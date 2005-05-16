@@ -1,0 +1,7 @@
+Mock Readme
+TODO: make readme
+TODO: make mock check the user's groups and error nicely if they are not in
+      the mock group
+TODO: make other UID/GID's than 500 work
+TODO: document more
+TODO: man page?
