@@ -1,7 +1,38 @@
 Mock Readme
+Mock is a simple chroot/rpm building program. It doesn't do anything
+terribly fancy other than build a single srpm at a time in a chroot.
+
+You invoke it as:
+mock -r name-of-chroot /path/to/srpm
+
+options:
+  -r CHROOT             chroot name/config file name default: chroot.cfg
+  --no-clean            do not clean chroot before building
+  --arch=ARCH           target build arch
+  --debug               Output copious debugging information
+  --resultdir=RESULTDIR
+                        path for resulting files to be put
+
+mock does:
+- builds the chroot
+- takes the srpm, rebuilds into another srpm
+   - it does this to make sure that the build deps in the spec file are
+     made in the right environment.
+- takes the build deps from the new srpm and installs them.
+- rebuilds the new srpm into binary packages
+- copies the binary packages into the result dir
+- logs nicely so that chroot creation and build logs are separate
+- outputs little unless it needs to.
+
+
 TODO: make readme
 TODO: make mock check the user's groups and error nicely if they are not in
       the mock group
 TODO: make other UID/GID's than 500 work
 TODO: document more
 TODO: man page?
+TODO: make default.cfg the default config file to look ast
+TODO: symlink fedora-development-i386-core.cfg to default.cfg
+TODO: if clean is not set then run 'yum update' on the tree instead
+TODO: changelog
+TODO: check on it working with yum 2.2.X on FC3/EL4, too.
