@@ -26,6 +26,8 @@ import glob
 import tempfile
 import shutil
 import types
+import grp
+import pwd
 from optparse import OptionParser
 
 __VERSION__ = '0.1'
@@ -143,7 +145,11 @@ class Root:
     def prep(self):
         self.state('Starting Prep')
         self._prep_install()
-        cmd = 'groupinstall %s' % self.config['buildgroup']
+        if self.config['clean']:
+            cmd = 'groupinstall %s' % self.config['buildgroup']
+        else:
+            cmd = 'update'
+
         self.yum(cmd)
         self._prep_build()
         self.state('Finished Prep')
@@ -556,7 +562,8 @@ def command_parse():
     usage = "usage: mock [options] /path/to/srpm"
     parser = OptionParser(usage=usage, version=__VERSION__)
     parser.add_option("-r", action="store", type="string", dest="chroot",
-                      default='chroot.cfg', help="chroot name/config file name default: %default")
+                      default='default', 
+                      help="chroot name/config file name default: %default")
     parser.add_option("--no-clean", action ="store_true", dest="dirty", 
              help="do not clean chroot before building")
     parser.add_option("--arch", action ="store", dest="arch", 
@@ -569,6 +576,20 @@ def command_parse():
     return parser.parse_args()
     
 def main():
+    # before we go on, make sure the user is a member of the 'mock' group.
+    member = False
+    for item in os.getgroups():
+        try:
+            grptup = grp.getgrgid(item)
+        except KeyError, e:
+            continue
+        if grptup[0] == 'mock':
+            member = True
+
+    if not member:
+        print "You need to be a member of the mock group for this to work"
+        sys.exit(1)
+        
     # config path
     config_path='/etc/mock'
     
