@@ -21,13 +21,11 @@ import sys
 import commands
 import rpmUtils
 import rpm
-import sha
 import glob
-import tempfile
 import shutil
 import types
 import grp
-import pwd
+
 from optparse import OptionParser
 
 __VERSION__ = '0.1'
@@ -527,11 +525,11 @@ class Root:
             self.do_chroot(cmd, fatal=True)
     
         # create dir structure
-        for dir in ('RPMS', 'SRPMS', 'SOURCES', 'SPECS', 'BUILD', 'originals'):
-            cmd = "mkdir -p %s/%s" % (self.builddir, dir)
+        for subdir in ('RPMS', 'SRPMS', 'SOURCES', 'SPECS', 'BUILD', 'originals'):
+            cmd = "mkdir -p %s/%s" % (self.builddir, subdir)
             self.do_chroot(cmd, fatal = True)
             cmd = "chown %s.%s %s/%s" % (self.config['chrootuser'], 
-               self.config['chrootgroup'], self.builddir, dir)
+               self.config['chrootgroup'], self.builddir, subdir)
             self.do_chroot(cmd, fatal = True)
         
         # rpmmacros default
