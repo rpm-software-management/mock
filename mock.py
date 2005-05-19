@@ -28,7 +28,7 @@ import grp
 
 from optparse import OptionParser
 
-__VERSION__ = '0.1'
+__VERSION__ = '0.2'
 
 def error(msg):
     print >> sys.stderr, msg
@@ -315,7 +315,7 @@ class Root:
 
     def _mount(self):
         """mount proc and devpts into chroot"""
-        mf = os.path.join(self.statedir, 'mounted')
+        mf = os.path.join(self.statedir, 'mounted-locations')
         track = open(mf, 'w+')
 
         # make the procdir if we don't have it
@@ -340,9 +340,7 @@ class Root:
         devptsdir = os.path.join(self.rootdir, 'dev/pts')
         self._ensure_dir(devptsdir)
         self.debug("mounting devpts in %s" % devptsdir)
-        command = '%s -t devpts -o uid=%s,gid=%s devpts %s' % (
-           self.config['mount'], self.config['chrootuid'], 
-           self.config['chrootgid'], devptsdir)
+        command = '%s -t devpts devpts %s' % (self.config['mount'], devptsdir)
         track.write('dev/pts\n')
         (retval, output) = self.do(command)
         track.flush()

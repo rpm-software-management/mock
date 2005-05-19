@@ -13,6 +13,7 @@
 #include <errno.h>
 #include <stdarg.h>
 #include <stdlib.h>
+#include <string.h>
 
 /* pull in configure'd defines */
 char *rootsdir = ROOTSDIR;
@@ -199,7 +200,7 @@ do_chroot (int argc, char *argv[])
  * allow proc mounts:
  * mount -t proc proc (root)/proc
  * allow devpts mounts:
- * mount -t devpts -o uid=500,gid=500 devpts (root)/dev/pts
+ * mount -t devpts devpts (root)/dev/pts
  */
 void
 do_mount (int argc, char *argv[])
@@ -219,14 +220,11 @@ do_mount (int argc, char *argv[])
   else if ((strncmp ("-t", argv[2], 2) == 0) &&
            (strncmp ("devpts", argv[3], 6) == 0))
   {
-    if (argc < 7)
+    if (argc < 5)
       error ("devpts: not enough mount arguments");
-    else if ((strncmp ("-o", argv[4], 2) != 0) ||
-             (strncmp ("uid=500,gid=500", argv[5], 15) != 0))
-      error ("devpts: unallowed mount options");
     /* see if we're mounting devpts to somewhere in rootsdir */
-    else if (strncmp (rootsdir, argv[7], strlen (rootsdir)) != 0)
-      error ("devpts: mount not allowed on %s", argv[7]);
+    else if (strncmp (rootsdir, argv[5], strlen (rootsdir)) != 0)
+      error ("devpts: mount not allowed on %s", argv[5]);
   }
   else
     error ("unallowed mount type");

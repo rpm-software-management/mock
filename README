@@ -25,9 +25,7 @@ mock does:
 - outputs little unless it needs to.
 
 
-TODO: make other UID/GID's than 500 work
 TODO: document more
 TODO: man page?
 TODO: symlink fedora-development-i386-core.cfg to default.cfg
 TODO: changelog
-TODO: check on it working with yum 2.2.X on FC3/EL4, too.

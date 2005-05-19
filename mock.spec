@@ -1,13 +1,13 @@
 Summary: Builds packages inside chroots
 Name: mock
-Version: 0.1
+Version: 0.2
 Release: 1
 License: GPL
 Group: Development/Tools
 Source: %{name}-%{version}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}root
 BuildRequires: gcc
-Requires: python, yum >= 2.3.2
+Requires: python, yum >= 2.2.1
 Requires(pre): shadow-utils
 
 
@@ -29,10 +29,11 @@ make DESTDIR=$RPM_BUILD_ROOT install
 [ "$RPM_BUILD_ROOT" != "/" ] && rm -rf $RPM_BUILD_ROOT
 
 %pre
-groupadd -r mock >/dev/null 2>&1
+groupadd -r mock >/dev/null 2>&1 || :
 
 %postun
-groupdel mock >/dev/null 2>&1
+groupdel mock >/dev/null 2>&1 || :
+
 
 %files
 %defattr(-, root, root)
@@ -45,5 +46,8 @@ groupdel mock >/dev/null 2>&1
 
 
 %changelog
+* Thu May 19 2005 Seth Vidal <skvidal@phy.duke.edu>
+- second packaging and backing down the yum ver req
+
 * Sun May 15 2005 Seth Vidal <skvidal@phy.duke.edu>
 - first version/packaging
