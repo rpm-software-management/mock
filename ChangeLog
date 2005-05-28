@@ -1,0 +1,50 @@
+2005-05-28 12:29  skvidal
+
+	* README, mock.spec: 
+	make the default.cfg symlink
+
+2005-05-19 10:24  skvidal
+
+	* README, mock.py, mock.spec, etc/fedora-3-i386-core.cfg,
+	etc/fedora-3-x86_64-core.cfg, etc/fedora-development-i386-core.cfg,
+	etc/fedora-development-ppc-core.cfg,
+	etc/fedora-development-x86_64-core.cfg, src/mock-helper.c: 
+	- allow users other than uid=500,gid=500 - fix warnings in
+	mock-helper - fix umount of proc and devpts
+
+2005-05-16 11:07  skvidal
+
+	* mock.py: 
+	pychecker is my friend
+
+2005-05-16 11:04  skvidal
+
+	* README, mock.py: 
+	- default now the default config file - checks for membership in
+	mock group before running - run yum update if the chroot is set to
+	not be cleaned out
+
+2005-05-16 02:27  skvidal
+
+	* README, mock.py: 
+	- update copyright info - update README with some more content and
+	TODOs
+
+2005-05-15 22:44  skvidal
+
+	* Makefile, README, mock.py, mock.spec, src/Makefile, src/config.h,
+	etc/Makefile, etc/fedora-3-i386-core.cfg,
+	etc/fedora-3-x86_64-core.cfg, etc/fedora-development-i386-core.cfg,
+	etc/fedora-development-ppc-core.cfg,
+	etc/fedora-development-x86_64-core.cfg, src/mock-helper.c,
+	src/selinux-mock.c: Import mock
+
+2005-05-15 22:44  skvidal
+
+	* Makefile, README, mock.py, mock.spec, src/Makefile, src/config.h,
+	etc/Makefile, etc/fedora-3-i386-core.cfg,
+	etc/fedora-3-x86_64-core.cfg, etc/fedora-development-i386-core.cfg,
+	etc/fedora-development-ppc-core.cfg,
+	etc/fedora-development-x86_64-core.cfg, src/mock-helper.c,
+	src/selinux-mock.c: Initial revision
+
