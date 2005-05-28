@@ -375,6 +375,7 @@ class Root:
         track.close()
         
         for item in lines:
+            item = item.replace('\n','')
             if len(item.strip()) < 1:
                 continue
             
