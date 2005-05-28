@@ -24,6 +24,9 @@ make
 %install
 [ "$RPM_BUILD_ROOT" != "/" ] && rm -rf $RPM_BUILD_ROOT
 make DESTDIR=$RPM_BUILD_ROOT install
+# make the default.cfg link
+ln -s %{_sysconfdir}/%{name}/fedora-development-i386-core.cfg \
+    %{_sysconfdir}/%{name}/default.cfg
 
 %clean
 [ "$RPM_BUILD_ROOT" != "/" ] && rm -rf $RPM_BUILD_ROOT
