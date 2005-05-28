@@ -41,7 +41,7 @@ groupdel mock >/dev/null 2>&1 || :
 
 %files
 %defattr(-, root, root)
-%doc README 
+%doc README ChangeLog
 %dir  %{_sysconfdir}/%{name}
 %config(noreplace) %{_sysconfdir}/%{name}/*.cfg
 %{_bindir}/%{name}
