@@ -1,3 +1,23 @@
+2005-05-28 13:24  skvidal
+
+	* mock.spec: 
+	add changelog to spec file
+
+2005-05-28 13:18  skvidal
+
+	* mock.py: 
+	correct umount_by_file problem with trailing \n
+
+2005-05-28 12:40  skvidal
+
+	* mock.spec: 
+	spec file fix
+
+2005-05-28 12:34  skvidal
+
+	* ChangeLog, README: 
+	added changelog
+
 2005-05-28 12:29  skvidal
 
 	* README, mock.spec: 
