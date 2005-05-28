@@ -8,7 +8,7 @@ CVSTAG=mock-$(subst .,_,$(VERSION)-$(RELEASE))
 all: subdirs
 
 clean:
-	rm -f *.pyc *.pyo *~
+	rm -f *.pyc *.pyo *~ *.bak
 	for d in $(SUBDIRS); do make -C $$d clean ; done
 
 subdirs:
