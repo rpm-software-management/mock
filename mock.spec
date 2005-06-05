@@ -4,9 +4,9 @@ Version: 0.2
 Release: 1
 License: GPL
 Group: Development/Tools
-Source: %{name}-%{version}.tar.gz
+Source: http://linux.duke.edu/~skvidal/mock/%{name}-%{version}.tar.gz
+URL: http://linux.duke.edu/~skvidal/mock/
 BuildRoot: %{_tmppath}/%{name}-%{version}root
-BuildRequires: gcc
 Requires: python, yum >= 2.2.1
 Requires(pre): shadow-utils
 
@@ -22,7 +22,7 @@ make
 
 
 %install
-[ "$RPM_BUILD_ROOT" != "/" ] && rm -rf $RPM_BUILD_ROOT
+rm -rf $RPM_BUILD_ROOT
 make DESTDIR=$RPM_BUILD_ROOT install
 # make the default.cfg link
 cd $RPM_BUILD_ROOT/%{_sysconfdir}/%{name}
@@ -30,13 +30,17 @@ ln -s fedora-development-i386-core.cfg default.cfg
 
 
 %clean
-[ "$RPM_BUILD_ROOT" != "/" ] && rm -rf $RPM_BUILD_ROOT
+rm -rf $RPM_BUILD_ROOT
 
 %pre
-groupadd -r mock >/dev/null 2>&1 || :
+if [ $1 == 1 ]; then
+    groupadd -r mock >/dev/null 2>&1 || :
+fi
 
 %postun
-groupdel mock >/dev/null 2>&1 || :
+if [ $1 == 0 ]; then
+   groupdel mock >/dev/null 2>&1 || :
+fi
 
 
 %files
@@ -50,6 +54,9 @@ groupdel mock >/dev/null 2>&1 || :
 
 
 %changelog
+* Sun Jun  5 2005 Seth Vidal <skvidal@phy.duke.edu>
+- clean up packaging for fedora extras
+
 * Thu May 19 2005 Seth Vidal <skvidal@phy.duke.edu>
 - second packaging and backing down the yum ver req
 
