@@ -33,14 +33,10 @@ ln -s fedora-development-i386-core.cfg default.cfg
 rm -rf $RPM_BUILD_ROOT
 
 %pre
-if [ $1 == 1 ]; then
+if [ $1 -eq 1 ]; then
     groupadd -r mock >/dev/null 2>&1 || :
 fi
 
-%postun
-if [ $1 == 0 ]; then
-   groupdel mock >/dev/null 2>&1 || :
-fi
 
 
 %files
