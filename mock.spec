@@ -1,7 +1,7 @@
 Summary: Builds packages inside chroots
 Name: mock
-Version: 0.2
-Release: 2
+Version: 0.3
+Release: 1
 License: GPL
 Group: Development/Tools
 Source: http://linux.duke.edu/~skvidal/mock/%{name}-%{version}.tar.gz
@@ -50,6 +50,9 @@ fi
 
 
 %changelog
+* Sat Jun 11 2005 Seth Vidal <skvidal@phy.duke.edu>
+- security fix in mock-helper
+
 * Sun Jun  5 2005 Seth Vidal <skvidal@phy.duke.edu>
 - clean up packaging for fedora extras
 
