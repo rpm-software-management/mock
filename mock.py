@@ -586,6 +586,11 @@ def main():
     if not member:
         print "You need to be a member of the mock group for this to work"
         sys.exit(1)
+
+    # and make sure they're not root
+    if os.geteuid() == 0:
+        error("Don't try to run mock as root!")
+        sys.exit(1)
         
     # config path
     config_path='/etc/mock'
@@ -632,6 +637,7 @@ def main():
     hdr = rpmUtils.miscutils.hdrFromPackage(ts, srpm)
     if hdr[rpm.RPMTAG_SOURCEPACKAGE] != 1:
         error("Specified srpm isn't a srpm!  Can't go on")
+        sys.exit(50)
     
     # read in the config file by chroot name
     if options.chroot.endswith('.cfg'):
