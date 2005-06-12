@@ -628,6 +628,10 @@ def main():
         sys.exit(50)
     
     srpm = args[0] # we only take one and I don't care. :)
+    ts = rpmUtils.transaction.initReadOnlyTransaction()
+    hdr = rpmUtils.miscutils.hdrFromPackage(ts, srpm)
+    if hdr[rpm.RPMTAG_SOURCEPACKAGE] != 1:
+        error("Specified srpm isn't a srpm!  Can't go on")
     
     # read in the config file by chroot name
     if options.chroot.endswith('.cfg'):
