@@ -631,13 +631,20 @@ def main():
     if len(args) < 1:
         error("No srpm specified - nothing to do")
         sys.exit(50)
+        
     
     srpm = args[0] # we only take one and I don't care. :)
     ts = rpmUtils.transaction.initReadOnlyTransaction()
-    hdr = rpmUtils.miscutils.hdrFromPackage(ts, srpm)
+    try:
+        hdr = rpmUtils.miscutils.hdrFromPackage(ts, srpm)
+    except rpmUtils.RpmUtilsError, e:
+        error("Specified srpm %s cannot be found/opened" % srpm)
+        sys.exit(50)
+
     if hdr[rpm.RPMTAG_SOURCEPACKAGE] != 1:
         error("Specified srpm isn't a srpm!  Can't go on")
         sys.exit(50)
+    
     
     # read in the config file by chroot name
     if options.chroot.endswith('.cfg'):
