@@ -24,7 +24,6 @@ char *rootsdir = ROOTSDIR;
 
 static char const * const ALLOWED_ENV[] =
 {
-  "APT_CONFIG",
   "dist",
   "ftp_proxy", "http_proxy", "https_proxy", "no_proxy"
 };
