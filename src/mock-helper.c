@@ -15,6 +15,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+#ifdef USE_SELINUX
+#include <selinux/selinux.h>
+#endif
+
 /* pull in configure'd defines */
 char *rootsdir = ROOTSDIR;
 
@@ -158,13 +162,15 @@ do_command (const char *filename, char *const argv[])
   printf ("\n");
   */
 
-  /* add LD_PRELOAD for our selinux lib if MOCK_LD_PRELOAD is set */
-  envvar = getenv ("MOCK_LD_PRELOAD");
-  if (envvar != 0)
+#ifdef USE_SELINUX
+  /* add LD_PRELOAD for our selinux lib if selinux is in use is set */
+  if (is_selinux_enabled() != -1)
   {
-    ld_preload = strdup("LD_PRELOAD=" LIBDIR "/libselinux-mock.so");
+    ld_preload = strdup("LD_PRELOAD=libselinux-mock.so");
+    printf("adding ld_preload of %s\n", ld_preload);
     env[idx++] = ld_preload;
   }
+#endif
 
   for (i = 0; i < ALLOWED_ENV_SIZE; ++i)
   {
