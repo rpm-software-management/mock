@@ -71,6 +71,15 @@ class Root:
         build_log = os.path.join(self.resultdir, 'build.log')
         self._build_log = open(build_log, 'w+')
         
+        # write out the config file
+        cfg_log = os.path.join(self.resultdir, 'mockconfig.log')
+        cfgout = open(cfg_log, 'w+')
+        cfgout.write('rootdir = %s' % self.rootdir)
+        cfgout.write('resultdir = %s' % self.resultdir)
+        cfgout.write('statedir = %s' % self.statedir)
+        cfgout.close()
+
+        
     
     def build_log(self, content):
         if type(content) is types.ListType:
@@ -567,8 +576,10 @@ def command_parse():
              default=None, help="target build arch")
     parser.add_option("--debug", action ="store_true", dest="debug", 
              default=False, help="Output copious debugging information")
-    parser.add_option("--resultdir", action="store", type="string", dest="resultdir",
-                      default=None, help="path for resulting files to be put")
+    parser.add_option("--resultdir", action="store", type="string", 
+             default=None, help="path for resulting files to be put")
+    parser.add_option("--statedir", action="store", type="string", default=None,
+            help="path for state dirresulting files to be put")
 
     return parser.parse_args()
     
@@ -671,7 +682,11 @@ def main():
     
     if options.resultdir:
         config_opts['resultdir'] = options.resultdir
-        
+
+    if options.statedir:
+        config_opts['statedir'] = options.resultdir
+
+
     try:
         my = Root(config_opts)
         my.prep()
@@ -682,7 +697,7 @@ def main():
         sys.exit(100)
 
     my.close()
-    print "Results and/or Logs in: %s" % my.resultdir
+    print "Results and/or logs in: %s" % my.resultdir
 
 
 if __name__ == '__main__':

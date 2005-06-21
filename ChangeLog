@@ -1,3 +1,37 @@
+2005-06-11 23:56  skvidal
+
+	* mock.py: 
+	label 0.3
+
+2005-06-11 23:38  skvidal
+
+	* mock.spec, src/mock-helper.c: 
+	security fix - pointed out by Toshio Kuratomi
+
+2005-06-05 10:51  skvidal
+
+	* mock.spec: 
+	changes to spec file for fedora extras
+
+2005-06-05 04:03  skvidal
+
+	* mock.spec: few more fixes
+
+2005-06-05 04:00  skvidal
+
+	* mock.spec: 
+	clean up spec file for fedora extras
+
+2005-05-28 13:25  skvidal
+
+	* Makefile: 
+	change make clean in . of dist dir
+
+2005-05-28 13:24  skvidal
+
+	* ChangeLog: 
+	update changelog
+
 2005-05-28 13:24  skvidal
 
 	* mock.spec: 
