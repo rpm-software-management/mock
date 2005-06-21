@@ -49,13 +49,16 @@ class Root:
         self.basedir = '%s/%s' % (config['basedir'], config['root'])
         self.target_arch = config['target_arch']
         self.rootdir = os.path.join(self.basedir, 'root')
-        self.statedir = os.path.join(self.basedir, 'state')
         self.homedir = self.config['chroothome']
         self.builddir = os.path.join(self.homedir, 'build')
         if not self.config.has_key('resultdir'):
             self.resultdir = os.path.join(self.basedir, 'result')
         else:
             self.resultdir = self.config['resultdir']
+        if not self.config.has_key('statedir'):
+            self.statedir = os.path.join(self.basedir, 'state')
+        else:
+            self.statedir = self.config['statedir']
         
         if config['clean']: 
             self.clean()
@@ -74,9 +77,9 @@ class Root:
         # write out the config file
         cfg_log = os.path.join(self.resultdir, 'mockconfig.log')
         cfgout = open(cfg_log, 'w+')
-        cfgout.write('rootdir = %s' % self.rootdir)
-        cfgout.write('resultdir = %s' % self.resultdir)
-        cfgout.write('statedir = %s' % self.statedir)
+        cfgout.write('rootdir = %s\n' % self.rootdir)
+        cfgout.write('resultdir = %s\n' % self.resultdir)
+        cfgout.write('statedir = %s\n' % self.statedir)
         cfgout.close()
 
         
@@ -131,7 +134,7 @@ class Root:
 
             if retval != 0:
                 error("Errors cleaning out chroot: %s" % output)
-                if os.path.exists(self.rootdir) or os.path.exists(self.statedir):
+                if os.path.exists(self.rootdir):
                     raise Error, "Failed to clean basedir, exiting"
 
 
@@ -685,7 +688,7 @@ def main():
         config_opts['resultdir'] = options.resultdir
 
     if options.statedir:
-        config_opts['statedir'] = options.resultdir
+        config_opts['statedir'] = options.statedir
 
 
     try:
