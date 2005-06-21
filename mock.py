@@ -125,13 +125,14 @@ class Root:
         if os.path.exists('%s/%s' % (self.rootdir, 'dev/pts')):
             self._umount('dev/pts')
             
-        cmd = '%s -rfv %s' % (self.config['rm'], self.basedir)
-        (retval, output) = self.do(cmd)
+        if os.path.exists(self.basedir)
+            cmd = '%s -rfv %s' % (self.config['rm'], self.basedir)
+            (retval, output) = self.do(cmd)
 
-        if retval != 0:
-            error("Errors cleaning out chroot: %s" % output)
-            if os.path.exists(self.rootdir) or os.path.exists(self.statedir):
-                raise Error, "Failed to clean basedir, exiting"
+            if retval != 0:
+                error("Errors cleaning out chroot: %s" % output)
+                if os.path.exists(self.rootdir) or os.path.exists(self.statedir):
+                    raise Error, "Failed to clean basedir, exiting"
 
 
     def state(self, curstate=None):
@@ -688,12 +689,14 @@ def main():
 
 
     try:
+        my = None  # if Root() fails, my will be undefined so we force it to None
         my = Root(config_opts)
         my.prep()
         my.build(srpm)
     except Error, e:
         print e
-        my.close()
+        if my:
+            my.close()
         sys.exit(100)
 
     my.close()

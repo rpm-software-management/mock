@@ -1,3 +1,11 @@
+2005-06-21 10:02  dcbw
+
+    * mock.py:
+    Fix traceback in clean() when self.basedir doesn't
+        yet exist.
+    Fix traceback when call to Root() raises an exception
+        and doesn't therefore set 'my'
+
 2005-06-11 23:56  skvidal
 
 	* mock.py: 
