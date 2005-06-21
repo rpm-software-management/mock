@@ -1,3 +1,66 @@
+2005-06-21 11:23  skvidal
+
+	* ChangeLog: 
+	remove dcbw's rogue changelog change
+
+2005-06-21 10:11  dcbw
+
+	* ChangeLog, mock.py: 2005-06-21 10:02	dcbw
+	
+	    * mock.py:
+	    Fix traceback in clean() when self.basedir doesn't
+		yet exist.
+	    Fix traceback when call to Root() raises an exception
+		and doesn't therefore set 'my'
+
+2005-06-21 09:47  skvidal
+
+	* ChangeLog, mock.py: 
+	--statedir on cli write out some of config into resultdir in a file
+	named mockconfig.log
+
+2005-06-17 17:11  katzj
+
+	* src/mock-helper.c: don't allow APT_CONFIG since apt is irrelevant
+	to mock
+
+2005-06-17 16:53  katzj
+
+	* src/: Makefile, mock-helper.c: * build libselinux-mock as a
+	shared lib that gets installed into LIBDIR * LD_PRELOAD
+	libselinux-mock if we're running with selinux.	this involves  
+	linking with libselinux.  if you're anti-selinux, build with  
+	'make NOSELINUX=1'.  this lets mock work on systems running
+	targeted policy   at least
+	
+	only ugliness here is that if the preload is being used, you get
+	errors about being unable to load it in the chroot from ld.  it
+	doesn't cause problems, it's just aesthetically ugly.
+
+2005-06-16 16:07  skvidal
+
+	* mock.py, etc/fedora-4-i386-core.cfg, etc/fedora-4-ppc-core.cfg,
+	etc/fedora-4-x86_64-core.cfg: 
+	- catch srpm not found traceback - fix fc4 config files
+
+2005-06-12 19:35  katzj
+
+	* mock.py: don't allow running as root (#159986)
+
+2005-06-12 19:33  katzj
+
+	* mock.py: error out if the user didn't pass a real srpm (#159987)
+
+2005-06-12 19:23  katzj
+
+	* etc/: Makefile, fedora-4-i386-core.cfg, fedora-4-ppc-core.cfg,
+	fedora-4-x86_64-core.cfg, fedora-5-i386-core.cfg,
+	fedora-5-ppc-core.cfg, fedora-5-x86_64-core.cfg,
+	fedora-development-i386-core.cfg, fedora-development-ppc-core.cfg,
+	fedora-development-x86_64-core.cfg: add config files for fc 4 and
+	5.  make the development config file a symlink at install time
+	since cvs can't really handle symlinks
+
 2005-06-11 23:56  skvidal
 
 	* mock.py: 
