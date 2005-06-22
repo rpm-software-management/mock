@@ -80,10 +80,9 @@ class Root:
         cfgout.write('rootdir = %s\n' % self.rootdir)
         cfgout.write('resultdir = %s\n' % self.resultdir)
         cfgout.write('statedir = %s\n' % self.statedir)
+        cfgout.flush()
         cfgout.close()
 
-        
-    
     def build_log(self, content):
         if type(content) is types.ListType:
             for line in content:
@@ -569,7 +568,11 @@ class Root:
 def command_parse():
     """return options and args from parsing the command line"""
     
-    usage = "usage: mock [options] /path/to/srpm"
+    usage = """
+    usage: mock [options] /path/to/srpm
+    optional commands: 
+        clean - clean out the specified chroot
+        init - initialize the chroot, do not build anything"""
     parser = OptionParser(usage=usage, version=__VERSION__)
     parser.add_option("-r", action="store", type="string", dest="chroot",
                       default='default', 
@@ -627,7 +630,7 @@ def main():
     config_opts['chrootgid'] = 500
     config_opts['chroothome'] = '/builddir'
     config_opts['clean'] = True
-    config_opts['debug'] = False    
+    config_opts['debug'] = False
     config_opts['target_arch'] = 'i386'
     config_opts['files'] = {}
     config_opts['yum.conf'] = ''
@@ -644,22 +647,8 @@ def main():
     (options, args) = command_parse()
     
     if len(args) < 1:
-        error("No srpm specified - nothing to do")
+        error("No srpm or command specified - nothing to do")
         sys.exit(50)
-        
-    
-    srpm = args[0] # we only take one and I don't care. :)
-    ts = rpmUtils.transaction.initReadOnlyTransaction()
-    try:
-        hdr = rpmUtils.miscutils.hdrFromPackage(ts, srpm)
-    except rpmUtils.RpmUtilsError, e:
-        error("Specified srpm %s cannot be found/opened" % srpm)
-        sys.exit(50)
-
-    if hdr[rpm.RPMTAG_SOURCEPACKAGE] != 1:
-        error("Specified srpm isn't a srpm!  Can't go on")
-        sys.exit(50)
-    
     
     # read in the config file by chroot name
     if options.chroot.endswith('.cfg'):
@@ -691,19 +680,70 @@ def main():
         config_opts['statedir'] = options.statedir
 
 
-    try:
-        my = None  # if Root() fails, my will be undefined so we force it to None
-        my = Root(config_opts)
-        my.prep()
-        my.build(srpm)
-    except Error, e:
-        print e
-        if my:
-            my.close()
-        sys.exit(100)
+    # do whatever we're here to do
+    if args[0] == 'clean':
+        # unset a --no-clean
+        config_opts['clean'] = True
+        try:
+            my = None
+            my = Root(config_opts)
+        except Error, e:
+            print e
+            if my:
+                my.close()
+            sys.exit(100)
 
-    my.close()
-    print "Results and/or logs in: %s" % my.resultdir
+        my.close()
+        print 'Finished cleaning root'
+        
+    elif args[0] == 'init':
+        try:
+            my = None
+            my = Root(config_opts)
+            my.prep()
+        except Error, e:
+            print e
+            if my:
+                my.close()
+            sys.exit(100)
+
+        my.close()
+        print 'Finished initializing root'
+        
+    else:
+        if args[0] == 'rebuild':
+            if len(args) > 1:
+                srpm = args[1]
+            else:
+                error("No package specified to rebuild command.")
+                sys.exit(50)
+        else:
+            srpm = args[0]
+
+        ts = rpmUtils.transaction.initReadOnlyTransaction()
+        try:
+            hdr = rpmUtils.miscutils.hdrFromPackage(ts, srpm)
+        except rpmUtils.RpmUtilsError, e:
+            error("Specified srpm %s cannot be found/opened" % srpm)
+            sys.exit(50)
+    
+        if hdr[rpm.RPMTAG_SOURCEPACKAGE] != 1:
+            error("Specified srpm isn't a srpm!  Can't go on")
+            sys.exit(50)
+    
+        try:
+            my = None  # if Root() fails, my will be undefined so we force it to None
+            my = Root(config_opts)
+            my.prep()
+            my.build(srpm)
+        except Error, e:
+            print e
+            if my:
+                my.close()
+            sys.exit(100)
+    
+        my.close()
+        print "Results and/or logs in: %s" % my.resultdir
 
 
 if __name__ == '__main__':

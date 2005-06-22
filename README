@@ -13,6 +13,12 @@ options:
   --resultdir=RESULTDIR
                         path for resulting files to be put
 
+ commands:
+  init  - initialize a chroot (install pkgs, setup devices, etc,) then exit
+  clean - purge the chroot tree - normally this happens right before a build
+          but this is for the tidy-minded
+  rebuild <srpm> - for mach compatibility
+
 mock does:
 - builds the chroot
 - takes the srpm, rebuilds into another srpm
