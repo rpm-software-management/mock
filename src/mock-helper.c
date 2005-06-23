@@ -163,7 +163,7 @@ do_command (const char *filename, char *const argv[])
 
 #ifdef USE_SELINUX
   /* add LD_PRELOAD for our selinux lib if selinux is in use is set */
-  if (is_selinux_enabled() != -1)
+  if (is_selinux_enabled() > 0)
   {
     ld_preload = strdup("LD_PRELOAD=libselinux-mock.so");
     printf("adding ld_preload of %s\n", ld_preload);
