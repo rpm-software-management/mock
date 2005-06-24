@@ -59,6 +59,8 @@ class Root:
             self.statedir = os.path.join(self.basedir, 'state')
         else:
             self.statedir = self.config['statedir']
+
+        self.state("init")
         
         if config['clean']: 
             self.clean()
@@ -121,6 +123,8 @@ class Root:
     
     def clean(self):
         """clean out chroot with extreme prejudice :)"""
+        self.state("clean")
+
         self.root_log('Cleaning Root')
         if os.path.exists('%s/%s' % (self.rootdir, 'proc')):
             self._umount('proc')
@@ -153,7 +157,8 @@ class Root:
             return self._state
     
     def prep(self):
-        self.state('Starting Prep')
+        self.state("prep")
+
         self._prep_install()
         if self.config['clean']:
             cmd = 'groupinstall %s' % self.config['buildgroup']
@@ -162,7 +167,6 @@ class Root:
 
         self.yum(cmd)
         self._prep_build()
-        self.state('Finished Prep')
         
 
     def yum(self, cmd):
@@ -173,8 +177,7 @@ class Root:
         self._mount() # check it again        
         command = '%s %s' % (basecmd, cmd)
         self.debug("yum: command %s" % command)
-        self.state("yum: command %s" % command)
-        
+
         self.root_log(command)
         (retval, output) = self.do(command)
         self.root_log(output)
@@ -202,7 +205,6 @@ class Root:
         cmd = "%s -c 'rpm -Uvh --nodeps %s' %s" % (self.config['runuser'], 
                           rootdest, self.config['chrootuser'])
         self.root_log(cmd)
-        self.state("Running: %s" % cmd)
         (retval, output) = self.do_chroot(cmd)
         
         self.root_log(output)
@@ -227,7 +229,6 @@ class Root:
         cmd = "%s -c 'rpmbuild -bs --target %s --nodeps %s' %s" % (self.config['runuser'], 
                     self.target_arch, chrootspec, self.config['chrootuser'])
         
-        self.state("Running: %s" % cmd)
         (retval, output) = self.do_chroot(cmd)
         self.root_log(output)
         if retval != 0:
@@ -245,7 +246,6 @@ class Root:
         ts = rpmUtils.transaction.initReadOnlyTransaction(root=self.rootdir)
         hdr = rpmUtils.miscutils.hdrFromPackage(ts, srpm)
         
-        self.state("Getting buildreqs")
         # get text buildreqs
         buildreqs = self._text_requires_from_hdr(hdr)
         arg_string = ""
@@ -270,21 +270,23 @@ class Root:
     def build(self, srpm):
         """build an srpm into binary rpms, capture log"""
         
+        self.state("setup")
+
         # take srpm, pass to install_build_deps() to rebuild it to a valid srpm
         # and do build deps
         srpm_out = self.install_build_deps(srpm)
         srpm_in = srpm_out.replace(self.rootdir, '')
         
         srpmfn = os.path.basename(srpm_in)
-        self.state("Starting Build of %s" % srpmfn)
         # run with --nodeps b/c of the check above we know we have our build
         # deps satisfied.
         cmd = "%s -c 'rpmbuild --rebuild  --target %s --nodeps %s' %s" % (
              self.config['runuser'], self.target_arch, srpm_in, 
              self.config['chrootuser'])
         
+        self.state("build")
+
         self.root_log(cmd)
-        
         (retval, output) = self.do_chroot(cmd)
         
         self.build_log(output)
@@ -305,11 +307,13 @@ class Root:
 
     def close(self):
         """unmount things and clean up a bit"""
-        self.root_log("Ending")
+        self.root_log("Cleaning up...")
+        self.state("ending")
         self._umount_by_file()
         self._root_log.close()
         self._build_log.close()
-        self.state("Closed")
+        self.state("done")
+        self.root_log("Done.")
         
         
     def _ensure_dir(self, path):
@@ -456,7 +460,6 @@ class Root:
         # make chroot dir
         # make /dev, mount /proc
         #
-        self.state("Preparing Root")
         for item in [self.basedir, self.rootdir, self.statedir, self.resultdir,
                      os.path.join(self.rootdir, 'var/lib/rpm'),
                      os.path.join(self.rootdir, 'var/log'),
@@ -470,7 +473,6 @@ class Root:
         self._mount()
 
         # we need stuff
-        self.state("making /dev devices")
         devices = [('null', 'c', '1', '3', '666'),
                    ('urandom', 'c', '1', '9', '644'),
                    ('random', 'c', '1', '9', '644'),
@@ -494,14 +496,12 @@ class Root:
         if not os.path.exists(devpath):
             os.symlink('../proc/self/fd', devpath)
         
-        self.state("making misc files of use")
         for item in [os.path.join(self.rootdir, 'etc', 'mtab'),
                      os.path.join(self.rootdir, 'etc', 'fstab'),
                      os.path.join(self.rootdir, 'var', 'log', 'yum.log')]:
             fo = open(item, 'w')
             fo.close()
         
-        self.state("making yum.conf")
         # write in yum.conf into chroot
         yumconf = os.path.join(self.rootdir, 'etc', 'yum.conf')
         yumconf_fo = open(yumconf, 'w')
@@ -517,7 +517,6 @@ class Root:
             fo.close()
 
     def _make_our_user(self):
-        self.state("Creating user for builds")
         # should check if the user exists first
         # make the buildusers/groups
         if not os.path.exists(self.rootdir + self.homedir):
@@ -528,7 +527,6 @@ class Root:
             self.do_chroot(cmd, fatal = True)
 
     def _build_dir_setup(self):
-        self.state("Setting up builddir")
         # purge the builddir, if it exists
         bd_out = '%s%s' % (self.rootdir, self.builddir)
         if os.path.exists(bd_out):
