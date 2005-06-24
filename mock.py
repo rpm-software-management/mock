@@ -310,10 +310,10 @@ class Root:
         self.root_log("Cleaning up...")
         self.state("ending")
         self._umount_by_file()
-        self._root_log.close()
         self._build_log.close()
         self.state("done")
         self.root_log("Done.")
+        self._root_log.close()
         
         
     def _ensure_dir(self, path):
