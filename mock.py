@@ -46,10 +46,10 @@ class Root:
         self._state = 'unstarted'
         self.tmplog = []
         self.config = config
-        basedir = config['basedir']
+        root = config['root']
         if config.has_key('unique-ext'):
-            basedir = "%s-%s" % (config['basedir'], config['unique-ext'])
-        self.basedir = os.path.join(basedir, config['root'])
+            root = "%s-%s" % (root, config['unique-ext'])
+        self.basedir = os.path.join(config['basedir'], root)
         self.target_arch = config['target_arch']
         self.rootdir = os.path.join(self.basedir, 'root')
         self.homedir = self.config['chroothome']
