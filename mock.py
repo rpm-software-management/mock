@@ -46,7 +46,10 @@ class Root:
         self._state = 'unstarted'
         self.tmplog = []
         self.config = config
-        self.basedir = '%s/%s' % (config['basedir'], config['root'])
+        basedir = config['basedir']
+        if config.has_key('unique-ext'):
+            basedir = "%s-%s" % (config['basedir'], config['unique-ext'])
+        self.basedir = os.path.join(basedir, config['root'])
         self.target_arch = config['target_arch']
         self.rootdir = os.path.join(self.basedir, 'root')
         self.homedir = self.config['chroothome']
@@ -585,6 +588,8 @@ def command_parse():
              default=None, help="path for resulting files to be put")
     parser.add_option("--statedir", action="store", type="string", default=None,
             help="path for state dirresulting files to be put")
+    parser.add_option("--uniqueext", action="store", type="string", default=None,
+            help="Arbitrary, unique extension to append to buildroot directory name")
 
     return parser.parse_args()
     
@@ -677,6 +682,8 @@ def main():
     if options.statedir:
         config_opts['statedir'] = options.statedir
 
+    if options.uniqueext:
+        config_opts['unique-ext'] = options.uniqueext
 
     # do whatever we're here to do
     if args[0] == 'clean':
