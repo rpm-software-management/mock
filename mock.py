@@ -62,7 +62,8 @@ class Root:
             self.statedir = os.path.join(self.basedir, 'state')
         else:
             self.statedir = self.config['statedir']
-
+        
+        self._ensure_dir(self.statedir)
         self.state("init")
         
         if config['clean']: 
