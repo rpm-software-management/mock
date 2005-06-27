@@ -11,6 +11,10 @@ clean:
 	rm -f *.pyc *.pyo *~ *.bak
 	for d in $(SUBDIRS); do make -C $$d clean ; done
 
+distclean: clean
+	rm -rf dist build
+	rm *.tar.gz
+
 subdirs:
 	for d in $(SUBDIRS); do make -C $$d; [ $$? = 0 ] || exit 1 ; done
 
@@ -24,9 +28,13 @@ archive:
 	@rm -rf ${PKGNAME}-%{VERSION}.tar.gz
 	@rm -rf /tmp/${PKGNAME}-$(VERSION) /tmp/${PKGNAME}
 	@dir=$$PWD; cd /tmp; cp -a $$dir ${PKGNAME}
-	@rm -f /tmp/${PKGNAME}/${PKGNAME}-daily.spec
+	@rm -rf /tmp/${PKGNAME}/${PKGNAME}-daily.spec /tmp/${PKGNAME}/build /tmp/${PKGNAME}/dist
 	@mv /tmp/${PKGNAME} /tmp/${PKGNAME}-$(VERSION)
 	@dir=$$PWD; cd /tmp; tar cvzf $$dir/${PKGNAME}-$(VERSION).tar.gz ${PKGNAME}-$(VERSION)
 	@rm -rf /tmp/${PKGNAME}-$(VERSION)	
 	@echo "The archive is in ${PKGNAME}-$(VERSION).tar.gz"
 
+rpm: archive
+	rm -rf build dist
+	mkdir build dist
+	rpmbuild --define "_sourcedir $(PWD)" --define "_builddir $(PWD)/build" --define "_srcrpmdir $(PWD)/dist" --define "_rpmdir $(PWD)/dist" -ba mock.spec

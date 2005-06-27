@@ -9,6 +9,7 @@ URL: http://linux.duke.edu/~skvidal/mock/
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 Requires: python, yum >= 2.2.1
 Requires(pre): shadow-utils
+BuildRequires: libselinux-devel
 
 
 %description
@@ -47,6 +48,7 @@ fi
 %{_bindir}/%{name}
 %attr(04750, root, mock) %{_sbindir}/mock-helper
 %attr(02775, root, mock) %dir /var/lib/mock
+%{_libdir}/libselinux-mock.so
 
 
 %changelog
