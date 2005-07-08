@@ -619,13 +619,13 @@ def main():
     
     # defaults
     config_opts = {}
-    config_opts['basedir'] = '/var/lib/mach/roots/' # root name is automatically added to this
-    config_opts['chroot'] = '/usr/sbin/mach-helper chroot'
-    config_opts['mount'] = '/usr/sbin/mach-helper mount'
-    config_opts['umount'] = '/usr/sbin/mach-helper umount'
-    config_opts['rm'] = '/usr/sbin/mach-helper rm'
-    config_opts['mknod'] = '/usr/sbin/mach-helper mknod'
-    config_opts['yum'] = '/usr/sbin/mach-helper yum'
+    config_opts['basedir'] = '/var/lib/mock/' # root name is automatically added to this
+    config_opts['chroot'] = '/usr/sbin/mock-helper chroot'
+    config_opts['mount'] = '/usr/sbin/mock-helper mount'
+    config_opts['umount'] = '/usr/sbin/mock-helper umount'
+    config_opts['rm'] = '/usr/sbin/mock-helper rm'
+    config_opts['mknod'] = '/usr/sbin/mock-helper mknod'
+    config_opts['yum'] = '/usr/sbin/mock-helper yum'
     config_opts['runuser'] = '/sbin/runuser'
     config_opts['buildgroup'] = 'build'
     config_opts['chrootuser'] = 'mockbuild'
