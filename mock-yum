@@ -1,0 +1,15 @@
+#!/usr/bin/python
+# Basically a copy of /usr/bin/yum that removes the LD_PRELOAD set by mock
+
+import os, sys
+
+if os.environ.has_key("LD_PRELOAD"): del os.environ["LD_PRELOAD"]
+
+import yum
+sys.path.insert(0, "/usr/share/yum-cli")
+import yummain
+try:
+    yummain.main(sys.argv[1:])
+except KeyboardInterrupt, e:
+    print >> sys.stderr, "\n\nExiting on user cancel."
+    sys.exit(1)

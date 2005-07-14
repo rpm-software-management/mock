@@ -133,7 +133,7 @@ check_file_allowed (const char *allowed, const char *given)
 
 /* argv[0] should by convention be the binary name to be executed */
 void
-do_command (const char *filename, char *const argv[])
+do_command (const char *filename, char *const argv[], int use_selinux_preload)
 {
   /* do not trust user environment;
    * copy over allowed env vars, after setting PATH and HOME ourselves
@@ -163,7 +163,7 @@ do_command (const char *filename, char *const argv[])
 
 #ifdef USE_SELINUX
   /* add LD_PRELOAD for our selinux lib if selinux is in use is set */
-  if (is_selinux_enabled() > 0)
+  if ((is_selinux_enabled() > 0) && (use_selinux_preload == 1))
   {
     ld_preload = strdup("LD_PRELOAD=libselinux-mock.so");
     printf("adding ld_preload of %s\n", ld_preload);
@@ -198,7 +198,7 @@ do_chroot (int argc, char *argv[])
   /* do we allow this dir ? */
   check_dir_allowed (rootsdir, argv[2]);
  
-  do_command ("/usr/sbin/chroot", &(argv[1]));
+  do_command ("/usr/sbin/chroot", &(argv[1]), 0);
 }
 
 /*
@@ -235,7 +235,7 @@ do_mount (int argc, char *argv[])
     error ("unallowed mount type");
 
   /* all checks passed, execute */
-  do_command ("/bin/mount", &(argv[1]));
+  do_command ("/bin/mount", &(argv[1]), 0);
 }
 
 /* clean out a chroot dir */
@@ -254,7 +254,7 @@ do_rm (int argc, char *argv[])
   check_dir_allowed (rootsdir, argv[3]);
 
   /* all checks passed, execute */
-  do_command ("/bin/rm", &(argv[1]));
+  do_command ("/bin/rm", &(argv[1]), 0);
 }
 
 /* perform rpm commands on root */
@@ -273,7 +273,7 @@ do_rpm (int argc, char *argv[])
   check_dir_allowed (rootsdir, argv[3]);
 
   /* all checks passed, execute */
-  do_command ("/bin/rpm", &(argv[1]));
+  do_command ("/bin/rpm", &(argv[1]), 0);
 }
 
 
@@ -292,7 +292,7 @@ do_yum (int argc, char *argv[])
   check_dir_allowed (rootsdir, argv[3]);
 
   /* all checks passed, execute */
-  do_command ("/usr/bin/yum", &(argv[1]));
+  do_command ("/usr/libexec/mock-yum", &(argv[1]), 1);
 }
 
 
@@ -308,7 +308,7 @@ do_umount (int argc, char *argv[])
   check_dir_allowed (rootsdir, argv[2]);
 
   /* all checks passed, execute */
-  do_command ("/bin/umount", &(argv[1]));
+  do_command ("/bin/umount", &(argv[1]), 1);
 }
 
 /* make /dev/ device nodes */
@@ -338,7 +338,7 @@ do_mknod (int argc, char *argv[])
 
   /* removed specific checks so we can make more than just /dev/null */
   /* all checks passed, execute */
-  do_command ("/bin/mknod", &(argv[1]));
+  do_command ("/bin/mknod", &(argv[1]), 0);
 }
 
 int
