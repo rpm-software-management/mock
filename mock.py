@@ -34,9 +34,35 @@ def error(msg):
     print >> sys.stderr, msg
 
 
-class Locked(Exception): pass
-class ReturnValue(Exception): pass
-class Error(Exception): pass
+class Error(Exception):
+    def __init__(self, msg):
+        exceptions.Exception.__init__(self)
+        self.msg = msg
+        self.resultcode = 1
+
+class YumError(Error): 
+    def __init__(self, msg):
+        Error.__init__(self)
+        self.msg = msg
+        self.resultcode = 30
+
+class PkgError(Error):
+    def __init__(self, msg):
+        Error.__init__(self)
+        self.msg = msg
+        self.resultcode = 40
+
+class BuildError(Error):
+    def __init__(self, msg):
+        Error.__init__(self)
+        self.msg = msg
+        self.resultcode = 10
+
+class RootError(Error):
+    def __init__(self, msg):
+        Error.__init__(self)
+        self.msg = msg
+        self.resultcode = 20
 
 
 
@@ -142,7 +168,7 @@ class Root:
             if retval != 0:
                 error("Errors cleaning out chroot: %s" % output)
                 if os.path.exists(self.rootdir):
-                    raise Error, "Failed to clean basedir, exiting"
+                    raise RootError, "Failed to clean basedir, exiting"
 
 
     def state(self, curstate=None):
@@ -187,7 +213,7 @@ class Root:
         self.root_log(output)
 
         if retval != 0:
-            raise Error, "Error peforming yum command: %s" % command
+            raise YumError, "Error peforming yum command: %s" % command
         
         return (retval, output)
         
@@ -216,14 +242,14 @@ class Root:
         if retval != 0:
             msg = "Error installing srpm: %s" % srpmfn
             self.root_log(msg)
-            raise Error, msg
+            raise RootError, msg
         
         specdir = os.path.join(bd_out, 'SPECS')
         specs = glob.glob('%s/*.spec' % specdir)
         if len(specs) < 1:
             msg =  "No Spec file found in srpm: %s" % srpmfn
             self.root_log(msg)
-            raise Error, msg
+            raise PkgError, msg
 
         spec = specs[0] # if there's more than one then someone is an idiot
     
@@ -236,14 +262,14 @@ class Root:
         (retval, output) = self.do_chroot(cmd)
         self.root_log(output)
         if retval != 0:
-            raise Error, "Error building srpm from installed spec. See Root log."
+            raise PkgError, "Error building srpm from installed spec. See Root log."
             
         srpmdir = os.path.join(bd_out, 'SRPMS')
         srpms = glob.glob('%s/*.src.rpm' % srpmdir)
         if len(srpms) < 1:
             msg = "No srpm created from specfile from srpm: %s" % srpmfn
             self.root_log(msg)
-            raise Error, msg
+            raise PkgError, msg
         
         srpm = srpms[0] # if there's more than one then something is weird
         
@@ -265,7 +291,7 @@ class Root:
             for line in output.split('\n'):
                 if line.find('No Package Found for') != -1:
                     errorpkg = line.replace('No Package Found for', '')
-                    raise Error, "Cannot find build req %s. Exiting." % errorpkg
+                    raise BuildError, "Cannot find build req %s. Exiting." % errorpkg
             # nothing made us exit, so we continue
             self.yum('install %s' % arg_string)
 
@@ -296,7 +322,7 @@ class Root:
         self.build_log(output)
         
         if retval != 0:
-            raise Error, "Error building package from %s, See build log" % srpmfn
+            raise BuildError, "Error building package from %s, See build log" % srpmfn
         
         bd_out = self.rootdir + self.builddir 
         rpms = glob.glob(bd_out + '/RPMS/*.rpm')
@@ -369,7 +395,7 @@ class Root:
         if retval != 0:
             if output.find('already mounted') == -1: # probably won't work in other LOCALES
                 self.root_log(output)
-                raise Error, "could not mount /dev/pts error was: %s" % output
+                raise RootError, "could not mount /dev/pts error was: %s" % output
         
 
     def _umount(self, path):
@@ -381,7 +407,7 @@ class Root:
         if retval != 0:
             if output.find('not mounted') == -1: # this probably won't work in other LOCALES
                 self.root_log(output)
-                raise Error, "could not umount %s error was: %s" % (path, output)
+                raise RootError, "could not umount %s error was: %s" % (path, output)
 
     
     def _umount_by_file(self):
@@ -417,7 +443,7 @@ class Root:
 
         return (retval, output)
 
-    def do_chroot(self, command, fatal = False):
+    def do_chroot(self, command, fatal = False, exitcode=None):
         """execute given command in root"""
         cmd = ""
         
@@ -434,6 +460,9 @@ class Root:
         (ret, output) = self.do(cmd)
         if (ret != 0) and fatal:
             self.close()
+            if exitcode:
+                ret = exitcode
+            
             error("Non-zero return value %d on executing %s\n" % (ret, cmd))
             sys.exit(ret)
         
@@ -493,7 +522,7 @@ class Root:
                 (retval, output) = self.do(cmd)
                 if retval != 0:
                     self.root_log(output)
-                    raise Error, "could not mknod error was: %s" % output
+                    raise RootError, "could not mknod error was: %s" % output
 
         # link fd to ../proc/self/fd
         devpath = os.path.join(self.rootdir, 'dev/fd')
@@ -525,7 +554,7 @@ class Root:
         # make the buildusers/groups
         if not os.path.exists(self.rootdir + self.homedir):
             if not os.path.exists(os.path.join(self.rootdir, 'usr/sbin/useradd')):
-                raise Error, "Could not find useradd in chroot, maybe the install failed?"
+                raise RootError, "Could not find useradd in chroot, maybe the install failed?"
             cmd = '/usr/sbin/useradd -u %s -d %s %s' % (self.config['chrootuid'], 
                     self.homedir, self.config['chrootuser'])
             self.do_chroot(cmd, fatal = True)
@@ -743,10 +772,10 @@ def main():
             my.prep()
             my.build(srpm)
         except Error, e:
-            print e
+            error(e)
             if my:
                 my.close()
-            sys.exit(100)
+            sys.exit(e.resultcode)
     
         my.close()
         print "Results and/or logs in: %s" % my.resultdir
