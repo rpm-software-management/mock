@@ -20,6 +20,7 @@ subdirs:
 
 install:
 	mkdir -p $(DESTDIR)/usr/bin/
+	mkdir -p $(DESTDIR)/usr/libexec
 	install -m 755 mock.py $(DESTDIR)/usr/bin/mock
 	install -m 755 mock-yum $(DESTDIR)/usr/libexec/mock-yum
 	mkdir -p $(DESTDIR)/var/lib/mock
