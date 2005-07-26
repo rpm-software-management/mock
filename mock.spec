@@ -46,6 +46,7 @@ fi
 %dir  %{_sysconfdir}/%{name}
 %config(noreplace) %{_sysconfdir}/%{name}/*.cfg
 %{_bindir}/%{name}
+%{_libexecdir}/mock-yum
 %attr(04750, root, mock) %{_sbindir}/mock-helper
 %attr(02775, root, mock) %dir /var/lib/mock
 %{_libdir}/libselinux-mock.so
