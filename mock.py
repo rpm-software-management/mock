@@ -25,6 +25,7 @@ import glob
 import shutil
 import types
 import grp
+from exceptions import Exception
 
 from optparse import OptionParser
 
@@ -36,31 +37,31 @@ def error(msg):
 
 class Error(Exception):
     def __init__(self, msg):
-        exceptions.Exception.__init__(self)
+        Exception.__init__(self)
         self.msg = msg
         self.resultcode = 1
 
 class YumError(Error): 
     def __init__(self, msg):
-        Error.__init__(self)
+        Error.__init__(self, msg)
         self.msg = msg
         self.resultcode = 30
 
 class PkgError(Error):
     def __init__(self, msg):
-        Error.__init__(self)
+        Error.__init__(self, msg)
         self.msg = msg
         self.resultcode = 40
 
 class BuildError(Error):
     def __init__(self, msg):
-        Error.__init__(self)
+        Error.__init__(self, msg)
         self.msg = msg
         self.resultcode = 10
 
 class RootError(Error):
     def __init__(self, msg):
-        Error.__init__(self)
+        Error.__init__(self, msg)
         self.msg = msg
         self.resultcode = 20
 
