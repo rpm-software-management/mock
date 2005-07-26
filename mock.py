@@ -28,7 +28,7 @@ import grp
 
 from optparse import OptionParser
 
-__VERSION__ = '0.3'
+__VERSION__ = '0.4'
 
 def error(msg):
     print >> sys.stderr, msg
