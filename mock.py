@@ -770,6 +770,7 @@ def main():
         try:
             my = None  # if Root() fails, my will be undefined so we force it to None
             my = Root(config_opts)
+            os.umask(0022) # set a umask- protects from paranoid whackjobs with an 002 umask
             my.prep()
             my.build(srpm)
         except Error, e:
