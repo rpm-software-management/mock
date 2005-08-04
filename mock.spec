@@ -4,8 +4,8 @@ Version: 0.4
 Release: 1
 License: GPL
 Group: Development/Tools
-Source: http://linux.duke.edu/~skvidal/mock/%{name}-%{version}.tar.gz
-URL: http://linux.duke.edu/~skvidal/mock/
+Source: http://fedoraproject.org/projects/mock/releases/%{name}-%{version}.tar.gz
+URL: http://fedoraproject.org/wiki/Projects/Mock
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 Requires: python, yum >= 2.2.1
 Requires(pre): shadow-utils

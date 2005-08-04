@@ -311,7 +311,7 @@ class Root:
         srpmfn = os.path.basename(srpm_in)
         # run with --nodeps b/c of the check above we know we have our build
         # deps satisfied.
-        cmd = "%s -c 'rpmbuild --rebuild  --target %s --nodeps %s' %s" % (
+        cmd = "cd /;%s -c 'rpmbuild --rebuild  --target %s --nodeps %s' %s" % (
              self.config['runuser'], self.target_arch, srpm_in, 
              self.config['chrootuser'])
         
