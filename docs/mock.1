@@ -1,0 +1,54 @@
+.TH "mock" "1" "0.4" "Seth Vidal" ""
+.SH "NAME"
+.LP 
+mock \- build a SRPM in a chroot
+.SH "SYNTAX"
+.LP 
+mock  [\-r CHROOT] [\-\-no\-clean] [\-\-arch=ARCH] [\-\-debug] [\-\-resultdir=RESULTDIR] [\-\-statedir=STATEDIR] [\-\-uniqueext=UNIQUEEXT] \fIfilename\fR
+
+.SH "DESCRIPTION"
+.LP 
+Mock is a simple chroot/rpm building program. It doesnt do anything terribly fancy other than build a single srpm at a time in a chroot.
+.SH "OPTIONS"
+.LP 
+.TP 
+\fB\-r\fR \fICHROOT\fP
+Uses specified chroot configuration as defined in /etc/mock/<\fIchroot\fP>.cfg If none specified, uses the chroot linked to by /etc/mock/default.cfg
+.TP 
+\fB\-\-no\-clean\fR
+Do not clean chroot before building package.
+.TP 
+\fB\-\-arch=\fR\fIARCH\fP
+Specify target build arch.
+.TP 
+\fB\-\-debug\fR
+Output copious debugging information.
+.TP 
+\fB\-\-resultdir=\fR\fIRESULTDIR\fP
+Path to store resulting files (RPMs and build logs)
+.TP 
+\fB\-\-help\fR
+Show usage information and exit.
+.TP 
+\fB\-\-version\fR
+Show version number and exit.
+.TP 
+.SH "FILES"
+.LP 
+\fI/etc/mock/\fP 
+.SH "EXAMPLES"
+.LP 
+To rebuild test.src.rpm under the default chroot:
+.LP 
+mock /path/to/test.src.rpm
+.LP 
+To specify a different chroot (which must be defined in /etc/mock):
+.LP 
+mock \-r fedora\-4\-i386\-core /path/to/test.src.rpm
+.SH "AUTHORS"
+.LP 
+Seth Vidal <skvidal@linux.duke.edu>
+.SH "SEE ALSO"
+.LP 
+yum(8) rpmbuild(8)
+http://fedoraproject.org/wiki/Projects/Mock
