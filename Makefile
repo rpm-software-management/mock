@@ -1,4 +1,4 @@
-SUBDIRS = etc src
+SUBDIRS = etc src docs
 
 PKGNAME = mock
 VERSION=$(shell awk '/Version:/ { print $$2 }' ${PKGNAME}.spec)
