@@ -35,6 +35,14 @@ def error(msg):
     print >> sys.stderr, msg
 
 
+# result/exit codes
+# 0 = yay!
+# 1 = something happened  - it's bad
+# 30 = Yum emitted an error of some sort
+# 40 = some error in the pkg we're building
+# 10 = problem building the package
+# 20 = error in the chroot of some kind
+
 class Error(Exception):
     def __init__(self, msg):
         Exception.__init__(self)
@@ -115,7 +123,12 @@ class Root:
         cfgout.write('statedir = %s\n' % self.statedir)
         cfgout.flush()
         cfgout.close()
+    
+    def log(self, msg):
+        if self.config['quiet']: return
+        print msg
 
+        
     def build_log(self, content):
         if type(content) is types.ListType:
             for line in content:
@@ -183,13 +196,14 @@ class Root:
             sfo.write('%s\n' % curstate)
             sfo.close()
             self._state = curstate
-            print curstate
+            self.log(curstate)
         else:
             return self._state
     
     def prep(self):
         self.state("prep")
-
+        self.log("This may take a while")
+        
         self._prep_install()
         if self.config['clean']:
             cmd = 'groupinstall %s' % self.config['buildgroup']
@@ -607,20 +621,22 @@ def command_parse():
         init - initialize the chroot, do not build anything"""
     parser = OptionParser(usage=usage, version=__VERSION__)
     parser.add_option("-r", action="store", type="string", dest="chroot",
-                      default='default', 
-                      help="chroot name/config file name default: %default")
+            help="chroot name/config file name default: %default", 
+            default='default')
     parser.add_option("--no-clean", action ="store_true", dest="dirty", 
-             help="do not clean chroot before building")
+            help="do not clean chroot before building")
     parser.add_option("--arch", action ="store", dest="arch", 
-             default=None, help="target build arch")
+            default=None, help="target build arch")
     parser.add_option("--debug", action ="store_true", dest="debug", 
-             default=False, help="Output copious debugging information")
+            default=False, help="Output copious debugging information")
     parser.add_option("--resultdir", action="store", type="string", 
-             default=None, help="path for resulting files to be put")
+            default=None, help="path for resulting files to be put")
     parser.add_option("--statedir", action="store", type="string", default=None,
             help="path for state dirresulting files to be put")
     parser.add_option("--uniqueext", action="store", type="string", default=None,
             help="Arbitrary, unique extension to append to buildroot directory name")
+    parser.add_option("--quiet", action ="store_true", dest="quiet", 
+            default=False, help="quiet down output")
 
     return parser.parse_args()
     
@@ -665,6 +681,7 @@ def main():
     config_opts['chroothome'] = '/builddir'
     config_opts['clean'] = True
     config_opts['debug'] = False
+    config_opts['quiet'] = False
     config_opts['target_arch'] = 'i386'
     config_opts['files'] = {}
     config_opts['yum.conf'] = ''
@@ -706,6 +723,7 @@ def main():
         config_opts['clean'] = True
         
     config_opts['debug'] = options.debug
+    config_opts['quiet'] = options.quiet
     
     if options.resultdir:
         config_opts['resultdir'] = options.resultdir
@@ -716,6 +734,7 @@ def main():
     if options.uniqueext:
         config_opts['unique-ext'] = options.uniqueext
 
+    
     # do whatever we're here to do
     if args[0] == 'clean':
         # unset a --no-clean
