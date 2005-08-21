@@ -4,7 +4,7 @@
 mock \- build a SRPM in a chroot
 .SH "SYNTAX"
 .LP 
-mock  [\-r CHROOT] [\-\-no\-clean] [\-\-arch=ARCH] [\-\-debug] [\-\-resultdir=RESULTDIR] [\-\-statedir=STATEDIR] [\-\-uniqueext=UNIQUEEXT] \fIfilename\fR
+mock  [\-r CHROOT] [\-\-no\-clean] [\-\-arch=ARCH] [\-\-debug] [\-\-resultdir=RESULTDIR] [\-\-statedir=STATEDIR] [\-\-uniqueext=UNIQUEEXT] [command] \fIfilename\fR
 
 .SH "DESCRIPTION"
 .LP 
@@ -32,6 +32,14 @@ Show usage information and exit.
 .TP 
 \fB\-\-version\fR
 Show version number and exit.
+.TP 
+\fBcommand\fR is one of:
+.TP 
+\fBinit\fR \- initialize a chroot (install packages, setup devices, etc.)
+.TP 
+\fBclean\fR \- purge the chroot tree
+.TP 
+\fBrebuild\fR \- If no command is specified, rebuild is assumed. Rebuilds the specified SRPM
 .TP 
 .SH "FILES"
 .LP 
