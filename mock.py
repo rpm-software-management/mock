@@ -450,9 +450,10 @@ class Root:
     def do(self, command):
         """execute given command outside of chroot"""
         
+        retval = 0
         self.debug("Executing %s" % command)
         (status, output) = commands.getstatusoutput(command)
-
+        
         if os.WIFEXITED(status):
             retval = os.WEXITSTATUS(status)
 
