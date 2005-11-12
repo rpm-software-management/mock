@@ -49,6 +49,9 @@ class Error(Exception):
         self.msg = msg
         self.resultcode = 1
 
+    def __str__(self):
+        return self.msg
+
 class YumError(Error): 
     def __init__(self, msg):
         Error.__init__(self, msg)
