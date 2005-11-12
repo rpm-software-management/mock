@@ -179,7 +179,7 @@ class Root:
             self._umount('dev/pts')
             
         if os.path.exists(self.basedir):
-            cmd = '%s -rfv %s' % (self.config['rm'], self.basedir)
+            cmd = '%s -rf %s' % (self.config['rm'], self.basedir)
             (retval, output) = self.do(cmd)
 
             if retval != 0:
