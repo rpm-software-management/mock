@@ -18,7 +18,6 @@
 import os
 import os.path
 import sys
-import commands
 import rpmUtils
 import rpm
 import glob
@@ -77,12 +76,33 @@ class RootError(Error):
         self.resultcode = 20
 
 
+class LogBuffer:
+
+    lines = []
+
+    def clear(self):
+        self.lines = []
+
+    def write(self, line):
+        if line[-1] != '\n':
+            line += '\n'
+        self.lines.append(line)
+
+    def writelines(self, lines):
+        for l in lines:
+            self.write(l)
+
+    def readlines(self):
+        return self.lines
+
+    def flush(self):
+        pass
 
 class Root:
     """base root object"""
     def __init__(self, config):
         self._state = 'unstarted'
-        self.tmplog = []
+        self.tmplog = LogBuffer()
         self.config = config
         root = config['root']
         if config.has_key('unique-ext'):
@@ -131,38 +151,18 @@ class Root:
         if self.config['quiet']: return
         print msg
 
-        
-    def build_log(self, content):
-        if type(content) is types.ListType:
-            for line in content:
-                self._build_log.write('%s\n' % line)
-        elif type(content) is types.StringType:
-            self._build_log.write('%s\n' % content)
-        else:
-            # wtf?
-            pass
-        self._build_log.flush()
-
     def root_log(self, content):
-            
+
+        if type(content) is list:
+            self.tmplog.writelines(content)
+        else:
+            self.tmplog.write(content)
+        
         # do this so if the log dir isn't ready yet we can still get those logs
-        self.tmplog.append(content)
-        
-        if not hasattr(self, '_root_log'):
-            return
-        
-        for content in self.tmplog:
-            if type(content) is types.ListType:
-                for line in content:
-                    self._root_log.write('%s\n' % line)
-            elif type(content) is types.StringType:
-                self._root_log.write('%s\n' % content)
-            else:
-                # wtf?
-                pass
-            
+        if hasattr(self, '_root_log'):
+            self._root_log.writelines(self.tmplog.readlines())
             self._root_log.flush()
-        self.tmplog = [] # zero out the logs
+            self.tmplog.clear()
 
     def debug(self, msg):
         if self.config['debug']:
@@ -226,9 +226,7 @@ class Root:
         command = '%s %s' % (basecmd, cmd)
         self.debug("yum: command %s" % command)
 
-        self.root_log(command)
         (retval, output) = self.do(command)
-        self.root_log(output)
 
         if retval != 0:
             raise YumError, "Error peforming yum command: %s" % command
@@ -252,10 +250,7 @@ class Root:
 
         cmd = "%s -c 'rpm -Uvh --nodeps %s' %s" % (self.config['runuser'], 
                           rootdest, self.config['chrootuser'])
-        self.root_log(cmd)
         (retval, output) = self.do_chroot(cmd)
-        
-        self.root_log(output)
         
         if retval != 0:
             msg = "Error installing srpm: %s" % srpmfn
@@ -278,7 +273,6 @@ class Root:
                     self.target_arch, chrootspec, self.config['chrootuser'])
         
         (retval, output) = self.do_chroot(cmd)
-        self.root_log(output)
         if retval != 0:
             raise PkgError, "Error building srpm from installed spec. See Root log."
             
@@ -305,7 +299,6 @@ class Root:
         # pass build reqs (as strings) to installer
         if arg_string != "":
             (retval, output) = self.yum('resolvedep %s' % arg_string)
-            self.root_log(output)
             for line in output.split('\n'):
                 if line.find('No Package Found for') != -1:
                     errorpkg = line.replace('No Package Found for', '')
@@ -334,10 +327,7 @@ class Root:
         
         self.state("build")
 
-        self.root_log(cmd)
         (retval, output) = self.do_chroot(cmd)
-        
-        self.build_log(output)
         
         if retval != 0:
             raise BuildError, "Error building package from %s, See build log" % srpmfn
@@ -396,7 +386,6 @@ class Root:
         
         if retval != 0:
             if output.find('already mounted') == -1: # probably won't work in other LOCALES
-                self.root_log(output)
                 error("could not mount proc error was: %s" % output)
         
         # devpts
@@ -412,7 +401,6 @@ class Root:
 
         if retval != 0:
             if output.find('already mounted') == -1: # probably won't work in other LOCALES
-                self.root_log(output)
                 raise RootError, "could not mount /dev/pts error was: %s" % output
         
 
@@ -424,7 +412,6 @@ class Root:
     
         if retval != 0:
             if output.find('not mounted') == -1: # this probably won't work in other LOCALES
-                self.root_log(output)
                 raise RootError, "could not umount %s error was: %s" % (path, output)
 
     
@@ -454,8 +441,29 @@ class Root:
         """execute given command outside of chroot"""
         
         retval = 0
-        self.debug("Executing %s" % command)
-        (status, output) = commands.getstatusoutput(command)
+        msg = "Executing %s" % command
+        self.debug(msg)
+        self.root_log(msg)
+
+        if hasattr(self, '_root_log'):
+            logfile = self._root_log
+        else:
+            logfile = self.tmplog
+        if self.state() == "build":
+            logfile = self._build_log
+
+        pipe = os.popen('{ ' + command + '; } 2>&1', 'r')
+        output = ""
+        for line in pipe:
+            logfile.write(line)
+            if self.config['debug']:
+                print line[:-1]
+                sys.stdout.flush()
+            logfile.flush()
+            output += line
+        status = pipe.close()
+        if status is None:
+            status = 0
         
         if os.WIFEXITED(status):
             retval = os.WEXITSTATUS(status)
@@ -540,7 +548,6 @@ class Root:
             if not os.path.exists(devpath):
                 (retval, output) = self.do(cmd)
                 if retval != 0:
-                    self.root_log(output)
                     raise RootError, "could not mknod error was: %s" % output
 
         # link fd to ../proc/self/fd
@@ -808,6 +815,5 @@ def main():
 
 if __name__ == '__main__':
     main()
-
 
 
