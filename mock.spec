@@ -47,12 +47,16 @@ fi
 %config(noreplace) %{_sysconfdir}/%{name}/*.cfg
 %{_bindir}/%{name}
 %{_libexecdir}/mock-yum
+%{_mandir}/man1/mock.1*
 %attr(04750, root, mock) %{_sbindir}/mock-helper
 %attr(02775, root, mock) %dir /var/lib/mock
 %{_libdir}/libselinux-mock.so
 
 
 %changelog
+* Tue Dec 27 2005 Seth Vidal <skvidal@phy.duke.edu>
+- add patch from Andreas Thienemann - adds man page
+
 * Sat Jun 11 2005 Seth Vidal <skvidal@phy.duke.edu>
 - security fix in mock-helper
 
