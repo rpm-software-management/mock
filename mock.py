@@ -648,6 +648,8 @@ def command_parse():
             help="Arbitrary, unique extension to append to buildroot directory name")
     parser.add_option("--quiet", action ="store_true", dest="quiet", 
             default=False, help="quiet down output")
+    parser.add_option("--setpgrp", action ="store_true", dest="setpgrp", 
+            default=False, help="starts a new process group for mock")
 
     return parser.parse_args()
     
@@ -711,7 +713,12 @@ def main():
     if len(args) < 1:
         error("No srpm or command specified - nothing to do")
         sys.exit(50)
-    
+
+    # If requested, become a process group leader so that us and
+    # _all_ of our children can more easily be killed with kill(2)
+    if options.setpgrp:
+        os.setpgrp()
+
     # read in the config file by chroot name
     if options.chroot.endswith('.cfg'):
         cfg = '%s/%s' % (config_path, options.chroot)
