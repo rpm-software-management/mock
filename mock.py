@@ -646,6 +646,8 @@ def command_parse():
             help="path for state dirresulting files to be put")
     parser.add_option("--uniqueext", action="store", type="string", default=None,
             help="Arbitrary, unique extension to append to buildroot directory name")
+    parser.add_option("--configdir", action="store", dest="configdir", default=None,
+                      help="Change where config files are found")
     parser.add_option("--quiet", action ="store_true", dest="quiet", 
             default=False, help="quiet down output")
 
@@ -711,6 +713,9 @@ def main():
     if len(args) < 1:
         error("No srpm or command specified - nothing to do")
         sys.exit(50)
+
+    if options.configdir:
+        config_path = options.configdir
     
     # read in the config file by chroot name
     if options.chroot.endswith('.cfg'):
