@@ -780,6 +780,12 @@ def main():
 
         my.close()
         print 'Finished initializing root'
+
+    elif args[0] == 'chroot':
+        config_opts['clean'] = config_opts['quiet'] = False
+        my= Root(config_opts)
+        my.do_chroot(' '.join(args[1:]), True)
+        print 'Finished chroot command'
         
     else:
         if args[0] == 'rebuild':
