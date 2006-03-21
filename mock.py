@@ -555,6 +555,14 @@ class Root:
         if not os.path.exists(devpath):
             os.symlink('../proc/self/fd', devpath)
         
+        fd = 0
+        for item in ('stdin', 'stdout', 'stderr'):
+            devpath =  os.path.join(self.rootdir, 'dev', item)
+            if not os.path.exists(devpath):
+                fdpath = os.path.join('../proc/self/fd', str(fd))
+                os.symlink(fdpath, devpath)
+            fd += 1
+
         for item in [os.path.join(self.rootdir, 'etc', 'mtab'),
                      os.path.join(self.rootdir, 'etc', 'fstab'),
                      os.path.join(self.rootdir, 'var', 'log', 'yum.log')]:
