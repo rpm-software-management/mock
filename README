@@ -12,7 +12,7 @@ options:
   --debug               Output copious debugging information
   --resultdir=RESULTDIR
                         path for resulting files to be put
-  --statedir=STATEDIR   path for state dirresulting files to be put
+  --statedir=STATEDIR   path for state file is written
   --uniqueext=UNIQUEEXT
                         Arbitrary, unique extension to append to buildroot
                         directory name

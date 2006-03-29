@@ -651,7 +651,7 @@ def command_parse():
     parser.add_option("--resultdir", action="store", type="string", 
             default=None, help="path for resulting files to be put")
     parser.add_option("--statedir", action="store", type="string", default=None,
-            help="path for state dirresulting files to be put")
+            help="path for state file is written")
     parser.add_option("--uniqueext", action="store", type="string", default=None,
             help="Arbitrary, unique extension to append to buildroot directory name")
     parser.add_option("--configdir", action="store", dest="configdir", default=None,
