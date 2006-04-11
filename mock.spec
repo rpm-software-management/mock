@@ -1,6 +1,6 @@
 Summary: Builds packages inside chroots
 Name: mock
-Version: 0.4
+Version: 0.5
 Release: 1
 License: GPL
 Group: Development/Tools
@@ -54,6 +54,9 @@ fi
 
 
 %changelog
+* Tue Apr 11 2006 Seth Vidal <skvidal at linux.duke.edu>
+- specfile version iterate
+
 * Tue Dec 27 2005 Seth Vidal <skvidal@phy.duke.edu>
 - add patch from Andreas Thienemann - adds man page
 
