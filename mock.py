@@ -28,7 +28,7 @@ from exceptions import Exception
 
 from optparse import OptionParser
 
-__VERSION__ = '0.4'
+__VERSION__ = '0.5'
 
 def error(msg):
     print >> sys.stderr, msg
@@ -209,7 +209,7 @@ class Root:
         
         self._prep_install()
         if self.config['clean']:
-            cmd = 'groupinstall %s' % self.config['buildgroup']
+            cmd = 'install %s' % self.config['chroot_dep_package']
         else:
             cmd = 'update'
 
@@ -694,7 +694,7 @@ def main():
     config_opts['mknod'] = '/usr/sbin/mock-helper mknod'
     config_opts['yum'] = '/usr/sbin/mock-helper yum'
     config_opts['runuser'] = '/sbin/runuser'
-    config_opts['buildgroup'] = 'build'
+    config_opts['chroot_dep_package'] = 'buildsys-build'
     config_opts['chrootuser'] = 'mockbuild'
     config_opts['chrootgroup'] = 'mockbuild'
     config_opts['chrootuid'] = 500
