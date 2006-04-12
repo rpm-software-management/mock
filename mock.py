@@ -792,7 +792,9 @@ def main():
     elif args[0] == 'chroot':
         config_opts['clean'] = config_opts['quiet'] = False
         my= Root(config_opts)
+        my._mount()
         my.do_chroot(' '.join(args[1:]), True)
+        my.close()
         print 'Finished chroot command'
         
     else:
