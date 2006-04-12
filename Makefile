@@ -40,3 +40,8 @@ rpm: archive
 	rm -rf build dist
 	mkdir build dist
 	rpmbuild --define "_sourcedir $(PWD)" --define "_builddir $(PWD)/build" --define "_srcrpmdir $(PWD)/dist" --define "_rpmdir $(PWD)/dist" -ba mock.spec
+
+buildsys-rpm:
+	rm -rf buildsys
+	mkdir buildsys
+	rpmbuild --define "_sourcedir $(PWD)" --define "_builddir $(PWD)/buildsys" --define "_srcrpmdir $(PWD)/buildsys" --define "_rpmdir $(PWD)/buildsys" -ba buildsys-build.spec
