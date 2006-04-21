@@ -229,7 +229,7 @@ class Root:
         (retval, output) = self.do(command)
 
         if retval != 0:
-            raise YumError, "Error peforming yum command: %s" % command
+            raise YumError, "Error performing yum command: %s" % command
         
         return (retval, output)
         
