@@ -566,8 +566,9 @@ class Root:
         for item in [os.path.join(self.rootdir, 'etc', 'mtab'),
                      os.path.join(self.rootdir, 'etc', 'fstab'),
                      os.path.join(self.rootdir, 'var', 'log', 'yum.log')]:
-            fo = open(item, 'w')
-            fo.close()
+            if not os.path.exists(item):
+                fo = open(item, 'w')
+                fo.close()
         
         # write in yum.conf into chroot
         yumconf = os.path.join(self.rootdir, 'etc', 'yum.conf')
@@ -578,6 +579,13 @@ class Root:
         # files in /etc that need doing
         filedict = self.config['files']
         for key in filedict:
+            # ensure permisssions
+            if os.path.exists( "%s%s" % (self.rootdir, key) ):
+                cmd = "chown %s.%s %s" % (self.config['chrootuser'],
+                    self.config['chrootgroup'], "%s" % key)
+                self.do_chroot(cmd, fatal = True)
+
+            # write file
             fn = '%s%s' % (self.rootdir, key)
             fo = open(fn, 'w')
             fo.write(filedict[key])
@@ -589,7 +597,7 @@ class Root:
         if not os.path.exists(self.rootdir + self.homedir):
             if not os.path.exists(os.path.join(self.rootdir, 'usr/sbin/useradd')):
                 raise RootError, "Could not find useradd in chroot, maybe the install failed?"
-            cmd = '/usr/sbin/useradd -u %s -d %s %s' % (self.config['chrootuid'], 
+            cmd = '/usr/sbin/useradd -m -u %s -d %s %s' % (self.config['chrootuid'], 
                     self.homedir, self.config['chrootuser'])
             self.do_chroot(cmd, fatal = True)
 
@@ -604,9 +612,11 @@ class Root:
         for subdir in ('RPMS', 'SRPMS', 'SOURCES', 'SPECS', 'BUILD', 'originals'):
             cmd = "mkdir -p %s/%s" % (self.builddir, subdir)
             self.do_chroot(cmd, fatal = True)
-            cmd = "chown %s.%s %s/%s" % (self.config['chrootuser'], 
-               self.config['chrootgroup'], self.builddir, subdir)
-            self.do_chroot(cmd, fatal = True)
+
+	# change ownership so we can write to build home dir
+        cmd = "chown -R %s.%s %s" % (self.config['chrootuser'], 
+           self.config['chrootgroup'], self.homedir)
+        self.do_chroot(cmd, fatal = True)
         
         # rpmmacros default
         macrofile_out = '%s%s/.rpmmacros' % (self.rootdir, self.homedir)
