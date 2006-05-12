@@ -25,7 +25,7 @@ char *rootsdir = ROOTSDIR;
 static char const * const ALLOWED_ENV[] =
 {
   "dist",
-  "ftp_proxy", "http_proxy", "https_proxy", "no_proxy"
+  "ftp_proxy", "http_proxy", "https_proxy", "no_proxy", "PS1",
 };
 
 #define ALLOWED_ENV_SIZE (sizeof (ALLOWED_ENV) / sizeof (ALLOWED_ENV[0]))
