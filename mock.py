@@ -810,36 +810,46 @@ def main():
     else:
         if args[0] == 'rebuild':
             if len(args) > 1:
-                srpm = args[1]
+                srpms = args[1:]
             else:
                 error("No package specified to rebuild command.")
                 sys.exit(50)
         else:
-            srpm = args[0]
+            srpms = args[0:]
 
-        ts = rpmUtils.transaction.initReadOnlyTransaction()
-        try:
-            hdr = rpmUtils.miscutils.hdrFromPackage(ts, srpm)
-        except rpmUtils.RpmUtilsError, e:
-            error("Specified srpm %s cannot be found/opened" % srpm)
-            sys.exit(50)
+        for srpm in srpms:
+            ts = rpmUtils.transaction.initReadOnlyTransaction()
+            try:
+                hdr = rpmUtils.miscutils.hdrFromPackage(ts, srpm)
+            except rpmUtils.RpmUtilsError, e:
+                error("Specified srpm %s cannot be found/opened" % srpm)
+                sys.exit(50)
     
-        if hdr[rpm.RPMTAG_SOURCEPACKAGE] != 1:
-            error("Specified srpm isn't a srpm!  Can't go on")
-            sys.exit(50)
-    
+            if hdr[rpm.RPMTAG_SOURCEPACKAGE] != 1:
+                error("Specified srpm isn't a srpm!  Can't go on")
+                sys.exit(50)
+
+        # Prep build root
+        my = None  # if Root() fails, my will be undefined so we force it to None
         try:
-            my = None  # if Root() fails, my will be undefined so we force it to None
             my = Root(config_opts)
             os.umask(0022) # set a umask- protects from paranoid whackjobs with an 002 umask
-            my.prep()
-            my.build(srpm)
         except Error, e:
             error(e)
             if my:
                 my.close()
             sys.exit(e.resultcode)
-    
+       
+        for srpm in srpms:
+            try:
+                my.prep()
+                my.build(srpm)
+            except Error, e:
+                error(e)
+                if my:
+                    my.close()
+                sys.exit(e.resultcode)
+        
         my.close()
         print "Results and/or logs in: %s" % my.resultdir
 
