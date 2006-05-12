@@ -800,13 +800,28 @@ def main():
         print 'Finished initializing root'
 
     elif args[0] == 'chroot':
+        # catch-all for executing arbitrary commands in the chroot
         config_opts['clean'] = config_opts['quiet'] = False
-        my= Root(config_opts)
+        my = Root(config_opts)
+        cmd = ' '.join(args[1:])
+        my.debug("executing: %s" % cmd)
         my._mount()
-        my.do_chroot(' '.join(args[1:]), True)
+        my.do_chroot(cmd, True)
         my.close()
-        print 'Finished chroot command'
+        my.debug('finished chroot command')
         
+    elif args[0] == 'shell':
+        # debugging tool for interactive poking around in the chroot
+        config_opts['clean'] = config_opts['quiet'] = False
+        my = Root(config_opts)
+        cmd = "PS1='mock-chroot> ' %s %s /bin/bash" % (config_opts['chroot'],
+                                 my.rootdir)
+        my.debug("executing: %s" % cmd)
+        my._mount()
+        ret = os.system(cmd)
+        my.close()
+        my.debug("finished shell with retval %d" % ret)
+
     else:
         if args[0] == 'rebuild':
             if len(args) > 1:
