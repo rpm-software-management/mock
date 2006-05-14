@@ -289,7 +289,7 @@ class Root:
         hdr = rpmUtils.miscutils.hdrFromPackage(ts, srpm)
         
         # get text buildreqs
-        buildreqs = self._text_requires_from_hdr(hdr)
+        buildreqs = self._text_requires_from_hdr(hdr, srpm)
         arg_string = ""
         for item in buildreqs:
             
@@ -495,7 +495,7 @@ class Root:
         
         return (ret, output)
 
-    def _text_requires_from_hdr(self, hdr):
+    def _text_requires_from_hdr(self, hdr, srpm):
         """take a header and hand back a unique'd list of the requires as
            strings"""
            
@@ -512,6 +512,23 @@ class Root:
 
             req = rpmUtils.miscutils.formatRequire(n, v, f)
             reqlist.append(req)
+        
+        # Extract SRPM name components - still not nice, shouldn't this
+        # be somewhere in the "hdr" parameter?
+        fname = os.path.split(str(srpm))[1]
+        name, ver, rel, epoch, arch = rpmUtils.miscutils.splitFilename(fname)
+
+        # Add the 'more_buildreqs' for this SRPM (if defined)
+        for this_srpm in ['-'.join([name,ver,rel]),
+                          '-'.join([name,ver]),
+                          '-'.join([name]),]:
+            if self.config['more_buildreqs'].has_key(this_srpm):
+                more_reqs = self.config['more_buildreqs'][this_srpm]
+                if type(more_reqs) in (type(u''), type(''),):
+                    more_reqs = [more_reqs] # be nice if we get a string
+                for req in more_reqs:
+                    reqlist.append(req)
+                break
         
         return rpmUtils.miscutils.unique(reqlist)
     
@@ -722,6 +739,7 @@ def main():
     
 """ % config_opts['chroothome']
     
+    config_opts['more_buildreqs'] = {}
     config_opts['files']['/etc/resolv.conf'] = "nameserver 192.168.1.1\n"
     config_opts['files']['/etc/hosts'] = "127.0.0.1 localhost localhost.localdomain\n"
     
