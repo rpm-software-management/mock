@@ -209,7 +209,7 @@ class Root:
         
         self._prep_install()
         if self.config['clean']:
-            cmd = 'install %s' % self.config['chroot_dep_package']
+            cmd = '%s' % self.config['chroot_setup_cmd']
         else:
             cmd = 'update'
 
@@ -721,7 +721,7 @@ def main():
     config_opts['mknod'] = '/usr/sbin/mock-helper mknod'
     config_opts['yum'] = '/usr/sbin/mock-helper yum'
     config_opts['runuser'] = '/sbin/runuser'
-    config_opts['chroot_dep_package'] = 'buildsys-build'
+    config_opts['chroot_setup_cmd'] = 'install buildsys-build'
     config_opts['chrootuser'] = 'mockbuild'
     config_opts['chrootgroup'] = 'mockbuild'
     config_opts['chrootuid'] = 500
