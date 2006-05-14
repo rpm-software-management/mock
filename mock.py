@@ -735,6 +735,14 @@ def main():
     if options.configdir:
         config_path = options.configdir
     
+    # Read in the default values which can be overwritten
+    # with the more specific config being loaded below.
+    cfg = os.path.join(config_path, 'defaults.cfg')
+    if os.path.exists(cfg):
+        execfile(cfg)
+    else:
+        pass # not finding the defaults.cfg file is no error
+    
     # read in the config file by chroot name
     if options.chroot.endswith('.cfg'):
         cfg = '%s/%s' % (config_path, options.chroot)
