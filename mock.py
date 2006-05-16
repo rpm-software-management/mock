@@ -630,7 +630,7 @@ class Root:
             cmd = "mkdir -p %s/%s" % (self.builddir, subdir)
             self.do_chroot(cmd, fatal = True)
 
-	# change ownership so we can write to build home dir
+        # change ownership so we can write to build home dir
         cmd = "chown -R %s.%s %s" % (self.config['chrootuser'], 
            self.config['chrootgroup'], self.homedir)
         self.do_chroot(cmd, fatal = True)
@@ -687,32 +687,8 @@ def command_parse():
             default=False, help="quiet down output")
 
     return parser.parse_args()
-    
-def main():
-    # before we go on, make sure the user is a member of the 'mock' group.
-    member = False
-    for item in os.getgroups():
-        try:
-            grptup = grp.getgrgid(item)
-        except KeyError, e:
-            continue
-        if grptup[0] == 'mock':
-            member = True
 
-    if not member:
-        print "You need to be a member of the mock group for this to work"
-        sys.exit(1)
-
-    # and make sure they're not root
-    if os.geteuid() == 0:
-        error("Don't try to run mock as root!")
-        sys.exit(1)
-        
-    # config path
-    config_path='/etc/mock'
-    
-    # defaults
-    config_opts = {}
+def setup_default_config_opts(config_opts):
     config_opts['basedir'] = '/var/lib/mock/' # root name is automatically added to this
     config_opts['chroot'] = '/usr/sbin/mock-helper chroot'
     config_opts['mount'] = '/usr/sbin/mock-helper mount'
@@ -742,6 +718,119 @@ def main():
     config_opts['more_buildreqs'] = {}
     config_opts['files']['/etc/resolv.conf'] = "nameserver 192.168.1.1\n"
     config_opts['files']['/etc/hosts'] = "127.0.0.1 localhost localhost.localdomain\n"
+
+def set_config_opts_per_cmdline(config_opts, options):
+    # do some other options and stuff
+    if options.arch:
+        config_opts['target_arch'] = options.arch
+    
+    if options.dirty:
+        config_opts['clean'] = False
+    else:
+        config_opts['clean'] = True
+        
+    config_opts['debug'] = options.debug
+    config_opts['quiet'] = options.quiet
+    
+    if options.resultdir:
+        config_opts['resultdir'] = options.resultdir
+
+    if options.statedir:
+        config_opts['statedir'] = options.statedir
+
+    if options.uniqueext:
+        config_opts['unique-ext'] = options.uniqueext
+
+def do_clean(config_opts, init=0):
+        my = None
+        try:
+            my = Root(config_opts)
+            if init: my.prep()
+        except Error, e:
+            print e
+            if my:
+                my.close()
+            sys.exit(100)
+
+        my.close()
+        if init:
+            print 'Finished initializing root'
+        else:
+            print 'Finished cleaning root'
+
+def do_run_cmd(config_opts, cmd, raw_chroot=0):
+        my = Root(config_opts)
+        my.debug("executing: %s" % cmd)
+        my._mount()
+        if raw_chroot: 
+            cmd = '%s %s %s' % (config_opts['chroot'], my.rootdir, cmd)
+            os.system(cmd)
+        else:
+            my.do_chroot(cmd, True)
+        my.close()
+        my.debug('finished chroot command')
+               
+def ensure_filetype_srpm(srpms):
+    for srpm in srpms:
+        ts = rpmUtils.transaction.initReadOnlyTransaction()
+        try:
+            hdr = rpmUtils.miscutils.hdrFromPackage(ts, srpm)
+        except rpmUtils.RpmUtilsError, e:
+            error("Specified srpm %s cannot be found/opened" % srpm)
+            sys.exit(50)
+   
+        if hdr[rpm.RPMTAG_SOURCEPACKAGE] != 1:
+            error("Specified srpm isn't a srpm!  Can't go on")
+            sys.exit(50)
+
+def do_rebuild(config_opts, srpms):
+    # Prep build root
+    my = None  # if Root() fails, my will be undefined so we force it to None
+    try:
+        my = Root(config_opts)
+        os.umask(0022) # set a umask- protects from paranoid whackjobs with an 002 umask
+    except Error, e:
+        error(e)
+        if my:
+            my.close()
+        sys.exit(e.resultcode)
+   
+    for srpm in srpms:
+        try:
+            my.prep()
+            my.build(srpm)
+        except Error, e:
+            error(e)
+            if my:
+                my.close()
+            sys.exit(e.resultcode)
+    
+    my.close()
+    print "Results and/or logs in: %s" % my.resultdir
+
+def main():
+    # before we go on, make sure the user is a member of the 'mock' group.
+    member = False
+    for item in os.getgroups():
+        try:
+            grptup = grp.getgrgid(item)
+        except KeyError, e:
+            continue
+        if grptup[0] == 'mock':
+            member = True
+
+    if not member:
+        print "You need to be a member of the mock group for this to work"
+        sys.exit(1)
+
+    # and make sure they're not root
+    if os.geteuid() == 0:
+        error("Don't try to run mock as root!")
+        sys.exit(1)
+        
+    # defaults
+    config_opts = {}
+    setup_default_config_opts(config_opts)
     
     # cli option parsing
     (options, args) = command_parse()
@@ -750,6 +839,8 @@ def main():
         error("No srpm or command specified - nothing to do")
         sys.exit(50)
 
+    # config path -- can be overridden on cmdline
+    config_path='/etc/mock'
     if options.configdir:
         config_path = options.configdir
     
@@ -773,80 +864,29 @@ def main():
         error("Could not find config file %s for chroot %s" % (cfg, options.chroot))
         sys.exit(1)
     
-    # do some other options and stuff
-    if options.arch:
-        config_opts['target_arch'] = options.arch
-    
-    if options.dirty:
-        config_opts['clean'] = False
-    else:
-        config_opts['clean'] = True
-        
-    config_opts['debug'] = options.debug
-    config_opts['quiet'] = options.quiet
-    
-    if options.resultdir:
-        config_opts['resultdir'] = options.resultdir
-
-    if options.statedir:
-        config_opts['statedir'] = options.statedir
-
-    if options.uniqueext:
-        config_opts['unique-ext'] = options.uniqueext
-
+    # cmdline options override config options
+    set_config_opts_per_cmdline(config_opts, options)
     
     # do whatever we're here to do
     if args[0] == 'clean':
         # unset a --no-clean
         config_opts['clean'] = True
-        try:
-            my = None
-            my = Root(config_opts)
-        except Error, e:
-            print e
-            if my:
-                my.close()
-            sys.exit(100)
-
-        my.close()
-        print 'Finished cleaning root'
+        do_clean(config_opts, init=0)
         
     elif args[0] == 'init':
-        try:
-            my = None
-            my = Root(config_opts)
-            my.prep()
-        except Error, e:
-            print e
-            if my:
-                my.close()
-            sys.exit(100)
-
-        my.close()
-        print 'Finished initializing root'
+        do_clean(config_opts, init=1)
 
     elif args[0] == 'chroot':
         # catch-all for executing arbitrary commands in the chroot
         config_opts['clean'] = config_opts['quiet'] = False
-        my = Root(config_opts)
         cmd = ' '.join(args[1:])
-        my.debug("executing: %s" % cmd)
-        my._mount()
-        my.do_chroot(cmd, True)
-        my.close()
-        my.debug('finished chroot command')
+        do_run_cmd(config_opts, cmd, raw_chroot=0)
         
     elif args[0] == 'shell':
         # debugging tool for interactive poking around in the chroot
         config_opts['clean'] = config_opts['quiet'] = False
-        my = Root(config_opts)
-        cmd = "PS1='mock-chroot> ' %s %s /bin/bash" % (config_opts['chroot'],
-                                 my.rootdir)
-        my.debug("executing: %s" % cmd)
-        my._mount()
-        ret = os.system(cmd)
-        my.close()
-        my.debug("finished shell with retval %d" % ret)
+        os.environ['PS1'] = "mock-chroot> "
+        do_run_cmd(config_opts, "/bin/bash", raw_chroot=1)
 
     else:
         if args[0] == 'rebuild':
@@ -858,42 +898,10 @@ def main():
         else:
             srpms = args[0:]
 
-        for srpm in srpms:
-            ts = rpmUtils.transaction.initReadOnlyTransaction()
-            try:
-                hdr = rpmUtils.miscutils.hdrFromPackage(ts, srpm)
-            except rpmUtils.RpmUtilsError, e:
-                error("Specified srpm %s cannot be found/opened" % srpm)
-                sys.exit(50)
-    
-            if hdr[rpm.RPMTAG_SOURCEPACKAGE] != 1:
-                error("Specified srpm isn't a srpm!  Can't go on")
-                sys.exit(50)
+        # exit here if everything isn't kosher
+        ensure_filetype_srpm(srpms)
 
-        # Prep build root
-        my = None  # if Root() fails, my will be undefined so we force it to None
-        try:
-            my = Root(config_opts)
-            os.umask(0022) # set a umask- protects from paranoid whackjobs with an 002 umask
-        except Error, e:
-            error(e)
-            if my:
-                my.close()
-            sys.exit(e.resultcode)
-       
-        for srpm in srpms:
-            try:
-                my.prep()
-                my.build(srpm)
-            except Error, e:
-                error(e)
-                if my:
-                    my.close()
-                sys.exit(e.resultcode)
-        
-        my.close()
-        print "Results and/or logs in: %s" % my.resultdir
-
+        do_rebuild(config_opts, srpms)
 
 if __name__ == '__main__':
     main()
