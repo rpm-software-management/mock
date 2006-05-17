@@ -758,12 +758,12 @@ def do_clean(config_opts, init=0):
         else:
             print 'Finished cleaning root'
 
-def do_run_cmd(config_opts, cmd, raw_chroot=0):
+def do_run_cmd(config_opts, cmd, env='', raw_chroot=0):
         my = Root(config_opts)
         my.debug("executing: %s" % cmd)
         my._mount()
         if raw_chroot: 
-            cmd = '%s %s %s' % (config_opts['chroot'], my.rootdir, cmd)
+            cmd = '%s %s %s %s' % (env, config_opts['chroot'], my.rootdir, cmd)
             os.system(cmd)
         else:
             my.do_chroot(cmd, True)
@@ -885,8 +885,7 @@ def main():
     elif args[0] == 'shell':
         # debugging tool for interactive poking around in the chroot
         config_opts['clean'] = config_opts['quiet'] = False
-        os.environ['PS1'] = "mock-chroot> "
-        do_run_cmd(config_opts, "/bin/bash", raw_chroot=1)
+        do_run_cmd(config_opts, "/bin/bash", env='PS1="mock-chroot> "', raw_chroot=1)
 
     else:
         if args[0] == 'rebuild':
