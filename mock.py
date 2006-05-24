@@ -24,6 +24,8 @@ import glob
 import shutil
 import types
 import grp
+import stat
+import time
 from exceptions import Exception
 
 from optparse import OptionParser
@@ -112,6 +114,8 @@ class Root:
         self.rootdir = os.path.join(self.basedir, 'root')
         self.homedir = self.config['chroothome']
         self.builddir = os.path.join(self.homedir, 'build')
+        self.cache_file = os.path.join(self.config['basedir'], 
+                self.config['cache_topdir'], self.config['root'] + self.config['cache_ext'])
         if not self.config.has_key('resultdir'):
             self.resultdir = os.path.join(self.basedir, 'result')
         else:
@@ -202,20 +206,50 @@ class Root:
             self.log(curstate)
         else:
             return self._state
+
+    def unpack(self):
+        self.state('unpack cache')
+        cmd = '%s %s %s' % (self.config['unpack_cmd'], self.basedir, self.cache_file)
+        self.do(cmd)
+
+    def pack(self):
+        self.state('create cache')
+        self._ensure_dir(os.path.join(self.config['basedir'], self.config['cache_topdir']))
+        cmd = '%s %s %s root' % (self.config['pack_cmd'], self.basedir, self.cache_file)
+        self.do(cmd)
     
     def prep(self):
         self.state("prep")
         self.log("This may take a while")
-        
-        self._prep_install()
-        if self.config['clean']:
-            cmd = '%s' % self.config['chroot_setup_cmd']
-        else:
-            cmd = 'update'
 
+        create_cache=0
+        if self.config['use_cache']:
+            cache_exists = os.path.exists( self.cache_file )
+            if cache_exists:
+                cache_mtime = os.stat(self.cache_file)[stat.ST_MTIME]
+                cache_age_days = (time.time() - cache_mtime) / (60 * 60 * 24)
+                if cache_age_days > self.config['max_cache_age_days']:
+                    self.config["rebuild_cache"] = True
+        
+            if cache_exists and not self.config['rebuild_cache']:
+                if self.config['clean']:
+                    self.unpack()
+                cmd = 'update'
+            else:
+                cmd = '%s' % self.config['chroot_setup_cmd']
+                create_cache = 1
+        else:
+            if self.config['clean']:
+                cmd = '%s' % self.config['chroot_setup_cmd']
+            else:
+                cmd = 'update'
+         
+        self._prep_install()
         self.yum(cmd)
         self._prep_build()
-        
+         
+        if create_cache:
+            self.pack()
 
     def yum(self, cmd):
         """use yum to install packages/package groups into the chroot"""
@@ -588,6 +622,10 @@ class Root:
                 fo.close()
         
         # write in yum.conf into chroot
+        if os.path.exists( os.path.join(self.rootdir, 'etc', 'yum.conf')):
+            cmd = "chown %s.%s /etc/yum.conf" % (self.config['chrootuid'],
+                self.config['chrootgid'])
+            self.do_chroot(cmd, fatal = True)
         yumconf = os.path.join(self.rootdir, 'etc', 'yum.conf')
         yumconf_fo = open(yumconf, 'w')
         yumconf_content = self.config['yum.conf']
@@ -598,8 +636,8 @@ class Root:
         for key in filedict:
             # ensure permisssions
             if os.path.exists( "%s%s" % (self.rootdir, key) ):
-                cmd = "chown %s.%s %s" % (self.config['chrootuser'],
-                    self.config['chrootgroup'], "%s" % key)
+                cmd = "chown %s.%s %s" % (self.config['chrootuid'],
+                    self.config['chrootgid'], "%s" % key)
                 self.do_chroot(cmd, fatal = True)
 
             # write file
@@ -609,11 +647,39 @@ class Root:
             fo.close()
 
     def _make_our_user(self):
+        if not os.path.exists(os.path.join(self.rootdir, 'usr/sbin/useradd')):
+            raise RootError, "Could not find useradd in chroot, maybe the install failed?"
         # should check if the user exists first
         # make the buildusers/groups
+        need_add_user = 0
         if not os.path.exists(self.rootdir + self.homedir):
-            if not os.path.exists(os.path.join(self.rootdir, 'usr/sbin/useradd')):
-                raise RootError, "Could not find useradd in chroot, maybe the install failed?"
+            need_add_user = 1
+        else:
+            # check for the following conditions:
+            #  -- using cache and current user is different from original cache creator
+            #  -- using --no-clean and current user is different from original creator
+            curruid = self.config['chrootuid']
+            chrootuid = None
+            passwd = os.path.join(self.rootdir, 'etc', 'passwd')
+
+            # find UID used to set up buildroot
+            fd = open( passwd, "r" )
+            while 1:
+                line = fd.readline()
+                if line == "": break
+                if line.startswith(self.config["chrootuser"]): 
+                    chrootuid = int(line.split(":")[2])
+
+            # do fixups if they are different
+            # if uid is different, assume we need to fix gid also
+            if chrootuid is not None and curruid != chrootuid:
+                need_add_user = 1
+                self.do_chroot('/usr/sbin/userdel -r %s' % self.config["chrootuser"], fatal = False)
+                self.do_chroot('/usr/sbin/groupdel %s' % self.config["chrootgroup"], fatal = False)
+                self.do_chroot('chown -R %s.%s %s' % (self.config["chrootuid"], self.config["chrootgid"], self.config["chroothome"]), fatal = False)
+                # may need a few other chown here if there are other files that have to be edited
+
+        if need_add_user:
             cmd = '/usr/sbin/useradd -m -u %s -d %s %s' % (self.config['chrootuid'], 
                     self.homedir, self.config['chrootuser'])
             self.do_chroot(cmd, fatal = True)
@@ -669,8 +735,8 @@ def command_parse():
     parser.add_option("-r", action="store", type="string", dest="chroot",
             help="chroot name/config file name default: %default", 
             default='default')
-    parser.add_option("--no-clean", action ="store_true", dest="dirty", 
-            help="do not clean chroot before building")
+    parser.add_option("--no-clean", action ="store_false", dest="clean", 
+            help="do not clean chroot before building", default=True)
     parser.add_option("--arch", action ="store", dest="arch", 
             default=None, help="target build arch")
     parser.add_option("--debug", action ="store_true", dest="debug", 
@@ -685,6 +751,10 @@ def command_parse():
                       help="Change where config files are found")
     parser.add_option("--quiet", action ="store_true", dest="quiet", 
             default=False, help="quiet down output")
+    parser.add_option("--autocache", action ="store_true", dest="use_cache",
+            default=False, help="Turn on build-root caching")
+    parser.add_option("--rebuildcache", action ="store_true", dest="rebuild_cache",
+            default=False, help="Force rebuild of build-root cache")
 
     return parser.parse_args()
 
@@ -719,18 +789,27 @@ def setup_default_config_opts(config_opts):
     config_opts['files']['/etc/resolv.conf'] = "nameserver 192.168.1.1\n"
     config_opts['files']['/etc/hosts'] = "127.0.0.1 localhost localhost.localdomain\n"
 
+    # caching-related config options
+    config_opts['rebuild_cache'] = False
+    config_opts['use_cache'] = False
+    config_opts['pack_cmd'] = "/usr/sbin/mock-helper pack"
+    config_opts['unpack_cmd'] = "/usr/sbin/mock-helper unpack"
+    config_opts['cache_ext'] = ".tar.gz"
+    config_opts['cache_topdir'] = "root-cache"
+    config_opts['max_cache_age_days'] = 15
+
 def set_config_opts_per_cmdline(config_opts, options):
     # do some other options and stuff
     if options.arch:
         config_opts['target_arch'] = options.arch
     
-    if options.dirty:
-        config_opts['clean'] = False
-    else:
-        config_opts['clean'] = True
-        
+    config_opts['clean'] = options.clean
     config_opts['debug'] = options.debug
     config_opts['quiet'] = options.quiet
+    config_opts['use_cache'] = options.use_cache
+    config_opts['rebuild_cache'] = options.rebuild_cache
+    if config_opts['rebuild_cache']: 
+        config_opts['use_cache'] = True
     
     if options.resultdir:
         config_opts['resultdir'] = options.resultdir

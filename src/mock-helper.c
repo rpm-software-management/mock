@@ -14,6 +14,8 @@
 #include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
+#include <grp.h>
+#include <libgen.h>
 
 #ifdef USE_SELINUX
 #include <selinux/selinux.h>
@@ -341,6 +343,84 @@ do_mknod (int argc, char *argv[])
   do_command ("/bin/mknod", &(argv[1]), 0);
 }
 
+void
+do_unpack(int argc, char *argv[])
+{
+  char *new_argv[5];
+
+  if (argc < 4)
+    error ("not enough arguments");
+  
+  check_dir_allowed (rootsdir, argv[2]);
+
+  if (chdir(argv[2]) != 0)
+    error ("could not change dir");
+
+  new_argv[0] = "tar";
+  new_argv[1] = "--same-owner";
+
+  /* select compression */
+  if (strstr(argv[3], ".bz2"))
+    new_argv[2] = "-jxpf";
+  else if (strstr(argv[3], ".gz"))
+    new_argv[2] = "-zxpf";
+  else
+    new_argv[2] = "-xpf";
+
+  new_argv[3] = argv[3];
+  new_argv[4] = NULL;
+  
+  do_command("/bin/tar", new_argv, 0);
+}
+
+
+void
+do_pack(int argc, char *argv[])
+{
+  char *new_argv[6];
+  char *cache_dir = 0;
+  char *argv_copy = 0;
+  struct group *gr = 0;
+
+  if (argc < 5)
+    error ("not enough arguments");
+  
+  check_dir_allowed (rootsdir, argv[2]);
+
+  if (chdir(argv[2]) != 0)
+    error ("could not change dir");
+
+  /* create root-cache dir with appropriate perms */
+  gr = getgrnam("mock");
+  argv_copy = strdup(argv[3]);
+  cache_dir = dirname(argv_copy);
+
+  check_dir_allowed (rootsdir, cache_dir);
+
+  mkdir(cache_dir, 0750);
+  if (gr)
+    chown(cache_dir, 0, gr->gr_gid);
+  free(argv_copy);
+  argv_copy = 0;
+
+  new_argv[0] = "tar";
+  new_argv[1] = "--one-file-system";
+
+  /* select compression */
+  if (strstr(argv[3], ".bz2"))
+    new_argv[2] = "-jlcf";
+  else if (strstr(argv[3], ".gz"))
+    new_argv[2] = "-zlcf";
+  else
+    new_argv[2] = "-clf";
+
+  new_argv[3] = argv[3];
+  new_argv[4] = argv[4];
+  new_argv[5] = NULL;
+  
+  do_command("/bin/tar", new_argv, 0);
+}
+
 int
 main (int argc, char *argv[])
 {
@@ -363,6 +443,10 @@ main (int argc, char *argv[])
     do_mknod (argc, argv);
   else if (strncmp ("yum", argv[1], 3) == 0)
     do_yum (argc, argv);
+  else if (strncmp ("unpack", argv[1], 6) == 0)
+    do_unpack (argc, argv);
+  else if (strncmp ("pack", argv[1], 4) == 0)
+    do_pack (argc, argv);
   else
   {
     error ("Command %s not recognized !\n", argv[1]);
