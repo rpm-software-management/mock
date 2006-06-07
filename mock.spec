@@ -1,6 +1,6 @@
 Summary: Builds packages inside chroots
 Name: mock
-Version: 0.5
+Version: 0.6
 Release: 1
 License: GPL
 Group: Development/Tools
@@ -54,6 +54,9 @@ fi
 
 
 %changelog
+* Wed Jun  7 2006 Seth Vidal <skvidal at linux.duke.edu>
+- version update
+
 * Tue Apr 11 2006 Seth Vidal <skvidal at linux.duke.edu>
 - specfile version iterate
 
