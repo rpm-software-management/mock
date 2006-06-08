@@ -244,15 +244,15 @@ do_mount (int argc, char *argv[])
 void
 do_rm (int argc, char *argv[])
 {
-  /* enough arguments ? mock-helper rm -rfv (rootdir), 4 */
+  /* enough arguments ? mock-helper rm -rf (rootdir), 4 */
   if (argc < 4)
     error ("not enough arguments");
 
-  /* see if we're doing rm -rfv */
-  if (strncmp ("-rfv", argv[2], 4) != 0)
+  /* see if we're doing rm -rf */
+  if (strncmp ("-rf", argv[2], 4) != 0)
     error ("%s: options not allowed", argv[2]);
 
-  /* see if we're doing -rfv on a dir under rootsdir */
+  /* see if we're doing -rf on a dir under rootsdir */
   check_dir_allowed (rootsdir, argv[3]);
 
   /* all checks passed, execute */

@@ -183,7 +183,7 @@ class Root:
             self._umount('dev/pts')
             
         if os.path.exists(self.basedir):
-            cmd = '%s -rfv %s' % (self.config['rm'], self.basedir)
+            cmd = '%s -rf %s' % (self.config['rm'], self.basedir)
             (retval, output) = self.do(cmd)
 
             if retval != 0:
@@ -688,7 +688,7 @@ class Root:
         # purge the builddir, if it exists
         bd_out = '%s%s' % (self.rootdir, self.builddir)
         if os.path.exists(bd_out):
-            cmd = 'rm -rfv %s' % self.builddir
+            cmd = 'rm -rf %s' % self.builddir
             self.do_chroot(cmd, fatal=True)
     
         # create dir structure
