@@ -1,3 +1,384 @@
+2006-06-13 01:15  skvidal
+
+	* etc/defaults.cfg: 
+	correct commented-out groupinstall option
+
+2006-06-13 00:28  skvidal
+
+	* etc/: fedora-3-i386-core.cfg, fedora-3-x86_64-core.cfg,
+	fedora-4-i386-core.cfg, fedora-4-ppc-core.cfg,
+	fedora-4-x86_64-core.cfg, fedora-5-x86_64-core.cfg,
+	fedora-devel-i386-core.cfg, fedora-devel-ppc-core.cfg,
+	fedora-devel-x86_64-core.cfg: 
+	config file changes to point to mirrors
+
+2006-06-13 00:12  skvidal
+
+	* etc/: fedora-4-i386-core.cfg, fedora-4-ppc-core.cfg,
+	fedora-4-x86_64-core.cfg, fedora-5-i386-core.cfg,
+	fedora-5-ppc-core.cfg, fedora-5-x86_64-core.cfg: 
+	fix up some of the url/mirrorlist paths
+
+2006-06-12 23:52  skvidal
+
+	* buildsys-build.spec: 
+	reduce build set
+
+2006-06-08 17:28  mebrown
+
+	* mock.py, src/mock-helper.c: Make rm less verbose.
+
+2006-06-07 08:36  skvidal
+
+	* etc/: fedora-1-i386-core.cfg, fedora-2-i386-core.cfg,
+	fedora-3-i386-core.cfg, fedora-3-x86_64-core.cfg,
+	fedora-4-i386-core.cfg, fedora-4-ppc-core.cfg,
+	fedora-4-x86_64-core.cfg, fedora-5-i386-core.cfg,
+	fedora-5-ppc-core.cfg, fedora-5-x86_64-core.cfg,
+	fedora-devel-i386-core.cfg, fedora-devel-ppc-core.cfg,
+	fedora-devel-x86_64-core.cfg, redhat-73-i386.cfg,
+	redhat-9-i386.cfg: 
+	fix up all the paths to buildgroups and to plague build-results
+
+2006-06-07 08:29  skvidal
+
+	* mock.py, mock.spec: 
+	
+	iterate version in spec files
+
+2006-06-07 08:27  skvidal
+
+	* etc/: fedora-1-i386-core.cfg, fedora-2-i386-core.cfg,
+	fedora-3-i386-core.cfg, fedora-3-x86_64-core.cfg,
+	fedora-4-i386-core.cfg, fedora-4-ppc-core.cfg,
+	fedora-4-x86_64-core.cfg, fedora-5-i386-core.cfg,
+	fedora-5-ppc-core.cfg, fedora-5-x86_64-core.cfg,
+	fedora-devel-i386-core.cfg, fedora-devel-ppc-core.cfg,
+	fedora-devel-x86_64-core.cfg, redhat-73-i386.cfg,
+	redhat-9-i386.cfg: 
+	clean out things that are now in 'defaults.cfg'
+
+2006-06-06 17:28  skvidal
+
+	* etc/defaults.cfg: use defaults more intelligently
+
+2006-05-24 11:15  skvidal
+
+	* mock.py, src/mock-helper.c: 
+	check in Michael Brown's lovely autocache creation patch.
+
+2006-05-17 11:12  jcwillia
+
+	* mock.py: Michael E. Brown's patch for getting PS1 down to chroot
+	shell
+
+2006-05-16 00:15  skvidal
+
+	* mock.py: applied tab-fix and a slimming of main patches from
+	Michael E. Brown.
+
+2006-05-14 00:53  skvidal
+
+	* mock.py, etc/defaults.cfg: 
+	make prep install command configurable and set default in
+	defaults.cfg
+
+2006-05-14 00:49  skvidal
+
+	* mock.py: 
+	commit Hans Ulrich Niedermann and  Andreas Thienemann patch for the
+	crack-y more buildreq feature.
+
+2006-05-14 00:48  skvidal
+
+	* mock.py, etc/defaults.cfg: check in global defaults patch from 
+	Andreas Thienemann
+
+2006-05-12 16:57  jcwillia
+
+	* src/mock-helper.c: added PS1 to allowed environment (to display
+	special prompt when inside chroot)
+
+2006-05-12 16:57  jcwillia
+
+	* mock.py: added interactive "shell" command for examining chroots
+
+2006-05-12 16:56  skvidal
+
+	* mock.py: commit michael brown's multiple srpms on the command
+	line patch
+
+2006-05-08 12:39  mdomsch
+
+	* mock.py: enable SLES9 and SLES10 build environments
+
+2006-04-21 09:07  skvidal
+
+	* mock.py: fix bug 189586 Thanks to mclasen for catching it
+
+2006-04-18 10:03  jcwillia
+
+	* etc/: fedora-5-i386-core.cfg, fedora-5-ppc-core.cfg,
+	fedora-5-x86_64-core.cfg: added updates-released section to fc5
+	configs
+
+2006-04-18 09:58  jcwillia
+
+	* etc/: fedora-5-i386-core.cfg, fedora-5-ppc-core.cfg,
+	fedora-5-x86_64-core.cfg, fedora-devel-i386-core.cfg,
+	fedora-devel-ppc-core.cfg, fedora-devel-x86_64-core.cfg: fixed fc5
+	configs to use correct path; added devel configs
+
+2006-04-12 10:23  jcwillia
+
+	* Makefile: added target for buildsys-build RPM
+
+2006-04-12 10:22  jcwillia
+
+	* buildsys-build.spec: initial checkin of dependency rpm specfile
+
+2006-04-12 10:22  jcwillia
+
+	* mock.py: change to chroot command to insure /proc and /sys are
+	mounted/unmounted
+
+2006-04-11 04:35  skvidal
+
+	* mock.spec: 
+	update spec file a bit
+
+2006-04-11 04:01  skvidal
+
+	* mock.py: 
+	remove the 'groupinstall' need to use a buildsys dependency-only
+	package iterate version to 0.5 more patches to go in, though
+
+2006-04-11 04:00  skvidal
+
+	* etc/: fedora-1-i386-core.cfg, fedora-2-i386-core.cfg,
+	fedora-3-i386-core.cfg, fedora-3-x86_64-core.cfg,
+	fedora-4-i386-core.cfg, fedora-4-ppc-core.cfg,
+	fedora-4-x86_64-core.cfg, fedora-5-i386-core.cfg,
+	fedora-5-ppc-core.cfg, fedora-5-x86_64-core.cfg,
+	redhat-73-i386.cfg, redhat-9-i386.cfg: 
+	modify all config files for chroot_dep_package option default
+	package name to buildsys-build
+
+2006-03-29 01:23  skvidal
+
+	* README, mock.py: 
+	closing:
+	https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=180976
+	
+	thanks to Tom Tromey
+
+2006-03-21 16:50  dcbw
+
+	* mock.py: Patch from Clark Williams <williams@redhat.com>
+	
+	Set up links to /dev/std[in|out|err] in buildroots
+
+2006-03-15 17:14  jcwillia
+
+	* mock.py: add chroot command for running arbitrary commands in the
+	chroot
+
+2006-02-24 14:31  skvidal
+
+	* mock.py: 
+	add patch from Clark Williams to be able to specify configdir
+
+2006-01-24 12:15  dcbw
+
+	* mock.py: Back out setpgrp patch, found a better way to do it in
+	plague
+
+2006-01-24 11:07  dcbw
+
+	* mock.py: Add an option to create a new process group so that both
+	mock and all of its children can be easily killed with kill(-<mock
+	pid>) without killing mock's parent (ie, plague-builder).
+
+2006-01-19 16:33  scop
+
+	* mock.py: s/mach/mock/ in comments.
+
+2005-12-27 13:30  skvidal
+
+	* mock.py, mock.spec, docs/Makefile: 
+	apply all of Andreas Thienemann's patches.
+	
+	fixes rm -rf call to rm -rfv and fixes the mock man page in the
+	package makefile and specfile.
+
+2005-11-20 16:57  scop
+
+	* Makefile: Exclude CVS stuff from tarball.
+
+2005-11-20 16:54  scop
+
+	* .cvsignore, src/.cvsignore: Ignore generated files.
+
+2005-11-12 14:00  symbiont
+
+	* mock.py: no verbose for rm
+
+2005-11-12 13:56  symbiont
+
+	* mock.py: realtime logging allowing for `tail -f' of the logs
+
+2005-11-12 09:32  symbiont
+
+	* mock.py: Fix string output when printing error objects.
+
+2005-08-23 17:09  skvidal
+
+	* mock.py: 
+	fix for a traceback when your hardware is failing. :)
+
+2005-08-21 12:29  sheltren
+
+	* docs/mock.1, etc/fedora-1-i386-core.cfg,
+	etc/fedora-2-i386-core.cfg, etc/redhat-73-i386.cfg,
+	etc/redhat-9-i386.cfg: add commands to man page, create config
+	files for legacy distributions
+
+2005-08-17 01:11  skvidal
+
+	* mock.py: 
+	--quiet flag and add a 'log' method for the primary class.
+
+2005-08-05 04:12  skvidal
+
+	* docs/: Makefile, mock.1: mock man page from Jeff Sheltren
+	Makefile for docs dir
+
+2005-08-05 04:11  skvidal
+
+	* Makefile: 
+	added makefile for docs subdir
+
+2005-08-04 16:53  skvidal
+
+	* mock.py: 
+	check in Jeff Sheltren's patch to fix bug: 165069
+
+2005-08-04 03:23  skvidal
+
+	* mock.py, mock.spec: 
+	mock.spec: url updates mock.py: fix for rh bug: 163576	       
+	Thanks To Adrian Reber
+
+2005-08-01 01:54  skvidal
+
+	* README: 
+	minor README update
+
+2005-07-29 01:11  katzj
+
+	* etc/: fedora-4-ppc-core.cfg, fedora-5-ppc-core.cfg: exclude ppc64
+	packages in ppc configs.  this fixes building of ppc stuff on a
+	ppc64 host
+
+2005-07-28 10:02  skvidal
+
+	* etc/: fedora-3-i386-core.cfg, fedora-3-x86_64-core.cfg,
+	fedora-4-i386-core.cfg, fedora-4-ppc-core.cfg,
+	fedora-4-x86_64-core.cfg, fedora-5-i386-core.cfg,
+	fedora-5-ppc-core.cfg, fedora-5-x86_64-core.cfg: 
+	update the local path
+
+2005-07-26 16:36  skvidal
+
+	* mock.py: 
+	fix exception handling
+
+2005-07-26 16:17  skvidal
+
+	* mock.py, mock.spec: bump version number to 0.4
+
+2005-07-26 16:16  skvidal
+
+	* mock.spec, etc/Makefile: 
+	make file fix and update spec file
+
+2005-07-26 16:12  skvidal
+
+	* Makefile, etc/Makefile: 
+	fix Makefile
+
+2005-07-21 10:40  skvidal
+
+	* mock.py: 
+	make more exceptions to allow for better exit codes from mock to
+	define failures.
+
+2005-07-14 14:00  katzj
+
+	* Makefile, mock-yum, src/mock-helper.c: add mock-yum wrapper to
+	remove the selinux LD_PRELOAD.	also, only set the LD_PRELOAD for
+	use with running yum
+
+2005-07-08 01:49  skvidal
+
+	* mock.py: 
+	remove references to mach-helper to fix 161828
+
+2005-06-26 23:43  skvidal
+
+	* Makefile, mock.spec: 
+	apply ignacio's patch for Makefile and spec file.
+
+2005-06-25 15:00  dcbw
+
+	* mock.py: Fix up basedir, it was actually config['root'] not
+	config['basedir'] that needed to be modified.  Sigh.
+
+2005-06-25 13:27  skvidal
+
+	* mock.py: 
+	make sure statedir is present before writing the statefile
+
+2005-06-25 13:23  skvidal
+
+	* mock.py: 
+	merge in dcbw's patch for --uniqueext
+
+2005-06-23 21:35  dcbw
+
+	* mock.py: don't close the rootlog before we're done writing to it.
+
+2005-06-23 21:04  dcbw
+
+	* mock.py: Clean up states written to the 'status' file to be less
+	granular and more parser friendly.
+
+2005-06-23 16:00  katzj
+
+	* src/mock-helper.c: don't do the libselinux preload if selinux is
+	disabled
+
+2005-06-22 01:38  skvidal
+
+	* README, mock.py: 
+	- add init and clean commands to initialize a buildroot and exit
+	and to clean out the chroot and exit.  - make sure the
+	mockconfig.log output is flushed.
+
+2005-06-21 13:48  dcbw
+
+	* mock.py: Make statedir function correctly, add newlines to config
+	dump file
+
+2005-06-21 11:53  dcbw
+
+	* mock.py: Fix syntax error in mock.py
+
+2005-06-21 11:23  skvidal
+
+	* ChangeLog: 
+	update changelog to make dcbw happy
+
 2005-06-21 11:23  skvidal
 
 	* ChangeLog: 
@@ -146,15 +527,6 @@
 	* README, mock.py: 
 	- update copyright info - update README with some more content and
 	TODOs
-
-2005-05-15 22:44  skvidal
-
-	* Makefile, README, mock.py, mock.spec, src/Makefile, src/config.h,
-	etc/Makefile, etc/fedora-3-i386-core.cfg,
-	etc/fedora-3-x86_64-core.cfg, etc/fedora-development-i386-core.cfg,
-	etc/fedora-development-ppc-core.cfg,
-	etc/fedora-development-x86_64-core.cfg, src/mock-helper.c,
-	src/selinux-mock.c: Import mock
 
 2005-05-15 22:44  skvidal
 
