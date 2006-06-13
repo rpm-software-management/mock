@@ -1,3 +1,13 @@
+2006-06-13 01:31  skvidal
+
+	* etc/defaults.cfg: 
+	add cache defaults
+
+2006-06-13 01:16  skvidal
+
+	* ChangeLog: 
+	check in changelog
+
 2006-06-13 01:15  skvidal
 
 	* etc/defaults.cfg: 
