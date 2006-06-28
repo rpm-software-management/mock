@@ -1,6 +1,6 @@
 Summary: Builds packages inside chroots
 Name: mock
-Version: 0.6
+Version: 0.7
 Release: 1
 License: GPL
 Group: Development/Tools
@@ -28,7 +28,7 @@ make DESTDIR=$RPM_BUILD_ROOT install
 # make the default.cfg link
 cd $RPM_BUILD_ROOT/%{_sysconfdir}/%{name}
 ln -s fedora-development-i386-core.cfg default.cfg
-
+cd $RPM_BUILD_ROOT/%{_bindir}
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -45,15 +45,20 @@ fi
 %doc README ChangeLog
 %dir  %{_sysconfdir}/%{name}
 %config(noreplace) %{_sysconfdir}/%{name}/*.cfg
-%{_bindir}/%{name}
+%attr(04750, root, mock) %{_bindir}/%{name}
+%{_bindir}/%{name}.py*
 %{_libexecdir}/mock-yum
 %{_mandir}/man1/mock.1*
-%attr(04750, root, mock) %{_sbindir}/mock-helper
 %attr(02775, root, mock) %dir /var/lib/mock
 %{_libdir}/libselinux-mock.so
 
 
 %changelog
+* Wed Jun 28 2006 Clark Williams <williams@redhat.com> - 0.7-1
+- updated version to 0.7
+- removed /usr/sbin/mock-helper
+- added /usr/bin/mock launcher
+
 * Wed Jun  7 2006 Seth Vidal <skvidal at linux.duke.edu>
 - version update
 

@@ -1,3 +1,37 @@
+2006-06-28  Clark Williams  <williams@redhat.com>
+
+	* mock.py
+	added code in Root class to save uid/gid
+	added elevate and drop methods to Root
+	changed most invocations of self.do() to self.do_elevated()
+	added flocking and flushing around status writes
+	moved cache logic from mock-helper into pack and unpack methods
+	added -n to mount and unmount of chroot entities (proc, sys, etc)
+	bracketed _mount, _umount and RPM calls with elevate and drop
+	removed commented out /boot/kernel manipulations
+	removed /usr/sbin/mock-helper from config_opts initializations
+	removed check for root and mock group membership
+
+	* mock.spec
+	changed version to 0.7
+	removed /usr/sbin/mock-helper
+	added /usr/bin/mock
+	
+	* Makefile
+	Changed install commands to use -D to create path components
+	
+	* ChangeLog
+	updated and check in changelog
+	
+	* etc/defaults.cfg
+	pared down options
+	
+2006-06-27  Clark Williams  <williams@redhat.com>
+
+	* src/:
+	check in new launcher source (mock.c)
+	modified Makefile to build new source
+
 2006-06-13 01:31  skvidal
 
 	* etc/defaults.cfg: 

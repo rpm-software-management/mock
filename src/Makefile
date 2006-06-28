@@ -1,32 +1,39 @@
-CC=gcc
-EXECUTABLE=mock-helper
-SBINDIR=/usr/sbin
-MOCKGROUP=mock
-DESTDIR=''
-INSTALL=/usr/bin/install
-MKDIR=/bin/mkdir
+CC	:=	gcc
+CFLAGS 	:= 	-O2 -g -Wall -Werror
+#DEBUG	:= 	-DDEBUG=1
+EXECUTABLE:=	mock
+LIBRARY	:=	libselinux-mock.so
+BINDIR	:=	/usr/bin
+MOCKGROUP:=	mock
+#DESTDIR	:=	''
+INSTALL	:=	/usr/bin/install
+MKDIR	:=	/bin/mkdir
 
 ifndef NOSELINUX
 SELINUXFLAGS=-DUSE_SELINUX=1 -lselinux
 endif
 
 ifneq (,$(filter ppc64 x86_64 s390x,$(shell uname -m)))
-LIBDIR = /usr/lib64
+LIBDIR 	:=	/usr/lib64
 else
-LIBDIR = /usr/lib
+LIBDIR 	:=	/usr/lib
 endif
 
-all: 
-	$(CC) $(CFLAGS) -o $(EXECUTABLE) mock-helper.c $(SELINUXFLAGS)
+all: $(EXECUTABLE) $(LIBRARY)
+
+$(LIBRARY): selinux-mock.o
+	$(LD) -shared -o $(LIBRARY) selinux-mock.o
+
+selinux-mock.o:  selinux-mock.c
 	$(CC) $(CFLAGS) -fPIC -c selinux-mock.c
-	$(LD) -shared -o libselinux-mock.so selinux-mock.o
+
+$(EXECUTABLE):	mock.c
+	$(CC) $(CFLAGS) $(DEBUG) -o $@ $<
 
 clean:
-	rm -f $(EXECUTABLE)
+	rm -f $(EXECUTABLE) $(LIBRARY)
 	rm -f *~ *.bak *.o *.so
 
-install:
-	$(MKDIR) -p $(DESTDIR)/$(SBINDIR) $(DESTDIR)/$(LIBDIR)
-	$(INSTALL) -m 4750 $(EXECUTABLE) $(DESTDIR)/$(SBINDIR)/$(EXECUTABLE)
-	$(INSTALL) -m 755 libselinux-mock.so $(DESTDIR)/$(LIBDIR)
-
+install:   $(EXECUTABLE) $(LIBRARY)
+	$(INSTALL) -D -m 755 $(EXECUTABLE) $(DESTDIR)/$(BINDIR)/$(EXECUTABLE)
+	$(INSTALL) -D -m 755 $(LIBRARY) $(DESTDIR)/$(LIBDIR)/$(LIBRARY)
