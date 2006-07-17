@@ -791,6 +791,7 @@ def command_parse():
     usage = """
     usage: mock [options] /path/to/srpm
     optional commands: 
+        chroot - run the specified command within the chroot
         clean - clean out the specified chroot
         init - initialize the chroot, do not build anything"""
     parser = OptionParser(usage=usage, version=__VERSION__)
