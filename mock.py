@@ -26,7 +26,6 @@ import types
 import grp
 import stat
 import time
-import fcntl
 from exceptions import Exception
 
 from optparse import OptionParser
@@ -107,17 +106,6 @@ class Root:
         self._state = 'unstarted'
         self.tmplog = LogBuffer()
         self.config = config
-
-        # save our uids
-        self.highuid = os.geteuid()
-        self.lowuid = os.getuid()
-
-        # set gid to mock group
-        os.setgid(os.getegid())
-            
-        # insure we're *not* running privileged
-        self.drop()
-        
         root = config['root']
         if config.has_key('unique-ext'):
             root = "%s-%s" % (root, config['unique-ext'])
@@ -163,14 +151,6 @@ class Root:
         cfgout.flush()
         cfgout.close()
     
-    def elevate(self):
-        self.debug("elevate: setting uid to %d" % self.highuid)
-        os.setreuid(self.highuid, self.lowuid)
-
-    def drop(self):
-        self.debug("drop: setting uid to %d" % self.lowuid)
-        os.setreuid(self.lowuid, self.highuid)
-        
     def log(self, msg):
         if self.config['quiet']: return
         print msg
@@ -204,7 +184,8 @@ class Root:
             
         if os.path.exists(self.basedir):
             cmd = '%s -rf %s' % (self.config['rm'], self.basedir)
-            (retval, output) = self.do_elevated(cmd)
+            (retval, output) = self.do(cmd)
+
             if retval != 0:
                 error("Errors cleaning out chroot: %s" % output)
                 if os.path.exists(self.rootdir):
@@ -219,9 +200,7 @@ class Root:
         if curstate:
             sf = os.path.join(self.statedir, 'status')
             sfo = open(sf, 'w')
-            fcntl.flock(sfo, fcntl.LOCK_EX)
             sfo.write('%s\n' % curstate)
-            fcntl.flock(sfo, fcntl.LOCK_UN)
             sfo.close()
             self._state = curstate
             self.log(curstate)
@@ -229,31 +208,15 @@ class Root:
             return self._state
 
     def unpack(self):
-        self.state('unpack_cache')
-        if self.cache_file.find(".bz2") != -1:
-            opts = "-jxpf"
-        elif self.cache_file.find(".gz") != -1:
-            opts = "-zxpf"
-        else:
-            opts = "-xpf"
-        cmd = '%s %s %s %s' % (self.config['unpack_cmd'], opts, self.basedir, self.cache_file)
-        self.debug("unpacking cache: %s" % cmd)
-        (retval, output) = self.do_elevated(cmd)
-        return retval
+        self.state('unpack cache')
+        cmd = '%s %s %s' % (self.config['unpack_cmd'], self.basedir, self.cache_file)
+        self.do(cmd)
 
     def pack(self):
-        self.state('create_cache')
+        self.state('create cache')
         self._ensure_dir(os.path.join(self.config['basedir'], self.config['cache_topdir']))
-        if self.cache_file.find(".bz2") != -1:
-            opts = "-jlcf"
-        elif self.cache_file.find(".gz") != -1:
-            opts = "-zlcf"
-        else:
-            opts = "-clf"
-        cmd = '%s %s %s root' % (self.config['pack_cmd'], opts, self.cache_file)
-        self.debug("creating cache: %s" % cmd)
-        (retval, output) = self.do_elevated(cmd)
-        return retval
+        cmd = '%s %s %s root' % (self.config['pack_cmd'], self.basedir, self.cache_file)
+        self.do(cmd)
     
     def prep(self):
         self.state("prep")
@@ -297,7 +260,7 @@ class Root:
         command = '%s %s' % (basecmd, cmd)
         self.debug("yum: command %s" % command)
 
-        (retval, output) = self.do_elevated(command)
+        (retval, output) = self.do(command)
 
         if retval != 0:
             raise YumError, "Error performing yum command: %s" % command
@@ -449,10 +412,10 @@ class Root:
         self._ensure_dir(procdir)
 
         self.debug("mounting proc in %s" % procdir)
-        command = '%s -n -t proc proc %s/proc' % (self.config['mount'], 
+        command = '%s -t proc proc %s/proc' % (self.config['mount'], 
                                                self.rootdir)
         track.write('proc\n')
-        (retval, output) = self.do_elevated(command)
+        (retval, output) = self.do(command)
         track.flush()
         
         if retval != 0:
@@ -464,9 +427,9 @@ class Root:
         devptsdir = os.path.join(self.rootdir, 'dev/pts')
         self._ensure_dir(devptsdir)
         self.debug("mounting devpts in %s" % devptsdir)
-        command = '%s -n -t devpts devpts %s' % (self.config['mount'], devptsdir)
+        command = '%s -t devpts devpts %s' % (self.config['mount'], devptsdir)
         track.write('dev/pts\n')
-        (retval, output) = self.do_elevated(command)
+        (retval, output) = self.do(command)
         track.flush()
         track.close()
 
@@ -478,8 +441,8 @@ class Root:
     def _umount(self, path):
     
         item = '%s/%s' % (self.rootdir, path)
-        command = '%s -n %s' % (self.config['umount'], item)
-        (retval, output) = self.do_elevated(command)
+        command = '%s %s' % (self.config['umount'], item)
+        (retval, output) = self.do(command)
     
         if retval != 0:
             if output.find('not mounted') == -1: # this probably won't work in other LOCALES
@@ -501,9 +464,7 @@ class Root:
             if len(item.strip()) < 1:
                 continue
             
-            self.elevate()
             self._umount(item)
-            self.drop()
             
         # poof, no more file
         if os.path.exists(mf):
@@ -543,30 +504,6 @@ class Root:
 
         return (retval, output)
 
-    def do_elevated(self, cmd):
-        if os.getuid() != self.highuid:
-            need_drop = 1
-        else:
-            need_drop = 0
-        try:
-            self.elevate()
-            (retval, output) = self.do(cmd)
-        finally:
-            if need_drop: self.drop()
-        return (retval, output)
-
-    def do_asuser(self, cmd):
-        if os.getuid() != self.lowuid:
-            need_elevate = 1
-        else:
-            need_elevate = 0
-        try:
-            self.drop()
-            (retval, output) = self.do(cmd)
-        finally:
-            if need_elevate: self.elevate()
-        return (retval, output)
-
     def do_chroot(self, command, fatal = False, exitcode=None):
         """execute given command in root"""
         cmd = ""
@@ -581,7 +518,7 @@ class Root:
                                                  self.rootdir,
                                                  self.config['runuser'],
                                                  command)
-        (ret, output) = self.do_elevated(cmd)
+        (ret, output) = self.do(cmd)
         if (ret != 0) and fatal:
             self.close()
             if exitcode:
@@ -607,17 +544,13 @@ class Root:
             if n.startswith('rpmlib'):
                 continue
 
-            self.elevate()
             req = rpmUtils.miscutils.formatRequire(n, v, f)
-            self.drop()
             reqlist.append(req)
         
         # Extract SRPM name components - still not nice, shouldn't this
         # be somewhere in the "hdr" parameter?
         fname = os.path.split(str(srpm))[1]
-        self.elevate()
         name, ver, rel, epoch, arch = rpmUtils.miscutils.splitFilename(fname)
-        self.drop()
 
         # Add the 'more_buildreqs' for this SRPM (if defined)
         for this_srpm in ['-'.join([name,ver,rel]),
@@ -631,10 +564,7 @@ class Root:
                     reqlist.append(req)
                 break
         
-        self.elevate()
-        ret = rpmUtils.miscutils.unique(reqlist)
-        self.drop()
-        return ret
+        return rpmUtils.miscutils.unique(reqlist)
     
     def _prep_install(self):
         """prep chroot for installation"""
@@ -667,7 +597,7 @@ class Root:
             cmd = '%s %s -m %s %s %s %s' % (self.config['mknod'], 
                       devpath, perm, devtype, major, minor)
             if not os.path.exists(devpath):
-                (retval, output) = self.do_elevated(cmd)
+                (retval, output) = self.do(cmd)
                 if retval != 0:
                     raise RootError, "could not mknod error was: %s" % output
 
@@ -785,12 +715,21 @@ class Root:
         self._build_dir_setup()
         self._mount() # check it again
         
+        # FIXME - do we need this still?
+        # create /boot/kernel.h with a warning
+        #self.do_chroot ("mkdir -p /boot", fatal = True)
+        #self.do_chroot ("echo '#ifndef __BOOT_KERNEL_H_' > /boot/kernel.h", fatal = True)
+        #self.do_chroot ("echo '#define __BOOT_KERNEL_H_' >> /boot/kernel.h", fatal = True)
+        #self.do_chroot ("echo '#error This is a kernel.h generated by mock, including this indicates a build error !' >> /boot/kernel.h", fatal = True)
+        #self.do_chroot ("echo '#endif /* __BOOT_KERNEL_H_ */' >> /boot/kernel.h", fatal = True)
+        
 def command_parse():
     """return options and args from parsing the command line"""
     
     usage = """
     usage: mock [options] /path/to/srpm
     optional commands: 
+        chroot - run the specified command within the chroot
         clean - clean out the specified chroot
         init - initialize the chroot, do not build anything"""
     parser = OptionParser(usage=usage, version=__VERSION__)
@@ -822,12 +761,12 @@ def command_parse():
 
 def setup_default_config_opts(config_opts):
     config_opts['basedir'] = '/var/lib/mock/' # root name is automatically added to this
-    config_opts['chroot'] = 'chroot'
-    config_opts['mount'] = 'mount'
-    config_opts['umount'] = 'umount'
-    config_opts['rm'] = 'rm'
-    config_opts['mknod'] = 'mknod'
-    config_opts['yum'] = 'yum'
+    config_opts['chroot'] = '/usr/sbin/mock-helper chroot'
+    config_opts['mount'] = '/usr/sbin/mock-helper mount'
+    config_opts['umount'] = '/usr/sbin/mock-helper umount'
+    config_opts['rm'] = '/usr/sbin/mock-helper rm'
+    config_opts['mknod'] = '/usr/sbin/mock-helper mknod'
+    config_opts['yum'] = '/usr/sbin/mock-helper yum'
     config_opts['runuser'] = '/sbin/runuser'
     config_opts['chroot_setup_cmd'] = 'install buildsys-build'
     config_opts['chrootuser'] = 'mockbuild'
@@ -854,8 +793,8 @@ def setup_default_config_opts(config_opts):
     # caching-related config options
     config_opts['rebuild_cache'] = False
     config_opts['use_cache'] = False
-    config_opts['pack_cmd'] = "tar"
-    config_opts['unpack_cmd'] = "tar"
+    config_opts['pack_cmd'] = "/usr/sbin/mock-helper pack"
+    config_opts['unpack_cmd'] = "/usr/sbin/mock-helper unpack"
     config_opts['cache_ext'] = ".tar.gz"
     config_opts['cache_topdir'] = "root-cache"
     config_opts['max_cache_age_days'] = 15
@@ -950,7 +889,25 @@ def do_rebuild(config_opts, srpms):
     print "Results and/or logs in: %s" % my.resultdir
 
 def main():
+    # before we go on, make sure the user is a member of the 'mock' group.
+    member = False
+    for item in os.getgroups():
+        try:
+            grptup = grp.getgrgid(item)
+        except KeyError, e:
+            continue
+        if grptup[0] == 'mock':
+            member = True
 
+    if not member:
+        print "You need to be a member of the mock group for this to work"
+        sys.exit(1)
+
+    # and make sure they're not root
+    if os.geteuid() == 0:
+        error("Don't try to run mock as root!")
+        sys.exit(1)
+        
     # defaults
     config_opts = {}
     setup_default_config_opts(config_opts)
