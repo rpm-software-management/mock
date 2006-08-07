@@ -39,7 +39,17 @@ rpm: archive
 	mkdir build dist
 	rpmbuild --define "_sourcedir $(PWD)" --define "_builddir $(PWD)/build" --define "_srcrpmdir $(PWD)/dist" --define "_rpmdir $(PWD)/dist" -ba mock.spec
 
+RPMARGS 	:= --define "_sourcedir $(PWD)" \
+		   --define "_builddir $(PWD)/buildsys" \
+		   --define "_srcrpmdir $(PWD)/buildsys" \
+		   --define "_rpmdir $(PWD)/buildsys" 
+
 buildsys-rpm:
 	rm -rf buildsys
 	mkdir buildsys
-	rpmbuild --define "_sourcedir $(PWD)" --define "_builddir $(PWD)/buildsys" --define "_srcrpmdir $(PWD)/buildsys" --define "_rpmdir $(PWD)/buildsys" -ba buildsys-build.spec
+	for i in 1 2 3 4 5 6; do \
+		rpmbuild $(RPMARGS) --define "fedora $$i" --define "dist .fc$$i" -bb buildsys-build.spec; \
+	done
+	for i in 3 4; do \
+		rpmbuild $(RPMARGS) --define "el $$i" --define "dist .el$$i" -bb buildsys-build.spec; \
+	done
