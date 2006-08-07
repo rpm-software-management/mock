@@ -34,17 +34,17 @@ Requires: which
 Requires: coreutils
 Requires: fedora-release
 Requires: redhat-rpm-config
-%if "%{?fedora}" == "4" ||  "%{?fedora}" == "3" || "%{?fedora}" == "2" || "%{?fedora}" == "1" || "%{?rhel}" == "3"
+%if "%{?fedora}" == "4" ||  "%{?fedora}" == "3" || "%{?fedora}" == "2" || "%{?fedora}" == "1" || "%{?el}" == "3"
 Requires: elfutils
 %endif
-%if "%{?fedora}" == "4" ||  "%{?fedora}" == "3" || "%{?rhel}" == "4"
+%if "%{?fedora}" == "4" ||  "%{?fedora}" == "3" || "%{?el}" == "4"
 Requires: python
 %endif
 %endif
 
-%if "%{?rhl}" != "" || "%{?rhel}" != ""
+%if "%{?rhl}" != "" || "%{?el}" != ""
 Requires: redhat-release
-%if "%{?rhl}" == "9" || "%{?rhel}" == "3" || "%{?rhel}" == "4"
+%if "%{?rhl}" == "9" || "%{?el}" == "3" || "%{?el}" == "4"
 Requires: coreutils
 Requires: elfutils
 Requires: redhat-rpm-config
@@ -54,7 +54,7 @@ Requires: fileutils
 Requires: findutils
 %endif
 # Cater for alternative versions of buildsys-macros
-%if "%{?rhl}" == "8" || "%{?rhl}" == "8.0" || "%{?rhel}" != ""
+%if "%{?rhl}" == "8" || "%{?rhl}" == "8.0" || "%{?el}" != ""
 Requires: redhat-rpm-config
 %endif
 %endif

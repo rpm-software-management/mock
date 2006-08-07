@@ -53,5 +53,5 @@ buildsys-rpm:
 		rpmbuild $(RPMARGS) --define "fedora $$i" --define "dist .fc$$i" -bb buildsys-build.spec; \
 	done
 	for i in 3 4; do \
-		rpmbuild $(RPMARGS) --define "rhel $$i" --define "dist .rhel$$i" -bb buildsys-build.spec; \
+		rpmbuild $(RPMARGS) --define "el $$i" --define "dist .el$$i" -bb buildsys-build.spec; \
 	done
