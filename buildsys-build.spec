@@ -4,7 +4,7 @@
 Summary: The base set of packages for a mock chroot
 Name: buildsys-build
 Version: 0.5
-Release: 4%{?dist}
+Release: 5%{?dist}
 License: GPL
 Group: Development/Build Tools
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
@@ -30,21 +30,34 @@ Requires: which
 
 # The rather long-winded format of the conditionals is needed for compatbility
 # with old rpm versions such as were supplied with Red Hat Linux 7
+
+# Fedora block
 %if "%{?fedora}" != ""
 Requires: coreutils
 Requires: fedora-release
 Requires: redhat-rpm-config
-%if "%{?fedora}" == "4" ||  "%{?fedora}" == "3" || "%{?fedora}" == "2" || "%{?fedora}" == "1" || "%{?el}" == "3"
+%if "%{?fedora}" == "4" ||  "%{?fedora}" == "3" || "%{?fedora}" == "2" || "%{?fedora}" == "1"
 Requires: elfutils
-%endif
-%if "%{?fedora}" == "4" ||  "%{?fedora}" == "3" || "%{?el}" == "4"
+%if "%{?fedora}" == "4" ||  "%{?fedora}" == "3"
 Requires: python
 %endif
 %endif
 
-%if "%{?rhl}" != "" || "%{?el}" != ""
+# RHEL block
+%if "%{?el}" != ""
 Requires: redhat-release
-%if "%{?rhl}" == "9" || "%{?el}" == "3" || "%{?el}" == "4"
+Requires: coreutils
+Requires: elfutils
+Requires: redhat-rpm-config
+%if "%{?el}" == "4"
+Requires: python
+%endif
+%endif
+
+# Red Hat Linux [789] block
+%if "%{?rhl}" != ""
+Requires: redhat-release
+%if "%{?rhl}" == "9"
 Requires: coreutils
 Requires: elfutils
 Requires: redhat-rpm-config
@@ -54,7 +67,7 @@ Requires: fileutils
 Requires: findutils
 %endif
 # Cater for alternative versions of buildsys-macros
-%if "%{?rhl}" == "8" || "%{?rhl}" == "8.0" || "%{?el}" != ""
+%if "%{?rhl}" == "8" || "%{?rhl}" == "8.0"
 Requires: redhat-rpm-config
 %endif
 %endif
