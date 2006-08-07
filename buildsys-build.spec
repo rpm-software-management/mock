@@ -34,17 +34,17 @@ Requires: which
 Requires: coreutils
 Requires: fedora-release
 Requires: redhat-rpm-config
-%if "%{?fedora}" == "4" ||  "%{?fedora}" == "3" || "%{?fedora}" == "2" || "%{?fedora}" == "1"
+%if "%{?fedora}" == "4" ||  "%{?fedora}" == "3" || "%{?fedora}" == "2" || "%{?fedora}" == "1" || "%{?rhel}" == "3"
 Requires: elfutils
 %endif
-%if "%{?fedora}" == "4" ||  "%{?fedora}" == "3"
+%if "%{?fedora}" == "4" ||  "%{?fedora}" == "3" || "%{?rhel}" == "4"
 Requires: python
 %endif
 %endif
 
-%if "%{?rhl}" != ""
+%if "%{?rhl}" != "" || "%{?rhel}" != ""
 Requires: redhat-release
-%if "%{?rhl}" == "9"
+%if "%{?rhl}" == "9" || "%{?rhel}" == "3" || "%{?rhel}" == "4"
 Requires: coreutils
 Requires: elfutils
 Requires: redhat-rpm-config
@@ -54,7 +54,7 @@ Requires: fileutils
 Requires: findutils
 %endif
 # Cater for alternative versions of buildsys-macros
-%if "%{?rhl}" == "8" || "%{?rhl}" == "8.0"
+%if "%{?rhl}" == "8" || "%{?rhl}" == "8.0" || "%{?rhel}" != ""
 Requires: redhat-rpm-config
 %endif
 %endif
@@ -76,6 +76,9 @@ The base set of packages for a mock chroot.
 %doc
 
 %changelog
+* Mon Aug  7 2006 Clark Williams <williams@redhat.com> - 0.5-3
+- added rhel build tags
+
 * Sun Aug 06 2006 Thorsten Leemhuis <fedora[AT]leemhuis.info> - 0.5-3
 - For FC4 and FC3 include python
 
