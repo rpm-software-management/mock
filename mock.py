@@ -110,6 +110,8 @@ class Root:
         if config.has_key('unique-ext'):
             root = "%s-%s" % (root, config['unique-ext'])
         self.basedir = os.path.join(config['basedir'], root)
+        if self.basedir.find("/var/lib/mock") != 0:
+            raise RootError, "Cannot change basedir location!"
         self.target_arch = config['target_arch']
         self.rootdir = os.path.join(self.basedir, 'root')
         self.homedir = self.config['chroothome']
