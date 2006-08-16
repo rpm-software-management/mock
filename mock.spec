@@ -27,7 +27,22 @@ rm -rf $RPM_BUILD_ROOT
 make DESTDIR=$RPM_BUILD_ROOT install
 # make the default.cfg link
 cd $RPM_BUILD_ROOT/%{_sysconfdir}/%{name}
-ln -s fedora-development-i386-core.cfg default.cfg
+
+%if 0%{?fedora:1}
+if [ -f fedora-%{fedora}-%{_target_cpu}-core.cfg ]; then
+   	ln -s fedora-%{fedora}-%{_target_cpu}-core.cfg default.cfg
+fi
+%endif
+
+# if we haven't created a default link yet, try to do so as devel
+if [ ! -f default.cfg ]; then
+    if [ -f fedora-development-%{_target_cpu}-core.cfg ]; then
+        ln -s fedora-development-%{_target_cpu}-core.cfg default.cfg
+    else
+        ln -s fedora-development-i386-core.cfg default.cfg
+    fi
+fi
+
 cd $RPM_BUILD_ROOT/%{_bindir}
 
 %clean
