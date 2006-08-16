@@ -1,7 +1,7 @@
 Summary: Builds packages inside chroots
 Name: mock
 Version: 0.6
-Release: 5
+Release: 5%{?dist}
 License: GPL
 Group: Development/Tools
 Source: http://fedoraproject.org/projects/mock/releases/%{name}-%{version}.tar.gz
@@ -55,6 +55,7 @@ fi
 %changelog
 * Wed Aug 16 2006 Clark Williams <williams@redhat.com>
 - Added buildsys-build specfile to docs
+- Added disttag
 - Bumped release number
 
 * Wed Jun  7 2006 Seth Vidal <skvidal at linux.duke.edu>
