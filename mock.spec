@@ -1,7 +1,7 @@
 Summary: Builds packages inside chroots
 Name: mock
 Version: 0.7
-Release: 1
+Release: 2%{?dist}
 License: GPL
 Group: Development/Tools
 Source: http://fedoraproject.org/projects/mock/releases/%{name}-%{version}.tar.gz
@@ -42,7 +42,7 @@ fi
 
 %files
 %defattr(-, root, root)
-%doc README ChangeLog
+%doc README ChangeLog buildsys-build.spec
 %dir  %{_sysconfdir}/%{name}
 %config(noreplace) %{_sysconfdir}/%{name}/*.cfg
 %attr(04750, root, mock) %{_bindir}/%{name}
@@ -54,6 +54,11 @@ fi
 
 
 %changelog
+* Wed Aug 16 2006 Clark Williams <williams@redhat.com> - 0.7-2
+- Added buildsys-build.spec to docs
+- Added disttag
+- Bumped release number
+
 * Wed Jun 28 2006 Clark Williams <williams@redhat.com> - 0.7-1
 - updated version to 0.7
 - removed /usr/sbin/mock-helper
