@@ -1,19 +1,33 @@
-.TH "mock" "1" "0.4" "Seth Vidal" ""
+.TH "mock" "1" "0.7" "Seth Vidal" ""
 .SH "NAME"
 .LP 
-mock \- build a SRPM in a chroot
+mock \- build SRPMs in a chroot
 .SH "SYNTAX"
 .LP 
-mock  [\-r CHROOT] [\-\-no\-clean] [\-\-arch=ARCH] [\-\-debug] [\-\-resultdir=RESULTDIR] [\-\-statedir=STATEDIR] [\-\-uniqueext=UNIQUEEXT] [command] \fIfilename\fR
+mock  [options] [\fBrebuild\fR] \fISRPM [\fISRPM...\fR]
+.LP
+mock  [options] \fBchroot\fR \fI<cmd>\fR
+.LP
+mock  [options] {\fBinit\fR|\fBclean\fR|\fBshell\fR}
 
 .SH "DESCRIPTION"
 .LP 
-Mock is a simple chroot/rpm building program. It doesnt do anything terribly fancy other than build a single srpm at a time in a chroot.
+Mock is a simple chroot/rpm building program. It doesn't do anything
+terribly fancy other than populate a chroot with the contents
+specified by a configuration file, then build any input SRPM(s) in
+that chroot. 
+.LP
+The content of a chroot is specified by the configuration
+specified with the \fB\-r\fR option. A default configuration file is
+specified in /etc/mock/default.cfg, which is usually a symlink to one
+of the installed configurations.
 .SH "OPTIONS"
 .LP 
 .TP 
 \fB\-r\fR \fICHROOT\fP
-Uses specified chroot configuration as defined in /etc/mock/<\fIchroot\fP>.cfg If none specified, uses the chroot linked to by /etc/mock/default.cfg
+Uses specified chroot configuration as defined in
+/etc/mock/<\fIchroot\fP>.cfg If none specified, uses the chroot linked
+to by /etc/mock/default.cfg 
 .TP 
 \fB\-\-no\-clean\fR
 Do not clean chroot before building package.
@@ -25,39 +39,79 @@ Specify target build arch.
 Output copious debugging information.
 .TP 
 \fB\-\-resultdir=\fR\fIRESULTDIR\fP
-Path to store resulting files (RPMs and build logs)
+Change directory where resulting files (RPMs and build logs) are written
+.TP
+\fB\-\-statedir=\fR\fISTATEDIR\fP
+Change directory where state information is written
+.TP
+\fB\-\-uniqueext=\fR\fItext\fP
+Arbitrary, unique extension to append to buildroot directory name
+.TP
+\fB\-\-configdir=\fR\fICONFIGDIR\fP
+Change directory where config files are found
+.TP
+\fB\-\-quiet\fR
+Suppress most output
+.TP
+\fB\-\-autocache\fR
+Turn on build-root caching
+.TP
+\fB\-\-rebuildcach\fR
+Force rebuild of build-root cache
 .TP 
 \fB\-\-help\fR
 Show usage information and exit.
 .TP 
 \fB\-\-version\fR
 Show version number and exit.
-.TP 
-\fBcommand\fR is one of:
+.SH "COMMANDS"
+.LP
 .TP 
 \fBinit\fR \- initialize a chroot (install packages, setup devices, etc.)
 .TP 
 \fBchroot\fR \- run the specified command within the chroot (which must already be initialized)
 .TP
 \fBclean\fR \- purge the chroot tree
+.TP
+\fBshell\fR \- start an interactive shell in the specified chroot
 .TP 
-\fBrebuild\fR \- If no command is specified, rebuild is assumed. Rebuilds the specified SRPM
-.TP 
+\fBrebuild\fR \- If no command is specified, rebuild is assumed. Rebuilds the specified SRPM(s)
 .SH "FILES"
 .LP 
-\fI/etc/mock/\fP 
+\fI/etc/mock/\fP \- default configuration directory
+.LP
+\fI/var/lib/mock\fP \- directory where chroots are created
 .SH "EXAMPLES"
 .LP 
 To rebuild test.src.rpm under the default chroot:
-.LP 
-mock /path/to/test.src.rpm
-.LP 
+.LP
+.RS 5
+\fBmock /path/to/test.src.rpm\fR
+.RE
+.LP
 To specify a different chroot (which must be defined in /etc/mock):
-.LP 
-mock \-r fedora\-4\-i386\-core /path/to/test.src.rpm
+.LP
+.RS 5
+\fBmock \-r fedora\-4\-i386\-core /path/to/test.src.rpm\fR
+.RE
+.SH "BUGS"
+.LP
+To report bugs in mock, go to:
+.LP
+.RS 5
+\fIhttp://bugzilla.redhat.com/bugzilla\fR.
+.RE
+.LP
+Select the query option, using product \fBFedora Hosted Projects\fR
+and component \fBmock\fR and press the \fBStart Search\fR
+button. If there is a bug similar to the one you are seeing, add your
+information to the comments. If not, go to the new bug page using the
+same product and component and fill in the form.
 .SH "AUTHORS"
 .LP 
 Seth Vidal <skvidal@linux.duke.edu>
+.LP
+and a cast of...tens
 .SH "SEE ALSO"
 .LP 
 yum(8) rpmbuild(8)
