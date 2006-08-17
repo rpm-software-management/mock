@@ -37,7 +37,10 @@ archive:
 rpm: archive
 	rm -rf build dist
 	mkdir build dist
-	rpmbuild --define "_sourcedir $(PWD)" --define "_builddir $(PWD)/build" --define "_srcrpmdir $(PWD)/dist" --define "_rpmdir $(PWD)/dist" -ba mock.spec
+	rpmbuild --define "_sourcedir $(PWD)" \
+		--define "_builddir $(PWD)/build" \
+		--define "_srcrpmdir $(PWD)/dist" \
+		--define "_rpmdir $(PWD)/dist" -ba mock.spec
 
 RPMARGS 	:= --define "_sourcedir $(PWD)" \
 		   --define "_builddir $(PWD)/buildsys" \
