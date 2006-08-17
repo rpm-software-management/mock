@@ -729,36 +729,41 @@ def command_parse():
     """return options and args from parsing the command line"""
     
     usage = """
-    usage: mock [options] /path/to/srpm
-    optional commands: 
+    usage:
+           mock [options] [rebuild] /path/to/srpm(s)
+           mock [options] chroot <cmd>
+           mock [options] {init|clean|shell}
+    commands: 
+        rebuild - build the specified SRPM(s) [default command]
         chroot - run the specified command within the chroot
+        shell - run an interactive shell within specified chroot
         clean - clean out the specified chroot
         init - initialize the chroot, do not build anything"""
     parser = OptionParser(usage=usage, version=__VERSION__)
     parser.add_option("-r", action="store", type="string", dest="chroot",
-            help="chroot name/config file name default: %default", 
-            default='default')
+                      help="chroot name/config file name default: %default", 
+                      default='default')
     parser.add_option("--no-clean", action ="store_false", dest="clean", 
-            help="do not clean chroot before building", default=True)
+                      help="do not clean chroot before building", default=True)
     parser.add_option("--arch", action ="store", dest="arch", 
-            default=None, help="target build arch")
+                      default=None, help="target build arch")
     parser.add_option("--debug", action ="store_true", dest="debug", 
-            default=False, help="Output copious debugging information")
+                      default=False, help="Output copious debugging information")
     parser.add_option("--resultdir", action="store", type="string", 
-            default=None, help="path for resulting files to be put")
+                      default=None, help="path for resulting files to be put")
     parser.add_option("--statedir", action="store", type="string", default=None,
-            help="path for state file is written")
+                      help="Path to directory where state information is written")
     parser.add_option("--uniqueext", action="store", type="string", default=None,
-            help="Arbitrary, unique extension to append to buildroot directory name")
+                      help="Arbitrary, unique extension to append to buildroot directory name")
     parser.add_option("--configdir", action="store", dest="configdir", default=None,
                       help="Change where config files are found")
     parser.add_option("--quiet", action ="store_true", dest="quiet", 
-            default=False, help="quiet down output")
+                      default=False, help="quiet down output")
     parser.add_option("--autocache", action ="store_true", dest="use_cache",
-            default=False, help="Turn on build-root caching")
+                      default=False, help="Turn on build-root caching")
     parser.add_option("--rebuildcache", action ="store_true", dest="rebuild_cache",
-            default=False, help="Force rebuild of build-root cache")
-
+                      default=False, help="Force rebuild of build-root cache")
+    
     return parser.parse_args()
 
 def setup_default_config_opts(config_opts):
