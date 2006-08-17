@@ -31,7 +31,7 @@ from exceptions import Exception
 
 from optparse import OptionParser
 
-__VERSION__ = '0.6'
+__VERSION__ = '0.7'
 
 def error(msg):
     print >> sys.stderr, msg
@@ -162,12 +162,17 @@ class Root:
         cfgout.write('statedir = %s\n' % self.statedir)
         cfgout.flush()
         cfgout.close()
-    
+
+        # note that we haven't mounted anything (yet)
+        self._mounted = 0
+
     def elevate(self):
+        "elevate privileges by changing to privileged uid"
         self.debug("elevate: setting uid to %d" % self.highuid)
         os.setreuid(self.highuid, self.lowuid)
 
     def drop(self):
+        "drop privileges by changing to unprivileged uid"
         self.debug("drop: setting uid to %d" % self.lowuid)
         os.setreuid(self.lowuid, self.highuid)
         
@@ -293,7 +298,7 @@ class Root:
         # mock-helper yum --installroot=rootdir cmd
         basecmd = '%s --installroot %s' % (self.config['yum'], self.rootdir)
         
-        self._mount() # check it again        
+        self._mountall() # check it again        
         command = '%s %s' % (basecmd, cmd)
         self.debug("yum: command %s" % command)
 
@@ -308,7 +313,7 @@ class Root:
         """take an srpm, install it, rebuild it to srpm, 
            return chroot-local path to the resulting srpm"""
         
-        self._mount() # check it again
+        self._mountall() # check it again
         bd_out = '%s%s' % (self.rootdir, self.builddir)
         # init build_dir
         self._build_dir_setup()
@@ -412,13 +417,11 @@ class Root:
         for item in packages:
             shutil.copy2(item, self.resultdir)
         
-
-
     def close(self):
         """unmount things and clean up a bit"""
         self.root_log("Cleaning up...")
         self.state("ending")
-        self._umount_by_file()
+        self._umountall()
         self._build_log.close()
         self.state("done")
         self.root_log("Done.")
@@ -438,45 +441,43 @@ class Root:
             except OSError, e:
                 raise Error, "Could not create dir %s. Error: %s" % (path, e)
 
-    def _mount(self):
-        """mount proc and devpts into chroot"""
+    def _mount(self, type, device, path):
+        "mount a device, given a filesystem type and a path"
+        mntpath = os.path.join(self.rootdir, path)
+        self._ensure_dir(mntpath)
+        self.debug("mounting %s as %s" % (device, mntpath))
+        command = '%s -n -t %s %s %s' % (self.config['mount'], type, device, mntpath)
         mf = os.path.join(self.statedir, 'mounted-locations')
+        (retval, output) = self.do_elevated(command)
+        if retval != 0:
+            if output.find('already mounted') == -1: # probably won't work in other LOCALES
+                estr = "could not mount %s. Error was: %s" % (path, output)
+                error(estr)
+                raise RootError, estr
         track = open(mf, 'w+')
-
-        # make the procdir if we don't have it
-        # mount up proc
-        procdir = os.path.join(self.rootdir, 'proc')
-        self._ensure_dir(procdir)
-
-        self.debug("mounting proc in %s" % procdir)
-        command = '%s -n -t proc proc %s/proc' % (self.config['mount'], 
-                                               self.rootdir)
-        track.write('proc\n')
-        (retval, output) = self.do_elevated(command)
-        track.flush()
-        
-        if retval != 0:
-            if output.find('already mounted') == -1: # probably won't work in other LOCALES
-                error("could not mount proc error was: %s" % output)
-        
-        # devpts
-        # 
-        devptsdir = os.path.join(self.rootdir, 'dev/pts')
-        self._ensure_dir(devptsdir)
-        self.debug("mounting devpts in %s" % devptsdir)
-        command = '%s -n -t devpts devpts %s' % (self.config['mount'], devptsdir)
-        track.write('dev/pts\n')
-        (retval, output) = self.do_elevated(command)
-        track.flush()
+        track.write('%s\n' % path)
         track.close()
-
-        if retval != 0:
-            if output.find('already mounted') == -1: # probably won't work in other LOCALES
-                raise RootError, "could not mount /dev/pts error was: %s" % output
         
+    def _mountall(self):
+        """mount proc, sys and devpts into chroot"""
+
+        # if we've already mounted these guys, then just return
+        if self._mounted:
+            return
+
+        # mount /proc
+        self._mount('proc', 'proc', 'proc')
+
+        # mount /dev/pts
+        self._mount('devpts', 'dev/pts', 'dev/pts')
+
+        # mount /sys (if we're on a 2.6 kernel)
+        if os.uname()[2].find('2.6') == 0:
+            self._mount('sysfs', 'sys', 'sys')
+
+        self._mounted = 1
 
     def _umount(self, path):
-    
         item = '%s/%s' % (self.rootdir, path)
         command = '%s -n %s' % (self.config['umount'], item)
         (retval, output) = self.do_elevated(command)
@@ -486,8 +487,9 @@ class Root:
                 raise RootError, "could not umount %s error was: %s" % (path, output)
 
     
-    def _umount_by_file(self):
-                
+    def _umountall(self):
+        "undo the results of _mountall (umount proc,sys, and dev/pts)"
+
         mf = os.path.join(self.statedir, 'mounted-locations')
         if not os.path.exists(mf):
             return
@@ -497,13 +499,10 @@ class Root:
         track.close()
         
         for item in lines:
-            item = item.replace('\n','')
-            if len(item.strip()) < 1:
+            item = item.strip()
+            if len(item) < 1:
                 continue
-            
-            self.elevate()
             self._umount(item)
-            self.drop()
             
         # poof, no more file
         if os.path.exists(mf):
@@ -651,7 +650,7 @@ class Root:
                      os.path.join(self.rootdir, 'etc/yum.repos.d')]:
             self._ensure_dir(item)
         
-        self._mount()
+        self._mountall()
 
         # we need stuff
         devices = [('null', 'c', '1', '3', '666'),
@@ -783,42 +782,48 @@ class Root:
         """prep the chroot for building packages"""
         self._make_our_user()
         self._build_dir_setup()
-        self._mount() # check it again
+        self._mountall() # check it again
         
 def command_parse():
     """return options and args from parsing the command line"""
     
     usage = """
-    usage: mock [options] /path/to/srpm
-    optional commands: 
+    usage:
+           mock [options] [rebuild] /path/to/srpm(s)
+           mock [options] chroot <cmd>
+           mock [options] {init|clean|shell}
+    commands: 
+        rebuild - build the specified SRPM(s) [default command]
         chroot - run the specified command within the chroot
+        shell - run an interactive shell within specified chroot
         clean - clean out the specified chroot
         init - initialize the chroot, do not build anything"""
+
     parser = OptionParser(usage=usage, version=__VERSION__)
     parser.add_option("-r", action="store", type="string", dest="chroot",
-            help="chroot name/config file name default: %default", 
-            default='default')
+                      help="chroot name/config file name default: %default", 
+                      default='default')
     parser.add_option("--no-clean", action ="store_false", dest="clean", 
-            help="do not clean chroot before building", default=True)
+                      help="do not clean chroot before building", default=True)
     parser.add_option("--arch", action ="store", dest="arch", 
-            default=None, help="target build arch")
+                      default=None, help="target build arch")
     parser.add_option("--debug", action ="store_true", dest="debug", 
-            default=False, help="Output copious debugging information")
+                      default=False, help="Output copious debugging information")
     parser.add_option("--resultdir", action="store", type="string", 
-            default=None, help="path for resulting files to be put")
+                      default=None, help="path for resulting files to be put")
     parser.add_option("--statedir", action="store", type="string", default=None,
-            help="path for state file is written")
+                      help="path for state file is written")
     parser.add_option("--uniqueext", action="store", type="string", default=None,
-            help="Arbitrary, unique extension to append to buildroot directory name")
+                      help="Arbitrary, unique extension to append to buildroot directory name")
     parser.add_option("--configdir", action="store", dest="configdir", default=None,
                       help="Change where config files are found")
     parser.add_option("--quiet", action ="store_true", dest="quiet", 
-            default=False, help="quiet down output")
+                      default=False, help="quiet down output")
     parser.add_option("--autocache", action ="store_true", dest="use_cache",
-            default=False, help="Turn on build-root caching")
+                      default=False, help="Turn on build-root caching")
     parser.add_option("--rebuildcache", action ="store_true", dest="rebuild_cache",
-            default=False, help="Force rebuild of build-root cache")
-
+                      default=False, help="Force rebuild of build-root cache")
+    
     return parser.parse_args()
 
 def setup_default_config_opts(config_opts):
@@ -871,6 +876,7 @@ def set_config_opts_per_cmdline(config_opts, options):
     config_opts['quiet'] = options.quiet
     config_opts['use_cache'] = options.use_cache
     config_opts['rebuild_cache'] = options.rebuild_cache
+    
     if config_opts['rebuild_cache']: 
         config_opts['use_cache'] = True
     
@@ -903,14 +909,16 @@ def do_clean(config_opts, init=0):
 def do_run_cmd(config_opts, cmd, env='', raw_chroot=0):
         my = Root(config_opts)
         my.debug("executing: %s" % cmd)
-        my._mount()
+        my._mountall()
         if raw_chroot: 
             cmd = '%s %s %s %s' % (env, config_opts['chroot'], my.rootdir, cmd)
+            my.elevate()
             os.system(cmd)
+            my.drop()
         else:
             my.do_chroot(cmd, True)
         my.close()
-        my.debug('finished chroot command')
+        my.debug('finished: %s' % cmd)
                
 def ensure_filetype_srpm(srpms):
     for srpm in srpms:
