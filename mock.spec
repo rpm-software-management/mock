@@ -1,7 +1,7 @@
 Summary: Builds packages inside chroots
 Name: mock
-Version: 0.6
-Release: 5%{?dist}
+Version: 0.6.1
+Release: 1%{?dist}
 License: GPL
 Group: Development/Tools
 Source: http://fedoraproject.org/projects/mock/releases/%{name}-%{version}.tar.gz
