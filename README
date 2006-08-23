@@ -2,25 +2,34 @@ Mock Readme
 Mock is a simple chroot/rpm building program. It doesn't do anything
 terribly fancy other than build a single srpm at a time in a chroot.
 
-You invoke it as:
-mock -r name-of-chroot /path/to/srpm
+You invoke mock using one of the following forms:
+
+   mock [options] [rebuild] /path/to/srpm(s)
+   mock [options] chroot <cmd>
+   mock [options] {init|clean|shell}
 
 options:
   -r CHROOT             chroot name/config file name default: chroot.cfg
   --no-clean            do not clean chroot before building
   --arch=ARCH           target build arch
   --debug               Output copious debugging information
-  --resultdir=RESULTDIR
-                        path for resulting files to be put
+  --resultdir=RESDIR	path for resulting files to be put
   --statedir=STATEDIR   path for state file is written
-  --uniqueext=UNIQUEEXT
-                        Arbitrary, unique extension to append to buildroot
+  --uniqueext=UNIQUEEXT Arbitrary, unique extension to append to buildroot
                         directory name
+  --configdir=CONFIGDIR Change directory where config files are found
+  --quiet		Suppress most output
+  --autocache		Turn on build-root caching
+  --rebuildcache	Force rebuild of build-root cache
+  --help		Show usage information and exit
+  --version		Show version number and exit
 
  commands:
-  init  - initialize a chroot (install pkgs, setup devices, etc,) then exit
-  clean - purge the chroot tree - normally this happens right before a build
+  init   - initialize a chroot (install pkgs, setup devices, etc,) then exit
+  chroot - run the specified command in an (already initialized) chroot
+  clean  - purge the chroot tree - normally this happens right before a build
           but this is for the tidy-minded
+  shell  - start an interactive shell in the specified chroot
   rebuild <srpm> - for mach compatibility
 
 mock does:
@@ -34,6 +43,3 @@ mock does:
 - logs nicely so that chroot creation and build logs are separate
 - outputs little unless it needs to.
 
-
-TODO: document more
-TODO: man page?
