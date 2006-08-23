@@ -67,6 +67,11 @@ fi
 
 
 %changelog
+* Wed Aug 23 2006 Clark Williams <williams@redhat.com> - 0.6.2-1
+- Updated README
+- Fixed link problem in etc/Makefile
+- Bumped version number
+
 * Wed Aug 16 2006 Clark Williams <williams@redhat.com>
 - Added buildsys-build specfile to docs
 - Added disttag
