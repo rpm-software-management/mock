@@ -4,7 +4,7 @@
 Summary: The base set of packages for a mock chroot
 Name: buildsys-build
 Version: 0.7
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPL
 Group: Development/Build Tools
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
@@ -42,6 +42,7 @@ Requires: elfutils
 Requires: python
 %endif
 %endif
+%endif
 
 # RHEL block
 %if "%{?el}" != ""
@@ -72,6 +73,18 @@ Requires: redhat-rpm-config
 %endif
 %endif
 
+# Aurora block
+%if "%{?aurora}" != ""
+Requires: coreutils
+Requires: fedora-release
+Requires: redhat-rpm-config
+%if "%{?aurora}" == "2" 
+Requires: elfutils
+Requires: python
+%endif
+%endif
+
+
 %description
 The base set of packages for a mock chroot.
 
@@ -89,6 +102,9 @@ The base set of packages for a mock chroot.
 %doc
 
 %changelog
+* Fri Aug 25 2006 Dennis Gilmore <dennis@ausil.us> - 0.7-2
+- add aurora SPARC linux conditionals
+
 * Mon Aug  7 2006 Clark Williams <williams@redhat.com> - 0.7-1
 - refactored conditional blocks for simplicity
 - bumped version to match mock
