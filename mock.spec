@@ -1,7 +1,7 @@
 Summary: Builds packages inside chroots
 Name: mock
 Version: 0.6.2
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPL
 Group: Development/Tools
 Source: http://fedoraproject.org/projects/mock/releases/%{name}-%{version}.tar.gz
@@ -67,6 +67,9 @@ fi
 
 
 %changelog
+* Tue Aug 29 2006 Clark Williams <williams@redhat.com> - 0.6.2-2
+- bumped revision for bz 204051
+
 * Wed Aug 23 2006 Clark Williams <williams@redhat.com> - 0.6.2-1
 - Updated README
 - Fixed link problem in etc/Makefile

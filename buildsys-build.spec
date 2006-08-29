@@ -42,6 +42,7 @@ Requires: elfutils
 Requires: python
 %endif
 %endif
+%endif
 
 # RHEL block
 %if "%{?el}" != ""
@@ -71,6 +72,20 @@ Requires: findutils
 Requires: redhat-rpm-config
 %endif
 %endif
+
+# Aurora block
+%if "%{?aurora}" != ""
+Requires: coreutils
+Requires: fedora-release
+Requires: redhat-rpm-config
+%if "%{?aurora}" == "2" 
+Requires: elfutils
+%if "%{?aurora}" == "2" 
+Requires: python
+%endif
+%endif
+%endif
+
 
 %description
 The base set of packages for a mock chroot.
