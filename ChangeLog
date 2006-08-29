@@ -1,37 +1,58 @@
-2006-06-28  Clark Williams  <williams@redhat.com>
+2006-08-29 05:16  jcwillia
 
 	* mock.py
-	added code in Root class to save uid/gid
-	added elevate and drop methods to Root
-	changed most invocations of self.do() to self.do_elevated()
-	added flocking and flushing around status writes
-	moved cache logic from mock-helper into pack and unpack methods
-	added -n to mount and unmount of chroot entities (proc, sys, etc)
-	bracketed _mount, _umount and RPM calls with elevate and drop
-	removed commented out /boot/kernel manipulations
-	removed /usr/sbin/mock-helper from config_opts initializations
-	removed check for root and mock group membership
+	explicit import of rpmUtils.transaction 
+	(BZ#204051)
+
+2006-08-25 16:40  jcwillia
+
+	* buildsys-build.spec
+	Dennis Gilmore's patches for Aurora SPARC Linux 
+	(BZ#204100)
+	
+2006-08-17 20:28  jcwillia
+	
+	* etc/redhat-73-i386.cfg, etc/redhat-9-i386.cfg:
+	added runuser config option for legacy config files
+	
+	* mock.py
+	updated usage message
+	
+	* doc/mock.1
+	reworked man page to include caching options, chroot and shell
+	commands. 
+	(BZ#200080)
+
+2006-08-17 20:23  jcwillia
+	
+	* etc/redhat-8-i386.cfg:
+	added template for RHL8
+	
+2006-08-16 16:59  jcwillia
 
 	* mock.spec
-	changed version to 0.7
-	removed /usr/sbin/mock-helper
-	added /usr/bin/mock
+	added disttags
 	
+	* mock.py
+	added check for basedir change and raise error when it's detected
+	(BZ#1644441)
+	
+	
+2006-08-07 17:26  jcwillia
+	
+	* buildsys-build.spec
+	added rhel tags
+
 	* Makefile
-	Changed install commands to use -D to create path components
-	
-	* ChangeLog
-	updated and check in changelog
-	
-	* etc/defaults.cfg
-	pared down options
-	
-2006-06-27  Clark Williams  <williams@redhat.com>
+	Modified to build all supported targets for buildsys-build
 
-	* src/:
-	check in new launcher source (mock.c)
-	modified Makefile to build new source
+2006-08-07 15:05  jcwillia
 
+	* buildsys-build.spec
+	Thorsten Leemhuis and Paul Howarth's patches for RHL and Legacy
+	chroots.
+	(BZ#196930)
+	
 2006-06-13 01:31  skvidal
 
 	* etc/defaults.cfg: 
@@ -105,6 +126,7 @@
 2006-06-06 17:28  skvidal
 
 	* etc/defaults.cfg: use defaults more intelligently
+
 
 2006-05-24 11:15  skvidal
 
