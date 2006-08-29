@@ -19,6 +19,7 @@ import os
 import os.path
 import sys
 import rpmUtils
+import rpmUtils.transaction
 import rpm
 import glob
 import shutil
