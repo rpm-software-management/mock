@@ -3,8 +3,8 @@
 #
 Summary: The base set of packages for a mock chroot
 Name: buildsys-build
-Version: 0.5
-Release: 5%{?dist}
+Version: 0.6
+Release: 1%{?dist}
 License: GPL
 Group: Development/Build Tools
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
@@ -104,6 +104,9 @@ The base set of packages for a mock chroot.
 %doc
 
 %changelog
+* Tue Aug 29 2006 Clark Williams <williams@redhat.com> - 0.6-1
+- added rhl buildsys-build rpms
+
 * Mon Aug  7 2006 Clark Williams <williams@redhat.com> - 0.5-4
 - added rhel build tags
 
