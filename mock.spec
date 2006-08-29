@@ -1,6 +1,6 @@
 Summary: Builds packages inside chroots
 Name: mock
-Version: 0.6.4
+Version: 0.6.5
 Release: 1%{?dist}
 License: GPL
 Group: Development/Tools
@@ -38,8 +38,12 @@ fi
 if [ ! -f default.cfg ]; then
     if [ -f fedora-development-%{_target_cpu}-core.cfg ]; then
         ln -s fedora-development-%{_target_cpu}-core.cfg default.cfg
-    else
+    elif [ -f fedora-devel-%{_target_cpu}-core.cfg ]; then
+        ln -s fedora-devel-%{_target_cpu}-core.cfg default.cfg
+    elif [ -f fedora-development-i386-core.cfg ]; then
         ln -s fedora-development-i386-core.cfg default.cfg
+    elif [ -f fedora-devel-i386-core.cfg ]; then
+	ln -s fedora-devel-i386-core.cfg default.cfg
     fi
 fi
 
