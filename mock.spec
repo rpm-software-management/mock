@@ -1,7 +1,7 @@
 Summary: Builds packages inside chroots
 Name: mock
-Version: 0.7
-Release: 2%{?dist}
+Version: 0.7.1
+Release: 1%{?dist}
 License: GPL
 Group: Development/Tools
 Source: http://fedoraproject.org/projects/mock/releases/%{name}-%{version}.tar.gz
@@ -61,14 +61,16 @@ fi
 %dir  %{_sysconfdir}/%{name}
 %config(noreplace) %{_sysconfdir}/%{name}/*.cfg
 %attr(04750, root, mock) %{_bindir}/%{name}
-%{_bindir}/%{name}.py*
-%{_libexecdir}/mock-yum
+%{_libexecdir}/mock*
 %{_mandir}/man1/mock.1*
 %attr(02775, root, mock) %dir /var/lib/mock
 %{_libdir}/libselinux-mock.so
 
 
 %changelog
+* Fri Sep  8 2006 Clark Williams <williams@redhat.com> - 0.7.1-1
+- Change mock.py to /usr/libexec
+
 * Wed Aug 16 2006 Clark Williams <williams@redhat.com> - 0.7-2
 - Added buildsys-build.spec to docs
 - Added disttag

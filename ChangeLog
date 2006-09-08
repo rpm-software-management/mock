@@ -1,3 +1,15 @@
+2006-09-08  Clark Williams  <williams@redhat.com>
+
+	* mock.c
+	changed MOCK_PATH to /usr/libexec/mock.py
+	
+	* mock.spec
+	changed version to 0.7.1
+	updated paths to reflect /usr/libexec/mock.py change
+
+	* Changelog
+	updated
+	
 2006-06-28  Clark Williams  <williams@redhat.com>
 
 	* mock.py

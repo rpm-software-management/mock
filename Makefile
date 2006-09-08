@@ -19,8 +19,8 @@ subdirs:
 	for d in $(SUBDIRS); do make -C $$d; [ $$? = 0 ] || exit 1 ; done
 
 install:
-	install -D -m 755 mock.py $(DESTDIR)/usr/bin/mock.py
-	install -D -m 755 mock-yum $(DESTDIR)/usr/libexec/mock-yum
+	install -D mock.py $(DESTDIR)/usr/libexec/mock.py
+	install -D mock-yum $(DESTDIR)/usr/libexec/mock-yum
 	mkdir -p $(DESTDIR)/var/lib/mock
 	for d in $(SUBDIRS); do make  DESTDIR=`cd $(DESTDIR); pwd` -C $$d install; [ $$? = 0 ] || exit 1; done
 
