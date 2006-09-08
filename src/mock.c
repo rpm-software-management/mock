@@ -45,7 +45,7 @@
 #endif
 
 #define PYTHON_PATH	"/usr/bin/python"
-#define MOCK_PATH	"/usr/bin/mock.py"
+#define MOCK_PATH	"/usr/libexec/mock.py"
 
 static char const * const ALLOWED_ENV[] =
 {
