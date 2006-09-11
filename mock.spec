@@ -71,6 +71,10 @@ fi
 
 
 %changelog
+* Mon Sep 11 2006 Clark Williams <williams@redhat.com> - 0.6.5-1
+- changed version number for patch from Karanbir Singh
+  (rpm workaround on CentOS 4.4)
+
 * Tue Aug 29 2006 Clark Williams <williams@redhat.com> - 0.6.3-1
 - changed version number to indicate fix for bz 204051
 

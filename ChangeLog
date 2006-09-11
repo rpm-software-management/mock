@@ -1,3 +1,11 @@
+2006-09-11 11:21  jcwillia
+	* mock.py
+	added patch from Karanbir Singh to fix RPM problem in 
+	CentOS 4.4
+
+	* mock.spec
+	bumped version to 0.6.5
+
 2006-08-29 05:16  jcwillia
 
 	* mock.py
