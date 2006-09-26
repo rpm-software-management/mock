@@ -643,6 +643,7 @@ class Root:
         for item in [self.basedir, self.rootdir, self.statedir, self.resultdir,
                      os.path.join(self.rootdir, 'var/lib/rpm'),
                      os.path.join(self.rootdir, 'var/log'),
+                     os.path.join(self.rootdir, 'var/lock/rpm'),
                      os.path.join(self.rootdir, 'dev'),
                      os.path.join(self.rootdir, 'etc/rpm'),
                      os.path.join(self.rootdir, 'tmp'),
