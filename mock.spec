@@ -1,6 +1,6 @@
 Summary: Builds packages inside chroots
 Name: mock
-Version: 0.6.5
+Version: 0.6.6
 Release: 1%{?dist}
 License: GPL
 Group: Development/Tools
@@ -71,6 +71,9 @@ fi
 
 
 %changelog
+* Sat Oct 21 2006 Clark Williams <williams@redhat.com> - 0.6.6-1
+- bumped version to 0.6.6 (fixed tarball problem)
+
 * Mon Sep 11 2006 Clark Williams <williams@redhat.com> - 0.6.5-1
 - changed version number for patch from Karanbir Singh
   (rpm workaround on CentOS 4.4)
