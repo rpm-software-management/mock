@@ -1,3 +1,11 @@
+2006-10-30  Clark Williams  <williams@redhat.com>
+
+	* Makefile
+	Bumped version to 0.6.7 for FC6 release
+
+	* etc/fedora-6-*
+	Added for FC6 release
+
 2006-10-21  Clark Williams  <williams@redhat.com>
 
 	* mock.spec
