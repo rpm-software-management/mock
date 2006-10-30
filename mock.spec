@@ -1,6 +1,6 @@
 Summary: Builds packages inside chroots
 Name: mock
-Version: 0.6.7
+Version: 0.6.8
 Release: 1%{?dist}
 License: GPL
 Group: Development/Tools
@@ -30,7 +30,7 @@ cd $RPM_BUILD_ROOT/%{_sysconfdir}/%{name}
 
 %if 0%{?fedora:1}
 if [ -f fedora-%{fedora}-%{_target_cpu}-core.cfg ]; then
-   	ln -s fedora-%{fedora}-%{_target_cpu}-core.cfg default.cfg
+        ln -s fedora-%{fedora}-%{_target_cpu}-core.cfg default.cfg
 fi
 %endif
 
@@ -43,7 +43,7 @@ if [ ! -f default.cfg ]; then
     elif [ -f fedora-development-i386-core.cfg ]; then
         ln -s fedora-development-i386-core.cfg default.cfg
     elif [ -f fedora-devel-i386-core.cfg ]; then
-	ln -s fedora-devel-i386-core.cfg default.cfg
+        ln -s fedora-devel-i386-core.cfg default.cfg
     fi
 fi
 
@@ -71,6 +71,9 @@ fi
 
 
 %changelog
+* Mon Oct 30 2006 Clark Williams <williams@redhat.com> - 0.6.8-1
+- respun tarballs without buildsys rpms
+
 * Mon Oct 30 2006 Clark Williams <williams@redhat.com> - 0.6.7-1
 - updated for FC6 release
 
