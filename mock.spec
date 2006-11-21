@@ -1,13 +1,13 @@
 Summary: Builds packages inside chroots
 Name: mock
-Version: 0.6.8
+Version: 0.6.9
 Release: 1%{?dist}
 License: GPL
 Group: Development/Tools
 Source: http://fedoraproject.org/projects/mock/releases/%{name}-%{version}.tar.gz
 URL: http://fedoraproject.org/wiki/Projects/Mock
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
-Requires: python, yum >= 2.2.1
+Requires: python, yum >= 3.0
 Requires(pre): shadow-utils
 BuildRequires: libselinux-devel
 
@@ -20,7 +20,6 @@ Mock takes a srpm and builds it in a chroot
 
 %build
 make
-
 
 %install
 rm -rf $RPM_BUILD_ROOT
@@ -71,6 +70,15 @@ fi
 
 
 %changelog
+* Tue Nov 21 2006 Clark Williams <williams@redhat.com> - 0.6.9-1
+- applied Eric Work's patch to fix defaults vs. command line option problem
+  (BZ 215168)
+- use /etc/mock/defaults.cfg if --configdir specified and no defaults found
+  in the specified configdir
+  (BZ 209407)
+- applied Jesse Keatings patch for arch specifi config files
+  (BZ 213516)
+
 * Mon Oct 30 2006 Clark Williams <williams@redhat.com> - 0.6.8-1
 - respun tarballs without buildsys rpms
 
