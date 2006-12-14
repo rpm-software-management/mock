@@ -19,7 +19,10 @@ import os
 import os.path
 import sys
 import rpmUtils
-import rpmUtils.transaction
+try:
+    test = rpmUtils.transaction.initReadOnlyTransaction()
+except:
+    import rpmUtils.transaction
 import rpm
 import glob
 import shutil

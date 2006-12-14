@@ -3,7 +3,7 @@
 #
 Summary: The base set of packages for a mock chroot
 Name: buildsys-build
-Version: 0.6
+Version: 0.6.1
 Release: 1%{?dist}
 License: GPL
 Group: Development/Build Tools
@@ -45,12 +45,12 @@ Requires: python
 %endif
 
 # RHEL block
-%if "%{?el}" != ""
+%if "%{?rhel}" != ""
 Requires: redhat-release
 Requires: coreutils
 Requires: elfutils
 Requires: redhat-rpm-config
-%if "%{?el}" == "4"
+%if "%{?rhel}" == "4"
 Requires: python
 %endif
 %endif
@@ -80,9 +80,7 @@ Requires: fedora-release
 Requires: redhat-rpm-config
 %if "%{?aurora}" == "2" 
 Requires: elfutils
-%if "%{?aurora}" == "2" 
 Requires: python
-%endif
 %endif
 %endif
 
@@ -104,9 +102,14 @@ The base set of packages for a mock chroot.
 %doc
 
 %changelog
+* Thu Dec 14 2006 Clark Williams <williams@redhat.com> - 0.6.1-1
+- added fix from David Lutterkort for RHEL
+- refactored some conditional blocks for simplicity
+- added this entry for Dennis Gilmore's aurora SPARC fixes
+
 * Tue Aug 29 2006 Clark Williams <williams@redhat.com> - 0.6-1
 - added rhl buildsys-build rpms
-
+ 
 * Mon Aug  7 2006 Clark Williams <williams@redhat.com> - 0.5-4
 - added rhel build tags
 
