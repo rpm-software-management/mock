@@ -3,7 +3,7 @@
 #
 Summary: The base set of packages for a mock chroot
 Name: buildsys-build
-Version: 0.6.1
+Version: 0.6.2
 Release: 1%{?dist}
 License: GPL
 Group: Development/Build Tools
