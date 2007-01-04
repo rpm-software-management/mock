@@ -19,6 +19,10 @@ import os
 import os.path
 import sys
 import rpmUtils
+try:
+    test = rpmUtils.transaction.initReadOnlyTransaction()
+except:
+    import rpmUtils.transaction
 import rpm
 import glob
 import shutil
@@ -122,6 +126,8 @@ class Root:
         if config.has_key('unique-ext'):
             root = "%s-%s" % (root, config['unique-ext'])
         self.basedir = os.path.join(config['basedir'], root)
+        if self.basedir.find("/var/lib/mock") != 0:
+            raise RootError, "Cannot change basedir location!"
         self.target_arch = config['target_arch']
         self.rootdir = os.path.join(self.basedir, 'root')
         self.homedir = self.config['chroothome']
@@ -784,7 +790,7 @@ class Root:
         self._make_our_user()
         self._build_dir_setup()
         self._mountall() # check it again
-        
+
 def command_parse():
     """return options and args from parsing the command line"""
     
@@ -813,7 +819,7 @@ def command_parse():
     parser.add_option("--resultdir", action="store", type="string", 
                       default=None, help="path for resulting files to be put")
     parser.add_option("--statedir", action="store", type="string", default=None,
-                      help="path for state file is written")
+                      help="Path to directory where state information is written")
     parser.add_option("--uniqueext", action="store", type="string", default=None,
                       help="Arbitrary, unique extension to append to buildroot directory name")
     parser.add_option("--configdir", action="store", dest="configdir", default=None,
@@ -871,22 +877,24 @@ def set_config_opts_per_cmdline(config_opts, options):
     # do some other options and stuff
     if options.arch:
         config_opts['target_arch'] = options.arch
-    
-    config_opts['clean'] = options.clean
-    config_opts['debug'] = options.debug
-    config_opts['quiet'] = options.quiet
-    config_opts['use_cache'] = options.use_cache
-    config_opts['rebuild_cache'] = options.rebuild_cache
-    
+    if not options.clean:
+        config_opts['clean'] = options.clean
+    if options.debug:
+        config_opts['debug'] = options.debug
+    if options.quiet:
+        config_opts['quiet'] = options.quiet
+    if options.use_cache:
+        config_opts['use_cache'] = options.use_cache
+    if options.rebuild_cache:
+        config_opts['rebuild_cache'] = options.rebuild_cache
     if config_opts['rebuild_cache']: 
         config_opts['use_cache'] = True
-    
+    if config_opts['rebuild_cache']: 
+        config_opts['use_cache'] = True
     if options.resultdir:
         config_opts['resultdir'] = options.resultdir
-
     if options.statedir:
         config_opts['statedir'] = options.statedir
-
     if options.uniqueext:
         config_opts['unique-ext'] = options.uniqueext
 
@@ -983,7 +991,8 @@ def main():
     if os.path.exists(cfg):
         execfile(cfg)
     else:
-        pass # not finding the defaults.cfg file is no error
+        if config_path != "/etc/mock" and os.file.exists("/etc/mock/defaults.cfg"):
+            execfile("/etc/mock/defaults.cfg")
     
     # read in the config file by chroot name
     if options.chroot.endswith('.cfg'):

@@ -1,3 +1,8 @@
+2007-01-03  Clark Williams  <williams@redhat.com>
+	
+	* mock.py, Makefile, etc/*.cfg
+	merged BZ fixes from mock-0.6 branch
+	
 2006-09-08  Clark Williams  <williams@redhat.com>
 
 	* mock.c
@@ -117,6 +122,7 @@
 2006-06-06 17:28  skvidal
 
 	* etc/defaults.cfg: use defaults more intelligently
+
 
 2006-05-24 11:15  skvidal
 

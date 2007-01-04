@@ -24,8 +24,8 @@ install:
 	mkdir -p $(DESTDIR)/var/lib/mock
 	for d in $(SUBDIRS); do make  DESTDIR=`cd $(DESTDIR); pwd` -C $$d install; [ $$? = 0 ] || exit 1; done
 
-archive:
-	@rm -rf ${PKGNAME}-%{VERSION}.tar.gz
+archive: clean
+	@rm -rf ${PKGNAME}-*.tar.gz
 	@rm -rf /tmp/${PKGNAME}-$(VERSION) /tmp/${PKGNAME}
 	@dir=$$PWD; cd /tmp; cp -a $$dir ${PKGNAME}
 	@rm -rf /tmp/${PKGNAME}/${PKGNAME}-daily.spec /tmp/${PKGNAME}/build /tmp/${PKGNAME}/dist
@@ -47,6 +47,16 @@ RPMARGS 	:= --define "_sourcedir $(PWD)" \
 		   --define "_srcrpmdir $(PWD)/buildsys" \
 		   --define "_rpmdir $(PWD)/buildsys" 
 
+RPMARGS 	:= --define "_sourcedir $(PWD)" \
+		   --define "_builddir $(PWD)/buildsys" \
+		   --define "_srcrpmdir $(PWD)/buildsys" \
+		   --define "_rpmdir $(PWD)/buildsys" 
+
+RPMARGS 	:= --define "_sourcedir $(PWD)" \
+		   --define "_builddir $(PWD)/buildsys" \
+		   --define "_srcrpmdir $(PWD)/buildsys" \
+		   --define "_rpmdir $(PWD)/buildsys" 
+
 buildsys-rpm:
 	rm -rf buildsys
 	mkdir buildsys
@@ -54,5 +64,9 @@ buildsys-rpm:
 		rpmbuild $(RPMARGS) --define "fedora $$i" --define "dist .fc$$i" -bb buildsys-build.spec; \
 	done
 	for i in 3 4; do \
-		rpmbuild $(RPMARGS) --define "el $$i" --define "dist .el$$i" -bb buildsys-build.spec; \
+		rpmbuild $(RPMARGS) --define "rhel $$i" --define "dist .el$$i" -bb buildsys-build.spec; \
 	done
+	for i in 73 8 9; do \
+		rpmbuild $(RPMARGS) --define "rhl $$i" --define "dist .rh$$i" -bb buildsys-build.spec; \
+	done
+        rpmbuild $(RPMARGS) --define "fedora development" --define "dist .fc7" -bb buildsys-build.spec

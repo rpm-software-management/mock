@@ -7,7 +7,7 @@ Group: Development/Tools
 Source: http://fedoraproject.org/projects/mock/releases/%{name}-%{version}.tar.gz
 URL: http://fedoraproject.org/wiki/Projects/Mock
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
-Requires: python, yum >= 2.2.1
+Requires: python, yum >= 3.0
 Requires(pre): shadow-utils
 BuildRequires: libselinux-devel
 
@@ -21,7 +21,6 @@ Mock takes a srpm and builds it in a chroot
 %build
 make
 
-
 %install
 rm -rf $RPM_BUILD_ROOT
 make DESTDIR=$RPM_BUILD_ROOT install
@@ -30,7 +29,7 @@ cd $RPM_BUILD_ROOT/%{_sysconfdir}/%{name}
 
 %if 0%{?fedora:1}
 if [ -f fedora-%{fedora}-%{_target_cpu}-core.cfg ]; then
-   	ln -s fedora-%{fedora}-%{_target_cpu}-core.cfg default.cfg
+        ln -s fedora-%{fedora}-%{_target_cpu}-core.cfg default.cfg
 fi
 %endif
 
@@ -38,12 +37,14 @@ fi
 if [ ! -f default.cfg ]; then
     if [ -f fedora-development-%{_target_cpu}-core.cfg ]; then
         ln -s fedora-development-%{_target_cpu}-core.cfg default.cfg
-    else
+    elif [ -f fedora-devel-%{_target_cpu}-core.cfg ]; then
+        ln -s fedora-devel-%{_target_cpu}-core.cfg default.cfg
+    elif [ -f fedora-development-i386-core.cfg ]; then
         ln -s fedora-development-i386-core.cfg default.cfg
+    elif [ -f fedora-devel-i386-core.cfg ]; then
+        ln -s fedora-devel-i386-core.cfg default.cfg
     fi
 fi
-
-cd $RPM_BUILD_ROOT/%{_bindir}
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -68,6 +69,9 @@ fi
 
 
 %changelog
+* Wed Jan  3 2007 Clark Williams <williams@redhat.com>
+- Merged mock-0.6 BZ fixes into head
+
 * Fri Sep  8 2006 Clark Williams <williams@redhat.com> - 0.7.1-1
 - Change mock.py to /usr/libexec
 
