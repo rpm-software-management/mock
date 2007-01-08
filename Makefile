@@ -24,10 +24,13 @@ install:
 	mkdir -p $(DESTDIR)/var/lib/mock
 	for d in $(SUBDIRS); do make  DESTDIR=`cd $(DESTDIR); pwd` -C $$d install; [ $$? = 0 ] || exit 1; done
 
+EXCLUDES	:= --exclude='*~' --exclude='*.patch' --exclude='*.save' \
+		   --exclude='*.rpm' --exclude='*.diff' --exclude='*.sh' \
+		   --exclude='*.tar.gz' --exclude='*.tar.bz2' --exclude='*test*'
 archive: clean
 	@rm -rf ${PKGNAME}-*.tar.gz
 	@rm -rf /tmp/${PKGNAME}-$(VERSION) /tmp/${PKGNAME}
-	@dir=$$PWD; cd /tmp; cp -a $$dir ${PKGNAME}
+	@rsync -a $(EXCLUDES) . /tmp/${PKGNAME}
 	@rm -rf /tmp/${PKGNAME}/${PKGNAME}-daily.spec /tmp/${PKGNAME}/build /tmp/${PKGNAME}/dist
 	@mv /tmp/${PKGNAME} /tmp/${PKGNAME}-$(VERSION)
 	@dir=$$PWD; cd /tmp; tar cvz --exclude=CVS --exclude=.cvsignore -f $$dir/${PKGNAME}-$(VERSION).tar.gz ${PKGNAME}-$(VERSION)

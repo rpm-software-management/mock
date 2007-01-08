@@ -54,8 +54,6 @@ if [ $1 -eq 1 ]; then
     groupadd -r mock >/dev/null 2>&1 || :
 fi
 
-
-
 %files
 %defattr(-, root, root)
 %doc README ChangeLog buildsys-build.spec
@@ -67,8 +65,10 @@ fi
 %attr(02775, root, mock) %dir /var/lib/mock
 %{_libdir}/libselinux-mock.so
 
-
 %changelog
+* Mon Jan  8 2007 Clark Williams <williams@redhat.com>
+- Added Josh Boyer's EPEL config files
+
 * Wed Jan  3 2007 Clark Williams <williams@redhat.com>
 - Merged mock-0.6 BZ fixes into head
 

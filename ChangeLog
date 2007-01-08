@@ -1,9 +1,27 @@
+2007-01-08  Clark Williams  <williams@redhat.com>
+	* Makefile
+	changed archive creation to keep tarball clean
+
+	* etc/fedora-4-*
+	added Josh Boyer's EPEL config files
+
+	* mock.spec
+	bumped version to 0.6.10
+	
 2007-01-03  Clark Williams  <williams@redhat.com>
 	
 	* mock.py, Makefile, etc/*.cfg
 	merged BZ fixes from mock-0.6 branch
 	
-2006-09-08  Clark Williams  <williams@redhat.com>
+2006-10-30  Clark Williams  <williams@redhat.com>
+
+	* Makefile
+	Bumped version to 0.6.7 for FC6 release
+
+	* etc/fedora-6-*
+	Added for FC6 release
+
+2006-10-21  Clark Williams  <williams@redhat.com>
 
 	* mock.c
 	changed MOCK_PATH to /usr/libexec/mock.py
