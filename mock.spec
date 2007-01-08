@@ -1,6 +1,6 @@
 Summary: Builds packages inside chroots
 Name: mock
-Version: 0.6.9
+Version: 0.6.10
 Release: 1%{?dist}
 License: GPL
 Group: Development/Tools
@@ -54,8 +54,6 @@ if [ $1 -eq 1 ]; then
     groupadd -r mock >/dev/null 2>&1 || :
 fi
 
-
-
 %files
 %defattr(-, root, root)
 %doc README ChangeLog buildsys-build.spec
@@ -68,8 +66,10 @@ fi
 %attr(02775, root, mock) %dir /var/lib/mock
 %{_libdir}/libselinux-mock.so
 
-
 %changelog
+* Mon Jan  8 2007 Clark Williams <williams@redhat.com> - 0.6.10-1
+- Added Josh Boyer's EPEL config files
+
 * Tue Nov 21 2006 Clark Williams <williams@redhat.com> - 0.6.9-1
 - applied Eric Work's patch to fix defaults vs. command line option problem
   (BZ 215168)

@@ -1,3 +1,13 @@
+2007-01-08  Clark Williams  <williams@redhat.com>
+	* Makefile
+	changed archive creation to keep tarball clean
+
+	* etc/fedora-4-*
+	added Josh Boyer's EPEL config files
+
+	* mock.spec
+	bumped version to 0.6.10
+	
 2006-10-30  Clark Williams  <williams@redhat.com>
 
 	* Makefile
