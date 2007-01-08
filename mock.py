@@ -712,6 +712,7 @@ class Root:
         macrofile_out = '%s%s/.rpmmacros' % (self.rootdir, self.homedir)
         if not os.path.exists(macrofile_out):
             rpmmacros = open(macrofile_out, 'w')
+            self.config['macros'] = self.config['macros'] + "\n%%_rpmlock_path	%s/var/lib/rpm/__db.000" % self.basedir
             rpmmacros.write(self.config['macros'])
             rpmmacros.close()
         
