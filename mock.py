@@ -21,6 +21,7 @@ import sys
 import rpmUtils
 try:
     test = rpmUtils.transaction.initReadOnlyTransaction()
+    test = None
 except:
     import rpmUtils.transaction
 import rpm
@@ -193,7 +194,7 @@ class Root:
             (retval, output) = self.do(cmd)
 
             if retval != 0:
-                error("Errors cleaning out chroot: %s" % output)
+                error(output)
                 if os.path.exists(self.rootdir):
                     raise RootError, "Failed to clean basedir, exiting"
 
@@ -269,6 +270,7 @@ class Root:
         (retval, output) = self.do(command)
 
         if retval != 0:
+            error(output)
             raise YumError, "Error performing yum command: %s" % command
         
         return (retval, output)
@@ -295,6 +297,7 @@ class Root:
         if retval != 0:
             msg = "Error installing srpm: %s" % srpmfn
             self.root_log(msg)
+            error(output)
             raise RootError, msg
         
         specdir = os.path.join(bd_out, 'SPECS')
@@ -314,6 +317,7 @@ class Root:
         
         (retval, output) = self.do_chroot(cmd)
         if retval != 0:
+            error(output)
             raise PkgError, "Error building srpm from installed spec. See Root log."
             
         srpmdir = os.path.join(bd_out, 'SRPMS')
@@ -342,12 +346,20 @@ class Root:
             for line in output.split('\n'):
                 if line.find('No Package Found for') != -1:
                     errorpkg = line.replace('No Package Found for', '')
+                    error(output)
                     raise BuildError, "Cannot find build req %s. Exiting." % errorpkg
             # nothing made us exit, so we continue
             self.yum('install %s' % arg_string)
-
         return srpm
 
+    def installdeps(self, srpm):
+        """build an srpm into binary rpms, capture log"""
+        
+        self.state("setup")
+        # take srpm, pass to install_build_deps() to rebuild it to a valid srpm
+        # and do build deps
+        self.install_build_deps(srpm)
+        
     def build(self, srpm):
         """build an srpm into binary rpms, capture log"""
         
@@ -370,6 +382,7 @@ class Root:
         (retval, output) = self.do_chroot(cmd)
         
         if retval != 0:
+            error(output)
             raise BuildError, "Error building package from %s, See build log" % srpmfn
         
         bd_out = self.rootdir + self.builddir 
@@ -441,6 +454,7 @@ class Root:
 
         if retval != 0:
             if output.find('already mounted') == -1: # probably won't work in other LOCALES
+                error(output)
                 raise RootError, "could not mount /dev/pts error was: %s" % output
         
 
@@ -452,6 +466,7 @@ class Root:
     
         if retval != 0:
             if output.find('not mounted') == -1: # this probably won't work in other LOCALES
+                error(output)
                 raise RootError, "could not umount %s error was: %s" % (path, output)
 
     
@@ -529,10 +544,9 @@ class Root:
             self.close()
             if exitcode:
                 ret = exitcode
-            
             error("Non-zero return value %d on executing %s\n" % (ret, cmd))
+            error(output)
             sys.exit(ret)
-        
         return (ret, output)
 
     def _text_requires_from_hdr(self, hdr, srpm):
@@ -606,6 +620,7 @@ class Root:
             if not os.path.exists(devpath):
                 (retval, output) = self.do(cmd)
                 if retval != 0:
+                    error(output)
                     raise RootError, "could not mknod error was: %s" % output
 
         # link fd to ../proc/self/fd
@@ -736,7 +751,9 @@ def command_parse():
         chroot - run the specified command within the chroot
         shell - run an interactive shell within specified chroot
         clean - clean out the specified chroot
-        init - initialize the chroot, do not build anything"""
+        init - initialize the chroot, do not build anything
+        installdeps - install build dependencies"""
+
     parser = OptionParser(usage=usage, version=__VERSION__)
     parser.add_option("-r", action="store", type="string", dest="chroot",
                       help="chroot name/config file name default: %default", 
@@ -938,7 +955,7 @@ def main():
     if os.path.exists(cfg):
         execfile(cfg)
     else:
-        if config_path != "/etc/mock" and os.file.exists("/etc/mock/defaults.cfg"):
+        if config_path != "/etc/mock" and os.path.exists("/etc/mock/defaults.cfg"):
             execfile("/etc/mock/defaults.cfg")
     
     # read in the config file by chroot name
@@ -975,6 +992,35 @@ def main():
         # debugging tool for interactive poking around in the chroot
         config_opts['clean'] = config_opts['quiet'] = False
         do_run_cmd(config_opts, "/bin/bash", env='PS1="mock-chroot> "', raw_chroot=1)
+
+    elif args[0] == 'installdeps':
+        if len(args) > 1:
+            srpm = args[1]
+        else:
+            error("No package specified to installdeps command.")
+            sys.exit(50)
+        ts = rpmUtils.transaction.initReadOnlyTransaction()
+        try:
+            hdr = rpmUtils.miscutils.hdrFromPackage(ts, srpm)
+        except rpmUtils.RpmUtilsError, e:
+            error("Specified srpm %s cannot be found/opened" % srpm)
+            sys.exit(50)
+        if hdr[rpm.RPMTAG_SOURCEPACKAGE] != 1:
+            error("Specified srpm isn't a srpm!  Can't go on")
+            sys.exit(50)
+        try:
+            my = None  # if Root() fails, my will be undefined so we force it to None
+            my = Root(config_opts)
+            os.umask(0022) # set a umask- protects from paranoid whackjobs with an 002 umask
+            my.prep()
+            my.installdeps(srpm)
+        except Error, e:
+            error(e)
+            if my:
+                my.close()
+            sys.exit(e.resultcode)
+        my.close()
+        print "Logs in: %s" % my.resultdir
 
     else:
         if args[0] == 'rebuild':

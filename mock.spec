@@ -1,6 +1,6 @@
 Summary: Builds packages inside chroots
 Name: mock
-Version: 0.6.10
+Version: 0.6.11
 Release: 1%{?dist}
 License: GPL
 Group: Development/Tools
@@ -10,7 +10,6 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 Requires: python, yum >= 3.0
 Requires(pre): shadow-utils
 BuildRequires: libselinux-devel
-
 
 %description
 Mock takes a srpm and builds it in a chroot
@@ -67,6 +66,12 @@ fi
 %{_libdir}/libselinux-mock.so
 
 %changelog
+* Wed Feb  7 2007 Clark Williams <williams@redhat.com> - 0.6.11-1
+- added error() calls to print command output on failed commands
+
+* Tue Feb  6 2007 Clark Williams <williams@redhat.com> - 0.6.11-1
+- added installdeps command for long-term chroot management
+
 * Mon Jan  8 2007 Clark Williams <williams@redhat.com> - 0.6.10-1
 - Added Josh Boyer's EPEL config files
 

@@ -1,3 +1,13 @@
+2007-02-07  Clark Williams  <williams@redhat.com>
+
+	* Added error() calls to print command output on failed commands
+
+2007-02-06  Clark Williams  <williams@redhat.com>
+
+	* mock.py
+	added installdeps command for long-term chroot management
+	fixed invalid reference to os.file (rather than os.path)
+	
 2007-01-08  Clark Williams  <williams@redhat.com>
 	* Makefile
 	changed archive creation to keep tarball clean
