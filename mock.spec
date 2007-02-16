@@ -1,6 +1,6 @@
 Summary: Builds packages inside chroots
 Name: mock
-Version: 0.6.11
+Version: 0.6.12
 Release: 1%{?dist}
 License: GPL
 Group: Development/Tools
@@ -66,6 +66,9 @@ fi
 %{_libdir}/libselinux-mock.so
 
 %changelog
+* Fri Feb 16 2007 Clark Williams <williams@redhat.com> - 0.6.12-1
+- added safety symlink for yum.conf
+
 * Wed Feb  7 2007 Clark Williams <williams@redhat.com> - 0.6.11-1
 - added error() calls to print command output on failed commands
 

@@ -1,6 +1,12 @@
+2007-02-16  Clark Williams  <williams@redhat.com>
+
+	* mock.py
+	Added safety symlink to handle possible yum breakage in rawhide
+
 2007-02-07  Clark Williams  <williams@redhat.com>
 
-	* Added error() calls to print command output on failed commands
+	* mock.py
+	Added error() calls to print command output on failed commands
 
 2007-02-06  Clark Williams  <williams@redhat.com>
 

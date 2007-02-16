@@ -652,6 +652,11 @@ class Root:
         yumconf_fo = open(yumconf, 'w')
         yumconf_content = self.config['yum.conf']
         yumconf_fo.write(yumconf_content)
+        # symlink /etc/yum.conf to /etc/yum/yum.conf to deal with
+        # (possible) yum breakage
+        yumdir = os.path.join(self.rootdir, 'etc', 'yum')
+        self._ensure_dir(yumdir)
+        os.symlink('../yum.conf', os.path.join(yumdir, 'yum.conf'))
     
         # files in /etc that need doing
         filedict = self.config['files']
