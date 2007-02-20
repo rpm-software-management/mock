@@ -1,6 +1,6 @@
 Summary: Builds packages inside chroots
 Name: mock
-Version: 0.6.12
+Version: 0.6.13
 Release: 1%{?dist}
 License: GPL
 Group: Development/Tools
@@ -66,6 +66,9 @@ fi
 %{_libdir}/libselinux-mock.so
 
 %changelog
+* Tue Feb 20 2007 Clark Williams <williams@redhat.com> - 0.6.13-1
+- Handle --no-clean option when doing yum.conf symlink
+
 * Fri Feb 16 2007 Clark Williams <williams@redhat.com> - 0.6.12-1
 - added safety symlink for yum.conf
 

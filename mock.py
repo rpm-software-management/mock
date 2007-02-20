@@ -656,7 +656,10 @@ class Root:
         # (possible) yum breakage
         yumdir = os.path.join(self.rootdir, 'etc', 'yum')
         self._ensure_dir(yumdir)
-        os.symlink('../yum.conf', os.path.join(yumdir, 'yum.conf'))
+        yumlink = os.path.join(yumdir, 'yum.conf')
+        if os.path.exists(yumlink):
+                os.remove(yumlink)
+        os.symlink('../yum.conf', yumlink)
     
         # files in /etc that need doing
         filedict = self.config['files']
