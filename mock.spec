@@ -18,7 +18,7 @@ Mock takes a srpm and builds it in a chroot
 %setup -q
 
 %build
-make
+make CFLAGS="$RPM_OPT_FLAGS"
 
 %install
 rm -rf $RPM_BUILD_ROOT
