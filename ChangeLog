@@ -1,3 +1,8 @@
+2007-02-24  Clark Williams  <williams@redhat.com>
+
+	* mock.spec
+	BZ#226673 - Ville Skyttä fix for RPM_OPT_FLAGS
+
 2007-02-20  Clark Williams  <williams@redhat.com>
 
 	* mock.py

@@ -1,6 +1,6 @@
-Summary: Builds packages inside chroots
+>Summary: Builds packages inside chroots
 Name: mock
-Version: 0.6.13
+Version: 0.6.14
 Release: 1%{?dist}
 License: GPL
 Group: Development/Tools
@@ -66,6 +66,10 @@ fi
 %{_libdir}/libselinux-mock.so
 
 %changelog
+* Sat Feb 24 2007 Clark Williams <williams@redhat.com> - 0.6.14-1
+- Ville Skyttä's fix for RPM_OPT_FLAGS
+- Bumped version to 0.6.14
+
 * Tue Feb 20 2007 Clark Williams <williams@redhat.com> - 0.6.13-1
 - Handle --no-clean option when doing yum.conf symlink
 
