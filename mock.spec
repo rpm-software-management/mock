@@ -1,4 +1,4 @@
->Summary: Builds packages inside chroots
+Summary: Builds packages inside chroots
 Name: mock
 Version: 0.6.14
 Release: 1%{?dist}
