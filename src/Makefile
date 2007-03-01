@@ -1,9 +1,10 @@
 CC	:=	gcc
 CFLAGS 	:= 	-O2 -g -Wall -Werror
 #DEBUG	:= 	-DDEBUG=1
-EXECUTABLE:=	mock
+#EXECUTABLE:=	mock
+EXECUTABLE:=	mock-helper
 LIBRARY	:=	libselinux-mock.so
-BINDIR	:=	/usr/bin
+BINDIR	:=	/usr/sbin
 MOCKGROUP:=	mock
 #DESTDIR	:=	''
 INSTALL	:=	/usr/bin/install
