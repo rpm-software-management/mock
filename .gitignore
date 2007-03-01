@@ -1,2 +1,5 @@
 *~
 *.bz2
+*.gz
+build
+dist
