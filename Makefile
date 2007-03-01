@@ -28,7 +28,8 @@ install:
 
 EXCLUDES	:= --exclude='*~' --exclude='*.patch' --exclude='*.save' \
 		   --exclude='*.rpm' --exclude='*.diff' --exclude='*.sh' \
-		   --exclude='*.tar.gz' --exclude='*.tar.bz2' --exclude='*test*'
+		   --exclude='*.tar.gz' --exclude='*.tar.bz2' --exclude='*test*' \
+		   --exclude='.git'
 archive: clean
 	@rm -rf ${PKGNAME}-*.tar.gz
 	@rm -rf /tmp/${PKGNAME}-$(VERSION) /tmp/${PKGNAME}
