@@ -1007,6 +1007,7 @@ def main():
         else:
             error("No package specified to installdeps command.")
             sys.exit(50)
+        config_opts['clean'] = config_opts['quiet'] = False
         ts = rpmUtils.transaction.initReadOnlyTransaction()
         try:
             hdr = rpmUtils.miscutils.hdrFromPackage(ts, srpm)
