@@ -1,12 +1,10 @@
 CC	:=	gcc
 CFLAGS 	:= 	-O2 -g -Wall -Werror
 #DEBUG	:= 	-DDEBUG=1
-#EXECUTABLE:=	mock
 EXECUTABLE:=	mock-helper
 LIBRARY	:=	libselinux-mock.so
-BINDIR	:=	/usr/sbin
+SBINDIR	:=	/usr/sbin
 MOCKGROUP:=	mock
-#DESTDIR	:=	''
 INSTALL	:=	/usr/bin/install
 MKDIR	:=	/bin/mkdir
 
@@ -28,7 +26,7 @@ $(LIBRARY): selinux-mock.o
 selinux-mock.o:  selinux-mock.c
 	$(CC) $(CFLAGS) -fPIC -c selinux-mock.c
 
-$(EXECUTABLE):	mock.c
+$(EXECUTABLE):	$(EXECUTABLE).c
 	$(CC) $(CFLAGS) $(DEBUG) -o $@ $<
 
 clean:
@@ -36,5 +34,5 @@ clean:
 	rm -f *~ *.bak *.o *.so
 
 install:   $(EXECUTABLE) $(LIBRARY)
-	$(INSTALL) -D -m 755 $(EXECUTABLE) $(DESTDIR)/$(BINDIR)/$(EXECUTABLE)
+	$(INSTALL) -D -m 755 $(EXECUTABLE) $(DESTDIR)/$(SBINDIR)/$(EXECUTABLE)
 	$(INSTALL) -D -m 755 $(LIBRARY) $(DESTDIR)/$(LIBDIR)/$(LIBRARY)
