@@ -158,16 +158,15 @@ class Root:
         cfgout.flush()
         cfgout.close()
     
-    def log(self, msg):
-        if self.config['quiet']: return
-        print msg
-
     def root_log(self, content):
 
         if type(content) is list:
             self.tmplog.writelines(content)
+            if self.config['verbose']:
+                for l in content: print l
         else:
             self.tmplog.write(content)
+            if self.config['verbose']: print content
         
         # do this so if the log dir isn't ready yet we can still get those logs
         if hasattr(self, '_root_log'):
@@ -210,7 +209,7 @@ class Root:
             sfo.write('%s\n' % curstate)
             sfo.close()
             self._state = curstate
-            self.log(curstate)
+            print curstate
         else:
             return self._state
 
@@ -227,7 +226,7 @@ class Root:
     
     def prep(self):
         self.state("prep")
-        self.log("This may take a while")
+        print "This may take a while"
 
         create_cache=0
         if self.config['use_cache']:
@@ -511,7 +510,7 @@ class Root:
         output = ""
         for line in pipe:
             logfile.write(line)
-            if self.config['debug']:
+            if self.config['debug'] or self.config['verbose']:
                 print line[:-1]
                 sys.stdout.flush()
             logfile.flush()
@@ -780,8 +779,8 @@ def command_parse():
                       help="Arbitrary, unique extension to append to buildroot directory name")
     parser.add_option("--configdir", action="store", dest="configdir", default=None,
                       help="Change where config files are found")
-    parser.add_option("--quiet", action ="store_true", dest="quiet", 
-                      default=False, help="quiet down output")
+    parser.add_option("--verbose", action ="store_true", dest="verbose", 
+                      default=False, help="verbose down output")
     parser.add_option("--autocache", action ="store_true", dest="use_cache",
                       default=False, help="Turn on build-root caching")
     parser.add_option("--rebuildcache", action ="store_true", dest="rebuild_cache",
@@ -806,7 +805,7 @@ def setup_default_config_opts(config_opts):
     config_opts['chroothome'] = '/builddir'
     config_opts['clean'] = True
     config_opts['debug'] = False
-    config_opts['quiet'] = False
+    config_opts['verbose'] = False
     config_opts['target_arch'] = 'i386'
     config_opts['files'] = {}
     config_opts['yum.conf'] = ''
@@ -837,8 +836,8 @@ def set_config_opts_per_cmdline(config_opts, options):
         config_opts['clean'] = options.clean
     if options.debug:
         config_opts['debug'] = options.debug
-    if options.quiet:
-        config_opts['quiet'] = options.quiet
+    if options.verbose:
+        config_opts['verbose'] = options.verbose
     if options.use_cache:
         config_opts['use_cache'] = options.use_cache
     if options.rebuild_cache:
@@ -992,13 +991,13 @@ def main():
 
     elif args[0] == 'chroot':
         # catch-all for executing arbitrary commands in the chroot
-        config_opts['clean'] = config_opts['quiet'] = False
+        config_opts['clean'] = False
         cmd = ' '.join(args[1:])
         do_run_cmd(config_opts, cmd, raw_chroot=0)
         
     elif args[0] == 'shell':
         # debugging tool for interactive poking around in the chroot
-        config_opts['clean'] = config_opts['quiet'] = False
+        config_opts['clean'] = False
         do_run_cmd(config_opts, "/bin/bash", env='PS1="mock-chroot> "', raw_chroot=1)
 
     elif args[0] == 'installdeps':
@@ -1007,7 +1006,7 @@ def main():
         else:
             error("No package specified to installdeps command.")
             sys.exit(50)
-        config_opts['clean'] = config_opts['quiet'] = False
+        config_opts['clean'] = False
         ts = rpmUtils.transaction.initReadOnlyTransaction()
         try:
             hdr = rpmUtils.miscutils.hdrFromPackage(ts, srpm)
