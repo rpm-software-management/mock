@@ -67,11 +67,11 @@ fi
 
 %changelog
 * Sat Feb 24 2007 Clark Williams <williams@redhat.com> - 0.6.14-1
-- Ville Skyttä's fix for RPM_OPT_FLAGS
+- Ville Skyttä's fix for RPM_OPT_FLAGS (BZ 226673)
 - Bumped version to 0.6.14
 
 * Tue Feb 20 2007 Clark Williams <williams@redhat.com> - 0.6.13-1
-- Handle --no-clean option when doing yum.conf symlink
+- Handle --no-clean option when doing yum.conf symlink (BZ 230824)
 
 * Fri Feb 16 2007 Clark Williams <williams@redhat.com> - 0.6.12-1
 - added safety symlink for yum.conf
