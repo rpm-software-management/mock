@@ -145,11 +145,12 @@ do_command (const char *filename, char *const argv[], int use_selinux_preload)
     [1] = "HOME=/root"
   };
   int retval;
-  char **arg;
+  //char **arg;
   size_t idx=2;
   size_t i;
-  char *envvar;
+#ifdef USE_SELINUX
   char *ld_preload;
+#endif
 
   /* elevate privileges */
   setreuid (geteuid (), geteuid ());
