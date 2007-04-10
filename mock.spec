@@ -1,6 +1,6 @@
 Summary: Builds packages inside chroots
 Name: mock
-Version: 0.6.14
+Version: 0.6.15
 Release: 1%{?dist}
 License: GPL
 Group: Development/Tools
@@ -66,6 +66,10 @@ fi
 %{_libdir}/libselinux-mock.so
 
 %changelog
+* Tue Apr 10 2007 Clark Williams <williams@redhat.com> - 0.6.15-1
+- Fixed typo in FC4 -epel configs (BZ 235490)
+- Bumped version to 0.6.15
+
 * Sat Feb 24 2007 Clark Williams <williams@redhat.com> - 0.6.14-1
 - Ville Skyttä's fix for RPM_OPT_FLAGS (BZ 226673)
 - Bumped version to 0.6.14
