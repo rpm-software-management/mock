@@ -26,9 +26,11 @@ except:
     import rpmUtils.transaction
 import rpm
 import glob
+import popen2
 import shutil
 import types
 import grp
+import signal
 import stat
 import time
 from exceptions import Exception
@@ -57,6 +59,8 @@ class Error(Exception):
 
     def __str__(self):
         return self.msg
+
+class commandTimeoutExpired(Error): pass
 
 class YumError(Error): 
     def __init__(self, msg):
@@ -378,11 +382,14 @@ class Root:
         
         self.state("build")
 
-        (retval, output) = self.do_chroot(cmd)
-        
-        if retval != 0:
-            error(output)
-            raise BuildError, "Error building package from %s, See build log" % srpmfn
+        try:
+            (retval, output) = self.do_chroot(cmd, timeout=self.config['rpmbuild_timeout'])
+            
+            if retval != 0:
+                error(output)
+                raise BuildError, "Error building package from %s, See build log" % srpmfn
+        except commandTimeoutExpired:
+            raise BuildError, "Error building package from %s. Exceeded rpmbuild_timeout which was set to %s seconds." % (srpmfn, self.config['rpmbuild_timeout'])
         
         bd_out = self.rootdir + self.builddir 
         rpms = glob.glob(bd_out + '/RPMS/*.rpm')
@@ -489,13 +496,15 @@ class Root:
         # poof, no more file
         if os.path.exists(mf):
             os.unlink(mf)
-        
 
-    def do(self, command):
+    def do(self, command, timeout=0):
         """execute given command outside of chroot"""
+        class alarmExc(Exception): pass
+        def alarmhandler(signum,stackframe):
+            raise alarmExc("timeout expired")
         
         retval = 0
-        msg = "Executing %s" % command
+        msg = "Executing timeout(%s): %s" % (timeout, command)
         self.debug(msg)
         self.root_log(msg)
 
@@ -506,25 +515,62 @@ class Root:
         if self.state() == "build":
             logfile = self._build_log
 
-        pipe = os.popen('{ ' + command + '; } 2>&1', 'r')
-        output = ""
-        for line in pipe:
-            logfile.write(line)
-            if self.config['debug'] or self.config['verbose']:
-                print line[:-1]
-                sys.stdout.flush()
-            logfile.flush()
-            output += line
-        status = pipe.close()
-        if status is None:
-            status = 0
-        
-        if os.WIFEXITED(status):
-            retval = os.WEXITSTATUS(status)
+        output=""
+        (r,w) = os.pipe()
+        pid = os.fork()
+        if pid: #parent
+            rpid = ret = 0
+            os.close(w)
+            oldhandler=signal.signal(signal.SIGALRM,alarmhandler)
+            starttime = time.time()
+            # timeout=0 means disable alarm signal. no timeout
+            signal.alarm(timeout)
 
-        return (retval, output)
+            try:
+                # read output from child
+                r = os.fdopen(r, "r")
+                for line in r:
+                    logfile.write(line)
+                    if self.config['debug'] or self.config['verbose']:
+                        print line[:-1]
+                        sys.stdout.flush()
+                    logfile.flush()
+                    output += line
 
-    def do_chroot(self, command, fatal = False, exitcode=None):
+                # close read handle, get child return status, etc
+                r.close()
+                (rpid, ret) = os.waitpid(pid, 0)
+                signal.alarm(0)
+                signal.signal(signal.SIGALRM,oldhandler)
+
+            except alarmExc:
+                os.kill(-pid, signal.SIGTERM)
+                time.sleep(1)
+                os.kill(-pid, signal.SIGKILL)
+                (rpid, ret) = os.waitpid(pid, 0)
+                signal.signal(signal.SIGALRM,oldhandler)
+                raise commandTimeoutExpired( "Timeout(%s) exceeded for command: %s" % (timeout, command))
+
+            # mask and return just return value, plus child output
+            return ((ret & 0xFF00) >> 8, output)
+
+        else: #child
+            os.close(r)
+            # become process group leader so that our parent
+            # can kill our children
+            os.setpgrp()  
+
+            child = popen2.Popen4(command)
+            child.tochild.close()
+
+            w = os.fdopen(w, "w")
+            for line in child.fromchild:
+                w.write(line)
+            w.close()
+            os._exit( (retval & 0xFF00) >> 8 )
+    
+
+    def do_chroot(self, command, fatal = False, exitcode=None, timeout=0):
         """execute given command in root"""
         cmd = ""
         
@@ -538,7 +584,7 @@ class Root:
                                                  self.rootdir,
                                                  self.config['runuser'],
                                                  command)
-        (ret, output) = self.do(cmd)
+        (ret, output) = self.do(cmd, timeout=timeout)
         if (ret != 0) and fatal:
             self.close()
             if exitcode:
@@ -785,6 +831,8 @@ def command_parse():
                       default=False, help="Turn on build-root caching")
     parser.add_option("--rebuildcache", action ="store_true", dest="rebuild_cache",
                       default=False, help="Force rebuild of build-root cache")
+    parser.add_option("--rpmbuild_timeout", action="store", dest="rpmbuild_timeout", type="int",
+                      default=None, help="Fail build if rpmbuild takes longer than 'timeout' seconds ")
     
     return parser.parse_args()
 
@@ -796,6 +844,7 @@ def setup_default_config_opts(config_opts):
     config_opts['rm'] = '/usr/sbin/mock-helper rm'
     config_opts['mknod'] = '/usr/sbin/mock-helper mknod'
     config_opts['yum'] = '/usr/sbin/mock-helper yum'
+    config_opts['rpmbuild_timeout'] = 0
     config_opts['runuser'] = '/sbin/runuser'
     config_opts['chroot_setup_cmd'] = 'install buildsys-build'
     config_opts['chrootuser'] = 'mockbuild'
@@ -852,6 +901,8 @@ def set_config_opts_per_cmdline(config_opts, options):
         config_opts['statedir'] = options.statedir
     if options.uniqueext:
         config_opts['unique-ext'] = options.uniqueext
+    if options.rpmbuild_timeout is not None:
+        config_opts['rpmbuild_timeout'] = options.rpmbuild_timeout
 
 def do_clean(config_opts, init=0):
         my = None
@@ -979,7 +1030,7 @@ def main():
     
     # cmdline options override config options
     set_config_opts_per_cmdline(config_opts, options)
-    
+
     # do whatever we're here to do
     if args[0] == 'clean':
         # unset a --no-clean
