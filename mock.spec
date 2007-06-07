@@ -1,6 +1,6 @@
 Summary: Builds packages inside chroots
 Name: mock
-Version: 0.6.16
+Version: 0.6.17
 Release: 1%{?dist}
 License: GPL
 Group: Development/Tools
@@ -66,6 +66,10 @@ fi
 %{_libdir}/libselinux-mock.so
 
 %changelog
+* Thu Jun  7 2007 Clark Williams <williams@redhat.com> - 0.6.17-1
+- added F-7 config files (BZ#242276 from Julian Sikorski)
+
+
 * Tue May 01 2007 Clark Williams <williams@redhat.com> - 0.6.16-1
 - timeout code adds new cmdline option that will kill build process after
   specified timeout. Useful for automated builds of things that may hang during
