@@ -447,6 +447,17 @@ class Root:
             if output.find('already mounted') == -1: # probably won't work in other LOCALES
                 error("could not mount proc error was: %s" % output)
         
+        # bind mount the host /dev
+        devdir = os.path.join(self.rootdir, 'dev')
+        self._ensure_dir(devdir)
+
+        self.debug("bind mounting /dev in %s" % devdir)
+        command = '%s --bind /dev %s' % (self.config['mount'], devdir)
+        track.write('dev\n')
+        (retval, output) = self.do(command)
+        track.flush()
+        
+
         # devpts
         # 
         devptsdir = os.path.join(self.rootdir, 'dev/pts')
@@ -485,6 +496,9 @@ class Root:
         track = open(mf, 'r')
         lines = track.readlines()
         track.close()
+
+        # umount in reverse order of mount
+        lines.reverse()
         
         for item in lines:
             item = item.replace('\n','')
@@ -649,38 +663,6 @@ class Root:
         
         self._mount()
 
-        # we need stuff
-        devices = [('null', 'c', '1', '3', '666'),
-                   ('urandom', 'c', '1', '9', '644'),
-                   ('random', 'c', '1', '9', '644'),
-                   ('full', 'c', '1', '7', '666'),
-                   ('ptmx', 'c', '5', '2', '666'),
-                   ('tty', 'c', '5', '0', '666'),
-                   ('zero', 'c', '1', '5', '666')]
-
-        for (dev, devtype, major, minor, perm) in devices:
-            devpath = os.path.join(self.rootdir, 'dev', dev)
-            cmd = '%s %s -m %s %s %s %s' % (self.config['mknod'], 
-                      devpath, perm, devtype, major, minor)
-            if not os.path.exists(devpath):
-                (retval, output) = self.do(cmd)
-                if retval != 0:
-                    error(output)
-                    raise RootError, "could not mknod error was: %s" % output
-
-        # link fd to ../proc/self/fd
-        devpath = os.path.join(self.rootdir, 'dev/fd')
-        if not os.path.exists(devpath):
-            os.symlink('../proc/self/fd', devpath)
-        
-        fd = 0
-        for item in ('stdin', 'stdout', 'stderr'):
-            devpath =  os.path.join(self.rootdir, 'dev', item)
-            if not os.path.exists(devpath):
-                fdpath = os.path.join('../proc/self/fd', str(fd))
-                os.symlink(fdpath, devpath)
-            fd += 1
-
         for item in [os.path.join(self.rootdir, 'etc', 'mtab'),
                      os.path.join(self.rootdir, 'etc', 'fstab'),
                      os.path.join(self.rootdir, 'var', 'log', 'yum.log')]:
@@ -720,6 +702,10 @@ class Root:
             fo = open(fn, 'w')
             fo.write(filedict[key])
             fo.close()
+
+        if self.config.setdefault('use_host_resolv', True) == True:
+            shutil.copy2('/etc/resolv.conf', os.join(self.rootdir, 'etc'))
+
 
     def _make_our_user(self):
         if not os.path.exists(os.path.join(self.rootdir, 'usr/sbin/useradd')):
@@ -865,7 +851,6 @@ def setup_default_config_opts(config_opts):
 """ % config_opts['chroothome']
     
     config_opts['more_buildreqs'] = {}
-    config_opts['files']['/etc/resolv.conf'] = "nameserver 192.168.1.1\n"
     config_opts['files']['/etc/hosts'] = "127.0.0.1 localhost localhost.localdomain\n"
 
     # caching-related config options
