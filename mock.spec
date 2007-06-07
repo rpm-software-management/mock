@@ -66,8 +66,10 @@ fi
 %{_libdir}/libselinux-mock.so
 
 %changelog
-* Tue May 01 2006 Clark Williams <williams@redhat.com> - 0.6.16-1
-- Michaels timeout code
+* Tue May 01 2007 Clark Williams <williams@redhat.com> - 0.6.16-1
+- timeout code adds new cmdline option that will kill build process after
+  specified timeout. Useful for automated builds of things that may hang during
+  build and you just want it to fail.
 
 * Tue Apr 10 2007 Clark Williams <williams@redhat.com> - 0.6.15-1
 - Fixed typo in FC4 -epel configs (BZ 235490)
