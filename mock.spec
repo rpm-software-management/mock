@@ -67,8 +67,10 @@ fi
 
 %changelog
 * Thu Jun  7 2007 Clark Williams <williams@redhat.com> - 0.6.17-1
-- added F-7 config files (BZ#242276 from Julian Sikorski)
-
+- added F-7 config files (BZ#242276)
+- modified epel configs for changed mirrorlist location (BZ#239981)
+- added bind mount of /dev (BZ#236428)
+- added copy of /etc/resolv.conf to chroot (BZ#237663 and BZ#238101)
 
 * Tue May 01 2007 Clark Williams <williams@redhat.com> - 0.6.16-1
 - timeout code adds new cmdline option that will kill build process after
