@@ -29,19 +29,21 @@ cd $RPM_BUILD_ROOT/%{_sysconfdir}/%{name}
 %if 0%{?fedora:1}
 if [ -f fedora-%{fedora}-%{_target_cpu}-core.cfg ]; then
         ln -s fedora-%{fedora}-%{_target_cpu}-core.cfg default.cfg
+elif [ -f fedora-%{fedora}-%{_target_cpu}.cfg ]; then
+        ln -s fedora-%{fedora}-%{_target_cpu}.cfg default.cfg
 fi
 %endif
 
 # if we haven't created a default link yet, try to do so as devel
 if [ ! -f default.cfg ]; then
-    if [ -f fedora-development-%{_target_cpu}-core.cfg ]; then
-        ln -s fedora-development-%{_target_cpu}-core.cfg default.cfg
-    elif [ -f fedora-devel-%{_target_cpu}-core.cfg ]; then
-        ln -s fedora-devel-%{_target_cpu}-core.cfg default.cfg
-    elif [ -f fedora-development-i386-core.cfg ]; then
-        ln -s fedora-development-i386-core.cfg default.cfg
-    elif [ -f fedora-devel-i386-core.cfg ]; then
-        ln -s fedora-devel-i386-core.cfg default.cfg
+    if [ -f fedora-development-%{_target_cpu}.cfg ]; then
+        ln -s fedora-development-%{_target_cpu}.cfg default.cfg
+    elif [ -f fedora-devel-%{_target_cpu}.cfg ]; then
+        ln -s fedora-devel-%{_target_cpu}.cfg default.cfg
+    elif [ -f fedora-development-i386.cfg ]; then
+        ln -s fedora-development-i386.cfg default.cfg
+    elif [ -f fedora-devel-i386.cfg ]; then
+        ln -s fedora-devel-i386.cfg default.cfg
     fi
 fi
 
