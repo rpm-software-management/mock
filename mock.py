@@ -704,7 +704,7 @@ class Root:
             fo.close()
 
         if self.config.setdefault('use_host_resolv', True) == True:
-            shutil.copy2('/etc/resolv.conf', os.join(self.rootdir, 'etc'))
+            shutil.copy2('/etc/resolv.conf', os.path.join(self.rootdir, 'etc'))
 
 
     def _make_our_user(self):
