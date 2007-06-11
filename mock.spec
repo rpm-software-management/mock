@@ -68,6 +68,10 @@ fi
 %{_libdir}/libselinux-mock.so
 
 %changelog
+* Mon Jun 11 2007 Clark Williams <williams@redhat.com> - 0.6.17-1
+- fixed bind mount problems
+- added code to allow multiple users to use --no-clean
+
 * Thu Jun  7 2007 Clark Williams <williams@redhat.com> - 0.6.17-1
 - added F-7 config files (BZ#242276)
 - modified epel configs for changed mirrorlist location (BZ#239981)
