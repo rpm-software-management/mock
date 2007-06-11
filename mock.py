@@ -696,6 +696,7 @@ class Root:
                 fo = open(item, 'w')
                 fo.close()
                 fixown.append(item)
+                os.chmod(item, 0666)
         
         # write in yum.conf into chroot
         if os.path.exists( os.path.join(self.rootdir, 'etc', 'yum.conf')):
@@ -706,6 +707,7 @@ class Root:
         yumconf_content = self.config['yum.conf']
         yumconf_fo.write(yumconf_content)
         yumconf_fo.close()
+        os.chmod(yumconf, 0666)
         fixown.append(yumconf)
 
         # symlink /etc/yum.conf to /etc/yum/yum.conf to deal with
@@ -723,6 +725,7 @@ class Root:
             if os.path.exists(resolvpath):
                 self.do_chroot("chown %d /etc/resolv.conf" % os.getuid())
             shutil.copy2('/etc/resolv.conf', resolvpath)
+            os.chmod(resolvpath, 0666)
             fixown.append('/etc/resolv.conf')
             
         # files in /etc that need doing
@@ -734,10 +737,12 @@ class Root:
                 fo = open(p, 'w')
                 fo.write(filedict[key])
                 fo.close()
+                os.chmod(p, 0666)
                 fixown.append(p)
 
         # set everything back to being owned by root
-        self.do_chroot('chown 0.0 %s' % " ".join(fixown), fatal=True)
+        #self.do_chroot('chown 0.0 %s' % " ".join(fixown), fatal=True)
+        self.debug("_prep_install: files needing ownership fixup: %s" % " ".join(fixown))
 
     def _make_our_user(self):
         if not os.path.exists(os.path.join(self.rootdir, 'usr/sbin/useradd')):
