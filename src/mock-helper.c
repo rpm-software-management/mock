@@ -145,11 +145,12 @@ do_command (const char *filename, char *const argv[], int use_selinux_preload)
     [1] = "HOME=/root"
   };
   int retval;
-  char **arg;
+  //char **arg;
   size_t idx=2;
   size_t i;
-  char *envvar;
+#ifdef USE_SELINUX
   char *ld_preload;
+#endif
 
   /* elevate privileges */
   setreuid (geteuid (), geteuid ());
@@ -218,20 +219,24 @@ do_mount (int argc, char *argv[])
 
   /* see if it's -t proc or -t devpts */
   if ((strncmp ("-t", argv[2], 2) == 0) &&
-           (strncmp ("proc", argv[3], 4) == 0))
-  {
+           (strncmp ("proc", argv[3], 4) == 0)) {
     /* see if we're mounting proc to somewhere in rootsdir */
     if (strncmp (rootsdir, argv[5], strlen (rootsdir)) != 0)
       error ("proc: mount not allowed on %s", argv[5]);
   }
   else if ((strncmp ("-t", argv[2], 2) == 0) &&
-           (strncmp ("devpts", argv[3], 6) == 0))
-  {
+           (strncmp ("devpts", argv[3], 6) == 0)) {
     if (argc < 5)
       error ("devpts: not enough mount arguments");
     /* see if we're mounting devpts to somewhere in rootsdir */
     else if (strncmp (rootsdir, argv[5], strlen (rootsdir)) != 0)
       error ("devpts: mount not allowed on %s", argv[5]);
+  }
+  else if ((strncmp("--bind", argv[2], 6) == 0) &&
+		   (strncmp("/dev", argv[3], 4) == 0)) {
+	  /* make sure we're only mounting /dev in the chroot */
+	  if (strncmp(rootsdir, argv[4], strlen(rootsdir)) != 0)
+		  error("can only bindmount /dev in chroot");
   }
   else
     error ("unallowed mount type");
