@@ -72,4 +72,4 @@ buildsys-rpm:
 	for i in 73 8 9; do \
 		rpmbuild $(RPMARGS) --define "rhl $$i" --define "dist .rh$$i" -bb buildsys-build.spec; \
 	done
-        rpmbuild $(RPMARGS) --define "fedora development" --define "dist .fc7" -bb buildsys-build.spec
+	rpmbuild $(RPMARGS) --define "fedora development" --define "dist .fc7" -bb buildsys-build.spec
