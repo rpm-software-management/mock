@@ -115,6 +115,8 @@ class Root:
         self._state = 'unstarted'
         self.tmplog = LogBuffer()
         self.config = config
+        self.mountorder = []
+        self.mounts = {}
         root = config['root']
         if config.has_key('unique-ext'):
             root = "%s-%s" % (root, config['unique-ext'])
@@ -232,6 +234,7 @@ class Root:
         self.state("prep")
         print "This may take a while"
 
+        self.debug("uid:%d, gid:%d" % (os.getuid(), os.getgid()))
         create_cache=0
         if self.config['use_cache']:
             cache_exists = os.path.exists( self.cache_file )
@@ -254,9 +257,13 @@ class Root:
             else:
                 cmd = 'update'
          
-        self._prep_install()
-        self.yum(cmd)
-        self._prep_build()
+        try:
+            self._prep_install()
+            self.yum(cmd)
+            self._prep_build()
+        except:
+            self._umountall()
+            raise
          
         if create_cache:
             self.pack()
@@ -401,12 +408,11 @@ class Root:
             shutil.copy2(item, self.resultdir)
         
 
-
     def close(self):
         """unmount things and clean up a bit"""
         self.root_log("Cleaning up...")
         self.state("ending")
-        self._umount_by_file()
+        self._umountall()
         self._build_log.close()
         self.state("done")
         self.root_log("Done.")
@@ -431,53 +437,66 @@ class Root:
         mf = os.path.join(self.statedir, 'mounted-locations')
         track = open(mf, 'w+')
 
-        # make the procdir if we don't have it
-        # mount up proc
-        procdir = os.path.join(self.rootdir, 'proc')
-        self._ensure_dir(procdir)
+        # mount proc
+        if not self.mounts.has_key('proc'):
+            procdir = os.path.join(self.rootdir, 'proc')
+            self._ensure_dir(procdir)
 
-        self.debug("mounting proc in %s" % procdir)
-        command = '%s -t proc proc %s/proc' % (self.config['mount'], 
+            self.debug("mounting proc in %s" % procdir)
+            command = '%s -t proc proc %s/proc' % (self.config['mount'], 
                                                self.rootdir)
-        track.write('proc\n')
-        (retval, output) = self.do(command)
-        track.flush()
+            track.write('proc\n')
+            (retval, output) = self.do(command)
+            track.flush()
         
-        if retval != 0:
-            if output.find('already mounted') == -1: # probably won't work in other LOCALES
-                error("could not mount proc error was: %s" % output)
-        
+            if retval != 0:
+                if output.find('already mounted') == -1: # probably won't work in other LOCALES
+                    error("could not mount proc error was: %s" % output)
+
+            self.mounts['proc'] = procdir
+            self.mountorder.append('proc')
+            self.debug("mounted proc on %s" % procdir)
+            
         # bind mount the host /dev
-        devdir = os.path.join(self.rootdir, 'dev')
-        self._ensure_dir(devdir)
+        if not self.mounts.has_key('dev'):
+            devdir = os.path.join(self.rootdir, 'dev')
+            self._ensure_dir(devdir)
 
-        self.debug("bind mounting /dev in %s" % devdir)
-        command = '%s --bind /dev %s' % (self.config['mount'], devdir)
-        track.write('dev\n')
-        (retval, output) = self.do(command)
-        track.flush()
+            self.debug("bind mounting /dev in %s" % devdir)
+            command = '%s --bind /dev %s' % (self.config['mount'], devdir)
+            track.write('dev\n')
+            (retval, output) = self.do(command)
+            track.flush()
+            self.mountorder.append('dev')
+            self.mounts['dev'] = devdir
+            self.debug("bind mounted dev on %s" % devdir)
         
 
-        # devpts
-        # 
-        devptsdir = os.path.join(self.rootdir, 'dev/pts')
-        self._ensure_dir(devptsdir)
-        self.debug("mounting devpts in %s" % devptsdir)
-        command = '%s -t devpts devpts %s' % (self.config['mount'], devptsdir)
-        track.write('dev/pts\n')
-        (retval, output) = self.do(command)
-        track.flush()
-        track.close()
+        # mount dev/pts
+        if not self.mounts.has_key('devpts'):
+            devptsdir = os.path.join(self.rootdir, 'dev/pts')
+            self._ensure_dir(devptsdir)
+            self.debug("mounting devpts in %s" % devptsdir)
+            command = '%s -t devpts devpts %s' % (self.config['mount'], devptsdir)
+            track.write('dev/pts\n')
+            (retval, output) = self.do(command)
+            track.flush()
+            track.close()
 
-        if retval != 0:
-            if output.find('already mounted') == -1: # probably won't work in other LOCALES
-                error(output)
-                raise RootError, "could not mount /dev/pts error was: %s" % output
+            if retval != 0:
+                if output.find('already mounted') == -1: # probably won't work in other LOCALES
+                    error(output)
+                    raise RootError, "could not mount /dev/pts error was: %s" % output
         
+            self.mountorder.append('devpts')
+            self.mounts['devpts'] = devptsdir
+            self.debug("mounted pts on %s" % devptsdir)
 
     def _umount(self, path):
-    
-        item = '%s/%s' % (self.rootdir, path)
+        if path.find(self.rootdir) == -1:
+            item = '%s/%s' % (self.rootdir, path)
+        else:
+            item = path
         command = '%s %s' % (self.config['umount'], item)
         (retval, output) = self.do(command)
     
@@ -486,7 +505,13 @@ class Root:
                 error(output)
                 raise RootError, "could not umount %s error was: %s" % (path, output)
 
-    
+
+    def _umountall(self):
+        self.mountorder.reverse()
+        for key in self.mountorder:
+            self.debug("umounting %s" % self.mounts[key])
+            self._umount(self.mounts[key])
+
     def _umount_by_file(self):
                 
         mf = os.path.join(self.statedir, 'mounted-locations')
@@ -647,6 +672,7 @@ class Root:
     
     def _prep_install(self):
         """prep chroot for installation"""
+        fixown = []
         # make chroot dir
         # make /dev, mount /proc
         #
@@ -669,16 +695,19 @@ class Root:
             if not os.path.exists(item):
                 fo = open(item, 'w')
                 fo.close()
+                fixown.append(item)
         
         # write in yum.conf into chroot
         if os.path.exists( os.path.join(self.rootdir, 'etc', 'yum.conf')):
-            cmd = "chown %s.%s /etc/yum.conf" % (self.config['chrootuid'],
-                self.config['chrootgid'])
+            cmd = "chown %d /etc/yum.conf" % os.getuid()
             self.do_chroot(cmd, fatal = True)
         yumconf = os.path.join(self.rootdir, 'etc', 'yum.conf')
         yumconf_fo = open(yumconf, 'w')
         yumconf_content = self.config['yum.conf']
         yumconf_fo.write(yumconf_content)
+        yumconf_fo.close()
+        fixown.append(yumconf)
+
         # symlink /etc/yum.conf to /etc/yum/yum.conf to deal with
         # (possible) yum breakage
         yumdir = os.path.join(self.rootdir, 'etc', 'yum')
@@ -688,24 +717,27 @@ class Root:
                 os.remove(yumlink)
         os.symlink('../yum.conf', yumlink)
     
+
+        if self.config.setdefault('use_host_resolv', True) == True:
+            resolvpath = os.path.join(self.rootdir, 'etc')
+            if os.path.exists(resolvpath):
+                self.do_chroot("chown %d /etc/resolv.conf" % os.getuid())
+            shutil.copy2('/etc/resolv.conf', resolvpath)
+            fixown.append('/etc/resolv.conf')
+            
         # files in /etc that need doing
         filedict = self.config['files']
         for key in filedict:
-            # ensure permisssions
-            if os.path.exists( "%s%s" % (self.rootdir, key) ):
-                cmd = "chown %s.%s %s" % (self.config['chrootuid'],
-                    self.config['chrootgid'], "%s" % key)
-                self.do_chroot(cmd, fatal = True)
+            p = os.path.join(self.rootdir, key)
+            if not os.path.exists(p):
+                # write file
+                fo = open(p, 'w')
+                fo.write(filedict[key])
+                fo.close()
+                fixown.append(p)
 
-            # write file
-            fn = '%s%s' % (self.rootdir, key)
-            fo = open(fn, 'w')
-            fo.write(filedict[key])
-            fo.close()
-
-        if self.config.setdefault('use_host_resolv', True) == True:
-            shutil.copy2('/etc/resolv.conf', os.path.join(self.rootdir, 'etc'))
-
+        # set everything back to being owned by root
+        self.do_chroot('chown 0.0 %s' % " ".join(fixown), fatal=True)
 
     def _make_our_user(self):
         if not os.path.exists(os.path.join(self.rootdir, 'usr/sbin/useradd')):
@@ -737,7 +769,9 @@ class Root:
                 need_add_user = 1
                 self.do_chroot('/usr/sbin/userdel -r %s' % self.config["chrootuser"], fatal = False)
                 self.do_chroot('/usr/sbin/groupdel %s' % self.config["chrootgroup"], fatal = False)
-                self.do_chroot('chown -R %s.%s %s' % (self.config["chrootuid"], self.config["chrootgid"], self.config["chroothome"]), fatal = False)
+                self.do_chroot('chown -R %s.%s %s' % (self.config["chrootuid"],
+                                                      self.config["chrootgid"],
+                                                      self.config["chroothome"]), fatal = False)
                 # may need a few other chown here if there are other files that have to be edited
 
         if need_add_user:
@@ -760,6 +794,10 @@ class Root:
         # change ownership so we can write to build home dir
         cmd = "chown -R %s.%s %s" % (self.config['chrootuser'], 
            self.config['chrootgroup'], self.homedir)
+        self.do_chroot(cmd, fatal = True)
+        
+        # change mode so we can write to build home dir
+        cmd = "chmod -R 0777 %s" % (self.homedir)
         self.do_chroot(cmd, fatal = True)
         
         # rpmmacros default
@@ -899,6 +937,9 @@ def do_clean(config_opts, init=0):
             if my:
                 my.close()
             sys.exit(100)
+        except KeyboardInterrupt, e:
+            if my: my.close()
+            raise
 
         my.close()
         if init:
@@ -942,6 +983,9 @@ def do_rebuild(config_opts, srpms):
         if my:
             my.close()
         sys.exit(e.resultcode)
+    except KeyboardInterrupt, e:
+        if my: my.close()
+        raise
    
     for srpm in srpms:
         try:
@@ -952,6 +996,9 @@ def do_rebuild(config_opts, srpms):
             if my:
                 my.close()
             sys.exit(e.resultcode)
+        except KeyboardInterrupt, e:
+            if my: my.close()
+            raise
     
     my.close()
     print "Results and/or logs in: %s" % my.resultdir
@@ -1063,6 +1110,9 @@ def main():
             if my:
                 my.close()
             sys.exit(e.resultcode)
+        except KeyboardInterrupt, e:
+            if my: my.close()
+            raise
         my.close()
         print "Logs in: %s" % my.resultdir
 
