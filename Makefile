@@ -3,7 +3,6 @@ SUBDIRS = etc src docs
 PKGNAME = mock
 VERSION=$(shell awk '/Version:/ { print $$2 }' ${PKGNAME}.spec)
 RELEASE=$(shell awk '/Release:/ { print $$2 }' ${PKGNAME}.spec)
-CVSTAG=mock-$(subst .,_,$(VERSION)-$(RELEASE))
 
 all: subdirs
 
@@ -32,12 +31,7 @@ EXCLUDES	:= --exclude='*~' --exclude='*.patch' --exclude='*.save' \
 		   --exclude='.git'
 archive: clean
 	@rm -rf ${PKGNAME}-*.tar.gz
-	@rm -rf /tmp/${PKGNAME}-$(VERSION) /tmp/${PKGNAME}
-	@rsync -a $(EXCLUDES) . /tmp/${PKGNAME}
-	@rm -rf /tmp/${PKGNAME}/${PKGNAME}-daily.spec /tmp/${PKGNAME}/build /tmp/${PKGNAME}/dist
-	@mv /tmp/${PKGNAME} /tmp/${PKGNAME}-$(VERSION)
-	@dir=$$PWD; cd /tmp; tar cvz --exclude=CVS --exclude=.cvsignore -f $$dir/${PKGNAME}-$(VERSION).tar.gz ${PKGNAME}-$(VERSION)
-	@rm -rf /tmp/${PKGNAME}-$(VERSION)	
+	@git-archive --format=tar --prefix=${PKGNAME}-$(VERSION)/ HEAD |gzip > ${PKGNAME}-$(VERSION).tar.gz
 	@echo "The archive is in ${PKGNAME}-$(VERSION).tar.gz"
 
 rpm: archive
