@@ -37,7 +37,7 @@ from exceptions import Exception
 
 from optparse import OptionParser
 
-__VERSION__ = '0.7'
+__VERSION__ = '0.7.0'
 
 def error(msg):
     print >> sys.stderr, msg
