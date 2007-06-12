@@ -413,11 +413,11 @@ do_pack(int argc, char *argv[])
 
   /* select compression */
   if (strstr(argv[3], ".bz2"))
-    new_argv[2] = "-jlcf";
+    new_argv[2] = "-jcf";
   else if (strstr(argv[3], ".gz"))
-    new_argv[2] = "-zlcf";
+    new_argv[2] = "-zcf";
   else
-    new_argv[2] = "-clf";
+    new_argv[2] = "-cf";
 
   new_argv[3] = argv[3];
   new_argv[4] = argv[4];
