@@ -1,6 +1,6 @@
 Summary: Builds packages inside chroots
 Name: mock
-Version: 0.7.0
+Version: 0.7.1
 Release: 1%{?dist}
 License: GPL
 Group: Development/Tools
@@ -68,6 +68,9 @@ fi
 %{_libdir}/libselinux-mock.so
 
 %changelog
+* Tue Jun 12 2007 Michael Brown <mebrown@michaels-house.net> - 0.7.1-1
+- add EPEL 5 config files
+
 * Mon Jun 11 2007 Clark Williams <williams@redhat.com> - 0.7-1
 - fixed bind mount problems
 - added code to allow multiple users to use --no-clean
