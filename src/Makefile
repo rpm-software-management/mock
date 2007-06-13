@@ -29,6 +29,8 @@ selinux-mock.o:  selinux-mock.c
 $(EXECUTABLE):	$(EXECUTABLE).c
 	$(CC) $(CFLAGS) $(DEBUG) -o $@ $<
 
+distclean: clean
+
 clean:
 	rm -f $(EXECUTABLE) $(LIBRARY)
 	rm -f *~ *.bak *.o *.so

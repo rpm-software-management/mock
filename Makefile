@@ -12,7 +12,8 @@ clean:
 
 distclean: clean
 	rm -rf dist build
-	rm *.tar.gz
+	rm -f *.tar.gz
+	for d in $(SUBDIRS); do make -C $$d distclean ; done
 
 subdirs:
 	for d in $(SUBDIRS); do make -C $$d; [ $$? = 0 ] || exit 1 ; done
