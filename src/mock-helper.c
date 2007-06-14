@@ -133,6 +133,32 @@ check_file_allowed (const char *allowed, const char *given)
     error ("%s: not a regular file", given);
 }
 
+/*
+ * perform checks on the given filesystem entity
+ * - is the given entry under the allowed hierarchy ?
+ * - are we not being tricked by using .. ?
+ */
+void
+check_allowed (const char *allowed, const char *given)
+{
+  char last;
+
+  /* does given start with allowed ? */
+  if (strncmp (given, allowed, strlen (allowed)) != 0)
+    error ("%s: not under allowed directory", given);
+
+  /* does it try to fool us by using .. ? */
+  if (strstr (given, "..") != 0)
+    error ("%s: contains '..'", given);
+
+  /* does it have a trailing / ? */
+  last = given[strlen (given) - 1];
+  if (last == '/')
+    error ("%s: ends with '/'", given);
+}
+
+
+
 /* argv[0] should by convention be the binary name to be executed */
 void
 do_command (const char *filename, char *const argv[], int use_selinux_preload)
@@ -157,12 +183,12 @@ do_command (const char *filename, char *const argv[], int use_selinux_preload)
   //printf ("DEBUG: First argument: %s\n", *argv);
   //printf ("DEBUG: Executing %s\n", filename);
   /* FIXME: for a debug option */
-  /*
-  printf ("Executing %s ", filename);
-  for (arg = (char **) &(argv[1]); *arg; ++arg)
-    printf ("%s ", *arg);
-  printf ("\n");
-  */
+
+  //printf ("Executing %s ", filename);
+  //for (arg = (char **) &(argv[1]); *arg; ++arg)
+  //   printf ("%s ", *arg);
+  //printf ("\n");
+
 
 #ifdef USE_SELINUX
   /* add LD_PRELOAD for our selinux lib if selinux is in use is set */
@@ -426,6 +452,38 @@ do_pack(int argc, char *argv[])
   do_command("/bin/tar", new_argv, 0);
 }
 
+void
+do_chown (int argc, char *argv[])
+{
+	int i;
+
+	/* validate argument vector length */
+	if (argc < 4)
+		error("do_chown: not enough arguments (%d)\n", argc);
+	
+	/* verify files are legal */
+	for (i = 3; i < argc; i++)
+		check_allowed(rootsdir, argv[i]);
+
+	do_command("/bin/chown", &(argv[1]), 1);
+}
+
+void
+do_chmod (int argc, char *argv[])
+{
+	int i;
+
+	/* validate argument vector length */
+	if (argc < 4)
+		error("do_chmod: not enough arguments (%d)\n", argc);
+	
+	/* verify files are legal */
+	for (i = 3; i < argc; i++)
+		check_allowed(rootsdir, argv[i]);
+
+	do_command("/bin/chmod", &(argv[1]), 1);
+}
+
 int
 main (int argc, char *argv[])
 {
@@ -452,6 +510,10 @@ main (int argc, char *argv[])
     do_unpack (argc, argv);
   else if (strncmp ("pack", argv[1], 4) == 0)
     do_pack (argc, argv);
+  else if (strncmp ("chown", argv[1], 5) == 0)
+	  do_chown(argc, argv);
+  else if (strncmp ("chmod", argv[1], 5) == 0)
+	  do_chmod(argc, argv);
   else
   {
     error ("Command %s not recognized !\n", argv[1]);

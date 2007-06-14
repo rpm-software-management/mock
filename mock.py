@@ -697,7 +697,6 @@ class Root:
                 os.chmod(item, 0664)
 
         # ensure /etc/ perms are correct
-        self._ensure_dir(os.path.join(self.rootdir, 'etc')
         cmd = '%s 2775 %s' % (self.config['chmod'], os.path.join(self.rootdir, "etc"))
         (retval, output) = self.do(cmd)
         cmd = '%s %s.%s %s' % (self.config['chown'], self.config['chrootuid'], self.config['chrootgid'], os.path.join(self.rootdir, "etc"))
@@ -784,7 +783,6 @@ class Root:
 
     def _build_dir_setup(self):
         # ensure /etc/ perms are correct
-        self._ensure_dir(os.path.join(self.rootdir, 'etc')
         cmd = '%s 2775 %s' % (self.config['chmod'], os.path.join(self.rootdir, "etc"))
         (retval, output) = self.do(cmd)
         cmd = '%s %s.%s %s' % (self.config['chown'], self.config['chrootuid'], self.config['chrootgid'], os.path.join(self.rootdir, "etc"))
