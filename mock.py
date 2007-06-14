@@ -717,17 +717,18 @@ class Root:
         yumdir = os.path.join(self.rootdir, 'etc', 'yum')
         self._ensure_dir(yumdir)
         yumlink = os.path.join(yumdir, 'yum.conf')
-        if not os.path.exists(yumlink):
+        if os.path.exists(yumlink):
             cmd = '%s -rf %s' % (self.config['rm'], yumlink)
             (retval, output) = self.do(cmd)
         os.symlink('../yum.conf', yumlink)
 
         if self.config.setdefault('use_host_resolv', True) == True:
-            resolvpath = os.path.join(self.rootdir, 'etc')
+            resolvdir = os.path.join(self.rootdir, 'etc')
+            resolvpath = os.path.join(self.rootdir, 'etc', 'resolv.conf')
             if os.path.exists(resolvpath):
-                cmd = '%s -rf %s' % (self.config['rm'], os.path.join(resolvpath, "resolv.conf"))
+                cmd = '%s -rf %s' % (self.config['rm'], resolvpath)
                 (retval, output) = self.do(cmd)
-            shutil.copy2('/etc/resolv.conf', resolvpath)
+            shutil.copy2('/etc/resolv.conf', resolvdir)
             os.chmod(resolvpath, 0664)
             
         # files in /etc that need doing
