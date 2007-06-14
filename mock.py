@@ -717,10 +717,8 @@ class Root:
         yumdir = os.path.join(self.rootdir, 'etc', 'yum')
         self._ensure_dir(yumdir)
         yumlink = os.path.join(yumdir, 'yum.conf')
-        if os.path.exists(yumlink):
-            cmd = '%s -rf %s' % (self.config['rm'], yumlink)
-            (retval, output) = self.do(cmd)
-        os.symlink('../yum.conf', yumlink)
+        if not os.path.exists(yumlink):
+            os.symlink('../yum.conf', yumlink)
 
         if self.config.setdefault('use_host_resolv', True) == True:
             resolvdir = os.path.join(self.rootdir, 'etc')
