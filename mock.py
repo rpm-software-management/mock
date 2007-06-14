@@ -724,8 +724,7 @@ class Root:
             resolvdir = os.path.join(self.rootdir, 'etc')
             resolvpath = os.path.join(self.rootdir, 'etc', 'resolv.conf')
             if os.path.exists(resolvpath):
-                cmd = '%s -rf %s' % (self.config['rm'], resolvpath)
-                (retval, output) = self.do(cmd)
+                os.remove(resolvpath)
             shutil.copy2('/etc/resolv.conf', resolvdir)
             os.chmod(resolvpath, 0664)
             
