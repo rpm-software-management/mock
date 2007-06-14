@@ -672,7 +672,6 @@ class Root:
     
     def _prep_install(self):
         """prep chroot for installation"""
-        fixown = []
         # make chroot dir
         # make /dev, mount /proc
         #
@@ -695,38 +694,42 @@ class Root:
             if not os.path.exists(item):
                 fo = open(item, 'w')
                 fo.close()
-                fixown.append(item)
-                os.chmod(item, 0666)
+                os.chmod(item, 0664)
+
+        # ensure /etc/ perms are correct
+        self._ensure_dir(os.path.join(self.rootdir, 'etc')
+        cmd = '%s 2775 %s' % (self.config['chmod'], os.path.join(self.rootdir, "etc"))
+        (retval, output) = self.do(cmd)
+        cmd = '%s %s.%s %s' % (self.config['chown'], self.config['chrootuid'], self.config['chrootgid'], os.path.join(self.rootdir, "etc"))
+        (retval, output) = self.do(cmd)
         
         # write in yum.conf into chroot
-        if os.path.exists( os.path.join(self.rootdir, 'etc', 'yum.conf')):
-            cmd = "chown %d /etc/yum.conf" % os.getuid()
-            self.do_chroot(cmd, fatal = True)
         yumconf = os.path.join(self.rootdir, 'etc', 'yum.conf')
-        yumconf_fo = open(yumconf, 'w')
+        # always truncate and overwrite (w+)
+        yumconf_fo = open(yumconf, 'w+')
         yumconf_content = self.config['yum.conf']
         yumconf_fo.write(yumconf_content)
         yumconf_fo.close()
-        os.chmod(yumconf, 0666)
-        fixown.append(yumconf)
+        os.chmod(yumconf, 0664)
 
         # symlink /etc/yum.conf to /etc/yum/yum.conf to deal with
         # (possible) yum breakage
+        # if symlink already exists, no need to recreate.
         yumdir = os.path.join(self.rootdir, 'etc', 'yum')
         self._ensure_dir(yumdir)
         yumlink = os.path.join(yumdir, 'yum.conf')
-        if os.path.exists(yumlink):
-                os.remove(yumlink)
+        if not os.path.exists(yumlink):
+            cmd = '%s -rf %s' % (self.config['rm'], yumlink)
+            (retval, output) = self.do(cmd)
         os.symlink('../yum.conf', yumlink)
-    
 
         if self.config.setdefault('use_host_resolv', True) == True:
             resolvpath = os.path.join(self.rootdir, 'etc')
             if os.path.exists(resolvpath):
-                self.do_chroot("chown %d /etc/resolv.conf" % os.getuid())
+                cmd = '%s -rf %s' % (self.config['rm'], os.path.join(resolvpath, "resolv.conf"))
+                (retval, output) = self.do(cmd)
             shutil.copy2('/etc/resolv.conf', resolvpath)
-            os.chmod(resolvpath, 0666)
-            fixown.append('/etc/resolv.conf')
+            os.chmod(resolvpath, 0664)
             
         # files in /etc that need doing
         filedict = self.config['files']
@@ -734,15 +737,10 @@ class Root:
             p = os.path.join(self.rootdir, key)
             if not os.path.exists(p):
                 # write file
-                fo = open(p, 'w')
+                fo = open(p, 'w+')
                 fo.write(filedict[key])
                 fo.close()
-                os.chmod(p, 0666)
-                fixown.append(p)
-
-        # set everything back to being owned by root
-        #self.do_chroot('chown 0.0 %s' % " ".join(fixown), fatal=True)
-        self.debug("_prep_install: files needing ownership fixup: %s" % " ".join(fixown))
+                os.chmod(p, 0664)
 
     def _make_our_user(self):
         if not os.path.exists(os.path.join(self.rootdir, 'usr/sbin/useradd')):
@@ -785,6 +783,13 @@ class Root:
             self.do_chroot(cmd, fatal = True)
 
     def _build_dir_setup(self):
+        # ensure /etc/ perms are correct
+        self._ensure_dir(os.path.join(self.rootdir, 'etc')
+        cmd = '%s 2775 %s' % (self.config['chmod'], os.path.join(self.rootdir, "etc"))
+        (retval, output) = self.do(cmd)
+        cmd = '%s %s.%s %s' % (self.config['chown'], self.config['chrootuid'], self.config['chrootgid'], os.path.join(self.rootdir, "etc"))
+        (retval, output) = self.do(cmd)
+
         # purge the builddir, if it exists
         bd_out = '%s%s' % (self.rootdir, self.builddir)
         if os.path.exists(bd_out):
@@ -873,6 +878,8 @@ def setup_default_config_opts(config_opts):
     config_opts['rm'] = '/usr/sbin/mock-helper rm'
     config_opts['mknod'] = '/usr/sbin/mock-helper mknod'
     config_opts['yum'] = '/usr/sbin/mock-helper yum'
+    config_opts['chmod'] = '/usr/sbin/mock-helper chmod'
+    config_opts['chown'] = '/usr/sbin/mock-helper chown'
     config_opts['rpmbuild_timeout'] = 0
     config_opts['runuser'] = '/sbin/runuser'
     config_opts['chroot_setup_cmd'] = 'install buildsys-build'
