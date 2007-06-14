@@ -694,7 +694,6 @@ class Root:
             if not os.path.exists(item):
                 fo = open(item, 'w')
                 fo.close()
-                os.chmod(item, 0664)
 
         # ensure /etc/ perms are correct
         cmd = '%s 2775 %s' % (self.config['chmod'], os.path.join(self.rootdir, "etc"))
@@ -709,7 +708,6 @@ class Root:
         yumconf_content = self.config['yum.conf']
         yumconf_fo.write(yumconf_content)
         yumconf_fo.close()
-        os.chmod(yumconf, 0664)
 
         # symlink /etc/yum.conf to /etc/yum/yum.conf to deal with
         # (possible) yum breakage
@@ -726,7 +724,6 @@ class Root:
             if os.path.exists(resolvpath):
                 os.remove(resolvpath)
             shutil.copy2('/etc/resolv.conf', resolvdir)
-            os.chmod(resolvpath, 0664)
             
         # files in /etc that need doing
         filedict = self.config['files']
@@ -737,7 +734,6 @@ class Root:
                 fo = open(p, 'w+')
                 fo.write(filedict[key])
                 fo.close()
-                os.chmod(p, 0664)
 
     def _make_our_user(self):
         if not os.path.exists(os.path.join(self.rootdir, 'usr/sbin/useradd')):
