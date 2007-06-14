@@ -960,6 +960,7 @@ def do_clean(config_opts, init=0):
 
 def do_run_cmd(config_opts, cmd, env='', raw_chroot=0):
         my = Root(config_opts)
+        os.umask(0002) # set umask so mock group can all share.
         my.debug("executing: %s" % cmd)
         my._mount()
         if raw_chroot: 
@@ -988,7 +989,7 @@ def do_rebuild(config_opts, srpms):
     my = None  # if Root() fails, my will be undefined so we force it to None
     try:
         my = Root(config_opts)
-        os.umask(0022) # set a umask- protects from paranoid whackjobs with an 002 umask
+        os.umask(0002) # set umask so mock group can all share.
     except Error, e:
         error(e)
         if my:
@@ -1113,7 +1114,7 @@ def main():
         try:
             my = None  # if Root() fails, my will be undefined so we force it to None
             my = Root(config_opts)
-            os.umask(0022) # set a umask- protects from paranoid whackjobs with an 002 umask
+            os.umask(0002) # set umask so mock group can all share.
             my.prep()
             my.installdeps(srpm)
         except Error, e:
