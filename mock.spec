@@ -1,6 +1,6 @@
 Summary: Builds packages inside chroots
 Name: mock
-Version: 0.7.2
+Version: 0.7.3
 Release: 1%{?dist}
 License: GPL
 Group: Development/Tools
@@ -68,6 +68,14 @@ fi
 %{_libdir}/libselinux-mock.so
 
 %changelog
+* Fri Jul  6 2007 Michael Brown <mebrown@michaels-house.net> - 0.7.3-1
+- remove redundant defaults.cfg entries.
+
+* Wed Jun 20 2007 Michael Brown <mebrown@michaels-house.net> - 0.7.2-1
+- fix exclude list
+- remove legacy configs
+- disable 'local' repos by default (koji-repos)
+
 * Wed Jun 13 2007 Michael Brown <mebrown@michaels-house.net> - 0.7.1-1
 - Fix problem with autocache where different users couldnt share same cache
 - Fix problem creating resolv.conf in rootfs
