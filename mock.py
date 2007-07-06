@@ -877,8 +877,12 @@ def setup_default_config_opts(config_opts):
     config_opts['chroot_setup_cmd'] = 'install buildsys-build'
     config_opts['chrootuser'] = 'mockbuild'
     config_opts['chrootgroup'] = 'mockbuild'
-    config_opts['chrootuid'] = 500
-    config_opts['chrootgid'] = 500
+    config_opts['use_host_resolv'] = True
+
+    import grp
+    config_opts['chrootuid'] = os.geteuid()
+    config_opts['chrootgid'] = grp.getgrnam("mock")[2]
+
     config_opts['chroothome'] = '/builddir'
     config_opts['clean'] = True
     config_opts['debug'] = False
@@ -897,7 +901,7 @@ def setup_default_config_opts(config_opts):
 
     # caching-related config options
     config_opts['rebuild_cache'] = False
-    config_opts['use_cache'] = False
+    config_opts['use_cache'] = True
     config_opts['pack_cmd'] = "/usr/sbin/mock-helper pack"
     config_opts['unpack_cmd'] = "/usr/sbin/mock-helper unpack"
     config_opts['cache_ext'] = ".tar.gz"
