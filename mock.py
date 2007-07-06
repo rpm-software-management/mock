@@ -874,7 +874,7 @@ def setup_default_config_opts(config_opts):
     config_opts['chown'] = '/usr/sbin/mock-helper chown'
     config_opts['rpmbuild_timeout'] = 0
     config_opts['runuser'] = '/sbin/runuser'
-    config_opts['chroot_setup_cmd'] = 'install buildsys-build'
+    config_opts['chroot_setup_cmd'] = 'groupinstall buildsys-build'
     config_opts['chrootuser'] = 'mockbuild'
     config_opts['chrootgroup'] = 'mockbuild'
     config_opts['use_host_resolv'] = True
