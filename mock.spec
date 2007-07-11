@@ -7,7 +7,7 @@ Group: Development/Tools
 Source: http://fedoraproject.org/projects/mock/releases/%{name}-%{version}.tar.gz
 URL: http://fedoraproject.org/wiki/Projects/Mock
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
-Requires: python, yum >= 3.0
+Requires: python, yum >= 2.4
 Requires(pre): shadow-utils
 BuildRequires: libselinux-devel
 
