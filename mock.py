@@ -866,6 +866,7 @@ def setup_default_config_opts(config_opts):
     config_opts['basedir'] = '/var/lib/mock/' # root name is automatically added to this
     config_opts['chroot'] = '/usr/sbin/mock-helper chroot'
     config_opts['mount'] = '/usr/sbin/mock-helper mount'
+    config_opts['orphanskill'] = '/usr/sbin/mock-helper orphanskill'
     config_opts['umount'] = '/usr/sbin/mock-helper umount'
     config_opts['rm'] = '/usr/sbin/mock-helper rm'
     config_opts['mknod'] = '/usr/sbin/mock-helper mknod'
@@ -960,6 +961,10 @@ def do_run_cmd(config_opts, cmd, env='', raw_chroot=0):
         os.umask(0002) # set umask so mock group can all share.
         my.debug("executing: %s" % cmd)
         my._mount()
+        # Orphans killing must be included it to the same command as otherwise
+        # self.do() would get stuck.
+        # orphanskill output is visible only with the --debug option.
+        cmd += '; %s %s' % (config_opts['orphanskill'], my.rootdir)
         if raw_chroot: 
             cmd = '%s %s %s %s' % (env, config_opts['chroot'], my.rootdir, cmd)
             os.system(cmd)

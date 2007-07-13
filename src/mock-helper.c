@@ -16,6 +16,11 @@
 #include <string.h>
 #include <grp.h>
 #include <libgen.h>
+#include <limits.h>
+#include <fcntl.h>
+#include <ctype.h>
+#include <signal.h>
+#include <dirent.h>
 
 #ifdef USE_SELINUX
 #include <selinux/selinux.h>
@@ -55,6 +60,19 @@ error (const char *format, ...)
   va_end (ap);
   fprintf (stderr, "\n");
   exit (1);
+}
+
+/* print formatted string to stderr, print newline and continue */
+void
+warning (const char *format, ...)
+{
+  va_list ap;
+
+  va_start (ap, format);
+  fprintf (stderr, "mock-helper: warning: ");
+  vfprintf (stderr, format, ap);
+  va_end (ap);
+  fprintf (stderr, "\n");
 }
 
 /*
@@ -484,6 +502,125 @@ do_chmod (int argc, char *argv[])
 	do_command("/bin/chmod", &(argv[1]), 1);
 }
 
+const char *read_cmdline (pid_t pid)
+{
+  char cmdline_fname[32];
+  static char cmdline[LINE_MAX];
+  int fd;
+  ssize_t got;
+  char *s;
+
+  if (snprintf (cmdline_fname, sizeof (cmdline_fname), "/proc/%d/cmdline",
+      (int) pid) < 0)
+    return NULL;
+  fd = open (cmdline_fname, O_RDONLY);
+  if (fd == -1) {
+    warning ("open (\"%s\"): %s", cmdline_fname, strerror (errno));
+    return NULL;
+  }
+  got = read (fd, cmdline, sizeof (cmdline) - 1);
+  if (got == -1)
+    warning ("read (\"%s\"): %s", cmdline_fname, strerror (errno));
+  if (close (fd))
+    warning ("close (\"%s\"): %s", cmdline_fname, strerror (errno));
+  if (got < 0)
+    return NULL;
+  /* Convert '\0' argument delimiters to spaces.  */
+  for (s = cmdline; s < cmdline + got; s++)
+    if (*s == 0)
+      *s = ' ';
+  /* Trim the trailing spaces (typically single '\0'->' ').  */
+  while (s > cmdline && isspace (s[-1]) != 0)
+    s--;
+  *s = 0;
+  return cmdline;
+}
+
+void orphanskill_pid (pid_t pid)
+{
+  const char *cmdline;
+
+  /* Should not happen.  */
+  if (pid == getpid())
+    error ("We as PID %d should not be chrooted", (int) pid);
+
+  cmdline = read_cmdline (pid);
+  if (cmdline == 0)
+    cmdline = "<error>";
+  warning ("Killed -9 orphan PID %d: %s", (int) pid, cmdline);
+  if (kill (pid, SIGKILL))
+  {
+    /* It may just be a race.  */
+    warning ("kill (%d, SIGKILL): %s", (int) pid, strerror (errno));
+    return;
+  }
+  /* Do not waitpid(2) as it cannot be our direct descendant and it gets
+     cleaned up by init(8).  */
+}
+
+void
+do_orphanskill (int argc, char *argv[])
+{
+  DIR *dir;
+  struct dirent *dirent;
+  const char *chrootdir;
+  size_t chrootdir_len;
+  char *link_buf;
+
+  if (argc < 3)
+    error ("No directory given for chroot !");
+  //printf ("DEBUG: rootsdir: %s\n", rootsdir);
+
+  chrootdir = argv[2];
+  /* do we allow this dir ? */
+  check_dir_allowed (rootsdir, chrootdir);
+  chrootdir_len = strlen (chrootdir) + 1;
+  link_buf = malloc (chrootdir_len);
+  if (link_buf == 0)
+    error ("malloc (%lu): %s", (unsigned long) chrootdir_len,
+	   strerror (errno));
+ 
+  dir = opendir ("/proc");
+  if (dir == 0)
+    error ("opendir (\"/proc\"): %s", strerror (errno));
+  while ((errno = 0, dirent = readdir (dir)))
+  {
+    const char *cs;
+    char proc_root[64];
+    int proc_root_got;
+    int pid;
+    ssize_t link_buf_got;
+
+    /* FIXME: POSIX portability.  */
+    if (dirent->d_type != DT_DIR)
+      continue;
+    /* Check /^\d+$/:  */
+    for (cs = dirent->d_name; *cs; cs++)
+      if (isdigit (*cs) == 0)
+        break;
+    if (cs == dirent->d_name || *cs != 0)
+      continue;
+    pid = atoi (dirent->d_name);
+
+    proc_root_got = snprintf (proc_root, sizeof (proc_root), "/proc/%d/root",
+			      pid);
+    if (proc_root_got <= 0 || proc_root_got >= sizeof (proc_root))
+      error ("/proc/%d/root: %s", pid, strerror (errno));
+
+    link_buf_got = readlink (proc_root, link_buf, chrootdir_len);
+    /* Errors may occur due to races.  */
+    if (link_buf_got != chrootdir_len - 1
+        || memcmp (link_buf, chrootdir, chrootdir_len - 1) != 0)
+      continue;
+
+    orphanskill_pid (pid);
+  }
+  if (errno != 0)
+    error ("readdir (\"/proc\"): %s", strerror (errno));
+  if (closedir (dir) != 0)
+    error ("closedir (\"/proc\"): %s", strerror (errno));
+}
+
 int
 main (int argc, char *argv[])
 {
@@ -514,6 +651,8 @@ main (int argc, char *argv[])
 	  do_chown(argc, argv);
   else if (strncmp ("chmod", argv[1], 5) == 0)
 	  do_chmod(argc, argv);
+  else if (strncmp ("orphanskill", argv[1], 11) == 0)
+    do_orphanskill (argc, argv);
   else
   {
     error ("Command %s not recognized !\n", argv[1]);
