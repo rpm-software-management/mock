@@ -606,6 +606,7 @@ class Root:
             for line in child.fromchild:
                 w.write(line)
             w.close()
+            retval=child.wait()
             os._exit( (retval & 0xFF00) >> 8 )
     
 
