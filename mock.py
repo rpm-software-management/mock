@@ -37,7 +37,7 @@ from exceptions import Exception
 
 from optparse import OptionParser
 
-__VERSION__ = '0.7.3'
+__VERSION__ = '0.7.4'
 
 def error(msg):
     print >> sys.stderr, msg
@@ -606,6 +606,7 @@ class Root:
             for line in child.fromchild:
                 w.write(line)
             w.close()
+            retval=child.wait()
             os._exit( (retval & 0xFF00) >> 8 )
     
 
