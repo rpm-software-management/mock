@@ -27,7 +27,7 @@
 #endif
 
 /* pull in configure'd defines */
-char *rootsdir = ROOTSDIR;
+static char *rootsdir = ROOTSDIR;
 
 static char const * const ALLOWED_ENV[] =
 {
@@ -76,30 +76,44 @@ warning (const char *format, ...)
 }
 
 /*
- * perform checks on the given dir
- * - is the given dir under the allowed hierarchy ?
- * - is it an actual dir ?
- * - are we not being tricked by using . or .. ?
+ * perform checks on the given filesystem entity
+ * - is the given entry under the allowed hierarchy ?
+ * - are we not being tricked by using .. ?
  */
 void
-check_dir_allowed (const char *allowed, const char *given)
+check_allowed (const char *given)
 {
-  struct stat buf;
   char last;
-  int retval;
 
-  /* does given start with allowed ? */
-  if (strncmp (given, allowed, strlen (allowed)) != 0)
-    error ("%s: not under allowed directory (%s)", given, allowed);
+  /* does given start with rootsdir ? */
+  if (strncmp (given, rootsdir, strlen (rootsdir)) != 0)
+    error ("%s: not under allowed directory", given);
 
   /* does it try to fool us by using .. ? */
   if (strstr (given, "..") != 0)
     error ("%s: contains '..'", given);
 
   /* does it try to fool us into following symlinks by having a trailing / ? */
-  last = given[strlen (given) - 1];
+  last = rootsdir[strlen (given) - 1];
   if (last == '/')
     error ("%s: ends with '/'", given);
+}
+
+
+/*
+ * perform checks on the given dir
+ * - is the given dir under the allowed hierarchy ?
+ * - is it an actual dir ?
+ * - are we not being tricked by using . or .. ?
+ */
+void
+check_dir_allowed (const char *given)
+{
+  struct stat buf;
+  int retval;
+
+  /* basic checks */
+  check_allowed(given);
 
   /* are we chrooting to an actual directory (not a symlink or anything) ? */
   retval = lstat (given, &buf);
@@ -120,24 +134,13 @@ check_dir_allowed (const char *allowed, const char *given)
  * - are we not being tricked by using .. ?
  */
 void
-check_file_allowed (const char *allowed, const char *given)
+check_file_allowed (const char *given)
 {
   struct stat buf;
-  char last;
   int retval;
 
-  /* does given start with allowed ? */
-  if (strncmp (given, allowed, strlen (allowed)) != 0)
-    error ("%s: not under allowed directory", given);
-
-  /* does it try to fool us by using .. ? */
-  if (strstr (given, "..") != 0)
-    error ("%s: contains '..'", given);
-
-  /* does it have a trailing / ? */
-  last = given[strlen (given) - 1];
-  if (last == '/')
-    error ("%s: ends with '/'", given);
+  /* basic checks */
+  check_allowed(given);
 
   /* are we working with an actual file ? */
   retval = lstat (given, &buf);
@@ -150,31 +153,6 @@ check_file_allowed (const char *allowed, const char *given)
   if (!(S_ISREG (buf.st_mode)))
     error ("%s: not a regular file", given);
 }
-
-/*
- * perform checks on the given filesystem entity
- * - is the given entry under the allowed hierarchy ?
- * - are we not being tricked by using .. ?
- */
-void
-check_allowed (const char *allowed, const char *given)
-{
-  char last;
-
-  /* does given start with allowed ? */
-  if (strncmp (given, allowed, strlen (allowed)) != 0)
-    error ("%s: not under allowed directory", given);
-
-  /* does it try to fool us by using .. ? */
-  if (strstr (given, "..") != 0)
-    error ("%s: contains '..'", given);
-
-  /* does it have a trailing / ? */
-  last = given[strlen (given) - 1];
-  if (last == '/')
-    error ("%s: ends with '/'", given);
-}
-
 
 
 /* argv[0] should by convention be the binary name to be executed */
@@ -243,7 +221,7 @@ do_chroot (int argc, char *argv[])
   //printf ("DEBUG: rootsdir: %s\n", rootsdir);
 
   /* do we allow this dir ? */
-  check_dir_allowed (rootsdir, argv[2]);
+  check_dir_allowed (argv[2]);
  
   do_command ("/usr/sbin/chroot", &(argv[1]), 0);
 }
@@ -302,7 +280,7 @@ do_rm (int argc, char *argv[])
     error ("%s: options not allowed", argv[2]);
 
   /* see if we're doing -rf on a dir under rootsdir */
-  check_dir_allowed (rootsdir, argv[3]);
+  check_dir_allowed (argv[3]);
 
   /* all checks passed, execute */
   do_command ("/bin/rm", &(argv[1]), 0);
@@ -321,7 +299,7 @@ do_rpm (int argc, char *argv[])
     error ("%s: options not allowed", argv[2]);
 
   /* check given dir */
-  check_dir_allowed (rootsdir, argv[3]);
+  check_dir_allowed (argv[3]);
 
   /* all checks passed, execute */
   do_command ("/bin/rpm", &(argv[1]), 0);
@@ -340,7 +318,7 @@ do_yum (int argc, char *argv[])
     error ("%s: options not allowed", argv[2]);
 
   /* check given dir */
-  check_dir_allowed (rootsdir, argv[3]);
+  check_dir_allowed (argv[3]);
 
   /* all checks passed, execute */
   do_command ("/usr/libexec/mock-yum", &(argv[1]), 1);
@@ -356,7 +334,7 @@ do_umount (int argc, char *argv[])
     error ("not enough arguments");
 
   /* see if we're unmounting from somewhere in rootsdir */
-  check_dir_allowed (rootsdir, argv[2]);
+  check_dir_allowed (argv[2]);
 
   /* all checks passed, execute */
   do_command ("/bin/umount", &(argv[1]), 1);
@@ -400,7 +378,7 @@ do_unpack(int argc, char *argv[])
   if (argc < 4)
     error ("not enough arguments");
   
-  check_dir_allowed (rootsdir, argv[2]);
+  check_dir_allowed (argv[2]);
 
   if (chdir(argv[2]) != 0)
     error ("could not change dir");
@@ -434,7 +412,7 @@ do_pack(int argc, char *argv[])
   if (argc < 5)
     error ("not enough arguments");
   
-  check_dir_allowed (rootsdir, argv[2]);
+  check_dir_allowed (argv[2]);
 
   if (chdir(argv[2]) != 0)
     error ("could not change dir");
@@ -444,7 +422,7 @@ do_pack(int argc, char *argv[])
   argv_copy = strdup(argv[3]);
   cache_dir = dirname(argv_copy);
 
-  check_dir_allowed (rootsdir, cache_dir);
+  check_dir_allowed (cache_dir);
 
   mkdir(cache_dir, 0750);
   if (gr)
@@ -481,7 +459,7 @@ do_chown (int argc, char *argv[])
 	
 	/* verify files are legal */
 	for (i = 3; i < argc; i++)
-		check_allowed(rootsdir, argv[i]);
+		check_allowed(argv[i]);
 
 	do_command("/bin/chown", &(argv[1]), 1);
 }
@@ -497,7 +475,7 @@ do_chmod (int argc, char *argv[])
 	
 	/* verify files are legal */
 	for (i = 3; i < argc; i++)
-		check_allowed(rootsdir, argv[i]);
+		check_allowed(argv[i]);
 
 	do_command("/bin/chmod", &(argv[1]), 1);
 }
@@ -573,7 +551,7 @@ do_orphanskill (int argc, char *argv[])
 
   chrootdir = argv[2];
   /* do we allow this dir ? */
-  check_dir_allowed (rootsdir, chrootdir);
+  check_dir_allowed (chrootdir);
   chrootdir_len = strlen (chrootdir) + 1;
   link_buf = malloc (chrootdir_len);
   if (link_buf == 0)
@@ -591,9 +569,9 @@ do_orphanskill (int argc, char *argv[])
     int pid;
     ssize_t link_buf_got;
 
-    /* FIXME: POSIX portability.  */
     if (dirent->d_type != DT_DIR)
       continue;
+
     /* Check /^\d+$/:  */
     for (cs = dirent->d_name; *cs; cs++)
       if (isdigit (*cs) == 0)
@@ -604,8 +582,10 @@ do_orphanskill (int argc, char *argv[])
 
     proc_root_got = snprintf (proc_root, sizeof (proc_root), "/proc/%d/root",
 			      pid);
-    if (proc_root_got <= 0 || proc_root_got >= sizeof (proc_root))
-      error ("/proc/%d/root: %s", pid, strerror (errno));
+    if (proc_root_got <= 0 || proc_root_got >= sizeof (proc_root)) {
+		warning("/proc/%d/root: %s", pid, strerror (errno));
+		continue;
+	}
 
     link_buf_got = readlink (proc_root, link_buf, chrootdir_len);
     /* Errors may occur due to races.  */
