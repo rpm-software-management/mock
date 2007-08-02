@@ -569,7 +569,9 @@ do_orphanskill (int argc, char *argv[])
     int pid;
     ssize_t link_buf_got;
 
+	/* reset any errors from the previous iteration */
 	errno = 0;
+
     if (dirent->d_type != DT_DIR)
       continue;
 
@@ -577,18 +579,22 @@ do_orphanskill (int argc, char *argv[])
     for (cs = dirent->d_name; *cs; cs++)
       if (isdigit (*cs) == 0)
         break;
+
     if (cs == dirent->d_name || *cs != 0)
       continue;
+
     pid = atoi (dirent->d_name);
 
     proc_root_got = snprintf (proc_root, sizeof (proc_root), "/proc/%d/root",
 			      pid);
+
     if (proc_root_got <= 0 || proc_root_got >= sizeof (proc_root)) {
 		warning("/proc/%d/root: %s", pid, strerror (errno));
 		continue;
 	}
 
     link_buf_got = readlink (proc_root, link_buf, chrootdir_len);
+
     /* Errors may occur due to races.  */
     if (link_buf_got != chrootdir_len - 1
         || memcmp (link_buf, chrootdir, chrootdir_len - 1) != 0)
@@ -596,9 +602,6 @@ do_orphanskill (int argc, char *argv[])
 
     orphanskill_pid (pid);
   }
-
-  if (closedir (dir) != 0)
-    error ("closedir (\"/proc\"): %s", strerror (errno));
 }
 
 int
