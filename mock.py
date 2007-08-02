@@ -250,7 +250,9 @@ class Root:
                 cmd = 'update'
             else:
                 cmd = '%s' % self.config['chroot_setup_cmd']
-                create_cache = 1
+                # never rebuild cache unless it was a clean build.
+                if self.config['clean']:
+                    create_cache = 1
         else:
             if self.config['clean']:
                 cmd = '%s' % self.config['chroot_setup_cmd']
