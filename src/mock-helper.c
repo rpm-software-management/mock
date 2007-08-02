@@ -561,14 +561,15 @@ do_orphanskill (int argc, char *argv[])
   dir = opendir ("/proc");
   if (dir == 0)
     error ("opendir (\"/proc\"): %s", strerror (errno));
-  while ((errno = 0, dirent = readdir (dir)))
-  {
+
+  while ((dirent = readdir (dir))) {
     const char *cs;
     char proc_root[64];
     int proc_root_got;
     int pid;
     ssize_t link_buf_got;
 
+	errno = 0;
     if (dirent->d_type != DT_DIR)
       continue;
 
@@ -595,8 +596,7 @@ do_orphanskill (int argc, char *argv[])
 
     orphanskill_pid (pid);
   }
-  if (errno != 0)
-    error ("readdir (\"/proc\"): %s", strerror (errno));
+
   if (closedir (dir) != 0)
     error ("closedir (\"/proc\"): %s", strerror (errno));
 }
