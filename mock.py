@@ -241,7 +241,7 @@ class Root:
             if cache_exists:
                 cache_mtime = os.stat(self.cache_file)[stat.ST_MTIME]
                 cache_age_days = (time.time() - cache_mtime) / (60 * 60 * 24)
-                if cache_age_days > self.config['max_cache_age_days']:
+                if self.config['max_cache_age_days'] and cache_age_days > self.config['max_cache_age_days']:
                     self.config["rebuild_cache"] = True
         
             if cache_exists and not self.config['rebuild_cache']:
