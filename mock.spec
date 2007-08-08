@@ -68,6 +68,13 @@ fi
 %{_libdir}/libselinux-mock.so
 
 %changelog
+* Wed Aug 8 2007 Clark Williams <williams@redhat.com> - 0.7.5-1
+- orphanskill feature (BZ#221351)
+
+* Wed Aug 8 2007 Michael Brown <mebrown@michaels-house.net> - 0.7.5-1
+- add example configs to defaults.cfg
+- dont rebuild cache if not clean build (BZ#250425)
+
 * Wed Jul 18 2007 Michael Brown <mebrown@michaels-house.net> - 0.7.4-1
 - return child exit status, so we properly report subcommand failures
 
