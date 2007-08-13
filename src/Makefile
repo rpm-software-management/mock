@@ -21,7 +21,7 @@ endif
 all: $(EXECUTABLE) $(LIBRARY)
 
 $(LIBRARY): selinux-mock.o
-	$(LD) -shared -o $(LIBRARY) selinux-mock.o
+	$(CC) $(CFLAGS) -shared -o $(LIBRARY) selinux-mock.o
 
 selinux-mock.o:  selinux-mock.c
 	$(CC) $(CFLAGS) -fPIC -c selinux-mock.c
