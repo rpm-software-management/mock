@@ -68,6 +68,9 @@ fi
 %{_libdir}/libselinux-mock.so
 
 %changelog
+* Mon Aug 13 2007 Clark Williams <williams@redhat.com> - 0.7.5-2
+- build fix from Roland McGrath to fix compile of selinux lib
+
 * Wed Aug 8 2007 Clark Williams <williams@redhat.com> - 0.7.5-1
 - orphanskill feature (BZ#221351)
 
