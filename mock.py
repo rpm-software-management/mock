@@ -731,7 +731,7 @@ class Root:
         # files in /etc that need doing
         filedict = self.config['files']
         for key in filedict:
-            p = os.path.join(self.rootdir, key)
+            p = os.path.join(self.rootdir, *key.split('/'))
             if not os.path.exists(p):
                 # write file
                 fo = open(p, 'w+')
