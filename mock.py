@@ -901,7 +901,7 @@ def setup_default_config_opts(config_opts):
 """ % config_opts['chroothome']
     
     config_opts['more_buildreqs'] = {}
-    config_opts['files']['/etc/hosts'] = "127.0.0.1 localhost localhost.localdomain\n"
+    config_opts['files']['etc/hosts'] = "127.0.0.1 localhost localhost.localdomain\n"
 
     # caching-related config options
     config_opts['rebuild_cache'] = False
