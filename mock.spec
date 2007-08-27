@@ -1,6 +1,6 @@
 Summary: Builds packages inside chroots
 Name: mock
-Version: 0.7.5
+Version: 0.7.6
 Release: 1%{?dist}
 License: GPL
 Group: Development/Tools
@@ -68,6 +68,9 @@ fi
 %{_libdir}/libselinux-mock.so
 
 %changelog
+* Mon Aug 27 2007 Michael Brown <mebrown@michaels-house.net> - 0.7.6-1
+- ensure /etc/hosts is created in chroot properly
+
 * Mon Aug 13 2007 Clark Williams <williams@redhat.com> - 0.7.5-2
 - build fix from Roland McGrath to fix compile of selinux lib
 
