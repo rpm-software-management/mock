@@ -356,8 +356,8 @@ class Root:
         if arg_string != "":
             (retval, output) = self.yum('resolvedep %s' % arg_string)
             for line in output.split('\n'):
-                if line.find('No Package Found for') != -1:
-                    errorpkg = line.replace('No Package Found for', '')
+                if line.find('No Package found for') != -1:
+                    errorpkg = line.replace('No Package found for', '')
                     error(output)
                     raise BuildError, "Cannot find build req %s. Exiting." % errorpkg
             # nothing made us exit, so we continue
