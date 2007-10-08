@@ -18,6 +18,7 @@
 
 
 
+
 VPATH = @srcdir@
 pkgdatadir = $(datadir)/@PACKAGE@
 pkglibdir = $(libdir)/@PACKAGE@
@@ -40,11 +41,12 @@ bin_PROGRAMS = src/mock$(EXEEXT)
 EXTRA_PROGRAMS =
 subdir = .
 DIST_COMMON = README $(am__configure_deps) $(dist_libexec_SCRIPTS) \
-	$(srcdir)/Makefile.am $(srcdir)/Makefile.in \
-	$(srcdir)/mock.spec.in $(top_srcdir)/configure \
-	$(top_srcdir)/src/version.h.in AUTHORS COPYING ChangeLog \
-	INSTALL NEWS build/compile build/config.guess build/config.sub \
-	build/depcomp build/install-sh build/ltmain.sh build/missing
+	$(dist_mocketc_DATA) $(srcdir)/Makefile.am \
+	$(srcdir)/Makefile.in $(srcdir)/mock.spec.in \
+	$(top_srcdir)/configure $(top_srcdir)/src/version.h.in AUTHORS \
+	COPYING ChangeLog INSTALL NEWS build/compile \
+	build/config.guess build/config.sub build/depcomp \
+	build/install-sh build/ltmain.sh build/missing
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
@@ -60,7 +62,8 @@ am__vpath_adj = case $$p in \
   esac;
 am__strip_dir = `echo $$p | sed -e 's|^.*/||'`;
 am__installdirs = "$(DESTDIR)$(libdir)" "$(DESTDIR)$(bindir)" \
-	"$(DESTDIR)$(libexecdir)" "$(DESTDIR)$(man1dir)"
+	"$(DESTDIR)$(libexecdir)" "$(DESTDIR)$(man1dir)" \
+	"$(DESTDIR)$(mocketcdir)"
 libLTLIBRARIES_INSTALL = $(INSTALL)
 LTLIBRARIES = $(lib_LTLIBRARIES)
 src_libselinux_mock_la_LIBADD =
@@ -106,6 +109,8 @@ RECURSIVE_TARGETS = all-recursive check-recursive dvi-recursive \
 man1dir = $(mandir)/man1
 NROFF = nroff
 MANS = $(man_MANS)
+dist_mocketcDATA_INSTALL = $(INSTALL_DATA)
+DATA = $(dist_mocketc_DATA)
 RECURSIVE_CLEAN_TARGETS = mostlyclean-recursive clean-recursive	\
   distclean-recursive maintainer-clean-recursive
 ETAGS = etags
@@ -247,7 +252,7 @@ MOCK_LIBTOOL_AGE = @MOCK_LIBTOOL_AGE@
 CLEANFILES = mock-*.tar.gz mock-*.tar.bz2 mock-*.rpm _buildtemp \
 	version $(EXTRA_PROGRAMS)
 DISTCLEANFILES = *~
-EXTRA_DIST = etc docs src/mock-yum buildsys-build.spec
+EXTRA_DIST = docs buildsys-build.spec
 AM_CPPFLAGS = -I$(top_builddir)/src -I$(top_srcdir)/src
 lib_LTLIBRARIES = src/libselinux-mock.la
 src_libselinux_mock_la_LDFLAGS = -version-info $(MOCK_LIBTOOL_CURRENT):$(MOCK_LIBTOOL_REVISION):$(MOCK_LIBTOOL_AGE)
@@ -255,7 +260,9 @@ src_libselinux_mock_la_CFLAGS =
 src_libselinux_mock_la_SOURCES = src/selinux-mock.c
 src_mock_SOURCES = src/mock.c
 src_mock_LDFLAGS = 
-dist_libexec_SCRIPTS = src/mock.py
+mocketcdir = $(sysconfdir)/mock
+dist_mocketc_DATA = $(wildcard etc/*.cfg)
+dist_libexec_SCRIPTS = src/mock.py src/mock-yum
 man_MANS = docs/mock.1
 all: all-recursive
 
@@ -483,6 +490,23 @@ uninstall-man1:
 	  inst=`echo $$inst | sed '$(transform)'`.$$ext; \
 	  echo " rm -f '$(DESTDIR)$(man1dir)/$$inst'"; \
 	  rm -f "$(DESTDIR)$(man1dir)/$$inst"; \
+	done
+install-dist_mocketcDATA: $(dist_mocketc_DATA)
+	@$(NORMAL_INSTALL)
+	test -z "$(mocketcdir)" || $(MKDIR_P) "$(DESTDIR)$(mocketcdir)"
+	@list='$(dist_mocketc_DATA)'; for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  f=$(am__strip_dir) \
+	  echo " $(dist_mocketcDATA_INSTALL) '$$d$$p' '$(DESTDIR)$(mocketcdir)/$$f'"; \
+	  $(dist_mocketcDATA_INSTALL) "$$d$$p" "$(DESTDIR)$(mocketcdir)/$$f"; \
+	done
+
+uninstall-dist_mocketcDATA:
+	@$(NORMAL_UNINSTALL)
+	@list='$(dist_mocketc_DATA)'; for p in $$list; do \
+	  f=$(am__strip_dir) \
+	  echo " rm -f '$(DESTDIR)$(mocketcdir)/$$f'"; \
+	  rm -f "$(DESTDIR)$(mocketcdir)/$$f"; \
 	done
 
 # This directory's subdirectories are mostly independent; you can cd
@@ -760,12 +784,12 @@ distcleancheck: distclean
 	       exit 1; } >&2
 check-am: all-am
 check: check-recursive
-all-am: Makefile $(LTLIBRARIES) $(PROGRAMS) $(SCRIPTS) $(MANS)
+all-am: Makefile $(LTLIBRARIES) $(PROGRAMS) $(SCRIPTS) $(MANS) $(DATA)
 install-binPROGRAMS: install-libLTLIBRARIES
 
 installdirs: installdirs-recursive
 installdirs-am:
-	for dir in "$(DESTDIR)$(libdir)" "$(DESTDIR)$(bindir)" "$(DESTDIR)$(libexecdir)" "$(DESTDIR)$(man1dir)"; do \
+	for dir in "$(DESTDIR)$(libdir)" "$(DESTDIR)$(bindir)" "$(DESTDIR)$(libexecdir)" "$(DESTDIR)$(man1dir)" "$(DESTDIR)$(mocketcdir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-recursive
@@ -818,7 +842,7 @@ info: info-recursive
 
 info-am:
 
-install-data-am: install-man
+install-data-am: install-dist_mocketcDATA install-man
 
 install-dvi: install-dvi-recursive
 
@@ -858,7 +882,8 @@ ps: ps-recursive
 ps-am:
 
 uninstall-am: uninstall-binPROGRAMS uninstall-dist_libexecSCRIPTS \
-	uninstall-libLTLIBRARIES uninstall-man
+	uninstall-dist_mocketcDATA uninstall-libLTLIBRARIES \
+	uninstall-man
 
 uninstall-man: uninstall-man1
 
@@ -874,16 +899,18 @@ uninstall-man: uninstall-man1
 	distcleancheck distdir distuninstallcheck dvi dvi-am html \
 	html-am info info-am install install-am install-binPROGRAMS \
 	install-data install-data-am install-dist_libexecSCRIPTS \
-	install-dvi install-dvi-am install-exec install-exec-am \
-	install-html install-html-am install-info install-info-am \
-	install-libLTLIBRARIES install-man install-man1 install-pdf \
-	install-pdf-am install-ps install-ps-am install-strip \
-	installcheck installcheck-am installdirs installdirs-am \
-	maintainer-clean maintainer-clean-generic mostlyclean \
-	mostlyclean-compile mostlyclean-generic mostlyclean-libtool \
-	pdf pdf-am ps ps-am tags tags-recursive uninstall uninstall-am \
+	install-dist_mocketcDATA install-dvi install-dvi-am \
+	install-exec install-exec-am install-html install-html-am \
+	install-info install-info-am install-libLTLIBRARIES \
+	install-man install-man1 install-pdf install-pdf-am install-ps \
+	install-ps-am install-strip installcheck installcheck-am \
+	installdirs installdirs-am maintainer-clean \
+	maintainer-clean-generic mostlyclean mostlyclean-compile \
+	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
+	tags tags-recursive uninstall uninstall-am \
 	uninstall-binPROGRAMS uninstall-dist_libexecSCRIPTS \
-	uninstall-libLTLIBRARIES uninstall-man uninstall-man1
+	uninstall-dist_mocketcDATA uninstall-libLTLIBRARIES \
+	uninstall-man uninstall-man1
 
 
 $(bin_PROGRAMS): src/libselinux-mock.la

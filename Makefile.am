@@ -41,7 +41,11 @@ bin_PROGRAMS += src/mock
 src_mock_SOURCES = src/mock.c
 src_mock_LDFLAGS =
 
-dist_libexec_SCRIPTS = src/mock.py
+mocketcdir = $(sysconfdir)/mock
+dist_mocketc_DATA = $(wildcard etc/*.cfg)
+
+EXTRA_DIST += docs buildsys-build.spec
+dist_libexec_SCRIPTS = src/mock.py src/mock-yum
 man_MANS = docs/mock.1
 
 src/mock.py: configure.ac Makefile.am
@@ -52,7 +56,7 @@ src/mock.py: configure.ac Makefile.am
 	rm -f $(top_builddir)/$@.new
 	chmod +x $(top_builddir)/$@ || :
 
-EXTRA_DIST += etc docs src/mock-yum buildsys-build.spec
+
 
 rpm: dist
 	BLD_DIR=$$(mktemp -d /tmp/rpmbuild-$$$$-XXXXXX); \
