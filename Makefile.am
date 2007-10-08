@@ -37,20 +37,22 @@ src_libselinux_mock_la_LDFLAGS = -version-info $(MOCK_LIBTOOL_CURRENT):$(MOCK_LI
 src_libselinux_mock_la_CFLAGS = 
 src_libselinux_mock_la_SOURCES = src/selinux-mock.c
 
-bin_PROGRAMS += src/mock
+bin_PROGRAMS += src/mock src/mock.py
 src_mock_SOURCES = src/mock.c
 src_mock_LDFLAGS =
 
-dist: src/mock.py
-src/mock.py: configure.ac
-	@echo Updating $@
-	@cp -f $@ $@.new
-	@perl -p -i -e 's/^__VERSION__=.*/__VERSION__="$(RELEASE_VERSION)"/' $@.new
-	@diff -q $@ $@.new >/dev/null 2>&1 || mv -f $@.new $@
-	@rm -f $@.new
+dist_libexec_SCRIPTS = src/mock.py
+man_MANS = docs/mock.1
+
+src/mock.py: configure.ac Makefile.am
+	echo Updating $@, current pwd: $$(pwd)
+	cp -f $(top_srcdir)/$@ $(top_builddir)/$@.new
+	perl -p -i -e 's/^__VERSION__=.*/__VERSION__="$(RELEASE_VERSION)"/' $(top_builddir)/$@.new
+	diff -q $(top_srcdir)/$@ $(top_builddir)/$@.new >/dev/null 2>&1 || mv -f $(top_builddir)/$@.new $(top_builddir)/$@
+	rm -f $(top_builddir)/$@.new
+	chmod +x $(top_builddir)/$@ || :
 
 EXTRA_DIST += etc docs
-
 
 rpm: dist
 	BLD_DIR=$$(mktemp -d /tmp/rpmbuild-$$$$-XXXXXX); \
@@ -59,7 +61,6 @@ rpm: dist
 	cp $$BLD_DIR/SRPMS/*rpm .       ;\
 	cp $$BLD_DIR/RPMS/*/*rpm .       ;\
 	rm -rf $$BLD_DIR
-
 
 srpm: dist
 	BLD_DIR=$$(mktemp -d /tmp/rpmbuild-$$$$-XXXXXX); \
