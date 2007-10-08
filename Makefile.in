@@ -36,7 +36,7 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-bin_PROGRAMS = src/mock$(EXEEXT) src/mock.py$(EXEEXT)
+bin_PROGRAMS = src/mock$(EXEEXT)
 EXTRA_PROGRAMS =
 subdir = .
 DIST_COMMON = README $(am__configure_deps) $(dist_libexec_SCRIPTS) \
@@ -80,9 +80,6 @@ src_mock_LDADD = $(LDADD)
 src_mock_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(src_mock_LDFLAGS) \
 	$(LDFLAGS) -o $@
-src_mock_py_SOURCES = src/mock.c
-src_mock_py_OBJECTS = src/mock.$(OBJEXT)
-src_mock_py_LDADD = $(LDADD)
 dist_libexecSCRIPT_INSTALL = $(INSTALL_SCRIPT)
 SCRIPTS = $(dist_libexec_SCRIPTS)
 DEFAULT_INCLUDES = -I.@am__isrc@
@@ -97,10 +94,8 @@ CCLD = $(CC)
 LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
 	$(LDFLAGS) -o $@
-SOURCES = $(src_libselinux_mock_la_SOURCES) $(src_mock_SOURCES) \
-	src/mock.c
-DIST_SOURCES = $(src_libselinux_mock_la_SOURCES) $(src_mock_SOURCES) \
-	src/mock.c
+SOURCES = $(src_libselinux_mock_la_SOURCES) $(src_mock_SOURCES)
+DIST_SOURCES = $(src_libselinux_mock_la_SOURCES) $(src_mock_SOURCES)
 RECURSIVE_TARGETS = all-recursive check-recursive dvi-recursive \
 	html-recursive info-recursive install-data-recursive \
 	install-dvi-recursive install-exec-recursive \
@@ -900,7 +895,7 @@ src/mock.py: configure.ac Makefile.am
 	perl -p -i -e 's/^__VERSION__=.*/__VERSION__="$(RELEASE_VERSION)"/' $(top_builddir)/$@.new
 	diff -q $(top_srcdir)/$@ $(top_builddir)/$@.new >/dev/null 2>&1 || mv -f $(top_builddir)/$@.new $(top_builddir)/$@
 	rm -f $(top_builddir)/$@.new
-	[ ! -e  $(top_builddir)/$@ ] || chmod +x $(top_builddir)/$@
+	chmod +x $(top_builddir)/$@ || :
 
 rpm: dist
 	BLD_DIR=$$(mktemp -d /tmp/rpmbuild-$$$$-XXXXXX); \

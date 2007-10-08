@@ -37,7 +37,7 @@ src_libselinux_mock_la_LDFLAGS = -version-info $(MOCK_LIBTOOL_CURRENT):$(MOCK_LI
 src_libselinux_mock_la_CFLAGS = 
 src_libselinux_mock_la_SOURCES = src/selinux-mock.c
 
-bin_PROGRAMS += src/mock src/mock.py
+bin_PROGRAMS += src/mock
 src_mock_SOURCES = src/mock.c
 src_mock_LDFLAGS =
 
