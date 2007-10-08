@@ -22,8 +22,6 @@
 
 //#define _GNU_SOURCE
 
-#include "config.h"
-
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -38,11 +36,7 @@
 #include <asm/unistd.h>
 #include <signal.h>
 
-#if 0
-#ifdef USE_SELINUX
-#include <selinux/selinux.h>
-#endif
-#endif
+#include "version.h"
 
 #define PYTHON_PATH	"/usr/bin/python"
 #define MOCK_PATH	"/usr/libexec/mock.py"

@@ -811,10 +811,10 @@ uninstall-am: uninstall-binPROGRAMS uninstall-libLTLIBRARIES
 $(bin_PROGRAMS): src/libselinux-mock.la
 $(EXTRA_PROGRAMS): src/libselinux-mock.la
 
-src/mock.py: version
+src/mock.py: configure.ac
 	@echo Updating $@
 	@cp -f $@ $@.new
-	@perl -p -i -e 's/^version=.*/version="$(RELEASE_VERSION)"/' $@.new
+	@perl -p -i -e 's/^__VERSION__=.*/__VERSION__="$(RELEASE_VERSION)"/' $@.new
 	@diff -q $@ $@.new >/dev/null 2>&1 || mv -f $@.new $@
 	@rm -f $@.new
 
