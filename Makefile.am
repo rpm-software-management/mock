@@ -52,7 +52,7 @@ src/mock.py: configure.ac Makefile.am
 	rm -f $(top_builddir)/$@.new
 	chmod +x $(top_builddir)/$@ || :
 
-EXTRA_DIST += etc docs
+EXTRA_DIST += etc docs src/mock-yum buildsys-build.spec
 
 rpm: dist
 	BLD_DIR=$$(mktemp -d /tmp/rpmbuild-$$$$-XXXXXX); \
