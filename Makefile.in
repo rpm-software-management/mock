@@ -40,10 +40,10 @@ EXTRA_PROGRAMS =
 subdir = .
 DIST_COMMON = README $(am__configure_deps) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in $(srcdir)/mock.spec.in \
-	$(top_srcdir)/configure $(top_srcdir)/src/mock.py.in \
-	$(top_srcdir)/src/version.h.in AUTHORS COPYING ChangeLog \
-	INSTALL NEWS build/compile build/config.guess build/config.sub \
-	build/depcomp build/install-sh build/ltmain.sh build/missing
+	$(top_srcdir)/configure $(top_srcdir)/src/version.h.in AUTHORS \
+	COPYING ChangeLog INSTALL NEWS build/compile \
+	build/config.guess build/config.sub build/depcomp \
+	build/install-sh build/ltmain.sh build/missing
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
@@ -51,7 +51,7 @@ am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
  configure.lineno config.status.lineno
 mkinstalldirs = $(install_sh) -d
-CONFIG_CLEAN_FILES = src/version.h src/mock.py mock.spec
+CONFIG_CLEAN_FILES = src/version.h mock.spec
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
 am__vpath_adj = case $$p in \
     $(srcdir)/*) f=`echo "$$p" | sed "s|^$$srcdirstrip/||"`;; \
@@ -286,8 +286,6 @@ $(top_srcdir)/configure: @MAINTAINER_MODE_TRUE@ $(am__configure_deps)
 $(ACLOCAL_M4): @MAINTAINER_MODE_TRUE@ $(am__aclocal_m4_deps)
 	cd $(srcdir) && $(ACLOCAL) $(ACLOCAL_AMFLAGS)
 src/version.h: $(top_builddir)/config.status $(top_srcdir)/src/version.h.in
-	cd $(top_builddir) && $(SHELL) ./config.status $@
-src/mock.py: $(top_builddir)/config.status $(top_srcdir)/src/mock.py.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 mock.spec: $(top_builddir)/config.status $(srcdir)/mock.spec.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
@@ -812,6 +810,13 @@ uninstall-am: uninstall-binPROGRAMS uninstall-libLTLIBRARIES
 
 $(bin_PROGRAMS): src/libselinux-mock.la
 $(EXTRA_PROGRAMS): src/libselinux-mock.la
+
+src/mock.py: version
+	@echo Updating $@
+	@cp -f $@ $@.new
+	@perl -p -i -e 's/^version=.*/version="$(RELEASE_VERSION)"/' $@.new
+	@diff -q $@ $@.new >/dev/null 2>&1 || mv -f $@.new $@
+	@rm -f $@.new
 
 rpm: dist
 	BLD_DIR=$$(mktemp -d /tmp/rpmbuild-$$$$-XXXXXX); \

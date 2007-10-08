@@ -41,6 +41,12 @@ bin_PROGRAMS += src/mock
 src_mock_SOURCES = src/mock.c
 src_mock_LDFLAGS =
 
+src/mock.py: version
+	@echo Updating $@
+	@cp -f $@ $@.new
+	@perl -p -i -e 's/^version=.*/version="$(RELEASE_VERSION)"/' $@.new
+	@diff -q $@ $@.new >/dev/null 2>&1 || mv -f $@.new $@
+	@rm -f $@.new
 
 rpm: dist
 	BLD_DIR=$$(mktemp -d /tmp/rpmbuild-$$$$-XXXXXX); \

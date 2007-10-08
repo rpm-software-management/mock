@@ -102,7 +102,6 @@ AC_SUBST([ MOCK_LIBTOOL_CURRENT  MOCK_LIBTOOL_REVISION MOCK_LIBTOOL_AGE  ])
 AC_CONFIG_FILES([
     Makefile 
     src/version.h 
-    src/mock.py
     mock.spec
     ])
 AC_OUTPUT

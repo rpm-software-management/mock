@@ -21993,7 +21993,7 @@ _ACEOF
 #echo "PACKAGE_STRING='$PACKAGE_STRING'" >> version
 
 # generate files and exit
-ac_config_files="$ac_config_files Makefile src/version.h src/mock.py mock.spec"
+ac_config_files="$ac_config_files Makefile src/version.h mock.spec"
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -22604,7 +22604,6 @@ do
     "depfiles") CONFIG_COMMANDS="$CONFIG_COMMANDS depfiles" ;;
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
     "src/version.h") CONFIG_FILES="$CONFIG_FILES src/version.h" ;;
-    "src/mock.py") CONFIG_FILES="$CONFIG_FILES src/mock.py" ;;
     "mock.spec") CONFIG_FILES="$CONFIG_FILES mock.spec" ;;
 
   *) { { echo "$as_me:$LINENO: error: invalid argument: $ac_config_target" >&5
