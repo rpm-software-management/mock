@@ -30,6 +30,7 @@ AC_HEADER_DIRENT
 AC_HEADER_STDC
 AC_HEADER_SYS_WAIT
 AC_CHECK_HEADERS([fcntl.h limits.h stdlib.h string.h unistd.h])
+AC_CONFIG_HEADERS([src/config.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
@@ -95,9 +96,5 @@ AC_SUBST([RELEASE_NAME RELEASE_MAJOR RELEASE_MINOR RELEASE_SUBLEVEL RELEASE_EXTR
 AC_SUBST([ MOCK_LIBTOOL_CURRENT  MOCK_LIBTOOL_REVISION MOCK_LIBTOOL_AGE  ])
 
 # generate files and exit
-AC_CONFIG_FILES([
-    Makefile 
-    src/version.h 
-    mock.spec
-    ])
+AC_CONFIG_FILES([ Makefile src/version.h mock.spec ])
 AC_OUTPUT

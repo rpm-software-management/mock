@@ -36,6 +36,7 @@
 #include <asm/unistd.h>
 #include <signal.h>
 
+#include "config.h"
 #include "version.h"
 
 #define PYTHON_PATH	"/usr/bin/python"
