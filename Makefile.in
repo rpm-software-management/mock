@@ -39,8 +39,8 @@ bin_PROGRAMS = src/mock$(EXEEXT)
 EXTRA_PROGRAMS =
 subdir = .
 DIST_COMMON = README $(am__configure_deps) $(srcdir)/Makefile.am \
-	$(srcdir)/Makefile.in $(srcdir)/mock.py.in \
-	$(srcdir)/mock.spec.in $(top_srcdir)/configure \
+	$(srcdir)/Makefile.in $(srcdir)/mock.spec.in \
+	$(top_srcdir)/configure $(top_srcdir)/src/mock.py.in \
 	$(top_srcdir)/src/version.h.in AUTHORS COPYING ChangeLog \
 	INSTALL NEWS build/compile build/config.guess build/config.sub \
 	build/depcomp build/install-sh build/ltmain.sh build/missing
@@ -51,7 +51,7 @@ am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
  configure.lineno config.status.lineno
 mkinstalldirs = $(install_sh) -d
-CONFIG_CLEAN_FILES = src/version.h mock.py mock.spec
+CONFIG_CLEAN_FILES = src/version.h src/mock.py mock.spec
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
 am__vpath_adj = case $$p in \
     $(srcdir)/*) f=`echo "$$p" | sed "s|^$$srcdirstrip/||"`;; \
@@ -287,7 +287,7 @@ $(ACLOCAL_M4): @MAINTAINER_MODE_TRUE@ $(am__aclocal_m4_deps)
 	cd $(srcdir) && $(ACLOCAL) $(ACLOCAL_AMFLAGS)
 src/version.h: $(top_builddir)/config.status $(top_srcdir)/src/version.h.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
-mock.py: $(top_builddir)/config.status $(srcdir)/mock.py.in
+src/mock.py: $(top_builddir)/config.status $(top_srcdir)/src/mock.py.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 mock.spec: $(top_builddir)/config.status $(srcdir)/mock.spec.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
