@@ -1,6 +1,14 @@
+# these are all substituted by autoconf
+%define major @RELEASE_MAJOR@
+%define minor @RELEASE_MINOR@
+%define sub @RELEASE_SUBLEVEL@
+%define extralevel @RELEASE_RPM_EXTRALEVEL@
+%define release_name mock
+%define release_version %{major}.%{minor}.%{sub}%{extralevel}
+
 Summary: Builds packages inside chroots
 Name: mock
-Version: 0.7.6
+Version: %{release_version}
 Release: 1%{?dist}
 License: GPL
 Group: Development/Tools

@@ -30,7 +30,7 @@ $(bin_PROGRAMS): src/libselinux-mock.la
 $(EXTRA_PROGRAMS): src/libselinux-mock.la
 CLEANFILES += $(EXTRA_PROGRAMS)
 
-AM_CPPFLAGS = 
+AM_CPPFLAGS = -I$(top_builddir)/src -I$(top_srcdir)/src
 
 lib_LTLIBRARIES = src/libselinux-mock.la
 src_libselinux_mock_la_LDFLAGS = -version-info $(MOCK_LIBTOOL_CURRENT):$(MOCK_LIBTOOL_REVISION):$(MOCK_LIBTOOL_AGE)
@@ -41,12 +41,16 @@ bin_PROGRAMS += src/mock
 src_mock_SOURCES = src/mock.c
 src_mock_LDFLAGS =
 
+dist: src/mock.py
 src/mock.py: configure.ac
 	@echo Updating $@
 	@cp -f $@ $@.new
 	@perl -p -i -e 's/^__VERSION__=.*/__VERSION__="$(RELEASE_VERSION)"/' $@.new
 	@diff -q $@ $@.new >/dev/null 2>&1 || mv -f $@.new $@
 	@rm -f $@.new
+
+EXTRA_DIST += etc docs
+
 
 rpm: dist
 	BLD_DIR=$$(mktemp -d /tmp/rpmbuild-$$$$-XXXXXX); \
@@ -64,4 +68,3 @@ srpm: dist
 	cp $$BLD_DIR/SRPMS/*rpm .       ;\
 	rm -rf $$BLD_DIR
 
-#EXTRA_DIST += 

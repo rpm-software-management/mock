@@ -240,8 +240,8 @@ MOCK_LIBTOOL_AGE = @MOCK_LIBTOOL_AGE@
 CLEANFILES = mock-*.tar.gz mock-*.tar.bz2 mock-*.rpm _buildtemp \
 	version $(EXTRA_PROGRAMS)
 DISTCLEANFILES = *~
-EXTRA_DIST = 
-AM_CPPFLAGS = 
+EXTRA_DIST = etc docs
+AM_CPPFLAGS = -I$(top_builddir)/src -I$(top_srcdir)/src
 lib_LTLIBRARIES = src/libselinux-mock.la
 src_libselinux_mock_la_LDFLAGS = -version-info $(MOCK_LIBTOOL_CURRENT):$(MOCK_LIBTOOL_REVISION):$(MOCK_LIBTOOL_AGE)
 src_libselinux_mock_la_CFLAGS = 
@@ -811,6 +811,7 @@ uninstall-am: uninstall-binPROGRAMS uninstall-libLTLIBRARIES
 $(bin_PROGRAMS): src/libselinux-mock.la
 $(EXTRA_PROGRAMS): src/libselinux-mock.la
 
+dist: src/mock.py
 src/mock.py: configure.ac
 	@echo Updating $@
 	@cp -f $@ $@.new
@@ -832,8 +833,6 @@ srpm: dist
 	rpmbuild --define "_topdir $$BLD_DIR" -ts --nodeps $(RELEASE_STRING).tar.gz  ;\
 	cp $$BLD_DIR/SRPMS/*rpm .       ;\
 	rm -rf $$BLD_DIR
-
-#EXTRA_DIST += 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:
