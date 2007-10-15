@@ -20,10 +20,13 @@ AM_MAINTAINER_MODE
 
 # Checks for programs.
 AC_PROG_CC
-AM_PROG_CC_C_O
 AC_PROG_CPP
 AC_PROG_LIBTOOL
 AC_PROG_INSTALL
+
+# automake macros
+AM_PROG_CC_C_O
+AM_PATH_PYTHON
 
 # Checks for header files.
 AC_HEADER_DIRENT

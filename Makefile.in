@@ -41,12 +41,13 @@ bin_PROGRAMS = src/mock$(EXEEXT)
 EXTRA_PROGRAMS =
 subdir = .
 DIST_COMMON = README $(am__configure_deps) $(dist_libexec_SCRIPTS) \
-	$(dist_mocketc_DATA) $(srcdir)/Makefile.am \
+	$(dist_mocketc_DATA) $(pkgpython_PYTHON) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in $(srcdir)/mock.spec.in \
 	$(top_srcdir)/configure $(top_srcdir)/src/config.h.in \
 	$(top_srcdir)/src/version.h.in AUTHORS COPYING ChangeLog \
 	INSTALL NEWS build/compile build/config.guess build/config.sub \
-	build/depcomp build/install-sh build/ltmain.sh build/missing
+	build/depcomp build/install-sh build/ltmain.sh build/missing \
+	build/py-compile
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
@@ -63,8 +64,8 @@ am__vpath_adj = case $$p in \
   esac;
 am__strip_dir = `echo $$p | sed -e 's|^.*/||'`;
 am__installdirs = "$(DESTDIR)$(libdir)" "$(DESTDIR)$(bindir)" \
-	"$(DESTDIR)$(libexecdir)" "$(DESTDIR)$(man1dir)" \
-	"$(DESTDIR)$(mocketcdir)"
+	"$(DESTDIR)$(libexecdir)" "$(DESTDIR)$(pkgpythondir)" \
+	"$(DESTDIR)$(man1dir)" "$(DESTDIR)$(mocketcdir)"
 libLTLIBRARIES_INSTALL = $(INSTALL)
 LTLIBRARIES = $(lib_LTLIBRARIES)
 src_libselinux_mock_la_LIBADD =
@@ -105,6 +106,8 @@ RECURSIVE_TARGETS = all-recursive check-recursive dvi-recursive \
 	install-pdf-recursive install-ps-recursive install-recursive \
 	installcheck-recursive installdirs-recursive pdf-recursive \
 	ps-recursive uninstall-recursive
+pkgpythonPYTHON_INSTALL = $(INSTALL_DATA)
+py_compile = $(top_srcdir)/build/py-compile
 man1dir = $(mandir)/man1
 NROFF = nroff
 MANS = $(man_MANS)
@@ -177,6 +180,11 @@ PACKAGE_STRING = @PACKAGE_STRING@
 PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
+PYTHON = @PYTHON@
+PYTHON_EXEC_PREFIX = @PYTHON_EXEC_PREFIX@
+PYTHON_PLATFORM = @PYTHON_PLATFORM@
+PYTHON_PREFIX = @PYTHON_PREFIX@
+PYTHON_VERSION = @PYTHON_VERSION@
 RANLIB = @RANLIB@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
@@ -224,9 +232,13 @@ mandir = @mandir@
 mkdir_p = @mkdir_p@
 oldincludedir = @oldincludedir@
 pdfdir = @pdfdir@
+pkgpyexecdir = @pkgpyexecdir@
+pkgpythondir = @pkgpythondir@
 prefix = @prefix@
 program_transform_name = @program_transform_name@
 psdir = @psdir@
+pyexecdir = @pyexecdir@
+pythondir = @pythondir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 srcdir = @srcdir@
@@ -261,8 +273,9 @@ src_mock_SOURCES = src/mock.c
 src_mock_LDFLAGS = 
 mocketcdir = $(sysconfdir)/mock
 dist_mocketc_DATA = $(wildcard etc/*.cfg)
-dist_libexec_SCRIPTS = src/mock.py src/mock-yum
+dist_libexec_SCRIPTS = src/mock.py
 man_MANS = docs/mock.1
+pkgpython_PYTHON = src/util.py src/__init__.py
 all: all-recursive
 
 .SUFFIXES:
@@ -454,6 +467,34 @@ clean-libtool:
 
 distclean-libtool:
 	-rm -f libtool
+install-pkgpythonPYTHON: $(pkgpython_PYTHON)
+	@$(NORMAL_INSTALL)
+	test -z "$(pkgpythondir)" || $(MKDIR_P) "$(DESTDIR)$(pkgpythondir)"
+	@list='$(pkgpython_PYTHON)'; dlist=''; for p in $$list; do\
+	  if test -f "$$p"; then b=; else b="$(srcdir)/"; fi; \
+	  if test -f $$b$$p; then \
+	    f=$(am__strip_dir) \
+	    dlist="$$dlist $$f"; \
+	    echo " $(pkgpythonPYTHON_INSTALL) '$$b$$p' '$(DESTDIR)$(pkgpythondir)/$$f'"; \
+	    $(pkgpythonPYTHON_INSTALL) "$$b$$p" "$(DESTDIR)$(pkgpythondir)/$$f"; \
+	  else :; fi; \
+	done; \
+	if test -n "$$dlist"; then \
+	  if test -z "$(DESTDIR)"; then \
+	    PYTHON=$(PYTHON) $(py_compile) --basedir "$(pkgpythondir)" $$dlist; \
+	  else \
+	    PYTHON=$(PYTHON) $(py_compile) --destdir "$(DESTDIR)" --basedir "$(pkgpythondir)" $$dlist; \
+	  fi; \
+	else :; fi
+
+uninstall-pkgpythonPYTHON:
+	@$(NORMAL_UNINSTALL)
+	@list='$(pkgpython_PYTHON)'; dlist=''; for p in $$list; do\
+	  f=$(am__strip_dir) \
+	  rm -f "$(DESTDIR)$(pkgpythondir)/$$f"; \
+	  rm -f "$(DESTDIR)$(pkgpythondir)/$${f}c"; \
+	  rm -f "$(DESTDIR)$(pkgpythondir)/$${f}o"; \
+	done
 install-man1: $(man1_MANS) $(man_MANS)
 	@$(NORMAL_INSTALL)
 	test -z "$(man1dir)" || $(MKDIR_P) "$(DESTDIR)$(man1dir)"
@@ -797,7 +838,7 @@ install-binPROGRAMS: install-libLTLIBRARIES
 
 installdirs: installdirs-recursive
 installdirs-am:
-	for dir in "$(DESTDIR)$(libdir)" "$(DESTDIR)$(bindir)" "$(DESTDIR)$(libexecdir)" "$(DESTDIR)$(man1dir)" "$(DESTDIR)$(mocketcdir)"; do \
+	for dir in "$(DESTDIR)$(libdir)" "$(DESTDIR)$(bindir)" "$(DESTDIR)$(libexecdir)" "$(DESTDIR)$(pkgpythondir)" "$(DESTDIR)$(man1dir)" "$(DESTDIR)$(mocketcdir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-recursive
@@ -850,7 +891,8 @@ info: info-recursive
 
 info-am:
 
-install-data-am: install-dist_mocketcDATA install-man
+install-data-am: install-dist_mocketcDATA install-man \
+	install-pkgpythonPYTHON
 
 install-dvi: install-dvi-recursive
 
@@ -891,7 +933,7 @@ ps-am:
 
 uninstall-am: uninstall-binPROGRAMS uninstall-dist_libexecSCRIPTS \
 	uninstall-dist_mocketcDATA uninstall-libLTLIBRARIES \
-	uninstall-man
+	uninstall-man uninstall-pkgpythonPYTHON
 
 uninstall-man: uninstall-man1
 
@@ -911,14 +953,15 @@ uninstall-man: uninstall-man1
 	install-dvi install-dvi-am install-exec install-exec-am \
 	install-html install-html-am install-info install-info-am \
 	install-libLTLIBRARIES install-man install-man1 install-pdf \
-	install-pdf-am install-ps install-ps-am install-strip \
-	installcheck installcheck-am installdirs installdirs-am \
-	maintainer-clean maintainer-clean-generic mostlyclean \
-	mostlyclean-compile mostlyclean-generic mostlyclean-libtool \
-	pdf pdf-am ps ps-am tags tags-recursive uninstall uninstall-am \
+	install-pdf-am install-pkgpythonPYTHON install-ps \
+	install-ps-am install-strip installcheck installcheck-am \
+	installdirs installdirs-am maintainer-clean \
+	maintainer-clean-generic mostlyclean mostlyclean-compile \
+	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
+	tags tags-recursive uninstall uninstall-am \
 	uninstall-binPROGRAMS uninstall-dist_libexecSCRIPTS \
 	uninstall-dist_mocketcDATA uninstall-libLTLIBRARIES \
-	uninstall-man uninstall-man1
+	uninstall-man uninstall-man1 uninstall-pkgpythonPYTHON
 
 
 $(bin_PROGRAMS): src/libselinux-mock.la
@@ -927,7 +970,10 @@ $(EXTRA_PROGRAMS): src/libselinux-mock.la
 src/mock.py: configure.ac Makefile.am
 	echo Updating $@, current pwd: $$(pwd)
 	cp -f $(top_srcdir)/$@ $(top_builddir)/$@.new
-	perl -p -i -e 's/^__VERSION__=.*/__VERSION__="$(RELEASE_VERSION)"/' $(top_builddir)/$@.new
+	perl -p -i -e 's|^__VERSION__=.*|__VERSION__="$(RELEASE_VERSION)"|' $(top_builddir)/$@.new
+	perl -p -i -e 's|^SYSCONFDIR=.*|SYSCONFDIR="$(sysconfdir)"|' $(top_builddir)/$@.new
+	perl -p -i -e 's|^PYTHONDIR=.*|PYTHONDIR="$(pythondir)"|' $(top_builddir)/$@.new
+	perl -p -i -e 's|^PKGPYTHONDIR=.*|PKGPYTHONDIR="$(pkgpythondir)"|' $(top_builddir)/$@.new
 	diff -q $(top_srcdir)/$@ $(top_builddir)/$@.new >/dev/null 2>&1 || mv -f $(top_builddir)/$@.new $(top_builddir)/$@
 	rm -f $(top_builddir)/$@.new
 	chmod +x $(top_builddir)/$@ || :

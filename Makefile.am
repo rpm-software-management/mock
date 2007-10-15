@@ -45,13 +45,18 @@ mocketcdir = $(sysconfdir)/mock
 dist_mocketc_DATA = $(wildcard etc/*.cfg)
 
 EXTRA_DIST += docs buildsys-build.spec
-dist_libexec_SCRIPTS = src/mock.py src/mock-yum
+dist_libexec_SCRIPTS = src/mock.py
 man_MANS = docs/mock.1
+
+pkgpython_PYTHON = src/util.py src/__init__.py
 
 src/mock.py: configure.ac Makefile.am
 	echo Updating $@, current pwd: $$(pwd)
 	cp -f $(top_srcdir)/$@ $(top_builddir)/$@.new
-	perl -p -i -e 's/^__VERSION__=.*/__VERSION__="$(RELEASE_VERSION)"/' $(top_builddir)/$@.new
+	perl -p -i -e 's|^__VERSION__=.*|__VERSION__="$(RELEASE_VERSION)"|' $(top_builddir)/$@.new
+	perl -p -i -e 's|^SYSCONFDIR=.*|SYSCONFDIR="$(sysconfdir)"|' $(top_builddir)/$@.new
+	perl -p -i -e 's|^PYTHONDIR=.*|PYTHONDIR="$(pythondir)"|' $(top_builddir)/$@.new
+	perl -p -i -e 's|^PKGPYTHONDIR=.*|PKGPYTHONDIR="$(pkgpythondir)"|' $(top_builddir)/$@.new
 	diff -q $(top_srcdir)/$@ $(top_builddir)/$@.new >/dev/null 2>&1 || mv -f $(top_builddir)/$@.new $(top_builddir)/$@
 	rm -f $(top_builddir)/$@.new
 	chmod +x $(top_builddir)/$@ || :
