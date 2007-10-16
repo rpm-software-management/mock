@@ -152,8 +152,8 @@ int main (int argc, char **argv)
     debug("argv[%d] = %s\n", 1, newargv[1]);
 
     for (i = 1; i < argc; i++) {
-        newargv[i + 2] = argv[i];
-        debug("argv[%d] = %s\n", i+2, newargv[i + 2]);
+        newargv[i + 1] = argv[i];
+        debug("argv[%d] = %s\n", i+2, newargv[i + 1]);
     }
     newargv[newargc] = NULL;
 
