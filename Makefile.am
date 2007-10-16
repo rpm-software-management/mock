@@ -49,11 +49,12 @@ dist_libexec_SCRIPTS = src/mock.py
 man_MANS = docs/mock.1
 
 pkgpython_PYTHON = \
-	src/mock/__init__.py \
-	src/mock/util.py \
-	src/mock/decorator.py \
-	src/mock/trace_decorator.py \
-	src/mock/backend.py
+	src/py-libs/__init__.py 	\
+	src/py-libs/exception.py 	\
+	src/py-libs/util.py 	\
+	src/py-libs/backend.py	\
+	src/py-libs/decorator.py 	\
+	src/py-libs/trace_decorator.py 
 
 src/mock.py: configure.ac Makefile.am src/mock.py
 	echo Updating $@, current pwd: $$(pwd)

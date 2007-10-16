@@ -205,6 +205,7 @@ def main():
 
     # cmdline options override config options
     set_config_opts_per_cmdline(config_opts, options)
+    warn_obsolete_config_options(config_opts)
 
     # do whatever we're here to do
     if args[0] == 'clean':
