@@ -17,11 +17,13 @@
 # Written by Seth Vidal
 # Sections taken from Mach by Thomas Vander Stichele
 
+# library imports
+import grp
+import logging
+import logging.config
 import os
 import os.path
 import sys
-import grp
-
 from optparse import OptionParser
 
 # all of the variables below are substituted by the build system
@@ -31,14 +33,16 @@ PYTHONDIR="/usr/local/lib/python2.5/site-packages"
 PKGPYTHONDIR="/usr/local/lib/python2.5/site-packages/mock"
 MOCKCONFDIR= SYSCONFDIR + "/mock"
 
-#import all mock.* modules after this.
+# import all mock.* modules after this.
 sys.path.insert(0,PYTHONDIR)
 
-import logging
-import logging.config
-log = logging.getLogger("main")
-
+# our imports
+import mock.exception
 from mock.trace_decorator import trace
+
+# set up basic logging until config file can be read
+log = logging.getLogger()
+logging.basicConfig()
 
 @trace
 def command_parse():
@@ -94,7 +98,7 @@ def setup_default_config_opts(config_opts):
     config_opts['debug'] = False
     config_opts['verbose'] = False
     config_opts['chroothome'] = '/builddir'
-    config_opts['log_config_file'] = 'logging.conf'
+    config_opts['log_config_file'] = 'logging.ini'
     config_opts['rpmbuild_timeout'] = 0
     config_opts['chrootuser'] = 'mockbuild'
     config_opts['chrootgroup'] = 'mockbuild'
@@ -141,6 +145,9 @@ def set_config_opts_per_cmdline(config_opts, options):
         config_opts['clean'] = options.clean
     if options.debug:
         config_opts['debug'] = options.debug
+        log.setLevel(logging.DEBUG)
+        #log.setFormatter("detailed")
+
     if options.verbose:
         config_opts['verbose'] = options.verbose
     if options.use_cache:
@@ -172,28 +179,32 @@ def main():
     # cli option parsing
     (options, args) = command_parse()
     
-    if len(args) < 1:
-        print("No srpm or command specified - nothing to do")
-        sys.exit(50)
-
     # config path -- can be overridden on cmdline
     config_path=MOCKCONFDIR
     if options.configdir:
         config_path = options.configdir
 
-    # Read in the default values which can be overwritten
-    # with the more specific config being loaded below.
+    # basic config for logging until config files are read
+    logging.config.fileConfig(os.path.join(config_path, config_opts["log_config_file"]))
+
+    # check args
+    if len(args) < 1:
+        log.error("No srpm or command specified - nothing to do")
+        sys.exit(50)
+
+    # Read in the config files: default, and then user specified
     for cfg in ( os.path.join(config_path, 'defaults.cfg'), '%s/%s.cfg' % (config_path, options.chroot)):
         if os.path.exists(cfg):
             execfile(cfg)
         else:
-            print("Could not find required config file: %s" % cfg)
+            log.error("Could not find required config file: %s" % cfg)
             sys.exit(1)
     
+    # reconfigure logging in case config file was overridden
+    logging.config.fileConfig(os.path.join(config_path, config_opts["log_config_file"]))
+
     # cmdline options override config options
     set_config_opts_per_cmdline(config_opts, options)
-
-    logging.config.fileConfig(os.path.join(config_path, options["log_config_file"]))
 
     # do whatever we're here to do
     if args[0] == 'clean':
