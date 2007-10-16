@@ -42,15 +42,15 @@ src_mock_SOURCES = src/mock.c
 src_mock_LDFLAGS =
 
 mocketcdir = $(sysconfdir)/mock
-dist_mocketc_DATA = $(wildcard etc/*.cfg)
+dist_mocketc_DATA = $(wildcard etc/*.cfg) etc/logging.ini
 
 EXTRA_DIST += docs buildsys-build.spec
 dist_libexec_SCRIPTS = src/mock.py
 man_MANS = docs/mock.1
 
-pkgpython_PYTHON = src/util.py src/__init__.py
+pkgpython_PYTHON = src/mock/util.py src/mock/__init__.py src/mock/backend.py
 
-src/mock.py: configure.ac Makefile.am
+src/mock.py: configure.ac Makefile.am src/mock.py
 	echo Updating $@, current pwd: $$(pwd)
 	cp -f $(top_srcdir)/$@ $(top_builddir)/$@.new
 	perl -p -i -e 's|^__VERSION__=.*|__VERSION__="$(RELEASE_VERSION)"|' $(top_builddir)/$@.new
