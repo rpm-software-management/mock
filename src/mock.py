@@ -84,13 +84,17 @@ def setup_default_config_opts(config_opts):
     config_opts['clean'] = True
     config_opts['debug'] = False
     config_opts['verbose'] = False
-    import grp
+    config_opts['chroothome'] = '/builddir'
+    config_opts['log_config_file'] = 'logging.conf'
+    config_opts['rpmbuild_timeout'] = 0
     config_opts['chrootuser'] = 'mockbuild'
     config_opts['chrootgroup'] = 'mockbuild'
     config_opts['chrootuid'] = os.geteuid()
-    config_opts['chrootgid'] = grp.getgrnam("mock")[2]
-    config_opts['chroothome'] = '/builddir'
-    config_opts['log_config_file'] = 'logging.conf'
+    try:
+        config_opts['chrootgid'] = grp.getgrnam("mock")[2]
+    except KeyError:
+        # if 'mock' group doesnt exist, must set in config file
+        pass
 
     # (global) caching-related config options
     config_opts['rebuild_cache'] = False
@@ -101,23 +105,21 @@ def setup_default_config_opts(config_opts):
     config_opts['cache_topdir'] = "root-cache"
     config_opts['max_cache_age_days'] = 15
 
-    # commands
+    # host commands
     config_opts['chroot'] = '/usr/sbin/chroot'
     config_opts['mount'] = '/bin/mount'
-    config_opts['umount'] = '/usr/umount'
-    config_opts['rpmbuild_timeout'] = 0
+    config_opts['umount'] = '/bin/umount'
 
     # dependent on guest OS
     config_opts['use_host_resolv'] = True
     config_opts['runuser'] = '/sbin/runuser'
     config_opts['chroot_setup_cmd'] = 'install buildsys-build'
     config_opts['target_arch'] = 'i386'
-    config_opts['files'] = {}
     config_opts['yum.conf'] = ''
     config_opts['macros'] = {'%%_topdir': '%s/build' % config_opts['chroothome'],
                              '%%_rpmfilename': '%%%%{NAME}-%%%%{VERSION}-%%%%{RELEASE}.%%%%{ARCH}.rpm'}
-
     config_opts['more_buildreqs'] = {}
+    config_opts['files'] = {}
     config_opts['files']['etc/hosts'] = "127.0.0.1 localhost localhost.localdomain\n"
 
 
@@ -148,6 +150,8 @@ def set_config_opts_per_cmdline(config_opts, options):
     if options.rpmbuild_timeout is not None:
         config_opts['rpmbuild_timeout'] = options.rpmbuild_timeout
 
+def warn_obsolete_config_options(config_opts):
+    pass
 
 def main():
     # defaults
@@ -158,7 +162,7 @@ def main():
     (options, args) = command_parse()
     
     if len(args) < 1:
-        error("No srpm or command specified - nothing to do")
+        print("No srpm or command specified - nothing to do")
         sys.exit(50)
 
     # config path -- can be overridden on cmdline
@@ -172,7 +176,7 @@ def main():
         if os.path.exists(cfg):
             execfile(cfg)
         else:
-            error("Could not find required config file: %s" % cfg)
+            print("Could not find required config file: %s" % cfg)
             sys.exit(1)
     
     # cmdline options override config options
@@ -183,17 +187,17 @@ def main():
 
     # do whatever we're here to do
     if args[0] == 'clean':
-        pass
+        print "clean placeholder"
     elif args[0] == 'init':
-        pass
+        print "init placeholder"
     elif args[0] == 'chroot':
-        pass
+        print "chroot placeholder"
     elif args[0] == 'shell':
-        pass
+        print "shell placeholder"
     elif args[0] == 'installdeps':
-        pass
+        print "installdeps placeholder"
     elif args[0] == 'rebuild':
-        pass
+        print "rebuild placeholder"
     else:
         pass
 
