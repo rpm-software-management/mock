@@ -31,8 +31,16 @@ PYTHONDIR="/usr/local/lib/python2.5/site-packages"
 PKGPYTHONDIR="/usr/local/lib/python2.5/site-packages/mock"
 MOCKCONFDIR= SYSCONFDIR + "/mock"
 
+#import all mock.* modules after this.
 sys.path.insert(0,PYTHONDIR)
 
+import logging
+import logging.config
+log = logging.getLogger("main")
+
+from mock.trace_decorator import trace
+
+@trace
 def command_parse():
     """return options and args from parsing the command line"""
     
@@ -78,6 +86,7 @@ def command_parse():
     
     return parser.parse_args()
 
+@trace
 def setup_default_config_opts(config_opts):
     # global
     config_opts['basedir'] = '/var/lib/mock/' # root name is automatically added to this
@@ -123,6 +132,7 @@ def setup_default_config_opts(config_opts):
     config_opts['files']['etc/hosts'] = "127.0.0.1 localhost localhost.localdomain\n"
 
 
+@trace
 def set_config_opts_per_cmdline(config_opts, options):
     # do some other options and stuff
     if options.arch:
@@ -150,6 +160,7 @@ def set_config_opts_per_cmdline(config_opts, options):
     if options.rpmbuild_timeout is not None:
         config_opts['rpmbuild_timeout'] = options.rpmbuild_timeout
 
+@trace
 def warn_obsolete_config_options(config_opts):
     pass
 
@@ -182,7 +193,6 @@ def main():
     # cmdline options override config options
     set_config_opts_per_cmdline(config_opts, options)
 
-    import logging.config
     logging.config.fileConfig(os.path.join(config_path, options["log_config_file"]))
 
     # do whatever we're here to do
