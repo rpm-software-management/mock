@@ -275,7 +275,13 @@ mocketcdir = $(sysconfdir)/mock
 dist_mocketc_DATA = $(wildcard etc/*.cfg) etc/logging.ini
 dist_libexec_SCRIPTS = src/mock.py
 man_MANS = docs/mock.1
-pkgpython_PYTHON = src/mock/util.py src/mock/__init__.py src/mock/backend.py
+pkgpython_PYTHON = \
+	src/mock/__init__.py \
+	src/mock/util.py \
+	src/mock/decorator.py \
+	src/mock/trace_decorator.py \
+	src/mock/backend.py
+
 all: all-recursive
 
 .SUFFIXES:

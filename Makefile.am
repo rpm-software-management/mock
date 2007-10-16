@@ -48,7 +48,12 @@ EXTRA_DIST += docs buildsys-build.spec
 dist_libexec_SCRIPTS = src/mock.py
 man_MANS = docs/mock.1
 
-pkgpython_PYTHON = src/mock/util.py src/mock/__init__.py src/mock/backend.py
+pkgpython_PYTHON = \
+	src/mock/__init__.py \
+	src/mock/util.py \
+	src/mock/decorator.py \
+	src/mock/trace_decorator.py \
+	src/mock/backend.py
 
 src/mock.py: configure.ac Makefile.am src/mock.py
 	echo Updating $@, current pwd: $$(pwd)
