@@ -9,7 +9,7 @@ log = logging.getLogger("function_tracing")
 #@decorator
 @decorator
 def trace(f, *args, **kw):
-    log.debug("ENTER: %s(%s, %s)\n" % (f.func_name, args, kw))
+    log.debug("ENTER: %s(%s, %s)" % (f.func_name, args, kw))
     try:
         result = "Bad exception raised: Exception was not a derived class of 'Exception'"
         try:
@@ -19,7 +19,7 @@ def trace(f, *args, **kw):
             log.debug( "EXCEPTION: %s\n" % e, exc_info=1)
             raise
     finally:
-        log.debug( "LEAVE %s --> %s\n\n" % (f.func_name, result))
+        log.debug( "LEAVE %s --> %s\n" % (f.func_name, result))
 
     return result
 
