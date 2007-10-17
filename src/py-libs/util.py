@@ -22,6 +22,12 @@
 import logging
 import os
 import os.path
+import popen2
+import rpmUtils
+import rpmUtils.transaction
+import shutil
+import signal
+import time
 
 # our imports
 import mock.exception
@@ -39,15 +45,16 @@ class commandTimeoutExpired(mock.exception.Error):
 
 # functions
 @traceLog(log)
-def mkdirIfAbsent(dir):
-    log.debug("ensuring that dir exists: %s" % dir)
-    if not os.path.exists(dir):
-        try:
-            log.debug("creating dir: %s" % dir)
-            os.makedirs(dir)
-        except OSError, e:
-            log.exception()
-            raise mock.exception.Error, "Could not create dir %s. Error: %s" % (dir, e)
+def mkdirIfAbsent(*args):
+    for dir in args:
+        log.debug("ensuring that dir exists: %s" % dir)
+        if not os.path.exists(dir):
+            try:
+                log.debug("creating dir: %s" % dir)
+                os.makedirs(dir)
+            except OSError, e:
+                log.exception("Could not create dir %s. Error: %s" % (dir, e))
+                raise mock.exception.Error, "Could not create dir %s. Error: %s" % (dir, e)
 
 @traceLog(log)
 def touch(fileName):
@@ -59,11 +66,34 @@ def touch(fileName):
 def umount(dir):
     log.debug("NOT YET IMPLEMENTED: unmounting dir: %s" % dir)
 
+@traceLog(log)
+def rmtree(*args, **kargs):
+    """version os shutil.rmtree that ignores no-such-file-or-directory errors"""
+    try:
+        shutil.rmtree(*args, **kargs)
+    except OSError, e:
+        if e.errno != 2: # no such file or directory
+            raise
 
 @traceLog(log)
-def do(command, timeout=0, *args, **kargs):
+def getSrpmHeader(srpms):
+    ts = rpmUtils.transaction.initReadOnlyTransaction()
+    for srpm in srpms:
+        try:
+            hdr = rpmUtils.miscutils.hdrFromPackage(ts, srpm)
+        except rpmUtils.RpmUtilsError, e:
+            log.exception("Cannot find/open srpm: %s. Error was: %s" % (srpm, str(e)))
+            raise mock.exceptions.Error("Cannot find/open srpm: %s. Error was: %s" % (srpm, str(e)))
+
+        if hdr[rpm.RPMTAG_SOURCEPACKAGE] != 1:
+            raise mock.exceptions.Error("File is not an srpm: %s." % srpm )
+
+        yield hdr
+
+@traceLog(log)
+def do(command, timeout=0, raiseExc=True, *args, **kargs):
     """execute given command outside of chroot"""
-    log.debug("Run cmd: %s" % cmd)
+    log.debug("Run cmd: %s" % command)
 
     class alarmExc(Exception): pass
     def alarmhandler(signum,stackframe):
@@ -104,8 +134,20 @@ def do(command, timeout=0, *args, **kargs):
             signal.signal(signal.SIGALRM,oldhandler)
             raise commandTimeoutExpired( "Timeout(%s) exceeded for command: %s" % (timeout, command))
 
+        # kill children for any exception...
+        except:
+            os.kill(-pid, signal.SIGTERM)
+            time.sleep(1)
+            os.kill(-pid, signal.SIGKILL)
+            (rpid, ret) = os.waitpid(pid, 0)
+            signal.signal(signal.SIGALRM,oldhandler)
+            raise
+
         # mask and return just return value, plus child output
-        return ((ret & 0xFF00) >> 8, output)
+        if raiseExc and os.WEXITSTATUS(ret):
+            raise mock.exception.Error, "Command(%s) failed. Output: %s" % (command, output)
+
+        return output
 
     else: #child
         os.close(r)
@@ -119,8 +161,9 @@ def do(command, timeout=0, *args, **kargs):
         w = os.fdopen(w, "w")
         for line in child.fromchild:
             w.write(line)
+            w.flush()
         w.close()
         retval=child.wait()
-        os._exit( (retval & 0xFF00) >> 8 )
+        os._exit(os.WEXITSTATUS(retval)) 
 
 
