@@ -63,10 +63,6 @@ def touch(fileName):
     fo.close()
 
 @traceLog(log)
-def umount(dir):
-    log.debug("NOT YET IMPLEMENTED: unmounting dir: %s" % dir)
-
-@traceLog(log)
 def rmtree(*args, **kargs):
     """version os shutil.rmtree that ignores no-such-file-or-directory errors"""
     try:
@@ -91,9 +87,18 @@ def getSrpmHeader(srpms):
         yield hdr
 
 @traceLog(log)
-def do(command, timeout=0, raiseExc=True, *args, **kargs):
+def do_interactive(command, *args, **kargs):
+    # we always assume that we dont care about return code for interactive stuff
+    os.system(command)
+
+@traceLog(log)
+def do(command, timeout=0, raiseExc=True, interactive=0, *args, **kargs):
     """execute given command outside of chroot"""
     log.debug("Run cmd: %s" % command)
+
+    # need to not fork, etc or interactive command wont properly display, so catch it here.
+    if interactive:
+        return do_interactive(command, timeout=timeout, raiseExc=raiseExc, *args, **kargs)
 
     class alarmExc(Exception): pass
     def alarmhandler(signum,stackframe):
@@ -115,13 +120,13 @@ def do(command, timeout=0, raiseExc=True, *args, **kargs):
 
         try:
             # read output from child
-            r = os.fdopen(r, "r")
-            for line in r:
+            r_fh = os.fdopen(r, "r")
+            for line in r_fh:
                 log.debug(line)
                 output += line
 
             # close read handle, get child return status, etc
-            r.close()
+            r_fh.close()
             (rpid, ret) = os.waitpid(pid, 0)
             signal.alarm(0)
             signal.signal(signal.SIGALRM,oldhandler)
@@ -165,5 +170,6 @@ def do(command, timeout=0, raiseExc=True, *args, **kargs):
         w.close()
         retval=child.wait()
         os._exit(os.WEXITSTATUS(retval)) 
+
 
 
