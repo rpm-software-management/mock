@@ -48,19 +48,19 @@ class uidManager(object):
 
     @traceLog(log)
     def dropPrivsTemp(self):
-        elevatePrivs()
+        self.elevatePrivs()
         os.setreuid(0, self.origruid)
         os.setregid(self.origrgid, self.origegid)
 
     @traceLog(log)
     def dropPrivsForever(self):
-        elevatePrivs()
+        self.elevatePrivs()
         os.setreuid(self.origruid, self.origruid)
         os.setregid(self.origrgid, self.origegid)
 
     @traceLog(log)
     def becomeUser(self, uid, gid=None):
-        elevatePrivs()
+        self.elevatePrivs()
         os.setreuid(0, uid)
         if gid is not None:
             os.setregid(gid, gid)
