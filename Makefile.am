@@ -44,7 +44,7 @@ src_mock_LDFLAGS =
 mocketcdir = $(sysconfdir)/mock
 dist_mocketc_DATA = $(wildcard etc/*.cfg) etc/logging.ini
 
-EXTRA_DIST += docs buildsys-build.spec
+EXTRA_DIST += docs buildsys-build.spec-template mock.spec
 dist_libexec_SCRIPTS = src/mock.py
 man_MANS = docs/mock.1
 
