@@ -25,7 +25,7 @@ import os.path
 
 # our imports
 import mock.exception
-from mock.trace_decorator import trace
+from mock.trace_decorator import traceLog
 
 # set up logging
 log = logging.getLogger("mock.util")
@@ -38,7 +38,7 @@ class commandTimeoutExpired(mock.exception.Error):
         self.resultcode = 10
 
 # functions
-@trace
+@traceLog(log)
 def mkdirIfAbsent(dir):
     log.debug("ensuring that dir exists: %s" % dir)
     if not os.path.exists(dir):
@@ -49,9 +49,78 @@ def mkdirIfAbsent(dir):
             log.exception()
             raise mock.exception.Error, "Could not create dir %s. Error: %s" % (dir, e)
 
+@traceLog(log)
+def touch(fileName):
+    log.debug("touching file: %s" % fileName)
+    fo = open(fileName, 'w')
+    fo.close()
 
-@trace
+@traceLog(log)
 def umount(dir):
     log.debug("NOT YET IMPLEMENTED: unmounting dir: %s" % dir)
+
+
+@traceLog(log)
+def do(command, timeout=0, *args, **kargs):
+    """execute given command outside of chroot"""
+    log.debug("Run cmd: %s" % cmd)
+
+    class alarmExc(Exception): pass
+    def alarmhandler(signum,stackframe):
+        raise alarmExc("timeout expired")
+    
+    retval = 0
+    log.debug("Executing timeout(%s): %s" % (timeout, command))
+
+    output=""
+    (r,w) = os.pipe()
+    pid = os.fork()
+    if pid: #parent
+        rpid = ret = 0
+        os.close(w)
+        oldhandler=signal.signal(signal.SIGALRM,alarmhandler)
+        starttime = time.time()
+        # timeout=0 means disable alarm signal. no timeout
+        signal.alarm(timeout)
+
+        try:
+            # read output from child
+            r = os.fdopen(r, "r")
+            for line in r:
+                log.debug(line)
+                output += line
+
+            # close read handle, get child return status, etc
+            r.close()
+            (rpid, ret) = os.waitpid(pid, 0)
+            signal.alarm(0)
+            signal.signal(signal.SIGALRM,oldhandler)
+
+        except alarmExc:
+            os.kill(-pid, signal.SIGTERM)
+            time.sleep(1)
+            os.kill(-pid, signal.SIGKILL)
+            (rpid, ret) = os.waitpid(pid, 0)
+            signal.signal(signal.SIGALRM,oldhandler)
+            raise commandTimeoutExpired( "Timeout(%s) exceeded for command: %s" % (timeout, command))
+
+        # mask and return just return value, plus child output
+        return ((ret & 0xFF00) >> 8, output)
+
+    else: #child
+        os.close(r)
+        # become process group leader so that our parent
+        # can kill our children
+        os.setpgrp()  
+
+        child = popen2.Popen4(command)
+        child.tochild.close()
+
+        w = os.fdopen(w, "w")
+        for line in child.fromchild:
+            w.write(line)
+        w.close()
+        retval=child.wait()
+        os._exit( (retval & 0xFF00) >> 8 )
 
 
