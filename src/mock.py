@@ -40,6 +40,7 @@ sys.path.insert(0,PYTHONDIR)
 import mock.exception
 from mock.trace_decorator import trace
 import mock.backend
+import mock.uid
 
 # set up basic logging until config file can be read
 log = logging.getLogger()
@@ -209,7 +210,7 @@ def main():
     warn_obsolete_config_options(config_opts)
 
     # do whatever we're here to do
-    root = mock.backend.Root(config_opts)
+    root = mock.backend.Root(config_opts, mock.uid.uidManager())
     if args[0] == 'init':
         print "initializing chroot "
         if config_opts['clean']:
