@@ -278,10 +278,11 @@ man_MANS = docs/mock.1
 pkgpython_PYTHON = \
 	src/py-libs/__init__.py 	\
 	src/py-libs/exception.py 	\
-	src/py-libs/util.py 	\
-	src/py-libs/backend.py	\
+	src/py-libs/util.py 		\
+	src/py-libs/backend.py		\
 	src/py-libs/decorator.py 	\
-	src/py-libs/trace_decorator.py 
+	src/py-libs/trace_decorator.py 	\
+	src/py-libs/uid.py
 
 all: all-recursive
 
