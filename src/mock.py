@@ -224,11 +224,20 @@ def main():
 
     elif args[0] == 'chroot':
         root.init()
-        # TODO
+        root._mountall()
+        try:
+            cmd = ' '.join(args[1:])
+            output = root.do_chroot(cmd, env="PS1='mock-chroot> '", interactive=1, raiseExc=0)
+        finally:
+            root._umountall()
 
     elif args[0] == 'shell':
         root.init()
-        # TODO
+        root._mountall()
+        try:
+            output = root.do_chroot("/bin/bash", env="PS1='mock-chroot> '", interactive=1, raiseExc=0)
+        finally:
+            root._umountall()
 
     elif args[0] == 'installdeps':
         root.init()
