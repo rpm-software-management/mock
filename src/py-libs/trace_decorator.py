@@ -13,7 +13,7 @@ def trace(f, *args, **kw):
         result = "Bad exception raised: Exception was not a derived class of 'Exception'"
         try:
             result = f(*args, **kw)
-        except Exception, e:
+        except BaseException, e:
             result = "EXCEPTION RAISED"
             moduleLog.debug( "EXCEPTION: %s\n" % e, exc_info=1)
             raise
@@ -36,7 +36,7 @@ def traceLog(logger = moduleLog):
             result = "Bad exception raised: Exception was not a derived class of 'Exception'"
             try:
                 result = f(*args, **kw)
-            except Exception, e:
+            except BaseException, e:
                 result = "EXCEPTION RAISED"
                 l2.debug( "EXCEPTION: %s\n" % e, exc_info=1)
                 raise
