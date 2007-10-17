@@ -19,38 +19,49 @@
 # revised and adapted by Michael Brown
 
 # python library imports
+import logging
 import os
 
 # our imports
-from mock.trace_decorator import trace
+from mock.trace_decorator import traceLog
 
-# functions
+# set up logging
+log = logging.getLogger("mock.uid")
 
-origruid=os.getruid()  # 500
-origeuid=os.geteuid()  #   0
+# class
+class uidManager(object):
+    @traceLog(log)
+    def __init__(self):
+        self.saveCurrentPrivs()
 
-@trace
-def savePerms():
-    global origruid
-    global origeuid
-    origruid = os.getruid()
-    origeuid = os.geteuid()
+    @traceLog(log)
+    def saveCurrentPrivs(self):
+        self.origruid = os.getuid() # 500
+        self.origeuid = os.geteuid() # 0
+        self.origrgid=os.getgid()  # 500
+        self.origegid=os.getegid()  # 500
 
-@trace
-def elevatePerms():
-    os.setreuid(0, 0)
+    @traceLog(log)
+    def elevatePrivs(self):
+        os.setreuid(0, 0)
+        os.setregid(0, 0)
 
-@trace
-def dropPermsTemp():
-    elevatePerms()
-    os.setreuid(0, origruid)
+    @traceLog(log)
+    def dropPrivsTemp(self):
+        elevatePrivs()
+        os.setreuid(0, self.origruid)
+        os.setregid(self.origrgid, self.origegid)
 
-@trace
-def dropPermsForever():
-    elevatePerms()
-    os.setreuid(origruid, origruid)
+    @traceLog(log)
+    def dropPrivsForever(self):
+        elevatePrivs()
+        os.setreuid(self.origruid, self.origruid)
+        os.setregid(self.origrgid, self.origegid)
 
-@trace
-def becomeUser(uid):
-    elevatePerms()
-    os.setreuid(0, uid)
+    @traceLog(log)
+    def becomeUser(self, uid, gid=None):
+        elevatePrivs()
+        os.setreuid(0, uid)
+        if gid is not None:
+            os.setregid(gid, gid)
+
