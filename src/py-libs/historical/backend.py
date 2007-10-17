@@ -15,158 +15,13 @@
 # Written by Seth Vidal
 # Sections taken from Mach by Thomas Vander Stichele
 
-import os
-import os.path
-import sys
-import rpmUtils
-import rpmUtils.transaction
-import rpm
-import glob
-import popen2
-import shutil
-import types
-import signal
-import stat
-import time
-from exceptions import Exception
-
-# result/exit codes
-# 0 = yay!
-# 1 = something happened  - it's bad
-# 30 = Yum emitted an error of some sort
-# 40 = some error in the pkg we're building
-# 10 = problem building the package
-# 20 = error in the chroot of some kind
-
-class Error(Exception):
-    def __init__(self, msg):
-        Exception.__init__(self)
-        self.msg = msg
-        self.resultcode = 1
-
-    def __str__(self):
-        return self.msg
-
-class commandTimeoutExpired(Error): pass
-
-class BuildError(Error):
-    def __init__(self, msg):
-        Error.__init__(self, msg)
-        self.msg = msg
-        self.resultcode = 10
-
-class RootError(Error):
-    def __init__(self, msg):
-        Error.__init__(self, msg)
-        self.msg = msg
-        self.resultcode = 20
-
-class YumError(Error): 
-    def __init__(self, msg):
-        Error.__init__(self, msg)
-        self.msg = msg
-        self.resultcode = 30
-
-class PkgError(Error):
-    def __init__(self, msg):
-        Error.__init__(self, msg)
-        self.msg = msg
-        self.resultcode = 40
-
 class Root:
     """base root object"""
     def __init__(self, config):
-        self._state = 'unstarted'
-        self.tmplog = logging.getLogger("mock.Root")
+        
 
-        self.config = config
-        self.mountorder = []
-        self.mounts = {}
-        root = config['root']
-        if config.has_key('unique-ext'):
-            root = "%s-%s" % (root, config['unique-ext'])
-        self.basedir = os.path.join(config['basedir'], root)
-        if self.basedir.find("/var/lib/mock") != 0:
-            raise RootError, "Cannot change basedir location!"
-        self.target_arch = config['target_arch']
-        self.rootdir = os.path.join(self.basedir, 'root')
-        self.homedir = self.config['chroothome']
-        self.builddir = os.path.join(self.homedir, 'build')
-        self.cache_file = os.path.join(self.config['basedir'], 
-                self.config['cache_topdir'], self.config['root'] + self.config['cache_ext'])
-        if not self.config.has_key('resultdir'):
-            self.resultdir = os.path.join(self.basedir, 'result')
-        else:
-            self.resultdir = self.config['resultdir']
-        if not self.config.has_key('statedir'):
-            self.statedir = os.path.join(self.basedir, 'state')
-        else:
-            self.statedir = self.config['statedir']
-        
-        self._ensure_dir(self.statedir)
-        self.state("init")
-        
-        if config['clean']: 
-            self.clean()
-
-        self._ensure_dir(self.basedir)
-        self._ensure_dir(self.rootdir)
-        self._ensure_dir(self.statedir)
-        self._ensure_dir(self.resultdir)
-        
-        # open the log files
-        root_log = os.path.join(self.resultdir, 'root.log')
-        self._root_log = open(root_log, 'w+')
-        build_log = os.path.join(self.resultdir, 'build.log')
-        self._build_log = open(build_log, 'w+')
-        
-        # write out the config file
-        cfg_log = os.path.join(self.resultdir, 'mockconfig.log')
-        cfgout = open(cfg_log, 'w+')
-        cfgout.write('rootdir = %s\n' % self.rootdir)
-        cfgout.write('resultdir = %s\n' % self.resultdir)
-        cfgout.write('statedir = %s\n' % self.statedir)
-        cfgout.flush()
-        cfgout.close()
-    
-    def root_log(self, content):
-
-        if type(content) is list:
-            self.tmplog.writelines(content)
-            if self.config['verbose']:
-                for l in content: print l
-        else:
-            self.tmplog.write(content)
-            if self.config['verbose']: print content
-        
-        # do this so if the log dir isn't ready yet we can still get those logs
-        if hasattr(self, '_root_log'):
-            self._root_log.writelines(self.tmplog.readlines())
-            self._root_log.flush()
-            self.tmplog.clear()
-
-    def debug(self, msg):
-        if self.config['debug']:
-            print "DEBUG: %s" % msg
-    
     def clean(self):
         """clean out chroot with extreme prejudice :)"""
-        self.state("clean")
-
-        self.root_log('Cleaning Root')
-        if os.path.exists('%s/%s' % (self.rootdir, 'proc')):
-            self._umount('proc')
-        if os.path.exists('%s/%s' % (self.rootdir, 'dev/pts')):
-            self._umount('dev/pts')
-            
-        if os.path.exists(self.basedir):
-            cmd = '%s -rf %s' % (self.config['rm'], self.basedir)
-            (retval, output) = self.do(cmd)
-
-            if retval != 0:
-                error(output)
-                if os.path.exists(self.rootdir):
-                    raise RootError, "Failed to clean basedir, exiting"
 
 
     def state(self, curstate=None):
@@ -174,16 +29,6 @@ class Root:
            state out and report it back. If curstate is not given report
            self.state"""
         
-        if curstate:
-            sf = os.path.join(self.statedir, 'status')
-            sfo = open(sf, 'w')
-            sfo.write('%s\n' % curstate)
-            sfo.close()
-            self._state = curstate
-            print curstate
-        else:
-            return self._state
-
     def unpack(self):
         self.state('unpack cache')
         cmd = '%s %s %s' % (self.config['unpack_cmd'], self.basedir, self.cache_file)
@@ -385,19 +230,6 @@ class Root:
         self.root_log("Done.")
         self._root_log.close()
         
-        
-    def _ensure_dir(self, path):
-        """check for dir existence and/or makedir, if error out then raise Error"""
-        
-        msg = "ensuring dir %s" % path
-        self.debug(msg)
-        self.root_log("%s" % msg)
-
-        if not os.path.exists(path):
-            try:
-                os.makedirs(path)
-            except OSError, e:
-                raise Error, "Could not create dir %s. Error: %s" % (path, e)
 
     def _mount(self):
         """mount proc and devpts into chroot"""
@@ -468,68 +300,7 @@ class Root:
     
     def _prep_install(self):
         """prep chroot for installation"""
-        # make chroot dir
-        # make /dev, mount /proc
-        #
-        for item in [self.basedir, self.rootdir, self.statedir, self.resultdir,
-                     os.path.join(self.rootdir, 'var/lib/rpm'),
-                     os.path.join(self.rootdir, 'var/log'),
-                     os.path.join(self.rootdir, 'var/lock/rpm'),
-                     os.path.join(self.rootdir, 'dev'),
-                     os.path.join(self.rootdir, 'etc/rpm'),
-                     os.path.join(self.rootdir, 'tmp'),
-                     os.path.join(self.rootdir, 'var/tmp'),
-                     os.path.join(self.rootdir, 'etc/yum.repos.d')]:
-            self._ensure_dir(item)
-        
-        self._mount()
 
-        for item in [os.path.join(self.rootdir, 'etc', 'mtab'),
-                     os.path.join(self.rootdir, 'etc', 'fstab'),
-                     os.path.join(self.rootdir, 'var', 'log', 'yum.log')]:
-            if not os.path.exists(item):
-                fo = open(item, 'w')
-                fo.close()
-
-        # ensure /etc/ perms are correct
-        cmd = '%s 2775 %s' % (self.config['chmod'], os.path.join(self.rootdir, "etc"))
-        (retval, output) = self.do(cmd)
-        cmd = '%s %s.%s %s' % (self.config['chown'], self.config['chrootuid'], self.config['chrootgid'], os.path.join(self.rootdir, "etc"))
-        (retval, output) = self.do(cmd)
-        
-        # write in yum.conf into chroot
-        yumconf = os.path.join(self.rootdir, 'etc', 'yum.conf')
-        # always truncate and overwrite (w+)
-        yumconf_fo = open(yumconf, 'w+')
-        yumconf_content = self.config['yum.conf']
-        yumconf_fo.write(yumconf_content)
-        yumconf_fo.close()
-
-        # symlink /etc/yum.conf to /etc/yum/yum.conf to deal with
-        # (possible) yum breakage
-        # if symlink already exists, no need to recreate.
-        yumdir = os.path.join(self.rootdir, 'etc', 'yum')
-        self._ensure_dir(yumdir)
-        yumlink = os.path.join(yumdir, 'yum.conf')
-        if not os.path.exists(yumlink):
-            os.symlink('../yum.conf', yumlink)
-
-        if self.config.setdefault('use_host_resolv', True) == True:
-            resolvdir = os.path.join(self.rootdir, 'etc')
-            resolvpath = os.path.join(self.rootdir, 'etc', 'resolv.conf')
-            if os.path.exists(resolvpath):
-                os.remove(resolvpath)
-            shutil.copy2('/etc/resolv.conf', resolvdir)
-            
-        # files in /etc that need doing
-        filedict = self.config['files']
-        for key in filedict:
-            p = os.path.join(self.rootdir, *key.split('/'))
-            if not os.path.exists(p):
-                # write file
-                fo = open(p, 'w+')
-                fo.write(filedict[key])
-                fo.close()
 
     def _make_our_user(self):
         if not os.path.exists(os.path.join(self.rootdir, 'usr/sbin/useradd')):
