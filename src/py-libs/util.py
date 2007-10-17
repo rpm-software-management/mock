@@ -49,3 +49,9 @@ def mkdirIfAbsent(dir):
             log.exception()
             raise mock.exception.Error, "Could not create dir %s. Error: %s" % (dir, e)
 
+
+@trace
+def umount(dir):
+    log.debug("NOT YET IMPLEMENTED: unmounting dir: %s" % dir)
+
+

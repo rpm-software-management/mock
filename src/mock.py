@@ -211,7 +211,10 @@ def main():
     # do whatever we're here to do
     root = mock.backend.Root(config_opts)
     if args[0] == 'init':
-        print "init placeholder"
+        print "initializing chroot "
+        if config_opts['clean']:
+            root.clean()
+        root.init()
     elif args[0] == 'clean':
         print "clean placeholder"
     elif args[0] == 'chroot':

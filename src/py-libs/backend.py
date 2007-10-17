@@ -21,6 +21,7 @@
 # python library imports
 import logging
 import os
+import shutil
 
 # our imports
 import mock.util
@@ -30,7 +31,6 @@ class Root:
     """controls setup of chroot environment"""
     def __init__(self, config):
         self._state = 'unstarted'
-
         self.config = config
 
         root = config['root']
@@ -57,28 +57,91 @@ class Root:
         else:
             self.statedir = self.config['statedir']
         
-        self._build_log = logging.getLogger("mock.Root.build")
-        self._root_log = logging.getLogger("mock.Root.root")
-        self._config_log = logging.getLogger("mock.Root.config")
+        self.build_log = logging.getLogger("mock.Root.build")
+        self.root_log = logging.getLogger("mock.Root.chroot")
         self._state_log = logging.getLogger("mock.Root.state")
 
+        # officially set state so it is logged
+        self.state("unstarted")
+
+
+    def _resetLogging(self):
+        # attach logs to log files. 
+        # This happens in addition to anything
+        # is set up in the config file... ie. logs go everywhere
+        formatter = logging.Formatter("%(asctime)s - %(module)s:%(lineno)d - %(levelname)s - %(message)s")
+        for (log, filename) in ( 
+                (self._state_log, "state.log"), 
+                (self.build_log, "build.log"), 
+                (self.root_log, "root.log")):
+            fullPath = os.path.join(self.statedir, filename)
+            fh = logging.FileHandler(fullPath, "w+")
+            fh.setFormatter(formatter)
+            fh.setLevel(logging.NOTSET)
+            log.addHandler(fh)
+
+ 
+    # =============
+    #  'Public' API
+    # =============
+
+    def state(self, newState = None):
+        if newState is not None:
+            self._state = newState
+            self._state_log.info("State Changed: %s" % self._state)
+
+        return self._state
+
+    def clean(self):
+        """clean out chroot with extreme prejudice :)"""
+        self.state("clean")
+        self.root_log.info("Cleaning chroot")
+        try:
+            shutil.rmtree(self.basedir)
+        except OSError, e:
+            if e.errno != 2: # no such file or directory
+                raise
+
+    def init(self):
+        self.state("init")
+
+         # create our base directory heirarchy
         mock.util.mkdirIfAbsent(self.basedir)
         mock.util.mkdirIfAbsent(self.statedir)
         mock.util.mkdirIfAbsent(self.rootdir)
         mock.util.mkdirIfAbsent(self.resultdir)
 
-        # set up file handlers
-        #formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-        #ch = logging.FileHandler(os.path.join(self.statedir, "state.log"))
-        #ch = logging.FileHandler(os.path.join(self.statedir, "build.log"))
-        #ch = logging.FileHandler(os.path.join(self.statedir, "root.log"))
-        #ch = logging.FileHandler(os.path.join(self.statedir, "config.log"))
-        #ch.setLevel(logging.DEBUG)
-        
-        # write out the config file
-        self._config_log.info('rootdir = %s\n' % self.rootdir)
-        self._config_log.info('resultdir = %s\n' % self.resultdir)
-        self._config_log.info('statedir = %s\n' % self.statedir)
- 
-    def state(self, state):
-        pass
+        self._resetLogging()
+
+        # write out config details
+        self.root_log.debug('rootdir = %s' % self.rootdir)
+        self.root_log.debug('resultdir = %s' % self.resultdir)
+        self.root_log.debug('statedir = %s' % self.statedir)
+
+        self.root_log.debug("root_log debug message")
+        self.root_log.info("root_log info message")
+        self.root_log.warning("root_log warning message")
+        self.root_log.error("root_log error message")
+        self.root_log.critical("root_log critical message")
+
+        self.build_log.debug("build_log debug message")
+        self.build_log.info("build_log info message")
+        self.build_log.warning("build_log warning message")
+        self.build_log.error("build_log error message")
+        self.build_log.critical("build_log critical message")
+   
+
+    # =============
+    # 'Private' API
+    # =============
+
+    def prep(self):
+        self.state("prep")
+        self.root_log.debug("uid:%d, gid:%d" % (os.getuid(), os.getgid()))
+
+        # create skeleton dirs
+        # yum stuff
+        # create user
+        # create rpmbuild dir
+
+
