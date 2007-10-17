@@ -4,7 +4,7 @@ import types
 from decorator import decorator
 
 import logging
-log = logging.getLogger("function_tracing")
+log = logging.getLogger("mock.trace_decorator")
 
 #@decorator
 @decorator
