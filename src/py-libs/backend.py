@@ -179,6 +179,7 @@ class Root(object):
         mock.util.rmtree(os.path.join(self.rootdir, "dev"))
         mock.util.mkdirIfAbsent(os.path.join(self.rootdir, "dev", "pts"))
         os.mknod(os.path.join(self.rootdir, "dev/zero"), stat.S_IFCHR | 0666, os.makedev(1, 5))
+        os.mknod(os.path.join(self.rootdir, "dev/tty"), stat.S_IFCHR | 0666, os.makedev(5, 0))
         os.mknod(os.path.join(self.rootdir, "dev/null"), stat.S_IFCHR | 0666, os.makedev(1, 3))
         os.mknod(os.path.join(self.rootdir, "dev/random"), stat.S_IFCHR | 0666, os.makedev(1, 8))
         os.mknod(os.path.join(self.rootdir, "dev/urandom"), stat.S_IFCHR | 0444, os.makedev(1, 9))
@@ -207,15 +208,21 @@ class Root(object):
         self.state("done")
         self.root_log.info("Done")
 
+    @traceLog(moduleLog)
+    def do_chroot(self, command, env="", *args, **kargs):
+        """execute given command in root"""
+        cmd = "%s /usr/sbin/chroot %s %s" % (env, self.rootdir, command)
+        return mock.util.do(cmd, *args, **kargs)
+
     # =============
     # 'Private' API
     # =============
     @traceLog(moduleLog)
     def _mountall(self):
         """mount 'normal' fs like /dev/ /proc/ /sys"""
-        cmds = ('mount -t proc   mock_chroot_proc   %s/proc' % self.rootdir,
-                'mount -t devpts mock_chroot_devpts %s/dev/pts' % self.rootdir,
-                'mount -t sysfs  mock_chroot_sysfs  %s/sys' % self.rootdir,
+        cmds = ('mount -n -t proc   mock_chroot_proc   %s/proc' % self.rootdir,
+                'mount -n -t devpts mock_chroot_devpts %s/dev/pts' % self.rootdir,
+                'mount -n -t sysfs  mock_chroot_sysfs  %s/sys' % self.rootdir,
                )
     
         g = [s%self.rootdir for s in ("%s/proc", "%s/dev/pts", "%s/sys")]
@@ -227,9 +234,9 @@ class Root(object):
     @traceLog(moduleLog)
     def _umountall(self):
         """umount all mounted chroot fs."""
-        cmds = ('umount %s/proc' % self.rootdir,
-                'umount %s/dev/pts' % self.rootdir,
-                'umount %s/sys' % self.rootdir,
+        cmds = ('umount -n %s/proc' % self.rootdir,
+                'umount -n %s/dev/pts' % self.rootdir,
+                'umount -n %s/sys' % self.rootdir,
                )
     
         for cmd in cmds:
@@ -249,20 +256,14 @@ class Root(object):
             raise mock.exception.YumError, "Error performing yum command: %s" % cmd
 
     @traceLog(moduleLog)
-    def _do_chroot(self, command, *args, **kargs):
-        """execute given command in root"""
-        cmd = "/usr/sbin/chroot %s %s" % (self.rootdir, command)
-        return mock.util.do(cmd, *args, **kargs)
-
-    @traceLog(moduleLog)
     def _make_our_user(self):
         if not os.path.exists(os.path.join(self.rootdir, 'usr/sbin/useradd')):
             raise RootError, "Could not find useradd in chroot, maybe the install failed?"
 
         mock.util.rmtree(os.path.join(self.rootdir, self.homedir))
-        self._do_chroot('/usr/sbin/userdel -r %s' % self.chrootuser, raiseExc=False)
-        self._do_chroot('/usr/sbin/groupdel %s' % self.chrootgroup, raiseExc=False)
-        self._do_chroot('/usr/sbin/useradd -m -u %s -d %s %s' % (self.chrootuid, self.homedir, self.chrootuser), raiseExc=True)
+        self.do_chroot('/usr/sbin/userdel -r %s' % self.chrootuser, raiseExc=False)
+        self.do_chroot('/usr/sbin/groupdel %s' % self.chrootgroup, raiseExc=False)
+        self.do_chroot('/usr/sbin/useradd -m -u %s -d %s %s' % (self.chrootuid, self.homedir, self.chrootuser), raiseExc=True)
 
 
     #
