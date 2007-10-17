@@ -104,7 +104,7 @@ def setup_default_config_opts(config_opts):
     config_opts['rpmbuild_timeout'] = 0
     config_opts['chrootuser'] = 'mockbuild'
     config_opts['chrootgroup'] = 'mockbuild'
-    config_opts['chrootuid'] = os.geteuid()
+    config_opts['chrootuid'] = os.getuid()
     try:
         config_opts['chrootgid'] = grp.getgrnam("mock")[2]
     except KeyError:
@@ -131,8 +131,10 @@ def setup_default_config_opts(config_opts):
     config_opts['chroot_setup_cmd'] = 'install buildsys-build'
     config_opts['target_arch'] = 'i386'
     config_opts['yum.conf'] = ''
-    config_opts['macros'] = {'%%_topdir': '%s/build' % config_opts['chroothome'],
-                             '%%_rpmfilename': '%%%%{NAME}-%%%%{VERSION}-%%%%{RELEASE}.%%%%{ARCH}.rpm'}
+    config_opts['macros'] = {'%_topdir': '%s/build' % config_opts['chroothome'],
+                             '%_rpmfilename': '%%{NAME}-%%{VERSION}-%%{RELEASE}.%%{ARCH}.rpm',
+                             }
+                             
     config_opts['more_buildreqs'] = {}
     config_opts['files'] = {}
     config_opts['files']['etc/hosts'] = "127.0.0.1 localhost localhost.localdomain\n"
@@ -211,23 +213,35 @@ def main():
 
     # do whatever we're here to do
     root = mock.backend.Root(config_opts, mock.uid.uidManager())
+    if config_opts['clean']:
+        root.clean()
+
     if args[0] == 'init':
-        print "initializing chroot "
-        if config_opts['clean']:
-            root.clean()
         root.init()
+
     elif args[0] == 'clean':
-        print "clean placeholder"
+        root.clean()
+
     elif args[0] == 'chroot':
-        print "chroot placeholder"
+        root.init()
+        # TODO
+
     elif args[0] == 'shell':
-        print "shell placeholder"
+        root.init()
+        # TODO
+
     elif args[0] == 'installdeps':
-        print "installdeps placeholder"
+        root.init()
+        # TODO
+
     elif args[0] == 'rebuild':
-        print "rebuild placeholder"
+        root.init()
+        # TODO
+
     else:
         pass
+
+    logging.shutdown()
 
 
 if __name__ == '__main__':
