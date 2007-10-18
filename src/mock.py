@@ -71,8 +71,6 @@ def command_parse():
                       help="do not clean chroot before building", default=True)
     parser.add_option("--arch", action ="store", dest="arch", 
                       default=None, help="target build arch")
-    parser.add_option("--debug", action ="store_true", dest="debug", 
-                      default=False, help="Output copious debugging information")
     parser.add_option("--resultdir", action="store", type="string", 
                       default=None, help="path for resulting files to be put")
     parser.add_option("--statedir", action="store", type="string", default=None,
@@ -110,13 +108,9 @@ def setup_default_config_opts(config_opts):
     # (global) caching-related config options
     config_opts['cache_topdir'] = '/var/lib/mock/cache'
     config_opts['enable_ccache'] = True
+    config_opts['ccache_opts'] = {'max_age_days': 15, 'max_cache_size': "32G"}
     config_opts['enable_yum_cache'] = True
-    config_opts['enable_root_cache'] = True
-
-    # host commands
-    config_opts['chroot'] = '/usr/sbin/chroot'
-    config_opts['mount'] = '/bin/mount'
-    config_opts['umount'] = '/bin/umount'
+    config_opts['yum_cache_opts'] = {'max_age_days': 15}
 
     # dependent on guest OS
     config_opts['use_host_resolv'] = True
@@ -139,10 +133,6 @@ def set_config_opts_per_cmdline(config_opts, options):
         config_opts['target_arch'] = options.arch
     if not options.clean:
         config_opts['clean'] = options.clean
-    if options.debug:
-        config_opts['debug'] = options.debug
-        log.setLevel(logging.DEBUG)
-        #log.setFormatter("detailed")
 
     if options.verbose:
         config_opts['verbose'] = options.verbose
@@ -234,7 +224,6 @@ def main():
 
             for hdr in mock.util.yieldSrpmHeaders(srpms): pass
             chroot.init()
-            # TODO: test this (oh, implement it first, actually)
             chroot.installSrpmDeps(srpms)
 
         else:
