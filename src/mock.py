@@ -189,8 +189,8 @@ def main():
         # do whatever we're here to do
         #   uidManager saves current real uid/gid which are unpriviledged (callers)
         #   due to suid helper, our current effective uid is 0
-        chroot = mock.backend.Root(config_opts, mock.uid.uidManager(os.getuid(), os.getgid()))
         log.info("mock.py version %s starting..." % __VERSION__)
+        chroot = mock.backend.Root(config_opts, mock.uid.uidManager(os.getuid(), os.getgid()))
         os.umask(002)
         if config_opts['clean']:
             chroot.clean()
@@ -248,7 +248,7 @@ def main():
             log.info("Results and/or logs in: %s" % chroot.resultdir)
 
         else:
-            log.error("Unknown command specified: %s" % args[0]
+            log.error("Unknown command specified: %s" % args[0])
 
     except (mock.exception.Error), e:
         log.error(str(e))
