@@ -65,7 +65,7 @@ class Root(object):
             self.statedir = os.path.join(self.basedir, 'state')
         else:
             self.statedir = config['statedir']
-        
+
         self.root_log = logging.getLogger("mock")
         self.build_log = logging.getLogger("mock.Root.build")
         self._state_log = logging.getLogger("mock.Root.state")
@@ -209,7 +209,7 @@ class Root(object):
         os.symlink("/proc/self/fd/0", os.path.join(self.rootdir, "dev/stdin"))
         os.symlink("/proc/self/fd/1", os.path.join(self.rootdir, "dev/stdout"))
         os.symlink("/proc/self/fd/2", os.path.join(self.rootdir, "dev/stderr"))
-        # "/dev/log" 
+        # "/dev/log"
 
         # set up cache dirs:
         self._initCache()
@@ -264,7 +264,7 @@ class Root(object):
     @traceLog(moduleLog)
     def build(self, srpm, timeout):
         """build an srpm into binary rpms, capture log"""
-        
+
         # tell caching we are building
         self._callHooks('prebuild')
 
@@ -287,15 +287,15 @@ class Root(object):
 
             self.do_chroot(cmd, env=env, logger=self.build_log, timeout=timeout, output=0)
 
-            bd_out = self.rootdir + self.builddir 
+            bd_out = self.rootdir + self.builddir
             rpms = glob.glob(bd_out + '/RPMS/*.rpm')
             srpms = glob.glob(bd_out + '/SRPMS/*.rpm')
             packages = rpms + srpms
-            
+
             self.root_log.info("Copying packages to result dir")
             for item in packages:
                 shutil.copy2(item, self.resultdir)
-                
+
         finally:
             self.uidManager.elevatePrivs()
             self._umountall()
@@ -307,18 +307,6 @@ class Root(object):
     # 'Private' API
     # =============
     @traceLog(moduleLog)
-    def _initCache(self):
-        self.cachedir = os.path.join(self.cache_topdir, self.sharedRootName)
-        if self.enable_yum_cache or self.enable_ccache:
-            mock.util.mkdirIfAbsent(self.cachedir)
-
-        if self.enable_yum_cache:
-            self._setupYumCache()
-
-        if self.enable_ccache:
-            self._setupCcache()
-
-    @traceLog(moduleLog)
     def _callHooks(self, stage):
         hooks = self._hooks.get(stage, [])
         for hook in hooks:
@@ -329,6 +317,18 @@ class Root(object):
         hooks = self._hooks.get(stage, [])
         hooks.append(function)
         self._hooks[stage] = hooks
+
+    @traceLog(moduleLog)
+    def _initCache(self):
+        self.cachedir = os.path.join(self.cache_topdir, self.sharedRootName)
+        if self.enable_yum_cache or self.enable_ccache:
+            mock.util.mkdirIfAbsent(self.cachedir)
+
+        if self.enable_yum_cache:
+            self._setupYumCache()
+
+        if self.enable_ccache:
+            self._setupCcache()
 
     @traceLog(moduleLog)
     def _setupYumCache(self):
@@ -355,7 +355,7 @@ class Root(object):
                 if file_age_days > self.ccache_opts['max_age_days']:
                     os.unlink(fullPath)
                     continue
-                    
+
     @traceLog(moduleLog)
     def _ccache_build_hook(self):
         mock.util.do("CCACHE_DIR=%s ccache -M %s" % (self.ccachePath, self.ccache_opts['max_cache_size']))
@@ -423,7 +423,7 @@ class Root(object):
 
 
     #
-    # UNPRIVLEGED: 
+    # UNPRIVLEGED:
     #   Everything in this function runs as the build user
     #
     @traceLog(moduleLog)
@@ -440,7 +440,7 @@ class Root(object):
                 for path in dirnames + filenames:
                     os.chown(os.path.join(dirpath, path), self.chrootuid, -1)
                     os.chmod(os.path.join(dirpath, path), 0755)
-            
+
             # rpmmacros default
             self.macros['%_rpmlock_path'] = "%s/var/lib/rpm/__db.000" % self.basedir
             macrofile_out = '%s%s/.rpmmacros' % (self.rootdir, self.homedir)
@@ -467,13 +467,13 @@ class Root(object):
 
     @traceLog(moduleLog)
     def _resetLogging(self):
-        # attach logs to log files. 
+        # attach logs to log files.
         # This happens in addition to anything
         # is set up in the config file... ie. logs go everywhere
         formatter = logging.Formatter("%(asctime)s - %(module)s:%(lineno)d:%(levelname)s: %(message)s")
-        for (log, filename) in ( 
-                (self._state_log, "state.log"), 
-                (self.build_log, "build.log"), 
+        for (log, filename) in (
+                (self._state_log, "state.log"),
+                (self.build_log, "build.log"),
                 (self.root_log, "root.log")):
             fullPath = os.path.join(self.statedir, filename)
             fh = logging.FileHandler(fullPath, "w+")
