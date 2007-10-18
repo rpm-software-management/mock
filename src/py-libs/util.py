@@ -73,7 +73,7 @@ def rmtree(*args, **kargs):
             raise
 
 @traceLog(log)
-def getSrpmHeader(srpms):
+def yieldSrpmHeaders(srpms):
     ts = rpmUtils.transaction.initReadOnlyTransaction()
     for srpm in srpms:
         try:
@@ -87,14 +87,74 @@ def getSrpmHeader(srpms):
         yield hdr
 
 @traceLog(log)
+def requiresTextFromHdr(hdr):
+    """take a header and hand back a unique'd list of the requires as
+       strings"""
+
+    reqlist = []
+    names = hdr[rpm.RPMTAG_REQUIRENAME]
+    flags = hdr[rpm.RPMTAG_REQUIREFLAGS]
+    ver = hdr[rpm.RPMTAG_REQUIREVERSION]
+    if names is not None:
+        tmplst = zip(names, flags, ver)
+
+    for (n, f, v) in tmplst:
+        if n.startswith('rpmlib'):
+            continue
+
+        req = rpmUtils.miscutils.formatRequire(n, v, f)
+        reqlist.append(req)
+
+    return rpmUtils.miscutils.unique(reqlist)
+
+@traceLog(log)
+def getNEVRA(hdr):
+    name = hdr[rpm.RPMTAG_NAME]
+    ver  = hdr[rpm.RPMTAG_VERSION]
+    rel  = hdr[rpm.RPMTAG_RELEASE]
+    epoch = hdr[rpm.RPMTAG_EPOCH]
+    arch = hdr[rpm.RPMTAG_ARCH]
+    if epoch is None: epoch = 0
+    return (name, epoch, ver, rel, arch)
+
+@traceLog(log)
+def getAddtlReqs(hdr, conf):
+    # Add the 'more_buildreqs' for this SRPM (if defined in config file)
+    (name, epoch, ver, rel, arch) = getNEVRA(hdr)
+    reqlist = []
+    for this_srpm in ['-'.join([name,ver,rel]),
+                      '-'.join([name,ver]),
+                      '-'.join([name]),]:
+        if conf.has_key(this_srpm):
+            more_reqs = conf[this_srpm]
+            if type(more_reqs) in (type(u''), type(''),):
+                reqlist.append(more_reqs)
+            else:
+                reqlist.extend(more_reqs)
+            break
+
+    return rpmUtils.miscutils.unique(reqlist)
+
+@traceLog(log)
+def uniqReqs(*args):
+    master = []
+    for l in args:
+        master.extend(l)
+    return rpmUtils.miscutils.unique(master)
+
+@traceLog(log)
 def do_interactive(command, *args, **kargs):
     # we always assume that we dont care about return code for interactive stuff
     os.system(command)
 
+# logger =
+# output = [1|0]
 @traceLog(log)
 def do(command, timeout=0, raiseExc=True, interactive=0, *args, **kargs):
     """execute given command outside of chroot"""
-    log.debug("Run cmd: %s" % command)
+    
+    logger = kargs.get("logger", log)
+    logger.debug("Run cmd: %s" % command)
 
     # need to not fork, etc or interactive command wont properly display, so catch it here.
     if interactive:
@@ -105,7 +165,7 @@ def do(command, timeout=0, raiseExc=True, interactive=0, *args, **kargs):
         raise alarmExc("timeout expired")
     
     retval = 0
-    log.debug("Executing timeout(%s): %s" % (timeout, command))
+    logger.debug("Executing timeout(%s): %s" % (timeout, command))
 
     output=""
     (r,w) = os.pipe()
@@ -122,8 +182,9 @@ def do(command, timeout=0, raiseExc=True, interactive=0, *args, **kargs):
             # read output from child
             r_fh = os.fdopen(r, "r")
             for line in r_fh:
-                log.debug(line)
-                output += line
+                logger.debug(line)
+                if kargs.get("output",1):
+                    output += line
 
             # close read handle, get child return status, etc
             r_fh.close()
