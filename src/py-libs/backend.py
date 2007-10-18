@@ -332,6 +332,21 @@ class Root(object):
         self.umountCmds.append('umount -n %s/tmp/ccache' % self.rootdir)
         self.mountCmds.append('mount -n --bind %s  %s/tmp/ccache' % (self.ccachePath, self.rootdir))
         os.environ['PATH'] = "/tmp/ccache:%s" % (os.environ['PATH'])
+        os.environ['CCACHE_DIR'] = "/tmp/ccache"
+        os.environ['CCACHE_UMASK'] = "002"
+        self._dumpToFile(os.path.join(self.ccachePath, "cc"), '#!/bin/sh\nexec ccache /usr/bin/cc "$@"\n', mode=0555)
+        self._dumpToFile(os.path.join(self.ccachePath, "gcc"), '#!/bin/sh\nexec ccache /usr/bin/gcc "$@"\n', mode=0555)
+        self._dumpToFile(os.path.join(self.ccachePath, "g++"), '#!/bin/sh\nexec ccache /usr/bin/g++ "$@"\n', mode=0555)
+        self._yum('install ccache')
+
+    @traceLog(moduleLog)
+    def _dumpToFile(self, filename, contents, *args, **kargs):
+        fd = open(filename, "w+")
+        fd.write(contents)
+        fd.close()
+        mode = kargs.get("mode", None)
+        if mode is not None:
+            os.chmod(filename, mode)
 
     @traceLog(moduleLog)
     def _mountall(self):
