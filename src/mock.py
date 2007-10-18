@@ -83,10 +83,6 @@ def command_parse():
                       help="Change where config files are found")
     parser.add_option("--verbose", action ="store_true", dest="verbose", 
                       default=False, help="verbose down output")
-    parser.add_option("--autocache", action ="store_true", dest="use_cache",
-                      default=False, help="Turn on build-root caching")
-    parser.add_option("--rebuildcache", action ="store_true", dest="rebuild_cache",
-                      default=False, help="Force rebuild of build-root cache")
     parser.add_option("--rpmbuild_timeout", action="store", dest="rpmbuild_timeout", type="int",
                       default=None, help="Fail build if rpmbuild takes longer than 'timeout' seconds ")
     
@@ -108,17 +104,14 @@ def setup_default_config_opts(config_opts):
     try:
         config_opts['chrootgid'] = grp.getgrnam("mock")[2]
     except KeyError:
-        # if 'mock' group doesnt exist, must set in config file
+        #  'mock' group doesnt exist, must set in config file
         pass
 
     # (global) caching-related config options
-    config_opts['rebuild_cache'] = False
-    config_opts['use_cache'] = True
-    config_opts['pack_cmd'] = "tar xvjf"
-    config_opts['unpack_cmd'] = "tar cvjf"
-    config_opts['cache_ext'] = ".tar.gz"
-    config_opts['cache_topdir'] = "root-cache"
-    config_opts['max_cache_age_days'] = 15
+    config_opts['cache_topdir'] = '/var/lib/mock/cache'
+    config_opts['enable_ccache'] = True
+    config_opts['enable_yum_cache'] = True
+    config_opts['enable_root_cache'] = True
 
     # host commands
     config_opts['chroot'] = '/usr/sbin/chroot'
@@ -131,13 +124,12 @@ def setup_default_config_opts(config_opts):
     config_opts['chroot_setup_cmd'] = 'install buildsys-build'
     config_opts['target_arch'] = 'i386'
     config_opts['yum.conf'] = ''
-    config_opts['macros'] = {'%_topdir': '%s/build' % config_opts['chroothome'],
-                             '%_rpmfilename': '%%{NAME}-%%{VERSION}-%%{RELEASE}.%%{ARCH}.rpm',
-                             }
-                             
     config_opts['more_buildreqs'] = {}
     config_opts['files'] = {}
     config_opts['files']['etc/hosts'] = "127.0.0.1 localhost localhost.localdomain\n"
+    config_opts['macros'] = {'%_topdir': '%s/build' % config_opts['chroothome'],
+                             '%_rpmfilename': '%%{NAME}-%%{VERSION}-%%{RELEASE}.%%{ARCH}.rpm',
+                             }
 
 
 @trace
@@ -154,14 +146,6 @@ def set_config_opts_per_cmdline(config_opts, options):
 
     if options.verbose:
         config_opts['verbose'] = options.verbose
-    if options.use_cache:
-        config_opts['use_cache'] = options.use_cache
-    if options.rebuild_cache:
-        config_opts['rebuild_cache'] = options.rebuild_cache
-    if config_opts['rebuild_cache']: 
-        config_opts['use_cache'] = True
-    if config_opts['rebuild_cache']: 
-        config_opts['use_cache'] = True
     if options.resultdir:
         config_opts['resultdir'] = options.resultdir
     if options.statedir:
@@ -221,7 +205,8 @@ def main():
             chroot.init()
 
         elif args[0] == 'clean':
-            chroot.clean()
+            if chroot.state() != "clean":
+                chroot.clean()
 
         elif args[0] == 'chroot':
             chroot.init()
@@ -266,7 +251,7 @@ def main():
             for hdr in mock.util.yieldSrpmHeaders(srpms): pass
 
             for srpm in srpms:
-                if config_opts['clean']:
+                if config_opts['clean'] and chroot.state() != "clean":
                     chroot.clean()
                 chroot.init()
                 chroot.build(srpm, timeout=config_opts['rpmbuild_timeout'])
