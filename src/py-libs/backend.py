@@ -19,6 +19,7 @@
 # revised and adapted by Michael Brown
 
 # python library imports
+import glob
 import logging
 import os
 import shutil
@@ -78,6 +79,7 @@ class Root(object):
         self.chroot_setup_cmd = config['chroot_setup_cmd']
         self.yum_path = '/usr/bin/yum'
         self.macros = config['macros']
+        self.more_buildreqs = config['more_buildreqs']
 
         # officially set state so it is logged
         self.state("unstarted")
@@ -202,17 +204,68 @@ class Root(object):
         self._build_dir_setup()
 
     @traceLog(moduleLog)
-    def close(self):
-        """cleanup everything"""
-        self.state("ending")
-        self.state("done")
-        self.root_log.info("Done")
-
-    @traceLog(moduleLog)
     def do_chroot(self, command, env="", *args, **kargs):
         """execute given command in root"""
         cmd = "%s /usr/sbin/chroot %s %s" % (env, self.rootdir, command)
         return mock.util.do(cmd, *args, **kargs)
+
+    @traceLog(moduleLog)
+    def installSrpmDeps(self, srpms):
+        """figure out deps from srpm. call yum to install them"""
+        arg_string = ""
+        self.uidManager.dropPrivsTemp()
+        try:
+            for hdr in mock.util.yieldSrpmHeaders(srpms):
+                # get text buildreqs
+                a = mock.util.requiresTextFromHdr(hdr)
+                b = mock.util.getAddtlReqs(hdr, self.more_buildreqs)
+                for item in mock.util.uniqReqs(a,b):
+                    arg_string = arg_string + " '%s'" % item
+
+        finally:
+            self.uidManager.elevatePrivs()
+
+        # everything exists, okay, install them all.
+        # pass build reqs (as strings) to installer
+        if arg_string != "":
+            output = self._yum('resolvedep %s' % arg_string)
+            for line in output.split('\n'):
+                if line.lower().find('No Package found for'.lower()) != -1:
+                    raise mock.exception.BuildError, "Bad build req: %s. Exiting." % line
+            # nothing made us exit, so we continue
+            self._yum('install %s' % arg_string)
+
+
+    @traceLog(moduleLog)
+    def build(self, srpm, timeout):
+        """build an srpm into binary rpms, capture log"""
+        
+        self.state("setup")
+        self.installSrpmDeps( [srpm,] ) # runs partially unprivileged
+
+        self.state("build")
+        srpmChrootFilename = self._copySrpmIntoChroot(srpm) # runs unprivileged
+
+        self.uidManager.becomeUser(self.chrootuid)
+        try:
+            srpmBasename = os.path.basename(srpmChrootFilename)
+            
+            cmd = "rpmbuild --rebuild  --target %s --nodeps %s" % (
+                    self.target_arch, srpmChrootFilename )
+
+            self.do_chroot(cmd, logger=self.build_log, timeout=timeout, output=0)
+
+            bd_out = self.rootdir + self.builddir 
+            rpms = glob.glob(bd_out + '/RPMS/*.rpm')
+            srpms = glob.glob(bd_out + '/SRPMS/*.rpm')
+            packages = rpms + srpms
+            
+            self.root_log.info("Copying packages to result dir")
+            for item in packages:
+                shutil.copy2(item, self.resultdir)
+                
+        finally:
+            self.uidManager.elevatePrivs()
 
     # =============
     # 'Private' API
@@ -250,7 +303,7 @@ class Root(object):
         cmd = '%s --installroot %s %s' % (self.yum_path, self.rootdir, cmd)
         self.root_log.info(cmd)
         try:
-            mock.util.do(cmd)
+            return mock.util.do(cmd)
         except mock.exception.Error, e:
             self.root_log.exception("Error performing yum command: %s" % cmd)
             raise mock.exception.YumError, "Error performing yum command: %s" % cmd
@@ -276,7 +329,7 @@ class Root(object):
         self.uidManager.becomeUser(self.chrootuid)
         try:
             # create dir structure
-            for subdir in ["%s/%s/%s" % (self.rootdir, self.homedir, s) for s in ('RPMS', 'SRPMS', 'SOURCES', 'SPECS', 'BUILD', 'originals')]:
+            for subdir in ["%s/%s/%s" % (self.rootdir, self.builddir, s) for s in ('RPMS', 'SRPMS', 'SOURCES', 'SPECS', 'BUILD', 'originals')]:
                 mock.util.mkdirIfAbsent(subdir)
 
             # change ownership so we can write to build home dir
@@ -295,7 +348,20 @@ class Root(object):
 
         finally:
             self.uidManager.elevatePrivs()
-    
+
+    @traceLog(moduleLog)
+    def _copySrpmIntoChroot(self, srpm):
+        self.uidManager.becomeUser(self.chrootuid)
+        try:
+            srpmFilename = os.path.basename(srpm)
+            dest = self.rootdir + '/' + self.builddir + '/' + 'originals'
+            shutil.copy2(srpm, dest)
+            origSrpmChrootFilename = os.path.join(self.builddir, 'originals', srpmFilename)
+        finally:
+            self.uidManager.elevatePrivs()
+
+        return origSrpmChrootFilename
+
     @traceLog(moduleLog)
     def _resetLogging(self):
         # attach logs to log files. 
