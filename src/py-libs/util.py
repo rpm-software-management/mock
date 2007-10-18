@@ -182,7 +182,11 @@ def do(command, timeout=0, raiseExc=True, interactive=0, *args, **kargs):
             # read output from child
             r_fh = os.fdopen(r, "r")
             for line in r_fh:
-                logger.debug(line)
+                if line.endswith("\n"):
+                    logger.debug(line[:-1])
+                else:
+                    logger.debug(line)
+
                 if kargs.get("output",1):
                     output += line
 
