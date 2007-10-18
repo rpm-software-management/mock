@@ -18,7 +18,6 @@
 
 
 
-
 VPATH = @srcdir@
 pkgdatadir = $(datadir)/@PACKAGE@
 pkglibdir = $(libdir)/@PACKAGE@
@@ -57,26 +56,12 @@ am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
 mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = $(top_builddir)/src/config.h
 CONFIG_CLEAN_FILES = src/version.h mock.spec
-am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
-am__vpath_adj = case $$p in \
-    $(srcdir)/*) f=`echo "$$p" | sed "s|^$$srcdirstrip/||"`;; \
-    *) f=$$p;; \
-  esac;
-am__strip_dir = `echo $$p | sed -e 's|^.*/||'`;
-am__installdirs = "$(DESTDIR)$(libdir)" "$(DESTDIR)$(bindir)" \
-	"$(DESTDIR)$(libexecdir)" "$(DESTDIR)$(pkgpythondir)" \
-	"$(DESTDIR)$(man1dir)" "$(DESTDIR)$(mocketcdir)"
-libLTLIBRARIES_INSTALL = $(INSTALL)
-LTLIBRARIES = $(lib_LTLIBRARIES)
-src_libselinux_mock_la_LIBADD =
-am__dirstamp = $(am__leading_dot)dirstamp
-am_src_libselinux_mock_la_OBJECTS = src/selinux-mock.lo
-src_libselinux_mock_la_OBJECTS = $(am_src_libselinux_mock_la_OBJECTS)
-src_libselinux_mock_la_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) \
-	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
-	$(src_libselinux_mock_la_LDFLAGS) $(LDFLAGS) -o $@
+am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(libexecdir)" \
+	"$(DESTDIR)$(pkgpythondir)" "$(DESTDIR)$(man1dir)" \
+	"$(DESTDIR)$(mocketcdir)"
 binPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
 PROGRAMS = $(bin_PROGRAMS)
+am__dirstamp = $(am__leading_dot)dirstamp
 am_src_mock_OBJECTS = src/mock.$(OBJEXT)
 src_mock_OBJECTS = $(am_src_mock_OBJECTS)
 src_mock_LDADD = $(LDADD)
@@ -97,8 +82,8 @@ CCLD = $(CC)
 LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
 	$(LDFLAGS) -o $@
-SOURCES = $(src_libselinux_mock_la_SOURCES) $(src_mock_SOURCES)
-DIST_SOURCES = $(src_libselinux_mock_la_SOURCES) $(src_mock_SOURCES)
+SOURCES = $(src_mock_SOURCES)
+DIST_SOURCES = $(src_mock_SOURCES)
 RECURSIVE_TARGETS = all-recursive check-recursive dvi-recursive \
 	html-recursive info-recursive install-data-recursive \
 	install-dvi-recursive install-exec-recursive \
@@ -106,6 +91,12 @@ RECURSIVE_TARGETS = all-recursive check-recursive dvi-recursive \
 	install-pdf-recursive install-ps-recursive install-recursive \
 	installcheck-recursive installdirs-recursive pdf-recursive \
 	ps-recursive uninstall-recursive
+am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
+am__vpath_adj = case $$p in \
+    $(srcdir)/*) f=`echo "$$p" | sed "s|^$$srcdirstrip/||"`;; \
+    *) f=$$p;; \
+  esac;
+am__strip_dir = `echo $$p | sed -e 's|^.*/||'`;
 pkgpythonPYTHON_INSTALL = $(INSTALL_DATA)
 py_compile = $(top_srcdir)/build/py-compile
 man1dir = $(mandir)/man1
@@ -260,15 +251,14 @@ RELEASE_STRING = $(RELEASE_NAME)-$(RELEASE_VERSION)
 MOCK_LIBTOOL_CURRENT = @MOCK_LIBTOOL_CURRENT@
 MOCK_LIBTOOL_REVISION = @MOCK_LIBTOOL_REVISION@
 MOCK_LIBTOOL_AGE = @MOCK_LIBTOOL_AGE@
+
+#$(bin_PROGRAMS): src/libselinux-mock.la
+#$(EXTRA_PROGRAMS): src/libselinux-mock.la
 CLEANFILES = mock-*.tar.gz mock-*.tar.bz2 mock-*.rpm _buildtemp \
 	version $(EXTRA_PROGRAMS)
 DISTCLEANFILES = *~
 EXTRA_DIST = docs buildsys-build.spec-template mock.spec
 AM_CFLAGS = -Wall -I$(top_srcdir)/src -DSYSCONFDIR='"$(sysconfdir)"' -DLIBEXECDIR='"$(libexecdir)"' -DLIBDIR='"$(libdir)"' -Werror
-lib_LTLIBRARIES = src/libselinux-mock.la
-src_libselinux_mock_la_LDFLAGS = -version-info $(MOCK_LIBTOOL_CURRENT):$(MOCK_LIBTOOL_REVISION):$(MOCK_LIBTOOL_AGE)
-#src_libselinux_mock_la_CFLAGS =
-src_libselinux_mock_la_SOURCES = src/selinux-mock.c
 src_mock_SOURCES = src/mock.c
 src_mock_LDFLAGS = 
 mocketcdir = $(sysconfdir)/mock
@@ -342,42 +332,6 @@ src/version.h: $(top_builddir)/config.status $(top_srcdir)/src/version.h.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 mock.spec: $(top_builddir)/config.status $(srcdir)/mock.spec.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
-install-libLTLIBRARIES: $(lib_LTLIBRARIES)
-	@$(NORMAL_INSTALL)
-	test -z "$(libdir)" || $(MKDIR_P) "$(DESTDIR)$(libdir)"
-	@list='$(lib_LTLIBRARIES)'; for p in $$list; do \
-	  if test -f $$p; then \
-	    f=$(am__strip_dir) \
-	    echo " $(LIBTOOL) --mode=install $(libLTLIBRARIES_INSTALL) $(INSTALL_STRIP_FLAG) '$$p' '$(DESTDIR)$(libdir)/$$f'"; \
-	    $(LIBTOOL) --mode=install $(libLTLIBRARIES_INSTALL) $(INSTALL_STRIP_FLAG) "$$p" "$(DESTDIR)$(libdir)/$$f"; \
-	  else :; fi; \
-	done
-
-uninstall-libLTLIBRARIES:
-	@$(NORMAL_UNINSTALL)
-	@list='$(lib_LTLIBRARIES)'; for p in $$list; do \
-	  p=$(am__strip_dir) \
-	  echo " $(LIBTOOL) --mode=uninstall rm -f '$(DESTDIR)$(libdir)/$$p'"; \
-	  $(LIBTOOL) --mode=uninstall rm -f "$(DESTDIR)$(libdir)/$$p"; \
-	done
-
-clean-libLTLIBRARIES:
-	-test -z "$(lib_LTLIBRARIES)" || rm -f $(lib_LTLIBRARIES)
-	@list='$(lib_LTLIBRARIES)'; for p in $$list; do \
-	  dir="`echo $$p | sed -e 's|/[^/]*$$||'`"; \
-	  test "$$dir" != "$$p" || dir=.; \
-	  echo "rm -f \"$${dir}/so_locations\""; \
-	  rm -f "$${dir}/so_locations"; \
-	done
-src/$(am__dirstamp):
-	@$(MKDIR_P) src
-	@: > src/$(am__dirstamp)
-src/$(DEPDIR)/$(am__dirstamp):
-	@$(MKDIR_P) src/$(DEPDIR)
-	@: > src/$(DEPDIR)/$(am__dirstamp)
-src/selinux-mock.lo: src/$(am__dirstamp) src/$(DEPDIR)/$(am__dirstamp)
-src/libselinux-mock.la: $(src_libselinux_mock_la_OBJECTS) $(src_libselinux_mock_la_DEPENDENCIES) src/$(am__dirstamp)
-	$(src_libselinux_mock_la_LINK) -rpath $(libdir) $(src_libselinux_mock_la_OBJECTS) $(src_libselinux_mock_la_LIBADD) $(LIBS)
 install-binPROGRAMS: $(bin_PROGRAMS)
 	@$(NORMAL_INSTALL)
 	test -z "$(bindir)" || $(MKDIR_P) "$(DESTDIR)$(bindir)"
@@ -406,6 +360,12 @@ clean-binPROGRAMS:
 	  echo " rm -f $$p $$f"; \
 	  rm -f $$p $$f ; \
 	done
+src/$(am__dirstamp):
+	@$(MKDIR_P) src
+	@: > src/$(am__dirstamp)
+src/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) src/$(DEPDIR)
+	@: > src/$(DEPDIR)/$(am__dirstamp)
 src/mock.$(OBJEXT): src/$(am__dirstamp) src/$(DEPDIR)/$(am__dirstamp)
 src/mock$(EXEEXT): $(src_mock_OBJECTS) $(src_mock_DEPENDENCIES) src/$(am__dirstamp)
 	@rm -f src/mock$(EXEEXT)
@@ -433,14 +393,11 @@ uninstall-dist_libexecSCRIPTS:
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
 	-rm -f src/mock.$(OBJEXT)
-	-rm -f src/selinux-mock.$(OBJEXT)
-	-rm -f src/selinux-mock.lo
 
 distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/mock.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@src/$(DEPDIR)/selinux-mock.Plo@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`;\
@@ -471,7 +428,6 @@ mostlyclean-libtool:
 
 clean-libtool:
 	-rm -rf .libs _libs
-	-rm -rf src/.libs src/_libs
 
 distclean-libtool:
 	-rm -f libtool
@@ -841,12 +797,10 @@ distcleancheck: distclean
 	       exit 1; } >&2
 check-am: all-am
 check: check-recursive
-all-am: Makefile $(LTLIBRARIES) $(PROGRAMS) $(SCRIPTS) $(MANS) $(DATA)
-install-binPROGRAMS: install-libLTLIBRARIES
-
+all-am: Makefile $(PROGRAMS) $(SCRIPTS) $(MANS) $(DATA)
 installdirs: installdirs-recursive
 installdirs-am:
-	for dir in "$(DESTDIR)$(libdir)" "$(DESTDIR)$(bindir)" "$(DESTDIR)$(libexecdir)" "$(DESTDIR)$(pkgpythondir)" "$(DESTDIR)$(man1dir)" "$(DESTDIR)$(mocketcdir)"; do \
+	for dir in "$(DESTDIR)$(bindir)" "$(DESTDIR)$(libexecdir)" "$(DESTDIR)$(pkgpythondir)" "$(DESTDIR)$(man1dir)" "$(DESTDIR)$(mocketcdir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-recursive
@@ -879,8 +833,7 @@ maintainer-clean-generic:
 	@echo "it deletes files that may require special tools to rebuild."
 clean: clean-recursive
 
-clean-am: clean-binPROGRAMS clean-generic clean-libLTLIBRARIES \
-	clean-libtool mostlyclean-am
+clean-am: clean-binPROGRAMS clean-generic clean-libtool mostlyclean-am
 
 distclean: distclean-recursive
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
@@ -904,8 +857,7 @@ install-data-am: install-dist_mocketcDATA install-man \
 
 install-dvi: install-dvi-recursive
 
-install-exec-am: install-binPROGRAMS install-dist_libexecSCRIPTS \
-	install-libLTLIBRARIES
+install-exec-am: install-binPROGRAMS install-dist_libexecSCRIPTS
 
 install-html: install-html-recursive
 
@@ -940,8 +892,8 @@ ps: ps-recursive
 ps-am:
 
 uninstall-am: uninstall-binPROGRAMS uninstall-dist_libexecSCRIPTS \
-	uninstall-dist_mocketcDATA uninstall-libLTLIBRARIES \
-	uninstall-man uninstall-pkgpythonPYTHON
+	uninstall-dist_mocketcDATA uninstall-man \
+	uninstall-pkgpythonPYTHON
 
 uninstall-man: uninstall-man1
 
@@ -950,30 +902,26 @@ uninstall-man: uninstall-man1
 
 .PHONY: $(RECURSIVE_CLEAN_TARGETS) $(RECURSIVE_TARGETS) CTAGS GTAGS \
 	all all-am am--refresh check check-am clean clean-binPROGRAMS \
-	clean-generic clean-libLTLIBRARIES clean-libtool ctags \
-	ctags-recursive dist dist-all dist-bzip2 dist-gzip dist-shar \
-	dist-tarZ dist-zip distcheck distclean distclean-compile \
-	distclean-generic distclean-hdr distclean-libtool \
-	distclean-tags distcleancheck distdir distuninstallcheck dvi \
-	dvi-am html html-am info info-am install install-am \
-	install-binPROGRAMS install-data install-data-am \
-	install-dist_libexecSCRIPTS install-dist_mocketcDATA \
-	install-dvi install-dvi-am install-exec install-exec-am \
-	install-html install-html-am install-info install-info-am \
-	install-libLTLIBRARIES install-man install-man1 install-pdf \
-	install-pdf-am install-pkgpythonPYTHON install-ps \
+	clean-generic clean-libtool ctags ctags-recursive dist \
+	dist-all dist-bzip2 dist-gzip dist-shar dist-tarZ dist-zip \
+	distcheck distclean distclean-compile distclean-generic \
+	distclean-hdr distclean-libtool distclean-tags distcleancheck \
+	distdir distuninstallcheck dvi dvi-am html html-am info \
+	info-am install install-am install-binPROGRAMS install-data \
+	install-data-am install-dist_libexecSCRIPTS \
+	install-dist_mocketcDATA install-dvi install-dvi-am \
+	install-exec install-exec-am install-html install-html-am \
+	install-info install-info-am install-man install-man1 \
+	install-pdf install-pdf-am install-pkgpythonPYTHON install-ps \
 	install-ps-am install-strip installcheck installcheck-am \
 	installdirs installdirs-am maintainer-clean \
 	maintainer-clean-generic mostlyclean mostlyclean-compile \
 	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
 	tags tags-recursive uninstall uninstall-am \
 	uninstall-binPROGRAMS uninstall-dist_libexecSCRIPTS \
-	uninstall-dist_mocketcDATA uninstall-libLTLIBRARIES \
-	uninstall-man uninstall-man1 uninstall-pkgpythonPYTHON
+	uninstall-dist_mocketcDATA uninstall-man uninstall-man1 \
+	uninstall-pkgpythonPYTHON
 
-
-$(bin_PROGRAMS): src/libselinux-mock.la
-$(EXTRA_PROGRAMS): src/libselinux-mock.la
 
 src/mock.py: configure.ac Makefile.am src/mock.py
 	echo Updating $@, current pwd: $$(pwd)

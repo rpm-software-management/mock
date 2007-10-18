@@ -26,16 +26,9 @@ EXTRA_DIST =
 bin_PROGRAMS=
 EXTRA_PROGRAMS=
 
-$(bin_PROGRAMS): src/libselinux-mock.la
-$(EXTRA_PROGRAMS): src/libselinux-mock.la
 CLEANFILES += $(EXTRA_PROGRAMS)
 
 AM_CFLAGS = -Wall -I$(top_srcdir)/src -DSYSCONFDIR='"$(sysconfdir)"' -DLIBEXECDIR='"$(libexecdir)"' -DLIBDIR='"$(libdir)"' -Werror
-
-lib_LTLIBRARIES = src/libselinux-mock.la
-src_libselinux_mock_la_LDFLAGS = -version-info $(MOCK_LIBTOOL_CURRENT):$(MOCK_LIBTOOL_REVISION):$(MOCK_LIBTOOL_AGE)
-#src_libselinux_mock_la_CFLAGS =
-src_libselinux_mock_la_SOURCES = src/selinux-mock.c
 
 bin_PROGRAMS += src/mock
 src_mock_SOURCES = src/mock.c
