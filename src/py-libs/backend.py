@@ -250,10 +250,11 @@ class Root(object):
         self._mountall()
         self.uidManager.becomeUser(self.chrootuid)
         try:
+            env = "HOME=%s" % self.homedir
             cmd = "rpmbuild --rebuild  --target %s --nodeps %s" % (
                     self.target_arch, srpmChrootFilename )
 
-            self.do_chroot(cmd, logger=self.build_log, timeout=timeout, output=0)
+            self.do_chroot(cmd, env=env, logger=self.build_log, timeout=timeout, output=0)
 
             bd_out = self.rootdir + self.builddir 
             rpms = glob.glob(bd_out + '/RPMS/*.rpm')
