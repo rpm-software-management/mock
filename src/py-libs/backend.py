@@ -24,6 +24,7 @@ import logging
 import os
 import shutil
 import stat
+import time
 
 # our imports
 import mock.util
@@ -40,6 +41,7 @@ class Root(object):
     def __init__(self, config, uidManager):
         self._state = 'unstarted'
         self.uidManager = uidManager
+        self._hooks = {}
 
         self.sharedRootName = config['root']
         root = self.sharedRootName
@@ -82,9 +84,10 @@ class Root(object):
         self.cache_topdir = config['cache_topdir']
 
         self.enable_ccache = config['enable_ccache']
-        self.enable_yum_cache = config['enable_yum_cache']
-        self.enable_root_cache = config['enable_root_cache']
+        self.ccache_opts   = config['ccache_opts']
 
+        self.enable_yum_cache = config['enable_yum_cache']
+        self.yum_cache_opts   = config['yum_cache_opts']
 
         # mount/umount
         self.umountCmds = ['umount -n %s/proc' % self.rootdir,
@@ -223,6 +226,8 @@ class Root(object):
         # create rpmbuild dir
         self._build_dir_setup()
 
+        # done with init
+
     @traceLog(moduleLog)
     def do_chroot(self, command, env="", *args, **kargs):
         """execute given command in root"""
@@ -260,6 +265,9 @@ class Root(object):
     def build(self, srpm, timeout):
         """build an srpm into binary rpms, capture log"""
         
+        # tell caching we are building
+        self._callHooks('prebuild')
+
         self.state("setup")
         self.installSrpmDeps( [srpm,] ) # runs partially unprivileged
 
@@ -292,17 +300,17 @@ class Root(object):
             self.uidManager.elevatePrivs()
             self._umountall()
 
+        # tell caching we are done building
+        self._callHooks('postbuild')
+
     # =============
     # 'Private' API
     # =============
     @traceLog(moduleLog)
     def _initCache(self):
         self.cachedir = os.path.join(self.cache_topdir, self.sharedRootName)
-        if self.enable_root_cache or self.enable_yum_cache or self.enable_ccache:
+        if self.enable_yum_cache or self.enable_ccache:
             mock.util.mkdirIfAbsent(self.cachedir)
-
-        if self.enable_root_cache:
-            self._setupRootCache()
 
         if self.enable_yum_cache:
             self._setupYumCache()
@@ -311,10 +319,16 @@ class Root(object):
             self._setupCcache()
 
     @traceLog(moduleLog)
-    def _setupRootCache(self):
-        self.rootCachePath = os.path.join(self.cachedir, "root_cache")
-        mock.util.mkdirIfAbsent(self.rootCachePath)
-        # TODO: need to check ages here for expiry
+    def _callHooks(self, stage):
+        hooks = self._hooks.get(stage, [])
+        for hook in hooks:
+            hook()
+
+    @traceLog(moduleLog)
+    def _addHook(self, stage, function):
+        hooks = self._hooks.get(stage, [])
+        hooks.append(function)
+        self._hooks[stage] = hooks
 
     @traceLog(moduleLog)
     def _setupYumCache(self):
@@ -323,9 +337,32 @@ class Root(object):
         mock.util.mkdirIfAbsent(self.yumSharedCachePath)
         self.umountCmds.append('umount -n %s/var/cache/yum' % self.rootdir)
         self.mountCmds.append('mount -n --bind %s  %s/var/cache/yum' % (self.yumSharedCachePath, self.rootdir))
+        for (dirpath, dirnames, filenames) in os.walk(self.yumSharedCachePath):
+            for filename in filenames:
+                fullPath = os.path.join(dirpath, filename)
+                # prune repodata so yum redownloads.
+                # prevents certain errors where yum gets stuck due to bad metadata
+                for ext in (".sqllite", ".xml", ".bz2", ".gz"):
+                    if filename.endswith(ext):
+                        os.unlink(fullPath)
+                        fullPath = None
+                        break
+
+                if fullPath is None: continue
+
+                statinfo = os.stat(fullPath)
+                file_age_days = (time.time() - statinfo.st_ctime) / (60 * 60 * 24)
+                if file_age_days > self.ccache_opts['max_age_days']:
+                    os.unlink(fullPath)
+                    continue
+                    
+    @traceLog(moduleLog)
+    def _ccache_build_hook(self):
+        mock.util.do("CCACHE_DIR=%s ccache -M %s" % (self.ccachePath, self.ccache_opts['max_cache_size']))
 
     @traceLog(moduleLog)
     def _setupCcache(self):
+        self._addHook("prebuild", self._ccache_build_hook)
         self.ccachePath = os.path.join(self.cachedir, "ccache")
         mock.util.mkdirIfAbsent(os.path.join(self.rootdir, 'tmp/ccache'))
         mock.util.mkdirIfAbsent(self.ccachePath)
