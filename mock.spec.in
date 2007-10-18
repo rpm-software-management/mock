@@ -56,8 +56,8 @@ fi
 %config(noreplace) %{_sysconfdir}/%{name}/*.cfg
 %config(noreplace) %{_sysconfdir}/%{name}/*.ini
 
-# binary
-%attr(04775, root, mock) %{_bindir}/%{name}
+# binary is setuid, but only runnable by group 'mock'
+%attr(04770, root, mock) %{_bindir}/%{name}
 
 %{_mandir}/man1/mock.1*
 %attr(02775, root, mock) %dir /var/lib/mock
