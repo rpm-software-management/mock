@@ -251,9 +251,6 @@ RELEASE_STRING = $(RELEASE_NAME)-$(RELEASE_VERSION)
 MOCK_LIBTOOL_CURRENT = @MOCK_LIBTOOL_CURRENT@
 MOCK_LIBTOOL_REVISION = @MOCK_LIBTOOL_REVISION@
 MOCK_LIBTOOL_AGE = @MOCK_LIBTOOL_AGE@
-
-#$(bin_PROGRAMS): src/libselinux-mock.la
-#$(EXTRA_PROGRAMS): src/libselinux-mock.la
 CLEANFILES = mock-*.tar.gz mock-*.tar.bz2 mock-*.rpm _buildtemp \
 	version $(EXTRA_PROGRAMS)
 DISTCLEANFILES = *~
@@ -923,7 +920,9 @@ uninstall-man: uninstall-man1
 	uninstall-pkgpythonPYTHON
 
 
-src/mock.py: configure.ac Makefile.am src/mock.py
+$(top_builddir)/src/mock.py: $(top_srcdir)/src/mock.py
+
+src/mock.py: configure.ac Makefile.am
 	echo Updating $@, current pwd: $$(pwd)
 	cp -f $(top_srcdir)/$@ $(top_builddir)/$@.new
 	perl -p -i -e 's|^__VERSION__=.*|__VERSION__="$(RELEASE_VERSION)"|' $(top_builddir)/$@.new

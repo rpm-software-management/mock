@@ -50,7 +50,9 @@ pkgpython_PYTHON = \
 	src/py-libs/trace_decorator.py 	\
 	src/py-libs/uid.py
 
-src/mock.py: configure.ac Makefile.am src/mock.py
+$(top_builddir)/src/mock.py: $(top_srcdir)/src/mock.py
+
+src/mock.py: configure.ac Makefile.am
 	echo Updating $@, current pwd: $$(pwd)
 	cp -f $(top_srcdir)/$@ $(top_builddir)/$@.new
 	perl -p -i -e 's|^__VERSION__=.*|__VERSION__="$(RELEASE_VERSION)"|' $(top_builddir)/$@.new
