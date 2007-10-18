@@ -57,7 +57,7 @@ fi
 %config(noreplace) %{_sysconfdir}/%{name}/*.ini
 
 # binary
-%{_bindir}/%{name}
+%attr(04775, root, mock) %{_bindir}/%{name}
 
 %{_mandir}/man1/mock.1*
 %attr(02775, root, mock) %dir /var/lib/mock
