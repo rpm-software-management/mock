@@ -6,22 +6,6 @@ from decorator import decorator
 import logging
 moduleLog = logging.getLogger("mock.trace_decorator")
 
-@decorator
-def trace(f, *args, **kw):
-    moduleLog.debug("ENTER: %s(%s, %s)" % (f.func_name, args, kw))
-    try:
-        result = "Bad exception raised: Exception was not a derived class of 'Exception'"
-        try:
-            result = f(*args, **kw)
-        except BaseException, e:
-            result = "EXCEPTION RAISED"
-            moduleLog.debug( "EXCEPTION: %s\n" % e, exc_info=1)
-            raise
-    finally:
-        moduleLog.debug( "LEAVE %s --> %s\n" % (f.func_name, result))
-
-    return result
-
 def traceLog(logger = moduleLog):
     log = logger
     @decorator
