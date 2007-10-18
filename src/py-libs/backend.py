@@ -19,6 +19,7 @@
 # revised and adapted by Michael Brown
 
 # python library imports
+import fcntl
 import glob
 import logging
 import os
@@ -42,6 +43,7 @@ class Root(object):
         self._state = 'unstarted'
         self.uidManager = uidManager
         self._hooks = {}
+        self.buildrootLock = None
 
         self.sharedRootName = config['root']
         root = self.sharedRootName
@@ -100,7 +102,7 @@ class Root(object):
                ]
 
         # officially set state so it is logged
-        self.state("unstarted")
+        self.state("start")
 
     # =============
     #  'Public' API
@@ -138,6 +140,14 @@ class Root(object):
         mock.util.mkdirIfAbsent(self.rootdir)
         mock.util.mkdirIfAbsent(self.resultdir)
 
+        # TODO: lock this buildroot so we dont get stomped on.
+        self.buildrootLock = open(os.path.join(self.statedir, "buildroot.lock"), "a+")
+        try:
+            fcntl.lockf(self.buildrootLock.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except IOError, e:
+            raise mock.exception.Error, "Build root is locked by another process."
+
+        # create our log files.
         self._resetLogging()
 
         # write out config details
@@ -235,7 +245,7 @@ class Root(object):
         return mock.util.do(cmd, *args, **kargs)
 
     @traceLog(moduleLog)
-    def installSrpmDeps(self, srpms):
+    def installSrpmDeps(self, *srpms):
         """figure out deps from srpm. call yum to install them"""
         arg_string = ""
         self.uidManager.dropPrivsTemp()
@@ -277,20 +287,39 @@ class Root(object):
         self.uidManager.becomeUser(self.chrootuid)
         try:
             self.state("setup")
-            self.installSrpmDeps( [srpm,] ) # runs partially unprivileged
 
-            self.state("build")
-            srpmChrootFilename = self._copySrpmIntoChroot(srpm) # runs unprivileged
+            srpmChrootFilename = self._copySrpmIntoChroot(srpm)
             srpmBasename = os.path.basename(srpmChrootFilename)
 
             # install srpm
-            # rebuild srpm
-
             env = "HOME=%s" % self.homedir
-            cmd = "rpmbuild --rebuild  --target %s --nodeps %s" % (
-                    self.target_arch, srpmChrootFilename )
+            self.doChroot("rpm -Uvh --nodeps %s" % srpmChrootFilename, env=env)
 
-            self.doChroot(cmd, env=env, logger=self.build_log, timeout=timeout, output=0)
+            # rebuild srpm/rpm from SPEC file
+            specs = glob.glob("%s/%s/SPECS/*.spec" % (self.rootdir, self.builddir))
+            if len(specs) < 1:
+                raise mock.exception.PkgError, "No Spec file found in srpm: %s" % srpmBasename
+
+            spec = specs[0] # if there's more than one then someone is an idiot
+            chrootspec = spec.replace(self.rootdir, '') # get rid of rootdir prefix
+            self.doChroot(
+                "rpmbuild -bs --target %s --nodeps %s" % (self.target_arch, chrootspec), 
+                env=env, logger=self.build_log, timeout=timeout, output=0
+                )
+
+            rebuiltSrpmFile = glob.glob("%s/%s/SRPMS/*.src.rpm" % (self.rootdir, self.builddir))
+            if len(rebuiltSrpmFile) != 1:
+                raise mock.exception.PkgError, "Didnt find single rebuilt srpm." 
+
+            rebuiltSrpmFile = rebuiltSrpmFile[0]
+            self.installSrpmDeps(rebuiltSrpmFile)
+
+            #have to permanently drop privs or rpmbuild regains them
+            self.state("build")
+            self.doChroot(
+                "rpmbuild -bb --target %s --nodeps %s" % (self.target_arch, chrootspec), 
+                env=env, logger=self.build_log, timeout=timeout, output=0
+                )
 
             bd_out = self.rootdir + self.builddir
             rpms = glob.glob(bd_out + '/RPMS/*.rpm')
@@ -429,6 +458,21 @@ class Root(object):
         self.doChroot('/usr/sbin/groupdel %s' % self.chrootgroup, raiseExc=False)
         self.doChroot('/usr/sbin/useradd -m -u %s -d %s %s' % (self.chrootuid, self.homedir, self.chrootuser), raiseExc=True)
 
+    @traceLog(moduleLog)
+    def _resetLogging(self):
+        # attach logs to log files.
+        # This happens in addition to anything
+        # is set up in the config file... ie. logs go everywhere
+        formatter = logging.Formatter("%(asctime)s - %(module)s:%(lineno)d:%(levelname)s: %(message)s")
+        for (log, filename) in (
+                (self._state_log, "state.log"),
+                (self.build_log, "build.log"),
+                (self.root_log, "root.log")):
+            fullPath = os.path.join(self.statedir, filename)
+            fh = logging.FileHandler(fullPath, "w+")
+            fh.setFormatter(formatter)
+            fh.setLevel(logging.NOTSET)
+            log.addHandler(fh)
 
     #
     # UNPRIVLEGED:
@@ -476,20 +520,4 @@ class Root(object):
             self.uidManager.restorePrivs()
 
         return origSrpmChrootFilename
-
-    @traceLog(moduleLog)
-    def _resetLogging(self):
-        # attach logs to log files.
-        # This happens in addition to anything
-        # is set up in the config file... ie. logs go everywhere
-        formatter = logging.Formatter("%(asctime)s - %(module)s:%(lineno)d:%(levelname)s: %(message)s")
-        for (log, filename) in (
-                (self._state_log, "state.log"),
-                (self.build_log, "build.log"),
-                (self.root_log, "root.log")):
-            fullPath = os.path.join(self.statedir, filename)
-            fh = logging.FileHandler(fullPath, "w+")
-            fh.setFormatter(formatter)
-            fh.setLevel(logging.NOTSET)
-            log.addHandler(fh)
 

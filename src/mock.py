@@ -226,7 +226,7 @@ def main():
 
             for hdr in mock.util.yieldSrpmHeaders(srpms): pass
             chroot.init()
-            chroot.installSrpmDeps(srpms)
+            chroot.installSrpmDeps(*srpms)
 
         else:
             if args[0] == 'rebuild':
@@ -247,7 +247,10 @@ def main():
                 chroot.init()
                 chroot.build(srpm, timeout=config_opts['rpmbuild_timeout'])
 
-            log.critical("Results and/or logs in: %s" % chroot.resultdir)
+            log.info("Results and/or logs in: %s" % chroot.resultdir)
+
+    except (mock.exception.Error), e:
+        log.error(str(e))
 
     except (Exception,), e:
         logging.exception(e)
