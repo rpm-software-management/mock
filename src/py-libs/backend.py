@@ -245,11 +245,11 @@ class Root(object):
 
         self.state("build")
         srpmChrootFilename = self._copySrpmIntoChroot(srpm) # runs unprivileged
+        srpmBasename = os.path.basename(srpmChrootFilename)
 
+        self._mountall()
         self.uidManager.becomeUser(self.chrootuid)
         try:
-            srpmBasename = os.path.basename(srpmChrootFilename)
-            
             cmd = "rpmbuild --rebuild  --target %s --nodeps %s" % (
                     self.target_arch, srpmChrootFilename )
 
@@ -266,6 +266,7 @@ class Root(object):
                 
         finally:
             self.uidManager.elevatePrivs()
+            self._umountall()
 
     # =============
     # 'Private' API
