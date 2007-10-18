@@ -247,7 +247,7 @@ def main():
                 log.critical("No package specified to rebuild command.")
                 sys.exit(50)
 
-            for hdr in mock.util.getSrpmHeader(srpms): pass
+            for hdr in mock.util.yieldSrpmHeaders(srpms): pass
             chroot.init()
             # TODO: test this (oh, implement it first, actually)
             chroot.installSrpmDeps(srpms)
@@ -263,15 +263,15 @@ def main():
                 srpms = args[0:]
 
             # check that everything is kosher. Raises exception on error
-            for hdr in mock.util.getSrpmHeader(srpms): pass
+            for hdr in mock.util.yieldSrpmHeaders(srpms): pass
 
             for srpm in srpms:
                 if config_opts['clean']:
                     chroot.clean()
                 chroot.init()
-                chroot.build(srpm)
+                chroot.build(srpm, timeout=config_opts['rpmbuild_timeout'])
 
-            log.critical("Results and/or logs in: %s" % root.resultdir)
+            log.critical("Results and/or logs in: %s" % chroot.resultdir)
 
     except (Exception,), e:
         logging.exception(e)
