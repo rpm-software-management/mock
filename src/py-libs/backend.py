@@ -132,7 +132,7 @@ class Root(object):
         #   --> no /etc/yum.conf symlink (F7 and above)
 
         self.root_log.debug("elevating privs")
-        self.uidManager.becomeUser(0,0)
+        self.uidManager.becomeUser(0)
 
          # create our base directory heirarchy
         mock.util.mkdirIfAbsent(self.basedir)
