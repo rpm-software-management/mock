@@ -187,7 +187,9 @@ def main():
 
     try:
         # do whatever we're here to do
-        chroot = mock.backend.Root(config_opts, mock.uid.uidManager())
+        #   uidManager saves current real uid/gid which are unpriviledged (callers)
+        #   due to suid helper, our current effective uid is 0
+        chroot = mock.backend.Root(config_opts, mock.uid.uidManager(os.getuid(), os.getgid()))
         if config_opts['clean']:
             chroot.clean()
 
@@ -203,7 +205,7 @@ def main():
             chroot._mountall()
             try:
                 cmd = ' '.join(args[1:])
-                output = chroot.do_chroot(cmd, env="PS1='mock-chroot> '", interactive=1, raiseExc=0)
+                output = chroot.doChroot(cmd, env="PS1='mock-chroot> '", interactive=1, raiseExc=0)
             finally:
                 chroot._umountall()
 
@@ -211,7 +213,7 @@ def main():
             chroot.init()
             chroot._mountall()
             try:
-                output = chroot.do_chroot("/bin/bash", env="PS1='mock-chroot> '", interactive=1, raiseExc=0)
+                output = chroot.doChroot("/bin/bash", env="PS1='mock-chroot> '", interactive=1, raiseExc=0)
             finally:
                 chroot._umountall()
 

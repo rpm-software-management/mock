@@ -130,7 +130,7 @@ class Root(object):
         #   --> no /etc/yum.conf symlink (F7 and above)
 
         self.root_log.debug("elevating privs")
-        self.uidManager.elevatePrivs()
+        self.uidManager.becomeUser(0,0)
 
          # create our base directory heirarchy
         mock.util.mkdirIfAbsent(self.basedir)
@@ -221,15 +221,15 @@ class Root(object):
         self._umountall()
 
         # create user
-        self._make_our_user()
+        self._makeBuildUser()
 
         # create rpmbuild dir
-        self._build_dir_setup()
+        self._buildDirSetup()
 
         # done with init
 
     @traceLog(moduleLog)
-    def do_chroot(self, command, env="", *args, **kargs):
+    def doChroot(self, command, env="", *args, **kargs):
         """execute given command in root"""
         cmd = "%s /usr/sbin/chroot %s %s" % (env, self.rootdir, command)
         return mock.util.do(cmd, *args, **kargs)
@@ -248,7 +248,7 @@ class Root(object):
                     arg_string = arg_string + " '%s'" % item
 
         finally:
-            self.uidManager.elevatePrivs()
+            self.uidManager.restorePrivs()
 
         # everything exists, okay, install them all.
         # pass build reqs (as strings) to installer
@@ -261,6 +261,11 @@ class Root(object):
             self._yum('install %s' % arg_string)
 
 
+    #
+    # UNPRIVLEGED:
+    #   Everything in this function runs as the build user
+    #   -> except the pre/post hooks
+    #
     @traceLog(moduleLog)
     def build(self, srpm, timeout):
         """build an srpm into binary rpms, capture log"""
@@ -268,16 +273,16 @@ class Root(object):
         # tell caching we are building
         self._callHooks('prebuild')
 
-        self.state("setup")
-        self.installSrpmDeps( [srpm,] ) # runs partially unprivileged
-
-        self.state("build")
-        srpmChrootFilename = self._copySrpmIntoChroot(srpm) # runs unprivileged
-        srpmBasename = os.path.basename(srpmChrootFilename)
-
         self._mountall()
         self.uidManager.becomeUser(self.chrootuid)
         try:
+            self.state("setup")
+            self.installSrpmDeps( [srpm,] ) # runs partially unprivileged
+
+            self.state("build")
+            srpmChrootFilename = self._copySrpmIntoChroot(srpm) # runs unprivileged
+            srpmBasename = os.path.basename(srpmChrootFilename)
+
             # install srpm
             # rebuild srpm
 
@@ -285,7 +290,7 @@ class Root(object):
             cmd = "rpmbuild --rebuild  --target %s --nodeps %s" % (
                     self.target_arch, srpmChrootFilename )
 
-            self.do_chroot(cmd, env=env, logger=self.build_log, timeout=timeout, output=0)
+            self.doChroot(cmd, env=env, logger=self.build_log, timeout=timeout, output=0)
 
             bd_out = self.rootdir + self.builddir
             rpms = glob.glob(bd_out + '/RPMS/*.rpm')
@@ -297,7 +302,7 @@ class Root(object):
                 shutil.copy2(item, self.resultdir)
 
         finally:
-            self.uidManager.elevatePrivs()
+            self.uidManager.restorePrivs()
             self._umountall()
 
         # tell caching we are done building
@@ -357,12 +362,12 @@ class Root(object):
                     continue
 
     @traceLog(moduleLog)
-    def _ccache_build_hook(self):
+    def _ccacheBuildHook(self):
         mock.util.do("CCACHE_DIR=%s ccache -M %s" % (self.ccachePath, self.ccache_opts['max_cache_size']))
 
     @traceLog(moduleLog)
     def _setupCcache(self):
-        self._addHook("prebuild", self._ccache_build_hook)
+        self._addHook("prebuild", self._ccacheBuildHook)
         self.ccachePath = os.path.join(self.cachedir, "ccache")
         mock.util.mkdirIfAbsent(os.path.join(self.rootdir, 'tmp/ccache'))
         mock.util.mkdirIfAbsent(self.ccachePath)
@@ -371,9 +376,12 @@ class Root(object):
         os.environ['PATH'] = "/tmp/ccache:%s" % (os.environ['PATH'])
         os.environ['CCACHE_DIR'] = "/tmp/ccache"
         os.environ['CCACHE_UMASK'] = "002"
-        self._dumpToFile(os.path.join(self.ccachePath, "cc"), '#!/bin/sh\nexec ccache /usr/bin/cc "$@"\n', mode=0555)
-        self._dumpToFile(os.path.join(self.ccachePath, "gcc"), '#!/bin/sh\nexec ccache /usr/bin/gcc "$@"\n', mode=0555)
-        self._dumpToFile(os.path.join(self.ccachePath, "g++"), '#!/bin/sh\nexec ccache /usr/bin/g++ "$@"\n', mode=0555)
+        self._dumpToFile(os.path.join(self.ccachePath, "cc"), 
+            '#!/bin/sh\nexec ccache /usr/bin/cc "$@"\n', mode=0555)
+        self._dumpToFile(os.path.join(self.ccachePath, "gcc"), 
+            '#!/bin/sh\nexec ccache /usr/bin/gcc "$@"\n', mode=0555)
+        self._dumpToFile(os.path.join(self.ccachePath, "g++"), 
+            '#!/bin/sh\nexec ccache /usr/bin/g++ "$@"\n', mode=0555)
         self._yum('install ccache')
 
     @traceLog(moduleLog)
@@ -412,14 +420,14 @@ class Root(object):
             raise mock.exception.YumError, "Error performing yum command: %s" % cmd
 
     @traceLog(moduleLog)
-    def _make_our_user(self):
+    def _makeBuildUser(self):
         if not os.path.exists(os.path.join(self.rootdir, 'usr/sbin/useradd')):
             raise RootError, "Could not find useradd in chroot, maybe the install failed?"
 
         mock.util.rmtree(os.path.join(self.rootdir, self.homedir))
-        self.do_chroot('/usr/sbin/userdel -r %s' % self.chrootuser, raiseExc=False)
-        self.do_chroot('/usr/sbin/groupdel %s' % self.chrootgroup, raiseExc=False)
-        self.do_chroot('/usr/sbin/useradd -m -u %s -d %s %s' % (self.chrootuid, self.homedir, self.chrootuser), raiseExc=True)
+        self.doChroot('/usr/sbin/userdel -r %s' % self.chrootuser, raiseExc=False)
+        self.doChroot('/usr/sbin/groupdel %s' % self.chrootgroup, raiseExc=False)
+        self.doChroot('/usr/sbin/useradd -m -u %s -d %s %s' % (self.chrootuid, self.homedir, self.chrootuser), raiseExc=True)
 
 
     #
@@ -427,7 +435,7 @@ class Root(object):
     #   Everything in this function runs as the build user
     #
     @traceLog(moduleLog)
-    def _build_dir_setup(self):
+    def _buildDirSetup(self):
         # create all dirs as the user who will be dropping things there.
         self.uidManager.becomeUser(self.chrootuid)
         try:
@@ -450,8 +458,12 @@ class Root(object):
             rpmmacros.close()
 
         finally:
-            self.uidManager.elevatePrivs()
+            self.uidManager.restorePrivs()
 
+    #
+    # UNPRIVLEGED:
+    #   Everything in this function runs as the build user
+    #
     @traceLog(moduleLog)
     def _copySrpmIntoChroot(self, srpm):
         self.uidManager.becomeUser(self.chrootuid)
@@ -461,7 +473,7 @@ class Root(object):
             shutil.copy2(srpm, dest)
             origSrpmChrootFilename = os.path.join(self.builddir, 'originals', srpmFilename)
         finally:
-            self.uidManager.elevatePrivs()
+            self.uidManager.restorePrivs()
 
         return origSrpmChrootFilename
 

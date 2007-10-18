@@ -31,26 +31,33 @@ log = logging.getLogger("mock.uid")
 # class
 class uidManager(object):
     @traceLog(log)
-    def __init__(self):
-        self.saveCurrentPrivs()
+    def __init__(self, unprivUid=-1, unprivGid=-1):
+        self.privStack = []
+        self.unprivUid = unprivUid
+        self.unprivGid = unprivGid
 
     @traceLog(log)
-    def saveCurrentPrivs(self):
-        self.origruid = os.getuid() # 500
-        self.origeuid = os.geteuid() # 0
-        self.origrgid=os.getgid()  # 500
-        self.origegid=os.getegid()  # 500
-
-    @traceLog(log)
-    def elevatePrivs(self):
-        os.setreuid(0, 0)
-        os.setregid(0, 0)
+    def becomeUser(self, uid, gid=-1):
+        # save current ruid, euid, rgid, egid
+        self._push()
+        self._becomeUser(uid, gid)
 
     @traceLog(log)
     def dropPrivsTemp(self):
-        self.elevatePrivs()
-        os.setregid(self.origrgid, self.origegid)
-        os.setreuid(0, self.origruid)
+        # save current ruid, euid, rgid, egid
+        self._push()
+        self._becomeUser(self.unprivUid, self.unprivGid)
+
+    @traceLog(log)
+    def restorePrivs(self):
+        # back to root first
+        os.setreuid(0, 0)
+        os.setregid(0, 0)
+
+        # then set saved 
+        privs = self.privStack.pop()
+        os.setregid(privs[2], privs[3])
+        os.setreuid(privs[0], privs[1])
 
     @traceLog(log)
     def dropPrivsForever(self):
@@ -59,9 +66,20 @@ class uidManager(object):
         os.setreuid(self.origruid, self.origruid)
 
     @traceLog(log)
-    def becomeUser(self, uid, gid=None):
-        self.elevatePrivs()
-        os.setreuid(0, uid)
+    def _push(self):
+         # save current ruid, euid, rgid, egid
+        self.privStack.append([
+            os.getuid(),
+            os.geteuid(),
+            os.getgid(),
+            os.getegid(),
+            ])
+
+    @traceLog(log)
+    def _becomeUser(self, uid, gid=None):
+        os.setreuid(0, 0)
+        os.setregid(0, 0)
         if gid is not None:
             os.setregid(gid, gid)
+        os.setreuid(0, uid)
 
