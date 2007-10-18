@@ -211,44 +211,71 @@ def main():
     set_config_opts_per_cmdline(config_opts, options)
     warn_obsolete_config_options(config_opts)
 
-    # do whatever we're here to do
-    root = mock.backend.Root(config_opts, mock.uid.uidManager())
-    if config_opts['clean']:
-        root.clean()
+    try:
+        # do whatever we're here to do
+        chroot = mock.backend.Root(config_opts, mock.uid.uidManager())
+        if config_opts['clean']:
+            chroot.clean()
 
-    if args[0] == 'init':
-        root.init()
+        if args[0] == 'init':
+            chroot.init()
 
-    elif args[0] == 'clean':
-        root.clean()
+        elif args[0] == 'clean':
+            chroot.clean()
 
-    elif args[0] == 'chroot':
-        root.init()
-        root._mountall()
-        try:
-            cmd = ' '.join(args[1:])
-            output = root.do_chroot(cmd, env="PS1='mock-chroot> '", interactive=1, raiseExc=0)
-        finally:
-            root._umountall()
+        elif args[0] == 'chroot':
+            chroot.init()
+            chroot._mountall()
+            try:
+                cmd = ' '.join(args[1:])
+                output = chroot.do_chroot(cmd, env="PS1='mock-chroot> '", interactive=1, raiseExc=0)
+            finally:
+                chroot._umountall()
 
-    elif args[0] == 'shell':
-        root.init()
-        root._mountall()
-        try:
-            output = root.do_chroot("/bin/bash", env="PS1='mock-chroot> '", interactive=1, raiseExc=0)
-        finally:
-            root._umountall()
+        elif args[0] == 'shell':
+            chroot.init()
+            chroot._mountall()
+            try:
+                output = chroot.do_chroot("/bin/bash", env="PS1='mock-chroot> '", interactive=1, raiseExc=0)
+            finally:
+                chroot._umountall()
 
-    elif args[0] == 'installdeps':
-        root.init()
-        # TODO
+        elif args[0] == 'installdeps':
+            if len(args) > 1:
+                srpms = args[1:]
+            else:
+                log.critical("No package specified to rebuild command.")
+                sys.exit(50)
 
-    elif args[0] == 'rebuild':
-        root.init()
-        # TODO
+            for hdr in mock.util.getSrpmHeader(srpms): pass
+            chroot.init()
+            # TODO: test this (oh, implement it first, actually)
+            chroot.installSrpmDeps(srpms)
 
-    else:
-        pass
+        else:
+            if args[0] == 'rebuild':
+                if len(args) > 1:
+                    srpms = args[1:]
+                else:
+                    log.critical("No package specified to rebuild command.")
+                    sys.exit(50)
+            else:
+                srpms = args[0:]
+
+            # check that everything is kosher. Raises exception on error
+            for hdr in mock.util.getSrpmHeader(srpms): pass
+
+            for srpm in srpms:
+                if config_opts['clean']:
+                    chroot.clean()
+                chroot.init()
+                chroot.build(srpm)
+
+            log.critical("Results and/or logs in: %s" % root.resultdir)
+
+    except (Exception,), e:
+        logging.exception(e)
+
 
     logging.shutdown()
 
