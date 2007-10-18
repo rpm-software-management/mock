@@ -41,7 +41,8 @@ class Root(object):
         self._state = 'unstarted'
         self.uidManager = uidManager
 
-        root = config['root']
+        self.sharedRootName = config['root']
+        root = self.sharedRootName
         if config.has_key('unique-ext'):
             root = "%s-%s" % (root, config['unique-ext'])
 
@@ -50,8 +51,6 @@ class Root(object):
         self.rootdir = os.path.join(self.basedir, 'root')
         self.homedir = config['chroothome']
         self.builddir = os.path.join(self.homedir, 'build')
-        self.cache_file = os.path.join(config['basedir'], 
-                config['cache_topdir'], config['root'] + config['cache_ext'])
 
         # result dir
         if not config.has_key('resultdir'):
@@ -80,6 +79,22 @@ class Root(object):
         self.yum_path = '/usr/bin/yum'
         self.macros = config['macros']
         self.more_buildreqs = config['more_buildreqs']
+        self.cache_topdir = config['cache_topdir']
+
+        self.enable_ccache = config['enable_ccache']
+        self.enable_yum_cache = config['enable_yum_cache']
+        self.enable_root_cache = config['enable_root_cache']
+
+
+        # mount/umount
+        self.umountCmds = ['umount -n %s/proc' % self.rootdir,
+                'umount -n %s/dev/pts' % self.rootdir,
+                'umount -n %s/sys' % self.rootdir,
+               ]
+        self.mountCmds = ['mount -n -t proc   mock_chroot_proc   %s/proc' % self.rootdir,
+                'mount -n -t devpts mock_chroot_devpts %s/dev/pts' % self.rootdir,
+                'mount -n -t sysfs  mock_chroot_sysfs  %s/sys' % self.rootdir,
+               ]
 
         # officially set state so it is logged
         self.state("unstarted")
@@ -129,21 +144,23 @@ class Root(object):
 
         self.root_log.debug("uid:%d, gid:%d" % (os.getuid(), os.getgid()))
 
-
         # create skeleton dirs
         self.root_log.info('create skeleton dirs')
         for item in [
-                     os.path.join(self.rootdir, 'var/lib/rpm'),
-                     os.path.join(self.rootdir, 'var/lib/yum'),
-                     os.path.join(self.rootdir, 'var/log'),
-                     os.path.join(self.rootdir, 'var/lock/rpm'),
-                     os.path.join(self.rootdir, 'etc/rpm'),
-                     os.path.join(self.rootdir, 'tmp'),
-                     os.path.join(self.rootdir, 'var/tmp'),
-                     os.path.join(self.rootdir, 'etc/yum.repos.d'),
-                     os.path.join(self.rootdir, 'etc/yum'),
+                     'var/lib/rpm',
+                     'var/lib/yum',
+                     'var/log',
+                     'var/lock/rpm',
+                     'etc/rpm',
+                     'tmp',
+                     'var/tmp',
+                     'etc/yum.repos.d',
+                     'etc/yum',
+                     'proc',
+                     'dev/pts',
+                     'sys',
                     ]:
-            mock.util.mkdirIfAbsent(item)
+            mock.util.mkdirIfAbsent(os.path.join(self.rootdir, item))
 
         # touch files
         self.root_log.info('touch required files')
@@ -190,6 +207,9 @@ class Root(object):
         os.symlink("/proc/self/fd/1", os.path.join(self.rootdir, "dev/stdout"))
         os.symlink("/proc/self/fd/2", os.path.join(self.rootdir, "dev/stderr"))
         # "/dev/log" 
+
+        # set up cache dirs:
+        self._initCache()
 
         # yum stuff
         self.root_log.info('run yum')
@@ -250,6 +270,9 @@ class Root(object):
         self._mountall()
         self.uidManager.becomeUser(self.chrootuid)
         try:
+            # install srpm
+            # rebuild srpm
+
             env = "HOME=%s" % self.homedir
             cmd = "rpmbuild --rebuild  --target %s --nodeps %s" % (
                     self.target_arch, srpmChrootFilename )
@@ -273,30 +296,56 @@ class Root(object):
     # 'Private' API
     # =============
     @traceLog(moduleLog)
+    def _initCache(self):
+        self.cachedir = os.path.join(self.cache_topdir, self.sharedRootName)
+        if self.enable_root_cache or self.enable_yum_cache or self.enable_ccache:
+            mock.util.mkdirIfAbsent(self.cachedir)
+
+        if self.enable_root_cache:
+            self._setupRootCache()
+
+        if self.enable_yum_cache:
+            self._setupYumCache()
+
+        if self.enable_ccache:
+            self._setupCcache()
+
+    @traceLog(moduleLog)
+    def _setupRootCache(self):
+        self.rootCachePath = os.path.join(self.cachedir, "root_cache")
+        mock.util.mkdirIfAbsent(self.rootCachePath)
+        # TODO: need to check ages here for expiry
+
+    @traceLog(moduleLog)
+    def _setupYumCache(self):
+        self.yumSharedCachePath = os.path.join(self.cachedir, "yum_cache")
+        mock.util.mkdirIfAbsent(os.path.join(self.rootdir, 'var/cache/yum'))
+        mock.util.mkdirIfAbsent(self.yumSharedCachePath)
+        self.umountCmds.append('umount -n %s/var/cache/yum' % self.rootdir)
+        self.mountCmds.append('mount -n --bind %s  %s/var/cache/yum' % (self.yumSharedCachePath, self.rootdir))
+
+    @traceLog(moduleLog)
+    def _setupCcache(self):
+        self.ccachePath = os.path.join(self.cachedir, "ccache")
+        mock.util.mkdirIfAbsent(os.path.join(self.rootdir, 'tmp/ccache'))
+        mock.util.mkdirIfAbsent(self.ccachePath)
+        self.umountCmds.append('umount -n %s/tmp/ccache' % self.rootdir)
+        self.mountCmds.append('mount -n --bind %s  %s/tmp/ccache' % (self.ccachePath, self.rootdir))
+        os.environ['PATH'] = "/tmp/ccache:%s" % (os.environ['PATH'])
+
+    @traceLog(moduleLog)
     def _mountall(self):
         """mount 'normal' fs like /dev/ /proc/ /sys"""
-        cmds = ('mount -n -t proc   mock_chroot_proc   %s/proc' % self.rootdir,
-                'mount -n -t devpts mock_chroot_devpts %s/dev/pts' % self.rootdir,
-                'mount -n -t sysfs  mock_chroot_sysfs  %s/sys' % self.rootdir,
-               )
-    
-        g = [s%self.rootdir for s in ("%s/proc", "%s/dev/pts", "%s/sys")]
-        mock.util.mkdirIfAbsent(*g)
-        for cmd in cmds:
+        for cmd in self.mountCmds:
             self.root_log.info(cmd)
             mock.util.do(cmd)
 
     @traceLog(moduleLog)
     def _umountall(self):
         """umount all mounted chroot fs."""
-        cmds = ('umount -n %s/proc' % self.rootdir,
-                'umount -n %s/dev/pts' % self.rootdir,
-                'umount -n %s/sys' % self.rootdir,
-               )
-    
-        for cmd in cmds:
+        for cmd in self.umountCmds:
             self.root_log.info(cmd)
-            mock.util.do(cmd)
+            mock.util.do(cmd, raiseExc=0)
 
     @traceLog(moduleLog)
     def _yum(self, cmd):
