@@ -53,18 +53,19 @@ pkgpython_PYTHON = \
  # indent a space to get around automake
  ifneq ($(top_builddir),$(top_srcdir))
  $(top_builddir)/src/mock.py: $(top_srcdir)/src/mock.py
+ CLEANFILES=$(top_builddir)/src/mock.py
  endif
 
 src/mock.py: Makefile
 	echo Updating $@, current pwd: $$(pwd)
-	cp -f $(top_srcdir)/$@ $(top_builddir)/$@.new
-	perl -p -i -e 's|^__VERSION__=.*|__VERSION__="$(RELEASE_VERSION)"|' $(top_builddir)/$@.new
-	perl -p -i -e 's|^SYSCONFDIR=.*|SYSCONFDIR="$(sysconfdir)"|' $(top_builddir)/$@.new
-	perl -p -i -e 's|^PYTHONDIR=.*|PYTHONDIR="$(pythondir)"|' $(top_builddir)/$@.new
-	perl -p -i -e 's|^PKGPYTHONDIR=.*|PKGPYTHONDIR="$(pkgpythondir)"|' $(top_builddir)/$@.new
-	diff -q $(top_srcdir)/$@ $(top_builddir)/$@.new >/dev/null 2>&1 || mv -f $(top_builddir)/$@.new $(top_builddir)/$@
-	rm -f $(top_builddir)/$@.new
-	chmod +x $(top_builddir)/$@ || :
+	cp -f $(top_srcdir)/src/mock.py $(top_builddir)/src/mock.py.new
+	perl -p -i -e 's|^__VERSION__=.*|__VERSION__="$(RELEASE_VERSION)"|' $(top_builddir)/src/mock.py.new
+	perl -p -i -e 's|^SYSCONFDIR=.*|SYSCONFDIR="$(sysconfdir)"|' $(top_builddir)/src/mock.py.new
+	perl -p -i -e 's|^PYTHONDIR=.*|PYTHONDIR="$(pythondir)"|' $(top_builddir)/src/mock.py.new
+	perl -p -i -e 's|^PKGPYTHONDIR=.*|PKGPYTHONDIR="$(pkgpythondir)"|' $(top_builddir)/src/mock.py.new
+	diff -q $(top_srcdir)/src/mock.py $(top_builddir)/src/mock.py.new >/dev/null 2>&1 || mv -f $(top_builddir)/src/mock.py.new $(top_builddir)/src/mock.py
+	rm -f $(top_builddir)/src/mock.py.new
+	chmod +x $(top_builddir)/src/mock.py 2>/dev/null || :
 
 rpm: dist
 	BLD_DIR=$$(mktemp -d /tmp/rpmbuild-$$$$-XXXXXX); \
