@@ -190,6 +190,8 @@ def main():
         #   uidManager saves current real uid/gid which are unpriviledged (callers)
         #   due to suid helper, our current effective uid is 0
         chroot = mock.backend.Root(config_opts, mock.uid.uidManager(os.getuid(), os.getgid()))
+        log.info("mock.py version %s starting..." % __VERSION__)
+        os.umask(002)
         if config_opts['clean']:
             chroot.clean()
 
@@ -228,15 +230,11 @@ def main():
             chroot.init()
             chroot.installSrpmDeps(*srpms)
 
-        else:
-            if args[0] == 'rebuild':
-                if len(args) > 1:
-                    srpms = args[1:]
-                else:
-                    log.critical("No package specified to rebuild command.")
-                    sys.exit(50)
-            else:
-                srpms = args[0:]
+        elif args[0] == 'rebuild':
+            srpms = args[1:]
+            if len(srpms) < 1:
+                log.critical("No package specified to rebuild command.")
+                sys.exit(50)
 
             # check that everything is kosher. Raises exception on error
             for hdr in mock.util.yieldSrpmHeaders(srpms): pass
@@ -248,6 +246,9 @@ def main():
                 chroot.build(srpm, timeout=config_opts['rpmbuild_timeout'])
 
             log.info("Results and/or logs in: %s" % chroot.resultdir)
+
+        else:
+            log.error("Unknown command specified: %s" % args[0]
 
     except (mock.exception.Error), e:
         log.error(str(e))
