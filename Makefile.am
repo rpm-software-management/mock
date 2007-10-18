@@ -50,9 +50,12 @@ pkgpython_PYTHON = \
 	src/py-libs/trace_decorator.py 	\
 	src/py-libs/uid.py
 
-$(top_builddir)/src/mock.py: $(top_srcdir)/src/mock.py
+ # indent a space to get around automake
+ ifneq ($(top_builddir),$(top_srcdir))
+ $(top_builddir)/src/mock.py: $(top_srcdir)/src/mock.py
+ endif
 
-src/mock.py: configure.ac Makefile.am
+src/mock.py: Makefile
 	echo Updating $@, current pwd: $$(pwd)
 	cp -f $(top_srcdir)/$@ $(top_builddir)/$@.new
 	perl -p -i -e 's|^__VERSION__=.*|__VERSION__="$(RELEASE_VERSION)"|' $(top_builddir)/$@.new
@@ -62,8 +65,6 @@ src/mock.py: configure.ac Makefile.am
 	diff -q $(top_srcdir)/$@ $(top_builddir)/$@.new >/dev/null 2>&1 || mv -f $(top_builddir)/$@.new $(top_builddir)/$@
 	rm -f $(top_builddir)/$@.new
 	chmod +x $(top_builddir)/$@ || :
-
-
 
 rpm: dist
 	BLD_DIR=$$(mktemp -d /tmp/rpmbuild-$$$$-XXXXXX); \

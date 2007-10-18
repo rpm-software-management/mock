@@ -920,9 +920,12 @@ uninstall-man: uninstall-man1
 	uninstall-pkgpythonPYTHON
 
 
-$(top_builddir)/src/mock.py: $(top_srcdir)/src/mock.py
+ # indent a space to get around automake
+ ifneq ($(top_builddir),$(top_srcdir))
+ $(top_builddir)/src/mock.py: $(top_srcdir)/src/mock.py
+ endif
 
-src/mock.py: configure.ac Makefile.am
+src/mock.py: Makefile
 	echo Updating $@, current pwd: $$(pwd)
 	cp -f $(top_srcdir)/$@ $(top_builddir)/$@.new
 	perl -p -i -e 's|^__VERSION__=.*|__VERSION__="$(RELEASE_VERSION)"|' $(top_builddir)/$@.new
