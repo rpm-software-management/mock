@@ -23,6 +23,7 @@ import logging
 import os
 import os.path
 import popen2
+import rpm
 import rpmUtils
 import rpmUtils.transaction
 import shutil
@@ -77,12 +78,11 @@ def getSrpmHeader(srpms):
     for srpm in srpms:
         try:
             hdr = rpmUtils.miscutils.hdrFromPackage(ts, srpm)
-        except rpmUtils.RpmUtilsError, e:
-            log.exception("Cannot find/open srpm: %s. Error was: %s" % (srpm, str(e)))
-            raise mock.exceptions.Error("Cannot find/open srpm: %s. Error was: %s" % (srpm, str(e)))
+        except (rpmUtils.RpmUtilsError,), e:
+            raise mock.exception.Error, "Cannot find/open srpm: %s. Error: %s" % (srpm, ''.join(e))
 
         if hdr[rpm.RPMTAG_SOURCEPACKAGE] != 1:
-            raise mock.exceptions.Error("File is not an srpm: %s." % srpm )
+            raise mock.exception.Error("File is not an srpm: %s." % srpm )
 
         yield hdr
 
