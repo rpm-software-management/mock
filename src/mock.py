@@ -46,7 +46,7 @@ import mock.uid
 log = logging.getLogger()
 logging.basicConfig()
 
-@trace
+@traceLog(log)
 def command_parse():
     """return options and args from parsing the command line"""
     
@@ -79,20 +79,16 @@ def command_parse():
                       help="Arbitrary, unique extension to append to buildroot directory name")
     parser.add_option("--configdir", action="store", dest="configdir", default=None,
                       help="Change where config files are found")
-    parser.add_option("--verbose", action ="store_true", dest="verbose", 
-                      default=False, help="verbose down output")
     parser.add_option("--rpmbuild_timeout", action="store", dest="rpmbuild_timeout", type="int",
                       default=None, help="Fail build if rpmbuild takes longer than 'timeout' seconds ")
     
     return parser.parse_args()
 
-@trace
+@traceLog(log)
 def setup_default_config_opts(config_opts):
     # global
     config_opts['basedir'] = '/var/lib/mock/' # root name is automatically added to this
     config_opts['clean'] = True
-    config_opts['debug'] = False
-    config_opts['verbose'] = False
     config_opts['chroothome'] = '/builddir'
     config_opts['log_config_file'] = 'logging.ini'
     config_opts['rpmbuild_timeout'] = 0
@@ -126,7 +122,7 @@ def setup_default_config_opts(config_opts):
                              }
 
 
-@trace
+@traceLog(log)
 def set_config_opts_per_cmdline(config_opts, options):
     # do some other options and stuff
     if options.arch:
@@ -134,8 +130,6 @@ def set_config_opts_per_cmdline(config_opts, options):
     if not options.clean:
         config_opts['clean'] = options.clean
 
-    if options.verbose:
-        config_opts['verbose'] = options.verbose
     if options.resultdir:
         config_opts['resultdir'] = options.resultdir
     if options.statedir:
@@ -145,7 +139,7 @@ def set_config_opts_per_cmdline(config_opts, options):
     if options.rpmbuild_timeout is not None:
         config_opts['rpmbuild_timeout'] = options.rpmbuild_timeout
 
-@trace
+@traceLog(log)
 def warn_obsolete_config_options(config_opts):
     pass
 
@@ -153,8 +147,6 @@ def main():
     # defaults
     config_opts = {}
     setup_default_config_opts(config_opts)
-    
-    # cli option parsing
     (options, args) = command_parse()
     
     # config path -- can be overridden on cmdline
@@ -176,12 +168,14 @@ def main():
             execfile(cfg)
         else:
             log.error("Could not find required config file: %s" % cfg)
+            if options.chroot == "default": log.error("  Did you forget to specify the chroot to use with '-r'?")
             sys.exit(1)
     
     # reconfigure logging in case config file was overridden
     logging.config.fileConfig(os.path.join(config_path, config_opts["log_config_file"]))
 
     # cmdline options override config options
+    log.info("mock.py version %s starting..." % __VERSION__)
     set_config_opts_per_cmdline(config_opts, options)
     warn_obsolete_config_options(config_opts)
 
@@ -189,7 +183,6 @@ def main():
         # do whatever we're here to do
         #   uidManager saves current real uid/gid which are unpriviledged (callers)
         #   due to suid helper, our current effective uid is 0
-        log.info("mock.py version %s starting..." % __VERSION__)
         chroot = mock.backend.Root(config_opts, mock.uid.uidManager(os.getuid(), os.getgid()))
         os.umask(002)
         if config_opts['clean']:
