@@ -365,12 +365,32 @@ class Root(object):
             self._setupCcache()
 
     @traceLog(moduleLog)
+    def _yumCachePreYumHook(self):
+        try:
+            fcntl.lockf(self.yumCacheLock.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except IOError, e:
+            oldState = self.state()
+            self.state("Waiting for yumcache lock")
+            fcntl.lockf(self.yumCacheLock.fileno(), fcntl.LOCK_EX)
+            self.state(oldState)
+
+    @traceLog(moduleLog)
+    def _yumCachePostYumHook(self):
+        fcntl.lockf(self.yumCacheLock.fileno(), fcntl.LOCK_UN)
+
+    @traceLog(moduleLog)
     def _setupYumCache(self):
+        self._addHook("preyum", self._yumCachePreYumHook)
+        self._addHook("postyum", self._yumCachePostYumHook)
         self.yumSharedCachePath = os.path.join(self.cachedir, "yum_cache")
         mock.util.mkdirIfAbsent(os.path.join(self.rootdir, 'var/cache/yum'))
         mock.util.mkdirIfAbsent(self.yumSharedCachePath)
         self.umountCmds.append('umount -n %s/var/cache/yum' % self.rootdir)
         self.mountCmds.append('mount -n --bind %s  %s/var/cache/yum' % (self.yumSharedCachePath, self.rootdir))
+        self.yumCacheLock = open(os.path.join(self.yumSharedCachePath, "yumcache.lock"), "a+")
+
+        # lock so others dont accidentally use yum cache while we operate on it.
+        self._yumCachePreYumHook()
         for (dirpath, dirnames, filenames) in os.walk(self.yumSharedCachePath):
             for filename in filenames:
                 fullPath = os.path.join(dirpath, filename)
@@ -389,6 +409,8 @@ class Root(object):
                 if file_age_days > self.ccache_opts['max_age_days']:
                     os.unlink(fullPath)
                     continue
+
+        self._yumCachePostYumHook()
 
     @traceLog(moduleLog)
     def _ccacheBuildHook(self):
@@ -443,7 +465,9 @@ class Root(object):
         cmd = '%s --installroot %s %s' % (self.yum_path, self.rootdir, cmd)
         self.root_log.info(cmd)
         try:
-            return mock.util.do(cmd)
+            self._callHooks("preyum")
+            mock.util.do(cmd, output=0)
+            self._callHooks("postyum")
         except mock.exception.Error, e:
             self.root_log.exception("Error performing yum command: %s" % cmd)
             raise mock.exception.YumError, "Error performing yum command: %s" % cmd
