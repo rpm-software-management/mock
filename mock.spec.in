@@ -6,6 +6,8 @@
 %define release_name mock
 %define release_version %{major}.%{minor}.%{sub}%{extralevel}
 
+%{!?python_sitelib: %define python_sitelib %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib()")}
+
 Summary: Builds packages inside chroots
 Name: mock
 Version: %{release_version}
@@ -26,34 +28,15 @@ Mock takes a srpm and builds it in a chroot
 %setup -q
 
 %build
-make CFLAGS="$RPM_OPT_FLAGS"
+%configure
+make
 
 %install
 rm -rf $RPM_BUILD_ROOT
 make DESTDIR=$RPM_BUILD_ROOT install
-# make the default.cfg link
-cd $RPM_BUILD_ROOT/%{_sysconfdir}/%{name}
-
-%if 0%{?fedora:1}
-if [ -f fedora-%{fedora}-%{_target_cpu}-core.cfg ]; then
-        ln -s fedora-%{fedora}-%{_target_cpu}-core.cfg default.cfg
-elif [ -f fedora-%{fedora}-%{_target_cpu}.cfg ]; then
-        ln -s fedora-%{fedora}-%{_target_cpu}.cfg default.cfg
-fi
-%endif
-
-# if we haven't created a default link yet, try to do so as devel
-if [ ! -f default.cfg ]; then
-    if [ -f fedora-development-%{_target_cpu}.cfg ]; then
-        ln -s fedora-development-%{_target_cpu}.cfg default.cfg
-    elif [ -f fedora-devel-%{_target_cpu}.cfg ]; then
-        ln -s fedora-devel-%{_target_cpu}.cfg default.cfg
-    elif [ -f fedora-development-i386.cfg ]; then
-        ln -s fedora-development-i386.cfg default.cfg
-    elif [ -f fedora-devel-i386.cfg ]; then
-        ln -s fedora-devel-i386.cfg default.cfg
-    fi
-fi
+rm $RPM_BUILD_ROOT/%{_libdir}/libselinux-mock.a
+rm $RPM_BUILD_ROOT/%{_libdir}/libselinux-mock.la
+mkdir -p $RPM_BUILD_ROOT/var/lib/mock
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -65,15 +48,23 @@ fi
 
 %files
 %defattr(-, root, root)
-%doc README ChangeLog buildsys-build.spec
+%doc README ChangeLog buildsys-build.spec-template
+
+# python stuff
+%{_libexecdir}/mock.py*
+%{python_sitelib}/*
+
+# config files
 %dir  %{_sysconfdir}/%{name}
 %config(noreplace) %{_sysconfdir}/%{name}/*.cfg
+%config(noreplace) %{_sysconfdir}/%{name}/*.ini
+
+# binary
 %{_bindir}/%{name}
-%{_libexecdir}/mock-yum
+
 %{_mandir}/man1/mock.1*
-%attr(04750, root, mock) %{_sbindir}/mock-helper
 %attr(02775, root, mock) %dir /var/lib/mock
-%{_libdir}/libselinux-mock.so
+%{_libdir}/libselinux-mock.so*
 
 %changelog
 * Mon Aug 27 2007 Michael Brown <mebrown@michaels-house.net> - 0.7.6-1
