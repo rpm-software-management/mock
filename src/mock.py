@@ -195,20 +195,12 @@ def main():
             if chroot.state() != "clean":
                 chroot.clean()
 
-        elif args[0] == 'chroot':
+        elif args[0] in ('chroot', 'shell'):
             chroot.init()
             chroot._mountall()
             try:
                 cmd = ' '.join(args[1:])
-                output = chroot.doChroot(cmd, env="PS1='mock-chroot> '", interactive=1, raiseExc=0)
-            finally:
-                chroot._umountall()
-
-        elif args[0] == 'shell':
-            chroot.init()
-            chroot._mountall()
-            try:
-                output = chroot.doChroot("/bin/bash", env="PS1='mock-chroot> '", interactive=1, raiseExc=0)
+                os.system("PS1='mock-chroot> ' /usr/sbin/chroot %s %s" % (chroot.rootdir, cmd))
             finally:
                 chroot._umountall()
 
