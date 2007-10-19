@@ -76,8 +76,6 @@ def command_parse():
                       default=None, help="target build arch")
     parser.add_option("--resultdir", action="store", type="string", 
                       default=None, help="path for resulting files to be put")
-    parser.add_option("--statedir", action="store", type="string", default=None,
-                      help="Path to directory where state information is written")
     parser.add_option("--uniqueext", action="store", type="string", default=None,
                       help="Arbitrary, unique extension to append to buildroot directory name")
     parser.add_option("--configdir", action="store", dest="configdir", default=None,
@@ -135,8 +133,6 @@ def set_config_opts_per_cmdline(config_opts, options):
 
     if options.resultdir:
         config_opts['resultdir'] = options.resultdir
-    if options.statedir:
-        config_opts['statedir'] = options.statedir
     if options.uniqueext:
         config_opts['unique-ext'] = options.uniqueext
     if options.rpmbuild_timeout is not None:

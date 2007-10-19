@@ -62,12 +62,6 @@ class Root(object):
         else:
             self.resultdir = config['resultdir']
 
-        # state dir
-        if not config.has_key('statedir'):
-            self.statedir = os.path.join(self.basedir, 'state')
-        else:
-            self.statedir = config['statedir']
-
         self.root_log = logging.getLogger("mock")
         self.build_log = logging.getLogger("mock.Root.build")
         self._state_log = logging.getLogger("mock.Root.state")
@@ -136,12 +130,11 @@ class Root(object):
 
          # create our base directory heirarchy
         mock.util.mkdirIfAbsent(self.basedir)
-        mock.util.mkdirIfAbsent(self.statedir)
         mock.util.mkdirIfAbsent(self.rootdir)
         mock.util.mkdirIfAbsent(self.resultdir)
 
         # TODO: lock this buildroot so we dont get stomped on.
-        self.buildrootLock = open(os.path.join(self.statedir, "buildroot.lock"), "a+")
+        self.buildrootLock = open(os.path.join(self.basedir, "buildroot.lock"), "a+")
         try:
             fcntl.lockf(self.buildrootLock.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
         except IOError, e:
@@ -153,7 +146,6 @@ class Root(object):
         # write out config details
         self.root_log.debug('rootdir = %s' % self.rootdir)
         self.root_log.debug('resultdir = %s' % self.resultdir)
-        self.root_log.debug('statedir = %s' % self.statedir)
 
         self._callHooks('preinit')
 
@@ -524,7 +516,7 @@ class Root(object):
                 (self._state_log, "state.log"),
                 (self.build_log, "build.log"),
                 (self.root_log, "root.log")):
-            fullPath = os.path.join(self.statedir, filename)
+            fullPath = os.path.join(self.resultdir, filename)
             fh = logging.FileHandler(fullPath, "a+")
             fh.setFormatter(formatter)
             fh.setLevel(logging.NOTSET)
