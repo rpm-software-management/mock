@@ -250,6 +250,7 @@ def main():
 
             for srpm in srpms:
                 start = time.time()
+                log.info("Start(%s)" % srpm)
                 if config_opts['clean'] and chroot.state() != "clean":
                     chroot.clean()
                 chroot.init()
