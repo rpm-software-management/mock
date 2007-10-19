@@ -38,7 +38,7 @@ sys.path.insert(0,PYTHONDIR)
 
 # our imports
 import mock.exception
-from mock.trace_decorator import trace
+from mock.trace_decorator import traceLog
 import mock.backend
 import mock.uid
 
