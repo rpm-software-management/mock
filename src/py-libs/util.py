@@ -73,6 +73,19 @@ def rmtree(*args, **kargs):
             raise
 
 @traceLog(log)
+def orphansKill(rootToKill):
+    """kill off anything that is still chrooted."""
+    for fn in os.listdir("/proc"):
+        try:
+            root = os.readlink("/proc/%s/root" % fn)
+            if root == rootToKill:
+                log.warning("Process ID %s still running in chroot. Killing..." % fn)
+                os.kill(int(fn,10), 15)
+        except OSError, e:
+            pass
+            
+
+@traceLog(log)
 def yieldSrpmHeaders(srpms):
     ts = rpmUtils.transaction.initReadOnlyTransaction()
     for srpm in srpms:
