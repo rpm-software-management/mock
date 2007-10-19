@@ -223,7 +223,10 @@ def do(command, chrootPath=None, timeout=0, raiseExc=True, returnOutput=0, *args
 
         # mask and return just return value, plus child output
         if raiseExc and os.WEXITSTATUS(ret):
-            raise mock.exception.Error, "Command(%s) failed. Output: %s" % (command, output)
+            if returnOutput:
+                raise mock.exception.Error, "Command(%s) failed. Output: %s" % (command, output)
+            else:
+                raise mock.exception.Error, "Command(%s) failed. See logs for output." % command
 
         return output
 
