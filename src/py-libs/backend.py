@@ -598,8 +598,13 @@ class Root(object):
 
     @traceLog(moduleLog)
     def _resetLogging(self):
+        # ensure we dont attach the handlers multiple times.
+        if getattr(self, "logging_initialized", None):
+            return
+        self.logging_initialized = 1
+
         # attach logs to log files.
-        # This happens in addition to anything
+        # This happens in addition to anything that
         # is set up in the config file... ie. logs go everywhere
         formatter = logging.Formatter("%(asctime)s - %(filename)s:%(lineno)d:%(levelname)s: %(message)s")
         for (log, filename) in (
