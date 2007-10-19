@@ -108,6 +108,8 @@ def setup_default_config_opts(config_opts):
     config_opts['ccache_opts'] = {'max_age_days': 15, 'max_cache_size': "32G"}
     config_opts['enable_yum_cache'] = True
     config_opts['yum_cache_opts'] = {'max_age_days': 15}
+    config_opts['enable_root_cache'] = True
+    config_opts['root_cache_opts'] = {'max_age_days': 15}
 
     # dependent on guest OS
     config_opts['use_host_resolv'] = True
