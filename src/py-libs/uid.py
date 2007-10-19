@@ -51,8 +51,7 @@ class uidManager(object):
     @traceLog(log)
     def restorePrivs(self):
         # back to root first
-        os.setreuid(0, 0)
-        os.setregid(0, 0)
+        self._elevatePrivs()
 
         # then set saved 
         privs = self.privStack.pop()
@@ -61,9 +60,9 @@ class uidManager(object):
 
     @traceLog(log)
     def dropPrivsForever(self):
-        self.elevatePrivs()
-        os.setregid(self.origrgid, self.origegid)
-        os.setreuid(self.origruid, self.origruid)
+        self._elevatePrivs()
+        os.setregid(self.unprivGid, self.unprivGid)
+        os.setreuid(self.unprivUid, self.unprivUid)
 
     @traceLog(log)
     def _push(self):
@@ -76,9 +75,13 @@ class uidManager(object):
             ])
 
     @traceLog(log)
-    def _becomeUser(self, uid, gid=None):
+    def _elevatePrivs(self):
         os.setreuid(0, 0)
         os.setregid(0, 0)
+
+    @traceLog(log)
+    def _becomeUser(self, uid, gid=None):
+        self._elevatePrivs()
         if gid is not None:
             os.setregid(gid, gid)
         os.setreuid(0, uid)
