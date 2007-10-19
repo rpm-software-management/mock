@@ -43,7 +43,6 @@ class Root(object):
         self._state = 'unstarted'
         self.uidManager = uidManager
         self._hooks = {}
-        self.buildrootLock = None
         self.chrootWasCleaned = False
 
         self.sharedRootName = config['root']
@@ -117,10 +116,26 @@ class Root(object):
     @traceLog(moduleLog)
     def clean(self):
         """clean out chroot with extreme prejudice :)"""
+        self.tryLockBuildRoot()
         self.state("clean")
         self.root_log.info("Cleaning chroot")
         mock.util.rmtree(self.basedir)
         self.chrootWasCleaned = True
+
+    @traceLog(moduleLog)
+    def tryLockBuildRoot(self):
+        self.state("lock buildroot")
+        try:
+            self.buildrootLock = open(os.path.join(self.basedir, "buildroot.lock"), "a+")
+        except IOError, e:
+            return 0
+
+        try:
+            fcntl.lockf(self.buildrootLock.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except IOError, e:
+            raise mock.exception.BuildRootLocked, "Build root is locked by another process."
+
+        return 1
 
     @traceLog(moduleLog)
     def init(self):
@@ -138,12 +153,8 @@ class Root(object):
         mock.util.mkdirIfAbsent(self.rootdir)
         mock.util.mkdirIfAbsent(self.resultdir)
 
-        # TODO: lock this buildroot so we dont get stomped on.
-        self.buildrootLock = open(os.path.join(self.basedir, "buildroot.lock"), "a+")
-        try:
-            fcntl.lockf(self.buildrootLock.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
-        except IOError, e:
-            raise mock.exception.BuildRootLocked, "Build root is locked by another process."
+        # lock this buildroot so we dont get stomped on.
+        self.tryLockBuildRoot()
 
         # create our log files.
         self._resetLogging()
@@ -383,9 +394,28 @@ class Root(object):
             self._setupCcache()
 
     @traceLog(moduleLog)
+    def _rootCacheLock(self, shared=1):
+        lockType = fcntl.LOCK_EX
+        if shared: lockType = fcntl.LOCK_SH
+        try:
+            fcntl.lockf(self.rootCacheLock.fileno(), lockType | fcntl.LOCK_NB)
+        except IOError, e:
+            oldState = self.state()
+            self.state("Waiting for rootcache lock")
+            fcntl.lockf(self.rootCacheLock.fileno(), lockType)
+            self.state(oldState)
+
+    @traceLog(moduleLog)
+    def _rootCacheUnlock(self):
+        fcntl.lockf(self.rootCacheLock.fileno(), fcntl.LOCK_UN)
+
+    @traceLog(moduleLog)
     def _rootCachePreInitHook(self):
         if os.path.exists(self.rootCacheFile):
             self.state("unpacking cache")
+            self._rootCacheLock()
+            mock.util.do("tar xvzf %s -C %s" % (self.rootCacheFile, self.rootdir))
+            self._rootCacheUnlock()
             mock.util.do("tar xvzf %s -C %s" % (self.rootCacheFile, self.rootdir))
             self.chroot_setup_cmd = "update"
             self.chrootWasCleaned = False
@@ -395,7 +425,9 @@ class Root(object):
         # never rebuild cache unless it was a clean build.
         if self.chrootWasCleaned:
             self.state("creating cache")
+            self._rootCacheLock(shared=0)
             mock.util.do("tar czf %s -C %s ." % (self.rootCacheFile, self.rootdir))
+            self._rootCacheUnlock()
 
     @traceLog(moduleLog)
     def _setupRootCache(self):
@@ -404,8 +436,12 @@ class Root(object):
         self.rootSharedCachePath = os.path.join(self.cachedir, "root_cache")
         self.rootCacheFile = os.path.join(self.rootSharedCachePath, "cache.tar.gz")
         mock.util.mkdirIfAbsent(self.rootSharedCachePath)
+
+        # lock so others dont accidentally use root cache while we operate on it.
+        self.rootCacheLock = open(os.path.join(self.rootSharedCachePath, "rootcache.lock"), "a+")
+
         # check cache age:
-        self.state("enabling root cache.")
+        self.state("enabling root cache")
         try:
             statinfo = os.stat(self.rootCacheFile)
             file_age_days = (time.time() - statinfo.st_ctime) / (60 * 60 * 24)
