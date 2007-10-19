@@ -296,14 +296,13 @@ class Root(object):
     #
     # UNPRIVLEGED:
     #   Everything in this function runs as the build user
-    #   -> except the pre/post hooks
     #
     @traceLog(moduleLog)
     def build(self, srpm, timeout):
         """build an srpm into binary rpms, capture log"""
 
         # tell caching we are building
-        self._callHooks('prebuild')
+        self._callHooks('earlyprebuild')
 
         self._mountall()
         self.uidManager.becomeUser(self.chrootuid)
@@ -347,6 +346,10 @@ class Root(object):
 
             #have to permanently drop privs or rpmbuild regains them
             self.state("build")
+
+            # tell caching we are building
+            self._callHooks('prebuild')
+
             mock.util.do(
                 "rpmbuild -bb --target %s --nodeps %s" % (self.target_arch, chrootspec), 
                 chrootPath=self.rootdir,
@@ -514,7 +517,7 @@ class Root(object):
     # ccache itself manages size and settings.
     @traceLog(moduleLog)
     def _ccacheBuildHook(self):
-        mock.util.do("CCACHE_DIR=%s ccache -M %s" % (self.ccachePath, self.ccache_opts['max_cache_size']))
+        self.doChroot("ccache -M %s" % self.ccache_opts['max_cache_size'])
 
     # install ccache rpm after buildroot set up.
     @traceLog(moduleLog)
