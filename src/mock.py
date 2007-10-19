@@ -41,6 +41,7 @@ import mock.exception
 from mock.trace_decorator import traceLog
 import mock.backend
 import mock.uid
+import mock.util
 
 # set up basic logging until config file can be read
 log = logging.getLogger()
@@ -181,6 +182,7 @@ def main():
     set_config_opts_per_cmdline(config_opts, options)
     warn_obsolete_config_options(config_opts)
 
+    killOrphans = 1
     try:
         # do whatever we're here to do
         #   uidManager saves current real uid/gid which are unpriviledged (callers)
@@ -247,12 +249,18 @@ def main():
         else:
             log.error("Unknown command specified: %s" % args[0])
 
+    except (mock.exception.BuildRootLocked), e:
+        log.error(str(e))
+        killOrphans = 0
+
     except (mock.exception.Error), e:
         log.error(str(e))
 
     except (Exception,), e:
         logging.exception(e)
 
+    if killOrphans:
+        mock.util.orphansKill(chroot.rootdir)
 
     logging.shutdown()
 
