@@ -278,7 +278,7 @@ class Root(object):
         # everything exists, okay, install them all.
         # pass build reqs (as strings) to installer
         if arg_string != "":
-            output = self._yum('resolvedep %s' % arg_string)
+            output = self._yum('resolvedep %s' % arg_string, returnOutput=1)
             for line in output.split('\n'):
                 if line.lower().find('No Package found for'.lower()) != -1:
                     raise mock.exception.BuildError, "Bad build req: %s. Exiting." % line
@@ -564,15 +564,16 @@ class Root(object):
             mock.util.do(cmd, raiseExc=0)
 
     @traceLog(moduleLog)
-    def _yum(self, cmd):
+    def _yum(self, cmd, returnOutput=0):
         """use yum to install packages/package groups into the chroot"""
         # mock-helper yum --installroot=rootdir cmd
         cmd = '%s --installroot %s %s' % (self.yum_path, self.rootdir, cmd)
         self.root_log.info(cmd)
         try:
             self._callHooks("preyum")
-            mock.util.do(cmd)
+            output = mock.util.do(cmd, returnOutput=returnOutput)
             self._callHooks("postyum")
+            return output
         except mock.exception.Error, e:
             self.root_log.exception("Error performing yum command: %s" % cmd)
             raise mock.exception.YumError, "Error performing yum command: %s" % cmd
