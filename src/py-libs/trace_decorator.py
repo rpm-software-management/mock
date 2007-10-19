@@ -20,7 +20,11 @@ def traceLog(logger = moduleLog):
             result = "Bad exception raised: Exception was not a derived class of 'Exception'"
             try:
                 result = f(*args, **kw)
-            except BaseException, e:
+            except KeyboardInterrupt, e:
+                result = "EXCEPTION RAISED"
+                l2.debug( "EXCEPTION: %s\n" % e, exc_info=1)
+                raise
+            except Exception, e:
                 result = "EXCEPTION RAISED"
                 l2.debug( "EXCEPTION: %s\n" % e, exc_info=1)
                 raise
