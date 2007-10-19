@@ -24,6 +24,7 @@ import logging.config
 import os
 import os.path
 import sys
+import time
 from optparse import OptionParser
 
 # all of the variables below are substituted by the build system
@@ -248,12 +249,14 @@ def main():
             for hdr in mock.util.yieldSrpmHeaders(srpms): pass
 
             for srpm in srpms:
+                start = time.time()
                 if config_opts['clean'] and chroot.state() != "clean":
                     chroot.clean()
                 chroot.init()
                 chroot.build(srpm, timeout=config_opts['rpmbuild_timeout'])
-
-            log.info("Results and/or logs in: %s" % chroot.resultdir)
+                elapsed = time.time() - start
+                log.info("Done(%s)  %s minutes %s seconds" % (srpm, elapsed/60, elapsed%60))
+                log.info("Results and/or logs in: %s" % chroot.resultdir)
 
         else:
             log.error("Unknown command specified: %s" % args[0])
