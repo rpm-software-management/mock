@@ -519,7 +519,7 @@ class Root(object):
                 (self.build_log, "build.log"),
                 (self.root_log, "root.log")):
             fullPath = os.path.join(self.statedir, filename)
-            fh = logging.FileHandler(fullPath, "w+")
+            fh = logging.FileHandler(fullPath, "a+")
             fh.setFormatter(formatter)
             fh.setLevel(logging.NOTSET)
             log.addHandler(fh)
