@@ -210,6 +210,7 @@ class Root(object):
         # files in /dev
         mock.util.rmtree(os.path.join(self.rootdir, "dev"))
         mock.util.mkdirIfAbsent(os.path.join(self.rootdir, "dev", "pts"))
+        prevMask = os.umask(0000)
         os.mknod(os.path.join(self.rootdir, "dev/zero"), stat.S_IFCHR | 0666, os.makedev(1, 5))
         os.mknod(os.path.join(self.rootdir, "dev/tty"), stat.S_IFCHR | 0666, os.makedev(5, 0))
         os.mknod(os.path.join(self.rootdir, "dev/null"), stat.S_IFCHR | 0666, os.makedev(1, 3))
@@ -219,6 +220,7 @@ class Root(object):
         os.symlink("/proc/self/fd/0", os.path.join(self.rootdir, "dev/stdin"))
         os.symlink("/proc/self/fd/1", os.path.join(self.rootdir, "dev/stdout"))
         os.symlink("/proc/self/fd/2", os.path.join(self.rootdir, "dev/stderr"))
+        os.umask(prevMask)
 
         # set up cache dirs:
         self._initCache()
@@ -292,8 +294,13 @@ class Root(object):
             srpmBasename = os.path.basename(srpmChrootFilename)
 
             # install srpm
-            env = "HOME=%s" % self.homedir
-            self.doChroot("rpm -Uvh --nodeps %s" % srpmChrootFilename, env=env)
+            os.environ["HOME"] = self.homedir 
+            # Completely/Permanently drop privs while running the following:
+            mock.util.do(
+                "rpm -Uvh --nodeps %s" % srpmChrootFilename,
+                chrootPath=self.rootdir,
+                uidManager=self.uidManager,
+                )
 
             # rebuild srpm/rpm from SPEC file
             specs = glob.glob("%s/%s/SPECS/*.spec" % (self.rootdir, self.builddir))
@@ -302,9 +309,13 @@ class Root(object):
 
             spec = specs[0] # if there's more than one then someone is an idiot
             chrootspec = spec.replace(self.rootdir, '') # get rid of rootdir prefix
-            self.doChroot(
+            self.root_log.info("about to drop to unpriv mode.")
+            # Completely/Permanently drop privs while running the following:
+            mock.util.do(
                 "rpmbuild -bs --target %s --nodeps %s" % (self.target_arch, chrootspec), 
-                env=env, logger=self.build_log, timeout=timeout, output=0
+                chrootPath=self.rootdir,
+                uidManager=self.uidManager,
+                logger=self.build_log, timeout=timeout,
                 )
 
             rebuiltSrpmFile = glob.glob("%s/%s/SRPMS/*.src.rpm" % (self.rootdir, self.builddir))
@@ -315,28 +326,13 @@ class Root(object):
             self.installSrpmDeps(rebuiltSrpmFile)
 
             #have to permanently drop privs or rpmbuild regains them
-            # can only do this by forking...
             self.state("build")
-            pid = os.fork()
-            if pid:
-                # parent
-                try:
-                    os.waitpid(pid,0)
-                except:
-                    os.kill(-pid, signal.SIGTERM)
-                    time.sleep(1)
-                    os.kill(-pid, signal.SIGKILL)
-
-            else:
-                # child
-                try:
-                    uidManager.dropPrivsForever()
-                    self.doChroot(
-                        "rpmbuild -bb --target %s --nodeps %s" % (self.target_arch, chrootspec), 
-                        env=env, logger=self.build_log, timeout=timeout, output=0
-                        )
-                finally:
-                    os._exit(0)
+            mock.util.do(
+                "rpmbuild -bb --target %s --nodeps %s" % (self.target_arch, chrootspec), 
+                chrootPath=self.rootdir,
+                uidManager=self.uidManager,
+                logger=self.build_log, timeout=timeout,
+                )
 
             bd_out = self.rootdir + self.builddir
             rpms = glob.glob(bd_out + '/RPMS/*.rpm')
@@ -495,7 +491,7 @@ class Root(object):
         self.root_log.info(cmd)
         try:
             self._callHooks("preyum")
-            mock.util.do(cmd, output=0)
+            mock.util.do(cmd)
             self._callHooks("postyum")
         except mock.exception.Error, e:
             self.root_log.exception("Error performing yum command: %s" % cmd)

@@ -142,23 +142,18 @@ def uniqReqs(*args):
         master.extend(l)
     return rpmUtils.miscutils.unique(master)
 
-@traceLog(log)
-def do_interactive(command, *args, **kargs):
-    # we always assume that we dont care about return code for interactive stuff
-    os.system(command)
-
 # logger =
 # output = [1|0]
+# chrootPath
+#
+# Warning: this is the function from hell. :(
+#
 @traceLog(log)
-def do(command, timeout=0, raiseExc=True, interactive=0, *args, **kargs):
+def do(command, chrootPath=None, timeout=0, raiseExc=True, returnOutput=0, *args, **kargs):
     """execute given command outside of chroot"""
     
     logger = kargs.get("logger", log)
     logger.debug("Run cmd: %s" % command)
-
-    # need to not fork, etc or interactive command wont properly display, so catch it here.
-    if interactive:
-        return do_interactive(command, timeout=timeout, raiseExc=raiseExc, *args, **kargs)
 
     class alarmExc(Exception): pass
     def alarmhandler(signum,stackframe):
@@ -187,7 +182,7 @@ def do(command, timeout=0, raiseExc=True, interactive=0, *args, **kargs):
                 else:
                     logger.debug(line)
 
-                if kargs.get("output",1):
+                if returnOutput:
                     output += line
 
             # close read handle, get child return status, etc
@@ -224,6 +219,22 @@ def do(command, timeout=0, raiseExc=True, interactive=0, *args, **kargs):
         # become process group leader so that our parent
         # can kill our children
         os.setpgrp()  
+
+        uidManager = kargs.get("uidManager")
+
+        if chrootPath is not None:
+            if uidManager:
+                logger.debug("elevate privs to run chroot")
+                uidManager.becomeUser(0)
+            os.chdir(chrootPath)
+            os.chroot(chrootPath)
+            if uidManager:
+                logger.debug("back to other privs")
+                uidManager.restorePrivs()
+
+        if uidManager:
+            logger.debug("about to drop privs")
+            uidManager.dropPrivsForever()
 
         child = popen2.Popen4(command)
         child.tochild.close()
