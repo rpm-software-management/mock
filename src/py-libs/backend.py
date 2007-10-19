@@ -151,7 +151,13 @@ class Root(object):
          # create our base directory heirarchy
         mock.util.mkdirIfAbsent(self.basedir)
         mock.util.mkdirIfAbsent(self.rootdir)
-        mock.util.mkdirIfAbsent(self.resultdir)
+
+        self.uidManager.dropPrivsTemp()
+        try:
+            mock.util.mkdirIfAbsent(self.resultdir)
+        except OSError:
+            pass
+        self.uidManager.restorePrivs()
 
         # lock this buildroot so we dont get stomped on.
         self.tryLockBuildRoot()
