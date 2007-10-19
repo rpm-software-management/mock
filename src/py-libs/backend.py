@@ -155,8 +155,6 @@ class Root(object):
         self.root_log.debug('resultdir = %s' % self.resultdir)
         self.root_log.debug('statedir = %s' % self.statedir)
 
-        self.root_log.debug("uid:%d, gid:%d" % (os.getuid(), os.getgid()))
-
         # create skeleton dirs
         self.root_log.info('create skeleton dirs')
         for item in [
