@@ -50,11 +50,10 @@ pkgpython_PYTHON = \
 	src/py-libs/trace_decorator.py 	\
 	src/py-libs/uid.py
 
- # indent a space to get around automake
- ifneq ($(top_builddir),$(top_srcdir))
+if BLD_SRC_DIFFERENT
  $(top_builddir)/src/mock.py: $(top_srcdir)/src/mock.py
- CLEANFILES=$(top_builddir)/src/mock.py
- endif
+ CLEANFILES+=$(top_builddir)/src/mock.py
+endif
 
 src/mock.py: Makefile
 	echo Updating $@, current pwd: $$(pwd)

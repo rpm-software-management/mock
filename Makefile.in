@@ -38,6 +38,7 @@ build_triplet = @build@
 host_triplet = @host@
 bin_PROGRAMS = src/mock$(EXEEXT)
 EXTRA_PROGRAMS =
+@BLD_SRC_DIFFERENT_TRUE@am__append_1 = $(top_builddir)/src/mock.py
 subdir = .
 DIST_COMMON = README $(am__configure_deps) $(dist_libexec_SCRIPTS) \
 	$(dist_mocketc_DATA) $(pkgpython_PYTHON) $(srcdir)/Makefile.am \
@@ -251,7 +252,8 @@ RELEASE_STRING = $(RELEASE_NAME)-$(RELEASE_VERSION)
 MOCK_LIBTOOL_CURRENT = @MOCK_LIBTOOL_CURRENT@
 MOCK_LIBTOOL_REVISION = @MOCK_LIBTOOL_REVISION@
 MOCK_LIBTOOL_AGE = @MOCK_LIBTOOL_AGE@
-CLEANFILES = $(top_builddir)/src/mock.py
+CLEANFILES = mock-*.tar.gz mock-*.tar.bz2 mock-*.rpm _buildtemp \
+	version $(EXTRA_PROGRAMS) $(am__append_1)
 DISTCLEANFILES = *~
 EXTRA_DIST = docs buildsys-build.spec-template mock.spec
 AM_CFLAGS = -Wall -I$(top_srcdir)/src -DSYSCONFDIR='"$(sysconfdir)"' -DLIBEXECDIR='"$(libexecdir)"' -DLIBDIR='"$(libdir)"' -Werror
@@ -919,10 +921,7 @@ uninstall-man: uninstall-man1
 	uninstall-pkgpythonPYTHON
 
 
- # indent a space to get around automake
- ifneq ($(top_builddir),$(top_srcdir))
- $(top_builddir)/src/mock.py: $(top_srcdir)/src/mock.py
- endif
+@BLD_SRC_DIFFERENT_TRUE@ $(top_builddir)/src/mock.py: $(top_srcdir)/src/mock.py
 
 src/mock.py: Makefile
 	echo Updating $@, current pwd: $$(pwd)
