@@ -41,6 +41,7 @@ class Error(Exception):
 # 30 = Yum emitted an error of some sort
 # 40 = some error in the pkg we're building
 # 50 = tried to fork a subcommand and it errored out
+# 60 = buildroot locked
 
 class BuildError(Error):
     def __init__(self, msg):
@@ -66,3 +67,8 @@ class PkgError(Error):
         self.msg = msg
         self.resultcode = 40
 
+class BuildRootLocked(Error):
+    def __init__(self, msg):
+        Error.__init__(self, msg)
+        self.msg = msg
+        self.resultcode = 60
