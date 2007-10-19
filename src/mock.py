@@ -55,13 +55,15 @@ def command_parse():
            mock [options] [rebuild] /path/to/srpm(s)
            mock [options] chroot <cmd>
            mock [options] {init|clean|shell}
+           mock [options] {installdeps|install}
     commands: 
-        rebuild - build the specified SRPM(s) [default command]
-        chroot - run the specified command within the chroot
-        shell - run an interactive shell within specified chroot
-        clean - clean out the specified chroot
-        init - initialize the chroot, do not build anything
-        installdeps - install build dependencies"""
+        rebuild     - build the specified SRPM(s) [default command]
+        chroot      - run the specified command within the chroot
+        shell       - run an interactive shell within specified chroot
+        clean       - clean out the specified chroot
+        init        - initialize the chroot, do not build anything
+        installdeps - install build dependencies for a specified SRPM
+        install     - install packages using yum"""
 
     parser = OptionParser(usage=usage, version=__VERSION__)
     parser.add_option("-r", action="store", type="string", dest="chroot",
@@ -208,12 +210,22 @@ def main():
             if len(args) > 1:
                 srpms = args[1:]
             else:
-                log.critical("No package specified to rebuild command.")
+                log.critical("You must specify an SRPM file.")
                 sys.exit(50)
 
             for hdr in mock.util.yieldSrpmHeaders(srpms): pass
             chroot.init()
             chroot.installSrpmDeps(*srpms)
+
+        elif args[0] == 'install':
+            if len(args) > 1:
+                srpms = args[1:]
+            else:
+                log.critical("You must specify a package list to install.")
+                sys.exit(50)
+
+            chroot.init()
+            chroot.yumInstall(*srpms)
 
         elif args[0] == 'rebuild':
             srpms = args[1:]

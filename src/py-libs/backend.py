@@ -247,6 +247,12 @@ class Root(object):
         return mock.util.do(cmd, *args, **kargs)
 
     @traceLog(moduleLog)
+    def yumInstall(self, *srpms):
+        """figure out deps from srpm. call yum to install them"""
+        # pass build reqs (as strings) to installer
+        self._yum('install %s' % ' '.join(srpms))
+
+    @traceLog(moduleLog)
     def installSrpmDeps(self, *srpms):
         """figure out deps from srpm. call yum to install them"""
         arg_string = ""
