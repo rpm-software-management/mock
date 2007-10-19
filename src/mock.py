@@ -82,6 +82,12 @@ def command_parse():
                       help="Change where config files are found")
     parser.add_option("--rpmbuild_timeout", action="store", dest="rpmbuild_timeout", type="int",
                       default=None, help="Fail build if rpmbuild takes longer than 'timeout' seconds ")
+
+    # caching
+    parser.add_option("--enable_cache", action="append", dest="enabled_caches", type="string",
+                      default=[], help="Disable types of caching. Valid values: 'root_cache', 'yum_cache', 'ccache'")
+    parser.add_option("--disable_cache", action="append", dest="disabled_caches", type="string",
+                      default=[], help="Disable types of caching. Valid values: 'root_cache', 'yum_cache', 'ccache'")
     
     return parser.parse_args()
 
@@ -139,6 +145,11 @@ def set_config_opts_per_cmdline(config_opts, options):
         config_opts['unique-ext'] = options.uniqueext
     if options.rpmbuild_timeout is not None:
         config_opts['rpmbuild_timeout'] = options.rpmbuild_timeout
+
+    for i in options.disabled_caches:
+        config_opts['enable_%s' % i] = False
+    for i in options.enabled_caches:
+        config_opts['enable_%s' % i] = True
 
 @traceLog(log)
 def warn_obsolete_config_options(config_opts):
