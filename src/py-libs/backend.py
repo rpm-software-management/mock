@@ -155,6 +155,8 @@ class Root(object):
         self.root_log.debug('resultdir = %s' % self.resultdir)
         self.root_log.debug('statedir = %s' % self.statedir)
 
+        self._callHooks('preinit')
+
         # create skeleton dirs
         self.root_log.info('create skeleton dirs')
         for item in [
@@ -217,7 +219,6 @@ class Root(object):
         os.symlink("/proc/self/fd/0", os.path.join(self.rootdir, "dev/stdin"))
         os.symlink("/proc/self/fd/1", os.path.join(self.rootdir, "dev/stdout"))
         os.symlink("/proc/self/fd/2", os.path.join(self.rootdir, "dev/stderr"))
-        # "/dev/log"
 
         # set up cache dirs:
         self._initCache()
@@ -235,6 +236,7 @@ class Root(object):
         self._buildDirSetup()
 
         # done with init
+        self._callHooks('postinit')
 
     @traceLog(moduleLog)
     def doChroot(self, command, env="", *args, **kargs):
@@ -313,11 +315,28 @@ class Root(object):
             self.installSrpmDeps(rebuiltSrpmFile)
 
             #have to permanently drop privs or rpmbuild regains them
+            # can only do this by forking...
             self.state("build")
-            self.doChroot(
-                "rpmbuild -bb --target %s --nodeps %s" % (self.target_arch, chrootspec), 
-                env=env, logger=self.build_log, timeout=timeout, output=0
-                )
+            pid = os.fork()
+            if pid:
+                # parent
+                try:
+                    os.waitpid(pid,0)
+                except:
+                    os.kill(-pid, signal.SIGTERM)
+                    time.sleep(1)
+                    os.kill(-pid, signal.SIGKILL)
+
+            else:
+                # child
+                try:
+                    uidManager.dropPrivsForever()
+                    self.doChroot(
+                        "rpmbuild -bb --target %s --nodeps %s" % (self.target_arch, chrootspec), 
+                        env=env, logger=self.build_log, timeout=timeout, output=0
+                        )
+                finally:
+                    os._exit(0)
 
             bd_out = self.rootdir + self.builddir
             rpms = glob.glob(bd_out + '/RPMS/*.rpm')
@@ -362,6 +381,10 @@ class Root(object):
         if self.enable_ccache:
             self._setupCcache()
 
+    # lock the shared yum cache (when enabled) before any access
+    # by yum, and prior to cleaning it. This prevents simultaneous access from
+    # screwing things up. This can possibly happen, eg. when running multiple
+    # mock instances with --uniqueext=
     @traceLog(moduleLog)
     def _yumCachePreYumHook(self):
         try:
@@ -385,10 +408,11 @@ class Root(object):
         mock.util.mkdirIfAbsent(self.yumSharedCachePath)
         self.umountCmds.append('umount -n %s/var/cache/yum' % self.rootdir)
         self.mountCmds.append('mount -n --bind %s  %s/var/cache/yum' % (self.yumSharedCachePath, self.rootdir))
-        self.yumCacheLock = open(os.path.join(self.yumSharedCachePath, "yumcache.lock"), "a+")
 
         # lock so others dont accidentally use yum cache while we operate on it.
+        self.yumCacheLock = open(os.path.join(self.yumSharedCachePath, "yumcache.lock"), "a+")
         self._yumCachePreYumHook()
+
         for (dirpath, dirnames, filenames) in os.walk(self.yumSharedCachePath):
             for filename in filenames:
                 fullPath = os.path.join(dirpath, filename)
@@ -410,10 +434,17 @@ class Root(object):
 
         self._yumCachePostYumHook()
 
+    # set the max size before we actually use it during a build.
+    # ccache itself manages size and settings.
     @traceLog(moduleLog)
     def _ccacheBuildHook(self):
         mock.util.do("CCACHE_DIR=%s ccache -M %s" % (self.ccachePath, self.ccache_opts['max_cache_size']))
 
+    # basic idea here is that we add 'cc', 'gcc', 'g++' shell scripts to
+    # to /tmp/ccache, which is bind-mounted from a shared location.
+    # we then add this to the front of the path.
+    # we also set a few admin variables used by ccache to find the shared
+    # cache.
     @traceLog(moduleLog)
     def _setupCcache(self):
         self._addHook("prebuild", self._ccacheBuildHook)
@@ -475,6 +506,7 @@ class Root(object):
         if not os.path.exists(os.path.join(self.rootdir, 'usr/sbin/useradd')):
             raise RootError, "Could not find useradd in chroot, maybe the install failed?"
 
+        # safe and easy. blow away existing /builddir and completely re-create.
         mock.util.rmtree(os.path.join(self.rootdir, self.homedir))
         self.doChroot('/usr/sbin/userdel -r %s' % self.chrootuser, raiseExc=False)
         self.doChroot('/usr/sbin/groupdel %s' % self.chrootgroup, raiseExc=False)
