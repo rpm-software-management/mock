@@ -255,7 +255,7 @@ def main():
                 chroot.init()
                 chroot.build(srpm, timeout=config_opts['rpmbuild_timeout'])
                 elapsed = time.time() - start
-                log.info("Done(%s)  %s minutes %s seconds" % (srpm, elapsed/60, elapsed%60))
+                log.info("Done(%s)  %d minutes %d seconds" % (srpm, elapsed//60, elapsed%60))
                 log.info("Results and/or logs in: %s" % chroot.resultdir)
 
         else:
