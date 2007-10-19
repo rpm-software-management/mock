@@ -145,7 +145,7 @@ class Root(object):
         try:
             fcntl.lockf(self.buildrootLock.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
         except IOError, e:
-            raise mock.exception.Error, "Build root is locked by another process."
+            raise mock.exception.BuildRootLocked, "Build root is locked by another process."
 
         # create our log files.
         self._resetLogging()
@@ -519,7 +519,7 @@ class Root(object):
         # attach logs to log files.
         # This happens in addition to anything
         # is set up in the config file... ie. logs go everywhere
-        formatter = logging.Formatter("%(asctime)s - %(module)s:%(lineno)d:%(levelname)s: %(message)s")
+        formatter = logging.Formatter("%(asctime)s - %(filename)s:%(lineno)d:%(levelname)s: %(message)s")
         for (log, filename) in (
                 (self._state_log, "state.log"),
                 (self.build_log, "build.log"),
