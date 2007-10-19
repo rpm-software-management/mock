@@ -162,7 +162,7 @@ class Root(object):
         # lock this buildroot so we dont get stomped on.
         self.tryLockBuildRoot()
 
-        # create our log files.
+        # create our log files. (if they havent already)
         self._resetLogging()
 
         # write out config details
@@ -381,8 +381,9 @@ class Root(object):
     @traceLog(moduleLog)
     def _addHook(self, stage, function):
         hooks = self._hooks.get(stage, [])
-        hooks.append(function)
-        self._hooks[stage] = hooks
+        if function not in hooks:
+            hooks.append(function)
+            self._hooks[stage] = hooks
 
     @traceLog(moduleLog)
     def _initCache(self):
