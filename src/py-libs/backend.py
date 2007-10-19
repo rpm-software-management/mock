@@ -44,6 +44,7 @@ class Root(object):
         self.uidManager = uidManager
         self._hooks = {}
         self.chrootWasCleaned = False
+        self.preExistingDeps = ""
 
         self.sharedRootName = config['root']
         root = self.sharedRootName
@@ -268,7 +269,7 @@ class Root(object):
     @traceLog(moduleLog)
     def installSrpmDeps(self, *srpms):
         """figure out deps from srpm. call yum to install them"""
-        arg_string = ""
+        arg_string = self.preExistingDeps
         self.uidManager.dropPrivsTemp()
         try:
             for hdr in mock.util.yieldSrpmHeaders(srpms):
@@ -284,12 +285,12 @@ class Root(object):
         # everything exists, okay, install them all.
         # pass build reqs (as strings) to installer
         if arg_string != "":
-            output = self._yum('resolvedep %s' % arg_string, returnOutput=1)
-            for line in output.split('\n'):
-                if line.lower().find('No Package found for'.lower()) != -1:
-                    raise mock.exception.BuildError, "Bad build req: %s. Exiting." % line
-            # nothing made us exit, so we continue
-            self._yum('install %s' % arg_string)
+#            output = self._yum('resolvedep %s' % arg_string, returnOutput=1)
+#            for line in output.split('\n'):
+#                if line.lower().find('No Package found for'.lower()) != -1:
+#                    raise mock.exception.BuildError, "Bad build req: %s. Exiting." % line
+#            # nothing made us exit, so we continue
+            self._yum('install %s' % arg_string, returnOutput=1)
 
 
     #
@@ -421,9 +422,8 @@ class Root(object):
         if os.path.exists(self.rootCacheFile):
             self.state("unpacking cache")
             self._rootCacheLock()
-            mock.util.do("tar xvzf %s -C %s" % (self.rootCacheFile, self.rootdir))
+            mock.util.do("tar xzf %s -C %s" % (self.rootCacheFile, self.rootdir))
             self._rootCacheUnlock()
-            mock.util.do("tar xvzf %s -C %s" % (self.rootCacheFile, self.rootdir))
             self.chroot_setup_cmd = "update"
             self.chrootWasCleaned = False
 
@@ -493,18 +493,17 @@ class Root(object):
         for (dirpath, dirnames, filenames) in os.walk(self.yumSharedCachePath):
             for filename in filenames:
                 fullPath = os.path.join(dirpath, filename)
+                statinfo = os.stat(fullPath)
+                file_age_days = (time.time() - statinfo.st_ctime) / (60 * 60 * 24)
                 # prune repodata so yum redownloads.
                 # prevents certain errors where yum gets stuck due to bad metadata
                 for ext in (".sqllite", ".xml", ".bz2", ".gz"):
-                    if filename.endswith(ext):
+                    if filename.endswith(ext) and file_age_days > 1:
                         os.unlink(fullPath)
                         fullPath = None
                         break
 
                 if fullPath is None: continue
-
-                statinfo = os.stat(fullPath)
-                file_age_days = (time.time() - statinfo.st_ctime) / (60 * 60 * 24)
                 if file_age_days > self.ccache_opts['max_age_days']:
                     os.unlink(fullPath)
                     continue
@@ -520,8 +519,9 @@ class Root(object):
     # install ccache rpm after buildroot set up.
     @traceLog(moduleLog)
     def _ccachePostInitHook(self):
-        self.state("installing ccache")
-        self._yum('install ccache')
+        #self.state("installing ccache")
+        #self._yum('install ccache')
+        self.preExistingDeps = "ccache"
 
     # basic idea here is that we add 'cc', 'gcc', 'g++' shell scripts to
     # to /tmp/ccache, which is bind-mounted from a shared location.
