@@ -221,6 +221,12 @@ def do(command, chrootPath=None, timeout=0, raiseExc=True, returnOutput=0, *args
             signal.signal(signal.SIGALRM,oldhandler)
             raise
 
+        # kill all children
+        try:
+            os.kill(-pid, signal.SIGTERM)
+        except OSError:
+            pass
+
         # mask and return just return value, plus child output
         if raiseExc and os.WEXITSTATUS(ret):
             if returnOutput:
@@ -231,37 +237,37 @@ def do(command, chrootPath=None, timeout=0, raiseExc=True, returnOutput=0, *args
         return output
 
     else: #child
-        os.close(r)
-        # become process group leader so that our parent
-        # can kill our children
-        os.setpgrp()  
+        retval = 255
+        try:
+            os.close(r)
+            # become process group leader so that our parent
+            # can kill our children
+            os.setpgrp()  
 
-        uidManager = kargs.get("uidManager")
+            uidManager = kargs.get("uidManager")
 
-        if chrootPath is not None:
+            if chrootPath is not None:
+                if uidManager:
+                    logger.debug("elevate privs to run chroot")
+                    uidManager.becomeUser(0)
+                os.chdir(chrootPath)
+                os.chroot(chrootPath)
+                if uidManager:
+                    logger.debug("back to other privs")
+                    uidManager.restorePrivs()
+
             if uidManager:
-                logger.debug("elevate privs to run chroot")
-                uidManager.becomeUser(0)
-            os.chdir(chrootPath)
-            os.chroot(chrootPath)
-            if uidManager:
-                logger.debug("back to other privs")
-                uidManager.restorePrivs()
+                logger.debug("about to drop privs")
+                uidManager.dropPrivsForever()
 
-        if uidManager:
-            logger.debug("about to drop privs")
-            uidManager.dropPrivsForever()
+            child = popen2.Popen4(command)
+            child.tochild.close()
 
-        child = popen2.Popen4(command)
-        child.tochild.close()
-
-        w = os.fdopen(w, "w")
-        for line in child.fromchild:
-            w.write(line)
-            w.flush()
-        w.close()
-        retval=child.wait()
-        os._exit(os.WEXITSTATUS(retval)) 
-
-
-
+            w = os.fdopen(w, "w")
+            for line in child.fromchild:
+                w.write(line)
+                w.flush()
+            w.close()
+            retval=child.wait()
+        finally:
+            os._exit(os.WEXITSTATUS(retval)) 
