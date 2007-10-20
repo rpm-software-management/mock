@@ -1,3 +1,15 @@
+2007-10-20  Michael Brown <mebrown@michaels-house.net>
+
+	* mock.py
+	lots of work redoing stuff. Now use setuid wrapper instead of
+	setuid helper.
+	huge number of changes upstream
+	convert to setuid wrapper instead of old setuid helper
+	lots of bugfixes and improvements
+	/var/cache/yum now saved and bind-mounted
+	ccache integration
+	rootcache improvements (formerly called autocache)
+
 2007-02-24  Clark Williams  <williams@redhat.com>
 
 	* mock.spec

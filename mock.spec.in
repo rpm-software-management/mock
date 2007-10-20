@@ -64,6 +64,14 @@ fi
 %attr(02775, root, mock) %dir /var/lib/mock
 
 %changelog
+* Fri Oct 20 2007 Michael Brown <mebrown@michaels-house.net> - 0.8.0-1
+- huge number of changes upstream
+- convert to setuid wrapper instead of old setuid helper
+- lots of bugfixes and improvements
+- /var/cache/yum now saved and bind-mounted
+- ccache integration
+- rootcache improvements (formerly called autocache)
+
 * Mon Aug 27 2007 Michael Brown <mebrown@michaels-house.net> - 0.7.6-1
 - ensure /etc/hosts is created in chroot properly
 
