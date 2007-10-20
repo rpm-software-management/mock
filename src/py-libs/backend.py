@@ -242,8 +242,10 @@ class Root(object):
         # yum stuff
         self.root_log.info('run yum')
         self._mountall()
-        self._yum(self.chroot_setup_cmd)
-        self._umountall()
+        try:
+            self._yum(self.chroot_setup_cmd)
+        finally:
+            self._umountall()
 
         # create user
         self._makeBuildUser()
@@ -264,7 +266,11 @@ class Root(object):
     def yumInstall(self, *srpms):
         """figure out deps from srpm. call yum to install them"""
         # pass build reqs (as strings) to installer
-        self._yum('install %s' % ' '.join(srpms))
+        self._mountall()
+        try:
+            self._yum('install %s' % ' '.join(srpms))
+        finally:
+            self._umountall()
 
     @traceLog(moduleLog)
     def installSrpmDeps(self, *srpms):
@@ -285,6 +291,10 @@ class Root(object):
         # everything exists, okay, install them all.
         # pass build reqs (as strings) to installer
         if arg_string != "":
+# TODO:
+#  make this configurable. It doesnt affect operation. It just gives better error message to user
+#  BUT: it slows down things for those cases where there are no errors.
+# 
 #            output = self._yum('resolvedep %s' % arg_string, returnOutput=1)
 #            for line in output.split('\n'):
 #                if line.lower().find('No Package found for'.lower()) != -1:

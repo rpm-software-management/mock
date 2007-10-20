@@ -74,7 +74,9 @@ def command_parse():
     parser.add_option("--no-clean", action ="store_false", dest="clean", 
                       help="do not clean chroot before building", default=True)
     parser.add_option("--cleanup-after", action ="store_true", dest="cleanup_after", 
-                      help="Clean chroot after building. Use with --resultdir. Only active for 'rebuild'.", default=False)
+                      help="Clean chroot after building. Use with --resultdir. Only active for 'rebuild'.", default=None)
+    parser.add_option("--no-cleanup-after", action ="store_false", dest="cleanup_after", 
+                      help="Dont clean chroot after building. If automatic cleanup is enabled, use this to disable.", default=None)
     parser.add_option("--arch", action ="store", dest="arch", 
                       default=None, help="target build arch")
     parser.add_option("--resultdir", action="store", type="string", 
@@ -111,10 +113,15 @@ def setup_default_config_opts(config_opts):
         #  'mock' group doesnt exist, must set in config file
         pass
 
+    # cleanup_on_* only take effect for separate --resultdir
+    # config_opts provides fine-grained control. cmdline only has big hammer
+    config_opts['cleanup_on_success'] = 1
+    config_opts['cleanup_on_failure'] = 1
+
     # (global) caching-related config options
     config_opts['cache_topdir'] = '/var/lib/mock/cache'
     config_opts['enable_ccache'] = True
-    config_opts['ccache_opts'] = {'max_age_days': 15, 'max_cache_size': "32G"}
+    config_opts['ccache_opts'] = {'max_age_days': 15, 'max_cache_size': "4G"}
     config_opts['enable_yum_cache'] = True
     config_opts['yum_cache_opts'] = {'max_age_days': 15}
     config_opts['enable_root_cache'] = True
@@ -122,7 +129,6 @@ def setup_default_config_opts(config_opts):
 
     # dependent on guest OS
     config_opts['use_host_resolv'] = True
-    config_opts['runuser'] = '/sbin/runuser'
     config_opts['chroot_setup_cmd'] = 'install buildsys-build'
     config_opts['target_arch'] = 'i386'
     config_opts['yum.conf'] = ''
@@ -156,9 +162,50 @@ def set_config_opts_per_cmdline(config_opts, options):
     if options.cleanup_after and not options.resultdir:
         raise mock.exception.BadCmdline("Must specify --resultdir when using --cleanup-after")
 
+    if options.cleanup_after == False:
+        config_opts['cleanup_on_success'] = False
+        config_opts['cleanup_on_failure'] = False
+
+    if options.cleanup_after == True:
+        config_opts['cleanup_on_success'] = True
+        config_opts['cleanup_on_failure'] = True
+
+    # cant cleanup unless separate resultdir
+    if not options.resultdir:
+        config_opts['cleanup_on_success'] = False
+        config_opts['cleanup_on_failure'] = False
+
 @traceLog(log)
 def warn_obsolete_config_options(config_opts):
     pass
+
+@traceLog(log)
+def do_rebuild(config_opts, chroot, srpms):
+    if len(srpms) < 1:
+        log.critical("No package specified to rebuild command.")
+        sys.exit(50)
+
+    # check that everything is kosher. Raises exception on error
+    for hdr in mock.util.yieldSrpmHeaders(srpms): pass
+
+    try:
+        for srpm in srpms:
+            start = time.time()
+            log.info("Start(%s)" % srpm)
+            if config_opts['clean'] and chroot.state() != "clean":
+                chroot.clean()
+            chroot.init()
+            chroot.build(srpm, timeout=config_opts['rpmbuild_timeout'])
+            elapsed = time.time() - start
+            log.info("Done(%s)  %d minutes %d seconds" % (srpm, elapsed//60, elapsed%60))
+            log.info("Results and/or logs in: %s" % chroot.resultdir)
+    
+        if config_opts["cleanup_on_success"]:
+            chroot.clean()
+    except (Exception, KeyboardInterrupt), e:
+        if config_opts["cleanup_on_failure"]:
+            chroot.clean()
+        raise
 
 def main(retParams):
     # defaults
@@ -201,6 +248,7 @@ def main(retParams):
     #   due to suid helper, our current effective uid is 0
     chroot = mock.backend.Root(config_opts, mock.uid.uidManager(os.getuid(), os.getgid()))
     retParams["chroot"] = chroot
+    retParams["config_opts"] = config_opts
     os.umask(002)
     if config_opts['clean']:
         chroot.clean()
@@ -230,7 +278,11 @@ def main(retParams):
 
         for hdr in mock.util.yieldSrpmHeaders(srpms, plainRpmOk=1): pass
         chroot.init()
-        chroot.installSrpmDeps(*srpms)
+        chroot._mountall()
+        try:
+            chroot.installSrpmDeps(*srpms)
+        finally:
+            chroot._umountall()
 
     elif args[0] == 'install':
         if len(args) > 1:
@@ -243,27 +295,7 @@ def main(retParams):
         chroot.yumInstall(*srpms)
 
     elif args[0] == 'rebuild':
-        srpms = args[1:]
-        if len(srpms) < 1:
-            log.critical("No package specified to rebuild command.")
-            sys.exit(50)
-
-        # check that everything is kosher. Raises exception on error
-        for hdr in mock.util.yieldSrpmHeaders(srpms): pass
-
-        for srpm in srpms:
-            start = time.time()
-            log.info("Start(%s)" % srpm)
-            if config_opts['clean'] and chroot.state() != "clean":
-                chroot.clean()
-            chroot.init()
-            chroot.build(srpm, timeout=config_opts['rpmbuild_timeout'])
-            elapsed = time.time() - start
-            log.info("Done(%s)  %d minutes %d seconds" % (srpm, elapsed//60, elapsed%60))
-            log.info("Results and/or logs in: %s" % chroot.resultdir)
-
-        if options.cleanup_after:
-            chroot.clean()
+        do_rebuild(config_opts, chroot, args[1:])
 
     else:
         log.error("Unknown command specified: %s" % args[0])
