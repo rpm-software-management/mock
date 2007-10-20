@@ -201,9 +201,11 @@ def do_rebuild(config_opts, chroot, srpms):
             log.info("Results and/or logs in: %s" % chroot.resultdir)
     
         if config_opts["cleanup_on_success"]:
+            log.info("Cleaning up build root ('clean_on_success=True')")
             chroot.clean()
     except (Exception, KeyboardInterrupt), e:
         if config_opts["cleanup_on_failure"]:
+            log.error("Got exception. Cleaning up build root ('clean_on_failure=True')")
             chroot.clean()
         raise
 
@@ -308,6 +310,10 @@ if __name__ == '__main__':
         # we hit an exception.
         retParams = {}
         main(retParams)
+
+    except (KeyboardInterrupt,), e:
+        log.error("Exiting on user interrupt, <CTRL>-C")
+
     except (mock.exception.BadCmdline), e:
         log.error(str(e))
         killOrphans = 0
