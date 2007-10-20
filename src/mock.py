@@ -89,9 +89,9 @@ def command_parse():
                       default=None, help="Fail build if rpmbuild takes longer than 'timeout' seconds ")
 
     # caching
-    parser.add_option("--enable_cache", action="append", dest="enabled_caches", type="string",
+    parser.add_option("--enable-cache", action="append", dest="enabled_caches", type="string",
                       default=[], help="Disable types of caching. Valid values: 'root_cache', 'yum_cache', 'ccache'")
-    parser.add_option("--disable_cache", action="append", dest="disabled_caches", type="string",
+    parser.add_option("--disable-cache", action="append", dest="disabled_caches", type="string",
                       default=[], help="Disable types of caching. Valid values: 'root_cache', 'yum_cache', 'ccache'")
     
     return parser.parse_args()
@@ -154,9 +154,14 @@ def set_config_opts_per_cmdline(config_opts, options):
     if options.rpmbuild_timeout is not None:
         config_opts['rpmbuild_timeout'] = options.rpmbuild_timeout
 
+    legalCacheOpts = ("yum_cache", "root_cache", "ccache")
     for i in options.disabled_caches:
+        if i not in legalCacheOpts:
+            raise mock.exception.BadCmdline("Bad option for '--disable-cache=%s'. Expecting one of: %s" % (i, legalCacheOpts))
         config_opts['enable_%s' % i] = False
     for i in options.enabled_caches:
+        if i not in legalCacheOpts:
+            raise mock.exception.BadCmdline("Bad option for '--enable-cache=%s'. Expecting one of: %s" % (i, legalCacheOpts))
         config_opts['enable_%s' % i] = True
 
     if options.cleanup_after and not options.resultdir:
