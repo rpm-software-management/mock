@@ -36,6 +36,7 @@ class Error(Exception):
 # result/exit codes
 # 0 = yay!
 # 1 = something happened  - it's bad
+# 5 = cmdline processing error
 # 10 = problem building the package
 # 20 = error in the chroot of some kind
 # 30 = Yum emitted an error of some sort
@@ -72,3 +73,9 @@ class BuildRootLocked(Error):
         Error.__init__(self, msg)
         self.msg = msg
         self.resultcode = 60
+
+class BadCmdline(Error):
+    def __init__(self, msg):
+        Error.__init__(self, msg)
+        self.msg = msg
+        self.resultcode = 05
