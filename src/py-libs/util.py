@@ -86,7 +86,7 @@ def orphansKill(rootToKill):
             
 
 @traceLog(log)
-def yieldSrpmHeaders(srpms):
+def yieldSrpmHeaders(srpms, plainRpmOk=0):
     ts = rpmUtils.transaction.initReadOnlyTransaction()
     for srpm in srpms:
         try:
@@ -94,7 +94,7 @@ def yieldSrpmHeaders(srpms):
         except (rpmUtils.RpmUtilsError,), e:
             raise mock.exception.Error, "Cannot find/open srpm: %s. Error: %s" % (srpm, ''.join(e))
 
-        if hdr[rpm.RPMTAG_SOURCEPACKAGE] != 1:
+        if not plainRpmOk and hdr[rpm.RPMTAG_SOURCEPACKAGE] != 1:
             raise mock.exception.Error("File is not an srpm: %s." % srpm )
 
         yield hdr

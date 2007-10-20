@@ -228,7 +228,7 @@ def main(retParams):
             log.critical("You must specify an SRPM file.")
             sys.exit(50)
 
-        for hdr in mock.util.yieldSrpmHeaders(srpms): pass
+        for hdr in mock.util.yieldSrpmHeaders(srpms, plainRpmOk=1): pass
         chroot.init()
         chroot.installSrpmDeps(*srpms)
 
