@@ -73,6 +73,8 @@ def command_parse():
                       default='default')
     parser.add_option("--no-clean", action ="store_false", dest="clean", 
                       help="do not clean chroot before building", default=True)
+    parser.add_option("--cleanup-after", action ="store_true", dest="cleanup_after", 
+                      help="Clean chroot after building. Use with --resultdir. Only active for 'rebuild'.", default=False)
     parser.add_option("--arch", action ="store", dest="arch", 
                       default=None, help="target build arch")
     parser.add_option("--resultdir", action="store", type="string", 
@@ -131,7 +133,6 @@ def setup_default_config_opts(config_opts):
                              '%_rpmfilename': '%%{NAME}-%%{VERSION}-%%{RELEASE}.%%{ARCH}.rpm',
                              }
 
-
 @traceLog(log)
 def set_config_opts_per_cmdline(config_opts, options):
     # do some other options and stuff
@@ -152,11 +153,14 @@ def set_config_opts_per_cmdline(config_opts, options):
     for i in options.enabled_caches:
         config_opts['enable_%s' % i] = True
 
+    if options.cleanup_after and not options.resultdir:
+        raise mock.exception.BadCmdline("Must specify --resultdir when using --cleanup-after")
+
 @traceLog(log)
 def warn_obsolete_config_options(config_opts):
     pass
 
-def main():
+def main(retParams):
     # defaults
     config_opts = {}
     setup_default_config_opts(config_opts)
@@ -192,75 +196,89 @@ def main():
     set_config_opts_per_cmdline(config_opts, options)
     warn_obsolete_config_options(config_opts)
 
-    killOrphans = 1
-    try:
-        # do whatever we're here to do
-        #   uidManager saves current real uid/gid which are unpriviledged (callers)
-        #   due to suid helper, our current effective uid is 0
-        chroot = mock.backend.Root(config_opts, mock.uid.uidManager(os.getuid(), os.getgid()))
-        os.umask(002)
-        if config_opts['clean']:
+    # do whatever we're here to do
+    #   uidManager saves current real uid/gid which are unpriviledged (callers)
+    #   due to suid helper, our current effective uid is 0
+    chroot = mock.backend.Root(config_opts, mock.uid.uidManager(os.getuid(), os.getgid()))
+    retParams["chroot"] = chroot
+    os.umask(002)
+    if config_opts['clean']:
+        chroot.clean()
+
+    if args[0] == 'init':
+        chroot.init()
+
+    elif args[0] == 'clean':
+        if chroot.state() != "clean":
             chroot.clean()
 
-        if args[0] == 'init':
-            chroot.init()
+    elif args[0] in ('chroot', 'shell'):
+        chroot.init()
+        chroot._mountall()
+        try:
+            cmd = ' '.join(args[1:])
+            os.system("PS1='mock-chroot> ' /usr/sbin/chroot %s %s" % (chroot.rootdir, cmd))
+        finally:
+            chroot._umountall()
 
-        elif args[0] == 'clean':
-            if chroot.state() != "clean":
-                chroot.clean()
-
-        elif args[0] in ('chroot', 'shell'):
-            chroot.init()
-            chroot._mountall()
-            try:
-                cmd = ' '.join(args[1:])
-                os.system("PS1='mock-chroot> ' /usr/sbin/chroot %s %s" % (chroot.rootdir, cmd))
-            finally:
-                chroot._umountall()
-
-        elif args[0] == 'installdeps':
-            if len(args) > 1:
-                srpms = args[1:]
-            else:
-                log.critical("You must specify an SRPM file.")
-                sys.exit(50)
-
-            for hdr in mock.util.yieldSrpmHeaders(srpms): pass
-            chroot.init()
-            chroot.installSrpmDeps(*srpms)
-
-        elif args[0] == 'install':
-            if len(args) > 1:
-                srpms = args[1:]
-            else:
-                log.critical("You must specify a package list to install.")
-                sys.exit(50)
-
-            chroot.init()
-            chroot.yumInstall(*srpms)
-
-        elif args[0] == 'rebuild':
+    elif args[0] == 'installdeps':
+        if len(args) > 1:
             srpms = args[1:]
-            if len(srpms) < 1:
-                log.critical("No package specified to rebuild command.")
-                sys.exit(50)
-
-            # check that everything is kosher. Raises exception on error
-            for hdr in mock.util.yieldSrpmHeaders(srpms): pass
-
-            for srpm in srpms:
-                start = time.time()
-                log.info("Start(%s)" % srpm)
-                if config_opts['clean'] and chroot.state() != "clean":
-                    chroot.clean()
-                chroot.init()
-                chroot.build(srpm, timeout=config_opts['rpmbuild_timeout'])
-                elapsed = time.time() - start
-                log.info("Done(%s)  %d minutes %d seconds" % (srpm, elapsed//60, elapsed%60))
-                log.info("Results and/or logs in: %s" % chroot.resultdir)
-
         else:
-            log.error("Unknown command specified: %s" % args[0])
+            log.critical("You must specify an SRPM file.")
+            sys.exit(50)
+
+        for hdr in mock.util.yieldSrpmHeaders(srpms): pass
+        chroot.init()
+        chroot.installSrpmDeps(*srpms)
+
+    elif args[0] == 'install':
+        if len(args) > 1:
+            srpms = args[1:]
+        else:
+            log.critical("You must specify a package list to install.")
+            sys.exit(50)
+
+        chroot.init()
+        chroot.yumInstall(*srpms)
+
+    elif args[0] == 'rebuild':
+        srpms = args[1:]
+        if len(srpms) < 1:
+            log.critical("No package specified to rebuild command.")
+            sys.exit(50)
+
+        # check that everything is kosher. Raises exception on error
+        for hdr in mock.util.yieldSrpmHeaders(srpms): pass
+
+        for srpm in srpms:
+            start = time.time()
+            log.info("Start(%s)" % srpm)
+            if config_opts['clean'] and chroot.state() != "clean":
+                chroot.clean()
+            chroot.init()
+            chroot.build(srpm, timeout=config_opts['rpmbuild_timeout'])
+            elapsed = time.time() - start
+            log.info("Done(%s)  %d minutes %d seconds" % (srpm, elapsed//60, elapsed%60))
+            log.info("Results and/or logs in: %s" % chroot.resultdir)
+
+        if options.cleanup_after:
+            chroot.clean()
+
+    else:
+        log.error("Unknown command specified: %s" % args[0])
+
+
+if __name__ == '__main__':
+    killOrphans = 1
+    try:
+        # sneaky way to ensure that we get passed back parameter even if 
+        # we hit an exception.
+        retParams = {}
+        main(retParams)
+    except (mock.exception.BadCmdline), e:
+        log.error(str(e))
+        killOrphans = 0
 
     except (mock.exception.BuildRootLocked), e:
         log.error(str(e))
@@ -272,13 +290,10 @@ def main():
     except (Exception,), e:
         logging.exception(e)
 
-    if killOrphans:
-        mock.util.orphansKill(chroot.rootdir)
+    if killOrphans and retParams:
+        mock.util.orphansKill(retParams["chroot"].rootdir)
 
     logging.shutdown()
 
-
-if __name__ == '__main__':
-    main()
 
 
