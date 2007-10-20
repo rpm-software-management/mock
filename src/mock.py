@@ -309,6 +309,7 @@ def main(retParams):
 
 
 if __name__ == '__main__':
+    exitStatus = 0
     killOrphans = 1
     try:
         # sneaky way to ensure that we get passed back parameter even if 
@@ -317,26 +318,32 @@ if __name__ == '__main__':
         main(retParams)
 
     except (KeyboardInterrupt,), e:
+        exitStatus = 7
         log.error("Exiting on user interrupt, <CTRL>-C")
 
     except (mock.exception.BadCmdline), e:
+        exitStatus = e.resultcode
         log.error(str(e))
         killOrphans = 0
 
     except (mock.exception.BuildRootLocked), e:
+        exitStatus = e.resultcode
         log.error(str(e))
         killOrphans = 0
 
     except (mock.exception.Error), e:
+        exitStatus = e.resultcode
         log.error(str(e))
 
     except (Exception,), e:
+        exitStatus = 1
         logging.exception(e)
 
     if killOrphans and retParams:
         mock.util.orphansKill(retParams["chroot"].rootdir)
 
     logging.shutdown()
+    sys.exit(exitStatus)
 
 
 
