@@ -18,16 +18,18 @@ DIR=$(cd $(dirname $0); pwd)
 TOP_SRCTREE=$DIR/../
 cd $TOP_SRCTREE
 
-[ ! -e Makefile ] || make distclean
+make distclean ||:
 
 ./configure
 make distcheck
 make rpm
 
-sudo rpm -e mock
-sudo rpm -Uvh --replacepkgs $(ls mock*.rpm | grep -v src.rpm | grep -v debuginfo)
+RPM=$(ls mock*.rpm | grep -v src.rpm | grep -v debuginfo)
 
-for i in $(ls $DIR/../etc/*cfg | grep -v default); do
-    mock --resultdir=$TOP_SRCTREE/mock-unit-test --uniqueext=unittest rebuild mock-0.8.0-1.fc7.src.rpm  -r fedora-4-i386-epel
+sudo rpm -e mock
+sudo rpm -Uvh --replacepkgs $RPM
+
+for i in $(ls /etc/mock | grep .cfg | grep -v default); do
+    mock --resultdir=$TOP_SRCTREE/mock-unit-test --uniqueext=unittest rebuild mock-*.src.rpm  -r $(basename $i .cfg)
 done
 
