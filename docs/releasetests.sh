@@ -29,7 +29,8 @@ RPM=$(ls mock*.rpm | grep -v src.rpm | grep -v debuginfo)
 sudo rpm -e mock
 sudo rpm -Uvh --replacepkgs $RPM
 
-for i in $(ls /etc/mock | grep .cfg | grep -v default); do
+sudo rm -rf $TOP_SRCTREE/mock-unit-test
+for i in $(ls /etc/mock | grep .cfg | grep -v default | grep -v ppc); do
     mock --resultdir=$TOP_SRCTREE/mock-unit-test --uniqueext=unittest rebuild mock-*.src.rpm  -r $(basename $i .cfg)
 done
 
