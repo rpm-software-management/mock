@@ -18,10 +18,10 @@ DIR=$(cd $(dirname $0); pwd)
 TOP_SRCTREE=$DIR/../
 cd $TOP_SRCTREE
 
-#make distclean ||:
+make distclean ||:
 
-#./configure
-#make distcheck
+./configure
+make distcheck
 make rpm
 
 RPM=$(ls mock*.rpm | grep -v src.rpm | grep -v debuginfo)
