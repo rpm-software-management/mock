@@ -1,4 +1,7 @@
 # vim:expandtab:autoindent:tabstop=4:shiftwidth=4:filetype=python:textwidth=0:
+# License: GPL2 or later see COPYING
+# Written by Michael Brown
+# Copyright (C) 2007 Michael E Brown <mebrown@michaels-house.net>
 
 import types
 from decorator import decorator

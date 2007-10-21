@@ -1,7 +1,10 @@
-// vim:tw=0:sw=4:ts=4:ai:
+// vim:expandtab:autoindent:tabstop=4:shiftwidth=4:filetype=c:textwidth=0:
 //
 // mock.c - setuid program for launching mock.py
 //
+// Copyright (c) 2006 - Clark Williams <williams@redhat.com>
+//   portions lifted from mock-helper.c by Seth Vidal
+//   namespace idea courtesy Enrico Scholz <enrico.scholz@informatik.tu-chemnitz.de>
 //
 // This program is free software; you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -17,9 +20,6 @@
 // along with this program; if not, write to the Free Software
 // Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 //
-// Copyright (c) 2006 - Clark Williams <williams@redhat.com>
-//   portions lifted from mock-helper.c by Seth Vidal
-//   namespace idea courtesy Enrico Scholz <enrico.scholz@informatik.tu-chemnitz.de>
 
 #define _GNU_SOURCE
 
