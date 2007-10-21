@@ -290,13 +290,14 @@ class Root(object):
             for line in output.split('\n'):
                 if line.lower().find('No Package found for'.lower()) != -1:
                     raise mock.exception.BuildError, "Bad build req: %s. Exiting." % line
-#            # nothing made us exit, so we continue
+            # nothing made us exit, so we continue
             self._yum('install %s' % arg_string, returnOutput=1)
 
 
     #
     # UNPRIVLEGED:
     #   Everything in this function runs as the build user
+    #       -> except hooks. :)
     #
     @traceLog(moduleLog)
     def build(self, srpm, timeout):
