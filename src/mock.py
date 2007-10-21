@@ -161,11 +161,11 @@ def set_config_opts_per_cmdline(config_opts, options):
     for i in options.disabled_plugins:
         if i not in config_opts['plugins']:
             raise mock.exception.BadCmdline("Bad option for '--disable-plugins=%s'. Expecting one of: %s" % (i, config_opts['plugins']))
-        config_opts['enable_%s' % i] = False
+        config_opts['plugin_conf']['enable_%s' % i] = False
     for i in options.enabled_plugins:
         if i not in config_opts['plugins']:
             raise mock.exception.BadCmdline("Bad option for '--enable-plugins=%s'. Expecting one of: %s" % (i, config_opts['plugins']))
-        config_opts['enable_%s' % i] = True
+        config_opts['plugin_conf']['enable_%s' % i] = True
 
     if options.cleanup_after and not options.resultdir:
         raise mock.exception.BadCmdline("Must specify --resultdir when using --cleanup-after")
