@@ -1,5 +1,9 @@
 #!/usr/bin/python -tt
-# vim:tw=0:ts=4:sw=4:et:
+# vim:expandtab:autoindent:tabstop=4:shiftwidth=4:filetype=python:textwidth=0:
+# Originally written by Seth Vidal
+# Sections taken from Mach by Thomas Vander Stichele
+# Major reorganization and adaptation by Michael Brown
+# Copyright (C) 2007 Michael E Brown <mebrown@michaels-house.net>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -14,8 +18,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-# Written by Seth Vidal
-# Sections taken from Mach by Thomas Vander Stichele
 
 # library imports
 import grp
@@ -100,6 +102,7 @@ def command_parse(config_opts):
 def setup_default_config_opts(config_opts):
     # global
     config_opts['basedir'] = '/var/lib/mock/' # root name is automatically added to this
+    config_opts['cache_topdir'] = '/var/lib/mock/cache'
     config_opts['clean'] = True
     config_opts['chroothome'] = '/builddir'
     config_opts['log_config_file'] = 'logging.ini'
@@ -118,9 +121,8 @@ def setup_default_config_opts(config_opts):
     config_opts['cleanup_on_success'] = 1
     config_opts['cleanup_on_failure'] = 1
 
-    # (global) caching-related config options
-    config_opts['cache_topdir'] = '/var/lib/mock/cache'
-    config_opts['plugins'] = ('ccache', 'yum_cache', 'root_cache')
+    # (global) plugins and plugin configs
+    config_opts['plugins'] = ('ccache', 'yum_cache', 'root_cache', 'bind_mount')
     config_opts['plugin_dir'] = os.path.join(PKGPYTHONDIR, "plugins")
     config_opts['plugin_conf'] = {
             'enable_ccache': True,
@@ -129,6 +131,12 @@ def setup_default_config_opts(config_opts):
             'yum_cache_opts': {'max_age_days': 15},
             'enable_root_cache': True,
             'root_cache_opts': {'max_age_days': 15},
+            'enable_bind_mount': True,
+            'bind_mount_opts': {'dirs': (
+                        # specify like this:
+                        # ( '/host/path', '/bind/mount/path/in/chroot/' )
+                        # ( '/another/host/path', '/another/bind/mount/path/in/chroot/' )
+                    )},
             }
 
     # dependent on guest OS

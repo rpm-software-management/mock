@@ -43,6 +43,7 @@ man_MANS = docs/mock.1
 
 pluginsdir = $(pkgpythondir)/plugins
 plugins_PYTHON = \
+ 	src/py-libs/plugins/bind_mount.py \
  	src/py-libs/plugins/ccache.py \
 	src/py-libs/plugins/root_cache.py 	\
 	src/py-libs/plugins/yum_cache.py
