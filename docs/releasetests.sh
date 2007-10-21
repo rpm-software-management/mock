@@ -31,7 +31,7 @@ sudo rpm -Uvh --replacepkgs $RPM
 
 sudo rm -rf $TOP_SRCTREE/mock-unit-test
 for i in $(ls /etc/mock | grep .cfg | grep -v default | grep -v ppc); do
-    mock --resultdir=$TOP_SRCTREE/mock-unit-test --uniqueext=unittest rebuild mock-*.src.rpm  -r $(basename $i .cfg)
+    time mock --resultdir=$TOP_SRCTREE/mock-unit-test --uniqueext=unittest rebuild mock-*.src.rpm  -r $(basename $i .cfg)
 done
 
 # test orphanskill
