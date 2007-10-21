@@ -125,18 +125,18 @@ def setup_default_config_opts(config_opts):
     config_opts['plugins'] = ('ccache', 'yum_cache', 'root_cache', 'bind_mount')
     config_opts['plugin_dir'] = os.path.join(PKGPYTHONDIR, "plugins")
     config_opts['plugin_conf'] = {
-            'enable_ccache': True,
+            'ccache_enable': True,
             'ccache_opts': {'max_age_days': 15, 'max_cache_size': "4G"},
-            'enable_yum_cache': True,
+            'yum_cache_enable': True,
             'yum_cache_opts': {'max_age_days': 15},
-            'enable_root_cache': True,
+            'root_cache_enable': True,
             'root_cache_opts': {'max_age_days': 15},
-            'enable_bind_mount': True,
-            'bind_mount_opts': {'dirs': (
+            'bind_mount_enable': True,
+            'bind_mount_opts': {'dirs': [
                         # specify like this:
-                        # ( '/host/path', '/bind/mount/path/in/chroot/' )
-                        # ( '/another/host/path', '/another/bind/mount/path/in/chroot/' )
-                    )},
+                        # ( '/host/path', '/bind/mount/path/in/chroot/' ),
+                        # ( '/another/host/path', '/another/bind/mount/path/in/chroot/' ),
+                    ]},
             }
 
     # dependent on guest OS
@@ -169,11 +169,11 @@ def set_config_opts_per_cmdline(config_opts, options):
     for i in options.disabled_plugins:
         if i not in config_opts['plugins']:
             raise mock.exception.BadCmdline("Bad option for '--disable-plugins=%s'. Expecting one of: %s" % (i, config_opts['plugins']))
-        config_opts['plugin_conf']['enable_%s' % i] = False
+        config_opts['plugin_conf']['%s_enable' % i] = False
     for i in options.enabled_plugins:
         if i not in config_opts['plugins']:
             raise mock.exception.BadCmdline("Bad option for '--enable-plugins=%s'. Expecting one of: %s" % (i, config_opts['plugins']))
-        config_opts['plugin_conf']['enable_%s' % i] = True
+        config_opts['plugin_conf']['%s_enable' % i] = True
 
     if options.cleanup_after and not options.resultdir:
         raise mock.exception.BadCmdline("Must specify --resultdir when using --cleanup-after")

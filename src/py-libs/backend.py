@@ -236,6 +236,8 @@ class Root(object):
         self.root_log.info('run yum')
         self._mountall()
         try:
+            if not self.chrootWasCleaned:
+                self.chroot_setup_cmd = 'update'
             self._yum(self.chroot_setup_cmd)
         finally:
             self._umountall()
@@ -386,7 +388,7 @@ class Root(object):
         # Import plugins  (simplified copy of what yum does). Can add yum
         #  features later when we prove we need them.
         for modname, modulefile in [ (p, os.path.join(self.pluginDir, "%s.py" % p)) for p in self.plugins ]:
-            if not self.pluginConf.get("enable_%s"%modname): continue
+            if not self.pluginConf.get("%s_enable"%modname): continue
             fp, pathname, description = imp.find_module(modname, [self.pluginDir])
             try:
                 module = imp.load_module(modname, fp, pathname, description)
