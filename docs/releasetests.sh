@@ -18,10 +18,10 @@ DIR=$(cd $(dirname $0); pwd)
 TOP_SRCTREE=$DIR/../
 cd $TOP_SRCTREE
 
-make distclean ||:
+#make distclean ||:
 
-./configure
-make distcheck
+#./configure
+#make distcheck
 make rpm
 
 RPM=$(ls mock*.rpm | grep -v src.rpm | grep -v debuginfo)
@@ -34,3 +34,12 @@ for i in $(ls /etc/mock | grep .cfg | grep -v default | grep -v ppc); do
     mock --resultdir=$TOP_SRCTREE/mock-unit-test --uniqueext=unittest rebuild mock-*.src.rpm  -r $(basename $i .cfg)
 done
 
+# test orphanskill
+gcc -o docs/daemontest docs/daemontest.c
+
+(pgrep daemontest && echo "Exiting because there is already a daemontest running." && exit 1) || :
+testConfig=fedora-7-x86_64
+mock -r $testConfig init
+cp docs/daemontest /var/lib/mock/$testConfig/root/tmp/
+mock -r $testConfig --no-clean -- chroot /tmp/daemontest
+(pgrep daemontest && echo "Daemontest FAILED. found a daemontest process running after exit." && exit 1) || :

@@ -21,6 +21,7 @@
 # python library imports
 import fcntl
 import glob
+import imp
 import logging
 import os
 import shutil
@@ -79,15 +80,11 @@ class Root(object):
         self.macros = config['macros']
         self.more_buildreqs = config['more_buildreqs']
         self.cache_topdir = config['cache_topdir']
+        self.cachedir = os.path.join(self.cache_topdir, self.sharedRootName)
 
-        self.enable_ccache = config['enable_ccache']
-        self.ccache_opts   = config['ccache_opts']
-
-        self.enable_yum_cache = config['enable_yum_cache']
-        self.yum_cache_opts   = config['yum_cache_opts']
-
-        self.enable_root_cache = config['enable_root_cache']
-        self.root_cache_opts   = config['root_cache_opts']
+        self.plugins = config['plugins']
+        self.pluginConf = config['plugin_conf']
+        self.pluginDir = config['plugin_dir']
 
         # mount/umount
         self.umountCmds = ['umount -n %s/proc' % self.rootdir,
@@ -99,12 +96,21 @@ class Root(object):
                 'mount -n -t sysfs  mock_chroot_sysfs  %s/sys' % self.rootdir,
                ]
 
+        self.state("init plugins")
+        self._initPlugins()
+
         # officially set state so it is logged
         self.state("start")
 
     # =============
     #  'Public' API
     # =============
+    @traceLog(moduleLog)
+    def addHook(self, stage, function):
+        hooks = self._hooks.get(stage, [])
+        if function not in hooks:
+            hooks.append(function)
+            self._hooks[stage] = hooks
 
     @traceLog(moduleLog)
     def state(self, newState = None):
@@ -150,6 +156,7 @@ class Root(object):
         self.uidManager.becomeUser(0)
 
          # create our base directory heirarchy
+        mock.util.mkdirIfAbsent(self.cachedir)
         mock.util.mkdirIfAbsent(self.basedir)
         mock.util.mkdirIfAbsent(self.rootdir)
 
@@ -170,8 +177,7 @@ class Root(object):
         self.root_log.debug('rootdir = %s' % self.rootdir)
         self.root_log.debug('resultdir = %s' % self.resultdir)
 
-        # set up cache dirs:
-        self._initCache()
+        # set up plugins:
         self._callHooks('preinit')
 
         # create skeleton dirs
@@ -389,181 +395,21 @@ class Root(object):
             hook()
 
     @traceLog(moduleLog)
-    def _addHook(self, stage, function):
-        hooks = self._hooks.get(stage, [])
-        if function not in hooks:
-            hooks.append(function)
-            self._hooks[stage] = hooks
+    def _initPlugins(self):
+        # Import plugins  (simplified copy of what yum does). Can add yum
+        #  features later when we prove we need them.
+        for modname, modulefile in [ (p, os.path.join(self.pluginDir, "%s.py" % p)) for p in self.plugins ]:
+            if not self.pluginConf.get("enable_%s"%modname): continue
+            fp, pathname, description = imp.find_module(modname, [self.pluginDir])
+            try:
+                module = imp.load_module(modname, fp, pathname, description)
+            finally:
+                fp.close()
 
-    @traceLog(moduleLog)
-    def _initCache(self):
-        self.cachedir = os.path.join(self.cache_topdir, self.sharedRootName)
-        if self.enable_root_cache or self.enable_yum_cache or self.enable_ccache:
-            mock.util.mkdirIfAbsent(self.cachedir)
+            if not hasattr(module, 'requires_api_version'):
+                raise mock.exception.Error('Plugin "%s" doesn\'t specify required API version' % modname)
 
-        if self.enable_root_cache:
-            self._setupRootCache()
-
-        if self.enable_yum_cache:
-            self._setupYumCache()
-
-        if self.enable_ccache:
-            self._setupCcache()
-
-    @traceLog(moduleLog)
-    def _rootCacheLock(self, shared=1):
-        lockType = fcntl.LOCK_EX
-        if shared: lockType = fcntl.LOCK_SH
-        try:
-            fcntl.lockf(self.rootCacheLock.fileno(), lockType | fcntl.LOCK_NB)
-        except IOError, e:
-            oldState = self.state()
-            self.state("Waiting for rootcache lock")
-            fcntl.lockf(self.rootCacheLock.fileno(), lockType)
-            self.state(oldState)
-
-    @traceLog(moduleLog)
-    def _rootCacheUnlock(self):
-        fcntl.lockf(self.rootCacheLock.fileno(), fcntl.LOCK_UN)
-
-    @traceLog(moduleLog)
-    def _rootCachePreInitHook(self):
-        if os.path.exists(self.rootCacheFile):
-            self.state("unpacking cache")
-            self._rootCacheLock()
-            mock.util.do("tar xzf %s -C %s" % (self.rootCacheFile, self.rootdir))
-            self._rootCacheUnlock()
-            self.chroot_setup_cmd = "update"
-            self.chrootWasCleaned = False
-
-    @traceLog(moduleLog)
-    def _rootCachePostInitHook(self):
-        # never rebuild cache unless it was a clean build.
-        if self.chrootWasCleaned:
-            self.state("creating cache")
-            self._rootCacheLock(shared=0)
-            mock.util.do("tar czf %s -C %s ." % (self.rootCacheFile, self.rootdir))
-            self._rootCacheUnlock()
-
-    @traceLog(moduleLog)
-    def _setupRootCache(self):
-        self._addHook("preinit", self._rootCachePreInitHook)
-        self._addHook("postinit", self._rootCachePostInitHook)
-        self.rootSharedCachePath = os.path.join(self.cachedir, "root_cache")
-        self.rootCacheFile = os.path.join(self.rootSharedCachePath, "cache.tar.gz")
-        mock.util.mkdirIfAbsent(self.rootSharedCachePath)
-
-        # lock so others dont accidentally use root cache while we operate on it.
-        self.rootCacheLock = open(os.path.join(self.rootSharedCachePath, "rootcache.lock"), "a+")
-
-        # check cache age:
-        self.state("enabling root cache")
-        try:
-            statinfo = os.stat(self.rootCacheFile)
-            file_age_days = (time.time() - statinfo.st_ctime) / (60 * 60 * 24)
-            if file_age_days > self.root_cache_opts['max_age_days']:
-                os.unlink(self.rootCacheFile)
-        except OSError:
-            pass
-
-    # lock the shared yum cache (when enabled) before any access
-    # by yum, and prior to cleaning it. This prevents simultaneous access from
-    # screwing things up. This can possibly happen, eg. when running multiple
-    # mock instances with --uniqueext=
-    @traceLog(moduleLog)
-    def _yumCachePreYumHook(self):
-        try:
-            fcntl.lockf(self.yumCacheLock.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
-        except IOError, e:
-            oldState = self.state()
-            self.state("Waiting for yumcache lock")
-            fcntl.lockf(self.yumCacheLock.fileno(), fcntl.LOCK_EX)
-            self.state(oldState)
-
-    @traceLog(moduleLog)
-    def _yumCachePostYumHook(self):
-        fcntl.lockf(self.yumCacheLock.fileno(), fcntl.LOCK_UN)
-
-    @traceLog(moduleLog)
-    def _setupYumCache(self):
-        self._addHook("preyum", self._yumCachePreYumHook)
-        self._addHook("postyum", self._yumCachePostYumHook)
-        self.yumSharedCachePath = os.path.join(self.cachedir, "yum_cache")
-        mock.util.mkdirIfAbsent(os.path.join(self.rootdir, 'var/cache/yum'))
-        mock.util.mkdirIfAbsent(self.yumSharedCachePath)
-        self.umountCmds.append('umount -n %s/var/cache/yum' % self.rootdir)
-        self.mountCmds.append('mount -n --bind %s  %s/var/cache/yum' % (self.yumSharedCachePath, self.rootdir))
-
-        # lock so others dont accidentally use yum cache while we operate on it.
-        self.yumCacheLock = open(os.path.join(self.yumSharedCachePath, "yumcache.lock"), "a+")
-        self._yumCachePreYumHook()
-
-        self.state("enabled yum cache, cleaning yum metadata")
-        for (dirpath, dirnames, filenames) in os.walk(self.yumSharedCachePath):
-            for filename in filenames:
-                fullPath = os.path.join(dirpath, filename)
-                statinfo = os.stat(fullPath)
-                file_age_days = (time.time() - statinfo.st_ctime) / (60 * 60 * 24)
-                # prune repodata so yum redownloads.
-                # prevents certain errors where yum gets stuck due to bad metadata
-                for ext in (".sqllite", ".xml", ".bz2", ".gz"):
-                    if filename.endswith(ext) and file_age_days > 1:
-                        os.unlink(fullPath)
-                        fullPath = None
-                        break
-
-                if fullPath is None: continue
-                if file_age_days > self.ccache_opts['max_age_days']:
-                    os.unlink(fullPath)
-                    continue
-
-        self._yumCachePostYumHook()
-
-    # set the max size before we actually use it during a build.
-    # ccache itself manages size and settings.
-    @traceLog(moduleLog)
-    def _ccacheBuildHook(self):
-        self.doChroot("ccache -M %s" % self.ccache_opts['max_cache_size'])
-
-    # install ccache rpm after buildroot set up.
-    @traceLog(moduleLog)
-    def _ccachePostInitHook(self):
-        #self.state("installing ccache")
-        #self._yum('install ccache')
-        self.preExistingDeps = "ccache"
-
-    # basic idea here is that we add 'cc', 'gcc', 'g++' shell scripts to
-    # to /tmp/ccache, which is bind-mounted from a shared location.
-    # we then add this to the front of the path.
-    # we also set a few admin variables used by ccache to find the shared
-    # cache.
-    @traceLog(moduleLog)
-    def _setupCcache(self):
-        self._addHook("prebuild", self._ccacheBuildHook)
-        self._addHook("postinit", self._ccachePostInitHook)
-        self.ccachePath = os.path.join(self.cachedir, "ccache")
-        mock.util.mkdirIfAbsent(os.path.join(self.rootdir, 'tmp/ccache'))
-        mock.util.mkdirIfAbsent(self.ccachePath)
-        self.umountCmds.append('umount -n %s/tmp/ccache' % self.rootdir)
-        self.mountCmds.append('mount -n --bind %s  %s/tmp/ccache' % (self.ccachePath, self.rootdir))
-        os.environ['PATH'] = "/tmp/ccache:%s" % (os.environ['PATH'])
-        os.environ['CCACHE_DIR'] = "/tmp/ccache"
-        os.environ['CCACHE_UMASK'] = "002"
-        self._dumpToFile(os.path.join(self.ccachePath, "cc"), 
-            '#!/bin/sh\nexec ccache /usr/bin/cc "$@"\n', mode=0555)
-        self._dumpToFile(os.path.join(self.ccachePath, "gcc"), 
-            '#!/bin/sh\nexec ccache /usr/bin/gcc "$@"\n', mode=0555)
-        self._dumpToFile(os.path.join(self.ccachePath, "g++"), 
-            '#!/bin/sh\nexec ccache /usr/bin/g++ "$@"\n', mode=0555)
-
-    @traceLog(moduleLog)
-    def _dumpToFile(self, filename, contents, *args, **kargs):
-        fd = open(filename, "w+")
-        fd.write(contents)
-        fd.close()
-        mode = kargs.get("mode", None)
-        if mode is not None:
-            os.chmod(filename, mode)
+            module.init(self, self.pluginConf["%s_opts" % modname])
 
     @traceLog(moduleLog)
     def _mountall(self):

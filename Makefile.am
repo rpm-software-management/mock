@@ -41,6 +41,12 @@ EXTRA_DIST += docs buildsys-build.spec-template mock.spec
 dist_libexec_SCRIPTS = src/mock.py
 man_MANS = docs/mock.1
 
+pluginsdir = $(pkgpythondir)/plugins
+plugins_PYTHON = \
+ 	src/py-libs/plugins/ccache.py \
+	src/py-libs/plugins/root_cache.py 	\
+	src/py-libs/plugins/yum_cache.py
+
 pkgpython_PYTHON = \
 	src/py-libs/__init__.py 	\
 	src/py-libs/exception.py 	\

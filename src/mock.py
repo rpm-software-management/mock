@@ -49,7 +49,7 @@ log = logging.getLogger()
 logging.basicConfig()
 
 @traceLog(log)
-def command_parse():
+def command_parse(config_opts):
     """return options and args from parsing the command line"""
     
     usage = """
@@ -89,10 +89,10 @@ def command_parse():
                       default=None, help="Fail build if rpmbuild takes longer than 'timeout' seconds ")
 
     # caching
-    parser.add_option("--enable-cache", action="append", dest="enabled_caches", type="string",
-                      default=[], help="Disable types of caching. Valid values: 'root_cache', 'yum_cache', 'ccache'")
-    parser.add_option("--disable-cache", action="append", dest="disabled_caches", type="string",
-                      default=[], help="Disable types of caching. Valid values: 'root_cache', 'yum_cache', 'ccache'")
+    parser.add_option("--enable-plugin", action="append", dest="enabled_plugins", type="string",
+                      default=[], help="Enable plugin. Currently-available plugins: %s" % repr(config_opts['plugins']))
+    parser.add_option("--disable-plugin", action="append", dest="disabled_plugins", type="string",
+                      default=[], help="Disable plugin. Currently-available plugins: %s" % repr(config_opts['plugins']))
     
     return parser.parse_args()
 
@@ -120,12 +120,16 @@ def setup_default_config_opts(config_opts):
 
     # (global) caching-related config options
     config_opts['cache_topdir'] = '/var/lib/mock/cache'
-    config_opts['enable_ccache'] = True
-    config_opts['ccache_opts'] = {'max_age_days': 15, 'max_cache_size': "4G"}
-    config_opts['enable_yum_cache'] = True
-    config_opts['yum_cache_opts'] = {'max_age_days': 15}
-    config_opts['enable_root_cache'] = True
-    config_opts['root_cache_opts'] = {'max_age_days': 15}
+    config_opts['plugins'] = ('ccache', 'yum_cache', 'root_cache')
+    config_opts['plugin_dir'] = os.path.join(PKGPYTHONDIR, "plugins")
+    config_opts['plugin_conf'] = {
+            'enable_ccache': True,
+            'ccache_opts': {'max_age_days': 15, 'max_cache_size': "4G"},
+            'enable_yum_cache': True,
+            'yum_cache_opts': {'max_age_days': 15},
+            'enable_root_cache': True,
+            'root_cache_opts': {'max_age_days': 15},
+            }
 
     # dependent on guest OS
     config_opts['use_host_resolv'] = True
@@ -154,14 +158,13 @@ def set_config_opts_per_cmdline(config_opts, options):
     if options.rpmbuild_timeout is not None:
         config_opts['rpmbuild_timeout'] = options.rpmbuild_timeout
 
-    legalCacheOpts = ("yum_cache", "root_cache", "ccache")
-    for i in options.disabled_caches:
-        if i not in legalCacheOpts:
-            raise mock.exception.BadCmdline("Bad option for '--disable-cache=%s'. Expecting one of: %s" % (i, legalCacheOpts))
+    for i in options.disabled_plugins:
+        if i not in config_opts['plugins']:
+            raise mock.exception.BadCmdline("Bad option for '--disable-plugins=%s'. Expecting one of: %s" % (i, config_opts['plugins']))
         config_opts['enable_%s' % i] = False
-    for i in options.enabled_caches:
-        if i not in legalCacheOpts:
-            raise mock.exception.BadCmdline("Bad option for '--enable-cache=%s'. Expecting one of: %s" % (i, legalCacheOpts))
+    for i in options.enabled_plugins:
+        if i not in config_opts['plugins']:
+            raise mock.exception.BadCmdline("Bad option for '--enable-plugins=%s'. Expecting one of: %s" % (i, config_opts['plugins']))
         config_opts['enable_%s' % i] = True
 
     if options.cleanup_after and not options.resultdir:
@@ -218,7 +221,7 @@ def main(retParams):
     # defaults
     config_opts = {}
     setup_default_config_opts(config_opts)
-    (options, args) = command_parse()
+    (options, args) = command_parse(config_opts)
     
     # config path -- can be overridden on cmdline
     config_path=MOCKCONFDIR
