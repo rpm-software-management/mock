@@ -29,12 +29,11 @@ class BindMount(object):
         self.rootdir = rootObj.rootdir
         rootObj.bindMountObj = self
         rootObj.addHook("preinit",  self._bindMountPreInitHook)
-        #rootObj.umountCmds.append('umount -n %s/tmp/ccache' % rootObj.rootdir)
-        #rootObj.mountCmds.append('mount -n --bind %s  %s/tmp/ccache' % (self.ccachePath, rootObj.rootdir))
+        for srcdir, destdir in self.bind_opts['dirs']:
+            rootObj.umountCmds.append('umount -n %s/%s' % (rootObj.rootdir, destdir))
+            rootObj.mountCmds.append('mount -n --bind %s  %s/%s' % (srcdir, rootObj.rootdir, destdir))
 
     @traceLog(moduleLog)
     def _bindMountPreInitHook(self):
-        #mock.util.mkdirIfAbsent(os.path.join(self.rootdir, 'tmp/ccache'))
-        pass
-
-
+        for srcdir, destdir in self.bind_opts['dirs']:
+            mock.util.mkdirIfAbsent("%s/%s" % (self.rootObj.rootdir, destdir))
