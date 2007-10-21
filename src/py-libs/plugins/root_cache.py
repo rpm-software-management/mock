@@ -73,18 +73,19 @@ class RootCache(object):
         except OSError:
             pass
 
-        if os.path.exists(self.rootCacheFile):
+        # optimization: dont unpack root cache if chroot was not cleaned
+        if os.path.exists(self.rootCacheFile) and self.rootObj.chrootWasCleaned:
             self.state("unpacking cache")
             self._rootCacheLock()
             mock.util.do("tar xzf %s -C %s" % (self.rootCacheFile, self.rootdir))
             self._rootCacheUnlock()
             self.chroot_setup_cmd = "update"
-            self.chrootWasCleaned = False
+            self.rootObj.chrootWasCleaned = False
 
     @traceLog(moduleLog)
     def _rootCachePostInitHook(self):
         # never rebuild cache unless it was a clean build.
-        if self.chrootWasCleaned:
+        if self.rootObj.chrootWasCleaned:
             self.state("creating cache")
             self._rootCacheLock(shared=0)
             mock.util.do("tar czf %s -C %s ." % (self.rootCacheFile, self.rootdir))
