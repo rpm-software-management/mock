@@ -139,9 +139,6 @@ class Root(object):
         #   --> /etc/ is no longer 02775 (new privs model)
         #   --> no /etc/yum.conf symlink (F7 and above)
 
-        self.root_log.debug("elevating privs")
-        self.uidManager.becomeUser(0)
-
          # create our base directory heirarchy
         mock.util.mkdirIfAbsent(self.cachedir)
         mock.util.mkdirIfAbsent(self.basedir)
@@ -447,6 +444,7 @@ class Root(object):
         self.doChroot('/usr/sbin/userdel -r %s' % self.chrootuser, raiseExc=False)
         self.doChroot('/usr/sbin/groupdel %s' % self.chrootgroup, raiseExc=False)
         self.doChroot('/usr/sbin/useradd -m -u %s -d %s %s' % (self.chrootuid, self.homedir, self.chrootuser), raiseExc=True)
+        self.doChroot("perl -p -i -e 's/^(%s:)!!/$1/;' /etc/passwd" % (self.chrootuser), raiseExc=True)
 
     @traceLog(moduleLog)
     def _resetLogging(self):

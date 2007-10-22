@@ -56,9 +56,9 @@ def command_parse(config_opts):
     
     usage = """
     usage:
+           mock [options] {init|clean}
            mock [options] [rebuild] /path/to/srpm(s)
            mock [options] {shell|chroot} <cmd>
-           mock [options] {init|clean}
            mock [options] installdeps {SRPM|RPM}
            mock [options] install PACKAGE
     commands: 
@@ -265,7 +265,12 @@ def main(retParams):
     # do whatever we're here to do
     #   uidManager saves current real uid/gid which are unpriviledged (callers)
     #   due to suid helper, our current effective uid is 0
-    chroot = mock.backend.Root(config_opts, mock.uid.uidManager(os.getuid(), os.getgid()))
+    uidManager = mock.uid.uidManager(os.getuid(), os.getgid())
+    chroot = mock.backend.Root(config_opts, uidManager)
+
+    # elevate privs
+    uidManager.becomeUser(0)
+
     retParams["chroot"] = chroot
     retParams["config_opts"] = config_opts
     os.umask(002)
