@@ -1,6 +1,6 @@
 Summary: Builds packages inside chroots
 Name: mock
-Version: 0.7.6
+Version: 0.7.7
 Release: 1%{?dist}
 License: GPL
 Group: Development/Tools
@@ -68,6 +68,9 @@ fi
 %{_libdir}/libselinux-mock.so
 
 %changelog
+* Mon Oct 22 2007 Michael Brown <mebrown@michaels-house.net> - 0.7.7-1
+- fix for BZ#250985. /dev/ is destroyed on next mock run if build fails.
+
 * Mon Aug 27 2007 Michael Brown <mebrown@michaels-house.net> - 0.7.6-1
 - ensure /etc/hosts is created in chroot properly
 
