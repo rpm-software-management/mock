@@ -437,7 +437,7 @@ class Root(object):
     @traceLog(moduleLog)
     def _makeBuildUser(self):
         if not os.path.exists(os.path.join(self.rootdir, 'usr/sbin/useradd')):
-            raise RootError, "Could not find useradd in chroot, maybe the install failed?"
+            raise mock.exception.RootError, "Could not find useradd in chroot, maybe the install failed?"
 
         # safe and easy. blow away existing /builddir and completely re-create.
         mock.util.rmtree(os.path.join(self.rootdir, self.homedir))
