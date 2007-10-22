@@ -200,6 +200,13 @@ class Root(object):
         yumconf_fo.write(self.yum_conf_content)
         yumconf_fo.close()
 
+        # symlink /etc/yum.conf to /etc/yum/yum.conf (FC6 requires)
+        try:
+            os.unlink(os.path.join(self.rootdir, "etc", "yum.conf"))
+        except OSError:
+            pass
+        os.symlink('yum/yum.conf', os.path.join(self.rootdir, "etc", "yum.conf"))
+
         # set up resolv.conf
         if self.use_host_resolv:
             resolvdir = os.path.join(self.rootdir, 'etc')
