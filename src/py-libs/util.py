@@ -258,6 +258,10 @@ def do(command, chrootPath=None, timeout=0, raiseExc=True, returnOutput=0, *args
 
             if uidManager:
                 logger.debug("about to drop privs")
+                uid = kargs.get("uid", None)
+                gid = kargs.get("gid", None)
+                if uid is not None: uidManager.unprivUid=uid
+                if gid is not None: uidManager.unprivGid=gid
                 uidManager.dropPrivsForever()
 
             child = popen2.Popen4(command)

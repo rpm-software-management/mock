@@ -57,8 +57,9 @@ class Root(object):
 
         # config options
         self.chrootuid = config['chrootuid']
-        self.chrootuser = config['chrootuser']
-        self.chrootgroup = config['chrootgroup']
+        self.chrootuser = 'mockbuild'
+        self.chrootgid = config['chrootgid']
+        self.chrootgroup = 'mockbuild'
         self.yum_conf_content = config['yum.conf']
         self.use_host_resolv = config['use_host_resolv']
         self.chroot_file_contents = config['files']
@@ -325,6 +326,8 @@ class Root(object):
                 "rpm -Uvh --nodeps %s" % srpmChrootFilename,
                 chrootPath=self.rootdir,
                 uidManager=self.uidManager,
+                uid=self.chrootuid,
+                gid=self.chrootgid,
                 )
 
             # rebuild srpm/rpm from SPEC file
@@ -339,8 +342,10 @@ class Root(object):
             mock.util.do(
                 "rpmbuild -bs --target %s --nodeps %s" % (self.target_arch, chrootspec), 
                 chrootPath=self.rootdir,
-                uidManager=self.uidManager,
                 logger=self.build_log, timeout=timeout,
+                uidManager=self.uidManager,
+                uid=self.chrootuid,
+                gid=self.chrootgid,
                 )
 
             rebuiltSrpmFile = glob.glob("%s/%s/SRPMS/*.src.rpm" % (self.rootdir, self.builddir))
@@ -360,6 +365,8 @@ class Root(object):
                 "rpmbuild -bb --target %s --nodeps %s" % (self.target_arch, chrootspec), 
                 chrootPath=self.rootdir,
                 uidManager=self.uidManager,
+                uid=self.chrootuid,
+                gid=self.chrootgid,
                 logger=self.build_log, timeout=timeout,
                 )
 
@@ -441,9 +448,13 @@ class Root(object):
 
         # safe and easy. blow away existing /builddir and completely re-create.
         mock.util.rmtree(os.path.join(self.rootdir, self.homedir))
-        self.doChroot('/usr/sbin/userdel -r %s' % self.chrootuser, raiseExc=False)
-        self.doChroot('/usr/sbin/groupdel %s' % self.chrootgroup, raiseExc=False)
-        self.doChroot('/usr/sbin/useradd -m -u %s -d %s %s' % (self.chrootuid, self.homedir, self.chrootuser), raiseExc=True)
+        dets = { 'uid': self.chrootuid, 'gid': self.chrootgid, 'user': self.chrootuser, 'group': self.chrootgroup, 'home': self.homedir }
+
+        self.doChroot('/usr/sbin/userdel -r %(user)s' % dets, raiseExc=False)
+        self.doChroot('/usr/sbin/groupdel %(group)s' % dets, raiseExc=False)
+
+        self.doChroot('/usr/sbin/groupadd -g %(gid)s %(group)s' % dets)
+        self.doChroot('/usr/sbin/useradd -m -u %(uid)s -g %(gid)s -d %(home)s -n %(user)s' % dets)
         self.doChroot("perl -p -i -e 's/^(%s:)!!/$1/;' /etc/passwd" % (self.chrootuser), raiseExc=True)
 
     @traceLog(moduleLog)

@@ -108,8 +108,6 @@ def setup_default_config_opts(config_opts):
     config_opts['chroothome'] = '/builddir'
     config_opts['log_config_file'] = 'logging.ini'
     config_opts['rpmbuild_timeout'] = 0
-    config_opts['chrootuser'] = 'mockbuild'
-    config_opts['chrootgroup'] = 'mockbuild'
     config_opts['chrootuid'] = os.getuid()
     try:
         config_opts['chrootgid'] = grp.getgrnam("mock")[2]
