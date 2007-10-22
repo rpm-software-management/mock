@@ -51,13 +51,25 @@ def touch(fileName):
     fo.close()
 
 @traceLog(log)
-def rmtree(*args, **kargs):
-    """version os shutil.rmtree that ignores no-such-file-or-directory errors"""
-    try:
-        shutil.rmtree(*args, **kargs)
-    except OSError, e:
-        if e.errno != 2: # no such file or directory
-            raise
+def rmtree(path, *args, **kargs):
+    """version os shutil.rmtree that ignores no-such-file-or-directory errors, 
+       and tries harder if it finds immutable files"""
+    tryAgain = 1
+    while tryAgain:
+        tryAgain = 0
+        triedTwice = 0
+        try:
+            shutil.rmtree(path, *args, **kargs)
+        except OSError, e:
+            if triedTwice: raise
+            if e.errno == 2: # no such file or directory
+                pass
+            elif e.errno==1:
+                tryAgain = 1
+                triedTwice = 1
+                os.system("chattr -i -R %s" % path)
+            else:
+                raise
 
 @traceLog(log)
 def orphansKill(rootToKill):
