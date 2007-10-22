@@ -37,7 +37,7 @@ from exceptions import Exception
 
 from optparse import OptionParser
 
-__VERSION__ = '0.6'
+__VERSION__ = '0.7.6'
 
 def error(msg):
     print >> sys.stderr, msg
@@ -241,7 +241,7 @@ class Root:
             if cache_exists:
                 cache_mtime = os.stat(self.cache_file)[stat.ST_MTIME]
                 cache_age_days = (time.time() - cache_mtime) / (60 * 60 * 24)
-                if cache_age_days > self.config['max_cache_age_days']:
+                if self.config['max_cache_age_days'] and cache_age_days > self.config['max_cache_age_days']:
                     self.config["rebuild_cache"] = True
         
             if cache_exists and not self.config['rebuild_cache']:
@@ -250,7 +250,9 @@ class Root:
                 cmd = 'update'
             else:
                 cmd = '%s' % self.config['chroot_setup_cmd']
-                create_cache = 1
+                # never rebuild cache unless it was a clean build.
+                if self.config['clean']:
+                    create_cache = 1
         else:
             if self.config['clean']:
                 cmd = '%s' % self.config['chroot_setup_cmd']
@@ -354,8 +356,8 @@ class Root:
         if arg_string != "":
             (retval, output) = self.yum('resolvedep %s' % arg_string)
             for line in output.split('\n'):
-                if line.find('No Package Found for') != -1:
-                    errorpkg = line.replace('No Package Found for', '')
+                if line.find('No Package found for') != -1:
+                    errorpkg = line.replace('No Package found for', '')
                     error(output)
                     raise BuildError, "Cannot find build req %s. Exiting." % errorpkg
             # nothing made us exit, so we continue
@@ -606,6 +608,7 @@ class Root:
             for line in child.fromchild:
                 w.write(line)
             w.close()
+            retval=child.wait()
             os._exit( (retval & 0xFF00) >> 8 )
     
 
@@ -672,7 +675,6 @@ class Root:
     
     def _prep_install(self):
         """prep chroot for installation"""
-        fixown = []
         # make chroot dir
         # make /dev, mount /proc
         #
@@ -695,49 +697,46 @@ class Root:
             if not os.path.exists(item):
                 fo = open(item, 'w')
                 fo.close()
-                fixown.append(item)
+
+        # ensure /etc/ perms are correct
+        cmd = '%s 2775 %s' % (self.config['chmod'], os.path.join(self.rootdir, "etc"))
+        (retval, output) = self.do(cmd)
+        cmd = '%s %s.%s %s' % (self.config['chown'], self.config['chrootuid'], self.config['chrootgid'], os.path.join(self.rootdir, "etc"))
+        (retval, output) = self.do(cmd)
         
         # write in yum.conf into chroot
-        if os.path.exists( os.path.join(self.rootdir, 'etc', 'yum.conf')):
-            cmd = "chown %d /etc/yum.conf" % os.getuid()
-            self.do_chroot(cmd, fatal = True)
         yumconf = os.path.join(self.rootdir, 'etc', 'yum.conf')
-        yumconf_fo = open(yumconf, 'w')
+        # always truncate and overwrite (w+)
+        yumconf_fo = open(yumconf, 'w+')
         yumconf_content = self.config['yum.conf']
         yumconf_fo.write(yumconf_content)
         yumconf_fo.close()
-        fixown.append(yumconf)
 
         # symlink /etc/yum.conf to /etc/yum/yum.conf to deal with
         # (possible) yum breakage
+        # if symlink already exists, no need to recreate.
         yumdir = os.path.join(self.rootdir, 'etc', 'yum')
         self._ensure_dir(yumdir)
         yumlink = os.path.join(yumdir, 'yum.conf')
-        if os.path.exists(yumlink):
-                os.remove(yumlink)
-        os.symlink('../yum.conf', yumlink)
-    
+        if not os.path.exists(yumlink):
+            os.symlink('../yum.conf', yumlink)
 
         if self.config.setdefault('use_host_resolv', True) == True:
-            resolvpath = os.path.join(self.rootdir, 'etc')
+            resolvdir = os.path.join(self.rootdir, 'etc')
+            resolvpath = os.path.join(self.rootdir, 'etc', 'resolv.conf')
             if os.path.exists(resolvpath):
-                self.do_chroot("chown %d /etc/resolv.conf" % os.getuid())
-            shutil.copy2('/etc/resolv.conf', resolvpath)
-            fixown.append('/etc/resolv.conf')
+                os.remove(resolvpath)
+            shutil.copy2('/etc/resolv.conf', resolvdir)
             
         # files in /etc that need doing
         filedict = self.config['files']
         for key in filedict:
-            p = os.path.join(self.rootdir, key)
+            p = os.path.join(self.rootdir, *key.split('/'))
             if not os.path.exists(p):
                 # write file
-                fo = open(p, 'w')
+                fo = open(p, 'w+')
                 fo.write(filedict[key])
                 fo.close()
-                fixown.append(p)
-
-        # set everything back to being owned by root
-        self.do_chroot('chown 0.0 %s' % " ".join(fixown), fatal=True)
 
     def _make_our_user(self):
         if not os.path.exists(os.path.join(self.rootdir, 'usr/sbin/useradd')):
@@ -780,6 +779,12 @@ class Root:
             self.do_chroot(cmd, fatal = True)
 
     def _build_dir_setup(self):
+        # ensure /etc/ perms are correct
+        cmd = '%s 2775 %s' % (self.config['chmod'], os.path.join(self.rootdir, "etc"))
+        (retval, output) = self.do(cmd)
+        cmd = '%s %s.%s %s' % (self.config['chown'], self.config['chrootuid'], self.config['chrootgid'], os.path.join(self.rootdir, "etc"))
+        (retval, output) = self.do(cmd)
+
         # purge the builddir, if it exists
         bd_out = '%s%s' % (self.rootdir, self.builddir)
         if os.path.exists(bd_out):
@@ -864,17 +869,24 @@ def setup_default_config_opts(config_opts):
     config_opts['basedir'] = '/var/lib/mock/' # root name is automatically added to this
     config_opts['chroot'] = '/usr/sbin/mock-helper chroot'
     config_opts['mount'] = '/usr/sbin/mock-helper mount'
+    config_opts['orphanskill'] = '/usr/sbin/mock-helper orphanskill'
     config_opts['umount'] = '/usr/sbin/mock-helper umount'
     config_opts['rm'] = '/usr/sbin/mock-helper rm'
     config_opts['mknod'] = '/usr/sbin/mock-helper mknod'
     config_opts['yum'] = '/usr/sbin/mock-helper yum'
+    config_opts['chmod'] = '/usr/sbin/mock-helper chmod'
+    config_opts['chown'] = '/usr/sbin/mock-helper chown'
     config_opts['rpmbuild_timeout'] = 0
     config_opts['runuser'] = '/sbin/runuser'
     config_opts['chroot_setup_cmd'] = 'install buildsys-build'
     config_opts['chrootuser'] = 'mockbuild'
     config_opts['chrootgroup'] = 'mockbuild'
-    config_opts['chrootuid'] = 500
-    config_opts['chrootgid'] = 500
+    config_opts['use_host_resolv'] = True
+
+    import grp
+    config_opts['chrootuid'] = os.geteuid()
+    config_opts['chrootgid'] = grp.getgrnam("mock")[2]
+
     config_opts['chroothome'] = '/builddir'
     config_opts['clean'] = True
     config_opts['debug'] = False
@@ -889,11 +901,11 @@ def setup_default_config_opts(config_opts):
 """ % config_opts['chroothome']
     
     config_opts['more_buildreqs'] = {}
-    config_opts['files']['/etc/hosts'] = "127.0.0.1 localhost localhost.localdomain\n"
+    config_opts['files']['etc/hosts'] = "127.0.0.1 localhost localhost.localdomain\n"
 
     # caching-related config options
     config_opts['rebuild_cache'] = False
-    config_opts['use_cache'] = False
+    config_opts['use_cache'] = True
     config_opts['pack_cmd'] = "/usr/sbin/mock-helper pack"
     config_opts['unpack_cmd'] = "/usr/sbin/mock-helper unpack"
     config_opts['cache_ext'] = ".tar.gz"
@@ -949,8 +961,13 @@ def do_clean(config_opts, init=0):
 
 def do_run_cmd(config_opts, cmd, env='', raw_chroot=0):
         my = Root(config_opts)
+        os.umask(0002) # set umask so mock group can all share.
         my.debug("executing: %s" % cmd)
         my._mount()
+        # Orphans killing must be included it to the same command as otherwise
+        # self.do() would get stuck.
+        # orphanskill output is visible only with the --debug option.
+        cmd += '; %s %s' % (config_opts['orphanskill'], my.rootdir)
         if raw_chroot: 
             cmd = '%s %s %s %s' % (env, config_opts['chroot'], my.rootdir, cmd)
             os.system(cmd)
@@ -977,7 +994,7 @@ def do_rebuild(config_opts, srpms):
     my = None  # if Root() fails, my will be undefined so we force it to None
     try:
         my = Root(config_opts)
-        os.umask(0022) # set a umask- protects from paranoid whackjobs with an 002 umask
+        os.umask(0002) # set umask so mock group can all share.
     except Error, e:
         error(e)
         if my:
@@ -1102,7 +1119,7 @@ def main():
         try:
             my = None  # if Root() fails, my will be undefined so we force it to None
             my = Root(config_opts)
-            os.umask(0022) # set a umask- protects from paranoid whackjobs with an 002 umask
+            os.umask(0002) # set umask so mock group can all share.
             my.prep()
             my.installdeps(srpm)
         except Error, e:

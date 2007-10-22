@@ -1,13 +1,13 @@
 Summary: Builds packages inside chroots
 Name: mock
-Version: 0.6.17
+Version: 0.7.6
 Release: 1%{?dist}
 License: GPL
 Group: Development/Tools
 Source: http://fedoraproject.org/projects/mock/releases/%{name}-%{version}.tar.gz
 URL: http://fedoraproject.org/wiki/Projects/Mock
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
-Requires: python, yum >= 3.0
+Requires: python, yum >= 2.4
 Requires(pre): shadow-utils
 BuildRequires: libselinux-devel
 
@@ -68,9 +68,42 @@ fi
 %{_libdir}/libselinux-mock.so
 
 %changelog
-* Mon Jun 11 2007 Clark Williams <williams@redhat.com> - 0.6.17-1
+* Mon Aug 27 2007 Michael Brown <mebrown@michaels-house.net> - 0.7.6-1
+- ensure /etc/hosts is created in chroot properly
+
+* Mon Aug 13 2007 Clark Williams <williams@redhat.com> - 0.7.5-2
+- build fix from Roland McGrath to fix compile of selinux lib
+
+* Wed Aug 8 2007 Clark Williams <williams@redhat.com> - 0.7.5-1
+- orphanskill feature (BZ#221351)
+
+* Wed Aug 8 2007 Michael Brown <mebrown@michaels-house.net> - 0.7.5-1
+- add example configs to defaults.cfg
+- dont rebuild cache if not clean build (BZ#250425)
+
+* Wed Jul 18 2007 Michael Brown <mebrown@michaels-house.net> - 0.7.4-1
+- return child exit status, so we properly report subcommand failures
+
+* Fri Jul  6 2007 Michael Brown <mebrown@michaels-house.net> - 0.7.3-1
+- remove redundant defaults.cfg entries.
+
+* Wed Jun 20 2007 Michael Brown <mebrown@michaels-house.net> - 0.7.2-1
+- fix exclude list
+- remove legacy configs
+- disable 'local' repos by default (koji-repos)
+
+* Wed Jun 13 2007 Michael Brown <mebrown@michaels-house.net> - 0.7.1-1
+- Fix problem with autocache where different users couldnt share same cache
+- Fix problem creating resolv.conf in rootfs
+- cleanup perms on rootfs /etc/
+
+* Tue Jun 12 2007 Michael Brown <mebrown@michaels-house.net> - 0.7.1-1
+- add EPEL 5 config files
+
+* Mon Jun 11 2007 Clark Williams <williams@redhat.com> - 0.7-1
 - fixed bind mount problems
 - added code to allow multiple users to use --no-clean
+- merged mock-0-6-branch to head and changed version
 
 * Thu Jun  7 2007 Clark Williams <williams@redhat.com> - 0.6.17-1
 - added F-7 config files (BZ#242276)

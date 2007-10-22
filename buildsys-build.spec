@@ -3,7 +3,7 @@
 #
 Summary: The base set of packages for a mock chroot
 Name: buildsys-build
-Version: 0.6.2
+Version: 0.7.6
 Release: 1%{?dist}
 License: GPL
 Group: Development/Build Tools
@@ -100,16 +100,25 @@ The base set of packages for a mock chroot.
 %files
 %defattr(-,root,root,-)
 %doc
-
 %changelog
-* Thu Dec 14 2006 Clark Williams <williams@redhat.com> - 0.6.1-1
+* Wed Jan  3 2007 Clark Williams <williams@redhat.com>
+- merged mock-0.6 BZ fixes to trunk
+
+* Thu Dec 14 2006 Clark Williams <williams@redhat.com>
 - added fix from David Lutterkort for RHEL
 - refactored some conditional blocks for simplicity
 - added this entry for Dennis Gilmore's aurora SPARC fixes
 
-* Tue Aug 29 2006 Clark Williams <williams@redhat.com> - 0.6-1
+* Tue Aug 29 2006 Clark Williams <williams@redhat.com>
 - added rhl buildsys-build rpms
- 
+
+* Fri Aug 25 2006 Dennis Gilmore <dennis@ausil.us>
+- add aurora SPARC linux conditionals
+
+* Mon Aug  7 2006 Clark Williams <williams@redhat.com>
+- refactored conditional blocks for simplicity
+- bumped version to match mock
+
 * Mon Aug  7 2006 Clark Williams <williams@redhat.com> - 0.5-4
 - added rhel build tags
 
