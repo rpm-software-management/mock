@@ -64,6 +64,11 @@ fi
 %attr(02775, root, mock) %dir /var/lib/mock
 
 %changelog
+* Mon Oct 22 2007 Michael Brown <mebrown@michaels-house.net> - 0.8.3-1
+- BZ# 336361 -- cannot su - mockbuild
+- BZ# 326561 -- update manpage
+- BZ# 235141 -- error with immutable bit
+
 * Fri Oct 20 2007 Michael Brown <mebrown@michaels-house.net> - 0.8.0-1
 - huge number of changes upstream
 - convert to setuid wrapper instead of old setuid helper
