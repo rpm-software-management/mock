@@ -193,6 +193,8 @@ class Root:
             self._umount('proc')
         if os.path.exists('%s/%s' % (self.rootdir, 'dev/pts')):
             self._umount('dev/pts')
+        if os.path.exists('%s/%s' % (self.rootdir, 'dev')):
+            self._umount('dev')
             
         if os.path.exists(self.basedir):
             cmd = '%s -rf %s' % (self.config['rm'], self.basedir)
