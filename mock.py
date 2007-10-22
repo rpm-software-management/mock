@@ -26,16 +26,18 @@ except:
     import rpmUtils.transaction
 import rpm
 import glob
+import popen2
 import shutil
 import types
 import grp
+import signal
 import stat
 import time
 from exceptions import Exception
 
 from optparse import OptionParser
 
-__VERSION__ = '0.6'
+__VERSION__ = '0.7.6'
 
 def error(msg):
     print >> sys.stderr, msg
@@ -57,6 +59,8 @@ class Error(Exception):
 
     def __str__(self):
         return self.msg
+
+class commandTimeoutExpired(Error): pass
 
 class YumError(Error): 
     def __init__(self, msg):
@@ -111,6 +115,8 @@ class Root:
         self._state = 'unstarted'
         self.tmplog = LogBuffer()
         self.config = config
+        self.mountorder = []
+        self.mounts = {}
         root = config['root']
         if config.has_key('unique-ext'):
             root = "%s-%s" % (root, config['unique-ext'])
@@ -230,13 +236,14 @@ class Root:
         self.state("prep")
         print "This may take a while"
 
+        self.debug("uid:%d, gid:%d" % (os.getuid(), os.getgid()))
         create_cache=0
         if self.config['use_cache']:
             cache_exists = os.path.exists( self.cache_file )
             if cache_exists:
                 cache_mtime = os.stat(self.cache_file)[stat.ST_MTIME]
                 cache_age_days = (time.time() - cache_mtime) / (60 * 60 * 24)
-                if cache_age_days > self.config['max_cache_age_days']:
+                if self.config['max_cache_age_days'] and cache_age_days > self.config['max_cache_age_days']:
                     self.config["rebuild_cache"] = True
         
             if cache_exists and not self.config['rebuild_cache']:
@@ -245,16 +252,22 @@ class Root:
                 cmd = 'update'
             else:
                 cmd = '%s' % self.config['chroot_setup_cmd']
-                create_cache = 1
+                # never rebuild cache unless it was a clean build.
+                if self.config['clean']:
+                    create_cache = 1
         else:
             if self.config['clean']:
                 cmd = '%s' % self.config['chroot_setup_cmd']
             else:
                 cmd = 'update'
          
-        self._prep_install()
-        self.yum(cmd)
-        self._prep_build()
+        try:
+            self._prep_install()
+            self.yum(cmd)
+            self._prep_build()
+        except:
+            self._umountall()
+            raise
          
         if create_cache:
             self.pack()
@@ -345,8 +358,8 @@ class Root:
         if arg_string != "":
             (retval, output) = self.yum('resolvedep %s' % arg_string)
             for line in output.split('\n'):
-                if line.find('No Package Found for') != -1:
-                    errorpkg = line.replace('No Package Found for', '')
+                if line.find('No Package found for') != -1:
+                    errorpkg = line.replace('No Package found for', '')
                     error(output)
                     raise BuildError, "Cannot find build req %s. Exiting." % errorpkg
             # nothing made us exit, so we continue
@@ -380,11 +393,14 @@ class Root:
         
         self.state("build")
 
-        (retval, output) = self.do_chroot(cmd)
-        
-        if retval != 0:
-            error(output)
-            raise BuildError, "Error building package from %s, See build log" % srpmfn
+        try:
+            (retval, output) = self.do_chroot(cmd, timeout=self.config['rpmbuild_timeout'])
+            
+            if retval != 0:
+                error(output)
+                raise BuildError, "Error building package from %s, See build log" % srpmfn
+        except commandTimeoutExpired:
+            raise BuildError, "Error building package from %s. Exceeded rpmbuild_timeout which was set to %s seconds." % (srpmfn, self.config['rpmbuild_timeout'])
         
         bd_out = self.rootdir + self.builddir 
         rpms = glob.glob(bd_out + '/RPMS/*.rpm')
@@ -396,12 +412,11 @@ class Root:
             shutil.copy2(item, self.resultdir)
         
 
-
     def close(self):
         """unmount things and clean up a bit"""
         self.root_log("Cleaning up...")
         self.state("ending")
-        self._umount_by_file()
+        self._umountall()
         self._build_log.close()
         self.state("done")
         self.root_log("Done.")
@@ -426,42 +441,66 @@ class Root:
         mf = os.path.join(self.statedir, 'mounted-locations')
         track = open(mf, 'w+')
 
-        # make the procdir if we don't have it
-        # mount up proc
-        procdir = os.path.join(self.rootdir, 'proc')
-        self._ensure_dir(procdir)
+        # mount proc
+        if not self.mounts.has_key('proc'):
+            procdir = os.path.join(self.rootdir, 'proc')
+            self._ensure_dir(procdir)
 
-        self.debug("mounting proc in %s" % procdir)
-        command = '%s -t proc proc %s/proc' % (self.config['mount'], 
+            self.debug("mounting proc in %s" % procdir)
+            command = '%s -t proc proc %s/proc' % (self.config['mount'], 
                                                self.rootdir)
-        track.write('proc\n')
-        (retval, output) = self.do(command)
-        track.flush()
+            track.write('proc\n')
+            (retval, output) = self.do(command)
+            track.flush()
         
-        if retval != 0:
-            if output.find('already mounted') == -1: # probably won't work in other LOCALES
-                error("could not mount proc error was: %s" % output)
-        
-        # devpts
-        # 
-        devptsdir = os.path.join(self.rootdir, 'dev/pts')
-        self._ensure_dir(devptsdir)
-        self.debug("mounting devpts in %s" % devptsdir)
-        command = '%s -t devpts devpts %s' % (self.config['mount'], devptsdir)
-        track.write('dev/pts\n')
-        (retval, output) = self.do(command)
-        track.flush()
-        track.close()
+            if retval != 0:
+                if output.find('already mounted') == -1: # probably won't work in other LOCALES
+                    error("could not mount proc error was: %s" % output)
 
-        if retval != 0:
-            if output.find('already mounted') == -1: # probably won't work in other LOCALES
-                error(output)
-                raise RootError, "could not mount /dev/pts error was: %s" % output
+            self.mounts['proc'] = procdir
+            self.mountorder.append('proc')
+            self.debug("mounted proc on %s" % procdir)
+            
+        # bind mount the host /dev
+        if not self.mounts.has_key('dev'):
+            devdir = os.path.join(self.rootdir, 'dev')
+            self._ensure_dir(devdir)
+
+            self.debug("bind mounting /dev in %s" % devdir)
+            command = '%s --bind /dev %s' % (self.config['mount'], devdir)
+            track.write('dev\n')
+            (retval, output) = self.do(command)
+            track.flush()
+            self.mountorder.append('dev')
+            self.mounts['dev'] = devdir
+            self.debug("bind mounted dev on %s" % devdir)
         
+
+        # mount dev/pts
+        if not self.mounts.has_key('devpts'):
+            devptsdir = os.path.join(self.rootdir, 'dev/pts')
+            self._ensure_dir(devptsdir)
+            self.debug("mounting devpts in %s" % devptsdir)
+            command = '%s -t devpts devpts %s' % (self.config['mount'], devptsdir)
+            track.write('dev/pts\n')
+            (retval, output) = self.do(command)
+            track.flush()
+            track.close()
+
+            if retval != 0:
+                if output.find('already mounted') == -1: # probably won't work in other LOCALES
+                    error(output)
+                    raise RootError, "could not mount /dev/pts error was: %s" % output
+        
+            self.mountorder.append('devpts')
+            self.mounts['devpts'] = devptsdir
+            self.debug("mounted pts on %s" % devptsdir)
 
     def _umount(self, path):
-    
-        item = '%s/%s' % (self.rootdir, path)
+        if path.find(self.rootdir) == -1:
+            item = '%s/%s' % (self.rootdir, path)
+        else:
+            item = path
         command = '%s %s' % (self.config['umount'], item)
         (retval, output) = self.do(command)
     
@@ -470,7 +509,13 @@ class Root:
                 error(output)
                 raise RootError, "could not umount %s error was: %s" % (path, output)
 
-    
+
+    def _umountall(self):
+        self.mountorder.reverse()
+        for key in self.mountorder:
+            self.debug("umounting %s" % self.mounts[key])
+            self._umount(self.mounts[key])
+
     def _umount_by_file(self):
                 
         mf = os.path.join(self.statedir, 'mounted-locations')
@@ -480,6 +525,9 @@ class Root:
         track = open(mf, 'r')
         lines = track.readlines()
         track.close()
+
+        # umount in reverse order of mount
+        lines.reverse()
         
         for item in lines:
             item = item.replace('\n','')
@@ -491,13 +539,15 @@ class Root:
         # poof, no more file
         if os.path.exists(mf):
             os.unlink(mf)
-        
 
-    def do(self, command):
+    def do(self, command, timeout=0):
         """execute given command outside of chroot"""
+        class alarmExc(Exception): pass
+        def alarmhandler(signum,stackframe):
+            raise alarmExc("timeout expired")
         
         retval = 0
-        msg = "Executing %s" % command
+        msg = "Executing timeout(%s): %s" % (timeout, command)
         self.debug(msg)
         self.root_log(msg)
 
@@ -508,25 +558,63 @@ class Root:
         if self.state() == "build":
             logfile = self._build_log
 
-        pipe = os.popen('{ ' + command + '; } 2>&1', 'r')
-        output = ""
-        for line in pipe:
-            logfile.write(line)
-            if self.config['debug'] or self.config['verbose']:
-                print line[:-1]
-                sys.stdout.flush()
-            logfile.flush()
-            output += line
-        status = pipe.close()
-        if status is None:
-            status = 0
-        
-        if os.WIFEXITED(status):
-            retval = os.WEXITSTATUS(status)
+        output=""
+        (r,w) = os.pipe()
+        pid = os.fork()
+        if pid: #parent
+            rpid = ret = 0
+            os.close(w)
+            oldhandler=signal.signal(signal.SIGALRM,alarmhandler)
+            starttime = time.time()
+            # timeout=0 means disable alarm signal. no timeout
+            signal.alarm(timeout)
 
-        return (retval, output)
+            try:
+                # read output from child
+                r = os.fdopen(r, "r")
+                for line in r:
+                    logfile.write(line)
+                    if self.config['debug'] or self.config['verbose']:
+                        print line[:-1]
+                        sys.stdout.flush()
+                    logfile.flush()
+                    output += line
 
-    def do_chroot(self, command, fatal = False, exitcode=None):
+                # close read handle, get child return status, etc
+                r.close()
+                (rpid, ret) = os.waitpid(pid, 0)
+                signal.alarm(0)
+                signal.signal(signal.SIGALRM,oldhandler)
+
+            except alarmExc:
+                os.kill(-pid, signal.SIGTERM)
+                time.sleep(1)
+                os.kill(-pid, signal.SIGKILL)
+                (rpid, ret) = os.waitpid(pid, 0)
+                signal.signal(signal.SIGALRM,oldhandler)
+                raise commandTimeoutExpired( "Timeout(%s) exceeded for command: %s" % (timeout, command))
+
+            # mask and return just return value, plus child output
+            return ((ret & 0xFF00) >> 8, output)
+
+        else: #child
+            os.close(r)
+            # become process group leader so that our parent
+            # can kill our children
+            os.setpgrp()  
+
+            child = popen2.Popen4(command)
+            child.tochild.close()
+
+            w = os.fdopen(w, "w")
+            for line in child.fromchild:
+                w.write(line)
+            w.close()
+            retval=child.wait()
+            os._exit( (retval & 0xFF00) >> 8 )
+    
+
+    def do_chroot(self, command, fatal = False, exitcode=None, timeout=0):
         """execute given command in root"""
         cmd = ""
         
@@ -540,7 +628,7 @@ class Root:
                                                  self.rootdir,
                                                  self.config['runuser'],
                                                  command)
-        (ret, output) = self.do(cmd)
+        (ret, output) = self.do(cmd, timeout=timeout)
         if (ret != 0) and fatal:
             self.close()
             if exitcode:
@@ -605,77 +693,52 @@ class Root:
         
         self._mount()
 
-        # we need stuff
-        devices = [('null', 'c', '1', '3', '666'),
-                   ('urandom', 'c', '1', '9', '644'),
-                   ('random', 'c', '1', '9', '644'),
-                   ('full', 'c', '1', '7', '666'),
-                   ('ptmx', 'c', '5', '2', '666'),
-                   ('tty', 'c', '5', '0', '666'),
-                   ('zero', 'c', '1', '5', '666')]
-
-        for (dev, devtype, major, minor, perm) in devices:
-            devpath = os.path.join(self.rootdir, 'dev', dev)
-            cmd = '%s %s -m %s %s %s %s' % (self.config['mknod'], 
-                      devpath, perm, devtype, major, minor)
-            if not os.path.exists(devpath):
-                (retval, output) = self.do(cmd)
-                if retval != 0:
-                    error(output)
-                    raise RootError, "could not mknod error was: %s" % output
-
-        # link fd to ../proc/self/fd
-        devpath = os.path.join(self.rootdir, 'dev/fd')
-        if not os.path.exists(devpath):
-            os.symlink('../proc/self/fd', devpath)
-        
-        fd = 0
-        for item in ('stdin', 'stdout', 'stderr'):
-            devpath =  os.path.join(self.rootdir, 'dev', item)
-            if not os.path.exists(devpath):
-                fdpath = os.path.join('../proc/self/fd', str(fd))
-                os.symlink(fdpath, devpath)
-            fd += 1
-
         for item in [os.path.join(self.rootdir, 'etc', 'mtab'),
                      os.path.join(self.rootdir, 'etc', 'fstab'),
                      os.path.join(self.rootdir, 'var', 'log', 'yum.log')]:
             if not os.path.exists(item):
                 fo = open(item, 'w')
                 fo.close()
+
+        # ensure /etc/ perms are correct
+        cmd = '%s 2775 %s' % (self.config['chmod'], os.path.join(self.rootdir, "etc"))
+        (retval, output) = self.do(cmd)
+        cmd = '%s %s.%s %s' % (self.config['chown'], self.config['chrootuid'], self.config['chrootgid'], os.path.join(self.rootdir, "etc"))
+        (retval, output) = self.do(cmd)
         
         # write in yum.conf into chroot
-        if os.path.exists( os.path.join(self.rootdir, 'etc', 'yum.conf')):
-            cmd = "chown %s.%s /etc/yum.conf" % (self.config['chrootuid'],
-                self.config['chrootgid'])
-            self.do_chroot(cmd, fatal = True)
         yumconf = os.path.join(self.rootdir, 'etc', 'yum.conf')
-        yumconf_fo = open(yumconf, 'w')
+        # always truncate and overwrite (w+)
+        yumconf_fo = open(yumconf, 'w+')
         yumconf_content = self.config['yum.conf']
         yumconf_fo.write(yumconf_content)
+        yumconf_fo.close()
+
         # symlink /etc/yum.conf to /etc/yum/yum.conf to deal with
         # (possible) yum breakage
+        # if symlink already exists, no need to recreate.
         yumdir = os.path.join(self.rootdir, 'etc', 'yum')
         self._ensure_dir(yumdir)
         yumlink = os.path.join(yumdir, 'yum.conf')
-        if os.path.exists(yumlink):
-                os.remove(yumlink)
-        os.symlink('../yum.conf', yumlink)
-    
+        if not os.path.exists(yumlink):
+            os.symlink('../yum.conf', yumlink)
+
+        if self.config.setdefault('use_host_resolv', True) == True:
+            resolvdir = os.path.join(self.rootdir, 'etc')
+            resolvpath = os.path.join(self.rootdir, 'etc', 'resolv.conf')
+            if os.path.exists(resolvpath):
+                os.remove(resolvpath)
+            shutil.copy2('/etc/resolv.conf', resolvdir)
+            
         # files in /etc that need doing
         filedict = self.config['files']
         for key in filedict:
-            # ensure permisssions
-            if os.path.exists( "%s%s" % (self.rootdir, key) ):
-                cmd = "chown %s.%s %s" % (self.config['chrootuid'],
-                    self.config['chrootgid'], "%s" % key)
-                self.do_chroot(cmd, fatal = True)
-
-            # write file
-            fn = '%s%s' % (self.rootdir, key)
-            fo = open(fn, 'w')
-            fo.write(filedict[key])
-            fo.close()
+            p = os.path.join(self.rootdir, *key.split('/'))
+            if not os.path.exists(p):
+                # write file
+                fo = open(p, 'w+')
+                fo.write(filedict[key])
+                fo.close()
 
     def _make_our_user(self):
         if not os.path.exists(os.path.join(self.rootdir, 'usr/sbin/useradd')):
@@ -707,7 +770,9 @@ class Root:
                 need_add_user = 1
                 self.do_chroot('/usr/sbin/userdel -r %s' % self.config["chrootuser"], fatal = False)
                 self.do_chroot('/usr/sbin/groupdel %s' % self.config["chrootgroup"], fatal = False)
-                self.do_chroot('chown -R %s.%s %s' % (self.config["chrootuid"], self.config["chrootgid"], self.config["chroothome"]), fatal = False)
+                self.do_chroot('chown -R %s.%s %s' % (self.config["chrootuid"],
+                                                      self.config["chrootgid"],
+                                                      self.config["chroothome"]), fatal = False)
                 # may need a few other chown here if there are other files that have to be edited
 
         if need_add_user:
@@ -716,6 +781,12 @@ class Root:
             self.do_chroot(cmd, fatal = True)
 
     def _build_dir_setup(self):
+        # ensure /etc/ perms are correct
+        cmd = '%s 2775 %s' % (self.config['chmod'], os.path.join(self.rootdir, "etc"))
+        (retval, output) = self.do(cmd)
+        cmd = '%s %s.%s %s' % (self.config['chown'], self.config['chrootuid'], self.config['chrootgid'], os.path.join(self.rootdir, "etc"))
+        (retval, output) = self.do(cmd)
+
         # purge the builddir, if it exists
         bd_out = '%s%s' % (self.rootdir, self.builddir)
         if os.path.exists(bd_out):
@@ -730,6 +801,10 @@ class Root:
         # change ownership so we can write to build home dir
         cmd = "chown -R %s.%s %s" % (self.config['chrootuser'], 
            self.config['chrootgroup'], self.homedir)
+        self.do_chroot(cmd, fatal = True)
+        
+        # change mode so we can write to build home dir
+        cmd = "chmod -R 0777 %s" % (self.homedir)
         self.do_chroot(cmd, fatal = True)
         
         # rpmmacros default
@@ -787,6 +862,8 @@ def command_parse():
                       default=False, help="Turn on build-root caching")
     parser.add_option("--rebuildcache", action ="store_true", dest="rebuild_cache",
                       default=False, help="Force rebuild of build-root cache")
+    parser.add_option("--rpmbuild_timeout", action="store", dest="rpmbuild_timeout", type="int",
+                      default=None, help="Fail build if rpmbuild takes longer than 'timeout' seconds ")
     
     return parser.parse_args()
 
@@ -794,16 +871,24 @@ def setup_default_config_opts(config_opts):
     config_opts['basedir'] = '/var/lib/mock/' # root name is automatically added to this
     config_opts['chroot'] = '/usr/sbin/mock-helper chroot'
     config_opts['mount'] = '/usr/sbin/mock-helper mount'
+    config_opts['orphanskill'] = '/usr/sbin/mock-helper orphanskill'
     config_opts['umount'] = '/usr/sbin/mock-helper umount'
     config_opts['rm'] = '/usr/sbin/mock-helper rm'
     config_opts['mknod'] = '/usr/sbin/mock-helper mknod'
     config_opts['yum'] = '/usr/sbin/mock-helper yum'
+    config_opts['chmod'] = '/usr/sbin/mock-helper chmod'
+    config_opts['chown'] = '/usr/sbin/mock-helper chown'
+    config_opts['rpmbuild_timeout'] = 0
     config_opts['runuser'] = '/sbin/runuser'
     config_opts['chroot_setup_cmd'] = 'install buildsys-build'
     config_opts['chrootuser'] = 'mockbuild'
     config_opts['chrootgroup'] = 'mockbuild'
-    config_opts['chrootuid'] = 500
-    config_opts['chrootgid'] = 500
+    config_opts['use_host_resolv'] = True
+
+    import grp
+    config_opts['chrootuid'] = os.geteuid()
+    config_opts['chrootgid'] = grp.getgrnam("mock")[2]
+
     config_opts['chroothome'] = '/builddir'
     config_opts['clean'] = True
     config_opts['debug'] = False
@@ -818,12 +903,11 @@ def setup_default_config_opts(config_opts):
 """ % config_opts['chroothome']
     
     config_opts['more_buildreqs'] = {}
-    config_opts['files']['/etc/resolv.conf'] = "nameserver 192.168.1.1\n"
-    config_opts['files']['/etc/hosts'] = "127.0.0.1 localhost localhost.localdomain\n"
+    config_opts['files']['etc/hosts'] = "127.0.0.1 localhost localhost.localdomain\n"
 
     # caching-related config options
     config_opts['rebuild_cache'] = False
-    config_opts['use_cache'] = False
+    config_opts['use_cache'] = True
     config_opts['pack_cmd'] = "/usr/sbin/mock-helper pack"
     config_opts['unpack_cmd'] = "/usr/sbin/mock-helper unpack"
     config_opts['cache_ext'] = ".tar.gz"
@@ -854,6 +938,8 @@ def set_config_opts_per_cmdline(config_opts, options):
         config_opts['statedir'] = options.statedir
     if options.uniqueext:
         config_opts['unique-ext'] = options.uniqueext
+    if options.rpmbuild_timeout is not None:
+        config_opts['rpmbuild_timeout'] = options.rpmbuild_timeout
 
 def do_clean(config_opts, init=0):
         my = None
@@ -865,6 +951,9 @@ def do_clean(config_opts, init=0):
             if my:
                 my.close()
             sys.exit(100)
+        except KeyboardInterrupt, e:
+            if my: my.close()
+            raise
 
         my.close()
         if init:
@@ -874,8 +963,13 @@ def do_clean(config_opts, init=0):
 
 def do_run_cmd(config_opts, cmd, env='', raw_chroot=0):
         my = Root(config_opts)
+        os.umask(0002) # set umask so mock group can all share.
         my.debug("executing: %s" % cmd)
         my._mount()
+        # Orphans killing must be included it to the same command as otherwise
+        # self.do() would get stuck.
+        # orphanskill output is visible only with the --debug option.
+        cmd += '; %s %s' % (config_opts['orphanskill'], my.rootdir)
         if raw_chroot: 
             cmd = '%s %s %s %s' % (env, config_opts['chroot'], my.rootdir, cmd)
             os.system(cmd)
@@ -902,12 +996,15 @@ def do_rebuild(config_opts, srpms):
     my = None  # if Root() fails, my will be undefined so we force it to None
     try:
         my = Root(config_opts)
-        os.umask(0022) # set a umask- protects from paranoid whackjobs with an 002 umask
+        os.umask(0002) # set umask so mock group can all share.
     except Error, e:
         error(e)
         if my:
             my.close()
         sys.exit(e.resultcode)
+    except KeyboardInterrupt, e:
+        if my: my.close()
+        raise
    
     for srpm in srpms:
         try:
@@ -918,6 +1015,9 @@ def do_rebuild(config_opts, srpms):
             if my:
                 my.close()
             sys.exit(e.resultcode)
+        except KeyboardInterrupt, e:
+            if my: my.close()
+            raise
     
     my.close()
     print "Results and/or logs in: %s" % my.resultdir
@@ -981,7 +1081,7 @@ def main():
     
     # cmdline options override config options
     set_config_opts_per_cmdline(config_opts, options)
-    
+
     # do whatever we're here to do
     if args[0] == 'clean':
         # unset a --no-clean
@@ -1021,7 +1121,7 @@ def main():
         try:
             my = None  # if Root() fails, my will be undefined so we force it to None
             my = Root(config_opts)
-            os.umask(0022) # set a umask- protects from paranoid whackjobs with an 002 umask
+            os.umask(0002) # set umask so mock group can all share.
             my.prep()
             my.installdeps(srpm)
         except Error, e:
@@ -1029,6 +1129,9 @@ def main():
             if my:
                 my.close()
             sys.exit(e.resultcode)
+        except KeyboardInterrupt, e:
+            if my: my.close()
+            raise
         my.close()
         print "Logs in: %s" % my.resultdir
 

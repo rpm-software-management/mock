@@ -45,7 +45,7 @@
 #endif
 
 #define PYTHON_PATH	"/usr/bin/python"
-#define MOCK_PATH	"/usr/bin/mock.py"
+#define MOCK_PATH	"/usr/libexec/mock.py"
 
 static char const * const ALLOWED_ENV[] =
 {
@@ -139,7 +139,7 @@ int main (int argc, char **argv)
 
 	// set up a new argv/argc
 	//     new argv[0] will be "/usr/bin/python"
-	//     new argv[1] will be "/usr/bin/mock.py"
+	//     new argv[1] will be "/usr/libexec/mock.py"
 	//     remainder of new argv will be old argv[1:n]
 	//     allocate one extra for null at end
 	newargc = argc + 1;
