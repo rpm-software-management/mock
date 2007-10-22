@@ -57,9 +57,10 @@ def command_parse(config_opts):
     usage = """
     usage:
            mock [options] [rebuild] /path/to/srpm(s)
-           mock [options] chroot <cmd>
-           mock [options] {init|clean|shell}
-           mock [options] {installdeps|install}
+           mock [options] {shell|chroot} <cmd>
+           mock [options] {init|clean}
+           mock [options] installdeps {SRPM|RPM}
+           mock [options] install PACKAGE
     commands: 
         rebuild     - build the specified SRPM(s) [default command]
         chroot      - run the specified command within the chroot

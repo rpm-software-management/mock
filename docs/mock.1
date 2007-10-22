@@ -9,6 +9,10 @@ mock  [options] [\fBrebuild\fR] \fISRPM [\fISRPM...\fR]
 mock  [options] \fBchroot\fR \fI<cmd>\fR
 .LP
 mock  [options] {\fBinit\fR|\fBclean\fR|\fBshell\fR}
+.LP
+mock  [options] installdeps {\fBSRPM\fR|\fBRPM\fR}
+.LP
+mock  [options] install \fBPACKAGE\fR
 
 .SH "DESCRIPTION"
 .LP 
@@ -32,17 +36,17 @@ to by /etc/mock/default.cfg
 \fB\-\-no\-clean\fR
 Do not clean chroot before building package.
 .TP 
+\fB\-\-cleanup\-after\fR
+Clean chroot after building. Use with \-\-resultdir. Only active for 'rebuild'.
+.TP 
+\fB\-\-no\-cleanup\-after\fR
+Dont clean chroot after building. If automatic cleanup is enabled, use this to disable.
+.TP 
 \fB\-\-arch=\fR\fIARCH\fP
 Specify target build arch.
 .TP 
-\fB\-\-debug\fR
-Output copious debugging information.
-.TP 
 \fB\-\-resultdir=\fR\fIRESULTDIR\fP
 Change directory where resulting files (RPMs and build logs) are written
-.TP
-\fB\-\-statedir=\fR\fISTATEDIR\fP
-Change directory where state information is written
 .TP
 \fB\-\-uniqueext=\fR\fItext\fP
 Arbitrary, unique extension to append to buildroot directory name
@@ -50,14 +54,8 @@ Arbitrary, unique extension to append to buildroot directory name
 \fB\-\-configdir=\fR\fICONFIGDIR\fP
 Change directory where config files are found
 .TP
-\fB\-\-quiet\fR
-Suppress most output
-.TP
-\fB\-\-autocache\fR
-Turn on build-root caching
-.TP
-\fB\-\-rebuildcache\fR
-Force rebuild of build-root cache
+\fB\-\-rpmbuild_timeout=\fR\fISECONDS\fP
+Fail build if rpmbuild takes longer than 'timeout' seconds
 .TP 
 \fB\-\-help\fR
 Show usage information and exit.
@@ -68,14 +66,16 @@ Show version number and exit.
 .LP
 .TP 
 \fBinit\fR \- initialize a chroot (install packages, setup devices, etc.)
-.TP 
-\fBchroot\fR \- run the specified command within the chroot (which must already be initialized)
 .TP
 \fBclean\fR \- purge the chroot tree
 .TP
-\fBshell\fR \- start an interactive shell in the specified chroot
-.TP 
 \fBrebuild\fR \- If no command is specified, rebuild is assumed. Rebuilds the specified SRPM(s)
+.TP 
+\fBchroot\fR|\fBshell\fR \- run the specified command within the chroot (which must already be initialized). If no command specified, /bin/sh is run.
+.TP
+\fBinstalldeps\fR \- find out deps for SRPM or RPM, and do a yum install to put them in the buildroot
+.TP
+\fBinstall\fR \- Do a yum install PACKAGE inside the buildroot
 .SH "FILES"
 .LP 
 \fI/etc/mock/\fP \- default configuration directory
@@ -108,6 +108,10 @@ button. If there is a bug similar to the one you are seeing, add your
 information to the comments. If not, go to the new bug page using the
 same product and component and fill in the form.
 .SH "AUTHORS"
+.LP 
+Michael Brown <mebrown@michaels-house.net>
+.LP 
+Clark Williams <williams@redhat.com>
 .LP 
 Seth Vidal <skvidal@linux.duke.edu>
 .LP
