@@ -55,9 +55,9 @@ def rmtree(path, *args, **kargs):
     """version os shutil.rmtree that ignores no-such-file-or-directory errors, 
        and tries harder if it finds immutable files"""
     tryAgain = 1
+    triedTwice = 0
     while tryAgain:
         tryAgain = 0
-        triedTwice = 0
         try:
             shutil.rmtree(path, *args, **kargs)
         except OSError, e:
