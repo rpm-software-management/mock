@@ -26,7 +26,7 @@ class CCache(object):
     def __init__(self, rootObj, conf):
         self.rootObj = rootObj
         self.ccache_opts = conf
-        self.ccachePath = os.path.join(rootObj.cachedir, "ccache")
+        self.ccachePath = self.ccache_opts['dir'] % self.ccache_opts
         self.rootdir = rootObj.rootdir
         rootObj.ccacheObj = self
         rootObj.preExistingDeps = "ccache"

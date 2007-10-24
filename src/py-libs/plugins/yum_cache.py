@@ -28,7 +28,7 @@ class YumCache(object):
     def __init__(self, rootObj, conf):
         self.rootObj = rootObj
         self.yum_cache_opts = conf
-        self.yumSharedCachePath = os.path.join(rootObj.cachedir, "yum_cache")
+        self.yumSharedCachePath = self.yum_cache_opts['dir'] % self.yum_cache_opts
         self.state = rootObj.state
         self.rootdir = rootObj.rootdir
         rootObj.yum_cacheObj = self

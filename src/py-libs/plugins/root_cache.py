@@ -28,7 +28,7 @@ class RootCache(object):
     def __init__(self, rootObj, conf):
         self.rootObj = rootObj
         self.root_cache_opts = conf
-        self.rootSharedCachePath = os.path.join(rootObj.cachedir, "root_cache")
+        self.rootSharedCachePath = self.root_cache_opts['dir'] % self.root_cache_opts
         self.rootCacheFile = os.path.join(self.rootSharedCachePath, "cache.tar.gz")
         self.rootCacheLock = None
         self.state = rootObj.state

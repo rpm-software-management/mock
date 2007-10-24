@@ -73,6 +73,11 @@ class Root(object):
         self.plugins = config['plugins']
         self.pluginConf = config['plugin_conf']
         self.pluginDir = config['plugin_dir']
+        for key in self.pluginConf.keys():
+            if not key.endswith("_opts"): continue
+            self.pluginConf[key]["basedir"] = self.basedir
+            self.pluginConf[key]["cache_topdir"] = self.cachedir
+            self.pluginConf[key]["root"] = self.sharedRootName
 
         # mount/umount
         self.umountCmds = ['umount -n %s/proc' % self.rootdir,
@@ -141,7 +146,6 @@ class Root(object):
         #   --> no /etc/yum.conf symlink (F7 and above)
 
          # create our base directory heirarchy
-        mock.util.mkdirIfAbsent(self.cachedir)
         mock.util.mkdirIfAbsent(self.basedir)
         mock.util.mkdirIfAbsent(self.rootdir)
 
