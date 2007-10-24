@@ -30,7 +30,7 @@ import time
 from optparse import OptionParser
 
 # all of the variables below are substituted by the build system
-__VERSION__="0.8.4"
+__VERSION__="0.8.5"
 SYSCONFDIR="/usr/local/etc"
 PYTHONDIR="/usr/local/lib/python2.5/site-packages"
 PKGPYTHONDIR="/usr/local/lib/python2.5/site-packages/mock"
@@ -237,7 +237,12 @@ def main(retParams):
         config_path = options.configdir
 
     # basic config for logging until config files are read
-    logging.config.fileConfig(os.path.join(config_path, config_opts["log_config_file"]))
+    log_ini = os.path.join(config_path, config_opts["log_config_file"])
+    try:
+        logging.config.fileConfig(log_ini)
+    except (IOError, OSError), e:
+        log.error("Could not find required logging config file: %s" % log_ini)
+        sys.exit(50)
 
     # check args
     if len(args) < 1:
