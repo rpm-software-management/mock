@@ -69,6 +69,7 @@ class Root(object):
         self.more_buildreqs = config['more_buildreqs']
         self.cache_topdir = config['cache_topdir']
         self.cachedir = os.path.join(self.cache_topdir, self.sharedRootName)
+        self.useradd = config['useradd']
 
         self.plugins = config['plugins']
         self.pluginConf = config['plugin_conf']
@@ -458,7 +459,7 @@ class Root(object):
         self.doChroot('/usr/sbin/groupdel %(group)s' % dets, raiseExc=False)
 
         self.doChroot('/usr/sbin/groupadd -g %(gid)s %(group)s' % dets)
-        self.doChroot('/usr/sbin/useradd -m -u %(uid)s -g %(gid)s -d %(home)s -n %(user)s' % dets)
+        self.doChroot(self.useradd % dets)
         self.doChroot("perl -p -i -e 's/^(%s:)!!/$1/;' /etc/passwd" % (self.chrootuser), raiseExc=True)
 
     @traceLog(moduleLog)

@@ -1,4 +1,4 @@
-# these are all substituted by autoconf
+# next four lines substituted by autoconf
 %define major @RELEASE_MAJOR@
 %define minor @RELEASE_MINOR@
 %define sub @RELEASE_SUBLEVEL@
@@ -7,6 +7,15 @@
 %define release_version %{major}.%{minor}.%{sub}%{extralevel}
 
 %{!?python_sitelib: %define python_sitelib %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib()")}
+
+# Compat for RHEL3 build
+%if %(test "%{dist}" == ".el3" && echo 1 || echo 0)
+# needed for RHEL3 build, python-devel doesnt seem to Require: python in
+# RHEL3
+BuildRequires:  python
+# override sitelib because this messes up on x86_64
+%define python_sitelib %{_exec_prefix}/lib/python2.2/site-packages/
+%endif
 
 Summary: Builds packages inside chroots
 Name: mock
