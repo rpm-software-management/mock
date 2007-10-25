@@ -77,7 +77,8 @@ class Root(object):
         for key in self.pluginConf.keys():
             if not key.endswith("_opts"): continue
             self.pluginConf[key]["basedir"] = self.basedir
-            self.pluginConf[key]["cache_topdir"] = self.cachedir
+            self.pluginConf[key]["cache_topdir"] = self.cache_topdir
+            self.pluginConf[key]["cachedir"] = self.cachedir
             self.pluginConf[key]["root"] = self.sharedRootName
 
         # mount/umount
