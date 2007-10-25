@@ -204,24 +204,28 @@ def do_rebuild(config_opts, chroot, srpms):
     # check that everything is kosher. Raises exception on error
     for hdr in mock.util.yieldSrpmHeaders(srpms): pass
 
+    start = time.time()
     try:
         for srpm in srpms:
             start = time.time()
-            log.info("Start(%s)" % srpm)
+            log.info("Start(%s)  Config(%s)" % (srpm, chroot.sharedRootName))
             if config_opts['clean'] and chroot.state() != "clean":
                 chroot.clean()
             chroot.init()
             chroot.build(srpm, timeout=config_opts['rpmbuild_timeout'])
             elapsed = time.time() - start
-            log.info("Done(%s)  %d minutes %d seconds" % (srpm, elapsed//60, elapsed%60))
+            log.info("Done(%s) Config(%s) %d minutes %d seconds" % (srpm, chroot.sharedRootName, elapsed//60, elapsed%60))
             log.info("Results and/or logs in: %s" % chroot.resultdir)
     
         if config_opts["cleanup_on_success"]:
             log.info("Cleaning up build root ('clean_on_success=True')")
             chroot.clean()
     except (Exception, KeyboardInterrupt), e:
+        elapsed = time.time() - start
+        log.error("Exception(%s) Config(%s) %d minutes %d seconds" % (srpm, chroot.sharedRootName, elapsed//60, elapsed%60))
+        log.info("Results and/or logs in: %s" % chroot.resultdir)
         if config_opts["cleanup_on_failure"]:
-            log.error("Got exception. Cleaning up build root ('clean_on_failure=True')")
+            log.info("Cleaning up build root ('clean_on_failure=True')")
             chroot.clean()
         raise
 
