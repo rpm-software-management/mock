@@ -155,6 +155,33 @@ def uniqReqs(*args):
         master.extend(l)
     return rpmUtils.miscutils.unique(master)
 
+@traceLog(log)
+def condChroot(chrootPath, uidManager=None):
+    if chrootPath is not None:
+        if uidManager:
+            log.debug("elevate privs to run chroot")
+            uidManager.becomeUser(0)
+        os.chdir(chrootPath)
+        os.chroot(chrootPath)
+        if uidManager:
+            log.debug("back to other privs")
+            uidManager.restorePrivs()
+
+@traceLog(log)
+def condDropPrivs(uidManager, uid, gid):
+    if uidManager is not None:
+        log.debug("about to drop privs")
+        if uid is not None: uidManager.unprivUid=uid
+        if gid is not None: uidManager.unprivGid=gid
+        uidManager.dropPrivsForever()
+
+# not traced...
+def chomp(line):
+    if line.endswith("\n"):
+        return line[:-1]
+    else:
+        return line
+
 # logger =
 # output = [1|0]
 # chrootPath
@@ -162,15 +189,14 @@ def uniqReqs(*args):
 # Warning: this is the function from hell. :(
 #
 @traceLog(log)
-def do(command, chrootPath=None, timeout=0, raiseExc=True, returnOutput=0, *args, **kargs):
+def do(command, chrootPath=None, timeout=0, raiseExc=True, returnOutput=0, uidManager=None, uid=None, gid=None, *args, **kargs):
     """execute given command outside of chroot"""
     
     logger = kargs.get("logger", log)
     logger.debug("Run cmd: %s" % command)
 
-    class alarmExc(Exception): pass
     def alarmhandler(signum,stackframe):
-        raise alarmExc("timeout expired")
+        raise commandTimeoutExpired("Timeout(%s) exceeded for command: %s" % (timeout, command))
     
     retval = 0
     logger.debug("Executing timeout(%s): %s" % (timeout, command))
@@ -182,7 +208,6 @@ def do(command, chrootPath=None, timeout=0, raiseExc=True, returnOutput=0, *args
         rpid = ret = 0
         os.close(w)
         oldhandler=signal.signal(signal.SIGALRM,alarmhandler)
-        starttime = time.time()
         # timeout=0 means disable alarm signal. no timeout
         signal.alarm(timeout)
 
@@ -190,10 +215,7 @@ def do(command, chrootPath=None, timeout=0, raiseExc=True, returnOutput=0, *args
             # read output from child
             r_fh = os.fdopen(r, "r")
             for line in r_fh:
-                if line.endswith("\n"):
-                    logger.debug(line[:-1])
-                else:
-                    logger.debug(line)
+                logger.debug(chomp(line))
 
                 if returnOutput:
                     output += line
@@ -204,28 +226,15 @@ def do(command, chrootPath=None, timeout=0, raiseExc=True, returnOutput=0, *args
             signal.alarm(0)
             signal.signal(signal.SIGALRM,oldhandler)
 
-        except alarmExc:
-            os.kill(-pid, signal.SIGTERM)
-            time.sleep(1)
-            os.kill(-pid, signal.SIGKILL)
-            (rpid, ret) = os.waitpid(pid, 0)
-            signal.signal(signal.SIGALRM,oldhandler)
-            raise commandTimeoutExpired( "Timeout(%s) exceeded for command: %s" % (timeout, command))
-
         # kill children for any exception...
-        except:
-            os.kill(-pid, signal.SIGTERM)
-            time.sleep(1)
-            os.kill(-pid, signal.SIGKILL)
-            (rpid, ret) = os.waitpid(pid, 0)
+        finally:
+            try:
+                os.kill(-pid, signal.SIGTERM)
+                time.sleep(1)
+                os.kill(-pid, signal.SIGKILL)
+            except OSError:
+                pass
             signal.signal(signal.SIGALRM,oldhandler)
-            raise
-
-        # kill all children
-        try:
-            os.kill(-pid, signal.SIGTERM)
-        except OSError:
-            pass
 
         # mask and return just return value, plus child output
         if raiseExc and os.WEXITSTATUS(ret):
@@ -244,25 +253,8 @@ def do(command, chrootPath=None, timeout=0, raiseExc=True, returnOutput=0, *args
             # can kill our children
             os.setpgrp()  
 
-            uidManager = kargs.get("uidManager")
-
-            if chrootPath is not None:
-                if uidManager:
-                    logger.debug("elevate privs to run chroot")
-                    uidManager.becomeUser(0)
-                os.chdir(chrootPath)
-                os.chroot(chrootPath)
-                if uidManager:
-                    logger.debug("back to other privs")
-                    uidManager.restorePrivs()
-
-            if uidManager:
-                logger.debug("about to drop privs")
-                uid = kargs.get("uid", None)
-                gid = kargs.get("gid", None)
-                if uid is not None: uidManager.unprivUid=uid
-                if gid is not None: uidManager.unprivGid=gid
-                uidManager.dropPrivsForever()
+            condChroot(chrootPath, uidManager)
+            condDropPrivs(uidManager, uid, gid)
 
             child = popen2.Popen4(command)
             child.tochild.close()
