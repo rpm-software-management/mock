@@ -27,7 +27,7 @@ log = logging.getLogger("mock.util")
 # classes
 class commandTimeoutExpired(mock.exception.Error):
     def __init__(self, msg):
-        Error.__init__(self, msg)
+        mock.exception.Error.__init__(self, msg)
         self.msg = msg
         self.resultcode = 10
 
