@@ -125,9 +125,9 @@ def setup_default_config_opts(config_opts):
     config_opts['plugin_dir'] = os.path.join(PKGPYTHONDIR, "plugins")
     config_opts['plugin_conf'] = {
             'ccache_enable': True,
-            'ccache_opts': {'max_age_days': 15, 'max_cache_size': "4G", 'dir': "%(cache_topdir)s/%(root)s/ccache/"},
+            'ccache_opts': {'max_cache_size': "4G", 'dir': "%(cache_topdir)s/%(root)s/ccache/"},
             'yum_cache_enable': True,
-            'yum_cache_opts': {'max_age_days': 15, 'dir': "%(cache_topdir)s/%(root)s/yum_cache/"},
+            'yum_cache_opts': {'max_age_days': 30, 'dir': "%(cache_topdir)s/%(root)s/yum_cache/"},
             'root_cache_enable': True,
             'root_cache_opts': {'max_age_days': 15, 'dir': "%(cache_topdir)s/%(root)s/root_cache/"},
             'bind_mount_enable': True,
@@ -330,7 +330,7 @@ def main(retParams):
         do_rebuild(config_opts, chroot, args[1:])
 
     else:
-        log.error("Unknown command specified: %s" % args[0])
+        raise mock.exception.BadCmdline, "Unknown command specified: %s" % args[0]
 
 
 if __name__ == '__main__':
