@@ -56,20 +56,18 @@ class CCache(object):
         os.environ['PATH'] = "/tmp/ccache:%s" % (os.environ['PATH'])
         os.environ['CCACHE_DIR'] = "/tmp/ccache"
         os.environ['CCACHE_UMASK'] = "002"
-        self._dumpToFile(os.path.join(self.ccachePath, "cc"), 
-            '#!/bin/sh\nexec ccache /usr/bin/cc "$@"\n', mode=0555)
-        self._dumpToFile(os.path.join(self.ccachePath, "gcc"), 
-            '#!/bin/sh\nexec ccache /usr/bin/gcc "$@"\n', mode=0555)
-        self._dumpToFile(os.path.join(self.ccachePath, "g++"), 
-            '#!/bin/sh\nexec ccache /usr/bin/g++ "$@"\n', mode=0555)
+        for i in ("cc", "gcc", "gcc296", "gcc32", "gcc33", "gcc34",
+                "g++", "c++", "c++32", "c++33", "c++34", "g++296", "g++32", "g++33", "g++34",
+                "g++-libstdc++-so_7",):
+            forceLink("/usr/bin/ccache", os.path.join(self.ccachePath, "%s" % i))
+            forceLink("/usr/bin/ccache", os.path.join(self.ccachePath, "x86_64-redhat-linux-%s" % i))
+            forceLink("/usr/bin/ccache", os.path.join(self.ccachePath, "i386-redhat-linux-%s" % i))
 
-    @traceLog(moduleLog)
-    def _dumpToFile(self, filename, contents, *args, **kargs):
-        fd = open(filename, "w+")
-        fd.write(contents)
-        fd.close()
-        mode = kargs.get("mode", None)
-        if mode is not None:
-            os.chmod(filename, mode)
+@traceLog(moduleLog)
+def forceLink( existing, linkname ):
+    try:
+        os.unlink(linkname)
+    except OSError:
+        pass
 
-
+    os.symlink(existing, linkname)
