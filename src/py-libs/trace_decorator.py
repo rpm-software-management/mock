@@ -3,7 +3,6 @@
 # Written by Michael Brown
 # Copyright (C) 2007 Michael E Brown <mebrown@michaels-house.net>
 
-import types
 from decorator import decorator
 
 import logging
@@ -23,11 +22,7 @@ def traceLog(logger = moduleLog):
             result = "Bad exception raised: Exception was not a derived class of 'Exception'"
             try:
                 result = f(*args, **kw)
-            except KeyboardInterrupt, e:
-                result = "EXCEPTION RAISED"
-                l2.debug( "EXCEPTION: %s\n" % e, exc_info=1)
-                raise
-            except Exception, e:
+            except (KeyboardInterrupt, Exception), e:
                 result = "EXCEPTION RAISED"
                 l2.debug( "EXCEPTION: %s\n" % e, exc_info=1)
                 raise
