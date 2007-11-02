@@ -265,8 +265,7 @@ class Root(object):
     @traceLog(moduleLog)
     def doChroot(self, command, env="", *args, **kargs):
         """execute given command in root"""
-        cmd = "%s /usr/sbin/chroot %s %s" % (env, self.rootdir, command)
-        return mock.util.do(cmd, *args, **kargs)
+        return mock.util.do( command, chrootPath=self.rootdir, *args, **kargs )
 
     @traceLog(moduleLog)
     def yumInstall(self, *srpms):
