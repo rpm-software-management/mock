@@ -4,7 +4,7 @@
 mock \- build SRPMs in a chroot
 .SH "SYNTAX"
 .LP 
-mock  [options] [\fBrebuild\fR] \fISRPM [\fISRPM...\fR]
+mock  [options] \fBrebuild\fR \fISRPM [\fISRPM...\fR]
 .LP
 mock  [options] \fBchroot\fR \fI<cmd>\fR
 .LP
@@ -86,13 +86,13 @@ Show version number and exit.
 To rebuild test.src.rpm under the default chroot:
 .LP
 .RS 5
-\fBmock /path/to/test.src.rpm\fR
+\fBmock rebuild /path/to/test.src.rpm\fR
 .RE
 .LP
 To specify a different chroot (which must be defined in /etc/mock):
 .LP
 .RS 5
-\fBmock \-r fedora\-4\-i386\-core /path/to/test.src.rpm\fR
+\fBmock \-r fedora\-4\-i386\-core rebuild /path/to/test.src.rpm\fR
 .RE
 .SH "BUGS"
 .LP
