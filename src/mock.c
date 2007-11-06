@@ -157,7 +157,7 @@ int main (int argc, char **argv)
     }
     newargv[newargc] = NULL;
 
-    printf("INFO: mock suid wrapper version " MOCK_RELEASE_VERSION " \n");
+    debug("INFO: mock suid wrapper version " MOCK_RELEASE_VERSION " \n");
 
     // clone a new process with a separate namespace
     // Note: we have to use syscall here, since we want the
