@@ -30,7 +30,7 @@ import time
 from optparse import OptionParser
 
 # all of the variables below are substituted by the build system
-__VERSION__="0.8.5"
+__VERSION__="0.8.7"
 SYSCONFDIR="/usr/local/etc"
 PYTHONDIR="/usr/local/lib/python2.5/site-packages"
 PKGPYTHONDIR="/usr/local/lib/python2.5/site-packages/mock"
