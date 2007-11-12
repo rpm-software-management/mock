@@ -117,7 +117,7 @@ def setup_default_config_opts(config_opts):
         pass
     config_opts['build_log_fmt_name'] = "unadorned"
     config_opts['root_log_fmt_name']  = "detailed"
-    config_opts['state_log_fmt_name'] = "detailed"
+    config_opts['state_log_fmt_name'] = "state"
 
     # cleanup_on_* only take effect for separate --resultdir
     # config_opts provides fine-grained control. cmdline only has big hammer
