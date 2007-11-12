@@ -20,6 +20,7 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 # library imports
+import ConfigParser
 import grp
 import logging
 import logging.config
@@ -114,6 +115,9 @@ def setup_default_config_opts(config_opts):
     except KeyError:
         #  'mock' group doesnt exist, must set in config file
         pass
+    config_opts['build_log_fmt_name'] = "unadorned"
+    config_opts['root_log_fmt_name']  = "detailed"
+    config_opts['state_log_fmt_name'] = "detailed"
 
     # cleanup_on_* only take effect for separate --resultdir
     # config_opts provides fine-grained control. cmdline only has big hammer
@@ -240,14 +244,6 @@ def main(retParams):
     if options.configdir:
         config_path = options.configdir
 
-    # basic config for logging until config files are read
-    log_ini = os.path.join(config_path, config_opts["log_config_file"])
-    try:
-        logging.config.fileConfig(log_ini)
-    except (IOError, OSError), e:
-        log.error("Could not find required logging config file: %s" % log_ini)
-        sys.exit(50)
-
     # check args
     if len(args) < 1:
         log.error("No srpm or command specified - nothing to do")
@@ -263,7 +259,19 @@ def main(retParams):
             sys.exit(1)
     
     # reconfigure logging in case config file was overridden
-    logging.config.fileConfig(os.path.join(config_path, config_opts["log_config_file"]))
+    log_ini = os.path.join(config_path, config_opts["log_config_file"])
+    try:
+        log_cfg = ConfigParser.ConfigParser()
+        logging.config.fileConfig(log_ini)
+        log_cfg.read(log_ini)
+    except (IOError, OSError), e:
+        log.error("Could not find required logging config file: %s" % log_ini)
+        sys.exit(50)
+
+    # set up logging format strings
+    config_opts['build_log_fmt_str'] = log_cfg.get("formatter_%s" % config_opts['build_log_fmt_name'], "format", raw=1)
+    config_opts['root_log_fmt_str'] = log_cfg.get("formatter_%s" % config_opts['root_log_fmt_name'], "format", raw=1)
+    config_opts['state_log_fmt_str'] = log_cfg.get("formatter_%s" % config_opts['state_log_fmt_name'], "format", raw=1)
 
     # cmdline options override config options
     log.info("mock.py version %s starting..." % __VERSION__)

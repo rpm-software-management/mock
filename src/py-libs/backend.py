@@ -91,6 +91,10 @@ class Root(object):
                 'mount -n -t sysfs  mock_chroot_sysfs  %s/sys' % self.rootdir,
                ]
 
+        self.build_log_fmt_str = config['build_log_fmt_str']
+        self.root_log_fmt_str = config['root_log_fmt_str']
+        self._state_log_fmt_str = config['state_log_fmt_str']
+
         self.state("init plugins")
         self._initPlugins()
 
@@ -472,13 +476,13 @@ class Root(object):
         # attach logs to log files.
         # This happens in addition to anything that
         # is set up in the config file... ie. logs go everywhere
-        formatter = logging.Formatter("%(asctime)s - %(filename)s:%(lineno)d:%(levelname)s: %(message)s")
-        for (log, filename) in (
-                (self._state_log, "state.log"),
-                (self.build_log, "build.log"),
-                (self.root_log, "root.log")):
+        for (log, filename, fmt_str) in (
+                (self._state_log, "state.log", self._state_log_fmt_str),
+                (self.build_log, "build.log", self.build_log_fmt_str),
+                (self.root_log, "root.log", self.root_log_fmt_str)):
             fullPath = os.path.join(self.resultdir, filename)
             fh = logging.FileHandler(fullPath, "a+")
+            formatter = logging.Formatter(fmt_str)
             fh.setFormatter(formatter)
             fh.setLevel(logging.NOTSET)
             log.addHandler(fh)
