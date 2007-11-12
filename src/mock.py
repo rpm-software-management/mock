@@ -282,6 +282,8 @@ def main(retParams):
     retParams["chroot"] = chroot
     retParams["config_opts"] = config_opts
     os.umask(002)
+    if args[0] in ('chroot', 'shell', 'install', 'installdeps'):
+        config_opts['clean'] = 0
     if config_opts['clean']:
         chroot.clean()
 
