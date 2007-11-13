@@ -262,7 +262,7 @@ AM_CFLAGS = -Wall -I$(top_srcdir)/src -DSYSCONFDIR='"$(sysconfdir)"' -DLIBEXECDI
 src_mock_SOURCES = src/mock.c
 src_mock_LDFLAGS = 
 mocketcdir = $(sysconfdir)/mock
-dist_mocketc_DATA = $(wildcard etc/*.cfg) etc/logging.ini
+dist_mocketc_DATA = $(wildcard $(top_srcdir)/etc/*.cfg) $(top_srcdir)/etc/logging.ini
 dist_libexec_SCRIPTS = src/mock.py
 man_MANS = docs/mock.1
 pluginsdir = $(pkgpythondir)/plugins
