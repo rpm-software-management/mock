@@ -287,7 +287,7 @@ class Root(object):
         arg_string = self.preExistingDeps
         self.uidManager.dropPrivsTemp()
         try:
-            for hdr in mock.util.yieldSrpmHeaders(srpms):
+            for hdr in mock.util.yieldSrpmHeaders(srpms, plainRpmOk=1):
                 # get text buildreqs
                 a = mock.util.requiresTextFromHdr(hdr)
                 b = mock.util.getAddtlReqs(hdr, self.more_buildreqs)
