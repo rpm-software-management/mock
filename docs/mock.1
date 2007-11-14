@@ -64,18 +64,18 @@ Show usage information and exit.
 Show version number and exit.
 .SH "COMMANDS"
 .LP
-.TP 
-\fBinit\fR \- initialize a chroot (install packages, setup devices, etc.)
 .TP
 \fBclean\fR \- purge the chroot tree
-.TP
-\fBrebuild\fR \- If no command is specified, rebuild is assumed. Rebuilds the specified SRPM(s)
 .TP 
-\fBchroot\fR|\fBshell\fR \- run the specified command within the chroot (which must already be initialized). If no command specified, /bin/sh is run.
+\fBinit\fR \- initialize a chroot (clean, install chroot packages, etc.)
 .TP
-\fBinstalldeps\fR \- find out deps for SRPM or RPM, and do a yum install to put them in the buildroot
+\fBrebuild\fR \- If no command is specified, rebuild is assumed. Rebuilds the specified SRPM(s). The buildroot is cleaned first, unless --no-clean is specified.
+.TP 
+\fBchroot\fR|\fBshell\fR \- run the specified command within the chroot (which must already be initialized -- no 'clean' is performed). If no command specified, /bin/sh is run.
 .TP
-\fBinstall\fR \- Do a yum install PACKAGE inside the buildroot
+\fBinstalldeps\fR \- find out deps for SRPM or RPM, and do a yum install to put them in the buildroot. Buildroot must already be initialized -- no 'clean' is performed
+.TP
+\fBinstall\fR \- Do a yum install PACKAGE inside the buildroot. Buildroot must already be initialized -- no 'clean' is performed
 .SH "FILES"
 .LP 
 \fI/etc/mock/\fP \- default configuration directory
