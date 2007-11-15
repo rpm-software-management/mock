@@ -260,12 +260,15 @@ def main(retParams):
     
     # reconfigure logging in case config file was overridden
     log_ini = os.path.join(config_path, config_opts["log_config_file"])
+    if not os.path.exists(log_ini):
+        log.error("Could not find required logging config file: %s" % log_ini)
+        sys.exit(50)
     try:
         log_cfg = ConfigParser.ConfigParser()
         logging.config.fileConfig(log_ini)
         log_cfg.read(log_ini)
     except (IOError, OSError), e:
-        log.error("Could not find required logging config file: %s" % log_ini)
+        log.error("Error configuring logging: %s" % e)
         sys.exit(50)
 
     # set up logging format strings
