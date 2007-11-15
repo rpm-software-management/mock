@@ -240,6 +240,7 @@ class Root(object):
         os.mknod(os.path.join(self.rootdir, "dev/tty"), stat.S_IFCHR | 0666, os.makedev(5, 0))
         os.mknod(os.path.join(self.rootdir, "dev/null"), stat.S_IFCHR | 0666, os.makedev(1, 3))
         os.mknod(os.path.join(self.rootdir, "dev/random"), stat.S_IFCHR | 0666, os.makedev(1, 8))
+        os.mknod(os.path.join(self.rootdir, "dev/ptmx"), stat.S_IFCHR | 0666, os.makedev(5, 2))
         os.mknod(os.path.join(self.rootdir, "dev/urandom"), stat.S_IFCHR | 0444, os.makedev(1, 9))
         os.mknod(os.path.join(self.rootdir, "dev/console"), stat.S_IFCHR | 0600, os.makedev(5, 1))
         os.symlink("/proc/self/fd/0", os.path.join(self.rootdir, "dev/stdin"))
@@ -507,7 +508,6 @@ class Root(object):
                     os.chmod(os.path.join(dirpath, path), 0755)
 
             # rpmmacros default
-            self.macros['%_rpmlock_path'] = "%s/var/lib/rpm/__db.000" % self.basedir
             macrofile_out = '%s%s/.rpmmacros' % (self.rootdir, self.homedir)
             rpmmacros = open(macrofile_out, 'w+')
             for key, value in self.macros.items():
