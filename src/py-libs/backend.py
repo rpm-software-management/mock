@@ -508,7 +508,6 @@ class Root(object):
                     os.chmod(os.path.join(dirpath, path), 0755)
 
             # rpmmacros default
-            self.macros['%_rpmlock_path'] = "%s/var/lib/rpm/__db.000" % self.basedir
             macrofile_out = '%s%s/.rpmmacros' % (self.rootdir, self.homedir)
             rpmmacros = open(macrofile_out, 'w+')
             for key, value in self.macros.items():
