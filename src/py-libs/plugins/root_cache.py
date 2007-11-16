@@ -64,7 +64,7 @@ class RootCache(object):
             self.rootCacheLock = open(os.path.join(self.rootSharedCachePath, "rootcache.lock"), "a+")
 
         # check cache age:
-        self.state("enabling root cache")
+        self.state("enabled root cache")
         try:
             statinfo = os.stat(self.rootCacheFile)
             file_age_days = (time.time() - statinfo.st_ctime) / (60 * 60 * 24)

@@ -249,7 +249,7 @@ class Root(object):
         os.umask(prevMask)
 
         # yum stuff
-        self.root_log.info('run yum')
+        self.state("running yum")
         self._mountall()
         try:
             if not self.chrootWasCleaned:
