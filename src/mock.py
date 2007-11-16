@@ -264,7 +264,7 @@ def main(retParams):
         log_cfg = ConfigParser.ConfigParser()
         logging.config.fileConfig(log_ini)
         log_cfg.read(log_ini)
-    except (IOError, OSError), e:
+    except (IOError, OSError, ConfigParser.NoSectionError), e:
         log.error("Could not find required logging config file: %s" % log_ini)
         sys.exit(50)
 
