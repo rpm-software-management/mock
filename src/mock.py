@@ -308,7 +308,7 @@ def main(retParams):
         chroot._mountall()
         try:
             cmd = ' '.join(args[1:])
-            os.system("PS1='mock-chroot> ' /usr/sbin/chroot %s %s" % (chroot.rootdir, cmd))
+            os.system("PS1='mock-chroot> ' setarch %s /usr/sbin/chroot %s %s" % (config_opts['target_arch'], chroot.rootdir, cmd))
         finally:
             chroot._umountall()
 

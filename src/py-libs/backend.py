@@ -333,7 +333,7 @@ class Root(object):
             os.environ["HOME"] = self.homedir 
             # Completely/Permanently drop privs while running the following:
             mock.util.do(
-                "rpm -Uvh --nodeps %s" % srpmChrootFilename,
+                "setarch %s rpm -Uvh --nodeps %s" % (self.target_arch, srpmChrootFilename),
                 chrootPath=self.rootdir,
                 uidManager=self.uidManager,
                 uid=self.chrootuid,
@@ -350,7 +350,7 @@ class Root(object):
             self.root_log.info("about to drop to unpriv mode.")
             # Completely/Permanently drop privs while running the following:
             mock.util.do(
-                "rpmbuild -bs --target %s --nodeps %s" % (self.target_arch, chrootspec), 
+                "setarch %s rpmbuild -bs --target %s --nodeps %s" % (self.target_arch, self.target_arch, chrootspec), 
                 chrootPath=self.rootdir,
                 logger=self.build_log, timeout=timeout,
                 uidManager=self.uidManager,
@@ -372,7 +372,7 @@ class Root(object):
             self._callHooks('prebuild')
 
             mock.util.do(
-                "rpmbuild -bb --target %s --nodeps %s" % (self.target_arch, chrootspec), 
+                "setarch %s rpmbuild -bb --target %s --nodeps %s" % (self.target_arch, self.target_arch, chrootspec), 
                 chrootPath=self.rootdir,
                 uidManager=self.uidManager,
                 uid=self.chrootuid,
@@ -440,7 +440,7 @@ class Root(object):
     def _yum(self, cmd, returnOutput=0):
         """use yum to install packages/package groups into the chroot"""
         # mock-helper yum --installroot=rootdir cmd
-        cmd = '%s --installroot %s %s' % (self.yum_path, self.rootdir, cmd)
+        cmd = 'setarch %s %s --installroot %s %s' % (self.target_arch, self.yum_path, self.rootdir, cmd)
         self.root_log.info(cmd)
         try:
             self._callHooks("preyum")
