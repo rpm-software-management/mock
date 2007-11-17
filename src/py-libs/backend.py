@@ -49,7 +49,7 @@ class Root(object):
         if not config.has_key('resultdir'):
             self.resultdir = os.path.join(self.basedir, 'result')
         else:
-            self.resultdir = config['resultdir']
+            self.resultdir = config['resultdir'] % config
 
         self.root_log = logging.getLogger("mock")
         self.build_log = logging.getLogger("mock.Root.build")
