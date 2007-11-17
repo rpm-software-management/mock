@@ -32,7 +32,7 @@ class Root(object):
         self.uidManager = uidManager
         self._hooks = {}
         self.chrootWasCleaned = False
-        self.preExistingDeps = ""
+        self.preExistingDeps = "/usr/bin/setarch "
 
         self.sharedRootName = config['root']
         root = self.sharedRootName
@@ -333,7 +333,7 @@ class Root(object):
             os.environ["HOME"] = self.homedir 
             # Completely/Permanently drop privs while running the following:
             mock.util.do(
-                "setarch %s rpm -Uvh --nodeps %s" % (self.target_arch, srpmChrootFilename),
+                "rpm -Uvh --nodeps %s" % (srpmChrootFilename,),
                 chrootPath=self.rootdir,
                 uidManager=self.uidManager,
                 uid=self.chrootuid,
@@ -350,7 +350,7 @@ class Root(object):
             self.root_log.info("about to drop to unpriv mode.")
             # Completely/Permanently drop privs while running the following:
             mock.util.do(
-                "setarch %s rpmbuild -bs --target %s --nodeps %s" % (self.target_arch, self.target_arch, chrootspec), 
+                "rpmbuild -bs --target %s --nodeps %s" % (self.target_arch, chrootspec), 
                 chrootPath=self.rootdir,
                 logger=self.build_log, timeout=timeout,
                 uidManager=self.uidManager,
