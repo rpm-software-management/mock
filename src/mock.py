@@ -218,7 +218,7 @@ def do_rebuild(config_opts, chroot, srpms):
             chroot.init()
             chroot.build(srpm, timeout=config_opts['rpmbuild_timeout'])
             elapsed = time.time() - start
-            log.info("Done(%s) Config(%s) %d minutes %d seconds" % (srpm, chroot.sharedRootName, elapsed//60, elapsed%60))
+            log.info("Done(%s) Config(%s) %d minutes %d seconds" % (srpm, config_opts['chroot_name'], elapsed//60, elapsed%60))
             log.info("Results and/or logs in: %s" % chroot.resultdir)
     
         if config_opts["cleanup_on_success"]:
@@ -259,6 +259,7 @@ def main(retParams):
             sys.exit(1)
     
     # reconfigure logging in case config file was overridden
+    config_opts['chroot_name'] = options.chroot
     log_ini = os.path.join(config_path, config_opts["log_config_file"])
     try:
         log_cfg = ConfigParser.ConfigParser()
