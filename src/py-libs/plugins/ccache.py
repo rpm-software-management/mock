@@ -29,7 +29,7 @@ class CCache(object):
         self.ccachePath = self.ccache_opts['dir'] % self.ccache_opts
         self.rootdir = rootObj.rootdir
         rootObj.ccacheObj = self
-        rootObj.preExistingDeps = "ccache"
+        rootObj.preExistingDeps = rootObj.preExistingDeps + " ccache "
         rootObj.addHook("prebuild", self._ccacheBuildHook)
         rootObj.addHook("preinit",  self._ccachePreInitHook)
         rootObj.umountCmds.append('umount -n %s/tmp/ccache' % rootObj.rootdir)
