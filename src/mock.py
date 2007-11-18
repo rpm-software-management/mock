@@ -30,12 +30,6 @@ import sys
 import time
 from optparse import OptionParser
 
-try:
-    import ctypes
-    have_ctypes = 1
-except ImportError:
-    have_ctypes = 0
-
 # all of the variables below are substituted by the build system
 __VERSION__="0.8.8"
 SYSCONFDIR="/usr/local/etc"
@@ -124,9 +118,12 @@ def setup_default_config_opts(config_opts):
     config_opts['build_log_fmt_name'] = "unadorned"
     config_opts['root_log_fmt_name']  = "detailed"
     config_opts['state_log_fmt_name'] = "state"
-    config_opts['internal_setarch'] = False
-    if have_ctypes:
+
+    try:
+        import ctypes
         config_opts['internal_setarch'] = True
+    except ImportError:
+        config_opts['internal_setarch'] = False
 
     # cleanup_on_* only take effect for separate --resultdir
     # config_opts provides fine-grained control. cmdline only has big hammer
