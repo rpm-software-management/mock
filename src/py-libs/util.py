@@ -188,13 +188,13 @@ personality_defs['i386']   = 0x0008
 # ... need to add ppc/ppc64...
 
 @traceLog(log)
-def condPersonality(per):
-    if per is None: return
+def condPersonality(per=None):
+    if personality_defs.get(per,None) is None: return
     import ctypes
     _libc = ctypes.cdll.LoadLibrary("libc.so.6")
     _libc.personality.argtypes = [ctypes.c_ulong]
     _libc.personality.restype = ctypes.c_int
-    _libc.personality(personality_defs.get(per, 0x00))
+    _libc.personality(personality_defs[per])
 
 # logger =
 # output = [1|0]
