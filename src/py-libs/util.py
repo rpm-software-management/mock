@@ -185,8 +185,9 @@ def chomp(line):
 # taken from sys/personality.h
 personality_defs = {}
 personality_defs['x86_64'] = 0x0000
+personality_defs['ppc64']  = 0x0000
 personality_defs['i386']   = 0x0008
-# ... need to add ppc/ppc64...
+personality_defs['ppc']    = 0x0008
 
 @traceLog(log)
 def condPersonality(per=None):
