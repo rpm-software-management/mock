@@ -182,6 +182,7 @@ def chomp(line):
     else:
         return line
 
+# taken from sys/personality.h
 personality_defs = {}
 personality_defs['x86_64'] = 0x0000
 personality_defs['i386']   = 0x0008
