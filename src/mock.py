@@ -316,11 +316,10 @@ def main(retParams):
         chroot.init()
         chroot._mountall()
         try:
-            setarch = ""
-            if config_opts['internal_setarch'] and os.path.exists('/usr/bin/setarch'):
-                setarch = "/usr/bin/setarch %s" % config_opts['target_arch']
+            if config_opts['internal_setarch']:
+                mock.util.condPersonality(config_opts['target_arch'])
             cmd = ' '.join(args[1:])
-            os.system("PS1='mock-chroot> ' %s /usr/sbin/chroot %s %s" % (setarch, chroot.rootdir, cmd))
+            os.system("PS1='mock-chroot> ' /usr/sbin/chroot %s %s" % (chroot.rootdir, cmd))
         finally:
             chroot._umountall()
 
