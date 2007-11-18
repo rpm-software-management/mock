@@ -118,6 +118,7 @@ def setup_default_config_opts(config_opts):
     config_opts['build_log_fmt_name'] = "unadorned"
     config_opts['root_log_fmt_name']  = "detailed"
     config_opts['state_log_fmt_name'] = "state"
+    config_opts['internal_setarch'] = True
 
     # cleanup_on_* only take effect for separate --resultdir
     # config_opts provides fine-grained control. cmdline only has big hammer
@@ -194,6 +195,10 @@ def set_config_opts_per_cmdline(config_opts, options):
     if not options.resultdir:
         config_opts['cleanup_on_success'] = False
         config_opts['cleanup_on_failure'] = False
+
+    config_opts['setarch'] = ""
+    if config_opts['internal_setarch']:
+        config_opts['setarch'] = "setarch %s" % config_opts['target_arch']
 
 @traceLog(log)
 def warn_obsolete_config_options(config_opts):
@@ -308,7 +313,7 @@ def main(retParams):
         chroot._mountall()
         try:
             cmd = ' '.join(args[1:])
-            os.system("PS1='mock-chroot> ' setarch %s /usr/sbin/chroot %s %s" % (config_opts['target_arch'], chroot.rootdir, cmd))
+            os.system("PS1='mock-chroot> ' %s /usr/sbin/chroot %s %s" % (config_opts['setarch'], chroot.rootdir, cmd))
         finally:
             chroot._umountall()
 

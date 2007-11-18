@@ -32,7 +32,11 @@ class Root(object):
         self.uidManager = uidManager
         self._hooks = {}
         self.chrootWasCleaned = False
-        self.preExistingDeps = "/usr/bin/setarch "
+
+        self.preExistingDeps = ""
+        self.setarch = config['setarch']
+        if config['internal_setarch']:
+            self.preExistingDeps = "/usr/bin/setarch "
 
         self.sharedRootName = config['root']
         root = self.sharedRootName
@@ -372,7 +376,7 @@ class Root(object):
             self._callHooks('prebuild')
 
             mock.util.do(
-                "setarch %s rpmbuild -bb --target %s --nodeps %s" % (self.target_arch, self.target_arch, chrootspec), 
+                "%s rpmbuild -bb --target %s --nodeps %s" % (self.setarch, self.target_arch, chrootspec), 
                 chrootPath=self.rootdir,
                 uidManager=self.uidManager,
                 uid=self.chrootuid,
@@ -440,7 +444,7 @@ class Root(object):
     def _yum(self, cmd, returnOutput=0):
         """use yum to install packages/package groups into the chroot"""
         # mock-helper yum --installroot=rootdir cmd
-        cmd = 'setarch %s %s --installroot %s %s' % (self.target_arch, self.yum_path, self.rootdir, cmd)
+        cmd = '%s %s --installroot %s %s' % (self.setarch, self.yum_path, self.rootdir, cmd)
         self.root_log.info(cmd)
         try:
             self._callHooks("preyum")
