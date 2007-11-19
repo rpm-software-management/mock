@@ -46,7 +46,9 @@ Dont clean chroot after building. If automatic cleanup is enabled, use this to d
 Specify target build arch.
 .TP 
 \fB\-\-resultdir=\fR\fIRESULTDIR\fP
-Change directory where resulting files (RPMs and build logs) are written
+Change directory where resulting files (RPMs and build logs) are written. Resultdir can contain python-string substitutions for any variable in the chroot config. For example:
+
+\fB\-\-resultdir=./my/'%(dist)s'/'%(target_arch)s'/\fR
 .TP
 \fB\-\-uniqueext=\fR\fItext\fP
 Arbitrary, unique extension to append to buildroot directory name
@@ -92,7 +94,7 @@ To rebuild test.src.rpm under the default chroot:
 To specify a different chroot (which must be defined in /etc/mock):
 .LP
 .RS 5
-\fBmock \-r fedora\-4\-i386\-core rebuild /path/to/test.src.rpm\fR
+\fBmock \-r fedora\-8\-i386\-core rebuild /path/to/test.src.rpm\fR
 .RE
 .SH "BUGS"
 .LP
