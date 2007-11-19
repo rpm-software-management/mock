@@ -386,6 +386,8 @@ if __name__ == '__main__':
     if killOrphans and retParams:
         mock.util.orphansKill(retParams["chroot"].rootdir)
 
+    # fix for python 2.4 logging module bug:
+    logging.raiseExceptions=0
     logging.shutdown()
     sys.exit(exitStatus)
 
