@@ -64,6 +64,34 @@ fi
 %attr(02775, root, mock) %dir /var/lib/mock
 
 %changelog
+* Mon Nov 19 2007 Michael Brown <mebrown@michaels-house.net> - 0.8.8-1
+- make it run correctly when called by the 'root' user
+- internal_setarch: optionally run 'setarch' internally. This
+  eliminates the need to run "setarch i386 mock ..." when building on
+  target_arch != build_arch. This is turned on by default. Limitations:
+  must have 'ctypes' python module available, which is only available
+  by default in python 2.5, or as an extension module in <= 2.4.
+  If the 'ctypes' module is not available, this feature will be
+  disabled and you must manually run 'setarch'.
+- Does not run 'clean' action for 'shell', 'chroot', 'install', or
+  'installdeps' (docs updated)
+- fix build for top_builddir != top_srcdir
+- fix 'installdeps' so that it works with both rpms/srpms
+- missing device file /dev/ptmx was causing 'expect' command to always
+  fail. Affected any SRPM build that used 'expect'.
+- hard spec file dep on python >= 2.4 due to python syntax changes.
+- resultdir can now contain python-string substitutions for any
+  variable in the chroot config. For example:
+  mock -r fedora-devel-x86_64    \
+  --resultdir=./my/'%(dist)s'/'%(target_arch)s'/  \
+  rebuild my.src.rpm
+- add 'dist' variable to all chroot config files so that it is
+  available for resultdir substitutions.
+- give good error message when logging.ini cannot be found.
+- change default logging format to remove verbosity from build.log.
+- make logging format configurable from defaults.cfg or chroot cfg.
+- less verbose state.log format
+
 * Mon Oct 22 2007 Michael Brown <mebrown@michaels-house.net> - 0.8.4-1
 - fix reported 'bad owner/group' from rpm in some configurations.
 
