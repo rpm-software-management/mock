@@ -81,9 +81,7 @@ fi
   fail. Affected any SRPM build that used 'expect'.
 - hard spec file dep on python >= 2.4 due to python syntax changes.
 - resultdir can now contain python-string substitutions for any
-  variable in the chroot config. For example:
-  mock -r fedora-devel-x86_64    \
-  --resultdir=./my/'%(dist)s'/'%(target_arch)s'/  \
+  variable in the chroot config.
   rebuild my.src.rpm
 - add 'dist' variable to all chroot config files so that it is
   available for resultdir substitutions.
