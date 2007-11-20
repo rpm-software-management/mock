@@ -110,6 +110,8 @@ def command_parse(config_opts):
         options.mode = args[0]
         args = args[1:]
 
+    return (options, args)
+
 @traceLog(log)
 def setup_default_config_opts(config_opts):
     # global
