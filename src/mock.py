@@ -33,8 +33,8 @@ from optparse import OptionParser
 # all of the variables below are substituted by the build system
 __VERSION__="0.8.9"
 SYSCONFDIR="/usr/local/etc"
-PYTHONDIR="/usr/local/lib/python2.4/site-packages"
-PKGPYTHONDIR="/usr/local/lib/python2.4/site-packages/mock"
+PYTHONDIR="/usr/local/lib/python2.5/site-packages"
+PKGPYTHONDIR="/usr/local/lib/python2.5/site-packages/mock"
 MOCKCONFDIR= SYSCONFDIR + "/mock"
 
 # import all mock.* modules after this.
@@ -62,19 +62,26 @@ def command_parse(config_opts):
            mock [options] {shell|chroot} <cmd>
            mock [options] installdeps {SRPM|RPM}
            mock [options] install PACKAGE
-    commands: 
-        rebuild     - build the specified SRPM(s) [default command]
-        chroot      - run the specified command within the chroot
-        shell       - run an interactive shell within specified chroot
-        clean       - clean out the specified chroot
-        init        - initialize the chroot, do not build anything
-        installdeps - install build dependencies for a specified SRPM
-        install     - install packages using yum"""
+           """
 
     parser = OptionParser(usage=usage, version=__VERSION__)
+    parser.add_option("--rebuild", action="store_const", const="rebuild", dest="mode",
+                      help="rebuild the specified SRPM(s)" default='rebuild')
+    parser.add_option("--chroot", "--shell", action="store_const", const="chroot", dest="mode",
+                      help="run the specified command within the chroot. Default command: /bin/sh")
+    parser.add_option("--clean", action="store_const", const="clean", dest="mode",
+                      help="completely remove the specified chroot")
+    parser.add_option("--init", action="store_const", const="init", dest="mode",
+                      help="initialize the chroot, do not build anything")
+    parser.add_option("--installdeps", action="store_const", const="installdeps", dest="mode",
+                      help="install build dependencies for a specified SRPM")
+    parser.add_option("--install", action="store_const", const="install", dest="mode",
+                      help="install packages using yum")
+
     parser.add_option("-r", action="store", type="string", dest="chroot",
                       help="chroot name/config file name default: %default", 
                       default='default')
+
     parser.add_option("--no-clean", action ="store_false", dest="clean", 
                       help="do not clean chroot before building", default=True)
     parser.add_option("--cleanup-after", action ="store_true", dest="cleanup_after", 
@@ -98,7 +105,10 @@ def command_parse(config_opts):
     parser.add_option("--disable-plugin", action="append", dest="disabled_plugins", type="string",
                       default=[], help="Disable plugin. Currently-available plugins: %s" % repr(config_opts['plugins']))
     
-    return parser.parse_args()
+    (options, args) = parser.parse_args()
+    if args[0] in ('chroot', 'rebuild', 'install', 'installdeps', 'init', 'clean'):
+        options.mode = args[0]
+        args = args[1:]
 
 @traceLog(log)
 def setup_default_config_opts(config_opts):
@@ -250,11 +260,6 @@ def main(retParams):
     if options.configdir:
         config_path = options.configdir
 
-    # check args
-    if len(args) < 1:
-        log.error("No srpm or command specified - nothing to do")
-        sys.exit(50)
-
     # Read in the config files: default, and then user specified
     for cfg in ( os.path.join(config_path, 'defaults.cfg'), '%s/%s.cfg' % (config_path, options.chroot)):
         if os.path.exists(cfg):
@@ -297,59 +302,52 @@ def main(retParams):
     retParams["chroot"] = chroot
     retParams["config_opts"] = config_opts
     os.umask(002)
-    if args[0] in ('chroot', 'shell', 'install', 'installdeps'):
+    if options.mode in ('chroot', 'shell', 'install', 'installdeps'):
         config_opts['clean'] = 0
     if config_opts['clean']:
         chroot.clean()
 
-    if args[0] == 'init':
+    if options.mode == 'init':
         chroot.init()
 
-    elif args[0] == 'clean':
+    elif options.mode == 'clean':
         if chroot.state() != "clean":
             chroot.clean()
 
-    elif args[0] in ('chroot', 'shell'):
+    elif options.mode in ('chroot', 'shell'):
         chroot.init()
         chroot._mountall()
         try:
             if config_opts['internal_setarch']:
                 mock.util.condPersonality(config_opts['target_arch'])
-            cmd = ' '.join(args[1:])
+            cmd = ' '.join(args)
             os.system("PS1='mock-chroot> ' /usr/sbin/chroot %s %s" % (chroot.rootdir, cmd))
         finally:
             chroot._umountall()
 
-    elif args[0] == 'installdeps':
-        if len(args) > 1:
-            srpms = args[1:]
-        else:
+    elif options.mode == 'installdeps':
+        if len(args) == 0:
             log.critical("You must specify an SRPM file.")
             sys.exit(50)
 
-        for hdr in mock.util.yieldSrpmHeaders(srpms, plainRpmOk=1): pass
+        for hdr in mock.util.yieldSrpmHeaders(args, plainRpmOk=1): pass
         chroot.init()
         chroot._mountall()
         try:
-            chroot.installSrpmDeps(*srpms)
+            chroot.installSrpmDeps(*args)
         finally:
             chroot._umountall()
 
-    elif args[0] == 'install':
-        if len(args) > 1:
-            srpms = args[1:]
-        else:
+    elif options.mode == 'install':
+        if len(args) == 0:
             log.critical("You must specify a package list to install.")
             sys.exit(50)
 
         chroot.init()
-        chroot.yumInstall(*srpms)
+        chroot.yumInstall(*args)
 
-    elif args[0] == 'rebuild':
-        do_rebuild(config_opts, chroot, args[1:])
-
-    else:
-        raise mock.exception.BadCmdline, "Unknown command specified: %s" % args[0]
+    elif options.mode == 'rebuild':
+        do_rebuild(config_opts, chroot, args)
 
 
 if __name__ == '__main__':
