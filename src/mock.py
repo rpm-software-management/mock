@@ -304,9 +304,7 @@ def main(retParams):
     retParams["chroot"] = chroot
     retParams["config_opts"] = config_opts
     os.umask(002)
-    if options.mode in ('chroot', 'shell', 'install', 'installdeps'):
-        config_opts['clean'] = 0
-    if config_opts['clean']:
+    if options.mode not in ('chroot', 'shell', 'install', 'installdeps') and config_opts['clean']:
         chroot.clean()
 
     if options.mode == 'init':
