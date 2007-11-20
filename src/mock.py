@@ -33,8 +33,8 @@ from optparse import OptionParser
 # all of the variables below are substituted by the build system
 __VERSION__="0.8.9"
 SYSCONFDIR="/usr/local/etc"
-PYTHONDIR="/usr/local/lib/python2.5/site-packages"
-PKGPYTHONDIR="/usr/local/lib/python2.5/site-packages/mock"
+PYTHONDIR="/usr/local/lib/python2.4/site-packages"
+PKGPYTHONDIR="/usr/local/lib/python2.4/site-packages/mock"
 MOCKCONFDIR= SYSCONFDIR + "/mock"
 
 # import all mock.* modules after this.
@@ -361,6 +361,9 @@ if __name__ == '__main__':
         retParams = {}
         main(retParams)
 
+    except (SystemExit,), e:
+        pass
+        
     except (KeyboardInterrupt,), e:
         exitStatus = 7
         log.error("Exiting on user interrupt, <CTRL>-C")
