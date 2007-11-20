@@ -64,6 +64,16 @@ fi
 %attr(02775, root, mock) %dir /var/lib/mock
 
 %changelog
+* Tue Nov 20 2007 Michael Brown <mebrown@michaels-house.net> - 0.8.9-1
+- Fixes so that mock will run cleanly on RHEL5
+- Add glib-devel.i386, glib2-devel.i386 to yum exclude list as it breaks
+  builds.
+- Add backwards-compatibility code for old-style 'automatically assume rebuild'
+  convention
+- automake symlink accidentally included in tarball rather than file
+  (py-compile)
+- update manpage
+
 * Mon Nov 19 2007 Michael Brown <mebrown@michaels-house.net> - 0.8.8-1
 - make it run correctly when called by the 'root' user
 - internal_setarch: optionally run 'setarch' internally. This
