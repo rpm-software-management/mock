@@ -240,13 +240,23 @@ class Root(object):
         mock.util.rmtree(os.path.join(self.rootdir, "dev"))
         mock.util.mkdirIfAbsent(os.path.join(self.rootdir, "dev", "pts"))
         prevMask = os.umask(0000)
-        os.mknod(os.path.join(self.rootdir, "dev/zero"), stat.S_IFCHR | 0666, os.makedev(1, 5))
-        os.mknod(os.path.join(self.rootdir, "dev/tty"), stat.S_IFCHR | 0666, os.makedev(5, 0))
-        os.mknod(os.path.join(self.rootdir, "dev/null"), stat.S_IFCHR | 0666, os.makedev(1, 3))
-        os.mknod(os.path.join(self.rootdir, "dev/random"), stat.S_IFCHR | 0666, os.makedev(1, 8))
-        os.mknod(os.path.join(self.rootdir, "dev/ptmx"), stat.S_IFCHR | 0666, os.makedev(5, 2))
-        os.mknod(os.path.join(self.rootdir, "dev/urandom"), stat.S_IFCHR | 0444, os.makedev(1, 9))
-        os.mknod(os.path.join(self.rootdir, "dev/console"), stat.S_IFCHR | 0600, os.makedev(5, 1))
+        devFiles = (
+            (stat.S_IFCHR | 0666, os.makedev(1, 3), "dev/null"),
+            (stat.S_IFCHR | 0666, os.makedev(1, 5), "dev/zero"),
+            (stat.S_IFCHR | 0666, os.makedev(1, 8), "dev/random"),
+            (stat.S_IFCHR | 0444, os.makedev(1, 9), "dev/urandom"),
+            (stat.S_IFCHR | 0666, os.makedev(5, 0), "dev/tty"),
+            (stat.S_IFCHR | 0600, os.makedev(5, 1), "dev/console"),
+            (stat.S_IFCHR | 0666, os.makedev(5, 2), "dev/ptmx"),
+        )
+        for i in devFiles:
+            # create node
+            os.mknod( os.path.join(self.rootdir, i[2]), i[0], i[1] )
+            # set context. (only necessary if host running selinux enabled.)
+            # fails gracefully if chcon not installed.
+            mock.util.do("chcon --reference=/%s %s" % 
+                (i[2], os.path.join(self.rootdir, i[2])), raiseExc=0)
+
         os.symlink("/proc/self/fd/0", os.path.join(self.rootdir, "dev/stdin"))
         os.symlink("/proc/self/fd/1", os.path.join(self.rootdir, "dev/stdout"))
         os.symlink("/proc/self/fd/2", os.path.join(self.rootdir, "dev/stderr"))
