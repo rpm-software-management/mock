@@ -64,6 +64,10 @@ fi
 %attr(02775, root, mock) %dir /var/lib/mock
 
 %changelog
+* Mon Nov 26 2007 Michael Brown <mebrown@michaels-house.net> - 0.8.10-1
+- fix 'shell' command
+- fix a couple different selinux avc denial messages (didnt affect functionality)
+
 * Tue Nov 20 2007 Michael Brown <mebrown@michaels-house.net> - 0.8.9-1
 - Fixes so that mock will run cleanly on RHEL5
 - Add glib-devel.i386, glib2-devel.i386 to yum exclude list as it breaks
