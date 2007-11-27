@@ -106,7 +106,7 @@ def command_parse(config_opts):
                       default=[], help="Disable plugin. Currently-available plugins: %s" % repr(config_opts['plugins']))
     
     (options, args) = parser.parse_args()
-    if args[0] in ('chroot', 'shell', 'rebuild', 'install', 'installdeps', 'init', 'clean'):
+    if len(args) and args[0] in ('chroot', 'shell', 'rebuild', 'install', 'installdeps', 'init', 'clean'):
         options.mode = args[0]
         args = args[1:]
 
