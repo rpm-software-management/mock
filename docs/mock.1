@@ -4,40 +4,48 @@
 mock \- build SRPMs in a chroot
 .SH "SYNTAX"
 .LP 
-mock  [options] \fBrebuild\fR \fISRPM [\fISRPM...\fR]
+mock  [options] \fB\-\-rebuild\fR \fISRPM [\fISRPM...\fR]
 .LP
-mock  [options] \fBchroot\fR \fI<cmd>\fR
+mock  [options] \fB\-\-chroot\fR \fI<cmd>\fR
 .LP
-mock  [options] {\fBinit\fR|\fBclean\fR|\fBshell\fR}
+mock  [options] {\fB\-\-init\fR|\fBclean\fR|\fBshell\fR}
 .LP
-mock  [options] installdeps {\fBSRPM\fR|\fBRPM\fR}
+mock  [options] \fB\-\-installdeps\fR {SRPM|RPM}
 .LP
-mock  [options] install \fBPACKAGE\fR
+mock  [options] \fB\-\-install\fR PACKAGE
 
 .SH "DESCRIPTION"
 .LP 
-Mock is a simple chroot/rpm building program. It doesn't do anything
-terribly fancy other than populate a chroot with the contents
-specified by a configuration file, then build any input SRPM(s) in
+Mock is a simple program that will build source RPMs inside a chroot. It
+doesn't do anything terribly fancy other than populate a chroot with the
+contents specified by a configuration file, then build any input SRPM(s) in
 that chroot. 
 .LP
-The content of a chroot is specified by the configuration
-specified with the \fB\-r\fR option. A default configuration file is
-specified in /etc/mock/default.cfg, which is usually a symlink to one
-of the installed configurations.
+The content of a chroot is specified by the configuration specified with the
+\fB\-r\fR option. The default configuration file is /etc/mock/default.cfg,
+which is usually a symlink to one of the installed configurations.
+.LP
+There is a site-wide configuration file, /etc/mock/defaults.cfg, which can be
+used to specify site-wide options. The shipped version of this file has no
+active options, but does have a list of all of the configuration options,
+examples of how to set them, and their default values.
+.LP
+For backwards compatibility, old-style commands, ("rebuild", "init", "clean",
+etc.) without leading '\-\-' are still accepted, but are deprecated. See
+COMMANDS section, below, for detailed listing of all commands.
 .SH "OPTIONS"
 .LP 
 .TP 
 \fB\-r\fR \fICHROOT\fP
 Uses specified chroot configuration as defined in
-/etc/mock/<\fIchroot\fP>.cfg If none specified, uses the chroot linked
+/etc/mock/<\fIchroot\fP>.cfg. If none specified, uses the chroot linked
 to by /etc/mock/default.cfg 
 .TP 
 \fB\-\-no\-clean\fR
 Do not clean chroot before building package.
 .TP 
 \fB\-\-cleanup\-after\fR
-Clean chroot after building. Use with \-\-resultdir. Only active for 'rebuild'.
+Clean chroot after building. Use with \-\-resultdir. Only active for '\-\-rebuild'.
 .TP 
 \fB\-\-no\-cleanup\-after\fR
 Dont clean chroot after building. If automatic cleanup is enabled, use this to disable.
@@ -46,7 +54,9 @@ Dont clean chroot after building. If automatic cleanup is enabled, use this to d
 Specify target build arch.
 .TP 
 \fB\-\-resultdir=\fR\fIRESULTDIR\fP
-Change directory where resulting files (RPMs and build logs) are written
+Change directory where resulting files (RPMs and build logs) are written. Resultdir can contain python-string substitutions for any variable in the chroot config. For example:
+
+\fB\-\-resultdir=./my/'%(dist)s'/'%(target_arch)s'/\fR
 .TP
 \fB\-\-uniqueext=\fR\fItext\fP
 Arbitrary, unique extension to append to buildroot directory name
@@ -65,17 +75,17 @@ Show version number and exit.
 .SH "COMMANDS"
 .LP
 .TP
-\fBclean\fR \- purge the chroot tree
+\fB\-\-clean\fR \- purge the chroot tree
 .TP 
-\fBinit\fR \- initialize a chroot (clean, install chroot packages, etc.)
+\fB\-\-init\fR \- initialize a chroot (clean, install chroot packages, etc.)
 .TP
-\fBrebuild\fR \- If no command is specified, rebuild is assumed. Rebuilds the specified SRPM(s). The buildroot is cleaned first, unless --no-clean is specified.
+\fB\-\-rebuild\fR \- If no command is specified, rebuild is assumed. Rebuilds the specified SRPM(s). The buildroot is cleaned first, unless --no-clean is specified.
 .TP 
-\fBchroot\fR|\fBshell\fR \- run the specified command within the chroot (which must already be initialized -- no 'clean' is performed). If no command specified, /bin/sh is run.
+\fB\-\-chroot\fR|\fB\-\-shell\fR \- run the specified command within the chroot (which must already be initialized -- no 'clean' is performed). If no command specified, /bin/sh is run.
 .TP
-\fBinstalldeps\fR \- find out deps for SRPM or RPM, and do a yum install to put them in the buildroot. Buildroot must already be initialized -- no 'clean' is performed
+\fB\-\-installdeps\fR \- find out deps for SRPM or RPM, and do a yum install to put them in the buildroot. Buildroot must already be initialized -- no 'clean' is performed
 .TP
-\fBinstall\fR \- Do a yum install PACKAGE inside the buildroot. Buildroot must already be initialized -- no 'clean' is performed
+\fB\-\-install\fR \- Do a yum install PACKAGE inside the buildroot. Buildroot must already be initialized -- no 'clean' is performed
 .SH "FILES"
 .LP 
 \fI/etc/mock/\fP \- default configuration directory
@@ -86,13 +96,13 @@ Show version number and exit.
 To rebuild test.src.rpm under the default chroot:
 .LP
 .RS 5
-\fBmock rebuild /path/to/test.src.rpm\fR
+\fBmock --rebuild /path/to/test.src.rpm\fR
 .RE
 .LP
 To specify a different chroot (which must be defined in /etc/mock):
 .LP
 .RS 5
-\fBmock \-r fedora\-4\-i386\-core rebuild /path/to/test.src.rpm\fR
+\fBmock \-r fedora\-8\-i386\-core --rebuild /path/to/test.src.rpm\fR
 .RE
 .SH "BUGS"
 .LP

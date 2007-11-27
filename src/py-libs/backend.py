@@ -45,11 +45,15 @@ class Root(object):
         self.homedir = config['chroothome']
         self.builddir = os.path.join(self.homedir, 'build')
 
+        self.personality = None
+        if config['internal_setarch']:
+            self.personality = config['target_arch']
+
         # result dir
         if not config.has_key('resultdir'):
             self.resultdir = os.path.join(self.basedir, 'result')
         else:
-            self.resultdir = config['resultdir']
+            self.resultdir = config['resultdir'] % config
 
         self.root_log = logging.getLogger("mock")
         self.build_log = logging.getLogger("mock.Root.build")
@@ -236,20 +240,30 @@ class Root(object):
         mock.util.rmtree(os.path.join(self.rootdir, "dev"))
         mock.util.mkdirIfAbsent(os.path.join(self.rootdir, "dev", "pts"))
         prevMask = os.umask(0000)
-        os.mknod(os.path.join(self.rootdir, "dev/zero"), stat.S_IFCHR | 0666, os.makedev(1, 5))
-        os.mknod(os.path.join(self.rootdir, "dev/tty"), stat.S_IFCHR | 0666, os.makedev(5, 0))
-        os.mknod(os.path.join(self.rootdir, "dev/null"), stat.S_IFCHR | 0666, os.makedev(1, 3))
-        os.mknod(os.path.join(self.rootdir, "dev/random"), stat.S_IFCHR | 0666, os.makedev(1, 8))
-        os.mknod(os.path.join(self.rootdir, "dev/ptmx"), stat.S_IFCHR | 0666, os.makedev(5, 2))
-        os.mknod(os.path.join(self.rootdir, "dev/urandom"), stat.S_IFCHR | 0444, os.makedev(1, 9))
-        os.mknod(os.path.join(self.rootdir, "dev/console"), stat.S_IFCHR | 0600, os.makedev(5, 1))
+        devFiles = (
+            (stat.S_IFCHR | 0666, os.makedev(1, 3), "dev/null"),
+            (stat.S_IFCHR | 0666, os.makedev(1, 5), "dev/zero"),
+            (stat.S_IFCHR | 0666, os.makedev(1, 8), "dev/random"),
+            (stat.S_IFCHR | 0444, os.makedev(1, 9), "dev/urandom"),
+            (stat.S_IFCHR | 0666, os.makedev(5, 0), "dev/tty"),
+            (stat.S_IFCHR | 0600, os.makedev(5, 1), "dev/console"),
+            (stat.S_IFCHR | 0666, os.makedev(5, 2), "dev/ptmx"),
+        )
+        for i in devFiles:
+            # create node
+            os.mknod( os.path.join(self.rootdir, i[2]), i[0], i[1] )
+            # set context. (only necessary if host running selinux enabled.)
+            # fails gracefully if chcon not installed.
+            mock.util.do("chcon --reference=/%s %s" % 
+                (i[2], os.path.join(self.rootdir, i[2])), raiseExc=0)
+
         os.symlink("/proc/self/fd/0", os.path.join(self.rootdir, "dev/stdin"))
         os.symlink("/proc/self/fd/1", os.path.join(self.rootdir, "dev/stdout"))
         os.symlink("/proc/self/fd/2", os.path.join(self.rootdir, "dev/stderr"))
         os.umask(prevMask)
 
         # yum stuff
-        self.root_log.info('run yum')
+        self.state("running yum")
         self._mountall()
         try:
             if not self.chrootWasCleaned:
@@ -270,7 +284,7 @@ class Root(object):
     @traceLog(moduleLog)
     def doChroot(self, command, env="", *args, **kargs):
         """execute given command in root"""
-        return mock.util.do( command, chrootPath=self.rootdir, *args, **kargs )
+        return mock.util.do( command, personality=self.personality, chrootPath=self.rootdir, *args, **kargs )
 
     @traceLog(moduleLog)
     def yumInstall(self, *srpms):
@@ -288,7 +302,7 @@ class Root(object):
         arg_string = self.preExistingDeps
         self.uidManager.dropPrivsTemp()
         try:
-            for hdr in mock.util.yieldSrpmHeaders(srpms):
+            for hdr in mock.util.yieldSrpmHeaders(srpms, plainRpmOk=1):
                 # get text buildreqs
                 a = mock.util.requiresTextFromHdr(hdr)
                 b = mock.util.getAddtlReqs(hdr, self.more_buildreqs)
@@ -332,9 +346,8 @@ class Root(object):
             # install srpm
             os.environ["HOME"] = self.homedir 
             # Completely/Permanently drop privs while running the following:
-            mock.util.do(
-                "rpm -Uvh --nodeps %s" % srpmChrootFilename,
-                chrootPath=self.rootdir,
+            self.doChroot(
+                "rpm -Uvh --nodeps %s" % (srpmChrootFilename,),
                 uidManager=self.uidManager,
                 uid=self.chrootuid,
                 gid=self.chrootgid,
@@ -349,9 +362,8 @@ class Root(object):
             chrootspec = spec.replace(self.rootdir, '') # get rid of rootdir prefix
             self.root_log.info("about to drop to unpriv mode.")
             # Completely/Permanently drop privs while running the following:
-            mock.util.do(
+            self.doChroot(
                 "rpmbuild -bs --target %s --nodeps %s" % (self.target_arch, chrootspec), 
-                chrootPath=self.rootdir,
                 logger=self.build_log, timeout=timeout,
                 uidManager=self.uidManager,
                 uid=self.chrootuid,
@@ -371,13 +383,12 @@ class Root(object):
             # tell caching we are building
             self._callHooks('prebuild')
 
-            mock.util.do(
+            self.doChroot(
                 "rpmbuild -bb --target %s --nodeps %s" % (self.target_arch, chrootspec), 
-                chrootPath=self.rootdir,
+                logger=self.build_log, timeout=timeout,
                 uidManager=self.uidManager,
                 uid=self.chrootuid,
                 gid=self.chrootgid,
-                logger=self.build_log, timeout=timeout,
                 )
 
             bd_out = self.rootdir + self.builddir
@@ -444,7 +455,7 @@ class Root(object):
         self.root_log.info(cmd)
         try:
             self._callHooks("preyum")
-            output = mock.util.do(cmd, returnOutput=returnOutput)
+            output = mock.util.do(cmd, returnOutput=returnOutput, personality=self.personality)
             self._callHooks("postyum")
             return output
         except mock.exception.Error, e:

@@ -182,6 +182,22 @@ def chomp(line):
     else:
         return line
 
+# taken from sys/personality.h
+personality_defs = {}
+personality_defs['x86_64'] = 0x0000
+personality_defs['ppc64']  = 0x0000
+personality_defs['i386']   = 0x0008
+personality_defs['ppc']    = 0x0008
+
+@traceLog(log)
+def condPersonality(per=None):
+    if personality_defs.get(per,None) is None: return
+    import ctypes
+    _libc = ctypes.cdll.LoadLibrary("libc.so.6")
+    _libc.personality.argtypes = [ctypes.c_ulong]
+    _libc.personality.restype = ctypes.c_int
+    _libc.personality(personality_defs[per])
+
 # logger =
 # output = [1|0]
 # chrootPath
@@ -189,7 +205,7 @@ def chomp(line):
 # Warning: this is the function from hell. :(
 #
 @traceLog(log)
-def do(command, chrootPath=None, timeout=0, raiseExc=True, returnOutput=0, uidManager=None, uid=None, gid=None, *args, **kargs):
+def do(command, chrootPath=None, timeout=0, raiseExc=True, returnOutput=0, uidManager=None, uid=None, gid=None, personality=None, *args, **kargs):
     """execute given command outside of chroot"""
     
     logger = kargs.get("logger", log)
@@ -253,6 +269,7 @@ def do(command, chrootPath=None, timeout=0, raiseExc=True, returnOutput=0, uidMa
             # can kill our children
             os.setpgrp()  
 
+            condPersonality(personality)
             condChroot(chrootPath, uidManager)
             condDropPrivs(uidManager, uid, gid)
 
