@@ -82,7 +82,7 @@ def command_parse(config_opts):
                       help="chroot name/config file name default: %default", 
                       default='default')
 
-    parser.add_option("--offline", action="store_false", dest="online", default=True
+    parser.add_option("--offline", action="store_false", dest="online", default=True,
                       help="activate 'offline' mode.")
 
     parser.add_option("--no-clean", action ="store_false", dest="clean", 
@@ -133,6 +133,7 @@ def setup_default_config_opts(config_opts):
     config_opts['build_log_fmt_name'] = "unadorned"
     config_opts['root_log_fmt_name']  = "detailed"
     config_opts['state_log_fmt_name'] = "state"
+    config_opts['online'] = True
 
     try:
         import ctypes
@@ -219,6 +220,8 @@ def set_config_opts_per_cmdline(config_opts, options):
     if not options.resultdir:
         config_opts['cleanup_on_success'] = False
         config_opts['cleanup_on_failure'] = False
+
+    config_opts['online'] = options.online
 
 @traceLog(log)
 def warn_obsolete_config_options(config_opts):
