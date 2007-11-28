@@ -275,6 +275,7 @@ def main(retParams):
     config_opts['chroot_name'] = options.chroot
     log_ini = os.path.join(config_path, config_opts["log_config_file"])
     try:
+        if not os.path.exists(log_ini): raise IOError, "Could not find log config file %s" % log_ini
         log_cfg = ConfigParser.ConfigParser()
         logging.config.fileConfig(log_ini)
         log_cfg.read(log_ini)
@@ -282,10 +283,14 @@ def main(retParams):
         log.error("Could not find required logging config file: %s" % log_ini)
         sys.exit(50)
 
-    # set up logging format strings
-    config_opts['build_log_fmt_str'] = log_cfg.get("formatter_%s" % config_opts['build_log_fmt_name'], "format", raw=1)
-    config_opts['root_log_fmt_str'] = log_cfg.get("formatter_%s" % config_opts['root_log_fmt_name'], "format", raw=1)
-    config_opts['state_log_fmt_str'] = log_cfg.get("formatter_%s" % config_opts['state_log_fmt_name'], "format", raw=1)
+    try:
+        # set up logging format strings
+        config_opts['build_log_fmt_str'] = log_cfg.get("formatter_%s" % config_opts['build_log_fmt_name'], "format", raw=1)
+        config_opts['root_log_fmt_str'] = log_cfg.get("formatter_%s" % config_opts['root_log_fmt_name'], "format", raw=1)
+        config_opts['state_log_fmt_str'] = log_cfg.get("formatter_%s" % config_opts['state_log_fmt_name'], "format", raw=1)
+    except ConfigParser.NoSectionError, e:
+        log.error("Log config file (%s) missing required section: %s" % (log_ini, e))
+        sys.exit(50)
 
     # cmdline options override config options
     log.info("mock.py version %s starting..." % __VERSION__)
