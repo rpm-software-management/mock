@@ -41,6 +41,9 @@ Uses specified chroot configuration as defined in
 /etc/mock/<\fIchroot\fP>.cfg. If none specified, uses the chroot linked
 to by /etc/mock/default.cfg 
 .TP 
+\fB\-\-offline\fR
+Run in 'offline' mode where we tell 'yum' to run completely from local cache. Also disables cache expiry for the mock yum cache.
+.TP 
 \fB\-\-no\-clean\fR
 Do not clean chroot before building package.
 .TP 
