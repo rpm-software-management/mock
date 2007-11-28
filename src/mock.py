@@ -182,7 +182,7 @@ def set_config_opts_per_cmdline(config_opts, options):
         config_opts['clean'] = options.clean
 
     if options.resultdir:
-        config_opts['resultdir'] = options.resultdir
+        config_opts['resultdir'] = os.path.expanduser(options.resultdir)
     if options.uniqueext:
         config_opts['unique-ext'] = options.uniqueext
     if options.rpmbuild_timeout is not None:
@@ -252,6 +252,13 @@ def do_rebuild(config_opts, chroot, srpms):
         raise
 
 def main(retParams):
+    # drop unprivleged to parse args, etc.
+    #   uidManager saves current real uid/gid which are unpriviledged (callers)
+    #   due to suid helper, our current effective uid is 0
+    uidManager = mock.uid.uidManager(os.getuid(), os.getgid())
+    uidManager.dropPrivsTemp()
+    del(os.environ["HOME"])
+
     # defaults
     config_opts = {}
     setup_default_config_opts(config_opts)
@@ -298,9 +305,6 @@ def main(retParams):
     warn_obsolete_config_options(config_opts)
 
     # do whatever we're here to do
-    #   uidManager saves current real uid/gid which are unpriviledged (callers)
-    #   due to suid helper, our current effective uid is 0
-    uidManager = mock.uid.uidManager(os.getuid(), os.getgid())
     chroot = mock.backend.Root(config_opts, uidManager)
 
     # elevate privs
