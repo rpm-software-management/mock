@@ -74,6 +74,7 @@ class Root(object):
         self.cache_topdir = config['cache_topdir']
         self.cachedir = os.path.join(self.cache_topdir, self.sharedRootName)
         self.useradd = config['useradd']
+        self.online = config['online']
 
         self.plugins = config['plugins']
         self.pluginConf = config['plugin_conf']
@@ -451,7 +452,11 @@ class Root(object):
     def _yum(self, cmd, returnOutput=0):
         """use yum to install packages/package groups into the chroot"""
         # mock-helper yum --installroot=rootdir cmd
-        cmd = '%s --installroot %s %s' % (self.yum_path, self.rootdir, cmd)
+        cmdOpts = ""
+        if not self.online:
+            cmdOpts = "-C"
+
+        cmd = '%s --installroot %s %s %s' % (self.yum_path, self.rootdir, cmdOpts, cmd)
         self.root_log.info(cmd)
         try:
             self._callHooks("preyum")
@@ -506,7 +511,7 @@ class Root(object):
     @traceLog(moduleLog)
     def _buildDirSetup(self):
         # create all dirs as the user who will be dropping things there.
-        self.uidManager.becomeUser(self.chrootuid)
+        self.uidManager.becomeUser(self.chrootuid, self.chrootgid)
         try:
             # create dir structure
             for subdir in ["%s/%s/%s" % (self.rootdir, self.builddir, s) for s in ('RPMS', 'SRPMS', 'SOURCES', 'SPECS', 'BUILD', 'originals')]:
@@ -534,7 +539,7 @@ class Root(object):
     #
     @traceLog(moduleLog)
     def _copySrpmIntoChroot(self, srpm):
-        self.uidManager.becomeUser(self.chrootuid)
+        self.uidManager.becomeUser(self.chrootuid, self.chrootgid)
         try:
             srpmFilename = os.path.basename(srpm)
             dest = self.rootdir + '/' + self.builddir + '/' + 'originals'

@@ -82,6 +82,9 @@ def command_parse(config_opts):
                       help="chroot name/config file name default: %default", 
                       default='default')
 
+    parser.add_option("--offline", action="store_false", dest="online", default=True
+                      help="activate 'offline' mode.")
+
     parser.add_option("--no-clean", action ="store_false", dest="clean", 
                       help="do not clean chroot before building", default=True)
     parser.add_option("--cleanup-after", action ="store_true", dest="cleanup_after", 
@@ -149,7 +152,11 @@ def setup_default_config_opts(config_opts):
             'ccache_enable': True,
             'ccache_opts': {'max_cache_size': "4G", 'dir': "%(cache_topdir)s/%(root)s/ccache/"},
             'yum_cache_enable': True,
-            'yum_cache_opts': {'max_age_days': 30, 'dir': "%(cache_topdir)s/%(root)s/yum_cache/"},
+            'yum_cache_opts': {
+                'max_age_days': 30, 
+                'max_metadata_age_days': 30, 
+                'dir': "%(cache_topdir)s/%(root)s/yum_cache/",
+                'online': True,},
             'root_cache_enable': True,
             'root_cache_opts': {'max_age_days': 15, 'dir': "%(cache_topdir)s/%(root)s/root_cache/"},
             'bind_mount_enable': True,
@@ -315,7 +322,7 @@ def main(retParams):
             chroot.clean()
 
     elif options.mode in ('chroot', 'shell'):
-        chroot.init()
+        chroot.tryLockBuildRoot()
         chroot._mountall()
         try:
             if config_opts['internal_setarch']:

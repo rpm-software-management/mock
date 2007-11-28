@@ -31,6 +31,7 @@ class YumCache(object):
         self.yumSharedCachePath = self.yum_cache_opts['dir'] % self.yum_cache_opts
         self.state = rootObj.state
         self.rootdir = rootObj.rootdir
+        self.online = rootObj.online
         rootObj.yum_cacheObj = self
         rootObj.addHook("preyum", self._yumCachePreYumHook)
         rootObj.addHook("postyum", self._yumCachePostYumHook)
@@ -68,24 +69,25 @@ class YumCache(object):
         self.yumCacheLock = open(os.path.join(self.yumSharedCachePath, "yumcache.lock"), "a+")
         self._yumCachePreYumHook()
 
-        self.state("enabled yum cache, cleaning yum metadata")
-        for (dirpath, dirnames, filenames) in os.walk(self.yumSharedCachePath):
-            for filename in filenames:
-                fullPath = os.path.join(dirpath, filename)
-                statinfo = os.stat(fullPath)
-                file_age_days = (time.time() - statinfo.st_ctime) / (60 * 60 * 24)
-                # prune repodata so yum redownloads.
-                # prevents certain errors where yum gets stuck due to bad metadata
-                for ext in (".sqllite", ".xml", ".bz2", ".gz"):
-                    if filename.endswith(ext) and file_age_days > 1:
+        if self.online:
+            self.state("enabled yum cache, cleaning yum metadata")
+            for (dirpath, dirnames, filenames) in os.walk(self.yumSharedCachePath):
+                for filename in filenames:
+                    fullPath = os.path.join(dirpath, filename)
+                    statinfo = os.stat(fullPath)
+                    file_age_days = (time.time() - statinfo.st_ctime) / (60 * 60 * 24)
+                    # prune repodata so yum redownloads.
+                    # prevents certain errors where yum gets stuck due to bad metadata
+                    for ext in (".sqllite", ".xml", ".bz2", ".gz"):
+                        if filename.endswith(ext) and file_age_days > self.yum_cache_opts['max_metadata_age_days']:
+                            os.unlink(fullPath)
+                            fullPath = None
+                            break
+    
+                    if fullPath is None: continue
+                    if file_age_days > self.yum_cache_opts['max_age_days']:
                         os.unlink(fullPath)
-                        fullPath = None
-                        break
-
-                if fullPath is None: continue
-                if file_age_days > self.yum_cache_opts['max_age_days']:
-                    os.unlink(fullPath)
-                    continue
+                        continue
 
         self._yumCachePostYumHook()
 
