@@ -54,8 +54,13 @@ pkgpython_PYTHON = \
 	src/py-libs/util.py 		\
 	src/py-libs/backend.py		\
 	src/py-libs/decorator.py 	\
-	src/py-libs/trace_decorator.py 	\
-	src/py-libs/uid.py
+	src/py-libs/trace_decorator.py 
+
+uiddir = $(pkgpythondir)/uid
+uid_PYTHON = \
+	src/py-libs/uid/__init__.py	\
+	src/py-libs/uid/uid_compat.py	\
+	src/py-libs/uid/uid.py
 
 if BLD_SRC_DIFFERENT
  $(top_builddir)/src/mock.py: $(top_srcdir)/src/mock.py

@@ -45,9 +45,9 @@ DIST_COMMON = README $(am__configure_deps) $(dist_libexec_SCRIPTS) \
 	$(srcdir)/Makefile.am $(srcdir)/Makefile.in \
 	$(srcdir)/mock.spec.in $(top_srcdir)/configure \
 	$(top_srcdir)/src/config.h.in $(top_srcdir)/src/version.h.in \
-	AUTHORS COPYING ChangeLog INSTALL NEWS build/compile \
-	build/config.guess build/config.sub build/depcomp \
-	build/install-sh build/ltmain.sh build/missing \
+	$(uid_PYTHON) AUTHORS COPYING ChangeLog INSTALL NEWS \
+	build/compile build/config.guess build/config.sub \
+	build/depcomp build/install-sh build/ltmain.sh build/missing \
 	build/py-compile
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
@@ -60,7 +60,8 @@ CONFIG_HEADER = $(top_builddir)/src/config.h
 CONFIG_CLEAN_FILES = src/version.h mock.spec
 am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(libexecdir)" \
 	"$(DESTDIR)$(pkgpythondir)" "$(DESTDIR)$(pluginsdir)" \
-	"$(DESTDIR)$(man1dir)" "$(DESTDIR)$(mocketcdir)"
+	"$(DESTDIR)$(uiddir)" "$(DESTDIR)$(man1dir)" \
+	"$(DESTDIR)$(mocketcdir)"
 binPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
 PROGRAMS = $(bin_PROGRAMS)
 am__dirstamp = $(am__leading_dot)dirstamp
@@ -101,6 +102,7 @@ am__vpath_adj = case $$p in \
 am__strip_dir = `echo $$p | sed -e 's|^.*/||'`;
 pkgpythonPYTHON_INSTALL = $(INSTALL_DATA)
 pluginsPYTHON_INSTALL = $(INSTALL_DATA)
+uidPYTHON_INSTALL = $(INSTALL_DATA)
 py_compile = $(top_srcdir)/build/py-compile
 man1dir = $(mandir)/man1
 NROFF = nroff
@@ -278,8 +280,13 @@ pkgpython_PYTHON = \
 	src/py-libs/util.py 		\
 	src/py-libs/backend.py		\
 	src/py-libs/decorator.py 	\
-	src/py-libs/trace_decorator.py 	\
-	src/py-libs/uid.py
+	src/py-libs/trace_decorator.py 
+
+uiddir = $(pkgpythondir)/uid
+uid_PYTHON = \
+	src/py-libs/uid/__init__.py	\
+	src/py-libs/uid/uid_compat.py	\
+	src/py-libs/uid/uid.py
 
 all: all-recursive
 
@@ -493,6 +500,34 @@ uninstall-pluginsPYTHON:
 	  rm -f "$(DESTDIR)$(pluginsdir)/$$f"; \
 	  rm -f "$(DESTDIR)$(pluginsdir)/$${f}c"; \
 	  rm -f "$(DESTDIR)$(pluginsdir)/$${f}o"; \
+	done
+install-uidPYTHON: $(uid_PYTHON)
+	@$(NORMAL_INSTALL)
+	test -z "$(uiddir)" || $(MKDIR_P) "$(DESTDIR)$(uiddir)"
+	@list='$(uid_PYTHON)'; dlist=''; for p in $$list; do\
+	  if test -f "$$p"; then b=; else b="$(srcdir)/"; fi; \
+	  if test -f $$b$$p; then \
+	    f=$(am__strip_dir) \
+	    dlist="$$dlist $$f"; \
+	    echo " $(uidPYTHON_INSTALL) '$$b$$p' '$(DESTDIR)$(uiddir)/$$f'"; \
+	    $(uidPYTHON_INSTALL) "$$b$$p" "$(DESTDIR)$(uiddir)/$$f"; \
+	  else :; fi; \
+	done; \
+	if test -n "$$dlist"; then \
+	  if test -z "$(DESTDIR)"; then \
+	    PYTHON=$(PYTHON) $(py_compile) --basedir "$(uiddir)" $$dlist; \
+	  else \
+	    PYTHON=$(PYTHON) $(py_compile) --destdir "$(DESTDIR)" --basedir "$(uiddir)" $$dlist; \
+	  fi; \
+	else :; fi
+
+uninstall-uidPYTHON:
+	@$(NORMAL_UNINSTALL)
+	@list='$(uid_PYTHON)'; dlist=''; for p in $$list; do\
+	  f=$(am__strip_dir) \
+	  rm -f "$(DESTDIR)$(uiddir)/$$f"; \
+	  rm -f "$(DESTDIR)$(uiddir)/$${f}c"; \
+	  rm -f "$(DESTDIR)$(uiddir)/$${f}o"; \
 	done
 install-man1: $(man1_MANS) $(man_MANS)
 	@$(NORMAL_INSTALL)
@@ -835,7 +870,7 @@ check: check-recursive
 all-am: Makefile $(PROGRAMS) $(SCRIPTS) $(MANS) $(DATA)
 installdirs: installdirs-recursive
 installdirs-am:
-	for dir in "$(DESTDIR)$(bindir)" "$(DESTDIR)$(libexecdir)" "$(DESTDIR)$(pkgpythondir)" "$(DESTDIR)$(pluginsdir)" "$(DESTDIR)$(man1dir)" "$(DESTDIR)$(mocketcdir)"; do \
+	for dir in "$(DESTDIR)$(bindir)" "$(DESTDIR)$(libexecdir)" "$(DESTDIR)$(pkgpythondir)" "$(DESTDIR)$(pluginsdir)" "$(DESTDIR)$(uiddir)" "$(DESTDIR)$(man1dir)" "$(DESTDIR)$(mocketcdir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-recursive
@@ -888,7 +923,8 @@ info: info-recursive
 info-am:
 
 install-data-am: install-dist_mocketcDATA install-man \
-	install-pkgpythonPYTHON install-pluginsPYTHON
+	install-pkgpythonPYTHON install-pluginsPYTHON \
+	install-uidPYTHON
 
 install-dvi: install-dvi-recursive
 
@@ -928,7 +964,8 @@ ps-am:
 
 uninstall-am: uninstall-binPROGRAMS uninstall-dist_libexecSCRIPTS \
 	uninstall-dist_mocketcDATA uninstall-man \
-	uninstall-pkgpythonPYTHON uninstall-pluginsPYTHON
+	uninstall-pkgpythonPYTHON uninstall-pluginsPYTHON \
+	uninstall-uidPYTHON
 
 uninstall-man: uninstall-man1
 
@@ -949,13 +986,14 @@ uninstall-man: uninstall-man1
 	install-info install-info-am install-man install-man1 \
 	install-pdf install-pdf-am install-pkgpythonPYTHON \
 	install-pluginsPYTHON install-ps install-ps-am install-strip \
-	installcheck installcheck-am installdirs installdirs-am \
-	maintainer-clean maintainer-clean-generic mostlyclean \
-	mostlyclean-compile mostlyclean-generic mostlyclean-libtool \
-	pdf pdf-am ps ps-am tags tags-recursive uninstall uninstall-am \
-	uninstall-binPROGRAMS uninstall-dist_libexecSCRIPTS \
-	uninstall-dist_mocketcDATA uninstall-man uninstall-man1 \
-	uninstall-pkgpythonPYTHON uninstall-pluginsPYTHON
+	install-uidPYTHON installcheck installcheck-am installdirs \
+	installdirs-am maintainer-clean maintainer-clean-generic \
+	mostlyclean mostlyclean-compile mostlyclean-generic \
+	mostlyclean-libtool pdf pdf-am ps ps-am tags tags-recursive \
+	uninstall uninstall-am uninstall-binPROGRAMS \
+	uninstall-dist_libexecSCRIPTS uninstall-dist_mocketcDATA \
+	uninstall-man uninstall-man1 uninstall-pkgpythonPYTHON \
+	uninstall-pluginsPYTHON uninstall-uidPYTHON
 
 
 @BLD_SRC_DIFFERENT_TRUE@ $(top_builddir)/src/mock.py: $(top_srcdir)/src/mock.py
