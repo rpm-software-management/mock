@@ -135,6 +135,7 @@ def setup_default_config_opts(config_opts):
     config_opts['state_log_fmt_name'] = "state"
     config_opts['online'] = True
 
+    config_opts['internal_dev_setup'] = True
     try:
         import ctypes
         config_opts['internal_setarch'] = True

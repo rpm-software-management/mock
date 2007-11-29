@@ -75,6 +75,7 @@ class Root(object):
         self.cachedir = os.path.join(self.cache_topdir, self.sharedRootName)
         self.useradd = config['useradd']
         self.online = config['online']
+        self.internal_dev_setup = config['internal_dev_setup']
 
         self.plugins = config['plugins']
         self.pluginConf = config['plugin_conf']
@@ -88,11 +89,9 @@ class Root(object):
 
         # mount/umount
         self.umountCmds = ['umount -n %s/proc' % self.rootdir,
-                'umount -n %s/dev/pts' % self.rootdir,
                 'umount -n %s/sys' % self.rootdir,
                ]
         self.mountCmds = ['mount -n -t proc   mock_chroot_proc   %s/proc' % self.rootdir,
-                'mount -n -t devpts mock_chroot_devpts %s/dev/pts' % self.rootdir,
                 'mount -n -t sysfs  mock_chroot_sysfs  %s/sys' % self.rootdir,
                ]
 
@@ -193,7 +192,6 @@ class Root(object):
                      'etc/yum.repos.d',
                      'etc/yum',
                      'proc',
-                     'dev/pts',
                      'sys',
                     ]:
             mock.util.mkdirIfAbsent(os.path.join(self.rootdir, item))
@@ -237,6 +235,30 @@ class Root(object):
                 fo.write(self.chroot_file_contents[key])
                 fo.close()
 
+        if self.internal_dev_setup:
+            self._setupDev()
+
+        # yum stuff
+        self.state("running yum")
+        self._mountall()
+        try:
+            if not self.chrootWasCleaned:
+                self.chroot_setup_cmd = 'update'
+            self._yum(self.chroot_setup_cmd, returnOutput=1)
+        finally:
+            self._umountall()
+
+        # create user
+        self._makeBuildUser()
+
+        # create rpmbuild dir
+        self._buildDirSetup()
+
+        # done with init
+        self._callHooks('postinit')
+
+    @traceLog(moduleLog)
+    def _setupDev(self):
         # files in /dev
         mock.util.rmtree(os.path.join(self.rootdir, "dev"))
         mock.util.mkdirIfAbsent(os.path.join(self.rootdir, "dev", "pts"))
@@ -263,24 +285,9 @@ class Root(object):
         os.symlink("/proc/self/fd/2", os.path.join(self.rootdir, "dev/stderr"))
         os.umask(prevMask)
 
-        # yum stuff
-        self.state("running yum")
-        self._mountall()
-        try:
-            if not self.chrootWasCleaned:
-                self.chroot_setup_cmd = 'update'
-            self._yum(self.chroot_setup_cmd, returnOutput=1)
-        finally:
-            self._umountall()
-
-        # create user
-        self._makeBuildUser()
-
-        # create rpmbuild dir
-        self._buildDirSetup()
-
-        # done with init
-        self._callHooks('postinit')
+        # mount/umount
+        self.umountCmds.append('umount -n %s/dev/pts' % self.rootdir)
+        self.mountCmds.append('mount -n -t devpts mock_chroot_devpts %s/dev/pts' % self.rootdir)
 
     @traceLog(moduleLog)
     def doChroot(self, command, env="", *args, **kargs):
