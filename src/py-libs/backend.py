@@ -128,7 +128,6 @@ class Root(object):
         """clean out chroot with extreme prejudice :)"""
         self.tryLockBuildRoot()
         self.state("clean")
-        self.root_log.info("Cleaning chroot")
         mock.util.rmtree(self.basedir)
         self.chrootWasCleaned = True
 
@@ -180,7 +179,7 @@ class Root(object):
         self._callHooks('preinit')
 
         # create skeleton dirs
-        self.root_log.info('create skeleton dirs')
+        self.root_log.debug('create skeleton dirs')
         for item in [
                      'var/lib/rpm',
                      'var/lib/yum',
@@ -197,7 +196,7 @@ class Root(object):
             mock.util.mkdirIfAbsent(os.path.join(self.rootdir, item))
 
         # touch files
-        self.root_log.info('touch required files')
+        self.root_log.debug('touch required files')
         for item in [os.path.join(self.rootdir, 'etc', 'mtab'),
                      os.path.join(self.rootdir, 'etc', 'fstab'),
                      os.path.join(self.rootdir, 'var', 'log', 'yum.log')]:
@@ -205,7 +204,7 @@ class Root(object):
 
         # write in yum.conf into chroot
         # always truncate and overwrite (w+)
-        self.root_log.info('configure yum')
+        self.root_log.debug('configure yum')
         yumconf = os.path.join(self.rootdir, 'etc', 'yum', 'yum.conf')
         yumconf_fo = open(yumconf, 'w+')
         yumconf_fo.write(self.yum_conf_content)
@@ -407,7 +406,7 @@ class Root(object):
             srpms = glob.glob(bd_out + '/SRPMS/*.rpm')
             packages = rpms + srpms
 
-            self.root_log.info("Copying packages to result dir")
+            self.root_log.debug("Copying packages to result dir")
             for item in packages:
                 shutil.copy2(item, self.resultdir)
 
@@ -448,14 +447,14 @@ class Root(object):
     def _mountall(self):
         """mount 'normal' fs like /dev/ /proc/ /sys"""
         for cmd in self.mountCmds:
-            self.root_log.info(cmd)
+            self.root_log.debug(cmd)
             mock.util.do(cmd)
 
     @traceLog(moduleLog)
     def _umountall(self):
         """umount all mounted chroot fs."""
         for cmd in self.umountCmds:
-            self.root_log.info(cmd)
+            self.root_log.debug(cmd)
             mock.util.do(cmd, raiseExc=0)
 
     @traceLog(moduleLog)
@@ -467,7 +466,7 @@ class Root(object):
             cmdOpts = "-C"
 
         cmd = '%s --installroot %s %s %s' % (self.yum_path, self.rootdir, cmdOpts, cmd)
-        self.root_log.info(cmd)
+        self.root_log.debug(cmd)
         try:
             self._callHooks("preyum")
             output = mock.util.do(cmd, returnOutput=returnOutput, personality=self.personality)
