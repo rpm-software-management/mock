@@ -62,6 +62,7 @@ class YumCache(object):
 
     @traceLog(moduleLog)
     def _yumCachePreInitHook(self):
+        moduleLog.info("enabled yum cache")
         mock.util.mkdirIfAbsent(os.path.join(self.rootdir, 'var/cache/yum'))
         mock.util.mkdirIfAbsent(self.yumSharedCachePath)
 
@@ -70,7 +71,7 @@ class YumCache(object):
         self._yumCachePreYumHook()
 
         if self.online:
-            self.state("enabled yum cache, cleaning yum metadata")
+            self.state("cleaning yum metadata")
             for (dirpath, dirnames, filenames) in os.walk(self.yumSharedCachePath):
                 for filename in filenames:
                     fullPath = os.path.join(dirpath, filename)

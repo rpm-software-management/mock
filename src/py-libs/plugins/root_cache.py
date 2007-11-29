@@ -58,13 +58,13 @@ class RootCache(object):
 
     @traceLog(moduleLog)
     def _rootCachePreInitHook(self):
+        moduleLog.info("enabled root cache")
         mock.util.mkdirIfAbsent(self.rootSharedCachePath)
         # lock so others dont accidentally use root cache while we operate on it.
         if self.rootCacheLock is None:
             self.rootCacheLock = open(os.path.join(self.rootSharedCachePath, "rootcache.lock"), "a+")
 
         # check cache age:
-        self.state("enabled root cache")
         try:
             statinfo = os.stat(self.rootCacheFile)
             file_age_days = (time.time() - statinfo.st_ctime) / (60 * 60 * 24)
