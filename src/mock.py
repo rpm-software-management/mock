@@ -40,6 +40,11 @@ MOCKCONFDIR= SYSCONFDIR + "/mock"
 # import all mock.* modules after this.
 sys.path.insert(0,PYTHONDIR)
 
+# set up basic logging until config file can be read
+FORMAT = "%(levelname)s: %(message)s"
+logging.basicConfig(format=FORMAT, level=logging.WARNING)
+log = logging.getLogger()
+
 # our imports
 import mock.exception
 from mock.trace_decorator import traceLog
@@ -47,12 +52,6 @@ import mock.backend
 import mock.uid
 import mock.util
 
-# set up basic logging until config file can be read
-log = logging.getLogger()
-FORMAT = "%(message)s"
-logging.basicConfig(format=FORMAT, level=logging.ERROR)
-
-@traceLog(log)
 def command_parse(config_opts):
     """return options and args from parsing the command line"""
     
@@ -290,7 +289,7 @@ def main(retParams):
             if options.chroot == "default": log.error("  Did you forget to specify the chroot to use with '-r'?")
             sys.exit(1)
     
-    # reconfigure logging in case config file was overridden
+    # configure logging
     config_opts['chroot_name'] = options.chroot
     log_ini = os.path.join(config_path, config_opts["log_config_file"])
     if not os.path.exists(log_ini):
