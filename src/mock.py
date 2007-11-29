@@ -49,7 +49,8 @@ import mock.util
 
 # set up basic logging until config file can be read
 log = logging.getLogger()
-logging.basicConfig()
+FORMAT = "%(message)s"
+logging.basicConfig(format=FORMAT, level=logging.ERROR)
 
 @traceLog(log)
 def command_parse(config_opts):
@@ -354,7 +355,7 @@ def main(retParams):
             sys.exit(50)
 
         for hdr in mock.util.yieldSrpmHeaders(args, plainRpmOk=1): pass
-        chroot.init()
+        chroot.tryLockBuildRoot()
         chroot._mountall()
         try:
             chroot.installSrpmDeps(*args)
@@ -366,7 +367,7 @@ def main(retParams):
             log.critical("You must specify a package list to install.")
             sys.exit(50)
 
-        chroot.init()
+        chroot.tryLockBuildRoot()
         chroot.yumInstall(*args)
 
     elif options.mode == 'rebuild':
