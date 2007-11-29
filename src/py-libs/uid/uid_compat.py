@@ -70,4 +70,3 @@ class uidManager(object):
         if gid is not None:
             os.setregid(gid, gid)
         os.setreuid(0, uid)
-
