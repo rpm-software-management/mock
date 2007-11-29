@@ -32,7 +32,8 @@ def traceLog(logger = moduleLog):
             message = message + "%s=%s" % (k,repr(v))
         message = message + ")"
 
-        l2.handle(l2.makeRecord(l2.name, logging.DEBUG, filename, lineno, message, args=[], exc_info=None, func=func_name))
+        frame = sys._getframe(2)
+        l2.handle(l2.makeRecord(l2.name, logging.DEBUG, os.path.normcase(frame.f_code.co_filename), frame.f_lineno, message, args=[], exc_info=None, func=frame.f_code.co_name))
         try:
             result = "Bad exception raised: Exception was not a derived class of 'Exception'"
             try:
@@ -61,10 +62,13 @@ if __name__ == "__main__":
     def testFunc(arg1, arg2="default", *args, **kargs):
         return 42
 
-    try:
-        testFunc("hello", "world")
-        testFunc("happy", "joy", name="skippy")
-        testFunc("hi")
-    except:
-        import traceback
-        traceback.print_exc()
+    testFunc("hello", "world")
+    testFunc("happy", "joy", name="skippy")
+    testFunc("hi")
+
+    @traceLog(log)
+    def testFunc22():
+        return testFunc("archie", "bunker")
+
+    testFunc22()
+
