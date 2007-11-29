@@ -11,6 +11,14 @@ import sys
 
 moduleLog = logging.getLogger("mock.trace_decorator")
 
+# emulates logic in logging module to ensure we only log
+# messages that logger is enabled to produce.
+def doLog(logger, level, *args, **kargs):
+    if logger.manager.disable >= level:
+        return
+    if logger.isEnabledFor(level):
+        logger.handle(logger.makeRecord(logger.name, level, *args, **kargs))
+
 def traceLog(logger = moduleLog):
     log = logger
     @decorator
@@ -33,27 +41,29 @@ def traceLog(logger = moduleLog):
         message = message + ")"
 
         frame = sys._getframe(2)
-        l2.handle(l2.makeRecord(l2.name, logging.DEBUG, os.path.normcase(frame.f_code.co_filename), frame.f_lineno, message, args=[], exc_info=None, func=frame.f_code.co_name))
+        doLog(l2, logging.DEBUG, os.path.normcase(frame.f_code.co_filename), frame.f_lineno, message, args=[], exc_info=None, func=frame.f_code.co_name)
         try:
             result = "Bad exception raised: Exception was not a derived class of 'Exception'"
             try:
                 result = f(*args, **kw)
             except (KeyboardInterrupt, Exception), e:
                 result = "EXCEPTION RAISED"
-                l2.handle(l2.makeRecord(l2.name, logging.DEBUG, filename, lineno, "EXCEPTION: %s\n" % e, args=[], exc_info=sys.exc_info(), func=func_name))
+                doLog(l2, logging.DEBUG, filename, lineno, "EXCEPTION: %s\n" % e, args=[], exc_info=sys.exc_info(), func=func_name)
                 raise
         finally:
-            l2.handle(l2.makeRecord(l2.name, logging.DEBUG, filename, lineno, "LEAVE %s --> %s\n" % (f.func_name, result), args=[], exc_info=None, func=func_name))
+            doLog(l2, logging.DEBUG, filename, lineno, "LEAVE %s --> %s\n" % (f.func_name, result), args=[], exc_info=None, func=func_name)
 
         return result
     return trace
 
 # unit tests...
 if __name__ == "__main__":
-    log = logging.getLogger("foobar")
-    logging.basicConfig(level=logging.DEBUG,
-                    format='%(asctime)s - %(levelname)s %(filename)s, %(funcName)s, Line: %(lineno)d:  %(message)s',
-                    )
+    logging.basicConfig(level=logging.WARNING,
+                    format='%(name)s %(levelname)s %(filename)s, %(funcName)s, Line: %(lineno)d:  %(message)s',)
+    log = logging.getLogger("foobar.bubble")
+    root = logging.getLogger()
+    log.setLevel(logging.WARNING)
+    root.setLevel(logging.DEBUG)
 
     log.debug(" --> debug")
     log.error(" --> error")
@@ -62,11 +72,11 @@ if __name__ == "__main__":
     def testFunc(arg1, arg2="default", *args, **kargs):
         return 42
 
-    testFunc("hello", "world")
+    testFunc("hello", "world", logger=root)
     testFunc("happy", "joy", name="skippy")
     testFunc("hi")
 
-    @traceLog(log)
+    @traceLog(root)
     def testFunc22():
         return testFunc("archie", "bunker")
 
