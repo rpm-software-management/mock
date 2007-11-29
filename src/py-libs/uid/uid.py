@@ -44,7 +44,7 @@ class uidManager(object):
 
         log.error("PrivStack *before* pop:")
         for p in self.privStack:
-            log.error("ruid(%(ruid)s) euid(%(euid)s) rgid(%(rgid)s) egid(%(egid)s)" % p)
+            log.error("    ruid(%(ruid)s) euid(%(euid)s) rgid(%(rgid)s) egid(%(egid)s)" % p)
 
         # then set saved 
         privs = self.privStack.pop()
@@ -73,7 +73,7 @@ class uidManager(object):
 
         log.error("PrivStack *after* push:")
         for p in self.privStack:
-            log.error("ruid(%(ruid)s) euid(%(euid)s) rgid(%(rgid)s) egid(%(egid)s)" % p)
+            log.error("    ruid(%(ruid)s) euid(%(euid)s) rgid(%(rgid)s) egid(%(egid)s)" % p)
 
     @traceLog(log)
     def _elevatePrivs(self):
