@@ -109,7 +109,7 @@ def command_parse(config_opts):
                       default=[], help="Disable plugin. Currently-available plugins: %s" % repr(config_opts['plugins']))
     
     (options, args) = parser.parse_args()
-    if args[0] in ('chroot', 'shell', 'rebuild', 'install', 'installdeps', 'init', 'clean'):
+    if len(args) and args[0] in ('chroot', 'shell', 'rebuild', 'install', 'installdeps', 'init', 'clean'):
         options.mode = args[0]
         args = args[1:]
 
@@ -284,6 +284,9 @@ def main(retParams):
     # reconfigure logging in case config file was overridden
     config_opts['chroot_name'] = options.chroot
     log_ini = os.path.join(config_path, config_opts["log_config_file"])
+    if not os.path.exists(log_ini):
+        log.error("Could not find required logging config file: %s" % log_ini)
+        sys.exit(50)
     try:
         log_cfg = ConfigParser.ConfigParser()
         logging.config.fileConfig(log_ini)
