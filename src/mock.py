@@ -65,51 +65,78 @@ def command_parse(config_opts):
            """
 
     parser = OptionParser(usage=usage, version=__VERSION__)
-    parser.add_option("--rebuild", action="store_const", const="rebuild", dest="mode", default='rebuild',
+    parser.add_option("--rebuild", action="store_const", const="rebuild", 
+                      dest="mode", default='rebuild',
                       help="rebuild the specified SRPM(s)")
-    parser.add_option("--chroot", "--shell", action="store_const", const="chroot", dest="mode",
-                      help="run the specified command within the chroot. Default command: /bin/sh")
-    parser.add_option("--clean", action="store_const", const="clean", dest="mode",
+    parser.add_option("--chroot", "--shell", action="store_const", 
+                      const="chroot", dest="mode",
+                      help="run the specified command within the chroot."
+                           " Default command: /bin/sh")
+    parser.add_option("--clean", action="store_const", const="clean", 
+                      dest="mode",
                       help="completely remove the specified chroot")
     parser.add_option("--init", action="store_const", const="init", dest="mode",
                       help="initialize the chroot, do not build anything")
-    parser.add_option("--installdeps", action="store_const", const="installdeps", dest="mode",
+    parser.add_option("--installdeps", action="store_const", const="installdeps", 
+                      dest="mode",
                       help="install build dependencies for a specified SRPM")
-    parser.add_option("--install", action="store_const", const="install", dest="mode",
+    parser.add_option("--install", action="store_const", const="install", 
+                      dest="mode",
                       help="install packages using yum")
 
     parser.add_option("-r", action="store", type="string", dest="chroot",
                       help="chroot name/config file name default: %default", 
                       default='default')
 
-    parser.add_option("--offline", action="store_false", dest="online", default=True,
+    parser.add_option("--offline", action="store_false", dest="online", 
+                      default=True,
                       help="activate 'offline' mode.")
 
     parser.add_option("--no-clean", action ="store_false", dest="clean", 
                       help="do not clean chroot before building", default=True)
-    parser.add_option("--cleanup-after", action ="store_true", dest="cleanup_after", 
-                      help="Clean chroot after building. Use with --resultdir. Only active for 'rebuild'.", default=None)
-    parser.add_option("--no-cleanup-after", action ="store_false", dest="cleanup_after", 
-                      help="Dont clean chroot after building. If automatic cleanup is enabled, use this to disable.", default=None)
+    parser.add_option("--cleanup-after", action ="store_true", 
+                      dest="cleanup_after", default=None,
+                      help="Clean chroot after building. Use with --resultdir."
+                           " Only active for 'rebuild'.")
+    parser.add_option("--no-cleanup-after", action ="store_false", 
+                      dest="cleanup_after", default=None,
+                      help="Dont clean chroot after building. If automatic"
+                           " cleanup is enabled, use this to disable.", )
     parser.add_option("--arch", action ="store", dest="arch", 
                       default=None, help="target build arch")
     parser.add_option("--resultdir", action="store", type="string", 
                       default=None, help="path for resulting files to be put")
-    parser.add_option("--uniqueext", action="store", type="string", default=None,
-                      help="Arbitrary, unique extension to append to buildroot directory name")
-    parser.add_option("--configdir", action="store", dest="configdir", default=None,
+    parser.add_option("--uniqueext", action="store", type="string", 
+                      default=None,
+                      help="Arbitrary, unique extension to append to buildroot"
+                           " directory name")
+    parser.add_option("--configdir", action="store", dest="configdir", 
+                      default=None,
                       help="Change where config files are found")
-    parser.add_option("--rpmbuild_timeout", action="store", dest="rpmbuild_timeout", type="int",
-                      default=None, help="Fail build if rpmbuild takes longer than 'timeout' seconds ")
+    parser.add_option("--rpmbuild_timeout", action="store", 
+                      dest="rpmbuild_timeout", type="int", default=None, 
+                      help="Fail build if rpmbuild takes longer than 'timeout'"
+                           " seconds ")
 
-    # caching
-    parser.add_option("--enable-plugin", action="append", dest="enabled_plugins", type="string",
-                      default=[], help="Enable plugin. Currently-available plugins: %s" % repr(config_opts['plugins']))
-    parser.add_option("--disable-plugin", action="append", dest="disabled_plugins", type="string",
-                      default=[], help="Disable plugin. Currently-available plugins: %s" % repr(config_opts['plugins']))
+    # verbosity
+    parser.add_option("-v", "--verbose", action="store_const", const=2, 
+                      dest="verbose", default=1, help="verbose build")
+    parser.add_option("-q", "--quiet", action="store_const", const=0, 
+                      dest="verbose", help="quiet build")
+
+    # plugins
+    parser.add_option("--enable-plugin", action="append", 
+                      dest="enabled_plugins", type="string", default=[], 
+                      help="Enable plugin. Currently-available plugins: %s" 
+                        % repr(config_opts['plugins']))
+    parser.add_option("--disable-plugin", action="append", 
+                      dest="disabled_plugins", type="string", default=[], 
+                      help="Disable plugin. Currently-available plugins: %s" 
+                           % repr(config_opts['plugins']))
     
     (options, args) = parser.parse_args()
-    if len(args) and args[0] in ('chroot', 'shell', 'rebuild', 'install', 'installdeps', 'init', 'clean'):
+    if len(args) and args[0] in ('chroot', 'shell', 
+            'rebuild', 'install', 'installdeps', 'init', 'clean'):
         options.mode = args[0]
         args = args[1:]
 
@@ -312,6 +339,18 @@ def main(retParams):
     except ConfigParser.NoSectionError, e:
         log.error("Log config file (%s) missing required section: %s" % (log_ini, e))
         sys.exit(50)
+
+    if options.verbose == 0:
+        log.handlers[0].setLevel(logging.WARNING)
+        logging.getLogger("mock.Root.state").handlers[0].setLevel(logging.WARNING)
+    elif options.verbose == 1:
+        log.handlers[0].setLevel(logging.INFO)
+    elif options.verbose == 2:
+        log.handlers[0].setLevel(logging.DEBUG)
+        build_log = logging.getLogger("mock.Root.build")
+        build_log.propagate = 1;
+        mock_log = logging.getLogger("mock")
+        mock_log.propagate = 1;
 
     # cmdline options override config options
     log.info("mock.py version %s starting..." % __VERSION__)
