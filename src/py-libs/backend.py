@@ -328,7 +328,11 @@ class Root(object):
                 if line.lower().find('No Package found for'.lower()) != -1:
                     raise mock.exception.BuildError, "Bad build req: %s. Exiting." % line
             # nothing made us exit, so we continue
-            self._yum('install %s' % arg_string, returnOutput=1)
+            self.uidManager.becomeUser(0,0)
+            try:
+                self._yum('install %s' % arg_string, returnOutput=1)
+            finally:
+                self.uidManager.restorePrivs()
 
 
     #
@@ -344,7 +348,7 @@ class Root(object):
         self._callHooks('earlyprebuild')
 
         self._mountall()
-        self.uidManager.becomeUser(self.chrootuid)
+        self.uidManager.becomeUser(self.chrootuid, self.chrootgid)
         try:
             self.state("setup")
 
@@ -368,7 +372,6 @@ class Root(object):
 
             spec = specs[0] # if there's more than one then someone is an idiot
             chrootspec = spec.replace(self.rootdir, '') # get rid of rootdir prefix
-            self.root_log.info("about to drop to unpriv mode.")
             # Completely/Permanently drop privs while running the following:
             self.doChroot(
                 "rpmbuild -bs --target %s --nodeps %s" % (self.target_arch, chrootspec), 
@@ -546,14 +549,8 @@ class Root(object):
     #
     @traceLog(moduleLog)
     def _copySrpmIntoChroot(self, srpm):
-        self.uidManager.becomeUser(self.chrootuid, self.chrootgid)
-        try:
-            srpmFilename = os.path.basename(srpm)
-            dest = self.rootdir + '/' + self.builddir + '/' + 'originals'
-            shutil.copy2(srpm, dest)
-            origSrpmChrootFilename = os.path.join(self.builddir, 'originals', srpmFilename)
-        finally:
-            self.uidManager.restorePrivs()
-
-        return origSrpmChrootFilename
+        srpmFilename = os.path.basename(srpm)
+        dest = self.rootdir + '/' + self.builddir + '/' + 'originals'
+        shutil.copy2(srpm, dest)
+        return os.path.join(self.builddir, 'originals', srpmFilename)
 
