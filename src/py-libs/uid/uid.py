@@ -26,40 +26,40 @@ class uidManager(object):
         # save current ruid, euid, rgid, egid
         self._push()
         self._becomeUser(uid, gid)
-        print "becomeUser done:"
-        print "DEBUG: ruid(%s) euid(%s) suid(%s)" % getresuid()
-        print "DEBUG: rgid(%s) egid(%s) sgid(%s)" % getresgid()
+        log.error( "becomeUser done:" )
+        log.error( "pid(%s) ruid(%s) euid(%s) suid(%s) rgid(%s) egid(%s) sgid(%s)" % ((os.getpid(),) + getresuid()+getresgid()) )
 
     @traceLog(log)
     def dropPrivsTemp(self):
         # save current ruid, euid, rgid, egid
         self._push()
         self._becomeUser(self.unprivUid, self.unprivGid)
-        print "dropPrivsTemp done:"
-        print "DEBUG: ruid(%s) euid(%s) suid(%s)" % getresuid()
-        print "DEBUG: rgid(%s) egid(%s) sgid(%s)" % getresgid()
+        log.error( "dropPrivsTemp done:" )
+        log.error( "pid(%s) ruid(%s) euid(%s) suid(%s) rgid(%s) egid(%s) sgid(%s)" % ((os.getpid(),) + getresuid()+getresgid()) )
 
     @traceLog(log)
     def restorePrivs(self):
         # back to root first
         self._elevatePrivs()
 
+        log.error("PrivStack *before* pop:")
+        for p in self.privStack:
+            log.error("ruid(%(ruid)s) euid(%(euid)s) rgid(%(rgid)s) egid(%(egid)s)" % p)
+
         # then set saved 
         privs = self.privStack.pop()
         os.setregid(privs['rgid'], privs['egid'])
         setresuid(privs['ruid'], privs['euid'])
-        print "restorePrivs done:"
-        print "DEBUG: ruid(%s) euid(%s) suid(%s)" % getresuid()
-        print "DEBUG: rgid(%s) egid(%s) sgid(%s)" % getresgid()
+        log.error( "restorePrivs done:" )
+        log.error( "pid(%s) ruid(%s) euid(%s) suid(%s) rgid(%s) egid(%s) sgid(%s)" % ((os.getpid(),) + getresuid()+getresgid()) )
 
     @traceLog(log)
     def dropPrivsForever(self):
         self._elevatePrivs()
         os.setregid(self.unprivGid, self.unprivGid)
         os.setreuid(self.unprivUid, self.unprivUid)
-        print "dropPrivsForever done:"
-        print "DEBUG: ruid(%s) euid(%s) suid(%s)" % getresuid()
-        print "DEBUG: rgid(%s) egid(%s) sgid(%s)" % getresgid()
+        log.error( "dropPrivsForever done:" )
+        log.error( "pid(%s) ruid(%s) euid(%s) suid(%s) rgid(%s) egid(%s) sgid(%s)" % ((os.getpid(),) + getresuid()+getresgid()) )
 
     @traceLog(log)
     def _push(self):
@@ -70,6 +70,10 @@ class uidManager(object):
             "rgid": os.getgid(),
             "egid": os.getegid(),
             })
+
+        log.error("PrivStack *after* push:")
+        for p in self.privStack:
+            log.error("ruid(%(ruid)s) euid(%(euid)s) rgid(%(rgid)s) egid(%(egid)s)" % p)
 
     @traceLog(log)
     def _elevatePrivs(self):
