@@ -269,7 +269,7 @@ class Root(object):
         try:
             if not self.chrootWasCleaned:
                 self.chroot_setup_cmd = 'update'
-            self._yum(self.chroot_setup_cmd)
+            self._yum(self.chroot_setup_cmd, returnOutput=1)
         finally:
             self._umountall()
 
@@ -293,7 +293,7 @@ class Root(object):
         # pass build reqs (as strings) to installer
         self._mountall()
         try:
-            self._yum('install %s' % ' '.join(srpms))
+            self._yum('install %s' % ' '.join(srpms), returnOutput=1)
         finally:
             self._umountall()
 
