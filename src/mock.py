@@ -267,7 +267,7 @@ def main(retParams):
     #   uidManager saves current real uid/gid which are unpriviledged (callers)
     #   due to suid helper, our current effective uid is 0
     uidManager = mock.uid.uidManager(os.getuid(), os.getgid())
-    uidManager.dropPrivsTemp()
+    uidManager._becomeUser(os.getuid(), os.getgid())
     del(os.environ["HOME"])
 
     # defaults
@@ -322,7 +322,7 @@ def main(retParams):
     chroot = mock.backend.Root(config_opts, uidManager)
 
     # elevate privs
-    uidManager.becomeUser(0)
+    uidManager._becomeUser(0, 0)
 
     retParams["chroot"] = chroot
     retParams["config_opts"] = config_opts
