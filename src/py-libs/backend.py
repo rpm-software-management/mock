@@ -467,14 +467,14 @@ class Root(object):
 
         cmd = '%s --installroot %s %s %s' % (self.yum_path, self.rootdir, cmdOpts, cmd)
         self.root_log.debug(cmd)
+        output = ""
         try:
             self._callHooks("preyum")
             output = mock.util.do(cmd, returnOutput=returnOutput, personality=self.personality)
             self._callHooks("postyum")
             return output
         except mock.exception.Error, e:
-            self.root_log.exception("Error performing yum command: %s" % cmd)
-            raise mock.exception.YumError, "Error performing yum command: %s" % cmd
+            raise mock.exception.YumError, str(e)
 
     @traceLog(moduleLog)
     def _makeBuildUser(self):
