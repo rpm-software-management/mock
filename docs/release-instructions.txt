@@ -1,12 +1,25 @@
 Release checklist overview:
 
-  1) update changlelog
-  2) check all changes into git and push upstream
-  3) properly tag git tree with signature
-  4) check release into fedora cvs
-  5) do build for -devel
-  6) do build for F-7, push to testing, then stable
-  7) do a build for FC-6
+  1) update ChangeLog
+  2) update version in 'configure.ac'
+  3) run 'autoreconf' to update autoconf files
+  4) run 'make rpm' to update version in all files
+  5) check all changes into git and push upstream
+  6) properly tag git tree with signature
+  7) check release into fedora cvs
+  8) do build for -devel
+  9) do build for F-7, push to testing, then stable
+  10) do a build for FC-6
+
+## script form:
+# vim ChangeLog  mock.spec.in
+# vim configure.ac
+# autoreconf
+# make rpm
+# git commit -m 'version bump' configure.ac configure src/mock.py
+# git tag -u YOURKEY mock-VERSION_HERE
+
+
 
 
 In the mock git tree, first ensure that you are:
