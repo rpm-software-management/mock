@@ -328,7 +328,7 @@ def main(retParams):
         logging.config.fileConfig(log_ini)
         log_cfg.read(log_ini)
     except (IOError, OSError, ConfigParser.NoSectionError), e:
-        log.error("Could not find required logging config file: %s" % log_ini)
+        log.error("Log config file(%s) not correctly configured: %s" % (log_ini, e))
         sys.exit(50)
 
     try:
@@ -422,7 +422,7 @@ if __name__ == '__main__':
         main(retParams)
 
     except (SystemExit,), e:
-        pass
+        raise
         
     except (KeyboardInterrupt,), e:
         exitStatus = 7
@@ -444,7 +444,7 @@ if __name__ == '__main__':
 
     except (Exception,), e:
         exitStatus = 1
-        logging.exception(e)
+        log.exception(e)
 
     if killOrphans and retParams:
         mock.util.orphansKill(retParams["chroot"].rootdir)
