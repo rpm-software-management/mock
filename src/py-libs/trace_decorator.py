@@ -5,8 +5,10 @@
 
 from decorator import decorator
 
-import os
 import logging
+import os
+import sys
+
 moduleLog = logging.getLogger("mock.trace_decorator")
 
 def traceLog(logger = moduleLog):
@@ -37,7 +39,7 @@ def traceLog(logger = moduleLog):
                 result = f(*args, **kw)
             except (KeyboardInterrupt, Exception), e:
                 result = "EXCEPTION RAISED"
-                l2.handle(l2.makeRecord(l2.name, logging.DEBUG, filename, lineno, "EXCEPTION: %s\n" % e, args=[], exc_info=1, func=func_name))
+                l2.handle(l2.makeRecord(l2.name, logging.DEBUG, filename, lineno, "EXCEPTION: %s\n" % e, args=[], exc_info=sys.exc_info(), func=func_name))
                 raise
         finally:
             l2.handle(l2.makeRecord(l2.name, logging.DEBUG, filename, lineno, "LEAVE %s --> %s\n" % (f.func_name, result), args=[], exc_info=None, func=func_name))
