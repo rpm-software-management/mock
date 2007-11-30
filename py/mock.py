@@ -310,8 +310,6 @@ def main(retParams):
     uidManager._becomeUser(unprivUid, unprivGid)
     del(os.environ["HOME"])
 
-    print "DEBUG: %s %s" % (mock.uid.getresuid(), mock.uid.getresgid())
-
     # defaults
     config_opts = {}
     setup_default_config_opts(config_opts)
