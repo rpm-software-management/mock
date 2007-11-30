@@ -1,6 +1,6 @@
 Release checklist overview:
 
-  1) update ChangeLog
+  1) update both the ChangeLog file and the specfile %changelog section
   2) update version in 'configure.ac'
   3) run 'autoreconf' to update autoconf files
   4) run 'make rpm' to update version in all files
@@ -18,8 +18,6 @@ Release checklist overview:
 # make rpm
 # git commit -m 'version bump' configure.ac configure src/mock.py
 # git tag -u YOURKEY mock-VERSION_HERE
-
-
 
 
 In the mock git tree, first ensure that you are:
