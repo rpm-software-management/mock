@@ -19,19 +19,14 @@ TOP_SRCTREE=$DIR/../
 cd $TOP_SRCTREE
 
 make distclean ||:
-
 ./configure
 make distcheck
+make
 make rpm
 
-RPM=$(ls mock*.rpm | grep -v src.rpm | grep -v debuginfo)
-
-sudo rpm -e mock
-sudo rpm -Uvh --replacepkgs $RPM
-
 sudo rm -rf $TOP_SRCTREE/mock-unit-test
-for i in $(ls /etc/mock | grep .cfg | grep -v default | grep -v ppc); do
-    time mock --resultdir=$TOP_SRCTREE/mock-unit-test --uniqueext=unittest rebuild mock-*.src.rpm  -r $(basename $i .cfg)
+for i in $(ls etc/mock | grep .cfg | grep -v default | grep -v ppc); do
+    time sudo ./py/mock.py --resultdir=$TOP_SRCTREE/mock-unit-test --uniqueext=unittest rebuild mock-*.src.rpm  -r $(basename $i .cfg)
 done
 
 # test orphanskill
@@ -39,7 +34,7 @@ gcc -o docs/daemontest docs/daemontest.c
 
 (pgrep daemontest && echo "Exiting because there is already a daemontest running." && exit 1) || :
 testConfig=fedora-7-x86_64
-mock -r $testConfig init
+sudo ./py/mock.py -r $testConfig --resultdir=$TOP_SRCTREE/mock-unit-test init
 cp docs/daemontest /var/lib/mock/$testConfig/root/tmp/
-mock -r $testConfig --no-clean -- chroot /tmp/daemontest
+sudo ./py/mock.py -r $testConfig --resultdir=$TOP_SRCTREE/mock-unit-test --no-clean -- chroot /tmp/daemontest
 (pgrep daemontest && echo "Daemontest FAILED. found a daemontest process running after exit." && exit 1) || :
