@@ -30,7 +30,6 @@ import sys
 import time
 from optparse import OptionParser
 
-# all of the variables below are substituted by the build system
 __VERSION__="unreleased_version"
 SYSCONFDIR=os.path.join(os.path.dirname(os.path.realpath(sys.argv[0])),"..","etc")
 PYTHONDIR=os.path.dirname(os.path.realpath(sys.argv[0]))

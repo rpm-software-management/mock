@@ -1,3 +1,12 @@
+2007-11-29  Clark Williams  <williams@redhat.com>
+
+	* mock.py, Makefile* 
+	added back verbosity control options (-q and -v)
+	added --offline option
+	added dependency on python-cytypes
+	lots of logging changes
+
+	
 2007-10-20  Michael Brown <mebrown@michaels-house.net>
 
 	* mock.py
