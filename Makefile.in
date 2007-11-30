@@ -38,7 +38,6 @@ build_triplet = @build@
 host_triplet = @host@
 bin_PROGRAMS = src/mock$(EXEEXT)
 EXTRA_PROGRAMS =
-@BLD_SRC_DIFFERENT_TRUE@am__append_1 = $(top_builddir)/src/mock.py
 subdir = .
 DIST_COMMON = README $(am__configure_deps) $(dist_libexec_SCRIPTS) \
 	$(dist_mocketc_DATA) $(pkgpython_PYTHON) $(plugins_PYTHON) \
@@ -255,32 +254,33 @@ MOCK_LIBTOOL_CURRENT = @MOCK_LIBTOOL_CURRENT@
 MOCK_LIBTOOL_REVISION = @MOCK_LIBTOOL_REVISION@
 MOCK_LIBTOOL_AGE = @MOCK_LIBTOOL_AGE@
 CLEANFILES = mock-*.tar.gz mock-*.tar.bz2 mock-*.rpm _buildtemp \
-	version $(EXTRA_PROGRAMS) $(am__append_1)
+	version $(EXTRA_PROGRAMS)
 DISTCLEANFILES = *~
 EXTRA_DIST = docs buildsys-build.spec-template mock.spec
 AM_CFLAGS = -Wall -I$(top_srcdir)/src -DSYSCONFDIR='"$(sysconfdir)"' -DLIBEXECDIR='"$(libexecdir)"' -DLIBDIR='"$(libdir)"' -Werror
 src_mock_SOURCES = src/mock.c
 src_mock_LDFLAGS = 
 mocketcdir = $(sysconfdir)/mock
-dist_mocketc_DATA = $(wildcard $(top_srcdir)/etc/*.cfg) $(top_srcdir)/etc/logging.ini
-dist_libexec_SCRIPTS = src/mock.py
+dist_mocketc_DATA = $(wildcard $(top_srcdir)/etc/mock/*.cfg) $(top_srcdir)/etc/mock/logging.ini
+dist_libexec_SCRIPTS = py/mock.py
 man_MANS = docs/mock.1
 pluginsdir = $(pkgpythondir)/plugins
 plugins_PYTHON = \
- 	src/py-libs/plugins/bind_mount.py \
- 	src/py-libs/plugins/ccache.py \
-	src/py-libs/plugins/root_cache.py 	\
-	src/py-libs/plugins/yum_cache.py
+ 	py/mock/plugins/bind_mount.py \
+ 	py/mock/plugins/ccache.py \
+	py/mock/plugins/root_cache.py 	\
+	py/mock/plugins/yum_cache.py
 
 pkgpython_PYTHON = \
-	src/py-libs/__init__.py 	\
-	src/py-libs/exception.py 	\
-	src/py-libs/util.py 		\
-	src/py-libs/backend.py		\
-	src/py-libs/decorator.py 	\
-	src/py-libs/trace_decorator.py  \
-	src/py-libs/uid.py 
+	py/mock/__init__.py 	\
+	py/mock/exception.py 	\
+	py/mock/util.py 		\
+	py/mock/backend.py		\
+	py/mock/decorator.py 	\
+	py/mock/trace_decorator.py  \
+	py/mock/uid.py 
 
+REPLACE_VARS_ON_INSTALL = $(libexecdir)/mock.py
 all: all-recursive
 
 .SUFFIXES:
@@ -893,6 +893,8 @@ install-data-am: install-dist_mocketcDATA install-man \
 install-dvi: install-dvi-recursive
 
 install-exec-am: install-binPROGRAMS install-dist_libexecSCRIPTS
+	@$(NORMAL_INSTALL)
+	$(MAKE) $(AM_MAKEFLAGS) install-exec-hook
 
 install-html: install-html-recursive
 
@@ -933,7 +935,7 @@ uninstall-am: uninstall-binPROGRAMS uninstall-dist_libexecSCRIPTS \
 uninstall-man: uninstall-man1
 
 .MAKE: $(RECURSIVE_CLEAN_TARGETS) $(RECURSIVE_TARGETS) install-am \
-	install-strip
+	install-exec-am install-strip
 
 .PHONY: $(RECURSIVE_CLEAN_TARGETS) $(RECURSIVE_TARGETS) CTAGS GTAGS \
 	all all-am am--refresh check check-am clean clean-binPROGRAMS \
@@ -945,31 +947,28 @@ uninstall-man: uninstall-man1
 	info-am install install-am install-binPROGRAMS install-data \
 	install-data-am install-dist_libexecSCRIPTS \
 	install-dist_mocketcDATA install-dvi install-dvi-am \
-	install-exec install-exec-am install-html install-html-am \
-	install-info install-info-am install-man install-man1 \
-	install-pdf install-pdf-am install-pkgpythonPYTHON \
-	install-pluginsPYTHON install-ps install-ps-am install-strip \
-	installcheck installcheck-am installdirs installdirs-am \
-	maintainer-clean maintainer-clean-generic mostlyclean \
-	mostlyclean-compile mostlyclean-generic mostlyclean-libtool \
-	pdf pdf-am ps ps-am tags tags-recursive uninstall uninstall-am \
+	install-exec install-exec-am install-exec-hook install-html \
+	install-html-am install-info install-info-am install-man \
+	install-man1 install-pdf install-pdf-am \
+	install-pkgpythonPYTHON install-pluginsPYTHON install-ps \
+	install-ps-am install-strip installcheck installcheck-am \
+	installdirs installdirs-am maintainer-clean \
+	maintainer-clean-generic mostlyclean mostlyclean-compile \
+	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
+	tags tags-recursive uninstall uninstall-am \
 	uninstall-binPROGRAMS uninstall-dist_libexecSCRIPTS \
 	uninstall-dist_mocketcDATA uninstall-man uninstall-man1 \
 	uninstall-pkgpythonPYTHON uninstall-pluginsPYTHON
 
-
-@BLD_SRC_DIFFERENT_TRUE@ $(top_builddir)/src/mock.py: $(top_srcdir)/src/mock.py
-
-src/mock.py: Makefile
-	echo Updating $@, current pwd: $$(pwd)
-	cp -f $(top_srcdir)/src/mock.py $(top_builddir)/src/mock.py.new
-	perl -p -i -e 's|^__VERSION__=.*|__VERSION__="$(RELEASE_VERSION)"|' $(top_builddir)/src/mock.py.new
-	perl -p -i -e 's|^SYSCONFDIR=.*|SYSCONFDIR="$(sysconfdir)"|' $(top_builddir)/src/mock.py.new
-	perl -p -i -e 's|^PYTHONDIR=.*|PYTHONDIR="$(pythondir)"|' $(top_builddir)/src/mock.py.new
-	perl -p -i -e 's|^PKGPYTHONDIR=.*|PKGPYTHONDIR="$(pkgpythondir)"|' $(top_builddir)/src/mock.py.new
-	diff -q $(top_srcdir)/src/mock.py $(top_builddir)/src/mock.py.new >/dev/null 2>&1 || mv -f $(top_builddir)/src/mock.py.new $(top_builddir)/src/mock.py
-	rm -f $(top_builddir)/src/mock.py.new
-	chmod +x $(top_builddir)/src/mock.py 2>/dev/null || :
+install-exec-hook:
+	for i in $(REPLACE_VARS_ON_INSTALL); do      \
+		file=$(DESTDIR)/$$i			;\
+                perl -p -i -e 's|^__VERSION__=.*|__VERSION__="$(RELEASE_VERSION)"|' $$file ;\
+                perl -p -i -e 's|^SYSCONFDIR=.*|SYSCONFDIR="$(sysconfdir)"|' $$file        ;\
+                perl -p -i -e 's|^PYTHONDIR=.*|PYTHONDIR="$(pythondir)"|' $$file           ;\
+                perl -p -i -e 's|^PKGPYTHONDIR=.*|PKGPYTHONDIR="$(pkgpythondir)"|' $$file  ;\
+                perl -p -i -e 's|^PKGDATADIR=.*|PKGDATADIR="$(pkgdatadir)"|' $$file        ;\
+        done
 
 rpm: dist
 	BLD_DIR=$$(mktemp -d /tmp/rpmbuild-$$$$-XXXXXX); \

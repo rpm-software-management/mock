@@ -31,11 +31,12 @@ import time
 from optparse import OptionParser
 
 # all of the variables below are substituted by the build system
-__VERSION__="0.8.10"
-SYSCONFDIR="/usr/local/etc"
-PYTHONDIR="/usr/local/lib/python2.5/site-packages"
-PKGPYTHONDIR="/usr/local/lib/python2.5/site-packages/mock"
-MOCKCONFDIR= SYSCONFDIR + "/mock"
+__VERSION__="unreleased_version"
+SYSCONFDIR=os.path.join(os.path.dirname(os.path.realpath(sys.argv[0])),"..","etc")
+PYTHONDIR=os.path.dirname(os.path.realpath(sys.argv[0]))
+PKGPYTHONDIR=os.path.join(os.path.dirname(os.path.realpath(sys.argv[0])),"mock")
+MOCKCONFDIR=os.path.join(SYSCONFDIR,"mock")
+# end build system subs
 
 # import all mock.* modules after this.
 sys.path.insert(0,PYTHONDIR)
@@ -293,9 +294,23 @@ def main(retParams):
     # drop unprivleged to parse args, etc.
     #   uidManager saves current real uid/gid which are unpriviledged (callers)
     #   due to suid helper, our current effective uid is 0
-    uidManager = mock.uid.uidManager(os.getuid(), os.getgid())
-    uidManager._becomeUser(os.getuid(), os.getgid())
+    #   also supports being run by sudo
+    #
+    #   setuid wrapper has real uid = unpriv,  effective uid = 0
+    #   sudo sets real/effective = 0, and sets env vars
+    #   setuid wrapper clears environment, so there wont be any conflict between these two
+    unprivUid=os.getuid()
+    if os.environ.get("SUDO_UID") is not None:
+        unprivUid=int(os.environ['SUDO_UID'])
+    unprivGid=os.getgid()
+    if os.environ.get("SUDO_GID") is not None:
+        unprivGid=int(os.environ['SUDO_GID'])
+
+    uidManager = mock.uid.uidManager(unprivUid, unprivGid)
+    uidManager._becomeUser(unprivUid, unprivGid)
     del(os.environ["HOME"])
+
+    print "DEBUG: %s %s" % (mock.uid.getresuid(), mock.uid.getresgid())
 
     # defaults
     config_opts = {}

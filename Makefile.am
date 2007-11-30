@@ -35,43 +35,38 @@ src_mock_SOURCES = src/mock.c
 src_mock_LDFLAGS =
 
 mocketcdir = $(sysconfdir)/mock
-dist_mocketc_DATA = $(wildcard $(top_srcdir)/etc/*.cfg) $(top_srcdir)/etc/logging.ini
+dist_mocketc_DATA = $(wildcard $(top_srcdir)/etc/mock/*.cfg) $(top_srcdir)/etc/mock/logging.ini
 
 EXTRA_DIST += docs buildsys-build.spec-template mock.spec
-dist_libexec_SCRIPTS = src/mock.py
+dist_libexec_SCRIPTS = py/mock.py
 man_MANS = docs/mock.1
 
 pluginsdir = $(pkgpythondir)/plugins
 plugins_PYTHON = \
- 	src/py-libs/plugins/bind_mount.py \
- 	src/py-libs/plugins/ccache.py \
-	src/py-libs/plugins/root_cache.py 	\
-	src/py-libs/plugins/yum_cache.py
+ 	py/mock/plugins/bind_mount.py \
+ 	py/mock/plugins/ccache.py \
+	py/mock/plugins/root_cache.py 	\
+	py/mock/plugins/yum_cache.py
 
 pkgpython_PYTHON = \
-	src/py-libs/__init__.py 	\
-	src/py-libs/exception.py 	\
-	src/py-libs/util.py 		\
-	src/py-libs/backend.py		\
-	src/py-libs/decorator.py 	\
-	src/py-libs/trace_decorator.py  \
-	src/py-libs/uid.py 
+	py/mock/__init__.py 	\
+	py/mock/exception.py 	\
+	py/mock/util.py 		\
+	py/mock/backend.py		\
+	py/mock/decorator.py 	\
+	py/mock/trace_decorator.py  \
+	py/mock/uid.py 
 
-if BLD_SRC_DIFFERENT
- $(top_builddir)/src/mock.py: $(top_srcdir)/src/mock.py
- CLEANFILES+=$(top_builddir)/src/mock.py
-endif
-
-src/mock.py: Makefile
-	echo Updating $@, current pwd: $$(pwd)
-	cp -f $(top_srcdir)/src/mock.py $(top_builddir)/src/mock.py.new
-	perl -p -i -e 's|^__VERSION__=.*|__VERSION__="$(RELEASE_VERSION)"|' $(top_builddir)/src/mock.py.new
-	perl -p -i -e 's|^SYSCONFDIR=.*|SYSCONFDIR="$(sysconfdir)"|' $(top_builddir)/src/mock.py.new
-	perl -p -i -e 's|^PYTHONDIR=.*|PYTHONDIR="$(pythondir)"|' $(top_builddir)/src/mock.py.new
-	perl -p -i -e 's|^PKGPYTHONDIR=.*|PKGPYTHONDIR="$(pkgpythondir)"|' $(top_builddir)/src/mock.py.new
-	diff -q $(top_srcdir)/src/mock.py $(top_builddir)/src/mock.py.new >/dev/null 2>&1 || mv -f $(top_builddir)/src/mock.py.new $(top_builddir)/src/mock.py
-	rm -f $(top_builddir)/src/mock.py.new
-	chmod +x $(top_builddir)/src/mock.py 2>/dev/null || :
+REPLACE_VARS_ON_INSTALL=$(libexecdir)/mock.py
+install-exec-hook:
+	for i in $(REPLACE_VARS_ON_INSTALL); do      \
+		file=$(DESTDIR)/$$i			;\
+                perl -p -i -e 's|^__VERSION__=.*|__VERSION__="$(RELEASE_VERSION)"|' $$file ;\
+                perl -p -i -e 's|^SYSCONFDIR=.*|SYSCONFDIR="$(sysconfdir)"|' $$file        ;\
+                perl -p -i -e 's|^PYTHONDIR=.*|PYTHONDIR="$(pythondir)"|' $$file           ;\
+                perl -p -i -e 's|^PKGPYTHONDIR=.*|PKGPYTHONDIR="$(pkgpythondir)"|' $$file  ;\
+                perl -p -i -e 's|^PKGDATADIR=.*|PKGDATADIR="$(pkgdatadir)"|' $$file        ;\
+        done
 
 rpm: dist
 	BLD_DIR=$$(mktemp -d /tmp/rpmbuild-$$$$-XXXXXX); \
