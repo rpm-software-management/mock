@@ -285,8 +285,13 @@ class Root(object):
         os.umask(prevMask)
 
         # mount/umount
-        self.umountCmds.append('umount -n %s/dev/pts' % self.rootdir)
-        self.mountCmds.append('mount -n -t devpts mock_chroot_devpts %s/dev/pts' % self.rootdir)
+        umntCmd = 'umount -n %s/dev/pts' % self.rootdir
+        if umntCmd not in self.umountCmds:
+            self.umountCmds.append(umntCmd)
+
+        mntCmd = 'mount -n -t devpts mock_chroot_devpts %s/dev/pts' % self.rootdir
+        if mntCmd not in self.mountCmds:
+            self.mountCmds.append(mntCmd)
 
     @traceLog(moduleLog)
     def doChroot(self, command, env="", *args, **kargs):
