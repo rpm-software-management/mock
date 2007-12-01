@@ -6,6 +6,7 @@
 # python library imports
 import logging
 import os
+from peak.util.decorators import decorate
 
 # our imports
 from mock.trace_decorator import traceLog
@@ -15,25 +16,25 @@ log = logging.getLogger("mock.uid")
 
 # class
 class uidManager(object):
-    @traceLog(log)
+    decorate(traceLog(log))
     def __init__(self, unprivUid=-1, unprivGid=-1):
         self.privStack = []
         self.unprivUid = unprivUid
         self.unprivGid = unprivGid
 
-    @traceLog(log)
+    decorate(traceLog(log))
     def becomeUser(self, uid, gid=-1):
         # save current ruid, euid, rgid, egid
         self._push()
         self._becomeUser(uid, gid)
 
-    @traceLog(log)
+    decorate(traceLog(log))
     def dropPrivsTemp(self):
         # save current ruid, euid, rgid, egid
         self._push()
         self._becomeUser(self.unprivUid, self.unprivGid)
 
-    @traceLog(log)
+    decorate(traceLog(log))
     def restorePrivs(self):
         # back to root first
         self._elevatePrivs()
@@ -43,13 +44,13 @@ class uidManager(object):
         os.setregid(privs['rgid'], privs['egid'])
         setresuid(privs['ruid'], privs['euid'])
 
-    @traceLog(log)
+    decorate(traceLog(log))
     def dropPrivsForever(self):
         self._elevatePrivs()
         os.setregid(self.unprivGid, self.unprivGid)
         os.setreuid(self.unprivUid, self.unprivUid)
 
-    @traceLog(log)
+    decorate(traceLog(log))
     def _push(self):
          # save current ruid, euid, rgid, egid
         self.privStack.append({
@@ -59,12 +60,12 @@ class uidManager(object):
             "egid": os.getegid(),
             })
 
-    @traceLog(log)
+    decorate(traceLog(log))
     def _elevatePrivs(self):
         setresuid(0, 0, 0)
         os.setregid(0, 0)
 
-    @traceLog(log)
+    decorate(traceLog(log))
     def _becomeUser(self, uid, gid=None):
         self._elevatePrivs()
         if gid is not None:

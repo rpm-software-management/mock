@@ -16,6 +16,7 @@ import rpmUtils.transaction
 import shutil
 import signal
 import time
+from peak.util.decorators import decorate
 
 # our imports
 import mock.exception
@@ -32,7 +33,7 @@ class commandTimeoutExpired(mock.exception.Error):
         self.resultcode = 10
 
 # functions
-@traceLog(log)
+decorate(traceLog(log))
 def mkdirIfAbsent(*args):
     for dir in args:
         log.debug("ensuring that dir exists: %s" % dir)
@@ -44,13 +45,13 @@ def mkdirIfAbsent(*args):
                 log.exception("Could not create dir %s. Error: %s" % (dir, e))
                 raise mock.exception.Error, "Could not create dir %s. Error: %s" % (dir, e)
 
-@traceLog(log)
+decorate(traceLog(log))
 def touch(fileName):
     log.debug("touching file: %s" % fileName)
     fo = open(fileName, 'w')
     fo.close()
 
-@traceLog(log)
+decorate(traceLog(log))
 def rmtree(path, *args, **kargs):
     """version os shutil.rmtree that ignores no-such-file-or-directory errors, 
        and tries harder if it finds immutable files"""
@@ -72,7 +73,7 @@ def rmtree(path, *args, **kargs):
             else:
                 raise
 
-@traceLog(log)
+decorate(traceLog(log))
 def orphansKill(rootToKill):
     """kill off anything that is still chrooted."""
     for fn in os.listdir("/proc"):
@@ -85,7 +86,7 @@ def orphansKill(rootToKill):
             pass
             
 
-@traceLog(log)
+decorate(traceLog(log))
 def yieldSrpmHeaders(srpms, plainRpmOk=0):
     ts = rpmUtils.transaction.initReadOnlyTransaction()
     for srpm in srpms:
@@ -99,7 +100,7 @@ def yieldSrpmHeaders(srpms, plainRpmOk=0):
 
         yield hdr
 
-@traceLog(log)
+decorate(traceLog(log))
 def requiresTextFromHdr(hdr):
     """take a header and hand back a unique'd list of the requires as
        strings"""
@@ -120,7 +121,7 @@ def requiresTextFromHdr(hdr):
 
     return rpmUtils.miscutils.unique(reqlist)
 
-@traceLog(log)
+decorate(traceLog(log))
 def getNEVRA(hdr):
     name = hdr[rpm.RPMTAG_NAME]
     ver  = hdr[rpm.RPMTAG_VERSION]
@@ -130,7 +131,7 @@ def getNEVRA(hdr):
     if epoch is None: epoch = 0
     return (name, epoch, ver, rel, arch)
 
-@traceLog(log)
+decorate(traceLog(log))
 def getAddtlReqs(hdr, conf):
     # Add the 'more_buildreqs' for this SRPM (if defined in config file)
     (name, epoch, ver, rel, arch) = getNEVRA(hdr)
@@ -148,14 +149,14 @@ def getAddtlReqs(hdr, conf):
 
     return rpmUtils.miscutils.unique(reqlist)
 
-@traceLog(log)
+decorate(traceLog(log))
 def uniqReqs(*args):
     master = []
     for l in args:
         master.extend(l)
     return rpmUtils.miscutils.unique(master)
 
-@traceLog(log)
+decorate(traceLog(log))
 def condChroot(chrootPath, uidManager=None):
     if chrootPath is not None:
         if uidManager:
@@ -167,7 +168,7 @@ def condChroot(chrootPath, uidManager=None):
             log.debug("back to other privs")
             uidManager.restorePrivs()
 
-@traceLog(log)
+decorate(traceLog(log))
 def condDropPrivs(uidManager, uid, gid):
     if uidManager is not None:
         log.debug("about to drop privs")
@@ -189,7 +190,7 @@ personality_defs['ppc64']  = 0x0000
 personality_defs['i386']   = 0x0008
 personality_defs['ppc']    = 0x0008
 
-@traceLog(log)
+decorate(traceLog(log))
 def condPersonality(per=None):
     if personality_defs.get(per,None) is None: return
     import ctypes
@@ -204,7 +205,7 @@ def condPersonality(per=None):
 #
 # Warning: this is the function from hell. :(
 #
-@traceLog(log)
+decorate(traceLog(log))
 def do(command, chrootPath=None, timeout=0, raiseExc=True, returnOutput=0, uidManager=None, uid=None, gid=None, personality=None, *args, **kargs):
     """execute given command outside of chroot"""
     

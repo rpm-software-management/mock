@@ -14,6 +14,7 @@ import os
 import shutil
 import stat
 import time
+from peak.util.decorators import decorate
 
 # our imports
 import mock.util
@@ -26,7 +27,7 @@ moduleLog = logging.getLogger("mock")
 # classes
 class Root(object):
     """controls setup of chroot environment"""
-    @traceLog(moduleLog)
+    decorate(traceLog(moduleLog))
     def __init__(self, config, uidManager):
         self._state = 'unstarted'
         self.uidManager = uidManager
@@ -108,14 +109,14 @@ class Root(object):
     # =============
     #  'Public' API
     # =============
-    @traceLog(moduleLog)
+    decorate(traceLog(moduleLog))
     def addHook(self, stage, function):
         hooks = self._hooks.get(stage, [])
         if function not in hooks:
             hooks.append(function)
             self._hooks[stage] = hooks
 
-    @traceLog(moduleLog)
+    decorate(traceLog(moduleLog))
     def state(self, newState = None):
         if newState is not None:
             self._state = newState
@@ -123,7 +124,7 @@ class Root(object):
 
         return self._state
 
-    @traceLog(moduleLog)
+    decorate(traceLog(moduleLog))
     def clean(self):
         """clean out chroot with extreme prejudice :)"""
         self.tryLockBuildRoot()
@@ -131,7 +132,7 @@ class Root(object):
         mock.util.rmtree(self.basedir)
         self.chrootWasCleaned = True
 
-    @traceLog(moduleLog)
+    decorate(traceLog(moduleLog))
     def tryLockBuildRoot(self):
         self.state("lock buildroot")
         try:
@@ -146,7 +147,7 @@ class Root(object):
 
         return 1
 
-    @traceLog(moduleLog)
+    decorate(traceLog(moduleLog))
     def init(self):
         self.state("init")
 
@@ -256,7 +257,7 @@ class Root(object):
         # done with init
         self._callHooks('postinit')
 
-    @traceLog(moduleLog)
+    decorate(traceLog(moduleLog))
     def _setupDev(self):
         # files in /dev
         mock.util.rmtree(os.path.join(self.rootdir, "dev"))
@@ -293,12 +294,12 @@ class Root(object):
         if mntCmd not in self.mountCmds:
             self.mountCmds.append(mntCmd)
 
-    @traceLog(moduleLog)
+    decorate(traceLog(moduleLog))
     def doChroot(self, command, env="", *args, **kargs):
         """execute given command in root"""
         return mock.util.do( command, personality=self.personality, chrootPath=self.rootdir, *args, **kargs )
 
-    @traceLog(moduleLog)
+    decorate(traceLog(moduleLog))
     def yumInstall(self, *srpms):
         """figure out deps from srpm. call yum to install them"""
         # pass build reqs (as strings) to installer
@@ -308,7 +309,7 @@ class Root(object):
         finally:
             self._umountall()
 
-    @traceLog(moduleLog)
+    decorate(traceLog(moduleLog))
     def installSrpmDeps(self, *srpms):
         """figure out deps from srpm. call yum to install them"""
         arg_string = self.preExistingDeps
@@ -344,7 +345,7 @@ class Root(object):
     #   Everything in this function runs as the build user
     #       -> except hooks. :)
     #
-    @traceLog(moduleLog)
+    decorate(traceLog(moduleLog))
     def build(self, srpm, timeout):
         """build an srpm into binary rpms, capture log"""
 
@@ -425,13 +426,13 @@ class Root(object):
     # =============
     # 'Private' API
     # =============
-    @traceLog(moduleLog)
+    decorate(traceLog(moduleLog))
     def _callHooks(self, stage):
         hooks = self._hooks.get(stage, [])
         for hook in hooks:
             hook()
 
-    @traceLog(moduleLog)
+    decorate(traceLog(moduleLog))
     def _initPlugins(self):
         # Import plugins  (simplified copy of what yum does). Can add yum
         #  features later when we prove we need them.
@@ -448,21 +449,21 @@ class Root(object):
 
             module.init(self, self.pluginConf["%s_opts" % modname])
 
-    @traceLog(moduleLog)
+    decorate(traceLog(moduleLog))
     def _mountall(self):
         """mount 'normal' fs like /dev/ /proc/ /sys"""
         for cmd in self.mountCmds:
             self.root_log.debug(cmd)
             mock.util.do(cmd)
 
-    @traceLog(moduleLog)
+    decorate(traceLog(moduleLog))
     def _umountall(self):
         """umount all mounted chroot fs."""
         for cmd in self.umountCmds:
             self.root_log.debug(cmd)
             mock.util.do(cmd, raiseExc=0)
 
-    @traceLog(moduleLog)
+    decorate(traceLog(moduleLog))
     def _yum(self, cmd, returnOutput=0):
         """use yum to install packages/package groups into the chroot"""
         # mock-helper yum --installroot=rootdir cmd
@@ -481,7 +482,7 @@ class Root(object):
         except mock.exception.Error, e:
             raise mock.exception.YumError, str(e)
 
-    @traceLog(moduleLog)
+    decorate(traceLog(moduleLog))
     def _makeBuildUser(self):
         if not os.path.exists(os.path.join(self.rootdir, 'usr/sbin/useradd')):
             raise mock.exception.RootError, "Could not find useradd in chroot, maybe the install failed?"
@@ -497,7 +498,7 @@ class Root(object):
         self.doChroot(self.useradd % dets)
         self.doChroot("perl -p -i -e 's/^(%s:)!!/$1/;' /etc/passwd" % (self.chrootuser), raiseExc=True)
 
-    @traceLog(moduleLog)
+    decorate(traceLog(moduleLog))
     def _resetLogging(self):
         # ensure we dont attach the handlers multiple times.
         if getattr(self, "logging_initialized", None):
@@ -522,7 +523,7 @@ class Root(object):
     # UNPRIVLEGED:
     #   Everything in this function runs as the build user
     #
-    @traceLog(moduleLog)
+    decorate(traceLog(moduleLog))
     def _buildDirSetup(self):
         # create all dirs as the user who will be dropping things there.
         self.uidManager.becomeUser(self.chrootuid, self.chrootgid)
@@ -551,7 +552,7 @@ class Root(object):
     # UNPRIVLEGED:
     #   Everything in this function runs as the build user
     #
-    @traceLog(moduleLog)
+    decorate(traceLog(moduleLog))
     def _copySrpmIntoChroot(self, srpm):
         srpmFilename = os.path.basename(srpm)
         dest = self.rootdir + '/' + self.builddir + '/' + 'originals'

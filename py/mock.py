@@ -29,6 +29,7 @@ import os.path
 import sys
 import time
 from optparse import OptionParser
+from peak.util.decorators import decorate
 
 # all of the variables below are substituted by the build system
 __VERSION__="unreleased_version"
@@ -143,7 +144,7 @@ def command_parse(config_opts):
 
     return (options, args)
 
-@traceLog(log)
+decorate(traceLog(log))
 def setup_default_config_opts(config_opts):
     # global
     config_opts['basedir'] = '/var/lib/mock/' # root name is automatically added to this
@@ -210,7 +211,7 @@ def setup_default_config_opts(config_opts):
                              '%_rpmfilename': '%%{NAME}-%%{VERSION}-%%{RELEASE}.%%{ARCH}.rpm',
                              }
 
-@traceLog(log)
+decorate(traceLog(log))
 def set_config_opts_per_cmdline(config_opts, options):
     # do some other options and stuff
     if options.arch:
@@ -252,11 +253,11 @@ def set_config_opts_per_cmdline(config_opts, options):
 
     config_opts['online'] = options.online
 
-@traceLog(log)
+decorate(traceLog(log))
 def warn_obsolete_config_options(config_opts):
     pass
 
-@traceLog(log)
+decorate(traceLog(log))
 def do_rebuild(config_opts, chroot, srpms):
     if len(srpms) < 1:
         log.critical("No package specified to rebuild command.")
