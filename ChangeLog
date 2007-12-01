@@ -1,3 +1,7 @@
+2007-12-01  Michael Brown <mebrown@michaels-house.net>
+	* backend.py
+	fixed build of multiple srpms on one cmdline
+
 2007-11-29  Clark Williams  <williams@redhat.com>
 
 	* mock.py, Makefile* 
