@@ -24,7 +24,8 @@ DISTCLEANFILES=*~
 
 EXTRA_DIST =
 bin_PROGRAMS=
-EXTRA_PROGRAMS=
+check_PROGRAMS= src/daemontest
+#TESTS = docs/make_check.sh
 
 CLEANFILES += $(EXTRA_PROGRAMS)
 
@@ -70,6 +71,7 @@ install-exec-hook:
                 perl -p -i -e 's|^PKGDATADIR=.*|PKGDATADIR="$(pkgdatadir)"|' $$file        ;\
         done
 
+.PHONY: rpm srpm
 rpm: dist
 	BLD_DIR=$$(mktemp -d /tmp/rpmbuild-$$$$-XXXXXX); \
 	mkdir -p $$BLD_DIR/SOURCES $$BLD_DIR/BUILD $$BLD_DIR/RPMS $$BLD_DIR/RPMS/i386 $$BLD_DIR/RPMS/noarch $$BLD_DIR/SRPMS $$BLD_DIR/SPECS ;\
