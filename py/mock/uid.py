@@ -74,7 +74,6 @@ class uidManager(object):
 # python doesnt have native versions of these. :(
 
 import ctypes
-import errno
 _libc = ctypes.cdll.LoadLibrary("libc.so.6")
 _errno = ctypes.c_int.in_dll(_libc, "errno")
 
