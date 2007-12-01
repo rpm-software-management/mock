@@ -25,7 +25,6 @@ DISTCLEANFILES=*~
 EXTRA_DIST =
 bin_PROGRAMS=
 check_PROGRAMS= src/daemontest
-#TESTS = docs/make_check.sh
 
 CLEANFILES += $(EXTRA_PROGRAMS)
 

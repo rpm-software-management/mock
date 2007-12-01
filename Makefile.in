@@ -256,7 +256,6 @@ RELEASE_STRING = $(RELEASE_NAME)-$(RELEASE_VERSION)
 MOCK_LIBTOOL_CURRENT = @MOCK_LIBTOOL_CURRENT@
 MOCK_LIBTOOL_REVISION = @MOCK_LIBTOOL_REVISION@
 MOCK_LIBTOOL_AGE = @MOCK_LIBTOOL_AGE@
-#TESTS = docs/make_check.sh
 CLEANFILES = mock-*.tar.gz mock-*.tar.bz2 mock-*.rpm _buildtemp \
 	version $(EXTRA_PROGRAMS) py/*.pyc py/mock/*.pyc \
 	py/mock/plugins/*.pyc
