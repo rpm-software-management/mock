@@ -30,28 +30,19 @@ AM_PROG_CC_C_O
 AM_PATH_PYTHON
 
 # Checks for header files.
-AC_HEADER_DIRENT
 AC_HEADER_STDC
 AC_HEADER_SYS_WAIT
-AC_CHECK_HEADERS([fcntl.h limits.h stdlib.h string.h unistd.h])
+AC_CHECK_HEADERS([stdlib.h string.h unistd.h])
 AC_CONFIG_HEADERS([src/config.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
 AC_TYPE_PID_T
-AC_TYPE_SIZE_T
-AC_TYPE_SSIZE_T
 
 # Checks for library functions.
 AC_FUNC_ALLOCA
-AC_FUNC_CHOWN
 AC_FUNC_ERROR_AT_LINE
-AC_FUNC_LSTAT
-AC_FUNC_LSTAT_FOLLOWS_SLASHED_SYMLINK
-AC_FUNC_MALLOC
-AC_FUNC_MEMCMP
-AC_FUNC_VPRINTF
-AC_CHECK_FUNCS([mkdir strdup strerror strstr])
+AC_CHECK_FUNCS([strerror])
 
 # update 'real' variables from the temp variable names.
 # do this at the end of the file so that they A) are not overwitten by other
