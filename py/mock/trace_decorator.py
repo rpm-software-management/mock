@@ -3,11 +3,11 @@
 # Written by Michael Brown
 # Copyright (C) 2007 Michael E Brown <mebrown@michaels-house.net>
 
-from decorator import decorator
-
 import logging
 import os
 import sys
+
+from decorator import decorator
 
 moduleLog = logging.getLogger("mock.trace_decorator")
 
