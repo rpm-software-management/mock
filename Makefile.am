@@ -53,7 +53,6 @@ pkgpython_PYTHON = \
 	py/mock/exception.py 	\
 	py/mock/util.py 		\
 	py/mock/backend.py		\
-	py/mock/decorator.py 	\
 	py/mock/trace_decorator.py  \
 	py/mock/uid.py 
 

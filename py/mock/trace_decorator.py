@@ -6,8 +6,7 @@
 import logging
 import os
 import sys
-
-from decorator import decorator
+from peak.util.decorators import rewrap
 
 moduleLog = logging.getLogger("mock.trace_decorator")
 
@@ -19,42 +18,42 @@ def doLog(logger, level, *args, **kargs):
     if logger.isEnabledFor(level):
         logger.handle(logger.makeRecord(logger.name, level, *args, **kargs))
 
-def traceLog(logger = moduleLog):
-    log = logger
-    @decorator
-    def trace(f, *args, **kw):
-        # default to logger that was passed by module, but
-        # can override by passing logger=foo as function parameter.
-        # make sure this doesnt conflict with one of the parameters
-        # you are expecting
-
-        filename = os.path.normcase(f.func_code.co_filename)
-        func_name = f.func_code.co_name
-        lineno = f.func_code.co_firstlineno
-
-        l2 = kw.get('logger', log)
-        message = "ENTER %s(" % f.func_name
-        for arg in args:
-            message = message + repr(arg) + ", "
-        for k,v in kw.items():
-            message = message + "%s=%s" % (k,repr(v))
-        message = message + ")"
-
-        frame = sys._getframe(2)
-        doLog(l2, logging.DEBUG, os.path.normcase(frame.f_code.co_filename), frame.f_lineno, message, args=[], exc_info=None, func=frame.f_code.co_name)
-        try:
-            result = "Bad exception raised: Exception was not a derived class of 'Exception'"
+def traceLog(log = moduleLog):
+    def decorator(func):
+        def trace(*args, **kw):
+            # default to logger that was passed by module, but
+            # can override by passing logger=foo as function parameter.
+            # make sure this doesnt conflict with one of the parameters
+            # you are expecting
+    
+            filename = os.path.normcase(func.func_code.co_filename)
+            func_name = func.func_code.co_name
+            lineno = func.func_code.co_firstlineno
+    
+            l2 = kw.get('logger', log)
+            message = "ENTER %s(" % func_name
+            for arg in args:
+                message = message + repr(arg) + ", "
+            for k,v in kw.items():
+                message = message + "%s=%s" % (k,repr(v))
+            message = message + ")"
+    
+            frame = sys._getframe(2)
+            doLog(l2, logging.DEBUG, os.path.normcase(frame.f_code.co_filename), frame.f_lineno, message, args=[], exc_info=None, func=frame.f_code.co_name)
             try:
-                result = f(*args, **kw)
-            except (KeyboardInterrupt, Exception), e:
-                result = "EXCEPTION RAISED"
-                doLog(l2, logging.DEBUG, filename, lineno, "EXCEPTION: %s\n" % e, args=[], exc_info=sys.exc_info(), func=func_name)
-                raise
-        finally:
-            doLog(l2, logging.DEBUG, filename, lineno, "LEAVE %s --> %s\n" % (f.func_name, result), args=[], exc_info=None, func=func_name)
+                result = "Bad exception raised: Exception was not a derived class of 'Exception'"
+                try:
+                    result = func(*args, **kw)
+                except (KeyboardInterrupt, Exception), e:
+                    result = "EXCEPTION RAISED"
+                    doLog(l2, logging.DEBUG, filename, lineno, "EXCEPTION: %s\n" % e, args=[], exc_info=sys.exc_info(), func=func_name)
+                    raise
+            finally:
+                doLog(l2, logging.DEBUG, filename, lineno, "LEAVE %s --> %s\n" % (func_name, result), args=[], exc_info=None, func=func_name)
 
-        return result
-    return trace
+            return result
+        return rewrap(func, trace)
+    return decorator
 
 # unit tests...
 if __name__ == "__main__":
