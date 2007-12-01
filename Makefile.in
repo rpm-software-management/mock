@@ -254,7 +254,8 @@ MOCK_LIBTOOL_CURRENT = @MOCK_LIBTOOL_CURRENT@
 MOCK_LIBTOOL_REVISION = @MOCK_LIBTOOL_REVISION@
 MOCK_LIBTOOL_AGE = @MOCK_LIBTOOL_AGE@
 CLEANFILES = mock-*.tar.gz mock-*.tar.bz2 mock-*.rpm _buildtemp \
-	version $(EXTRA_PROGRAMS)
+	version $(EXTRA_PROGRAMS) py/*.pyc py/mock/*.pyc \
+	py/mock/plugins/*.pyc
 DISTCLEANFILES = *~
 EXTRA_DIST = docs buildsys-build.spec-template mock.spec
 AM_CFLAGS = -Wall -I$(top_srcdir)/src -DSYSCONFDIR='"$(sysconfdir)"' -DLIBEXECDIR='"$(libexecdir)"' -DLIBDIR='"$(libdir)"' -Werror

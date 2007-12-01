@@ -57,6 +57,8 @@ pkgpython_PYTHON = \
 	py/mock/trace_decorator.py  \
 	py/mock/uid.py 
 
+CLEANFILES += py/*.pyc py/mock/*.pyc py/mock/plugins/*.pyc
+
 REPLACE_VARS_ON_INSTALL=$(libexecdir)/mock.py
 install-exec-hook:
 	for i in $(REPLACE_VARS_ON_INSTALL); do      \
