@@ -19,7 +19,7 @@ requires_api_version = "1.0"
 
 # plugin entry point
 def init(rootObj, conf):
-    rootCache = RootCache(rootObj, conf)
+    RootCache(rootObj, conf)
 
 # classes
 class RootCache(object):

@@ -17,7 +17,7 @@ requires_api_version = "1.0"
 
 # plugin entry point
 def init(rootObj, conf):
-    ccache = CCache(rootObj, conf)
+    CCache(rootObj, conf)
 
 # classes
 class CCache(object):

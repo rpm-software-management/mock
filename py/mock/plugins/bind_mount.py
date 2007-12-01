@@ -17,7 +17,7 @@ requires_api_version = "1.0"
 
 # plugin entry point
 def init(rootObj, conf):
-    bind = BindMount(rootObj, conf)
+    BindMount(rootObj, conf)
 
 # classes
 class BindMount(object):

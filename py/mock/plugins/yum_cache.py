@@ -19,7 +19,7 @@ requires_api_version = "1.0"
 
 # plugin entry point
 def init(rootObj, conf):
-    yumCache = YumCache(rootObj, conf)
+    YumCache(rootObj, conf)
 
 # classes
 class YumCache(object):
