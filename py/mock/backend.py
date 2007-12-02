@@ -13,7 +13,6 @@ import logging
 import os
 import shutil
 import stat
-import time
 from peak.util.decorators import decorate
 
 # our imports
@@ -34,6 +33,8 @@ class Root(object):
         self._hooks = {}
         self.chrootWasCleaned = False
         self.preExistingDeps = ""
+        self.logging_initialized = False
+        self.buildrootLock = None
 
         self.sharedRootName = config['root']
         root = self.sharedRootName
@@ -51,10 +52,7 @@ class Root(object):
             self.personality = config['target_arch']
 
         # result dir
-        if not config.has_key('resultdir'):
-            self.resultdir = os.path.join(self.basedir, 'result')
-        else:
-            self.resultdir = config['resultdir'] % config
+        self.resultdir = config['resultdir'] % config
 
         self.root_log = logging.getLogger("mock")
         self.build_log = logging.getLogger("mock.Root.build")
@@ -277,7 +275,7 @@ class Root(object):
             os.mknod( os.path.join(self.rootdir, i[2]), i[0], i[1] )
             # set context. (only necessary if host running selinux enabled.)
             # fails gracefully if chcon not installed.
-            mock.util.do("chcon --reference=/%s %s" % 
+            mock.util.do("chcon --reference=/%s %s" %
                 (i[2], os.path.join(self.rootdir, i[2])), raiseExc=0)
 
         os.symlink("/proc/self/fd/0", os.path.join(self.rootdir, "dev/stdin"))
@@ -319,7 +317,7 @@ class Root(object):
                 # get text buildreqs
                 a = mock.util.requiresTextFromHdr(hdr)
                 b = mock.util.getAddtlReqs(hdr, self.more_buildreqs)
-                for item in mock.util.uniqReqs(a,b):
+                for item in mock.util.uniqReqs(a, b):
                     arg_string = arg_string + " '%s'" % item
 
         finally:
@@ -333,7 +331,7 @@ class Root(object):
                 if line.lower().find('No Package found for'.lower()) != -1:
                     raise mock.exception.BuildError, "Bad build req: %s. Exiting." % line
             # nothing made us exit, so we continue
-            self.uidManager.becomeUser(0,0)
+            self.uidManager.becomeUser(0, 0)
             try:
                 self._yum('install %s' % arg_string, returnOutput=1)
             finally:
@@ -361,7 +359,7 @@ class Root(object):
             srpmBasename = os.path.basename(srpmChrootFilename)
 
             # install srpm
-            os.environ["HOME"] = self.homedir 
+            os.environ["HOME"] = self.homedir
             # Completely/Permanently drop privs while running the following:
             self.doChroot(
                 "rpm -Uvh --nodeps %s" % (srpmChrootFilename,),
@@ -379,7 +377,7 @@ class Root(object):
             chrootspec = spec.replace(self.rootdir, '') # get rid of rootdir prefix
             # Completely/Permanently drop privs while running the following:
             self.doChroot(
-                "rpmbuild -bs --target %s --nodeps %s" % (self.target_arch, chrootspec), 
+                "rpmbuild -bs --target %s --nodeps %s" % (self.target_arch, chrootspec),
                 logger=self.build_log, timeout=timeout,
                 uidManager=self.uidManager,
                 uid=self.chrootuid,
@@ -388,7 +386,7 @@ class Root(object):
 
             rebuiltSrpmFile = glob.glob("%s/%s/SRPMS/*.src.rpm" % (self.rootdir, self.builddir))
             if len(rebuiltSrpmFile) != 1:
-                raise mock.exception.PkgError, "Didnt find single rebuilt srpm." 
+                raise mock.exception.PkgError, "Didnt find single rebuilt srpm."
 
             rebuiltSrpmFile = rebuiltSrpmFile[0]
             self.installSrpmDeps(rebuiltSrpmFile)
@@ -400,7 +398,7 @@ class Root(object):
             self._callHooks('prebuild')
 
             self.doChroot(
-                "rpmbuild -bb --target %s --nodeps %s" % (self.target_arch, chrootspec), 
+                "rpmbuild -bb --target %s --nodeps %s" % (self.target_arch, chrootspec),
                 logger=self.build_log, timeout=timeout,
                 uidManager=self.uidManager,
                 uid=self.chrootuid,
@@ -501,9 +499,9 @@ class Root(object):
     decorate(traceLog(moduleLog))
     def _resetLogging(self):
         # ensure we dont attach the handlers multiple times.
-        if getattr(self, "logging_initialized", None):
+        if self.logging_initialized:
             return
-        self.logging_initialized = 1
+        self.logging_initialized = True
 
         # attach logs to log files.
         # This happens in addition to anything that

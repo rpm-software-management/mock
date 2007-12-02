@@ -25,19 +25,19 @@ def traceLog(log = moduleLog):
             # can override by passing logger=foo as function parameter.
             # make sure this doesnt conflict with one of the parameters
             # you are expecting
-    
+
             filename = os.path.normcase(func.func_code.co_filename)
             func_name = func.func_code.co_name
             lineno = func.func_code.co_firstlineno
-    
+
             l2 = kw.get('logger', log)
             message = "ENTER %s(" % func_name
             for arg in args:
                 message = message + repr(arg) + ", "
-            for k,v in kw.items():
-                message = message + "%s=%s" % (k,repr(v))
+            for k, v in kw.items():
+                message = message + "%s=%s" % (k, repr(v))
             message = message + ")"
-    
+
             frame = sys._getframe(2)
             doLog(l2, logging.DEBUG, os.path.normcase(frame.f_code.co_filename), frame.f_lineno, message, args=[], exc_info=None, func=frame.f_code.co_name)
             try:

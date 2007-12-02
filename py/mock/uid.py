@@ -39,7 +39,7 @@ class uidManager(object):
         # back to root first
         self._elevatePrivs()
 
-        # then set saved 
+        # then set saved
         privs = self.privStack.pop()
         os.setregid(privs['rgid'], privs['egid'])
         setresuid(privs['ruid'], privs['euid'])

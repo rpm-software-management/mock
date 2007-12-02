@@ -35,15 +35,15 @@ class commandTimeoutExpired(mock.exception.Error):
 # functions
 decorate(traceLog(log))
 def mkdirIfAbsent(*args):
-    for dir in args:
-        log.debug("ensuring that dir exists: %s" % dir)
-        if not os.path.exists(dir):
+    for dirName in args:
+        log.debug("ensuring that dir exists: %s" % dirName)
+        if not os.path.exists(dirName):
             try:
-                log.debug("creating dir: %s" % dir)
-                os.makedirs(dir)
+                log.debug("creating dir: %s" % dirName)
+                os.makedirs(dirName)
             except OSError, e:
-                log.exception("Could not create dir %s. Error: %s" % (dir, e))
-                raise mock.exception.Error, "Could not create dir %s. Error: %s" % (dir, e)
+                log.exception("Could not create dir %s. Error: %s" % (dirName, e))
+                raise mock.exception.Error, "Could not create dir %s. Error: %s" % (dirName, e)
 
 decorate(traceLog(log))
 def touch(fileName):
@@ -53,7 +53,7 @@ def touch(fileName):
 
 decorate(traceLog(log))
 def rmtree(path, *args, **kargs):
-    """version os shutil.rmtree that ignores no-such-file-or-directory errors, 
+    """version os shutil.rmtree that ignores no-such-file-or-directory errors,
        and tries harder if it finds immutable files"""
     tryAgain = 1
     failedFilename = None
@@ -81,10 +81,10 @@ def orphansKill(rootToKill):
             root = os.readlink("/proc/%s/root" % fn)
             if root == rootToKill:
                 log.warning("Process ID %s still running in chroot. Killing..." % fn)
-                os.kill(int(fn,10), 15)
+                os.kill(int(fn, 10), 15)
         except OSError, e:
             pass
-            
+
 
 decorate(traceLog(log))
 def yieldSrpmHeaders(srpms, plainRpmOk=0):
@@ -136,8 +136,8 @@ def getAddtlReqs(hdr, conf):
     # Add the 'more_buildreqs' for this SRPM (if defined in config file)
     (name, epoch, ver, rel, arch) = getNEVRA(hdr)
     reqlist = []
-    for this_srpm in ['-'.join([name,ver,rel]),
-                      '-'.join([name,ver]),
+    for this_srpm in ['-'.join([name, ver, rel]),
+                      '-'.join([name, ver]),
                       '-'.join([name]),]:
         if conf.has_key(this_srpm):
             more_reqs = conf[this_srpm]
@@ -172,8 +172,10 @@ decorate(traceLog(log))
 def condDropPrivs(uidManager, uid, gid):
     if uidManager is not None:
         log.debug("about to drop privs")
-        if uid is not None: uidManager.unprivUid=uid
-        if gid is not None: uidManager.unprivGid=gid
+        if uid is not None:
+            uidManager.unprivUid = uid
+        if gid is not None:
+            uidManager.unprivGid = gid
         uidManager.dropPrivsForever()
 
 # not traced...
@@ -192,7 +194,7 @@ personality_defs['ppc']    = 0x0008
 
 decorate(traceLog(log))
 def condPersonality(per=None):
-    if personality_defs.get(per,None) is None: return
+    if personality_defs.get(per, None) is None: return
     import ctypes
     _libc = ctypes.cdll.LoadLibrary("libc.so.6")
     _libc.personality.argtypes = [ctypes.c_ulong]
@@ -208,23 +210,23 @@ def condPersonality(per=None):
 decorate(traceLog(log))
 def do(command, chrootPath=None, timeout=0, raiseExc=True, returnOutput=0, uidManager=None, uid=None, gid=None, personality=None, *args, **kargs):
     """execute given command outside of chroot"""
-    
+
     logger = kargs.get("logger", log)
     logger.debug("Run cmd: %s" % command)
 
-    def alarmhandler(signum,stackframe):
+    def alarmhandler(signum, stackframe):
         raise commandTimeoutExpired("Timeout(%s) exceeded for command: %s" % (timeout, command))
-    
+
     retval = 0
     logger.debug("Executing timeout(%s): %s" % (timeout, command))
 
-    output=""
-    (r,w) = os.pipe()
+    output = ""
+    (r, w) = os.pipe()
     pid = os.fork()
     if pid: #parent
         rpid = ret = 0
         os.close(w)
-        oldhandler=signal.signal(signal.SIGALRM,alarmhandler)
+        oldhandler = signal.signal(signal.SIGALRM, alarmhandler)
         # timeout=0 means disable alarm signal. no timeout
         signal.alarm(timeout)
 
@@ -241,7 +243,7 @@ def do(command, chrootPath=None, timeout=0, raiseExc=True, returnOutput=0, uidMa
             r_fh.close()
             (rpid, ret) = os.waitpid(pid, 0)
             signal.alarm(0)
-            signal.signal(signal.SIGALRM,oldhandler)
+            signal.signal(signal.SIGALRM, oldhandler)
 
         # kill children for any exception...
         finally:
@@ -251,7 +253,7 @@ def do(command, chrootPath=None, timeout=0, raiseExc=True, returnOutput=0, uidMa
                 os.kill(-pid, signal.SIGKILL)
             except OSError:
                 pass
-            signal.signal(signal.SIGALRM,oldhandler)
+            signal.signal(signal.SIGALRM, oldhandler)
 
         # mask and return just return value, plus child output
         if raiseExc and os.WEXITSTATUS(ret):
@@ -268,7 +270,7 @@ def do(command, chrootPath=None, timeout=0, raiseExc=True, returnOutput=0, uidMa
             os.close(r)
             # become process group leader so that our parent
             # can kill our children
-            os.setpgrp()  
+            os.setpgrp()
 
             condPersonality(personality)
             condChroot(chrootPath, uidManager)
@@ -282,6 +284,6 @@ def do(command, chrootPath=None, timeout=0, raiseExc=True, returnOutput=0, uidMa
                 w.write(line)
                 w.flush()
             w.close()
-            retval=child.wait()
+            retval = child.wait()
         finally:
-            os._exit(os.WEXITSTATUS(retval)) 
+            os._exit(os.WEXITSTATUS(retval))

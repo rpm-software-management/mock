@@ -4,14 +4,16 @@
 # Sections taken from Mach by Thomas Vander Stichele
 # Major reorganization and adaptation by Michael Brown
 # Copyright (C) 2007 Michael E Brown <mebrown@michaels-house.net>
+"""define most of the exceptions used."""
 
 # python library imports
-from exceptions import Exception
+#from exceptions import Exception
 
 # our imports
 
 # classes
 class Error(Exception):
+    "base class for our errors."
     def __init__(self, msg):
         Exception.__init__(self)
         self.msg = msg
@@ -32,36 +34,42 @@ class Error(Exception):
 # 60 = buildroot locked
 
 class BuildError(Error):
+    "rpmbuild failed."
     def __init__(self, msg):
         Error.__init__(self, msg)
         self.msg = msg
         self.resultcode = 10
 
 class RootError(Error):
+    "failed to set up chroot"
     def __init__(self, msg):
         Error.__init__(self, msg)
         self.msg = msg
         self.resultcode = 20
 
-class YumError(Error): 
+class YumError(RootError):
+    "yum failed."
     def __init__(self, msg):
-        Error.__init__(self, msg)
+        RootError.__init__(self, msg)
         self.msg = msg
         self.resultcode = 30
 
 class PkgError(Error):
+    "error with the srpm given to us."
     def __init__(self, msg):
         Error.__init__(self, msg)
         self.msg = msg
         self.resultcode = 40
 
 class BuildRootLocked(Error):
+    "build root in use by another process."
     def __init__(self, msg):
         Error.__init__(self, msg)
         self.msg = msg
         self.resultcode = 60
 
 class BadCmdline(Error):
+    "user gave bad/inconsistent command line."
     def __init__(self, msg):
         Error.__init__(self, msg)
         self.msg = msg

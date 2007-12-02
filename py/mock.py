@@ -18,6 +18,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+"""
+    usage:
+           mock [options] {init|clean}
+           mock [options] [rebuild] /path/to/srpm(s)
+           mock [options] {shell|chroot} <cmd>
+           mock [options] installdeps {SRPM|RPM}
+           mock [options] install PACKAGE
+"""
 
 # library imports
 import ConfigParser
@@ -32,15 +40,15 @@ from optparse import OptionParser
 from peak.util.decorators import decorate
 
 # all of the variables below are substituted by the build system
-__VERSION__="unreleased_version"
-SYSCONFDIR=os.path.join(os.path.dirname(os.path.realpath(sys.argv[0])),"..","etc")
-PYTHONDIR=os.path.dirname(os.path.realpath(sys.argv[0]))
-PKGPYTHONDIR=os.path.join(os.path.dirname(os.path.realpath(sys.argv[0])),"mock")
-MOCKCONFDIR=os.path.join(SYSCONFDIR,"mock")
+__VERSION__ = "unreleased_version"
+SYSCONFDIR = os.path.join(os.path.dirname(os.path.realpath(sys.argv[0])), "..", "etc")
+PYTHONDIR = os.path.dirname(os.path.realpath(sys.argv[0]))
+PKGPYTHONDIR = os.path.join(os.path.dirname(os.path.realpath(sys.argv[0])), "mock")
+MOCKCONFDIR = os.path.join(SYSCONFDIR, "mock")
 # end build system subs
 
 # import all mock.* modules after this.
-sys.path.insert(0,PYTHONDIR)
+sys.path.insert(0, PYTHONDIR)
 
 # set up basic logging until config file can be read
 FORMAT = "%(levelname)s: %(message)s"
@@ -56,88 +64,81 @@ import mock.util
 
 def command_parse(config_opts):
     """return options and args from parsing the command line"""
-    
-    usage = """
-    usage:
-           mock [options] {init|clean}
-           mock [options] [rebuild] /path/to/srpm(s)
-           mock [options] {shell|chroot} <cmd>
-           mock [options] installdeps {SRPM|RPM}
-           mock [options] install PACKAGE
-           """
+
+    usage = __doc__
 
     parser = OptionParser(usage=usage, version=__VERSION__)
-    parser.add_option("--rebuild", action="store_const", const="rebuild", 
+    parser.add_option("--rebuild", action="store_const", const="rebuild",
                       dest="mode", default='rebuild',
                       help="rebuild the specified SRPM(s)")
-    parser.add_option("--chroot", "--shell", action="store_const", 
+    parser.add_option("--chroot", "--shell", action="store_const",
                       const="chroot", dest="mode",
                       help="run the specified command within the chroot."
                            " Default command: /bin/sh")
-    parser.add_option("--clean", action="store_const", const="clean", 
+    parser.add_option("--clean", action="store_const", const="clean",
                       dest="mode",
                       help="completely remove the specified chroot")
     parser.add_option("--init", action="store_const", const="init", dest="mode",
                       help="initialize the chroot, do not build anything")
-    parser.add_option("--installdeps", action="store_const", const="installdeps", 
+    parser.add_option("--installdeps", action="store_const", const="installdeps",
                       dest="mode",
                       help="install build dependencies for a specified SRPM")
-    parser.add_option("--install", action="store_const", const="install", 
+    parser.add_option("--install", action="store_const", const="install",
                       dest="mode",
                       help="install packages using yum")
 
     parser.add_option("-r", action="store", type="string", dest="chroot",
-                      help="chroot name/config file name default: %default", 
+                      help="chroot name/config file name default: %default",
                       default='default')
 
-    parser.add_option("--offline", action="store_false", dest="online", 
+    parser.add_option("--offline", action="store_false", dest="online",
                       default=True,
                       help="activate 'offline' mode.")
 
-    parser.add_option("--no-clean", action ="store_false", dest="clean", 
+    parser.add_option("--no-clean", action ="store_false", dest="clean",
                       help="do not clean chroot before building", default=True)
-    parser.add_option("--cleanup-after", action ="store_true", 
+    parser.add_option("--cleanup-after", action ="store_true",
                       dest="cleanup_after", default=None,
                       help="Clean chroot after building. Use with --resultdir."
                            " Only active for 'rebuild'.")
-    parser.add_option("--no-cleanup-after", action ="store_false", 
+    parser.add_option("--no-cleanup-after", action ="store_false",
                       dest="cleanup_after", default=None,
                       help="Dont clean chroot after building. If automatic"
                            " cleanup is enabled, use this to disable.", )
-    parser.add_option("--arch", action ="store", dest="arch", 
+    parser.add_option("--arch", action ="store", dest="arch",
                       default=None, help="target build arch")
-    parser.add_option("--resultdir", action="store", type="string", 
+    parser.add_option("--resultdir", action="store", type="string",
                       default=None, help="path for resulting files to be put")
-    parser.add_option("--uniqueext", action="store", type="string", 
+    parser.add_option("--uniqueext", action="store", type="string",
                       default=None,
                       help="Arbitrary, unique extension to append to buildroot"
                            " directory name")
-    parser.add_option("--configdir", action="store", dest="configdir", 
+    parser.add_option("--configdir", action="store", dest="configdir",
                       default=None,
                       help="Change where config files are found")
-    parser.add_option("--rpmbuild_timeout", action="store", 
-                      dest="rpmbuild_timeout", type="int", default=None, 
+    parser.add_option("--rpmbuild_timeout", action="store",
+                      dest="rpmbuild_timeout", type="int", default=None,
                       help="Fail build if rpmbuild takes longer than 'timeout'"
                            " seconds ")
 
     # verbosity
-    parser.add_option("-v", "--verbose", action="store_const", const=2, 
+    parser.add_option("-v", "--verbose", action="store_const", const=2,
                       dest="verbose", default=1, help="verbose build")
-    parser.add_option("-q", "--quiet", action="store_const", const=0, 
+    parser.add_option("-q", "--quiet", action="store_const", const=0,
                       dest="verbose", help="quiet build")
 
     # plugins
-    parser.add_option("--enable-plugin", action="append", 
-                      dest="enabled_plugins", type="string", default=[], 
-                      help="Enable plugin. Currently-available plugins: %s" 
+    parser.add_option("--enable-plugin", action="append",
+                      dest="enabled_plugins", type="string", default=[],
+                      help="Enable plugin. Currently-available plugins: %s"
                         % repr(config_opts['plugins']))
-    parser.add_option("--disable-plugin", action="append", 
-                      dest="disabled_plugins", type="string", default=[], 
-                      help="Disable plugin. Currently-available plugins: %s" 
+    parser.add_option("--disable-plugin", action="append",
+                      dest="disabled_plugins", type="string", default=[],
+                      help="Disable plugin. Currently-available plugins: %s"
                            % repr(config_opts['plugins']))
-    
+
     (options, args) = parser.parse_args()
-    if len(args) and args[0] in ('chroot', 'shell', 
+    if len(args) and args[0] in ('chroot', 'shell',
             'rebuild', 'install', 'installdeps', 'init', 'clean'):
         options.mode = args[0]
         args = args[1:]
@@ -146,8 +147,10 @@ def command_parse(config_opts):
 
 decorate(traceLog(log))
 def setup_default_config_opts(config_opts):
+    "sets up default configuration."
     # global
     config_opts['basedir'] = '/var/lib/mock/' # root name is automatically added to this
+    config_opts['resultdir'] = '%(basedir)s/%(root)s/result'
     config_opts['cache_topdir'] = '/var/lib/mock/cache'
     config_opts['clean'] = True
     config_opts['chroothome'] = '/builddir'
@@ -165,11 +168,7 @@ def setup_default_config_opts(config_opts):
     config_opts['online'] = True
 
     config_opts['internal_dev_setup'] = True
-    try:
-        import ctypes
-        config_opts['internal_setarch'] = True
-    except ImportError:
-        config_opts['internal_setarch'] = False
+    config_opts['internal_setarch'] = True
 
     # cleanup_on_* only take effect for separate --resultdir
     # config_opts provides fine-grained control. cmdline only has big hammer
@@ -181,25 +180,30 @@ def setup_default_config_opts(config_opts):
     config_opts['plugin_dir'] = os.path.join(PKGPYTHONDIR, "plugins")
     config_opts['plugin_conf'] = {
             'ccache_enable': True,
-            'ccache_opts': {'max_cache_size': "4G", 'dir': "%(cache_topdir)s/%(root)s/ccache/"},
+            'ccache_opts': {
+                'max_cache_size': "4G",
+                'dir': "%(cache_topdir)s/%(root)s/ccache/"},
             'yum_cache_enable': True,
             'yum_cache_opts': {
-                'max_age_days': 30, 
-                'max_metadata_age_days': 30, 
+                'max_age_days': 30,
+                'max_metadata_age_days': 30,
                 'dir': "%(cache_topdir)s/%(root)s/yum_cache/",
                 'online': True,},
             'root_cache_enable': True,
-            'root_cache_opts': {'max_age_days': 15, 'dir': "%(cache_topdir)s/%(root)s/root_cache/"},
+            'root_cache_opts': {
+                'max_age_days': 15,
+                'dir': "%(cache_topdir)s/%(root)s/root_cache/"},
             'bind_mount_enable': True,
             'bind_mount_opts': {'dirs': [
-                        # specify like this:
-                        # ( '/host/path', '/bind/mount/path/in/chroot/' ),
-                        # ( '/another/host/path', '/another/bind/mount/path/in/chroot/' ),
-                    ]},
+                # specify like this:
+                # ('/host/path', '/bind/mount/path/in/chroot/' ),
+                # ('/another/host/path', '/another/bind/mount/path/in/chroot/'),
+                ]},
             }
 
     # dependent on guest OS
-    config_opts['useradd'] = '/usr/sbin/useradd -o -m -u %(uid)s -g %(gid)s -d %(home)s -n %(user)s' # Fedora/RedHat
+    config_opts['useradd'] = \
+        '/usr/sbin/useradd -o -m -u %(uid)s -g %(gid)s -d %(home)s -n %(user)s'
     config_opts['use_host_resolv'] = True
     config_opts['chroot_setup_cmd'] = 'install buildsys-build'
     config_opts['target_arch'] = 'i386'
@@ -207,12 +211,14 @@ def setup_default_config_opts(config_opts):
     config_opts['more_buildreqs'] = {}
     config_opts['files'] = {}
     config_opts['files']['etc/hosts'] = "127.0.0.1 localhost localhost.localdomain\n"
-    config_opts['macros'] = {'%_topdir': '%s/build' % config_opts['chroothome'],
-                             '%_rpmfilename': '%%{NAME}-%%{VERSION}-%%{RELEASE}.%%{ARCH}.rpm',
-                             }
+    config_opts['macros'] = {
+        '%_topdir': '%s/build' % config_opts['chroothome'],
+        '%_rpmfilename': '%%{NAME}-%%{VERSION}-%%{RELEASE}.%%{ARCH}.rpm',
+        }
 
 decorate(traceLog(log))
 def set_config_opts_per_cmdline(config_opts, options):
+    "takes processed cmdline args and sets config options."
     # do some other options and stuff
     if options.arch:
         config_opts['target_arch'] = options.arch
@@ -228,15 +234,20 @@ def set_config_opts_per_cmdline(config_opts, options):
 
     for i in options.disabled_plugins:
         if i not in config_opts['plugins']:
-            raise mock.exception.BadCmdline("Bad option for '--disable-plugins=%s'. Expecting one of: %s" % (i, config_opts['plugins']))
+            raise mock.exception.BadCmdline(
+                "Bad option for '--disable-plugins=%s'. Expecting one of: %s"
+                % (i, config_opts['plugins']))
         config_opts['plugin_conf']['%s_enable' % i] = False
     for i in options.enabled_plugins:
         if i not in config_opts['plugins']:
-            raise mock.exception.BadCmdline("Bad option for '--enable-plugins=%s'. Expecting one of: %s" % (i, config_opts['plugins']))
+            raise mock.exception.BadCmdline(
+                "Bad option for '--enable-plugins=%s'. Expecting one of: %s"
+                % (i, config_opts['plugins']))
         config_opts['plugin_conf']['%s_enable' % i] = True
 
     if options.cleanup_after and not options.resultdir:
-        raise mock.exception.BadCmdline("Must specify --resultdir when using --cleanup-after")
+        raise mock.exception.BadCmdline(
+            "Must specify --resultdir when using --cleanup-after")
 
     if options.cleanup_after == False:
         config_opts['cleanup_on_success'] = False
@@ -254,17 +265,15 @@ def set_config_opts_per_cmdline(config_opts, options):
     config_opts['online'] = options.online
 
 decorate(traceLog(log))
-def warn_obsolete_config_options(config_opts):
-    pass
-
-decorate(traceLog(log))
 def do_rebuild(config_opts, chroot, srpms):
+    "rebuilds a list of srpms using provided chroot"
     if len(srpms) < 1:
         log.critical("No package specified to rebuild command.")
         sys.exit(50)
 
     # check that everything is kosher. Raises exception on error
-    for hdr in mock.util.yieldSrpmHeaders(srpms): pass
+    for hdr in mock.util.yieldSrpmHeaders(srpms):
+        pass
 
     start = time.time()
     try:
@@ -276,22 +285,25 @@ def do_rebuild(config_opts, chroot, srpms):
             chroot.init()
             chroot.build(srpm, timeout=config_opts['rpmbuild_timeout'])
             elapsed = time.time() - start
-            log.info("Done(%s) Config(%s) %d minutes %d seconds" % (srpm, config_opts['chroot_name'], elapsed//60, elapsed%60))
+            log.info("Done(%s) Config(%s) %d minutes %d seconds"
+                % (srpm, config_opts['chroot_name'], elapsed//60, elapsed%60))
             log.info("Results and/or logs in: %s" % chroot.resultdir)
-    
+
         if config_opts["cleanup_on_success"]:
             log.info("Cleaning up build root ('clean_on_success=True')")
             chroot.clean()
-    except (Exception, KeyboardInterrupt), e:
+    except (Exception, KeyboardInterrupt):
         elapsed = time.time() - start
-        log.error("Exception(%s) Config(%s) %d minutes %d seconds" % (srpm, chroot.sharedRootName, elapsed//60, elapsed%60))
+        log.error("Exception(%s) Config(%s) %d minutes %d seconds"
+            % (srpm, chroot.sharedRootName, elapsed//60, elapsed%60))
         log.info("Results and/or logs in: %s" % chroot.resultdir)
         if config_opts["cleanup_on_failure"]:
             log.info("Cleaning up build root ('clean_on_failure=True')")
             chroot.clean()
         raise
 
-def main(retParams):
+def main(ret):
+    "Main executable entry point."
     # drop unprivleged to parse args, etc.
     #   uidManager saves current real uid/gid which are unpriviledged (callers)
     #   due to suid helper, our current effective uid is 0
@@ -300,12 +312,12 @@ def main(retParams):
     #   setuid wrapper has real uid = unpriv,  effective uid = 0
     #   sudo sets real/effective = 0, and sets env vars
     #   setuid wrapper clears environment, so there wont be any conflict between these two
-    unprivUid=os.getuid()
+    unprivUid = os.getuid()
     if os.environ.get("SUDO_UID") is not None:
-        unprivUid=int(os.environ['SUDO_UID'])
-    unprivGid=os.getgid()
+        unprivUid = int(os.environ['SUDO_UID'])
+    unprivGid = os.getgid()
     if os.environ.get("SUDO_GID") is not None:
-        unprivGid=int(os.environ['SUDO_GID'])
+        unprivGid = int(os.environ['SUDO_GID'])
 
     uidManager = mock.uid.uidManager(unprivUid, unprivGid)
     uidManager._becomeUser(unprivUid, unprivGid)
@@ -315,9 +327,9 @@ def main(retParams):
     config_opts = {}
     setup_default_config_opts(config_opts)
     (options, args) = command_parse(config_opts)
-    
+
     # config path -- can be overridden on cmdline
-    config_path=MOCKCONFDIR
+    config_path = MOCKCONFDIR
     if options.configdir:
         config_path = options.configdir
 
@@ -329,7 +341,7 @@ def main(retParams):
             log.error("Could not find required config file: %s" % cfg)
             if options.chroot == "default": log.error("  Did you forget to specify the chroot to use with '-r'?")
             sys.exit(1)
-    
+
     # configure logging
     config_opts['chroot_name'] = options.chroot
     log_ini = os.path.join(config_path, config_opts["log_config_file"])
@@ -341,8 +353,8 @@ def main(retParams):
         log_cfg = ConfigParser.ConfigParser()
         logging.config.fileConfig(log_ini)
         log_cfg.read(log_ini)
-    except (IOError, OSError, ConfigParser.NoSectionError), e:
-        log.error("Log config file(%s) not correctly configured: %s" % (log_ini, e))
+    except (IOError, OSError, ConfigParser.NoSectionError), exc:
+        log.error("Log config file(%s) not correctly configured: %s" % (log_ini, exc))
         sys.exit(50)
 
     try:
@@ -350,8 +362,8 @@ def main(retParams):
         config_opts['build_log_fmt_str'] = log_cfg.get("formatter_%s" % config_opts['build_log_fmt_name'], "format", raw=1)
         config_opts['root_log_fmt_str'] = log_cfg.get("formatter_%s" % config_opts['root_log_fmt_name'], "format", raw=1)
         config_opts['state_log_fmt_str'] = log_cfg.get("formatter_%s" % config_opts['state_log_fmt_name'], "format", raw=1)
-    except ConfigParser.NoSectionError, e:
-        log.error("Log config file (%s) missing required section: %s" % (log_ini, e))
+    except ConfigParser.NoSectionError, exc:
+        log.error("Log config file (%s) missing required section: %s" % (log_ini, exc))
         sys.exit(50)
 
     if options.verbose == 0:
@@ -362,14 +374,13 @@ def main(retParams):
     elif options.verbose == 2:
         log.handlers[0].setLevel(logging.DEBUG)
         build_log = logging.getLogger("mock.Root.build")
-        build_log.propagate = 1;
+        build_log.propagate = 1
         mock_log = logging.getLogger("mock")
-        mock_log.propagate = 1;
+        mock_log.propagate = 1
 
     # cmdline options override config options
     log.info("mock.py version %s starting..." % __VERSION__)
     set_config_opts_per_cmdline(config_opts, options)
-    warn_obsolete_config_options(config_opts)
 
     # do whatever we're here to do
     chroot = mock.backend.Root(config_opts, uidManager)
@@ -377,8 +388,8 @@ def main(retParams):
     # elevate privs
     uidManager._becomeUser(0, 0)
 
-    retParams["chroot"] = chroot
-    retParams["config_opts"] = config_opts
+    ret["chroot"] = chroot
+    ret["config_opts"] = config_opts
     os.umask(002)
     if options.mode not in ('chroot', 'shell', 'install', 'installdeps') and config_opts['clean']:
         chroot.clean()
@@ -406,7 +417,8 @@ def main(retParams):
             log.critical("You must specify an SRPM file.")
             sys.exit(50)
 
-        for hdr in mock.util.yieldSrpmHeaders(args, plainRpmOk=1): pass
+        for hdr in mock.util.yieldSrpmHeaders(args, plainRpmOk=1):
+            pass
         chroot.tryLockBuildRoot()
         chroot._mountall()
         try:
@@ -430,41 +442,41 @@ if __name__ == '__main__':
     exitStatus = 0
     killOrphans = 1
     try:
-        # sneaky way to ensure that we get passed back parameter even if 
+        # sneaky way to ensure that we get passed back parameter even if
         # we hit an exception.
         retParams = {}
         main(retParams)
 
-    except (SystemExit,), e:
+    except (SystemExit,):
         raise
-        
-    except (KeyboardInterrupt,), e:
+
+    except (KeyboardInterrupt,):
         exitStatus = 7
         log.error("Exiting on user interrupt, <CTRL>-C")
 
-    except (mock.exception.BadCmdline), e:
-        exitStatus = e.resultcode
-        log.error(str(e))
+    except (mock.exception.BadCmdline), exc:
+        exitStatus = exc.resultcode
+        log.error(str(exc))
         killOrphans = 0
 
-    except (mock.exception.BuildRootLocked), e:
-        exitStatus = e.resultcode
-        log.error(str(e))
+    except (mock.exception.BuildRootLocked), exc:
+        exitStatus = exc.resultcode
+        log.error(str(exc))
         killOrphans = 0
 
-    except (mock.exception.Error), e:
-        exitStatus = e.resultcode
-        log.error(str(e))
+    except (mock.exception.Error), exc:
+        exitStatus = exc.resultcode
+        log.error(str(exc))
 
-    except (Exception,), e:
+    except (Exception,), exc:
         exitStatus = 1
-        log.exception(e)
+        log.exception(exc)
 
     if killOrphans and retParams:
         mock.util.orphansKill(retParams["chroot"].rootdir)
 
     # fix for python 2.4 logging module bug:
-    logging.raiseExceptions=0
+    logging.raiseExceptions = 0
     logging.shutdown()
     sys.exit(exitStatus)
 
