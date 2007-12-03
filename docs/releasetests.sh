@@ -44,11 +44,17 @@ time $MOCKCMD --offline --rebuild mock-*.src.rpm
 #
 # Test orphanskill feature
 #
-(pgrep daemontest && echo "Exiting because there is already a daemontest running." && exit 1) || :
+if pgrep daemontest; then
+    echo "Exiting because there is already a daemontest running."
+    exit 1
+fi
 time $MOCKCMD --offline --init
 cp src/daemontest $CHROOT/tmp
 time $MOCKCMD --offline --chroot -- /tmp/daemontest
-(pgrep daemontest && echo "Daemontest FAILED. found a daemontest process running after exit." && exit 1) || :
+if pgrep daemontest; then
+    echo "Daemontest FAILED. found a daemontest process running after exit." 
+    exit 1
+fi
 
 #
 # test init/clean
@@ -56,7 +62,8 @@ time $MOCKCMD --offline --chroot -- /tmp/daemontest
 time $MOCKCMD --offline --clean
 time $MOCKCMD --offline --init
 time $MOCKCMD --offline --install ccache
-[ -e $CHROOT/usr/bin/ccache ] || echo "init/clean test FAILED. ccache not found." && exit 1
+[ -e $CHROOT/usr/bin/ccache ] || echo "init/clean test FAILED. ccache not found."
+[ -e $CHROOT/usr/bin/ccache ] || exit 1
 
 #
 # test old-style cmdline options
@@ -64,7 +71,8 @@ time $MOCKCMD --offline --install ccache
 time $MOCKCMD --offline clean
 time $MOCKCMD --offline init
 time $MOCKCMD --offline install ccache
-[ -e $CHROOT/usr/bin/ccache ] || echo "init/clean test FAILED. ccache not found." && exit 1
+[ -e $CHROOT/usr/bin/ccache ] || echo "init/clean test FAILED. ccache not found."
+[ -e $CHROOT/usr/bin/ccache ] || exit 1
 
 #
 # Test build all configs we ship.
