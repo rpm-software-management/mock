@@ -27,44 +27,44 @@ make src/daemontest
 # most tests below will use this mock command line
 # 
 testConfig=fedora-8-x86_64
-MOCKCMD="time sudo ./py/mock.py --resultdir=$TOP_SRCTREE/mock-unit-test --uniqueext=unittest -r $testConfig"
-CHROOT=/var/lib/mock/$testConfig/root
+MOCKCMD="sudo ./py/mock.py --resultdir=$TOP_SRCTREE/mock-unit-test --uniqueext=unittest -r $testConfig"
+CHROOT=/var/lib/mock/${testConfig}-unittest/root
 
 #
 # pre-populate yum cache for the rest of the commands below
 #
-$MOCKCMD --init
-$MOCKCMD --installdeps mock-*.src.rpm
+time $MOCKCMD --init
+time $MOCKCMD --installdeps mock-*.src.rpm
 
 #
 # Test offline build
 #
-$MOCKCMD --offline --rebuild mock-*.src.rpm
+time $MOCKCMD --offline --rebuild mock-*.src.rpm
 
 #
 # Test orphanskill feature
 #
 (pgrep daemontest && echo "Exiting because there is already a daemontest running." && exit 1) || :
-$MOCKCMD --offline --init
+time $MOCKCMD --offline --init
 cp src/daemontest $CHROOT/tmp
-$MOCKCMD --offline --chroot -- /tmp/daemontest
+time $MOCKCMD --offline --chroot -- /tmp/daemontest
 (pgrep daemontest && echo "Daemontest FAILED. found a daemontest process running after exit." && exit 1) || :
 
 #
 # test init/clean
 #
-$MOCKCMD --offline --clean
-$MOCKCMD --offline --init
-$MOCKCMD --offline --install ccache
-[ -e $CHROOT/usr/bin/ccache ] || (echo "init/clean test FAILED. ccache not found." && exit 1)
+time $MOCKCMD --offline --clean
+time $MOCKCMD --offline --init
+time $MOCKCMD --offline --install ccache
+[ -e $CHROOT/usr/bin/ccache ] || echo "init/clean test FAILED. ccache not found." && exit 1
 
 #
 # test old-style cmdline options
 #
-$MOCKCMD --offline clean
-$MOCKCMD --offline init
-$MOCKCMD --offline install ccache
-[ -e $CHROOT/usr/bin/ccache ] || (echo "init/clean test FAILED. ccache not found." && exit 1)
+time $MOCKCMD --offline clean
+time $MOCKCMD --offline init
+time $MOCKCMD --offline install ccache
+[ -e $CHROOT/usr/bin/ccache ] || echo "init/clean test FAILED. ccache not found." && exit 1
 
 #
 # Test build all configs we ship.
