@@ -6,10 +6,9 @@
 # python library imports
 import logging
 import os
-from peak.util.decorators import decorate
 
 # our imports
-from mock.trace_decorator import traceLog
+from mock.trace_decorator import traceLog, decorate
 
 # set up logging
 log = logging.getLogger("mock.uid")

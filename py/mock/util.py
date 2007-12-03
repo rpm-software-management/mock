@@ -16,11 +16,10 @@ import rpmUtils.transaction
 import shutil
 import signal
 import time
-from peak.util.decorators import decorate
 
 # our imports
 import mock.exception
-from mock.trace_decorator import traceLog
+from mock.trace_decorator import traceLog, decorate
 
 # set up logging
 log = logging.getLogger("mock.util")

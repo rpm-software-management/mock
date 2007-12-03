@@ -37,7 +37,6 @@ import os.path
 import sys
 import time
 from optparse import OptionParser
-from peak.util.decorators import decorate
 
 # all of the variables below are substituted by the build system
 __VERSION__ = "unreleased_version"
@@ -57,7 +56,7 @@ log = logging.getLogger()
 
 # our imports
 import mock.exception
-from mock.trace_decorator import traceLog
+from mock.trace_decorator import traceLog, decorate
 import mock.backend
 import mock.uid
 import mock.util
