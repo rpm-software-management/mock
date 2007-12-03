@@ -17,19 +17,60 @@ DIR=$(cd $(dirname $0); pwd)
 TOP_SRCTREE=$DIR/../
 cd $TOP_SRCTREE
 
-make distcheck ||:
+make distclean ||:
 ./configure
+make distcheck
 make srpm
 make src/daemontest
 
+#
+# most tests below will use this mock command line
+# 
+testConfig=fedora-8-x86_64
+MOCKCMD="time sudo ./py/mock.py --resultdir=$TOP_SRCTREE/mock-unit-test --uniqueext=unittest -r $testConfig"
+CHROOT=/var/lib/mock/$testConfig/root
+
+#
+# pre-populate yum cache for the rest of the commands below
+#
+$MOCKCMD --installdeps mock-*.src.rpm
+
+#
+# Test orphanskill feature
+#
+(pgrep daemontest && echo "Exiting because there is already a daemontest running." && exit 1) || :
+$MOCKCMD --offline --init
+cp src/daemontest $CHROOT/tmp
+$MOCKCMD --offline --chroot -- /tmp/daemontest
+(pgrep daemontest && echo "Daemontest FAILED. found a daemontest process running after exit." && exit 1) || :
+
+#
+# Test offline build
+#
+$MOCKCMD --offline --rebuild mock-*.src.rpm
+
+#
+# test init/clean
+#
+$MOCKCMD --offline --clean
+$MOCKCMD --offline --init
+$MOCKCMD --offline --install ccache
+[ -e $CHROOT/usr/bin/ccache ] || (echo "init/clean test FAILED. ccache not found." && exit 1)
+
+#
+# test old-style cmdline options
+#
+$MOCKCMD --offline clean
+$MOCKCMD --offline init
+$MOCKCMD --offline install ccache
+[ -e $CHROOT/usr/bin/ccache ] || (echo "init/clean test FAILED. ccache not found." && exit 1)
+
+#
+# Test build all configs we ship.
+#
 sudo rm -rf $TOP_SRCTREE/mock-unit-test
 for i in $(ls etc/mock | grep .cfg | grep -v default | grep -v ppc); do
     time sudo ./py/mock.py --resultdir=$TOP_SRCTREE/mock-unit-test --uniqueext=unittest rebuild mock-*.src.rpm  -r $(basename $i .cfg)
 done
 
-(pgrep daemontest && echo "Exiting because there is already a daemontest running." && exit 1) || :
-testConfig=fedora-8-x86_64
-sudo ./py/mock.py -r $testConfig --resultdir=$TOP_SRCTREE/mock-unit-test init
-cp src/daemontest /var/lib/mock/$testConfig/root/tmp/
-sudo ./py/mock.py -r $testConfig --resultdir=$TOP_SRCTREE/mock-unit-test --no-clean -- chroot /tmp/daemontest
-(pgrep daemontest && echo "Daemontest FAILED. found a daemontest process running after exit." && exit 1) || :
+
