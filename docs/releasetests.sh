@@ -33,7 +33,13 @@ CHROOT=/var/lib/mock/$testConfig/root
 #
 # pre-populate yum cache for the rest of the commands below
 #
+$MOCKCMD --init
 $MOCKCMD --installdeps mock-*.src.rpm
+
+#
+# Test offline build
+#
+$MOCKCMD --offline --rebuild mock-*.src.rpm
 
 #
 # Test orphanskill feature
@@ -43,11 +49,6 @@ $MOCKCMD --offline --init
 cp src/daemontest $CHROOT/tmp
 $MOCKCMD --offline --chroot -- /tmp/daemontest
 (pgrep daemontest && echo "Daemontest FAILED. found a daemontest process running after exit." && exit 1) || :
-
-#
-# Test offline build
-#
-$MOCKCMD --offline --rebuild mock-*.src.rpm
 
 #
 # test init/clean
