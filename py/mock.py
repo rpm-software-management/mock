@@ -64,10 +64,7 @@ import mock.util
 
 def command_parse(config_opts):
     """return options and args from parsing the command line"""
-
-    usage = __doc__
-
-    parser = OptionParser(usage=usage, version=__VERSION__)
+    parser = OptionParser(usage=__doc__, version=__VERSION__)
     parser.add_option("--rebuild", action="store_const", const="rebuild",
                       dest="mode", default='rebuild',
                       help="rebuild the specified SRPM(s)")
