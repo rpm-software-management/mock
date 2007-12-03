@@ -20,11 +20,11 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 """
     usage:
-           mock [options] {init|clean}
-           mock [options] [rebuild] /path/to/srpm(s)
-           mock [options] {shell|chroot} <cmd>
-           mock [options] installdeps {SRPM|RPM}
-           mock [options] install PACKAGE
+           mock [options] {--init|--clean}
+           mock [options] [--rebuild] /path/to/srpm(s)
+           mock [options] {--shell|--chroot} <cmd>
+           mock [options] --installdeps {SRPM|RPM}
+           mock [options] --install PACKAGE
 """
 
 # library imports
