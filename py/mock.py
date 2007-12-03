@@ -315,6 +315,8 @@ def main(ret):
     unprivUid = os.getuid()
     if os.environ.get("SUDO_UID") is not None:
         unprivUid = int(os.environ['SUDO_UID'])
+        groups = [ g[2] for g in grp.getgrall() if os.environ.get("SUDO_USER") in g[3]]
+        os.setgroups(groups)
     unprivGid = os.getgid()
     if os.environ.get("SUDO_GID") is not None:
         unprivGid = int(os.environ['SUDO_GID'])
