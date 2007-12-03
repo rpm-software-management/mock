@@ -6,7 +6,7 @@
 import logging
 import os
 import sys
-from peak.util.decorators import rewrap
+from peak.util.decorators import rewrap, decorate
 
 moduleLog = logging.getLogger("mock.trace_decorator")
 

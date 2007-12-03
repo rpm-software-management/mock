@@ -13,12 +13,11 @@ import logging
 import os
 import shutil
 import stat
-from peak.util.decorators import decorate
 
 # our imports
 import mock.util
 import mock.exception
-from mock.trace_decorator import traceLog
+from mock.trace_decorator import traceLog, decorate
 
 # set up logging
 moduleLog = logging.getLogger("mock")
