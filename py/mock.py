@@ -410,7 +410,9 @@ def main(ret):
             if config_opts['internal_setarch']:
                 mock.util.condPersonality(config_opts['target_arch'])
             cmd = ' '.join(args)
-            os.system("PS1='mock-chroot> ' /usr/sbin/chroot %s %s" % (chroot.rootdir, cmd))
+            status = os.system("PS1='mock-chroot> ' /usr/sbin/chroot %s %s" % (chroot.rootdir, cmd))
+            ret['exitStatus'] = os.WEXITSTATUS(status)
+
         finally:
             chroot._umountall()
 
@@ -448,6 +450,7 @@ if __name__ == '__main__':
         # we hit an exception.
         retParams = {}
         main(retParams)
+        exitStatus = retParams.get("exitStatus", exitStatus)
 
     except (SystemExit,):
         raise
