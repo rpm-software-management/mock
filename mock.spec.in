@@ -64,8 +64,10 @@ fi
 %attr(02775, root, mock) %dir /var/lib/mock
 
 %changelog
-* Sat Dec 01 2007 Michael Brown <mebrown@michaels-house.net> - 0.8.12-1
+* Mon Dec 03 2007 Michael Brown <mebrown@michaels-house.net> - 0.8.12-1
 - fix builds of multiple srpms
+- fix 'mock install'
+- use python-decoratortools for better python 2.3 back compat
 
 * Thu Nov 29 2007 Clark Williams <williams@redhat.com> - 0.8.11-1
 - fixes from mebrown:

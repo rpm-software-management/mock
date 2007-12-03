@@ -1,4 +1,23 @@
 2007-12-01  Michael Brown <mebrown@michaels-house.net>
+	* configure.ac
+	remove unnecessary configure items to speed configure
+	* daemontest.c
+	fix compile warnings
+	* doc/releasetests.sh
+	more comprehensive release tests
+	* decorator.py
+	remove our decorator.py in favor of std python-decoratortools
+	* various
+	pylint/pychecker recommendations
+	make decorator syntax compatible with python 2.3 (for RHEL4 porting...)
+	fix 'mock install'
+	* mock.py
+	popagate chroot/shell command exit codes to caller
+	init groups list if we are called by sudo so we have access to
+		all directories caller does
+	
+
+2007-12-01  Michael Brown <mebrown@michaels-house.net>
 	* backend.py
 	fixed build of multiple srpms on one cmdline
 
