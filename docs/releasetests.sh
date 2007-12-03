@@ -78,7 +78,7 @@ time $MOCKCMD --offline --install ccache
 if [ ! -e $CHROOT/usr/bin/ccache ]; then
     echo "init/clean test FAILED. ccache not found."
     exit 1
-exit
+fi
 
 #
 # test old-style cmdline options
@@ -89,7 +89,7 @@ time $MOCKCMD --offline install ccache
 if [ ! -e $CHROOT/usr/bin/ccache ]; then
     echo "init/clean test FAILED. ccache not found."
     exit 1
-exit
+fi
 
 #
 # Test build all configs we ship.
