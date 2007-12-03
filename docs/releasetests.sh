@@ -35,11 +35,19 @@ CHROOT=/var/lib/mock/${testConfig}-unittest/root
 #
 time $MOCKCMD --init
 time $MOCKCMD --installdeps mock-*.src.rpm
+if [ ! -e $CHROOT/usr/include/python* ]; then
+    echo "installdeps test FAILED. could not find /usr/include/python*"
+    exit 1
+fi
 
 #
 # Test offline build
 #
 time $MOCKCMD --offline --rebuild mock-*.src.rpm
+if [ ! -e mock-unit-test/mock-*.x86_64.rpm ]; then
+    echo "rebuild test FAILED. could not find mock-unit-test/mock-*.x86_64.rpm"
+    exit 1
+fi
 
 #
 # Test orphanskill feature
@@ -60,10 +68,17 @@ fi
 # test init/clean
 #
 time $MOCKCMD --offline --clean
+if [ -e $CHROOT ]; then
+    echo "clean test FAILED. still found $CHROOT dir."
+    exit 1
+fi
+
 time $MOCKCMD --offline --init
 time $MOCKCMD --offline --install ccache
-[ -e $CHROOT/usr/bin/ccache ] || echo "init/clean test FAILED. ccache not found."
-[ -e $CHROOT/usr/bin/ccache ] || exit 1
+if [ ! -e $CHROOT/usr/bin/ccache ]; then
+    echo "init/clean test FAILED. ccache not found."
+    exit 1
+exit
 
 #
 # test old-style cmdline options
@@ -71,8 +86,10 @@ time $MOCKCMD --offline --install ccache
 time $MOCKCMD --offline clean
 time $MOCKCMD --offline init
 time $MOCKCMD --offline install ccache
-[ -e $CHROOT/usr/bin/ccache ] || echo "init/clean test FAILED. ccache not found."
-[ -e $CHROOT/usr/bin/ccache ] || exit 1
+if [ ! -e $CHROOT/usr/bin/ccache ]; then
+    echo "init/clean test FAILED. ccache not found."
+    exit 1
+exit
 
 #
 # Test build all configs we ship.
