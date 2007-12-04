@@ -106,6 +106,12 @@ def command_parse(config_opts):
     parser.add_option("--define", action="append", dest="rpmmacros",
                       default=[], type="string", metavar="'MACRO EXPR'",
                       help="define an rpm macro (may be used more than once)")
+    parser.add_option("--with", action="append", dest="rpmwith",
+                      default=[], type="string", metavar="option",
+                      help="enable configure option for build (may be used more than once)")
+    parser.add_option("--without", action="append", dest="rpmwithout",
+                      default=[], type="string", metavar="option",
+                      help="disable configure option for build (may be used more than once)")
     parser.add_option("--resultdir", action="store", type="string",
                       default=None, help="path for resulting files to be put")
     parser.add_option("--uniqueext", action="store", type="string",
@@ -223,6 +229,12 @@ def set_config_opts_per_cmdline(config_opts, options, args):
         config_opts['target_arch'] = options.arch
     if not options.clean:
         config_opts['clean'] = options.clean
+
+    for option in options.rpmwith:
+        options.rpmmacros.append("_with_%s 1" % option)
+
+    for option in options.rpmwithout:
+        options.rpmmacros.append("_with_%s 0" % option)
 
     for macro in options.rpmmacros:
         try:

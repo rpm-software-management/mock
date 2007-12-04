@@ -59,7 +59,17 @@ Specify target build arch.
 \fB\-\-define=\fR"\fIMACRO EXPR\fP"
 Specify macro definitions used for the build.  This option may be used multiple times, just as the rpmbuild \-\-define option can be.  For example:
 
-\fB\-\-define="with_extra_cheese 1" \-\-define="packager Monkey"\fR
+\fB\-\-define "with_extra_cheese 1" \-\-define="packager Monkey"\fR
+.TP 
+\fB\-\-with=\fR\fIOPTION\fP
+Enable configure OPTION for build.  This option may be used multiple times.  For example:
+
+\fB\-\-with extra_cheese\fR
+.TP 
+\fB\-\-without=\fR\fIOPTION\fP
+Disable configure OPTION for build.  This option may be used multiple times.  For example:
+
+\fB\-\-without anchovies\fR
 .TP 
 \fB\-\-resultdir=\fR\fIRESULTDIR\fP
 Change directory where resulting files (RPMs and build logs) are written. Resultdir can contain python-string substitutions for any variable in the chroot config. For example:
