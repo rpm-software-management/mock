@@ -103,6 +103,9 @@ def command_parse(config_opts):
                            " cleanup is enabled, use this to disable.", )
     parser.add_option("--arch", action ="store", dest="arch",
                       default=None, help="target build arch")
+    parser.add_option("--define", action="append", dest="rpmmacros",
+                      default=[], type="string", metavar="'NAME VALUE'",
+                      help="define an rpm macro (may be used more than once)")
     parser.add_option("--resultdir", action="store", type="string",
                       default=None, help="path for resulting files to be put")
     parser.add_option("--uniqueext", action="store", type="string",
@@ -220,6 +223,17 @@ def set_config_opts_per_cmdline(config_opts, options, args):
         config_opts['target_arch'] = options.arch
     if not options.clean:
         config_opts['clean'] = options.clean
+
+    for macro in options.rpmmacros:
+        try:
+            k, v = macro.split(" ", 1)
+            if not k.startswith('%'):
+                k = '%%%s' % k
+            config_opts['macros'].update({k: v})
+        except:
+            raise mock.exception.BadCmdline(
+                "Bad option for '--define' (%s).  Use --define 'name value'"
+                % macro)
 
     if options.resultdir:
         config_opts['resultdir'] = os.path.expanduser(options.resultdir)
