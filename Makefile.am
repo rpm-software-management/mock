@@ -70,19 +70,27 @@ install-exec-hook:
                 perl -p -i -e 's|^LIBDIR =.*|PKGDATADIR="$(libdir)"|' $$file        ;\
         done
 
+TOPDIR := $(shell cd $(top_builddir);pwd)
+BUILDDIR = $(TOPDIR)/_rpmbuild
+RPMDIR = $(TOPDIR)
+SOURCEDIR = $(TOPDIR)
+SPECDIR = $(TOPDIR)
+SRCRPMDIR = $(TOPDIR)
+
+RPM_DEFINES = --define "_topdir $(TOPDIR)" \
+		--define "_builddir $(BUILDDIR)" \
+		--define "_rpmdir $(RPMDIR)" \
+		--define "_sourcedir $(SOURCEDIR)" \
+		--define "_specdir $(SPECDIR)" \
+		--define "_srcrpmdir $(SRCRPMDIR)"
+
 .PHONY: rpm srpm
 rpm: dist
-	BLD_DIR=$$(mktemp -d /tmp/rpmbuild-$$$$-XXXXXX); \
-	mkdir -p $$BLD_DIR/SOURCES $$BLD_DIR/BUILD $$BLD_DIR/RPMS $$BLD_DIR/RPMS/i386 $$BLD_DIR/RPMS/noarch $$BLD_DIR/SRPMS $$BLD_DIR/SPECS ;\
-	rpmbuild --define "_topdir $$BLD_DIR" -ta --nodeps $(RELEASE_STRING).tar.gz  ;\
-	cp $$BLD_DIR/SRPMS/*rpm .       ;\
-	cp $$BLD_DIR/RPMS/*/*rpm .       ;\
-	rm -rf $$BLD_DIR
+	mkdir -p $(BUILDDIR)
+	rpmbuild $(RPM_DEFINES) -ba --nodeps $(PACKAGE_NAME).spec
+	rm -rf $(BUILDDIR)
 
 srpm: dist
-	BLD_DIR=$$(mktemp -d /tmp/rpmbuild-$$$$-XXXXXX); \
-	mkdir -p $$BLD_DIR/SOURCES $$BLD_DIR/BUILD $$BLD_DIR/RPMS $$BLD_DIR/RPMS/i386 $$BLD_DIR/RPMS/noarch $$BLD_DIR/SRPMS $$BLD_DIR/SPECS ;\
-	rpmbuild --define "_topdir $$BLD_DIR" -ts --nodeps $(RELEASE_STRING).tar.gz  ;\
-	cp $$BLD_DIR/SRPMS/*rpm .       ;\
-	rm -rf $$BLD_DIR
-
+	mkdir -p $(BUILDDIR)
+	rpmbuild $(RPM_DEFINES) -ba --nodeps $(PACKAGE_NAME).spec
+	rm -rf $(BUILDDIR)
