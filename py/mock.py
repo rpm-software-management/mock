@@ -213,7 +213,7 @@ def setup_default_config_opts(config_opts):
         }
 
 decorate(traceLog(log))
-def set_config_opts_per_cmdline(config_opts, options):
+def set_config_opts_per_cmdline(config_opts, options, args):
     "takes processed cmdline args and sets config options."
     # do some other options and stuff
     if options.arch:
@@ -244,6 +244,10 @@ def set_config_opts_per_cmdline(config_opts, options):
     if options.cleanup_after and not options.resultdir:
         raise mock.exception.BadCmdline(
             "Must specify --resultdir when using --cleanup-after")
+
+    if len(args) > 1 and not options.resultdir:
+        raise mock.exception.BadCmdline(
+            "Must specify --resultdir when building multiple RPMS.")
 
     if options.cleanup_after == False:
         config_opts['cleanup_on_success'] = False
@@ -378,7 +382,7 @@ def main(ret):
 
     # cmdline options override config options
     log.info("mock.py version %s starting..." % __VERSION__)
-    set_config_opts_per_cmdline(config_opts, options)
+    set_config_opts_per_cmdline(config_opts, options, args)
 
     # do whatever we're here to do
     chroot = mock.backend.Root(config_opts, uidManager)
