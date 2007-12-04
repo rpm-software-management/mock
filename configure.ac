@@ -9,7 +9,7 @@ AC_INIT([mock],[0.8.12])
 temp_RELEASE_NAME=mock
 temp_RELEASE_MAJOR=0
 temp_RELEASE_MINOR=8
-temp_RELEASE_SUBLEVEL=12
+temp_RELEASE_SUBLEVEL=13
 temp_RELEASE_EXTRALEVEL=
 
 ####################################

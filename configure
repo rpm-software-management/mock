@@ -1949,7 +1949,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 temp_RELEASE_NAME=mock
 temp_RELEASE_MAJOR=0
 temp_RELEASE_MINOR=8
-temp_RELEASE_SUBLEVEL=12
+temp_RELEASE_SUBLEVEL=13
 temp_RELEASE_EXTRALEVEL=
 
 ####################################
