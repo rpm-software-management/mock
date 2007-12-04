@@ -64,6 +64,13 @@ fi
 %attr(02775, root, mock) %dir /var/lib/mock
 
 %changelog
+* Tue Dec 04 2007 Michael Brown <mebrown@michaels-house.net> - 0.8.14-1
+- fix traceback when cache dir was not found
+
+* Tue Dec 04 2007 Michael Brown <mebrown@michaels-house.net> - 0.8.13-1
+- brown-paper-bag bug where built rpm didnt work due to lack of path 
+  substitution in mock.py
+
 * Mon Dec 03 2007 Michael Brown <mebrown@michaels-house.net> - 0.8.12-1
 - fix builds of multiple srpms
 - fix 'mock install'
