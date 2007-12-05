@@ -35,6 +35,9 @@ testConfig=fedora-8-x86_64
 MOCKCMD="sudo ./py/mock.py --resultdir=$TOP_SRCTREE/mock-unit-test --uniqueext=unittest -r $testConfig"
 CHROOT=/var/lib/mock/${testConfig}-unittest/root
 
+# clear out any old test results
+sudo rm -rf $TOP_SRCTREE/mock-unit-test
+
 #
 # pre-populate yum cache for the rest of the commands below
 #
@@ -99,7 +102,6 @@ fi
 #
 # Test build all configs we ship.
 #
-sudo rm -rf $TOP_SRCTREE/mock-unit-test
 for i in $(ls etc/mock | grep .cfg | grep -v default | grep -v ppc); do
     time sudo ./py/mock.py --resultdir=$TOP_SRCTREE/mock-unit-test --uniqueext=unittest rebuild mock-*.src.rpm  -r $(basename $i .cfg)
 done
