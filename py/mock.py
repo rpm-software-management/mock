@@ -103,6 +103,15 @@ def command_parse(config_opts):
                            " cleanup is enabled, use this to disable.", )
     parser.add_option("--arch", action ="store", dest="arch",
                       default=None, help="target build arch")
+    parser.add_option("--define", action="append", dest="rpmmacros",
+                      default=[], type="string", metavar="'MACRO EXPR'",
+                      help="define an rpm macro (may be used more than once)")
+    parser.add_option("--with", action="append", dest="rpmwith",
+                      default=[], type="string", metavar="option",
+                      help="enable configure option for build (may be used more than once)")
+    parser.add_option("--without", action="append", dest="rpmwithout",
+                      default=[], type="string", metavar="option",
+                      help="disable configure option for build (may be used more than once)")
     parser.add_option("--resultdir", action="store", type="string",
                       default=None, help="path for resulting files to be put")
     parser.add_option("--uniqueext", action="store", type="string",
@@ -213,13 +222,30 @@ def setup_default_config_opts(config_opts):
         }
 
 decorate(traceLog(log))
-def set_config_opts_per_cmdline(config_opts, options):
+def set_config_opts_per_cmdline(config_opts, options, args):
     "takes processed cmdline args and sets config options."
     # do some other options and stuff
     if options.arch:
         config_opts['target_arch'] = options.arch
     if not options.clean:
         config_opts['clean'] = options.clean
+
+    for option in options.rpmwith:
+        options.rpmmacros.append("_with_%s 1" % option)
+
+    for option in options.rpmwithout:
+        options.rpmmacros.append("_with_%s 0" % option)
+
+    for macro in options.rpmmacros:
+        try:
+            k, v = macro.split(" ", 1)
+            if not k.startswith('%'):
+                k = '%%%s' % k
+            config_opts['macros'].update({k: v})
+        except:
+            raise mock.exception.BadCmdline(
+                "Bad option for '--define' (%s).  Use --define 'macro expr'"
+                % macro)
 
     if options.resultdir:
         config_opts['resultdir'] = os.path.expanduser(options.resultdir)
@@ -244,6 +270,10 @@ def set_config_opts_per_cmdline(config_opts, options):
     if options.cleanup_after and not options.resultdir:
         raise mock.exception.BadCmdline(
             "Must specify --resultdir when using --cleanup-after")
+
+    if len(args) > 1 and not options.resultdir:
+        raise mock.exception.BadCmdline(
+            "Must specify --resultdir when building multiple RPMS.")
 
     if options.cleanup_after == False:
         config_opts['cleanup_on_success'] = False
@@ -378,7 +408,7 @@ def main(ret):
 
     # cmdline options override config options
     log.info("mock.py version %s starting..." % __VERSION__)
-    set_config_opts_per_cmdline(config_opts, options)
+    set_config_opts_per_cmdline(config_opts, options, args)
 
     # do whatever we're here to do
     chroot = mock.backend.Root(config_opts, uidManager)
