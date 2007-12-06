@@ -36,12 +36,13 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 bin_PROGRAMS =
 subdir = .
-DIST_COMMON = README $(am__configure_deps) $(dist_mocketc_DATA) \
+DIST_COMMON = README $(am__configure_deps) $(dist_sbin_SCRIPTS) \
 	$(pkgpython_PYTHON) $(plugins_PYTHON) \
 	$(srcdir)/${PACKAGE_NAME}.spec.in $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in $(top_srcdir)/configure AUTHORS COPYING \
-	ChangeLog INSTALL NEWS build/config.guess build/config.sub \
-	build/depcomp build/install-sh build/missing build/py-compile
+	ChangeLog INSTALL NEWS build/compile build/config.guess \
+	build/config.sub build/depcomp build/install-sh \
+	build/ltmain.sh build/missing build/py-compile
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
@@ -56,8 +57,8 @@ am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(sbindir)" \
 	"$(DESTDIR)$(mocketcdir)" "$(DESTDIR)$(pamdir)"
 binPROGRAMS_INSTALL = $(INSTALL_PROGRAM)
 PROGRAMS = $(bin_PROGRAMS)
-sbinSCRIPT_INSTALL = $(INSTALL_SCRIPT)
-SCRIPTS = $(sbin_SCRIPTS)
+dist_sbinSCRIPT_INSTALL = $(INSTALL_SCRIPT)
+SCRIPTS = $(dist_sbin_SCRIPTS)
 SOURCES =
 DIST_SOURCES =
 RECURSIVE_TARGETS = all-recursive check-recursive dvi-recursive \
@@ -80,9 +81,9 @@ man1dir = $(mandir)/man1
 NROFF = nroff
 MANS = $(man_MANS)
 consoleDATA_INSTALL = $(INSTALL_DATA)
-dist_mocketcDATA_INSTALL = $(INSTALL_DATA)
+mocketcDATA_INSTALL = $(INSTALL_DATA)
 pamDATA_INSTALL = $(INSTALL_DATA)
-DATA = $(console_DATA) $(dist_mocketc_DATA) $(pam_DATA)
+DATA = $(console_DATA) $(mocketc_DATA) $(pam_DATA)
 RECURSIVE_CLEAN_TARGETS = mostlyclean-recursive clean-recursive	\
   distclean-recursive maintainer-clean-recursive
 ETAGS = etags
@@ -197,10 +198,10 @@ CLEANFILES = mock-*.tar.gz mock-*.tar.bz2 mock-*.rpm _buildtemp \
 	version $(EXTRA_PROGRAMS) py/*.pyc py/mock/*.pyc \
 	py/mock/plugins/*.pyc
 DISTCLEANFILES = *~
-EXTRA_DIST = docs buildsys-build.spec-template mock.spec
+EXTRA_DIST = docs buildsys-build.spec-template mock.spec etc
 mocketcdir = $(sysconfdir)/mock
-dist_mocketc_DATA = $(wildcard $(top_srcdir)/etc/mock/*.cfg) $(top_srcdir)/etc/mock/logging.ini
-sbin_SCRIPTS = py/mock.py
+mocketc_DATA = $(wildcard $(top_srcdir)/etc/mock/*.cfg) $(top_srcdir)/etc/mock/logging.ini
+dist_sbin_SCRIPTS = py/mock.py
 man_MANS = docs/mock.1
 pamdir = $(sysconfdir)/pam.d/
 pam_DATA = etc/pam/mock
@@ -221,7 +222,7 @@ pkgpython_PYTHON = \
 	py/mock/trace_decorator.py  \
 	py/mock/uid.py 
 
-REPLACE_VARS_ON_INSTALL = $(sbindir)/mock
+REPLACE_VARS_ON_INSTALL = $(sbindir)/mock.py
 TOPDIR := $(shell cd $(top_builddir);pwd)
 BUILDDIR = $(TOPDIR)/_rpmbuild
 RPMDIR = $(TOPDIR)
@@ -296,21 +297,21 @@ uninstall-binPROGRAMS:
 
 clean-binPROGRAMS:
 	-test -z "$(bin_PROGRAMS)" || rm -f $(bin_PROGRAMS)
-install-sbinSCRIPTS: $(sbin_SCRIPTS)
+install-dist_sbinSCRIPTS: $(dist_sbin_SCRIPTS)
 	@$(NORMAL_INSTALL)
 	test -z "$(sbindir)" || $(MKDIR_P) "$(DESTDIR)$(sbindir)"
-	@list='$(sbin_SCRIPTS)'; for p in $$list; do \
+	@list='$(dist_sbin_SCRIPTS)'; for p in $$list; do \
 	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
 	  if test -f $$d$$p; then \
 	    f=`echo "$$p" | sed 's|^.*/||;$(transform)'`; \
-	    echo " $(sbinSCRIPT_INSTALL) '$$d$$p' '$(DESTDIR)$(sbindir)/$$f'"; \
-	    $(sbinSCRIPT_INSTALL) "$$d$$p" "$(DESTDIR)$(sbindir)/$$f"; \
+	    echo " $(dist_sbinSCRIPT_INSTALL) '$$d$$p' '$(DESTDIR)$(sbindir)/$$f'"; \
+	    $(dist_sbinSCRIPT_INSTALL) "$$d$$p" "$(DESTDIR)$(sbindir)/$$f"; \
 	  else :; fi; \
 	done
 
-uninstall-sbinSCRIPTS:
+uninstall-dist_sbinSCRIPTS:
 	@$(NORMAL_UNINSTALL)
-	@list='$(sbin_SCRIPTS)'; for p in $$list; do \
+	@list='$(dist_sbin_SCRIPTS)'; for p in $$list; do \
 	  f=`echo "$$p" | sed 's|^.*/||;$(transform)'`; \
 	  echo " rm -f '$(DESTDIR)$(sbindir)/$$f'"; \
 	  rm -f "$(DESTDIR)$(sbindir)/$$f"; \
@@ -433,19 +434,19 @@ uninstall-consoleDATA:
 	  echo " rm -f '$(DESTDIR)$(consoledir)/$$f'"; \
 	  rm -f "$(DESTDIR)$(consoledir)/$$f"; \
 	done
-install-dist_mocketcDATA: $(dist_mocketc_DATA)
+install-mocketcDATA: $(mocketc_DATA)
 	@$(NORMAL_INSTALL)
 	test -z "$(mocketcdir)" || $(MKDIR_P) "$(DESTDIR)$(mocketcdir)"
-	@list='$(dist_mocketc_DATA)'; for p in $$list; do \
+	@list='$(mocketc_DATA)'; for p in $$list; do \
 	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
 	  f=$(am__strip_dir) \
-	  echo " $(dist_mocketcDATA_INSTALL) '$$d$$p' '$(DESTDIR)$(mocketcdir)/$$f'"; \
-	  $(dist_mocketcDATA_INSTALL) "$$d$$p" "$(DESTDIR)$(mocketcdir)/$$f"; \
+	  echo " $(mocketcDATA_INSTALL) '$$d$$p' '$(DESTDIR)$(mocketcdir)/$$f'"; \
+	  $(mocketcDATA_INSTALL) "$$d$$p" "$(DESTDIR)$(mocketcdir)/$$f"; \
 	done
 
-uninstall-dist_mocketcDATA:
+uninstall-mocketcDATA:
 	@$(NORMAL_UNINSTALL)
-	@list='$(dist_mocketc_DATA)'; for p in $$list; do \
+	@list='$(mocketc_DATA)'; for p in $$list; do \
 	  f=$(am__strip_dir) \
 	  echo " rm -f '$(DESTDIR)$(mocketcdir)/$$f'"; \
 	  rm -f "$(DESTDIR)$(mocketcdir)/$$f"; \
@@ -794,13 +795,12 @@ info: info-recursive
 
 info-am:
 
-install-data-am: install-consoleDATA install-dist_mocketcDATA \
-	install-man install-pamDATA install-pkgpythonPYTHON \
-	install-pluginsPYTHON
+install-data-am: install-consoleDATA install-man install-mocketcDATA \
+	install-pamDATA install-pkgpythonPYTHON install-pluginsPYTHON
 
 install-dvi: install-dvi-recursive
 
-install-exec-am: install-binPROGRAMS install-sbinSCRIPTS
+install-exec-am: install-binPROGRAMS install-dist_sbinSCRIPTS
 	@$(NORMAL_INSTALL)
 	$(MAKE) $(AM_MAKEFLAGS) install-exec-hook
 
@@ -835,9 +835,9 @@ ps: ps-recursive
 ps-am:
 
 uninstall-am: uninstall-binPROGRAMS uninstall-consoleDATA \
-	uninstall-dist_mocketcDATA uninstall-man uninstall-pamDATA \
-	uninstall-pkgpythonPYTHON uninstall-pluginsPYTHON \
-	uninstall-sbinSCRIPTS
+	uninstall-dist_sbinSCRIPTS uninstall-man uninstall-mocketcDATA \
+	uninstall-pamDATA uninstall-pkgpythonPYTHON \
+	uninstall-pluginsPYTHON
 
 uninstall-man: uninstall-man1
 
@@ -851,20 +851,20 @@ uninstall-man: uninstall-man1
 	distclean-generic distclean-tags distcleancheck distdir \
 	distuninstallcheck dvi dvi-am html html-am info info-am \
 	install install-am install-binPROGRAMS install-consoleDATA \
-	install-data install-data-am install-dist_mocketcDATA \
+	install-data install-data-am install-dist_sbinSCRIPTS \
 	install-dvi install-dvi-am install-exec install-exec-am \
 	install-exec-hook install-html install-html-am install-info \
-	install-info-am install-man install-man1 install-pamDATA \
-	install-pdf install-pdf-am install-pkgpythonPYTHON \
-	install-pluginsPYTHON install-ps install-ps-am \
-	install-sbinSCRIPTS install-strip installcheck installcheck-am \
+	install-info-am install-man install-man1 install-mocketcDATA \
+	install-pamDATA install-pdf install-pdf-am \
+	install-pkgpythonPYTHON install-pluginsPYTHON install-ps \
+	install-ps-am install-strip installcheck installcheck-am \
 	installdirs installdirs-am maintainer-clean \
 	maintainer-clean-generic mostlyclean mostlyclean-generic pdf \
 	pdf-am ps ps-am tags tags-recursive uninstall uninstall-am \
 	uninstall-binPROGRAMS uninstall-consoleDATA \
-	uninstall-dist_mocketcDATA uninstall-man uninstall-man1 \
-	uninstall-pamDATA uninstall-pkgpythonPYTHON \
-	uninstall-pluginsPYTHON uninstall-sbinSCRIPTS
+	uninstall-dist_sbinSCRIPTS uninstall-man uninstall-man1 \
+	uninstall-mocketcDATA uninstall-pamDATA \
+	uninstall-pkgpythonPYTHON uninstall-pluginsPYTHON
 
 install-exec-hook:
 	for i in $(REPLACE_VARS_ON_INSTALL); do      \
@@ -876,6 +876,7 @@ install-exec-hook:
                 perl -p -i -e 's|^PKGDATADIR =.*|PKGDATADIR="$(pkgdatadir)"|' $$file        ;\
                 perl -p -i -e 's|^LIBDIR =.*|PKGDATADIR="$(libdir)"|' $$file        ;\
         done
+	mv $(DESTDIR)/$(sbindir)/mock.py $(DESTDIR)/$(sbindir)/mock
 
 .PHONY: rpm srpm
 rpm: dist

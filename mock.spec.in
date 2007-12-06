@@ -35,6 +35,7 @@ make
 rm -rf $RPM_BUILD_ROOT
 make DESTDIR=$RPM_BUILD_ROOT install
 mkdir -p $RPM_BUILD_ROOT/var/lib/mock
+ln -s consolehelper $RPM_BUILD_ROOT/usr/bin/mock
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -46,10 +47,12 @@ fi
 
 %files
 %defattr(-, root, root)
-%doc README ChangeLog buildsys-build.spec-template
+
+# executables
+%{_bindir}/mock
+%attr(0755, root, mock) %{_sbindir}/mock
 
 # python stuff
-%{_sbindir}/mock.py
 %{python_sitelib}/*
 
 # config files
@@ -59,7 +62,11 @@ fi
 %config(noreplace) %{_sysconfdir}/pam.d/%{name}
 %config(noreplace) %{_sysconfdir}/security/console.apps/%{name}
 
+# docs
 %{_mandir}/man1/mock.1*
+%doc README ChangeLog buildsys-build.spec-template
+
+# build dir
 %attr(02775, root, mock) %dir /var/lib/mock
 
 %changelog

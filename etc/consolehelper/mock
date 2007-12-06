@@ -1,4 +1,4 @@
 USER=root
-PROGRAM=/usr/sbin/mock.py
+PROGRAM=/usr/sbin/mock
 SESSION=false
 FALLBACK=false

@@ -27,10 +27,10 @@ bin_PROGRAMS=
 CLEANFILES += $(EXTRA_PROGRAMS)
 
 mocketcdir = $(sysconfdir)/mock
-dist_mocketc_DATA = $(wildcard $(top_srcdir)/etc/mock/*.cfg) $(top_srcdir)/etc/mock/logging.ini
+mocketc_DATA = $(wildcard $(top_srcdir)/etc/mock/*.cfg) $(top_srcdir)/etc/mock/logging.ini
 
-EXTRA_DIST += docs buildsys-build.spec-template mock.spec
-sbin_SCRIPTS = py/mock.py
+EXTRA_DIST += docs buildsys-build.spec-template mock.spec etc
+dist_sbin_SCRIPTS = py/mock.py
 man_MANS = docs/mock.1
 
 pamdir = $(sysconfdir)/pam.d/
@@ -56,7 +56,7 @@ pkgpython_PYTHON = \
 
 CLEANFILES += py/*.pyc py/mock/*.pyc py/mock/plugins/*.pyc
 
-REPLACE_VARS_ON_INSTALL=$(sbindir)/mock
+REPLACE_VARS_ON_INSTALL=$(sbindir)/mock.py
 install-exec-hook:
 	for i in $(REPLACE_VARS_ON_INSTALL); do      \
 		file=$(DESTDIR)/$$i			;\
@@ -67,6 +67,7 @@ install-exec-hook:
                 perl -p -i -e 's|^PKGDATADIR =.*|PKGDATADIR="$(pkgdatadir)"|' $$file        ;\
                 perl -p -i -e 's|^LIBDIR =.*|PKGDATADIR="$(libdir)"|' $$file        ;\
         done
+	mv $(DESTDIR)/$(sbindir)/mock.py $(DESTDIR)/$(sbindir)/mock
 
 TOPDIR := $(shell cd $(top_builddir);pwd)
 BUILDDIR = $(TOPDIR)/_rpmbuild
