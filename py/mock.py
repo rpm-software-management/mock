@@ -426,6 +426,9 @@ def main(ret):
     # cmdline options override config options
     set_config_opts_per_cmdline(config_opts, options, args)
     
+    # elevate privs
+    uidManager._becomeUser(0, 0)
+
     # do whatever we're here to do
     log.info("mock.py version %s starting..." % __VERSION__)
     chroot = mock.backend.Root(config_opts, uidManager)
@@ -434,9 +437,6 @@ def main(ret):
     log.debug("mock final configuration:")
     for k, v in config_opts.items():
         log.debug("    %s:  %s" % (k, v))
-
-    # elevate privs
-    uidManager._becomeUser(0, 0)
 
     ret["chroot"] = chroot
     ret["config_opts"] = config_opts
