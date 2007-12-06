@@ -4,25 +4,24 @@
 # Copyright (C) 2007 Michael E Brown <mebrown@michaels-house.net>
 
 # python library imports
-import logging
 import os
 
 # our imports
-from mock.trace_decorator import traceLog
+from mock.trace_decorator import decorate, traceLog, getLog
+
 import mock.util
 
-# set up logging, module options
-moduleLog = logging.getLogger("mock")
 requires_api_version = "1.0"
 
 # plugin entry point
+decorate(traceLog())
 def init(rootObj, conf):
     BindMount(rootObj, conf)
 
 # classes
 class BindMount(object):
     """bind mount dirs from host into chroot"""
-    @traceLog(moduleLog)
+    decorate(traceLog())
     def __init__(self, rootObj, conf):
         self.rootObj = rootObj
         self.bind_opts = conf
@@ -33,7 +32,7 @@ class BindMount(object):
             rootObj.umountCmds.append('umount -n %s/%s' % (rootObj.rootdir, destdir))
             rootObj.mountCmds.append('mount -n --bind %s  %s/%s' % (srcdir, rootObj.rootdir, destdir))
 
-    @traceLog(moduleLog)
+    decorate(traceLog())
     def _bindMountPreInitHook(self):
         for srcdir, destdir in self.bind_opts['dirs']:
             mock.util.mkdirIfAbsent("%s/%s" % (self.rootObj.rootdir, destdir))

@@ -131,6 +131,8 @@ def command_parse(config_opts):
                       dest="verbose", default=1, help="verbose build")
     parser.add_option("-q", "--quiet", action="store_const", const=0,
                       dest="verbose", help="quiet build")
+    parser.add_option("--trace", action="store_true", default=False,
+                      dest="trace", help="quiet build")
 
     # plugins
     parser.add_option("--enable-plugin", action="append",
@@ -150,7 +152,7 @@ def command_parse(config_opts):
 
     return (options, args)
 
-decorate(traceLog(log))
+decorate(traceLog())
 def setup_default_config_opts(config_opts):
     "sets up default configuration."
     # global
@@ -221,7 +223,7 @@ def setup_default_config_opts(config_opts):
         '%_rpmfilename': '%%{NAME}-%%{VERSION}-%%{RELEASE}.%%{ARCH}.rpm',
         }
 
-decorate(traceLog(log))
+decorate(traceLog())
 def set_config_opts_per_cmdline(config_opts, options, args):
     "takes processed cmdline args and sets config options."
     # do some other options and stuff
@@ -290,7 +292,7 @@ def set_config_opts_per_cmdline(config_opts, options, args):
 
     config_opts['online'] = options.online
 
-decorate(traceLog(log))
+decorate(traceLog())
 def do_rebuild(config_opts, chroot, srpms):
     "rebuilds a list of srpms using provided chroot"
     if len(srpms) < 1:
@@ -401,17 +403,24 @@ def main(ret):
         log.handlers[0].setLevel(logging.INFO)
     elif options.verbose == 2:
         log.handlers[0].setLevel(logging.DEBUG)
-        build_log = logging.getLogger("mock.Root.build")
-        build_log.propagate = 1
-        mock_log = logging.getLogger("mock")
-        mock_log.propagate = 1
+        logging.getLogger("mock.Root.build").propagate = 1
+        logging.getLogger("mock").propagate = 1
+
+    logging.getLogger("trace").propagate=0
+    if options.trace:
+        logging.getLogger("trace").propagate=1
 
     # cmdline options override config options
-    log.info("mock.py version %s starting..." % __VERSION__)
     set_config_opts_per_cmdline(config_opts, options, args)
-
+    
     # do whatever we're here to do
+    log.info("mock.py version %s starting..." % __VERSION__)
     chroot = mock.backend.Root(config_opts, uidManager)
+
+    # dump configuration to log
+    log.debug("mock final configuration:")
+    for k, v in config_opts.items():
+        log.debug("    %s:  %s" % (k, v))
 
     # elevate privs
     uidManager._becomeUser(0, 0)

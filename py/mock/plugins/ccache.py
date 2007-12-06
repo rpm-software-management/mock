@@ -4,25 +4,23 @@
 # Copyright (C) 2007 Michael E Brown <mebrown@michaels-house.net>
 
 # python library imports
-import logging
 import os
 
 # our imports
-from mock.trace_decorator import traceLog
+from mock.trace_decorator import decorate, traceLog, getLog
 import mock.util
 
-# set up logging, module options
-moduleLog = logging.getLogger("mock")
 requires_api_version = "1.0"
 
 # plugin entry point
+decorate(traceLog())
 def init(rootObj, conf):
     CCache(rootObj, conf)
 
 # classes
 class CCache(object):
     """enables ccache in buildroot/rpmbuild"""
-    @traceLog(moduleLog)
+    decorate(traceLog())
     def __init__(self, rootObj, conf):
         self.rootObj = rootObj
         self.ccache_opts = conf
@@ -40,7 +38,7 @@ class CCache(object):
     # =============
     # set the max size before we actually use it during a build.
     # ccache itself manages size and settings.
-    @traceLog(moduleLog)
+    decorate(traceLog())
     def _ccacheBuildHook(self):
         self.rootObj.doChroot("ccache -M %s" % self.ccache_opts['max_cache_size'])
 
@@ -49,7 +47,7 @@ class CCache(object):
     # we then add this to the front of the path.
     # we also set a few admin variables used by ccache to find the shared
     # cache.
-    @traceLog(moduleLog)
+    decorate(traceLog())
     def _ccachePreInitHook(self):
         mock.util.mkdirIfAbsent(os.path.join(self.rootdir, 'tmp/ccache'))
         mock.util.mkdirIfAbsent(self.ccachePath)
@@ -63,7 +61,7 @@ class CCache(object):
             forceLink("/usr/bin/ccache", os.path.join(self.ccachePath, "x86_64-redhat-linux-%s" % i))
             forceLink("/usr/bin/ccache", os.path.join(self.ccachePath, "i386-redhat-linux-%s" % i))
 
-@traceLog(moduleLog)
+decorate(traceLog())
 def forceLink( existing, linkname ):
     try:
         os.unlink(linkname)

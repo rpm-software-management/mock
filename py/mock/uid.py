@@ -4,36 +4,32 @@
 # Copyright (C) 2007 Michael E Brown <mebrown@michaels-house.net>
 
 # python library imports
-import logging
 import os
 
 # our imports
-from mock.trace_decorator import traceLog, decorate
-
-# set up logging
-log = logging.getLogger("mock.uid")
+from mock.trace_decorator import traceLog, decorate, getLog
 
 # class
 class uidManager(object):
-    decorate(traceLog(log))
+    decorate(traceLog())
     def __init__(self, unprivUid=-1, unprivGid=-1):
         self.privStack = []
         self.unprivUid = unprivUid
         self.unprivGid = unprivGid
 
-    decorate(traceLog(log))
+    decorate(traceLog())
     def becomeUser(self, uid, gid=-1):
         # save current ruid, euid, rgid, egid
         self._push()
         self._becomeUser(uid, gid)
 
-    decorate(traceLog(log))
+    decorate(traceLog())
     def dropPrivsTemp(self):
         # save current ruid, euid, rgid, egid
         self._push()
         self._becomeUser(self.unprivUid, self.unprivGid)
 
-    decorate(traceLog(log))
+    decorate(traceLog())
     def restorePrivs(self):
         # back to root first
         self._elevatePrivs()
@@ -43,13 +39,13 @@ class uidManager(object):
         os.setregid(privs['rgid'], privs['egid'])
         setresuid(privs['ruid'], privs['euid'])
 
-    decorate(traceLog(log))
+    decorate(traceLog())
     def dropPrivsForever(self):
         self._elevatePrivs()
         os.setregid(self.unprivGid, self.unprivGid)
         os.setreuid(self.unprivUid, self.unprivUid)
 
-    decorate(traceLog(log))
+    decorate(traceLog())
     def _push(self):
          # save current ruid, euid, rgid, egid
         self.privStack.append({
@@ -59,12 +55,12 @@ class uidManager(object):
             "egid": os.getegid(),
             })
 
-    decorate(traceLog(log))
+    decorate(traceLog())
     def _elevatePrivs(self):
         setresuid(0, 0, 0)
         os.setregid(0, 0)
 
-    decorate(traceLog(log))
+    decorate(traceLog())
     def _becomeUser(self, uid, gid=None):
         self._elevatePrivs()
         if gid is not None:
