@@ -431,6 +431,12 @@ def main(ret):
     if options.mode not in ('chroot', 'shell', 'install', 'installdeps') and config_opts['clean']:
         chroot.clean()
 
+    # New namespace starting from here
+    try:
+        mock.util.unshare(mock.util.CLONE_NEWNS)
+    except:
+        log.info("Namespace unshare failed.")
+
     if options.mode == 'init':
         chroot.init()
 

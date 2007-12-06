@@ -190,15 +190,33 @@ personality_defs['ppc64']  = 0x0000
 personality_defs['i386']   = 0x0008
 personality_defs['ppc']    = 0x0008
 
+import ctypes
+_libc = ctypes.cdll.LoadLibrary("libc.so.6")
+_errno = ctypes.c_int.in_dll(_libc, "errno")
+_libc.personality.argtypes = [ctypes.c_ulong]
+_libc.personality.restype = ctypes.c_int
+
 decorate(traceLog())
 def condPersonality(per=None):
     if personality_defs.get(per, None) is None: return
-    import ctypes
-    _libc = ctypes.cdll.LoadLibrary("libc.so.6")
-    _libc.personality.argtypes = [ctypes.c_ulong]
-    _libc.personality.restype = ctypes.c_int
-    _libc.personality(personality_defs[per])
+    res = _libc.personality(personality_defs[per])
+    if res:
+        raise OSError(_errno.value, os.strerror(_errno.value))
     getLog().debug("set personality (setarch)")
+
+CLONE_NEWNS = 0x00020000
+
+decorate(traceLog())
+def unshare(flags):
+    getLog().debug("Unsharing. Flags: %s" % flags)
+    try:
+        _libc.unshare.argtypes = [ctypes.c_int,]
+        _libc.unshare.restype = ctypes.c_int
+        res = _libc.unshare(flags)
+        if res:
+            raise OSError(_errno.value, os.strerror(_errno.value))
+    except AttributeError, e:
+        pass
 
 # logger =
 # output = [1|0]
