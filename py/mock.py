@@ -469,8 +469,12 @@ def main(ret):
 
 
 if __name__ == '__main__':
+    # fix for python 2.4 logging module bug:
+    logging.raiseExceptions = 0
+
     exitStatus = 0
     killOrphans = 1
+
     try:
         # sneaky way to ensure that we get passed back parameter even if
         # we hit an exception.
@@ -506,8 +510,6 @@ if __name__ == '__main__':
     if killOrphans and retParams:
         mock.util.orphansKill(retParams["chroot"].rootdir)
 
-    # fix for python 2.4 logging module bug:
-    logging.raiseExceptions = 0
     logging.shutdown()
     sys.exit(exitStatus)
 
