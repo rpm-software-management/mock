@@ -38,6 +38,9 @@ CHROOT=/var/lib/mock/${testConfig}-unittest/root
 # clear out any old test results
 sudo rm -rf $TOP_SRCTREE/mock-unit-test
 
+# clear out root cache so we get at least run without root cache present
+sudo rm -rf /var/lib/mock/cache/${testConfig}/root_cache
+
 #
 # pre-populate yum cache for the rest of the commands below
 #
