@@ -15,31 +15,29 @@ RELEASE_STRING = $(RELEASE_NAME)-$(RELEASE_VERSION)
 VERSION = $(RELEASE_VERSION)
 PACKAGE = $(RELEASE_NAME)
 
-MOCK_LIBTOOL_CURRENT=@MOCK_LIBTOOL_CURRENT@
-MOCK_LIBTOOL_REVISION=@MOCK_LIBTOOL_REVISION@
-MOCK_LIBTOOL_AGE=@MOCK_LIBTOOL_AGE@
+LIBTOOL_CURRENT=@LIBTOOL_CURRENT@
+LIBTOOL_REVISION=@LIBTOOL_REVISION@
+LIBTOOL_AGE=@LIBTOOL_AGE@
 
 CLEANFILES=mock-*.tar.gz mock-*.tar.bz2 mock-*.rpm _buildtemp version
 DISTCLEANFILES=*~
 
 EXTRA_DIST =
 bin_PROGRAMS=
-check_PROGRAMS= src/daemontest
-
 CLEANFILES += $(EXTRA_PROGRAMS)
-
-AM_CFLAGS = -Wall -I$(top_srcdir)/src -DSYSCONFDIR='"$(sysconfdir)"' -DLIBEXECDIR='"$(libexecdir)"' -DLIBDIR='"$(libdir)"' -Werror
-
-bin_PROGRAMS += src/mock
-src_mock_SOURCES = src/mock.c
-src_mock_LDFLAGS =
 
 mocketcdir = $(sysconfdir)/mock
 dist_mocketc_DATA = $(wildcard $(top_srcdir)/etc/mock/*.cfg) $(top_srcdir)/etc/mock/logging.ini
 
 EXTRA_DIST += docs buildsys-build.spec-template mock.spec
-dist_libexec_SCRIPTS = py/mock.py
+sbin_SCRIPTS = py/mock.py
 man_MANS = docs/mock.1
+
+pamdir = $(sysconfdir)/pam.d/
+pam_DATA = etc/pam/mock
+
+consoledir = $(sysconfdir)/security/console.apps/
+console_DATA = etc/consolehelper/mock
 
 pluginsdir = $(pkgpythondir)/plugins
 plugins_PYTHON = \
@@ -58,7 +56,7 @@ pkgpython_PYTHON = \
 
 CLEANFILES += py/*.pyc py/mock/*.pyc py/mock/plugins/*.pyc
 
-REPLACE_VARS_ON_INSTALL=$(libexecdir)/mock.py
+REPLACE_VARS_ON_INSTALL=$(sbindir)/mock
 install-exec-hook:
 	for i in $(REPLACE_VARS_ON_INSTALL); do      \
 		file=$(DESTDIR)/$$i			;\

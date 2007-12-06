@@ -49,16 +49,15 @@ fi
 %doc README ChangeLog buildsys-build.spec-template
 
 # python stuff
-%{_libexecdir}/mock.py*
+%{_sbindir}/mock.py
 %{python_sitelib}/*
 
 # config files
 %dir  %{_sysconfdir}/%{name}
 %config(noreplace) %{_sysconfdir}/%{name}/*.cfg
 %config(noreplace) %{_sysconfdir}/%{name}/*.ini
-
-# binary is setuid, but only runnable by group 'mock'
-%attr(04770, root, mock) %{_bindir}/%{name}
+%config(noreplace) %{_sysconfdir}/pam.d/%{name}
+%config(noreplace) %{_sysconfdir}/security/console.apps/%{name}
 
 %{_mandir}/man1/mock.1*
 %attr(02775, root, mock) %dir /var/lib/mock

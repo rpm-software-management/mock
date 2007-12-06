@@ -1,0 +1,4 @@
+USER=root
+PROGRAM=/usr/sbin/mock.py
+SESSION=false
+FALLBACK=false

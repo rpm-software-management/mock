@@ -4,12 +4,12 @@
 
 ####################################
 # change version here.
-AC_INIT([mock],[0.8.15])
+AC_INIT([mock],[0.8.16])
 
 temp_RELEASE_NAME=mock
 temp_RELEASE_MAJOR=0
 temp_RELEASE_MINOR=8
-temp_RELEASE_SUBLEVEL=15
+temp_RELEASE_SUBLEVEL=16
 temp_RELEASE_EXTRALEVEL=
 
 ####################################
@@ -20,29 +20,16 @@ AM_INIT_AUTOMAKE
 AM_MAINTAINER_MODE
 
 # Checks for programs.
-AC_PROG_CC
-AC_PROG_CPP
-AC_PROG_LIBTOOL
 AC_PROG_INSTALL
 
 # automake macros
-AM_PROG_CC_C_O
 AM_PATH_PYTHON
 
 # Checks for header files.
-AC_HEADER_STDC
-AC_HEADER_SYS_WAIT
-AC_CHECK_HEADERS([stdlib.h string.h unistd.h])
-AC_CONFIG_HEADERS([src/config.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
-AC_C_CONST
-AC_TYPE_PID_T
 
 # Checks for library functions.
-AC_FUNC_ALLOCA
-AC_FUNC_ERROR_AT_LINE
-AC_CHECK_FUNCS([strerror])
 
 # update 'real' variables from the temp variable names.
 # do this at the end of the file so that they A) are not overwitten by other
@@ -60,9 +47,9 @@ done
 # If any interfaces have been added, removed, or changed since the last update, increment current, and set revision to 0.
 # If any interfaces have been added since the last public release, then increment age.
 # If any interfaces have been removed since the last public release, then set age to 0. 
-MOCK_LIBTOOL_CURRENT=$(( $RELEASE_MAJOR + 1 ))
-MOCK_LIBTOOL_REVISION=$RELEASE_MINOR
-MOCK_LIBTOOL_AGE=0
+LIBTOOL_CURRENT=$(( $RELEASE_MAJOR ))
+LIBTOOL_REVISION=$RELEASE_MINOR
+LIBTOOL_AGE=0
 
 if test -z "$RELEASE_RPM_EXTRALEVEL"; then
     if test -z "$RELEASE_EXTRALEVEL"; then
@@ -88,12 +75,12 @@ cat >>confdefs.h <<_ACEOF
 _ACEOF
 
 AC_SUBST([RELEASE_NAME RELEASE_MAJOR RELEASE_MINOR RELEASE_SUBLEVEL RELEASE_EXTRALEVEL RELEASE_RPM_EXTRALEVEL])
-AC_SUBST([ MOCK_LIBTOOL_CURRENT  MOCK_LIBTOOL_REVISION MOCK_LIBTOOL_AGE  ])
+AC_SUBST([ LIBTOOL_CURRENT  LIBTOOL_REVISION LIBTOOL_AGE  ])
 
 # check if build dir == source dir.
 AM_CONDITIONAL([BLD_SRC_DIFFERENT], [test x$srcdir != x.])
 
 # generate files and exit
-AC_CONFIG_FILES([ Makefile src/version.h mock.spec ])
+AC_CONFIG_FILES([ Makefile ${PACKAGE_NAME}.spec ])
 AC_OUTPUT
 
