@@ -38,7 +38,6 @@ class YumCache(object):
         rootObj.addHook("preinit", self._yumCachePreInitHook)
         rootObj.umountCmds.append('umount -n %s/var/cache/yum' % rootObj.rootdir)
         rootObj.mountCmds.append('mount -n --bind %s  %s/var/cache/yum' % (self.yumSharedCachePath, rootObj.rootdir))
-        mock.util.mkdirIfAbsent(os.path.join(self.rootdir, 'var/cache/yum'))
         mock.util.mkdirIfAbsent(self.yumSharedCachePath)
         self.yumCacheLock = open(os.path.join(self.yumSharedCachePath, "yumcache.lock"), "a+")
 
@@ -66,6 +65,7 @@ class YumCache(object):
     @traceLog(moduleLog)
     def _yumCachePreInitHook(self):
         moduleLog.info("enabled yum cache")
+        mock.util.mkdirIfAbsent(os.path.join(self.rootdir, 'var/cache/yum'))
 
         # lock so others dont accidentally use yum cache while we operate on it.
         self._yumCachePreYumHook()
