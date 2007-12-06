@@ -37,7 +37,7 @@ def mkdirIfAbsent(*args):
                 getLog().debug("creating dir: %s" % dirName)
                 os.makedirs(dirName)
             except OSError, e:
-                log.exception("Could not create dir %s. Error: %s" % (dirName, e))
+                getLog().exception("Could not create dir %s. Error: %s" % (dirName, e))
                 raise mock.exception.Error, "Could not create dir %s. Error: %s" % (dirName, e)
 
 decorate(traceLog())
@@ -77,7 +77,7 @@ def orphansKill(rootToKill):
         try:
             root = os.readlink("/proc/%s/root" % fn)
             if root == rootToKill:
-                log.warning("Process ID %s still running in chroot. Killing..." % fn)
+                getLog().warning("Process ID %s still running in chroot. Killing..." % fn)
                 os.kill(int(fn, 10), 15)
         except OSError, e:
             pass
