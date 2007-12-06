@@ -64,6 +64,11 @@ fi
 %attr(02775, root, mock) %dir /var/lib/mock
 
 %changelog
+* Wed Dec 05 2007 Michael Brown <mebrown@michaels-house.net> - 0.8.15-1
+- fix traceback when root cache doesnt exist.
+- add "--with", "--without", and "--define" cmdline parameters which are passed
+  to rpmbuild (courtesy Todd Zullinger)
+
 * Tue Dec 04 2007 Michael Brown <mebrown@michaels-house.net> - 0.8.14-1
 - fix traceback when cache dir was not found
 
