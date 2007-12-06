@@ -34,6 +34,7 @@ import logging
 import logging.config
 import os
 import os.path
+import pwd
 import sys
 import time
 from optparse import OptionParser
@@ -153,7 +154,7 @@ def command_parse(config_opts):
     return (options, args)
 
 decorate(traceLog())
-def setup_default_config_opts(config_opts):
+def setup_default_config_opts(config_opts, unprivUid):
     "sets up default configuration."
     # global
     config_opts['basedir'] = '/var/lib/mock/' # root name is automatically added to this
@@ -163,7 +164,7 @@ def setup_default_config_opts(config_opts):
     config_opts['chroothome'] = '/builddir'
     config_opts['log_config_file'] = 'logging.ini'
     config_opts['rpmbuild_timeout'] = 0
-    config_opts['chrootuid'] = os.getuid()
+    config_opts['chrootuid'] = unprivUid
     try:
         config_opts['chrootgid'] = grp.getgrnam("mock")[2]
     except KeyError:
@@ -356,10 +357,10 @@ def main(ret):
     # consolehelper
     if os.environ.get("USERHELPER_UID") is not None:
         unprivUid = int(os.environ['USERHELPER_UID'])
-        username = getpwuid(unprivUid)[0]
+        username = pwd.getpwuid(unprivUid)[0]
         groups = [ g[2] for g in grp.getgrall() if username in g[3]]
         os.setgroups(groups)
-        unprivGid = getpwuid(unprivUid)[3]
+        unprivGid = pwd.getpwuid(unprivUid)[3]
 
     uidManager = mock.uid.uidManager(unprivUid, unprivGid)
     uidManager._becomeUser(unprivUid, unprivGid)
@@ -367,7 +368,7 @@ def main(ret):
 
     # defaults
     config_opts = {}
-    setup_default_config_opts(config_opts)
+    setup_default_config_opts(config_opts, unprivUid)
     (options, args) = command_parse(config_opts)
 
     # config path -- can be overridden on cmdline
