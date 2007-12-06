@@ -229,13 +229,12 @@ def do(command, chrootPath=None, timeout=0, raiseExc=True, returnOutput=0, uidMa
     """execute given command outside of chroot"""
 
     logger = kargs.get("logger", getLog())
-    logger.debug("Run cmd: %s" % command)
+    logger.debug("run cmd timeout(%s): %s" % (timeout, command))
 
     def alarmhandler(signum, stackframe):
         raise commandTimeoutExpired("Timeout(%s) exceeded for command: %s" % (timeout, command))
 
     retval = 0
-    logger.debug("Executing timeout(%s): %s" % (timeout, command))
 
     output = ""
     (r, w) = os.pipe()
