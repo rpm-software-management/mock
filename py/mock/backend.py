@@ -237,8 +237,8 @@ class Root(object):
 
         # yum stuff
         self.state("running yum")
-        self._mountall()
         try:
+            self._mountall()
             if not self.chrootWasCleaned:
                 self.chroot_setup_cmd = 'update'
             self._yum(self.chroot_setup_cmd, returnOutput=1)
@@ -300,8 +300,8 @@ class Root(object):
     def yumInstall(self, *srpms):
         """figure out deps from srpm. call yum to install them"""
         # pass build reqs (as strings) to installer
-        self._mountall()
         try:
+            self._mountall()
             self._yum('install %s' % ' '.join(srpms), returnOutput=1)
         finally:
             self._umountall()
@@ -349,9 +349,9 @@ class Root(object):
         # tell caching we are building
         self._callHooks('earlyprebuild')
 
-        self._mountall()
-        self.uidManager.becomeUser(self.chrootuid, self.chrootgid)
         try:
+            self._mountall()
+            self.uidManager.becomeUser(self.chrootuid, self.chrootgid)
             self.state("setup")
 
             srpmChrootFilename = self._copySrpmIntoChroot(srpm)

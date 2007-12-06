@@ -431,8 +431,8 @@ def main(ret):
 
     elif options.mode in ('chroot', 'shell'):
         chroot.tryLockBuildRoot()
-        chroot._mountall()
         try:
+            chroot._mountall()
             if config_opts['internal_setarch']:
                 mock.util.condPersonality(config_opts['target_arch'])
             cmd = ' '.join(args)
@@ -450,8 +450,8 @@ def main(ret):
         for hdr in mock.util.yieldSrpmHeaders(args, plainRpmOk=1):
             pass
         chroot.tryLockBuildRoot()
-        chroot._mountall()
         try:
+            chroot._mountall()
             chroot.installSrpmDeps(*args)
         finally:
             chroot._umountall()
