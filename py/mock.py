@@ -346,6 +346,12 @@ def main(ret):
     unprivUid = os.getuid()
     unprivGid = os.getgid()
 
+    #DEBUG
+    #import mock.uid
+    #print("UID: %s %s" % (repr(mock.uid.getresuid()), repr(mock.uid.getresgid())))
+    #for k, v in os.environ.items():
+    #    print "  %s: %s" % (k, v)
+
     # sudo
     if os.environ.get("SUDO_UID") is not None:
         unprivUid = int(os.environ['SUDO_UID'])
@@ -353,6 +359,7 @@ def main(ret):
         groups = [ g[2] for g in grp.getgrall() if username in g[3]]
         os.setgroups(groups)
         unprivGid = int(os.environ['SUDO_GID'])
+        #print "SUDO_UID activated: %s %s" % (unprivUid, unprivGid)
 
     # consolehelper
     if os.environ.get("USERHELPER_UID") is not None:
@@ -361,6 +368,7 @@ def main(ret):
         groups = [ g[2] for g in grp.getgrall() if username in g[3]]
         os.setgroups(groups)
         unprivGid = pwd.getpwuid(unprivUid)[3]
+        #print "USERHELPER_UID activated: %s %s" % (unprivUid, unprivGid)
 
     uidManager = mock.uid.uidManager(unprivUid, unprivGid)
     uidManager._becomeUser(unprivUid, unprivGid)
