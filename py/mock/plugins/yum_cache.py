@@ -10,21 +10,21 @@ import time
 import os
 
 # our imports
-from mock.trace_decorator import traceLog
+from mock.trace_decorator import decorate, traceLog, getLog
 import mock.util
 
 # set up logging, module options
-moduleLog = logging.getLogger("mock")
 requires_api_version = "1.0"
 
 # plugin entry point
+decorate(traceLog())
 def init(rootObj, conf):
     YumCache(rootObj, conf)
 
 # classes
 class YumCache(object):
     """caches root environment in a tarball"""
-    @traceLog(moduleLog)
+    decorate(traceLog())
     def __init__(self, rootObj, conf):
         self.rootObj = rootObj
         self.yum_cache_opts = conf
@@ -48,7 +48,7 @@ class YumCache(object):
     # by yum, and prior to cleaning it. This prevents simultaneous access from
     # screwing things up. This can possibly happen, eg. when running multiple
     # mock instances with --uniqueext=
-    @traceLog(moduleLog)
+    decorate(traceLog())
     def _yumCachePreYumHook(self):
         try:
             fcntl.lockf(self.yumCacheLock.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
@@ -58,13 +58,13 @@ class YumCache(object):
             fcntl.lockf(self.yumCacheLock.fileno(), fcntl.LOCK_EX)
             self.state(oldState)
 
-    @traceLog(moduleLog)
+    decorate(traceLog())
     def _yumCachePostYumHook(self):
         fcntl.lockf(self.yumCacheLock.fileno(), fcntl.LOCK_UN)
 
-    @traceLog(moduleLog)
+    decorate(traceLog())
     def _yumCachePreInitHook(self):
-        moduleLog.info("enabled yum cache")
+        getLog().info("enabled yum cache")
         mock.util.mkdirIfAbsent(os.path.join(self.rootdir, 'var/cache/yum'))
 
         # lock so others dont accidentally use yum cache while we operate on it.

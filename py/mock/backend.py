@@ -17,15 +17,12 @@ import stat
 # our imports
 import mock.util
 import mock.exception
-from mock.trace_decorator import traceLog, decorate
-
-# set up logging
-moduleLog = logging.getLogger("mock")
+from mock.trace_decorator import traceLog, decorate, getLog
 
 # classes
 class Root(object):
     """controls setup of chroot environment"""
-    decorate(traceLog(moduleLog))
+    decorate(traceLog())
     def __init__(self, config, uidManager):
         self._state = 'unstarted'
         self.uidManager = uidManager
@@ -53,9 +50,9 @@ class Root(object):
         # result dir
         self.resultdir = config['resultdir'] % config
 
-        self.root_log = logging.getLogger("mock")
-        self.build_log = logging.getLogger("mock.Root.build")
-        self._state_log = logging.getLogger("mock.Root.state")
+        self.root_log = getLog("mock")
+        self.build_log = getLog("mock.Root.build")
+        self._state_log = getLog("mock.Root.state")
 
         # config options
         self.chrootuid = config['chrootuid']
@@ -106,14 +103,14 @@ class Root(object):
     # =============
     #  'Public' API
     # =============
-    decorate(traceLog(moduleLog))
+    decorate(traceLog())
     def addHook(self, stage, function):
         hooks = self._hooks.get(stage, [])
         if function not in hooks:
             hooks.append(function)
             self._hooks[stage] = hooks
 
-    decorate(traceLog(moduleLog))
+    decorate(traceLog())
     def state(self, newState = None):
         if newState is not None:
             self._state = newState
@@ -121,7 +118,7 @@ class Root(object):
 
         return self._state
 
-    decorate(traceLog(moduleLog))
+    decorate(traceLog())
     def clean(self):
         """clean out chroot with extreme prejudice :)"""
         self.tryLockBuildRoot()
@@ -129,7 +126,7 @@ class Root(object):
         mock.util.rmtree(self.basedir)
         self.chrootWasCleaned = True
 
-    decorate(traceLog(moduleLog))
+    decorate(traceLog())
     def tryLockBuildRoot(self):
         self.state("lock buildroot")
         try:
@@ -144,7 +141,7 @@ class Root(object):
 
         return 1
 
-    decorate(traceLog(moduleLog))
+    decorate(traceLog())
     def init(self):
         self.state("init")
 
@@ -254,7 +251,7 @@ class Root(object):
         # done with init
         self._callHooks('postinit')
 
-    decorate(traceLog(moduleLog))
+    decorate(traceLog())
     def _setupDev(self):
         # files in /dev
         mock.util.rmtree(os.path.join(self.rootdir, "dev"))
@@ -291,12 +288,12 @@ class Root(object):
         if mntCmd not in self.mountCmds:
             self.mountCmds.append(mntCmd)
 
-    decorate(traceLog(moduleLog))
+    decorate(traceLog())
     def doChroot(self, command, env="", *args, **kargs):
         """execute given command in root"""
         return mock.util.do( command, personality=self.personality, chrootPath=self.rootdir, *args, **kargs )
 
-    decorate(traceLog(moduleLog))
+    decorate(traceLog())
     def yumInstall(self, *srpms):
         """figure out deps from srpm. call yum to install them"""
         # pass build reqs (as strings) to installer
@@ -306,7 +303,7 @@ class Root(object):
         finally:
             self._umountall()
 
-    decorate(traceLog(moduleLog))
+    decorate(traceLog())
     def installSrpmDeps(self, *srpms):
         """figure out deps from srpm. call yum to install them"""
         arg_string = self.preExistingDeps
@@ -342,7 +339,7 @@ class Root(object):
     #   Everything in this function runs as the build user
     #       -> except hooks. :)
     #
-    decorate(traceLog(moduleLog))
+    decorate(traceLog())
     def build(self, srpm, timeout):
         """build an srpm into binary rpms, capture log"""
 
@@ -423,13 +420,13 @@ class Root(object):
     # =============
     # 'Private' API
     # =============
-    decorate(traceLog(moduleLog))
+    decorate(traceLog())
     def _callHooks(self, stage):
         hooks = self._hooks.get(stage, [])
         for hook in hooks:
             hook()
 
-    decorate(traceLog(moduleLog))
+    decorate(traceLog())
     def _initPlugins(self):
         # Import plugins  (simplified copy of what yum does). Can add yum
         #  features later when we prove we need them.
@@ -446,21 +443,21 @@ class Root(object):
 
             module.init(self, self.pluginConf["%s_opts" % modname])
 
-    decorate(traceLog(moduleLog))
+    decorate(traceLog())
     def _mountall(self):
         """mount 'normal' fs like /dev/ /proc/ /sys"""
         for cmd in self.mountCmds:
             self.root_log.debug(cmd)
             mock.util.do(cmd)
 
-    decorate(traceLog(moduleLog))
+    decorate(traceLog())
     def _umountall(self):
         """umount all mounted chroot fs."""
         for cmd in self.umountCmds:
             self.root_log.debug(cmd)
             mock.util.do(cmd, raiseExc=0)
 
-    decorate(traceLog(moduleLog))
+    decorate(traceLog())
     def _yum(self, cmd, returnOutput=0):
         """use yum to install packages/package groups into the chroot"""
         # mock-helper yum --installroot=rootdir cmd
@@ -479,7 +476,7 @@ class Root(object):
         except mock.exception.Error, e:
             raise mock.exception.YumError, str(e)
 
-    decorate(traceLog(moduleLog))
+    decorate(traceLog())
     def _makeBuildUser(self):
         if not os.path.exists(os.path.join(self.rootdir, 'usr/sbin/useradd')):
             raise mock.exception.RootError, "Could not find useradd in chroot, maybe the install failed?"
@@ -495,32 +492,38 @@ class Root(object):
         self.doChroot(self.useradd % dets)
         self.doChroot("perl -p -i -e 's/^(%s:)!!/$1/;' /etc/passwd" % (self.chrootuser), raiseExc=True)
 
-    decorate(traceLog(moduleLog))
+    decorate(traceLog())
     def _resetLogging(self):
         # ensure we dont attach the handlers multiple times.
         if self.logging_initialized:
             return
         self.logging_initialized = True
 
-        # attach logs to log files.
-        # This happens in addition to anything that
-        # is set up in the config file... ie. logs go everywhere
-        for (log, filename, fmt_str) in (
-                (self._state_log, "state.log", self._state_log_fmt_str),
-                (self.build_log, "build.log", self.build_log_fmt_str),
-                (self.root_log, "root.log", self.root_log_fmt_str)):
-            fullPath = os.path.join(self.resultdir, filename)
-            fh = logging.FileHandler(fullPath, "a+")
-            formatter = logging.Formatter(fmt_str)
-            fh.setFormatter(formatter)
-            fh.setLevel(logging.NOTSET)
-            log.addHandler(fh)
+        try:
+            self.uidManager.dropPrivsTemp()
+
+            # attach logs to log files.
+            # This happens in addition to anything that
+            # is set up in the config file... ie. logs go everywhere
+            for (log, filename, fmt_str) in (
+                    (self._state_log, "state.log", self._state_log_fmt_str),
+                    (self.build_log, "build.log", self.build_log_fmt_str),
+                    (self.root_log, "root.log", self.root_log_fmt_str)):
+                fullPath = os.path.join(self.resultdir, filename)
+                fh = logging.FileHandler(fullPath, "a+")
+                formatter = logging.Formatter(fmt_str)
+                fh.setFormatter(formatter)
+                fh.setLevel(logging.NOTSET)
+                log.addHandler(fh)
+        finally:
+            self.uidManager.restorePrivs()
+            
 
     #
     # UNPRIVLEGED:
     #   Everything in this function runs as the build user
     #
-    decorate(traceLog(moduleLog))
+    decorate(traceLog())
     def _buildDirSetup(self):
         # create all dirs as the user who will be dropping things there.
         self.uidManager.becomeUser(self.chrootuid, self.chrootgid)
@@ -549,7 +552,7 @@ class Root(object):
     # UNPRIVLEGED:
     #   Everything in this function runs as the build user
     #
-    decorate(traceLog(moduleLog))
+    decorate(traceLog())
     def _copySrpmIntoChroot(self, srpm):
         srpmFilename = os.path.basename(srpm)
         dest = self.rootdir + '/' + self.builddir + '/' + 'originals'

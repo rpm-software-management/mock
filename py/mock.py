@@ -34,6 +34,7 @@ import logging
 import logging.config
 import os
 import os.path
+import pwd
 import sys
 import time
 from optparse import OptionParser
@@ -131,6 +132,8 @@ def command_parse(config_opts):
                       dest="verbose", default=1, help="verbose build")
     parser.add_option("-q", "--quiet", action="store_const", const=0,
                       dest="verbose", help="quiet build")
+    parser.add_option("--trace", action="store_true", default=False,
+                      dest="trace", help="quiet build")
 
     # plugins
     parser.add_option("--enable-plugin", action="append",
@@ -150,8 +153,8 @@ def command_parse(config_opts):
 
     return (options, args)
 
-decorate(traceLog(log))
-def setup_default_config_opts(config_opts):
+decorate(traceLog())
+def setup_default_config_opts(config_opts, unprivUid):
     "sets up default configuration."
     # global
     config_opts['basedir'] = '/var/lib/mock/' # root name is automatically added to this
@@ -161,7 +164,7 @@ def setup_default_config_opts(config_opts):
     config_opts['chroothome'] = '/builddir'
     config_opts['log_config_file'] = 'logging.ini'
     config_opts['rpmbuild_timeout'] = 0
-    config_opts['chrootuid'] = os.getuid()
+    config_opts['chrootuid'] = unprivUid
     try:
         config_opts['chrootgid'] = grp.getgrnam("mock")[2]
     except KeyError:
@@ -221,7 +224,7 @@ def setup_default_config_opts(config_opts):
         '%_rpmfilename': '%%{NAME}-%%{VERSION}-%%{RELEASE}.%%{ARCH}.rpm',
         }
 
-decorate(traceLog(log))
+decorate(traceLog())
 def set_config_opts_per_cmdline(config_opts, options, args):
     "takes processed cmdline args and sets config options."
     # do some other options and stuff
@@ -290,7 +293,7 @@ def set_config_opts_per_cmdline(config_opts, options, args):
 
     config_opts['online'] = options.online
 
-decorate(traceLog(log))
+decorate(traceLog())
 def do_rebuild(config_opts, chroot, srpms):
     "rebuilds a list of srpms using provided chroot"
     if len(srpms) < 1:
@@ -338,14 +341,26 @@ def main(ret):
     #   setuid wrapper has real uid = unpriv,  effective uid = 0
     #   sudo sets real/effective = 0, and sets env vars
     #   setuid wrapper clears environment, so there wont be any conflict between these two
+
+    # old setuid wrapper
     unprivUid = os.getuid()
+    unprivGid = os.getgid()
+
+    # sudo
     if os.environ.get("SUDO_UID") is not None:
         unprivUid = int(os.environ['SUDO_UID'])
-        groups = [ g[2] for g in grp.getgrall() if os.environ.get("SUDO_USER") in g[3]]
+        username = os.environ.get("SUDO_USER")
+        groups = [ g[2] for g in grp.getgrall() if username in g[3]]
         os.setgroups(groups)
-    unprivGid = os.getgid()
-    if os.environ.get("SUDO_GID") is not None:
         unprivGid = int(os.environ['SUDO_GID'])
+
+    # consolehelper
+    if os.environ.get("USERHELPER_UID") is not None:
+        unprivUid = int(os.environ['USERHELPER_UID'])
+        username = pwd.getpwuid(unprivUid)[0]
+        groups = [ g[2] for g in grp.getgrall() if username in g[3]]
+        os.setgroups(groups)
+        unprivGid = pwd.getpwuid(unprivUid)[3]
 
     uidManager = mock.uid.uidManager(unprivUid, unprivGid)
     uidManager._becomeUser(unprivUid, unprivGid)
@@ -353,7 +368,7 @@ def main(ret):
 
     # defaults
     config_opts = {}
-    setup_default_config_opts(config_opts)
+    setup_default_config_opts(config_opts, unprivUid)
     (options, args) = command_parse(config_opts)
 
     # config path -- can be overridden on cmdline
@@ -401,26 +416,39 @@ def main(ret):
         log.handlers[0].setLevel(logging.INFO)
     elif options.verbose == 2:
         log.handlers[0].setLevel(logging.DEBUG)
-        build_log = logging.getLogger("mock.Root.build")
-        build_log.propagate = 1
-        mock_log = logging.getLogger("mock")
-        mock_log.propagate = 1
+        logging.getLogger("mock.Root.build").propagate = 1
+        logging.getLogger("mock").propagate = 1
+
+    logging.getLogger("trace").propagate=0
+    if options.trace:
+        logging.getLogger("trace").propagate=1
 
     # cmdline options override config options
-    log.info("mock.py version %s starting..." % __VERSION__)
     set_config_opts_per_cmdline(config_opts, options, args)
-
-    # do whatever we're here to do
-    chroot = mock.backend.Root(config_opts, uidManager)
-
+    
     # elevate privs
     uidManager._becomeUser(0, 0)
+
+    # do whatever we're here to do
+    log.info("mock.py version %s starting..." % __VERSION__)
+    chroot = mock.backend.Root(config_opts, uidManager)
+
+    # dump configuration to log
+    log.debug("mock final configuration:")
+    for k, v in config_opts.items():
+        log.debug("    %s:  %s" % (k, v))
 
     ret["chroot"] = chroot
     ret["config_opts"] = config_opts
     os.umask(002)
     if options.mode not in ('chroot', 'shell', 'install', 'installdeps') and config_opts['clean']:
         chroot.clean()
+
+    # New namespace starting from here
+    try:
+        mock.util.unshare(mock.util.CLONE_NEWNS)
+    except:
+        log.info("Namespace unshare failed.")
 
     if options.mode == 'init':
         chroot.init()

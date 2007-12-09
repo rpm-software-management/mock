@@ -6,7 +6,6 @@
 # Copyright (C) 2007 Michael E Brown <mebrown@michaels-house.net>
 
 # python library imports
-import logging
 import os
 import os.path
 import popen2
@@ -19,10 +18,7 @@ import time
 
 # our imports
 import mock.exception
-from mock.trace_decorator import traceLog, decorate
-
-# set up logging
-log = logging.getLogger("mock.util")
+from mock.trace_decorator import traceLog, decorate, getLog
 
 # classes
 class commandTimeoutExpired(mock.exception.Error):
@@ -32,30 +28,31 @@ class commandTimeoutExpired(mock.exception.Error):
         self.resultcode = 10
 
 # functions
-decorate(traceLog(log))
+decorate(traceLog())
 def mkdirIfAbsent(*args):
     for dirName in args:
-        log.debug("ensuring that dir exists: %s" % dirName)
+        getLog().debug("ensuring that dir exists: %s" % dirName)
         if not os.path.exists(dirName):
             try:
-                log.debug("creating dir: %s" % dirName)
+                getLog().debug("creating dir: %s" % dirName)
                 os.makedirs(dirName)
             except OSError, e:
-                log.exception("Could not create dir %s. Error: %s" % (dirName, e))
+                getLog().exception("Could not create dir %s. Error: %s" % (dirName, e))
                 raise mock.exception.Error, "Could not create dir %s. Error: %s" % (dirName, e)
 
-decorate(traceLog(log))
+decorate(traceLog())
 def touch(fileName):
-    log.debug("touching file: %s" % fileName)
+    getLog().debug("touching file: %s" % fileName)
     fo = open(fileName, 'w')
     fo.close()
 
-decorate(traceLog(log))
+decorate(traceLog())
 def rmtree(path, *args, **kargs):
     """version os shutil.rmtree that ignores no-such-file-or-directory errors,
        and tries harder if it finds immutable files"""
     tryAgain = 1
     failedFilename = None
+    getLog().debug("remove tree: %s" % path)
     while tryAgain:
         tryAgain = 0
         try:
@@ -72,20 +69,21 @@ def rmtree(path, *args, **kargs):
             else:
                 raise
 
-decorate(traceLog(log))
+decorate(traceLog())
 def orphansKill(rootToKill):
     """kill off anything that is still chrooted."""
+    getLog().debug("kill orphans")
     for fn in os.listdir("/proc"):
         try:
             root = os.readlink("/proc/%s/root" % fn)
             if root == rootToKill:
-                log.warning("Process ID %s still running in chroot. Killing..." % fn)
+                getLog().warning("Process ID %s still running in chroot. Killing..." % fn)
                 os.kill(int(fn, 10), 15)
         except OSError, e:
             pass
 
 
-decorate(traceLog(log))
+decorate(traceLog())
 def yieldSrpmHeaders(srpms, plainRpmOk=0):
     ts = rpmUtils.transaction.initReadOnlyTransaction()
     for srpm in srpms:
@@ -99,7 +97,7 @@ def yieldSrpmHeaders(srpms, plainRpmOk=0):
 
         yield hdr
 
-decorate(traceLog(log))
+decorate(traceLog())
 def requiresTextFromHdr(hdr):
     """take a header and hand back a unique'd list of the requires as
        strings"""
@@ -120,7 +118,7 @@ def requiresTextFromHdr(hdr):
 
     return rpmUtils.miscutils.unique(reqlist)
 
-decorate(traceLog(log))
+decorate(traceLog())
 def getNEVRA(hdr):
     name = hdr[rpm.RPMTAG_NAME]
     ver  = hdr[rpm.RPMTAG_VERSION]
@@ -130,7 +128,7 @@ def getNEVRA(hdr):
     if epoch is None: epoch = 0
     return (name, epoch, ver, rel, arch)
 
-decorate(traceLog(log))
+decorate(traceLog())
 def getAddtlReqs(hdr, conf):
     # Add the 'more_buildreqs' for this SRPM (if defined in config file)
     (name, epoch, ver, rel, arch) = getNEVRA(hdr)
@@ -148,29 +146,30 @@ def getAddtlReqs(hdr, conf):
 
     return rpmUtils.miscutils.unique(reqlist)
 
-decorate(traceLog(log))
+decorate(traceLog())
 def uniqReqs(*args):
     master = []
     for l in args:
         master.extend(l)
     return rpmUtils.miscutils.unique(master)
 
-decorate(traceLog(log))
+decorate(traceLog())
 def condChroot(chrootPath, uidManager=None):
     if chrootPath is not None:
+        getLog().debug("chroot %s" % chrootPath)
         if uidManager:
-            log.debug("elevate privs to run chroot")
+            getLog().debug("elevate privs to run chroot")
             uidManager.becomeUser(0)
         os.chdir(chrootPath)
         os.chroot(chrootPath)
         if uidManager:
-            log.debug("back to other privs")
+            getLog().debug("back to other privs")
             uidManager.restorePrivs()
 
-decorate(traceLog(log))
+decorate(traceLog())
 def condDropPrivs(uidManager, uid, gid):
     if uidManager is not None:
-        log.debug("about to drop privs")
+        getLog().debug("about to drop privs")
         if uid is not None:
             uidManager.unprivUid = uid
         if gid is not None:
@@ -191,14 +190,33 @@ personality_defs['ppc64']  = 0x0000
 personality_defs['i386']   = 0x0008
 personality_defs['ppc']    = 0x0008
 
-decorate(traceLog(log))
+import ctypes
+_libc = ctypes.cdll.LoadLibrary("libc.so.6")
+_errno = ctypes.c_int.in_dll(_libc, "errno")
+_libc.personality.argtypes = [ctypes.c_ulong]
+_libc.personality.restype = ctypes.c_int
+
+decorate(traceLog())
 def condPersonality(per=None):
     if personality_defs.get(per, None) is None: return
-    import ctypes
-    _libc = ctypes.cdll.LoadLibrary("libc.so.6")
-    _libc.personality.argtypes = [ctypes.c_ulong]
-    _libc.personality.restype = ctypes.c_int
-    _libc.personality(personality_defs[per])
+    res = _libc.personality(personality_defs[per])
+    if res:
+        raise OSError(_errno.value, os.strerror(_errno.value))
+    getLog().debug("set personality (setarch)")
+
+CLONE_NEWNS = 0x00020000
+
+decorate(traceLog())
+def unshare(flags):
+    getLog().debug("Unsharing. Flags: %s" % flags)
+    try:
+        _libc.unshare.argtypes = [ctypes.c_int,]
+        _libc.unshare.restype = ctypes.c_int
+        res = _libc.unshare(flags)
+        if res:
+            raise OSError(_errno.value, os.strerror(_errno.value))
+    except AttributeError, e:
+        pass
 
 # logger =
 # output = [1|0]
@@ -206,18 +224,17 @@ def condPersonality(per=None):
 #
 # Warning: this is the function from hell. :(
 #
-decorate(traceLog(log))
+decorate(traceLog())
 def do(command, chrootPath=None, timeout=0, raiseExc=True, returnOutput=0, uidManager=None, uid=None, gid=None, personality=None, *args, **kargs):
     """execute given command outside of chroot"""
 
-    logger = kargs.get("logger", log)
-    logger.debug("Run cmd: %s" % command)
+    logger = kargs.get("logger", getLog())
+    logger.debug("run cmd timeout(%s): %s" % (timeout, command))
 
     def alarmhandler(signum, stackframe):
         raise commandTimeoutExpired("Timeout(%s) exceeded for command: %s" % (timeout, command))
 
     retval = 0
-    logger.debug("Executing timeout(%s): %s" % (timeout, command))
 
     output = ""
     (r, w) = os.pipe()

@@ -74,7 +74,7 @@ Disable configure OPTION for build.  This option may be used multiple times.  Fo
 \fB\-\-resultdir=\fR\fIRESULTDIR\fP
 Change directory where resulting files (RPMs and build logs) are written. Resultdir can contain python-string substitutions for any variable in the chroot config. For example:
 
-\fB\-\-resultdir=./my/'%(dist)s'/'%(target_arch)s'/\fR
+\fB\-\-resultdir=./my/"%(dist)s"/"%(target_arch)s"/\fR
 .TP
 \fB\-\-uniqueext=\fR\fItext\fP
 Arbitrary, unique extension to append to buildroot directory name
