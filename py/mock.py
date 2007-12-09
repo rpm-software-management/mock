@@ -237,7 +237,7 @@ def set_config_opts_per_cmdline(config_opts, options, args):
         options.rpmmacros.append("_with_%s 1" % option)
 
     for option in options.rpmwithout:
-        options.rpmmacros.append("_with_%s 0" % option)
+        options.rpmmacros.append("_without_%s 1" % option)
 
     for macro in options.rpmmacros:
         try:
