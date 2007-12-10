@@ -33,7 +33,7 @@ make src/daemontest
 # 
 testConfig=fedora-8-x86_64
 uniqueext="$$-$RANDOM"
-MOCKCMD="sudo ./py/mock.py --resultdir=$TOP_SRCTREE/mock-unit-test --uniqueext=$uniqueext -r $testConfig"
+MOCKCMD="sudo ./py/mock.py --resultdir=$TOP_SRCTREE/mock-unit-test --uniqueext=$uniqueext -r $testConfig $MOCK_EXTRA_ARGS"
 CHROOT=/var/lib/mock/${testConfig}-$uniqueext/root
 
 # clear out any old test results
@@ -122,7 +122,7 @@ fi
 # Test build all configs we ship.
 #
 for i in $(ls etc/mock | grep .cfg | grep -v default | grep -v ppc); do
-    time sudo ./py/mock.py --resultdir=$TOP_SRCTREE/mock-unit-test --uniqueext=$uniqueext rebuild mock-*.src.rpm  -r $(basename $i .cfg)
+    time sudo ./py/mock.py --resultdir=$TOP_SRCTREE/mock-unit-test --uniqueext=$uniqueext rebuild mock-*.src.rpm  -r $(basename $i .cfg) $MOCK_EXTRA_ARGS
 done
 
 
