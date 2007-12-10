@@ -83,6 +83,9 @@ def command_parse(config_opts):
     parser.add_option("--install", action="store_const", const="install",
                       dest="mode",
                       help="install packages using yum")
+    parser.add_option("--orphanskill", action="store_const", const="orphanskill",
+                      dest="mode",
+                      help="Kill all processes using specified buildroot.")
 
     parser.add_option("-r", action="store", type="string", dest="chroot",
                       help="chroot name/config file name default: %default",
@@ -441,8 +444,6 @@ def main(ret):
     ret["chroot"] = chroot
     ret["config_opts"] = config_opts
     os.umask(002)
-    if options.mode not in ('chroot', 'shell', 'install', 'installdeps') and config_opts['clean']:
-        chroot.clean()
 
     # New namespace starting from here
     try:
@@ -451,11 +452,12 @@ def main(ret):
         log.info("Namespace unshare failed.")
 
     if options.mode == 'init':
+        if config_opts['clean']:
+            chroot.clean()
         chroot.init()
 
     elif options.mode == 'clean':
-        if chroot.state() != "clean":
-            chroot.clean()
+        chroot.clean()
 
     elif options.mode in ('chroot', 'shell'):
         chroot.tryLockBuildRoot()
@@ -494,6 +496,9 @@ def main(ret):
 
     elif options.mode == 'rebuild':
         do_rebuild(config_opts, chroot, args)
+
+    elif options.mode == 'orphanskill':
+        mock.util.orphansKill(chroot.rootdir)
 
 
 if __name__ == '__main__':
