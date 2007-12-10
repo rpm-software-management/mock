@@ -26,7 +26,7 @@ make distclean ||:
 ./configure
 make distcheck
 make srpm
-make src/daemontest
+gcc -o docs/daemontest docs/daemontest.c
 
 #
 # most tests below will use this mock command line
@@ -69,7 +69,7 @@ if pgrep daemontest; then
     exit 1
 fi
 time $MOCKCMD --offline --init
-cp src/daemontest $CHROOT/tmp
+cp docs/daemontest $CHROOT/tmp
 time $MOCKCMD --offline --chroot -- /tmp/daemontest
 if pgrep daemontest; then
     echo "Daemontest FAILED. found a daemontest process running after exit." 

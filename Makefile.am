@@ -24,7 +24,6 @@ DISTCLEANFILES=*~
 
 EXTRA_DIST =
 bin_PROGRAMS=
-check_PROGRAMS= src/daemontest
 
 CLEANFILES += $(EXTRA_PROGRAMS)
 
