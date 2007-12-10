@@ -61,7 +61,7 @@ if [ ! -e mock-unit-test/mock-*.x86_64.rpm ]; then
 fi
 
 #
-# Test orphanskill feature
+# Test orphanskill feature (std)
 #
 if pgrep daemontest; then
     echo "Exiting because there is already a daemontest running."
@@ -74,6 +74,21 @@ if pgrep daemontest; then
     echo "Daemontest FAILED. found a daemontest process running after exit." 
     exit 1
 fi
+
+#
+# Test orphanskill feature (explicit)
+#
+time $MOCKCMD --offline --init
+cp docs/daemontest $CHROOT/tmp
+echo -e "#!/bin/sh\n/tmp/daemontest\nsleep 60\n" >> $CHROOT/tmp/try
+$MOCKCMD --offline --chroot -- /tmp/try &
+kill -9 $!
+$MOCKCMD --offline --orphanskill 
+if pgrep daemontest; then
+    echo "Daemontest FAILED. found a daemontest process running after exit." 
+    exit 1
+fi
+
 
 #
 # test init/clean
