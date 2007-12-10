@@ -70,6 +70,11 @@ fi
 %attr(02775, root, mock) %dir /var/lib/mock
 
 %changelog
+* Sun Dec 09 2007 Michael Brown <mebrown@michaels-house.net> - 0.8.16-1
+- drop FC6 configs. FC6 no longer supported
+- add --trace cmdline parameter
+- make logs slightly less verbose
+
 * Wed Dec 05 2007 Michael Brown <mebrown@michaels-house.net> - 0.8.15-1
 - fix traceback when root cache doesnt exist.
 - add "--with", "--without", and "--define" cmdline parameters which are passed
