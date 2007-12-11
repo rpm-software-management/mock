@@ -53,6 +53,19 @@ if [ ! -e $CHROOT/usr/include/python* ]; then
 fi
 
 #
+# Test that chroot return code is properly passed up
+#
+set +e
+time $MOCKCMD --offline --chroot 'bash -c "exit 5"'
+if [ $? -ne 5 ]; then
+    echo "'mock --chroot' return code not properly passed back."
+    exit 1
+fi
+set -e
+
+
+
+#
 # Test offline build
 #
 time $MOCKCMD --offline --rebuild mock-*.src.rpm

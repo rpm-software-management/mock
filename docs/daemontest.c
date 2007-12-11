@@ -95,7 +95,9 @@ char str[10];
 int main()
 {
     daemonize();
-    while(1) sleep(1); /* run */
+    // run for roughly 5 mins then exit. No need to stick around if unit test fails.
+    int i=0;
+    for( i=0; i<300; i++ ) sleep(1);
 }
 
 /* EOF */
