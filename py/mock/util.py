@@ -188,7 +188,7 @@ PER_LINUX32=0x0008
 PER_LINUX=0x0000
 personality_defs = {
     'x86_64': PER_LINUX, 'ppc64': PER_LINUX, 'sparc64': PER_LINUX,
-    'i386': PER_LINUX32, 'ppc': PER_LINUX32, 'sparc': PER_LINUX32,
+    'i386': PER_LINUX32, 'ppc': PER_LINUX32, 'sparc': PER_LINUX32, 'sparcv9': PER_LINUX32,
 }
 
 import ctypes
