@@ -277,7 +277,7 @@ def set_config_opts_per_cmdline(config_opts, options, args):
         raise mock.exception.BadCmdline(
             "Must specify --resultdir when using --cleanup-after")
 
-    if len(args) > 1 and not options.resultdir:
+    if options.mode in ("rebuild",) and len(args) > 1 and not options.resultdir:
         raise mock.exception.BadCmdline(
             "Must specify --resultdir when building multiple RPMS.")
 
