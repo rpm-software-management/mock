@@ -13,6 +13,8 @@ mock  [options] {\fB\-\-init\fR|\fBclean\fR|\fBshell\fR}
 mock  [options] \fB\-\-installdeps\fR {SRPM|RPM}
 .LP
 mock  [options] \fB\-\-install\fR PACKAGE
+.LP
+mock  [options] \fB\-\-orphanskill\fR
 
 .SH "DESCRIPTION"
 .LP
@@ -104,6 +106,9 @@ Show version number and exit.
 \fB\-\-installdeps\fR \- find out deps for SRPM or RPM, and do a yum install to put them in the buildroot. Buildroot must already be initialized -- no 'clean' is performed
 .TP
 \fB\-\-install\fR \- Do a yum install PACKAGE inside the buildroot. Buildroot must already be initialized -- no 'clean' is performed
+.TP
+\fB\-\-orphanskill\fP
+Noop mode that simply checks that no stray processes are running in the chroot. Kills any processes that it finds using specified root.
 .SH "FILES"
 .LP
 \fI/etc/mock/\fP \- default configuration directory
