@@ -274,11 +274,11 @@ def do(command, chrootPath=None, timeout=0, raiseExc=True, returnOutput=0, uidMa
             signal.signal(signal.SIGALRM, oldhandler)
 
         # mask and return just return value, plus child output
-        if raiseExc and os.WEXITSTATUS(ret):
+        if raiseExc and ((os.WIFEXITED(ret) and os.WEXITSTATUS(ret)) or os.WIFSIGNALED(ret)):
             if returnOutput:
-                raise mock.exception.Error, "Command failed: \n # %s\n%s" % (command, output)
+                raise mock.exception.Error, ("Command failed: \n # %s\n%s" % (command, output), ret)
             else:
-                raise mock.exception.Error, "Command failed. See logs for output.\n # %s" % command
+                raise mock.exception.Error, ("Command failed. See logs for output.\n # %s" % (command,), ret)
 
         return output
 
