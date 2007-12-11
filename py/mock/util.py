@@ -200,7 +200,7 @@ decorate(traceLog())
 def condPersonality(per=None):
     if personality_defs.get(per, None) is None: return
     res = _libc.personality(personality_defs[per])
-    if res:
+    if res == -1:
         raise OSError(_errno.value, os.strerror(_errno.value))
     getLog().debug("set personality (setarch)")
 
