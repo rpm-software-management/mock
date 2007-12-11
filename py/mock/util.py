@@ -188,7 +188,8 @@ PER_LINUX32=0x0008
 PER_LINUX=0x0000
 personality_defs = {
     'x86_64': PER_LINUX, 'ppc64': PER_LINUX, 'sparc64': PER_LINUX,
-    'i386': PER_LINUX32, 'ppc': PER_LINUX32, 'sparc': PER_LINUX32, 'sparcv9': PER_LINUX32,
+    'i386': PER_LINUX32, 'i586': PER_LINUX32, 'i686': PER_LINUX32, 
+    'ppc': PER_LINUX32, 'sparc': PER_LINUX32, 'sparcv9': PER_LINUX32,
 }
 
 import ctypes
@@ -203,7 +204,7 @@ def condPersonality(per=None):
     res = _libc.personality(personality_defs[per])
     if res == -1:
         raise OSError(_errno.value, os.strerror(_errno.value))
-    getLog().debug("set personality (setarch)")
+    getLog().info("Ran setarch '%s'" % per)
 
 CLONE_NEWNS = 0x00020000
 
