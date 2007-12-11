@@ -101,7 +101,9 @@ Show version number and exit.
 .TP
 \fB\-\-rebuild\fR \- If no command is specified, rebuild is assumed. Rebuilds the specified SRPM(s). The buildroot is cleaned first, unless --no-clean is specified.
 .TP
-\fB\-\-chroot\fR|\fB\-\-shell\fR \- run the specified command within the chroot (which must already be initialized -- no 'clean' is performed). If no command specified, /bin/sh is run.
+\fB\-\-shell\fR \- run the specified command interactively within the chroot (which must already be initialized -- no 'clean' is performed). If no command specified, /bin/sh is run.
+.TP
+\fB\-\-chroot\fR \- run the specified command non-interactively within the chroot (which must already be initialized -- no 'clean' is performed). Command output will be sent to the log files.
 .TP
 \fB\-\-installdeps\fR \- find out deps for SRPM or RPM, and do a yum install to put them in the buildroot. Buildroot must already be initialized -- no 'clean' is performed
 .TP
