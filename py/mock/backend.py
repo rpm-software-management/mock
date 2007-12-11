@@ -307,17 +307,12 @@ class Root(object):
     def installSrpmDeps(self, *srpms):
         """figure out deps from srpm. call yum to install them"""
         arg_string = self.preExistingDeps
-        self.uidManager.dropPrivsTemp()
-        try:
-            for hdr in mock.util.yieldSrpmHeaders(srpms, plainRpmOk=1):
-                # get text buildreqs
-                a = mock.util.requiresTextFromHdr(hdr)
-                b = mock.util.getAddtlReqs(hdr, self.more_buildreqs)
-                for item in mock.util.uniqReqs(a, b):
-                    arg_string = arg_string + " '%s'" % item
-
-        finally:
-            self.uidManager.restorePrivs()
+        for hdr in mock.util.yieldSrpmHeaders(srpms, plainRpmOk=1):
+            # get text buildreqs
+            a = mock.util.requiresTextFromHdr(hdr)
+            b = mock.util.getAddtlReqs(hdr, self.more_buildreqs)
+            for item in mock.util.uniqReqs(a, b):
+                arg_string = arg_string + " '%s'" % item
 
         # everything exists, okay, install them all.
         # pass build reqs (as strings) to installer
