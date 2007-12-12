@@ -76,6 +76,24 @@ fi
 set -e
 
 #
+# Test that chroot with one arg is getting passed though a shell (via os.system())
+#
+time $MOCKCMD --offline --chroot 'touch /tmp/{foo,bar,baz}'
+if [ ! -f $CHROOT/tmp/foo ] || [ ! -f $CHROOT/tmp/bar ] || [ ! -f $CHROOT/tmp/baz ]; then
+    echo "'mock --chroot' with one argument is not being passed to os.system()"
+    exit 1
+fi
+
+#
+# Test that chroot with more than one arg is not getting passed through a shell
+#
+time $MOCKCMD --offline --chroot touch '/tmp/{quux,wibble}'
+if [ ! -f $CHROOT/tmp/\{quux,wibble\} ] || [ -f $CHROOT/tmp/quux ] || [ -f $CHROOT/tmp/wibble ]; then
+    echo "'mock --chroot' with more than one argument is being passed to os.system()"
+    exit 1
+fi
+
+#
 # Test offline build
 #
 time $MOCKCMD --offline --rebuild mock-*.src.rpm
