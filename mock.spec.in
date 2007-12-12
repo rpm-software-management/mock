@@ -46,7 +46,7 @@ fi
 
 %files
 %defattr(-, root, root)
-%doc README ChangeLog buildsys-build.spec-template
+%doc ChangeLog buildsys-build.spec-template
 
 # python stuff
 %{_libexecdir}/mock.py*
