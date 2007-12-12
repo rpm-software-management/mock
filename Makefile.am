@@ -1,7 +1,7 @@
 # vim:noexpandtab:autoindent:tabstop=8:shiftwidth=8:filetype=make:nocindent:tw=0:
 
 AUTOMAKE_OPTIONS = subdir-objects
-SUBDIRS = 
+SUBDIRS =
 
 # dont move these 5 lines, as this is how we override the autoconf version and package name
 RELEASE_NAME=@RELEASE_NAME@
@@ -48,7 +48,7 @@ pkgpython_PYTHON = \
 	py/mock/util.py 		\
 	py/mock/backend.py		\
 	py/mock/trace_decorator.py  \
-	py/mock/uid.py 
+	py/mock/uid.py
 
 CLEANFILES += py/*.pyc py/mock/*.pyc py/mock/plugins/*.pyc
 
@@ -58,7 +58,6 @@ ChangeLog:
 
 AUTHORS:
 	(GIT_DIR=.git git-log | grep ^Author | sort |uniq > .authors.tmp && mv .authors.tmp AUTHORS; rm -f .authors.tmp) || (touch AUTHORS; echo 'git directory not found: installing possibly empty AUTHORS.' >&2)
-	
 
 REPLACE_VARS_ON_INSTALL=$(sbindir)/mock.py
 install-exec-hook:
