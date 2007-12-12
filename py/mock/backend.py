@@ -311,7 +311,7 @@ class Root(object):
             self._yum('update', returnOutput=1)
         finally:
             self._umountall()
-            
+
     decorate(traceLog())
     def installSrpmDeps(self, *srpms):
         """figure out deps from srpm. call yum to install them"""
@@ -521,7 +521,7 @@ class Root(object):
                 log.addHandler(fh)
         finally:
             self.uidManager.restorePrivs()
-            
+
 
     #
     # UNPRIVLEGED:
