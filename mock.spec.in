@@ -64,7 +64,7 @@ fi
 
 # docs
 %{_mandir}/man1/mock.1*
-%doc README ChangeLog buildsys-build.spec-template
+%doc ChangeLog buildsys-build.spec-template
 
 # build dir
 %attr(02775, root, mock) %dir /var/lib/mock

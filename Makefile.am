@@ -52,6 +52,10 @@ pkgpython_PYTHON = \
 
 CLEANFILES += py/*.pyc py/mock/*.pyc py/mock/plugins/*.pyc
 
+dist: ChangeLog
+ChangeLog:
+	(GIT_DIR=.git git-log > .changelog.tmp && mv .changelog.tmp ChangeLog; rm -f .changelog.tmp) || (touch ChangeLog; echo 'git directory not found: installing possibly empty changelog.' >&2)
+
 REPLACE_VARS_ON_INSTALL=$(sbindir)/mock.py
 install-exec-hook:
 	for i in $(REPLACE_VARS_ON_INSTALL); do      \
