@@ -25,7 +25,7 @@ CLEANFILES += $(EXTRA_PROGRAMS)
 mocketcdir = $(sysconfdir)/mock
 mocketc_DATA = $(wildcard $(top_srcdir)/etc/mock/*.cfg) $(top_srcdir)/etc/mock/logging.ini
 
-EXTRA_DIST += docs buildsys-build.spec-template mock.spec etc
+EXTRA_DIST += docs etc
 dist_sbin_SCRIPTS = py/mock.py
 man_MANS = docs/mock.1
 
