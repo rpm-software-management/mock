@@ -649,8 +649,6 @@ pyexecdir
 pkgpyexecdir
 RELEASE_NAME RELEASE_MAJOR RELEASE_MINOR RELEASE_SUBLEVEL RELEASE_EXTRALEVEL RELEASE_RPM_EXTRALEVEL
  LIBTOOL_CURRENT  LIBTOOL_REVISION LIBTOOL_AGE
-BLD_SRC_DIFFERENT_TRUE
-BLD_SRC_DIFFERENT_FALSE
 LIBOBJS
 LTLIBOBJS'
 ac_subst_files=''
@@ -2413,15 +2411,6 @@ do
     fi
 done
 
-# Update the version information only immediately before a public release of your software. More frequent updates are unnecessary, and only guarantee that the current interface number gets larger faster.
-# If the library source code has changed at all since the last update, then increment revision (c:r:a becomes c:r+1:a).
-# If any interfaces have been added, removed, or changed since the last update, increment current, and set revision to 0.
-# If any interfaces have been added since the last public release, then increment age.
-# If any interfaces have been removed since the last public release, then set age to 0.
-LIBTOOL_CURRENT=$(( $RELEASE_MAJOR ))
-LIBTOOL_REVISION=$RELEASE_MINOR
-LIBTOOL_AGE=0
-
 if test -z "$RELEASE_RPM_EXTRALEVEL"; then
     if test -z "$RELEASE_EXTRALEVEL"; then
         RELEASE_RPM_EXTRALEVEL=%{nil}
@@ -2434,28 +2423,7 @@ PACKAGE_VERSION=`echo ${RELEASE_MAJOR}.${RELEASE_MINOR}.${RELEASE_SUBLEVEL}${REL
 PACKAGE_STRING=`echo ${RELEASE_NAME} ${RELEASE_MAJOR}.${RELEASE_MINOR}.${RELEASE_SUBLEVEL}${RELEASE_EXTRALEVEL}`
 VERSION=$PACKAGE_VERSION
 
-cat confdefs.h |
-    grep -v 'define VERSION ' |
-    grep -v 'define PACKAGE_VERSION ' |
-    grep -v 'define PACKAGE_STRING '  > confdefs.new
-mv confdefs.new confdefs.h
-cat >>confdefs.h <<_ACEOF
-#define VERSION "$VERSION"
-#define PACKAGE_VERSION "$PACKAGE_VERSION"
-#define PACKAGE_STRING "$PACKAGE_STRING"
-_ACEOF
 
-
-
-
-# check if build dir == source dir.
- if test x$srcdir != x.; then
-  BLD_SRC_DIFFERENT_TRUE=
-  BLD_SRC_DIFFERENT_FALSE='#'
-else
-  BLD_SRC_DIFFERENT_TRUE='#'
-  BLD_SRC_DIFFERENT_FALSE=
-fi
 
 
 # generate files and exit
@@ -2591,13 +2559,6 @@ if test -z "${MAINTAINER_MODE_TRUE}" && test -z "${MAINTAINER_MODE_FALSE}"; then
   { { echo "$as_me:$LINENO: error: conditional \"MAINTAINER_MODE\" was never defined.
 Usually this means the macro was only invoked conditionally." >&5
 echo "$as_me: error: conditional \"MAINTAINER_MODE\" was never defined.
-Usually this means the macro was only invoked conditionally." >&2;}
-   { (exit 1); exit 1; }; }
-fi
-if test -z "${BLD_SRC_DIFFERENT_TRUE}" && test -z "${BLD_SRC_DIFFERENT_FALSE}"; then
-  { { echo "$as_me:$LINENO: error: conditional \"BLD_SRC_DIFFERENT\" was never defined.
-Usually this means the macro was only invoked conditionally." >&5
-echo "$as_me: error: conditional \"BLD_SRC_DIFFERENT\" was never defined.
 Usually this means the macro was only invoked conditionally." >&2;}
    { (exit 1); exit 1; }; }
 fi
@@ -3186,13 +3147,11 @@ RELEASE_RPM_EXTRALEVEL!$RELEASE_RPM_EXTRALEVEL$ac_delim
 LIBTOOL_CURRENT!$LIBTOOL_CURRENT$ac_delim
 LIBTOOL_REVISION!$LIBTOOL_REVISION$ac_delim
 LIBTOOL_AGE!$LIBTOOL_AGE$ac_delim
-BLD_SRC_DIFFERENT_TRUE!$BLD_SRC_DIFFERENT_TRUE$ac_delim
-BLD_SRC_DIFFERENT_FALSE!$BLD_SRC_DIFFERENT_FALSE$ac_delim
 LIBOBJS!$LIBOBJS$ac_delim
 LTLIBOBJS!$LTLIBOBJS$ac_delim
 _ACEOF
 
-  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 84; then
+  if test `sed -n "s/.*$ac_delim\$/X/p" conf$$subs.sed | grep -c X` = 82; then
     break
   elif $ac_last_try; then
     { { echo "$as_me:$LINENO: error: could not make $CONFIG_STATUS" >&5
