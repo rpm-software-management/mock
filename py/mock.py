@@ -69,7 +69,7 @@ def command_parse(config_opts):
                       dest="mode", default='rebuild',
                       help="rebuild the specified SRPM(s)")
     parser.add_option("--chroot", "--shell", action="store_const",
-                      const="chroot", dest="mode",
+                      const="shell", dest="mode",
                       help="run the specified command within the chroot."
                            " Default command: /bin/sh")
     parser.add_option("--clean", action="store_const", const="clean",

@@ -63,7 +63,16 @@ if [ $? -ne 5 ]; then
 fi
 set -e
 
-
+#
+# test mock shell (interactive) and return code passing
+#
+set +e
+echo exit 5 | time $MOCKCMD --offline --shell
+if [ $? -ne 5 ]; then
+    echo "'mock --chroot' return code not properly passed back."
+    exit 1
+fi
+set -e
 
 #
 # Test offline build
