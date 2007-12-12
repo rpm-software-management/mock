@@ -442,7 +442,7 @@ def main(ret):
 
     # cmdline options override config options
     set_config_opts_per_cmdline(config_opts, options, args)
-    
+
     # elevate privs
     uidManager._becomeUser(0, 0)
 
@@ -517,7 +517,7 @@ def main(ret):
 
         chroot.tryLockBuildRoot()
         chroot.yumInstall(*args)
-    
+
     elif options.mode == 'update':
         chroot.yumUpdate()
 
