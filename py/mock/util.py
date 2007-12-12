@@ -209,7 +209,7 @@ def condPersonality(per=None):
     res = _libc.personality(personality_defs[per])
     if res == -1:
         raise OSError(_errno.value, os.strerror(_errno.value))
-    getLog().info("Ran setarch '%s'" % per)
+    getLog().debug("Ran setarch '%s'" % per)
 
 CLONE_NEWNS = 0x00020000
 
