@@ -22,6 +22,7 @@ DIR=$(cd $(dirname $0); pwd)
 TOP_SRCTREE=$DIR/../
 cd $TOP_SRCTREE
 
+./autogen.sh
 make distclean ||:
 ./configure
 make distcheck
