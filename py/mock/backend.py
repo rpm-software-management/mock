@@ -304,6 +304,15 @@ class Root(object):
             self._umountall()
 
     decorate(traceLog())
+    def yumUpdate(self):
+        """use yum to update the chroot"""
+        try:
+            self._mountall()
+            self._yum('update', returnOutput=1)
+        finally:
+            self._umountall()
+            
+    decorate(traceLog())
     def installSrpmDeps(self, *srpms):
         """figure out deps from srpm. call yum to install them"""
         arg_string = self.preExistingDeps
