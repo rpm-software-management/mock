@@ -200,7 +200,12 @@ _libc.personality.restype = ctypes.c_int
 
 decorate(traceLog())
 def condPersonality(per=None):
-    if personality_defs.get(per, None) is None: return
+    if per is None:
+        return
+    if personality_defs.get(per, None) is None:
+        getLog().warning("Unable to find predefined setarch personality constant for '%s' arch."
+            " You may have to manually run setarch."% per)
+        return
     res = _libc.personality(personality_defs[per])
     if res == -1:
         raise OSError(_errno.value, os.strerror(_errno.value))
