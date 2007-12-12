@@ -153,7 +153,7 @@ def command_parse(config_opts):
 
     (options, args) = parser.parse_args()
     if len(args) and args[0] in ('chroot', 'shell',
-            'rebuild', 'install', 'update', 'installdeps', 'init', 'clean'):
+            'rebuild', 'install', 'installdeps', 'init', 'clean'):
         options.mode = args[0]
         args = args[1:]
 
