@@ -8,16 +8,19 @@
 
 # python library imports
 #from exceptions import Exception
+import os
 
 # our imports
 
 # classes
 class Error(Exception):
     "base class for our errors."
-    def __init__(self, msg):
+    def __init__(self, msg, status=None):
         Exception.__init__(self)
         self.msg = msg
         self.resultcode = 1
+        if status is not None and os.WIFEXITED(status):
+            self.resultcode = os.WEXITSTATUS(status)
 
     def __str__(self):
         return self.msg

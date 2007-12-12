@@ -56,7 +56,7 @@ fi
 # Test that chroot return code is properly passed up
 #
 set +e
-time $MOCKCMD --offline --chroot 'bash -c "exit 5"'
+time $MOCKCMD --offline --chroot -- bash -c "exit 5"
 if [ $? -ne 5 ]; then
     echo "'mock --chroot' return code not properly passed back."
     exit 1
