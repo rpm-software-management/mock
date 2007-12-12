@@ -490,6 +490,8 @@ def main(ret):
         if len(args) == 0:
             log.critical("You must specify a command to run")
             sys.exit(50)
+        elif len(args) == 1:
+            args = args[0]
 
         log.info("Running in chroot: %s" % args)
         chroot.tryLockBuildRoot()
