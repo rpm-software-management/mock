@@ -459,7 +459,7 @@ def main(ret):
     elif options.mode == 'clean':
         chroot.clean()
 
-    elif options.mode in ('chroot', 'shell'):
+    elif options.mode == 'shell':
         chroot.tryLockBuildRoot()
         try:
             chroot._mountall()
@@ -471,6 +471,17 @@ def main(ret):
 
         finally:
             chroot._umountall()
+
+    elif options.mode == 'chroot':
+        if len(args) == 0:
+            log.critical("You must specify a command to run")
+            sys.exit(50)
+        else:
+            log.info("Running in chroot: %s" % args)
+
+        chroot.tryLockBuildRoot()
+        chroot._resetLogging()
+        chroot.doChroot(args)
 
     elif options.mode == 'installdeps':
         if len(args) == 0:

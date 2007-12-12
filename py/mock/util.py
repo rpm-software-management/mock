@@ -184,11 +184,13 @@ def chomp(line):
         return line
 
 # taken from sys/personality.h
-personality_defs = {}
-personality_defs['x86_64'] = 0x0000
-personality_defs['ppc64']  = 0x0000
-personality_defs['i386']   = 0x0008
-personality_defs['ppc']    = 0x0008
+PER_LINUX32=0x0008
+PER_LINUX=0x0000
+personality_defs = {
+    'x86_64': PER_LINUX, 'ppc64': PER_LINUX, 'sparc64': PER_LINUX,
+    'i386': PER_LINUX32, 'i586': PER_LINUX32, 'i686': PER_LINUX32, 
+    'ppc': PER_LINUX32, 'sparc': PER_LINUX32, 'sparcv9': PER_LINUX32,
+}
 
 import ctypes
 _libc = ctypes.cdll.LoadLibrary("libc.so.6")
@@ -198,11 +200,16 @@ _libc.personality.restype = ctypes.c_int
 
 decorate(traceLog())
 def condPersonality(per=None):
-    if personality_defs.get(per, None) is None: return
+    if per is None:
+        return
+    if personality_defs.get(per, None) is None:
+        getLog().warning("Unable to find predefined setarch personality constant for '%s' arch."
+            " You may have to manually run setarch."% per)
+        return
     res = _libc.personality(personality_defs[per])
-    if res:
+    if res == -1:
         raise OSError(_errno.value, os.strerror(_errno.value))
-    getLog().debug("set personality (setarch)")
+    getLog().info("Ran setarch '%s'" % per)
 
 CLONE_NEWNS = 0x00020000
 
@@ -272,11 +279,11 @@ def do(command, chrootPath=None, timeout=0, raiseExc=True, returnOutput=0, uidMa
             signal.signal(signal.SIGALRM, oldhandler)
 
         # mask and return just return value, plus child output
-        if raiseExc and os.WEXITSTATUS(ret):
+        if raiseExc and ((os.WIFEXITED(ret) and os.WEXITSTATUS(ret)) or os.WIFSIGNALED(ret)):
             if returnOutput:
-                raise mock.exception.Error, "Command failed: \n # %s\n%s" % (command, output)
+                raise mock.exception.Error, ("Command failed: \n # %s\n%s" % (command, output), ret)
             else:
-                raise mock.exception.Error, "Command failed. See logs for output.\n # %s" % command
+                raise mock.exception.Error, ("Command failed. See logs for output.\n # %s" % (command,), ret)
 
         return output
 
