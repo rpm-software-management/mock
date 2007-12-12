@@ -68,10 +68,13 @@ def command_parse(config_opts):
     parser.add_option("--rebuild", action="store_const", const="rebuild",
                       dest="mode", default='rebuild',
                       help="rebuild the specified SRPM(s)")
-    parser.add_option("--chroot", "--shell", action="store_const",
+    parser.add_option("--shell", action="store_const",
                       const="shell", dest="mode",
-                      help="run the specified command within the chroot."
+                      help="run the specified command interactively within the chroot."
                            " Default command: /bin/sh")
+    parser.add_option("--chroot", action="store_const",
+                      const="chroot", dest="mode",
+                      help="run the specified command noninteractively within the chroot.")
     parser.add_option("--clean", action="store_const", const="clean",
                       dest="mode",
                       help="completely remove the specified chroot")
@@ -487,9 +490,8 @@ def main(ret):
         if len(args) == 0:
             log.critical("You must specify a command to run")
             sys.exit(50)
-        else:
-            log.info("Running in chroot: %s" % args)
 
+        log.info("Running in chroot: %s" % args)
         chroot.tryLockBuildRoot()
         chroot._resetLogging()
         chroot.doChroot(args)
