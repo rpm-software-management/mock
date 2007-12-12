@@ -57,9 +57,12 @@ pkgpython_PYTHON = \
 
 CLEANFILES += py/*.pyc py/mock/*.pyc py/mock/plugins/*.pyc
 
-dist: ChangeLog
+dist: ChangeLog AUTHORS
 ChangeLog:
 	(GIT_DIR=.git git-log > .changelog.tmp && mv .changelog.tmp ChangeLog; rm -f .changelog.tmp) || (touch ChangeLog; echo 'git directory not found: installing possibly empty changelog.' >&2)
+
+AUTHORS:
+	(GIT_DIR=.git git-log | grep ^Author | sort |uniq > .authors.tmp && mv .authors.tmp AUTHORS; rm -f .authors.tmp) || (touch AUTHORS; echo 'git directory not found: installing possibly empty AUTHORS.' >&2)
 
 REPLACE_VARS_ON_INSTALL=$(libexecdir)/mock.py
 install-exec-hook:
