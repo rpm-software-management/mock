@@ -42,15 +42,6 @@ do
     fi
 done
 
-# Update the version information only immediately before a public release of your software. More frequent updates are unnecessary, and only guarantee that the current interface number gets larger faster.
-# If the library source code has changed at all since the last update, then increment revision (c:r:a becomes c:r+1:a).
-# If any interfaces have been added, removed, or changed since the last update, increment current, and set revision to 0.
-# If any interfaces have been added since the last public release, then increment age.
-# If any interfaces have been removed since the last public release, then set age to 0. 
-LIBTOOL_CURRENT=$(( $RELEASE_MAJOR ))
-LIBTOOL_REVISION=$RELEASE_MINOR
-LIBTOOL_AGE=0
-
 if test -z "$RELEASE_RPM_EXTRALEVEL"; then
     if test -z "$RELEASE_EXTRALEVEL"; then
         RELEASE_RPM_EXTRALEVEL=%{nil}
@@ -63,22 +54,7 @@ PACKAGE_VERSION=[`echo ${RELEASE_MAJOR}.${RELEASE_MINOR}.${RELEASE_SUBLEVEL}${RE
 PACKAGE_STRING=[`echo ${RELEASE_NAME} ${RELEASE_MAJOR}.${RELEASE_MINOR}.${RELEASE_SUBLEVEL}${RELEASE_EXTRALEVEL}`]
 VERSION=$PACKAGE_VERSION
 
-cat confdefs.h |
-    grep -v 'define VERSION ' |
-    grep -v 'define PACKAGE_VERSION ' |
-    grep -v 'define PACKAGE_STRING '  > confdefs.new
-mv confdefs.new confdefs.h
-cat >>confdefs.h <<_ACEOF 
-#define VERSION "$VERSION"
-#define PACKAGE_VERSION "$PACKAGE_VERSION"
-#define PACKAGE_STRING "$PACKAGE_STRING"
-_ACEOF
-
 AC_SUBST([RELEASE_NAME RELEASE_MAJOR RELEASE_MINOR RELEASE_SUBLEVEL RELEASE_EXTRALEVEL RELEASE_RPM_EXTRALEVEL])
-AC_SUBST([ LIBTOOL_CURRENT  LIBTOOL_REVISION LIBTOOL_AGE  ])
-
-# check if build dir == source dir.
-AM_CONDITIONAL([BLD_SRC_DIFFERENT], [test x$srcdir != x.])
 
 # generate files and exit
 AC_CONFIG_FILES([ Makefile ${PACKAGE_NAME}.spec ])

@@ -83,6 +83,9 @@ def command_parse(config_opts):
     parser.add_option("--install", action="store_const", const="install",
                       dest="mode",
                       help="install packages using yum")
+    parser.add_option("--update", action="store_const", const="update",
+                      dest="mode",
+                      help="update installed packages using yum")
     parser.add_option("--orphanskill", action="store_const", const="orphanskill",
                       dest="mode",
                       help="Kill all processes using specified buildroot.")
@@ -512,6 +515,9 @@ def main(ret):
 
         chroot.tryLockBuildRoot()
         chroot.yumInstall(*args)
+    
+    elif options.mode == 'update':
+        chroot.yumUpdate()
 
     elif options.mode == 'rebuild':
         do_rebuild(config_opts, chroot, args)
