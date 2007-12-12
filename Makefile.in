@@ -195,8 +195,8 @@ LIBTOOL_CURRENT = @LIBTOOL_CURRENT@
 LIBTOOL_REVISION = @LIBTOOL_REVISION@
 LIBTOOL_AGE = @LIBTOOL_AGE@
 CLEANFILES = mock-*.tar.gz mock-*.tar.bz2 mock-*.rpm _buildtemp \
-	version $(EXTRA_PROGRAMS) py/*.pyc py/mock/*.pyc \
-	py/mock/plugins/*.pyc
+	version docs/daemontest $(EXTRA_PROGRAMS) py/*.pyc \
+	py/mock/*.pyc py/mock/plugins/*.pyc
 DISTCLEANFILES = *~
 EXTRA_DIST = docs buildsys-build.spec-template mock.spec etc
 mocketcdir = $(sysconfdir)/mock

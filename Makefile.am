@@ -19,7 +19,7 @@ LIBTOOL_CURRENT=@LIBTOOL_CURRENT@
 LIBTOOL_REVISION=@LIBTOOL_REVISION@
 LIBTOOL_AGE=@LIBTOOL_AGE@
 
-CLEANFILES=mock-*.tar.gz mock-*.tar.bz2 mock-*.rpm _buildtemp version
+CLEANFILES=mock-*.tar.gz mock-*.tar.bz2 mock-*.rpm _buildtemp version docs/daemontest
 DISTCLEANFILES=*~
 
 EXTRA_DIST =
