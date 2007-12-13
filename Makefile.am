@@ -18,6 +18,9 @@ PACKAGE = $(RELEASE_NAME)
 CLEANFILES=mock-*.tar.gz mock-*.tar.bz2 mock-*.rpm _buildtemp version docs/daemontest
 DISTCLEANFILES=*~
 
+docs/runtests.sh: srpm
+TESTS=./docs/runtests.sh
+
 EXTRA_DIST =
 bin_PROGRAMS=
 CLEANFILES += $(EXTRA_PROGRAMS)
