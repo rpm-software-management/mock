@@ -53,6 +53,24 @@ if [ ! -e $CHROOT/usr/include/python* ]; then
     exit 1
 fi
 
+# test the copyin command
+time $MOCKCMD --copyin docs/release-instructions.txt /tmp
+if [ ! -f $CHROOT/tmp/release-instructions.txt ]; then
+    echo "copyin test FAILED! could not find $CHROOT/tmp/release-instructions.txt"
+    exit 1
+fi
+
+# test the copyout command
+time $MOCKCMD --copyout /etc/passwd /tmp/my-copyout-passwd
+if [ ! -f /tmp/my-copyout-passwd ]; then
+    echo "copyout test FAILED! could not find /tmp/my-copyout-passwd"
+fi
+mkdir /tmp/$uniqueext
+time $MOCKCMD --copyout /etc/passwd /etc/fstab /tmp/$uniqueext
+if [ ! -f /tmp/$uniqueext/passwd -o ! -f /tmp/$uniqueext/fstab ]; then
+    echo "multiple copyout failed!"
+fi
+
 #
 # Test that chroot return code is properly passed up
 #

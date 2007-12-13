@@ -65,6 +65,8 @@ import mock.util
 def command_parse(config_opts):
     """return options and args from parsing the command line"""
     parser = OptionParser(usage=__doc__, version=__VERSION__)
+
+    # modes (basic commands)
     parser.add_option("--rebuild", action="store_const", const="rebuild",
                       dest="mode", default='rebuild',
                       help="rebuild the specified SRPM(s)")
@@ -93,6 +95,15 @@ def command_parse(config_opts):
                       dest="mode",
                       help="Kill all processes using specified buildroot.")
 
+    parser.add_option("--copyin", action="store_const", const="copyin",
+                      dest="mode",
+                      help="Copy file(s) into the specified chroot")
+
+    parser.add_option("--copyout", action="store_const", const="copyout",
+                      dest="mode", 
+                      help="Copy file(s) from the specified chroot")
+    
+    # options
     parser.add_option("-r", action="store", type="string", dest="chroot",
                       help="chroot name/config file name default: %default",
                       default='default')
@@ -526,7 +537,37 @@ def main(ret):
 
     elif options.mode == 'orphanskill':
         mock.util.orphansKill(chroot.rootdir)
-
+    elif options.mode == 'copyin':
+        chroot.tryLockBuildRoot()
+        uidManager.dropPrivsForever()
+        if len(args) < 2:
+            log.critical("Must have source and destinations for copyin")
+            sys.exit(50)
+        dest = chroot.makeChrootPath(args[-1])
+        if len(args) > 2 and not os.path.isdir(dest):
+            log.critical("multiple source files and %s is not a directory!" % dest)
+            sys.exit(50)
+        args = args[:-1]
+        import shutil
+        for f in args:
+            print "copying %s to %s" % (f, dest)
+            shutil.copy(f, dest)
+    elif options.mode == 'copyout':
+        chroot.tryLockBuildRoot()
+        uidManager.dropPrivsForever()
+        if len(args) < 2:
+            log.critical("Must have source and destinations for copyout")
+            sys.exit(50)
+        dest = args[-1]
+        if len(args) > 2 and not os.path.isdir(dest):
+            log.critical("multiple source files and %s is not a directory!" % dest)
+            sys.exit(50)
+        args = args[:-1]
+        import shutil
+        for f in args:
+            src = chroot.makeChrootPath(f)
+            print "copying %s to %s" % (src, dest)
+            shutil.copy(src, dest)
 
 if __name__ == '__main__':
     # fix for python 2.4 logging module bug:
