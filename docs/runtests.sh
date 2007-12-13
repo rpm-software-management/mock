@@ -22,12 +22,7 @@ DIR=$(cd $(dirname $0); pwd)
 TOP_SRCTREE=$DIR/../
 cd $TOP_SRCTREE
 
-./autogen.sh
-make distclean ||:
-./configure
-make distcheck
-make srpm
-gcc -o docs/daemontest docs/daemontest.c
+gcc -Wall -o docs/daemontest docs/daemontest.c
 
 #
 # most tests below will use this mock command line
