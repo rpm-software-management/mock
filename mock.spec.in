@@ -70,6 +70,10 @@ fi
 %attr(02775, root, mock) %dir /var/lib/mock
 
 %changelog
+* Thu Dec 13 2007 Michael Brown <mebrown@michaels-house.net> - 0.9.2-1
+- add '--update' mode
+- fix '--shell' mode
+
 * Tue Dec 11 2007 Michael Brown <mebrown@michaels-house.net> - 0.9.1-1
 - fix 'mock shell' command when passing more than one arg.
 - add --orphanskill mode which only does orphankill
