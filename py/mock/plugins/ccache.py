@@ -25,13 +25,12 @@ class CCache(object):
         self.rootObj = rootObj
         self.ccache_opts = conf
         self.ccachePath = self.ccache_opts['dir'] % self.ccache_opts
-        self.rootdir = rootObj.rootdir
         rootObj.ccacheObj = self
         rootObj.preExistingDeps = rootObj.preExistingDeps + " ccache "
         rootObj.addHook("prebuild", self._ccacheBuildHook)
         rootObj.addHook("preinit",  self._ccachePreInitHook)
-        rootObj.umountCmds.append('umount -n %s/tmp/ccache' % rootObj.rootdir)
-        rootObj.mountCmds.append('mount -n --bind %s  %s/tmp/ccache' % (self.ccachePath, rootObj.rootdir))
+        rootObj.umountCmds.append('umount -n %s' % rootObj.makeChrootPath("/tmp/ccache"))
+        rootObj.mountCmds.append('mount -n --bind %s  %s' % (self.ccachePath, rootObj.makeChrootPath("/tmp/ccache")))
 
     # =============
     # 'Private' API
@@ -49,7 +48,7 @@ class CCache(object):
     # cache.
     decorate(traceLog())
     def _ccachePreInitHook(self):
-        mock.util.mkdirIfAbsent(os.path.join(self.rootdir, 'tmp/ccache'))
+        mock.util.mkdirIfAbsent(self.rootObj.makeChrootPath('/tmp/ccache'))
         mock.util.mkdirIfAbsent(self.ccachePath)
         os.environ['PATH'] = "/tmp/ccache:%s" % (os.environ['PATH'])
         os.environ['CCACHE_DIR'] = "/tmp/ccache"

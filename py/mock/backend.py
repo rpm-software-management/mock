@@ -143,6 +143,9 @@ class Root(object):
 
     decorate(traceLog())
     def makeChrootPath(self, *args):
+        '''For safety reasons, self.rootdir should not be used directly. Instead
+        use this handy helper function anytime you want to reference a path in
+        relation to the chroot.'''
         tmp = self.rootdir + "/" + "/".join(args)
         return tmp.replace("//", "/")
 
@@ -227,7 +230,7 @@ class Root(object):
 
         # files in /etc that need doing
         for key in self.chroot_file_contents:
-            p = self.makeChrootPath(*key.split('/'))
+            p = self.makeChrootPath(key)
             if not os.path.exists(p):
                 # write file
                 fo = open(p, 'w+')
@@ -538,7 +541,7 @@ class Root(object):
         self.uidManager.becomeUser(self.chrootuid, self.chrootgid)
         try:
             # create dir structure
-            for subdir in ["%s" % self.makeChrootPath(self.builddir, s) for s in ('RPMS', 'SRPMS', 'SOURCES', 'SPECS', 'BUILD', 'originals')]:
+            for subdir in [self.makeChrootPath(self.builddir, s) for s in ('RPMS', 'SRPMS', 'SOURCES', 'SPECS', 'BUILD', 'originals')]:
                 mock.util.mkdirIfAbsent(subdir)
 
             # change ownership so we can write to build home dir
@@ -548,7 +551,7 @@ class Root(object):
                     os.chmod(os.path.join(dirpath, path), 0755)
 
             # rpmmacros default
-            macrofile_out = '%s/.rpmmacros' % self.makeChrootPath(self.homedir)
+            macrofile_out = self.makeChrootPath(self.homedir, ".rpmmacros")
             rpmmacros = open(macrofile_out, 'w+')
             for key, value in self.macros.items():
                 rpmmacros.write( "%s %s\n" % (key, value) )
