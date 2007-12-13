@@ -29,10 +29,10 @@ class BindMount(object):
         rootObj.bindMountObj = self
         rootObj.addHook("preinit",  self._bindMountPreInitHook)
         for srcdir, destdir in self.bind_opts['dirs']:
-            rootObj.umountCmds.append('umount -n %s/%s' % (rootObj.rootdir, destdir))
-            rootObj.mountCmds.append('mount -n --bind %s  %s/%s' % (srcdir, rootObj.rootdir, destdir))
+            rootObj.umountCmds.append('umount -n %s' % rootObj.makeChrootPath(destdir))
+            rootObj.mountCmds.append('mount -n --bind %s  %s' % (srcdir, rootObj.makeChrootPath(destdir)))
 
     decorate(traceLog())
     def _bindMountPreInitHook(self):
         for srcdir, destdir in self.bind_opts['dirs']:
-            mock.util.mkdirIfAbsent("%s/%s" % (self.rootObj.rootdir, destdir))
+            mock.util.mkdirIfAbsent(self.rootObj.makeChrootPath(destdir))

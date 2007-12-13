@@ -53,13 +53,6 @@ if [ ! -e $CHROOT/usr/include/python* ]; then
     exit 1
 fi
 
-# test the copyin command
-time $MOCKCMD --copyin docs/release-instructions.txt /tmp
-if [ ! -f $CHROOT/tmp/release-instructions.txt ]; then
-    echo "copyin test FAILED! could not find $CHROOT/tmp/release-instructions.txt"
-    exit 1
-fi
-
 # test the copyout command
 time $MOCKCMD --copyout /etc/passwd /tmp/my-copyout-passwd
 if [ ! -f /tmp/my-copyout-passwd ]; then
@@ -122,13 +115,14 @@ fi
 
 #
 # Test orphanskill feature (std)
+# (also tests the --copyin feature)
 #
 if pgrep daemontest; then
     echo "Exiting because there is already a daemontest running."
     exit 1
 fi
 time $MOCKCMD --offline --init
-cp docs/daemontest $CHROOT/tmp
+time $MOCKCMD --copyin docs/daemontest /tmp
 time $MOCKCMD --offline --chroot -- /tmp/daemontest
 if pgrep daemontest; then
     echo "Daemontest FAILED. found a daemontest process running after exit." 
@@ -137,9 +131,10 @@ fi
 
 #
 # Test orphanskill feature (explicit)
+# (also tests --copyin)
 #
 time $MOCKCMD --offline --init
-cp docs/daemontest $CHROOT/tmp
+time $MOCKCMD --copyin docs/daemontest /tmp
 echo -e "#!/bin/sh\n/tmp/daemontest\nsleep 60\n" >> $CHROOT/tmp/try
 # the following should launch about three processes in the chroot: bash, sleep, daemontest
 $MOCKCMD --offline --chroot -- bash /tmp/try &

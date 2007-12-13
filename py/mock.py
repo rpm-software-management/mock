@@ -25,6 +25,8 @@
            mock [options] {--shell|--chroot} <cmd>
            mock [options] --installdeps {SRPM|RPM}
            mock [options] --install PACKAGE
+           mock [options] --copyin path [..path] destination
+           mock [options] --copyout path [..path] destination
 """
 
 # library imports
@@ -541,6 +543,7 @@ def main(ret):
         mock.util.orphansKill(chroot.rootdir)
     elif options.mode == 'copyin':
         chroot.tryLockBuildRoot()
+        chroot._resetLogging()
         uidManager.dropPrivsForever()
         if len(args) < 2:
             log.critical("Must have source and destinations for copyin")
@@ -551,11 +554,15 @@ def main(ret):
             sys.exit(50)
         args = args[:-1]
         import shutil
-        for f in args:
-            print "copying %s to %s" % (f, dest)
-            shutil.copy(f, dest)
+        for src in args:
+            log.debug("copying %s to %s" % (src, dest))
+            if os.path.isdir(src):
+                shutil.copytree(src, dest)
+            else:
+                shutil.copy(src, dest)
     elif options.mode == 'copyout':
         chroot.tryLockBuildRoot()
+        chroot._resetLogging()
         uidManager.dropPrivsForever()
         if len(args) < 2:
             log.critical("Must have source and destinations for copyout")
@@ -568,8 +575,11 @@ def main(ret):
         import shutil
         for f in args:
             src = chroot.makeChrootPath(f)
-            print "copying %s to %s" % (src, dest)
-            shutil.copy(src, dest)
+            log.debug("copying %s to %s" % (src, dest))
+            if os.path.isdir(src):
+                shutil.copytree(src, dest)
+            else:
+                shutil.copy(src, dest)
 
 if __name__ == '__main__':
     # fix for python 2.4 logging module bug:
