@@ -30,7 +30,6 @@ class RootCache(object):
         self.rootCacheFile = os.path.join(self.rootSharedCachePath, "cache.tar.gz")
         self.rootCacheLock = None
         self.state = rootObj.state
-        self.rootdir = rootObj.rootdir
         rootObj.rootCacheObj = self
         rootObj.addHook("preinit", self._rootCachePreInitHook)
         rootObj.addHook("postinit", self._rootCachePostInitHook)
@@ -75,7 +74,7 @@ class RootCache(object):
         if os.path.exists(self.rootCacheFile) and self.rootObj.chrootWasCleaned:
             self.state("unpacking cache")
             self._rootCacheLock()
-            mock.util.do("tar xzf %s -C %s" % (self.rootCacheFile, self.rootdir))
+            mock.util.do("tar xzf %s -C %s" % (self.rootCacheFile, self.rootObj.makeChrootPath()))
             self._rootCacheUnlock()
             self.chroot_setup_cmd = "update"
             self.rootObj.chrootWasCleaned = False
@@ -86,6 +85,6 @@ class RootCache(object):
         if self.rootObj.chrootWasCleaned:
             self.state("creating cache")
             self._rootCacheLock(shared=0)
-            mock.util.do("tar czf %s -C %s ." % (self.rootCacheFile, self.rootdir))
+            mock.util.do("tar czf %s -C %s ." % (self.rootCacheFile, self.rootObj.makeChrootPath()))
             self._rootCacheUnlock()
 
