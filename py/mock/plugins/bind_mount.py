@@ -25,7 +25,6 @@ class BindMount(object):
     def __init__(self, rootObj, conf):
         self.rootObj = rootObj
         self.bind_opts = conf
-        self.rootdir = rootObj.rootdir
         rootObj.bindMountObj = self
         rootObj.addHook("preinit",  self._bindMountPreInitHook)
         for srcdir, destdir in self.bind_opts['dirs']:
