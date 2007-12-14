@@ -1,8 +1,20 @@
 Release checklist overview:
 
+  -) ensure all source changes are checked into git
+  -) run 'make distclean' to remove generated files
+  -) remove ChangeLog and AUTHORS
+  -) update version info in 'configure.ac'
+  -) run 'autogen.sh' to update autoconf files
+  -) run 'configure' to generate Makefile and mock.spec
+  -) run 'make dist' to generate ChangeLog and AUTHORS files
+  -) run make rpm to generate binary RPM and propagate version changes
+
   1) update both the ChangeLog file and the specfile %changelog section
+     - remove existing ChangeLog and AUTHORS file
+     - run 'make dist' to regenerate them
+     - edit mock.spec.in with %changelog info
   2) update version in 'configure.ac'
-  3) run 'autoreconf' to update autoconf files
+  3) run 'autogen.sh' to update autoconf files
   4) run 'make rpm' to update version in all files
   5) check all changes into git and push upstream
   6) properly tag git tree with signature

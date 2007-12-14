@@ -74,7 +74,7 @@ class RootCache(object):
         if os.path.exists(self.rootCacheFile) and self.rootObj.chrootWasCleaned:
             self.state("unpacking cache")
             self._rootCacheLock()
-            mock.util.do("tar xzf %s -C %s" % (self.rootCacheFile, rootObj.makeChrootPath()))
+            mock.util.do("tar xzf %s -C %s" % (self.rootCacheFile, self.rootObj.makeChrootPath()))
             self._rootCacheUnlock()
             self.chroot_setup_cmd = "update"
             self.rootObj.chrootWasCleaned = False
