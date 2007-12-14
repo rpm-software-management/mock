@@ -83,11 +83,11 @@ class Root(object):
             self.pluginConf[key]["root"] = self.sharedRootName
 
         # mount/umount
-        self.umountCmds = ['umount -n %s/proc' % self.rootdir,
-                'umount -n %s/sys' % self.rootdir,
+        self.umountCmds = ['umount -n %s' % self.makeChrootPath('proc')
+                'umount -n %s' % self.makeChrootPath('sys')
                ]
-        self.mountCmds = ['mount -n -t proc   mock_chroot_proc   %s/proc' % self.rootdir,
-                'mount -n -t sysfs  mock_chroot_sysfs  %s/sys' % self.rootdir,
+        self.mountCmds = ['mount -n -t proc   mock_chroot_proc   %s' % self.makeChrootPath('proc'),
+                'mount -n -t sysfs  mock_chroot_sysfs  %s' % self.makeChrootPath('sys'),
                ]
 
         self.build_log_fmt_str = config['build_log_fmt_str']
@@ -159,7 +159,7 @@ class Root(object):
 
          # create our base directory heirarchy
         mock.util.mkdirIfAbsent(self.basedir)
-        mock.util.mkdirIfAbsent(self.rootdir)
+        mock.util.mkdirIfAbsent(self.makeChrootPath())
 
         self.uidManager.dropPrivsTemp()
         try:
@@ -175,7 +175,7 @@ class Root(object):
         self._resetLogging()
 
         # write out config details
-        self.root_log.debug('rootdir = %s' % self.rootdir)
+        self.root_log.debug('rootdir = %s' % self.makeChrootPath())
         self.root_log.debug('resultdir = %s' % self.resultdir)
 
         # set up plugins:
@@ -299,7 +299,7 @@ class Root(object):
     decorate(traceLog())
     def doChroot(self, command, env="", *args, **kargs):
         """execute given command in root"""
-        return mock.util.do( command, personality=self.personality, chrootPath=self.rootdir, *args, **kargs )
+        return mock.util.do( command, personality=self.personality, chrootPath=self.makeChrootPath(), *args, **kargs )
 
     decorate(traceLog())
     def yumInstall(self, *srpms):
@@ -377,12 +377,12 @@ class Root(object):
                 )
 
             # rebuild srpm/rpm from SPEC file
-            specs = glob.glob("%s/%s/SPECS/*.spec" % (self.rootdir, self.builddir))
+            specs = glob.glob("%s/%s/SPECS/*.spec" % (self.makeChrootPath(), self.builddir))
             if len(specs) < 1:
                 raise mock.exception.PkgError, "No Spec file found in srpm: %s" % srpmBasename
 
             spec = specs[0] # if there's more than one then someone is an idiot
-            chrootspec = spec.replace(self.rootdir, '') # get rid of rootdir prefix
+            chrootspec = spec.replace(self.makeChrootPath(), '') # get rid of rootdir prefix
             # Completely/Permanently drop privs while running the following:
             self.doChroot(
                 "rpmbuild -bs --target %s --nodeps %s" % (self.target_arch, chrootspec),
@@ -392,7 +392,7 @@ class Root(object):
                 gid=self.chrootgid,
                 )
 
-            rebuiltSrpmFile = glob.glob("%s/%s/SRPMS/*.src.rpm" % (self.rootdir, self.builddir))
+            rebuiltSrpmFile = glob.glob("%s/%s/SRPMS/*.src.rpm" % (self.makeChrootPath(), self.builddir))
             if len(rebuiltSrpmFile) != 1:
                 raise mock.exception.PkgError, "Didnt find single rebuilt srpm."
 
@@ -477,7 +477,7 @@ class Root(object):
         if not self.online:
             cmdOpts = "-C"
 
-        cmd = '%s --installroot %s %s %s' % (self.yum_path, self.rootdir, cmdOpts, cmd)
+        cmd = '%s --installroot %s %s %s' % (self.yum_path, self.makeChrootPath(), cmdOpts, cmd)
         self.root_log.debug(cmd)
         output = ""
         try:
