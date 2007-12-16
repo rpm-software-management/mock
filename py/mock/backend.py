@@ -83,7 +83,7 @@ class Root(object):
             self.pluginConf[key]["root"] = self.sharedRootName
 
         # mount/umount
-        self.umountCmds = ['umount -n %s' % self.makeChrootPath('proc')
+        self.umountCmds = ['umount -n %s' % self.makeChrootPath('proc'),
                 'umount -n %s' % self.makeChrootPath('sys')
                ]
         self.mountCmds = ['mount -n -t proc   mock_chroot_proc   %s' % self.makeChrootPath('proc'),
