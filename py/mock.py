@@ -106,7 +106,7 @@ def command_parse(config_opts):
                       help="Copy file(s) from the specified chroot")
     
     # options
-    parser.add_option("-r", action="store", type="string", dest="chroot",
+    parser.add_option("-r", "--root", action="store", type="string", dest="chroot",
                       help="chroot name/config file name default: %default",
                       default='default')
 
@@ -124,9 +124,9 @@ def command_parse(config_opts):
                       dest="cleanup_after", default=None,
                       help="Dont clean chroot after building. If automatic"
                            " cleanup is enabled, use this to disable.", )
-    parser.add_option("--arch", action ="store", dest="arch",
+    parser.add_option("--target", "--arch", action ="store", dest="arch",
                       default=None, help="target build arch")
-    parser.add_option("--define", action="append", dest="rpmmacros",
+    parser.add_option("-D", "--define", action="append", dest="rpmmacros",
                       default=[], type="string", metavar="'MACRO EXPR'",
                       help="define an rpm macro (may be used more than once)")
     parser.add_option("--with", action="append", dest="rpmwith",
@@ -155,7 +155,7 @@ def command_parse(config_opts):
     parser.add_option("-q", "--quiet", action="store_const", const=0,
                       dest="verbose", help="quiet build")
     parser.add_option("--trace", action="store_true", default=False,
-                      dest="trace", help="quiet build")
+                      dest="trace", help="TODO: document me")
 
     # plugins
     parser.add_option("--enable-plugin", action="append",
