@@ -44,7 +44,7 @@ COMMANDS section, below, for detailed listing of all commands.
 .SH "OPTIONS"
 .LP
 .TP
-\fB\-r\fR \fICHROOT\fP
+\fB\-r\fR \fICHROOT\fP, \fB\-\-root\fR=\fICHROOT\fP
 Uses specified chroot configuration as defined in
 /etc/mock/<\fIchroot\fP>.cfg. If none specified, uses the chroot linked
 to by /etc/mock/default.cfg
@@ -59,12 +59,12 @@ Do not clean chroot before building package.
 Clean chroot after building. Use with \-\-resultdir. Only active for '\-\-rebuild'.
 .TP
 \fB\-\-no\-cleanup\-after\fR
-Dont clean chroot after building. If automatic cleanup is enabled, use this to disable.
+Don't clean chroot after building. If automatic cleanup is enabled, use this to disable.
 .TP
-\fB\-\-arch=\fR\fIARCH\fP
+\fB\-\-target=\fR\fIARCH\fP, \fB\-\-arch=\fR\fIARCH\fP
 Specify target build arch.
 .TP
-\fB\-\-define=\fR"\fIMACRO EXPR\fP"
+\fB\-D \fR"\fIMACRO EXPR\fP", \fB\-\-define=\fR"\fIMACRO EXPR\fP"
 Specify macro definitions used for the build.  This option may be used multiple times, just as the rpmbuild \-\-define option can be.  For example:
 
 \fB\-\-define "with_extra_cheese 1" \-\-define="packager Monkey"\fR
@@ -72,12 +72,12 @@ Specify macro definitions used for the build.  This option may be used multiple 
 \fB\-\-with=\fR\fIOPTION\fP
 Enable configure OPTION for build.  This option may be used multiple times.  For example:
 
-\fB\-\-with extra_cheese\fR
+\fB\-\-with=extra_cheese\fR
 .TP
 \fB\-\-without=\fR\fIOPTION\fP
 Disable configure OPTION for build.  This option may be used multiple times.  For example:
 
-\fB\-\-without anchovies\fR
+\fB\-\-without=anchovies\fR
 .TP
 \fB\-\-resultdir=\fR\fIRESULTDIR\fP
 Change directory where resulting files (RPMs and build logs) are written. Resultdir can contain python-string substitutions for any variable in the chroot config. For example:
@@ -93,7 +93,16 @@ Change directory where config files are found
 \fB\-\-rpmbuild_timeout=\fR\fISECONDS\fP
 Fail build if rpmbuild takes longer than 'timeout' seconds
 .TP
-\fB\-\-help\fR
+\fB\-q\fR, \fB\-\-quiet\fR
+Be quiet.
+.TP
+\fB\-v\fR, \fB\-\-verbose\fR
+Output verbose progress information.
+.TP
+\fB\-\-trace\fR
+TODO: document me
+.TP
+\fB\-h\fR, \fB\-\-help\fR
 Show usage information and exit.
 .TP
 \fB\-\-version\fR
@@ -126,7 +135,7 @@ Do a yum install PACKAGE inside the buildroot. Buildroot must already be initial
 Do a yum update inside the buildroot. Buildroot must already be initialized -- no 'clean' is performed
 .TP
 \fB\-\-orphanskill\fP
-Noop mode that simply checks that no stray processes are running in the chroot. Kills any processes that it finds using specified root.
+No-op mode that simply checks that no stray processes are running in the chroot. Kills any processes that it finds using specified root.
 .TP
 \fB\-\-copyin\fP
 Copies the source paths (files or directory trees) into the chroot at
