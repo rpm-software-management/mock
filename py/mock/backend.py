@@ -142,6 +142,11 @@ class Root(object):
         return 1
 
     decorate(traceLog())
+    def makeChrootPath(self, *args):
+        tmp = self.rootdir + "/" + "/".join(args)
+        return tmp.replace("//", "/")
+
+    decorate(traceLog())
     def init(self):
         self.state("init")
 
@@ -188,41 +193,41 @@ class Root(object):
                      'proc',
                      'sys',
                     ]:
-            mock.util.mkdirIfAbsent(os.path.join(self.rootdir, item))
+            mock.util.mkdirIfAbsent(self.makeChrootPath(item))
 
         # touch files
         self.root_log.debug('touch required files')
-        for item in [os.path.join(self.rootdir, 'etc', 'mtab'),
-                     os.path.join(self.rootdir, 'etc', 'fstab'),
-                     os.path.join(self.rootdir, 'var', 'log', 'yum.log')]:
+        for item in [self.makeChrootPath('etc', 'mtab'),
+                     self.makeChrootPath('etc', 'fstab'),
+                     self.makeChrootPath('var', 'log', 'yum.log')]:
             mock.util.touch(item)
 
         # write in yum.conf into chroot
         # always truncate and overwrite (w+)
         self.root_log.debug('configure yum')
-        yumconf = os.path.join(self.rootdir, 'etc', 'yum', 'yum.conf')
+        yumconf = self.makeChrootPath('etc', 'yum', 'yum.conf')
         yumconf_fo = open(yumconf, 'w+')
         yumconf_fo.write(self.yum_conf_content)
         yumconf_fo.close()
 
         # symlink /etc/yum.conf to /etc/yum/yum.conf (FC6 requires)
         try:
-            os.unlink(os.path.join(self.rootdir, "etc", "yum.conf"))
+            os.unlink(self.makeChrootPath("etc", "yum.conf"))
         except OSError:
             pass
-        os.symlink('yum/yum.conf', os.path.join(self.rootdir, "etc", "yum.conf"))
+        os.symlink('yum/yum.conf', self.makeChrootPath("etc", "yum.conf"))
 
         # set up resolv.conf
         if self.use_host_resolv:
-            resolvdir = os.path.join(self.rootdir, 'etc')
-            resolvpath = os.path.join(self.rootdir, 'etc', 'resolv.conf')
+            resolvdir = self.makeChrootPath('etc')
+            resolvpath = self.makeChrootPath('etc', 'resolv.conf')
             if os.path.exists(resolvpath):
                 os.remove(resolvpath)
             shutil.copy2('/etc/resolv.conf', resolvdir)
 
         # files in /etc that need doing
         for key in self.chroot_file_contents:
-            p = os.path.join(self.rootdir, *key.split('/'))
+            p = self.makeChrootPath(*key.split('/'))
             if not os.path.exists(p):
                 # write file
                 fo = open(p, 'w+')
@@ -254,8 +259,8 @@ class Root(object):
     decorate(traceLog())
     def _setupDev(self):
         # files in /dev
-        mock.util.rmtree(os.path.join(self.rootdir, "dev"))
-        mock.util.mkdirIfAbsent(os.path.join(self.rootdir, "dev", "pts"))
+        mock.util.rmtree(self.makeChrootPath("dev"))
+        mock.util.mkdirIfAbsent(self.makeChrootPath("dev", "pts"))
         prevMask = os.umask(0000)
         devFiles = (
             (stat.S_IFCHR | 0666, os.makedev(1, 3), "dev/null"),
@@ -268,23 +273,23 @@ class Root(object):
         )
         for i in devFiles:
             # create node
-            os.mknod( os.path.join(self.rootdir, i[2]), i[0], i[1] )
+            os.mknod( self.makeChrootPath(i[2]), i[0], i[1])
             # set context. (only necessary if host running selinux enabled.)
             # fails gracefully if chcon not installed.
             mock.util.do("chcon --reference=/%s %s" %
-                (i[2], os.path.join(self.rootdir, i[2])), raiseExc=0)
+                (i[2], self.makeChrootPath(i[2])), raiseExc=0)
 
-        os.symlink("/proc/self/fd/0", os.path.join(self.rootdir, "dev/stdin"))
-        os.symlink("/proc/self/fd/1", os.path.join(self.rootdir, "dev/stdout"))
-        os.symlink("/proc/self/fd/2", os.path.join(self.rootdir, "dev/stderr"))
+        os.symlink("/proc/self/fd/0", self.makeChrootPath("dev/stdin"))
+        os.symlink("/proc/self/fd/1", self.makeChrootPath("dev/stdout"))
+        os.symlink("/proc/self/fd/2", self.makeChrootPath("dev/stderr"))
         os.umask(prevMask)
 
         # mount/umount
-        umntCmd = 'umount -n %s/dev/pts' % self.rootdir
+        umntCmd = 'umount -n %s' % self.makeChrootPath('/dev/pts')
         if umntCmd not in self.umountCmds:
             self.umountCmds.append(umntCmd)
 
-        mntCmd = 'mount -n -t devpts mock_chroot_devpts %s/dev/pts' % self.rootdir
+        mntCmd = 'mount -n -t devpts mock_chroot_devpts %s' % self.makeChrootPath('/dev/pts')
         if mntCmd not in self.mountCmds:
             self.mountCmds.append(mntCmd)
 
@@ -405,7 +410,7 @@ class Root(object):
                 gid=self.chrootgid,
                 )
 
-            bd_out = self.rootdir + self.builddir
+            bd_out = self.makeChrootPath(self.builddir)
             rpms = glob.glob(bd_out + '/RPMS/*.rpm')
             srpms = glob.glob(bd_out + '/SRPMS/*.rpm')
             packages = rpms + srpms
@@ -482,11 +487,11 @@ class Root(object):
 
     decorate(traceLog())
     def _makeBuildUser(self):
-        if not os.path.exists(os.path.join(self.rootdir, 'usr/sbin/useradd')):
+        if not os.path.exists(self.makeChrootPath('usr/sbin/useradd')):
             raise mock.exception.RootError, "Could not find useradd in chroot, maybe the install failed?"
 
         # safe and easy. blow away existing /builddir and completely re-create.
-        mock.util.rmtree(os.path.join(self.rootdir, self.homedir))
+        mock.util.rmtree(self.makeChrootPath(self.homedir))
         dets = { 'uid': self.chrootuid, 'gid': self.chrootgid, 'user': self.chrootuser, 'group': self.chrootgroup, 'home': self.homedir }
 
         self.doChroot('/usr/sbin/userdel -r %(user)s' % dets, raiseExc=False)
@@ -533,7 +538,7 @@ class Root(object):
         self.uidManager.becomeUser(self.chrootuid, self.chrootgid)
         try:
             # create dir structure
-            for subdir in ["%s/%s/%s" % (self.rootdir, self.builddir, s) for s in ('RPMS', 'SRPMS', 'SOURCES', 'SPECS', 'BUILD', 'originals')]:
+            for subdir in ["%s" % self.makeChrootPath(self.builddir, s) for s in ('RPMS', 'SRPMS', 'SOURCES', 'SPECS', 'BUILD', 'originals')]:
                 mock.util.mkdirIfAbsent(subdir)
 
             # change ownership so we can write to build home dir
@@ -543,7 +548,7 @@ class Root(object):
                     os.chmod(os.path.join(dirpath, path), 0755)
 
             # rpmmacros default
-            macrofile_out = '%s%s/.rpmmacros' % (self.rootdir, self.homedir)
+            macrofile_out = '%s/.rpmmacros' % self.makeChrootPath(self.homedir)
             rpmmacros = open(macrofile_out, 'w+')
             for key, value in self.macros.items():
                 rpmmacros.write( "%s %s\n" % (key, value) )
@@ -559,7 +564,7 @@ class Root(object):
     decorate(traceLog())
     def _copySrpmIntoChroot(self, srpm):
         srpmFilename = os.path.basename(srpm)
-        dest = self.rootdir + '/' + self.builddir + '/' + 'originals'
+        dest = self.makeChrootPath(self.builddir, 'originals')
         shutil.copy2(srpm, dest)
         return os.path.join(self.builddir, 'originals', srpmFilename)
 
