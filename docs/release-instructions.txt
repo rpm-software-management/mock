@@ -27,8 +27,6 @@ In the git tree:
      $ git tag -u <your key> mock-<version>
   12) push to main git repo:
      $ git push
-  13) run 'autogen.sh && ./configure'
-  14) run 'make rpm' again to generate source tarball
 
 =====================================================================
 
