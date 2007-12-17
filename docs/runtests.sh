@@ -116,7 +116,8 @@ fi
 # Test orphanskill feature (explicit)
 #
 time $MOCKCMD --offline --init
-cp docs/daemontest $CHROOT/tmp
+time $MOCKCMD --offline --copyin docs/daemontest.c /tmp
+time $MOCKCMD --offline --chroot -- gcc -Wall -o /tmp/daemontest /tmp/daemontest.c
 echo -e "#!/bin/sh\n/tmp/daemontest\nsleep 60\n" >> $CHROOT/tmp/try
 # the following should launch about three processes in the chroot: bash, sleep, daemontest
 $MOCKCMD --offline --chroot -- bash /tmp/try &
