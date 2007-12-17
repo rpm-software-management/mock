@@ -50,7 +50,9 @@ fi
 
 # python stuff
 %{_libexecdir}/mock.py
+%if "%{el4}" != "1"
 %exclude %{_libexecdir}/mock.py[co]
+%endif
 %{python_sitelib}/*
 
 # config files
