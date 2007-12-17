@@ -155,7 +155,7 @@ def command_parse(config_opts):
     parser.add_option("-q", "--quiet", action="store_const", const=0,
                       dest="verbose", help="quiet build")
     parser.add_option("--trace", action="store_true", default=False,
-                      dest="trace", help="TODO: document me")
+                      dest="trace", help="Enable internal mock tracing output.")
 
     # plugins
     parser.add_option("--enable-plugin", action="append",
