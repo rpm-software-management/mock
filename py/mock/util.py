@@ -76,7 +76,7 @@ def orphansKill(rootToKill):
     for fn in os.listdir("/proc"):
         try:
             root = os.readlink("/proc/%s/root" % fn)
-            if root == rootToKill:
+            if os.path.realpath(root) == os.path.realpath(rootToKill):
                 getLog().warning("Process ID %s still running in chroot. Killing..." % fn)
                 os.kill(int(fn, 10), 15)
         except OSError, e:
