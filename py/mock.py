@@ -493,7 +493,7 @@ def main(ret):
             if config_opts['internal_setarch']:
                 mock.util.condPersonality(config_opts['target_arch'])
             cmd = ' '.join(args)
-            status = os.system("PS1='mock-chroot> ' /usr/sbin/chroot %s %s" % (chroot.rootdir, cmd))
+            status = os.system("PS1='mock-chroot> ' /usr/sbin/chroot %s %s" % (chroot.makeChrootPath(), cmd))
             ret['exitStatus'] = os.WEXITSTATUS(status)
 
         finally:
@@ -540,7 +540,7 @@ def main(ret):
         do_rebuild(config_opts, chroot, args)
 
     elif options.mode == 'orphanskill':
-        mock.util.orphansKill(chroot.rootdir)
+        mock.util.orphansKill(chroot.makeChrootPath())
     elif options.mode == 'copyin':
         chroot.tryLockBuildRoot()
         chroot._resetLogging()
@@ -621,7 +621,7 @@ if __name__ == '__main__':
         log.exception(exc)
 
     if killOrphans and retParams:
-        mock.util.orphansKill(retParams["chroot"].rootdir)
+        mock.util.orphansKill(retParams["chroot"].makeChrootPath())
 
     logging.shutdown()
     sys.exit(exitStatus)

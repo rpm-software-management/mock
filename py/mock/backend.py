@@ -39,7 +39,7 @@ class Root(object):
 
         self.basedir = os.path.join(config['basedir'], root)
         self.target_arch = config['target_arch']
-        self.rootdir = os.path.join(self.basedir, 'root')
+        self._rootdir = os.path.join(self.basedir, 'root')
         self.homedir = config['chroothome']
         self.builddir = os.path.join(self.homedir, 'build')
 
@@ -143,10 +143,10 @@ class Root(object):
 
     decorate(traceLog())
     def makeChrootPath(self, *args):
-        '''For safety reasons, self.rootdir should not be used directly. Instead
+        '''For safety reasons, self._rootdir should not be used directly. Instead
         use this handy helper function anytime you want to reference a path in
         relation to the chroot.'''
-        tmp = self.rootdir + "/" + "/".join(args)
+        tmp = self._rootdir + "/" + "/".join(args)
         return tmp.replace("//", "/")
 
     decorate(traceLog())
