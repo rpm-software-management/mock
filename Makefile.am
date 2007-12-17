@@ -89,7 +89,7 @@ RPM_DEFINES = --define "_topdir $(TOPDIR)" \
 		--define "_specdir $(SPECDIR)" \
 		--define "_srcrpmdir $(SRCRPMDIR)"
 
-.PHONY: rpm srpm
+.PHONY: rpm srpm help
 rpm: dist
 	mkdir -p $(BUILDDIR)
 	rpmbuild $(RPM_DEFINES) -ba --nodeps $(PACKAGE_NAME).spec
@@ -99,3 +99,14 @@ srpm: dist
 	mkdir -p $(BUILDDIR)
 	rpmbuild $(RPM_DEFINES) -ba --nodeps $(PACKAGE_NAME).spec
 	rm -rf $(BUILDDIR)
+
+
+help: 
+	@echo
+	@echo "Mock Makefile targets:"
+	@echo "	dist	- generate Changelog and Authors file"
+	@echo "	rpm	- build binary RPM"
+	@echo "	srpm	- build source RPM"
+	@echo "	help	- print this message"
+	@echo "Additionally, all standard automake targets are supported"
+	@echo

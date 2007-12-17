@@ -1,15 +1,61 @@
+# Work in progress...
+
 Release checklist overview:
 
-  1) update both the ChangeLog file and the specfile %changelog section
-  2) update version in 'configure.ac'
-  3) run 'autoreconf' to update autoconf files
-  4) run 'make rpm' to update version in all files
-  5) check all changes into git and push upstream
-  6) properly tag git tree with signature
-  7) check release into fedora cvs
-  8) do build for -devel
-  9) do build for F-7, push to testing, then stable
-  10) do a build for FC-6
+   1) git tree: pull, merge, checkin, tag and push
+   2) koji tree: for each release: checkin tarball and spec, kick off builds
+   3) bodhi: schedule releases
+
+=====================================================================
+
+In the git tree:
+
+   1) switch to the master branch
+      $ git checkout master
+   2) merge any changes from local branches
+      $ git merge mybranch
+   3) run 'autogen.sh' to update autoconf files
+   4) run 'configure' to generate Makefile and mock.spec
+   5) run 'make rpm' to generate binary RPM and propagate version changes
+   6) run 'make check' until it passes
+   7) check in any changes
+   8) remove ChangeLog and AUTHORS
+   9) run 'make dist' to generate ChangeLog and AUTHORS files
+  10) update version info in 'configure.ac' and commit it:
+     $ git commit -m 'version bump' configure.ac
+  11) tag the git tree:
+     $ git tag -u <your key> mock-<version>
+  12) push to main git repo:
+     $ git push
+
+=====================================================================
+
+In the fedora CVS (koji) tree
+
+    1) update the cvs tree
+       $ cvs update
+    2) upload the tarball for the devel release
+       $ cd devel
+       $ make new-source FILES=../../mock.git/mock-0.9.3.tar.gz
+    3) copy the new specfile from the git tree
+       $ cp ../../mock.git/mock.spec .
+    4) create a changelog entry (clog)
+       $ make clog
+    5) checkin the new specfile using the clog
+       $ cvs commit -F clog 
+    6) create the koji tag
+       $ make tag
+    7) initiate a koji build
+       $ make build
+    8) repeat above for released tree and released tree -1
+
+=====================================================================
+Michaels old stuff
+
+   1) check release into fedora cvs
+   2) do build for -devel
+   3) do build for F-8, push to testing, then stable
+   4) do a build for F-7
 
 ## script form:
 # vim ChangeLog  mock.spec.in
