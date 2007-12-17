@@ -49,7 +49,8 @@ fi
 %doc ChangeLog
 
 # python stuff
-%{_libexecdir}/mock.py*
+%{_libexecdir}/mock.py
+%exclude %{_libexecdir}/mock.py[co]
 %{python_sitelib}/*
 
 # config files
