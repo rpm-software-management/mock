@@ -18,31 +18,30 @@
 set -e
 set -x
 
+CURDIR=$(pwd)
+MOCKSRPM=${CURDIR}/mock-*.src.rpm
 DIR=$(cd $(dirname $0); pwd)
 TOP_SRCTREE=$DIR/../
 cd $TOP_SRCTREE
-
-gcc -Wall -o docs/daemontest docs/daemontest.c
 
 #
 # most tests below will use this mock command line
 # 
 testConfig=fedora-8-x86_64
 uniqueext="$$-$RANDOM"
-MOCKCMD="sudo ./py/mock.py --resultdir=$TOP_SRCTREE/mock-unit-test --uniqueext=$uniqueext -r $testConfig $MOCK_EXTRA_ARGS"
+outdir=$(mktemp -d /tmp/mock-unit-test-$$-$RANDOM-XXXXXXXX)
+trap 'rm -rf $outdir' INT TERM HUP QUIT EXIT 
+MOCKCMD="sudo ./py/mock.py --resultdir=$outdir --uniqueext=$uniqueext -r $testConfig $MOCK_EXTRA_ARGS"
 CHROOT=/var/lib/mock/${testConfig}-$uniqueext/root
 
-# clear out any old test results
-sudo rm -rf $TOP_SRCTREE/mock-unit-test
-
 # clear out root cache so we get at least run without root cache present
-sudo rm -rf /var/lib/mock/cache/${testConfig}/root_cache
+#sudo rm -rf /var/lib/mock/cache/${testConfig}/root_cache
 
 #
 # pre-populate yum cache for the rest of the commands below
 #
 time $MOCKCMD --init
-time $MOCKCMD --installdeps mock-*.src.rpm
+time $MOCKCMD --installdeps $MOCKSRPM
 if [ ! -e $CHROOT/usr/include/python* ]; then
     echo "installdeps test FAILED. could not find /usr/include/python*"
     exit 1
@@ -91,9 +90,9 @@ fi
 #
 # Test offline build
 #
-time $MOCKCMD --offline --rebuild mock-*.src.rpm
-if [ ! -e mock-unit-test/mock-*.x86_64.rpm ]; then
-    echo "rebuild test FAILED. could not find mock-unit-test/mock-*.x86_64.rpm"
+time $MOCKCMD --offline --rebuild $MOCKSRPM
+if [ ! -e $outdir/mock-*.x86_64.rpm ]; then
+    echo "rebuild test FAILED. could not find $outdir/mock-*.x86_64.rpm"
     exit 1
 fi
 
@@ -105,7 +104,8 @@ if pgrep daemontest; then
     exit 1
 fi
 time $MOCKCMD --offline --init
-cp docs/daemontest $CHROOT/tmp
+time $MOCKCMD --offline --copyin docs/daemontest.c /tmp
+time $MOCKCMD --offline --chroot -- gcc -Wall -o /tmp/daemontest /tmp/daemontest.c
 time $MOCKCMD --offline --chroot -- /tmp/daemontest
 if pgrep daemontest; then
     echo "Daemontest FAILED. found a daemontest process running after exit." 
@@ -166,7 +166,7 @@ fi
 # Test build all configs we ship.
 #
 for i in $(ls etc/mock | grep .cfg | grep -v default | grep -v ppc); do
-    time sudo ./py/mock.py --resultdir=$TOP_SRCTREE/mock-unit-test --uniqueext=$uniqueext rebuild mock-*.src.rpm  -r $(basename $i .cfg) $MOCK_EXTRA_ARGS
+    time sudo ./py/mock.py --resultdir=$outdir --uniqueext=$uniqueext rebuild $MOCKSRPM -r $(basename $i .cfg) $MOCK_EXTRA_ARGS
 done
 
 
