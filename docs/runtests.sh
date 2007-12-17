@@ -29,8 +29,7 @@ cd $TOP_SRCTREE
 # 
 testConfig=fedora-8-x86_64
 uniqueext="$$-$RANDOM"
-outdir=$(mktemp -d /tmp/mock-unit-test-$$-$RANDOM-XXXXXXXX)
-trap 'rm -rf $outdir' INT TERM HUP QUIT EXIT 
+outdir=${CURDIR}/mock-unit-test
 MOCKCMD="sudo ./py/mock.py --resultdir=$outdir --uniqueext=$uniqueext -r $testConfig $MOCK_EXTRA_ARGS"
 CHROOT=/var/lib/mock/${testConfig}-$uniqueext/root
 
