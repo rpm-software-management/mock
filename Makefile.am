@@ -16,7 +16,7 @@ VERSION = $(RELEASE_VERSION)
 PACKAGE = $(RELEASE_NAME)
 
 CLEANFILES=mock-*.tar.gz mock-*.tar.bz2 mock-*.rpm _buildtemp version docs/daemontest
-DISTCLEANFILES=*~
+DISTCLEANFILES=*~ mock-unit-test/* x86_64/* noarch/* i386/*
 
 TESTS=./docs/runtests.sh
 $(TESTS): srpm
