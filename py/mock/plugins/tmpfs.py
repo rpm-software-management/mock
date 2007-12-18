@@ -25,10 +25,17 @@ class Tmpfs(object):
         self.rootObj = rootObj
         self.conf = conf
         rootObj.addHook("preinit",  self._tmpfsPreInitHook)
+        rootObj.addHook("postbuild",  self._tmpfsPostBuildHook)
 
     decorate(traceLog())
     def _tmpfsPreInitHook(self):
         getLog().info("mounting tmpfs.")
         mountCmd = "mount -n -t tmpfs  mock_chroot_tmpfs %s" % self.rootObj.makeChrootPath()
         mock.util.do(mountCmd)
+
+    def _tmpfsPostBuildHook(self):
+        getLog().info("unmounting tmpfs.")
+        mountCmd = "umount -n %s" % self.rootObj.makeChrootPath()
+        mock.util.do(mountCmd)
+        
 
