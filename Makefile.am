@@ -20,7 +20,7 @@ MOCK_LIBTOOL_REVISION=@MOCK_LIBTOOL_REVISION@
 MOCK_LIBTOOL_AGE=@MOCK_LIBTOOL_AGE@
 
 CLEANFILES=mock-*.tar.gz mock-*.tar.bz2 mock-*.rpm _buildtemp version docs/daemontest
-DISTCLEANFILES=*~
+DISTCLEANFILES=*~ mock-unit-test/* x86_64/* noarch/* i386/* 
 
 TESTS=./docs/runtests.sh
 $(TESTS): srpm
