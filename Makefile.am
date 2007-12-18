@@ -65,14 +65,14 @@ AUTHORS:
 REPLACE_VARS_ON_INSTALL=$(sbindir)/mock.py
 install-exec-hook:
 	for i in $(REPLACE_VARS_ON_INSTALL); do      \
-		file=$(DESTDIR)/$$i                  ;\
-		perl -p -i -e 's|^__VERSION__ =.*|__VERSION__="$(RELEASE_VERSION)"|' $$file ;\
-		perl -p -i -e 's|^SYSCONFDIR =.*|SYSCONFDIR="$(sysconfdir)"|' $$file        ;\
-		perl -p -i -e 's|^PYTHONDIR =.*|PYTHONDIR="$(pythondir)"|' $$file           ;\
-		perl -p -i -e 's|^PKGPYTHONDIR =.*|PKGPYTHONDIR="$(pkgpythondir)"|' $$file  ;\
-		perl -p -i -e 's|^PKGDATADIR =.*|PKGDATADIR="$(pkgdatadir)"|' $$file        ;\
-		perl -p -i -e 's|^LIBDIR =.*|PKGDATADIR="$(libdir)"|' $$file        ;\
-	done
+		file=$(DESTDIR)/$$i			;\
+                perl -p -i -e 's|^__VERSION__ =.*|__VERSION__="$(RELEASE_VERSION)"|' $$file ;\
+                perl -p -i -e 's|^SYSCONFDIR =.*|SYSCONFDIR="$(sysconfdir)"|' $$file        ;\
+                perl -p -i -e 's|^PYTHONDIR =.*|PYTHONDIR="$(pythondir)"|' $$file           ;\
+                perl -p -i -e 's|^PKGPYTHONDIR =.*|PKGPYTHONDIR="$(pkgpythondir)"|' $$file  ;\
+                perl -p -i -e 's|^PKGDATADIR =.*|PKGDATADIR="$(pkgdatadir)"|' $$file        ;\
+                perl -p -i -e 's|^LIBDIR =.*|LIBDIR="$(libdir)"|' $$file        ;\
+        done
 	mv $(DESTDIR)/$(sbindir)/mock.py $(DESTDIR)/$(sbindir)/mock
 
 TOPDIR := $(shell cd $(top_builddir);pwd)
