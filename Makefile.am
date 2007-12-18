@@ -40,18 +40,18 @@ console_DATA = etc/consolehelper/mock
 
 pluginsdir = $(pkgpythondir)/plugins
 plugins_PYTHON = \
- 	py/mock/plugins/bind_mount.py \
- 	py/mock/plugins/ccache.py \
-	py/mock/plugins/root_cache.py 	\
-	py/mock/plugins/yum_cache.py
+    py/mock/plugins/bind_mount.py \
+    py/mock/plugins/ccache.py     \
+    py/mock/plugins/root_cache.py \
+    py/mock/plugins/yum_cache.py
 
 pkgpython_PYTHON = \
-	py/mock/__init__.py 	\
-	py/mock/exception.py 	\
-	py/mock/util.py 		\
-	py/mock/backend.py		\
-	py/mock/trace_decorator.py  \
-	py/mock/uid.py
+    py/mock/__init__.py        \
+    py/mock/exception.py       \
+    py/mock/util.py            \
+    py/mock/backend.py         \
+    py/mock/trace_decorator.py \
+    py/mock/uid.py
 
 CLEANFILES += py/*.pyc py/mock/*.pyc py/mock/plugins/*.pyc
 
@@ -65,14 +65,14 @@ AUTHORS:
 REPLACE_VARS_ON_INSTALL=$(sbindir)/mock.py
 install-exec-hook:
 	for i in $(REPLACE_VARS_ON_INSTALL); do      \
-		file=$(DESTDIR)/$$i			;\
-                perl -p -i -e 's|^__VERSION__ =.*|__VERSION__="$(RELEASE_VERSION)"|' $$file ;\
-                perl -p -i -e 's|^SYSCONFDIR =.*|SYSCONFDIR="$(sysconfdir)"|' $$file        ;\
-                perl -p -i -e 's|^PYTHONDIR =.*|PYTHONDIR="$(pythondir)"|' $$file           ;\
-                perl -p -i -e 's|^PKGPYTHONDIR =.*|PKGPYTHONDIR="$(pkgpythondir)"|' $$file  ;\
-                perl -p -i -e 's|^PKGDATADIR =.*|PKGDATADIR="$(pkgdatadir)"|' $$file        ;\
-                perl -p -i -e 's|^LIBDIR =.*|PKGDATADIR="$(libdir)"|' $$file        ;\
-        done
+		file=$(DESTDIR)/$$i                  ;\
+		perl -p -i -e 's|^__VERSION__ =.*|__VERSION__="$(RELEASE_VERSION)"|' $$file ;\
+		perl -p -i -e 's|^SYSCONFDIR =.*|SYSCONFDIR="$(sysconfdir)"|' $$file        ;\
+		perl -p -i -e 's|^PYTHONDIR =.*|PYTHONDIR="$(pythondir)"|' $$file           ;\
+		perl -p -i -e 's|^PKGPYTHONDIR =.*|PKGPYTHONDIR="$(pkgpythondir)"|' $$file  ;\
+		perl -p -i -e 's|^PKGDATADIR =.*|PKGDATADIR="$(pkgdatadir)"|' $$file        ;\
+		perl -p -i -e 's|^LIBDIR =.*|PKGDATADIR="$(libdir)"|' $$file        ;\
+	done
 	mv $(DESTDIR)/$(sbindir)/mock.py $(DESTDIR)/$(sbindir)/mock
 
 TOPDIR := $(shell cd $(top_builddir);pwd)
@@ -83,11 +83,11 @@ SPECDIR = $(TOPDIR)
 SRCRPMDIR = $(TOPDIR)
 
 RPM_DEFINES = --define "_topdir $(TOPDIR)" \
-		--define "_builddir $(BUILDDIR)" \
-		--define "_rpmdir $(RPMDIR)" \
-		--define "_sourcedir $(SOURCEDIR)" \
-		--define "_specdir $(SPECDIR)" \
-		--define "_srcrpmdir $(SRCRPMDIR)"
+    --define "_builddir $(BUILDDIR)" \
+    --define "_rpmdir $(RPMDIR)" \
+    --define "_sourcedir $(SOURCEDIR)" \
+    --define "_specdir $(SPECDIR)" \
+    --define "_srcrpmdir $(SRCRPMDIR)"
 
 .PHONY: rpm srpm help
 rpm: dist
