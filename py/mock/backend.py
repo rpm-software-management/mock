@@ -296,7 +296,9 @@ class Root(object):
         if mntCmd not in self.mountCmds:
             self.mountCmds.append(mntCmd)
 
-    decorate(traceLog())
+    # bad hack
+    # comment out decorator here so we dont get double exceptions in the root log
+    #decorate(traceLog())
     def doChroot(self, command, env="", *args, **kargs):
         """execute given command in root"""
         return mock.util.do( command, personality=self.personality, chrootPath=self.makeChrootPath(), *args, **kargs )
