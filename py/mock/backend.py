@@ -123,6 +123,7 @@ class Root(object):
         """clean out chroot with extreme prejudice :)"""
         self.tryLockBuildRoot()
         self.state("clean")
+        self._callHooks('clean')
         mock.util.rmtree(self.basedir)
         self.chrootWasCleaned = True
 
