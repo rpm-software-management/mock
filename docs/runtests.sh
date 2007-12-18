@@ -87,9 +87,9 @@ if [ ! -f $CHROOT/tmp/\{quux,wibble\} ] || [ -f $CHROOT/tmp/quux ] || [ -f $CHRO
 fi
 
 #
-# Test offline build
+# Test offline build as well as tmpfs
 #
-time $MOCKCMD --offline --rebuild $MOCKSRPM
+time $MOCKCMD --offline --enable-plugin=tmpfs --rebuild $MOCKSRPM
 if [ ! -e $outdir/mock-*.x86_64.rpm ]; then
     echo "rebuild test FAILED. could not find $outdir/mock-*.x86_64.rpm"
     exit 1
@@ -166,6 +166,8 @@ fi
 # Test build all configs we ship.
 #
 for i in $(ls etc/mock | grep .cfg | grep -v default | grep -v ppc); do
+    # test tmpfs and normal
+    time sudo ./py/mock.py --resultdir=$outdir --uniqueext=$uniqueext --enable-plugin=tmpfs --rebuild $MOCKSRPM -r $(basename $i .cfg) $MOCK_EXTRA_ARGS
     time sudo ./py/mock.py --resultdir=$outdir --uniqueext=$uniqueext rebuild $MOCKSRPM -r $(basename $i .cfg) $MOCK_EXTRA_ARGS
 done
 
