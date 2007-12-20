@@ -325,27 +325,27 @@ class Root(object):
     decorate(traceLog())
     def installSrpmDeps(self, *srpms):
         """figure out deps from srpm. call yum to install them"""
-        arg_string = self.preExistingDeps
-        for hdr in mock.util.yieldSrpmHeaders(srpms, plainRpmOk=1):
-            # get text buildreqs
-            a = mock.util.requiresTextFromHdr(hdr)
-            b = mock.util.getAddtlReqs(hdr, self.more_buildreqs)
-            for item in mock.util.uniqReqs(a, b):
-                arg_string = arg_string + " '%s'" % item
-
-        # everything exists, okay, install them all.
-        # pass build reqs (as strings) to installer
-        if arg_string != "":
-            output = self._yum('resolvedep %s' % arg_string, returnOutput=1)
-            for line in output.split('\n'):
-                if line.lower().find('No Package found for'.lower()) != -1:
-                    raise mock.exception.BuildError, "Bad build req: %s. Exiting." % line
-            # nothing made us exit, so we continue
+        try:
             self.uidManager.becomeUser(0, 0)
-            try:
+            arg_string = self.preExistingDeps
+            for hdr in mock.util.yieldSrpmHeaders(srpms, plainRpmOk=1):
+                # get text buildreqs
+                a = mock.util.requiresTextFromHdr(hdr)
+                b = mock.util.getAddtlReqs(hdr, self.more_buildreqs)
+                for item in mock.util.uniqReqs(a, b):
+                    arg_string = arg_string + " '%s'" % item
+
+            # everything exists, okay, install them all.
+            # pass build reqs (as strings) to installer
+            if arg_string != "":
+                output = self._yum('resolvedep %s' % arg_string, returnOutput=1)
+                for line in output.split('\n'):
+                    if line.lower().find('No Package found for'.lower()) != -1:
+                        raise mock.exception.BuildError, "Bad build req: %s. Exiting." % line
+                # nothing made us exit, so we continue
                 self._yum('install %s' % arg_string, returnOutput=1)
-            finally:
-                self.uidManager.restorePrivs()
+        finally:
+            self.uidManager.restorePrivs()
 
 
     #
