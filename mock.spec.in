@@ -71,6 +71,13 @@ fi
 %attr(02775, root, mock) %dir /var/lib/mock
 
 %changelog
+* Wed Dec 19 2007 Michael Brown <mebrown@michaels-house.net> - 0.9.4-1
+- Result dir was not honoring --uniqueext=
+- make rpmbuild run under a chroot login shell
+- mock is now noarch due to drop of all binary components
+- add tmpfs plugin (disabled by default)
+- slightly more friendly logs.
+
 * Fri Dec 14 2007 Clark Williams <williams@redhat.com> - 0.9.3-1
 - added '--copyin' and '--copyout' modes
 - added makeChrootPath() method to Root
