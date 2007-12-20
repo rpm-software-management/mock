@@ -90,8 +90,8 @@ fi
 # Test offline build as well as tmpfs
 #
 time $MOCKCMD --offline --enable-plugin=tmpfs --rebuild $MOCKSRPM
-if [ ! -e $outdir/mock-*.x86_64.rpm ]; then
-    echo "rebuild test FAILED. could not find $outdir/mock-*.x86_64.rpm"
+if [ ! -e $outdir/mock-*.noarch.rpm ]; then
+    echo "rebuild test FAILED. could not find $outdir/mock-*.noarch.rpm"
     exit 1
 fi
 
