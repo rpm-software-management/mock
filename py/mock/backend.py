@@ -33,11 +33,10 @@ class Root(object):
         self.buildrootLock = None
 
         self.sharedRootName = config['root']
-        root = self.sharedRootName
         if config.has_key('unique-ext'):
-            root = "%s-%s" % (root, config['unique-ext'])
+            config['root'] = "%s-%s" % (config['root'], config['unique-ext'])
 
-        self.basedir = os.path.join(config['basedir'], root)
+        self.basedir = os.path.join(config['basedir'], config['root'])
         self.target_arch = config['target_arch']
         self._rootdir = os.path.join(self.basedir, 'root')
         self.homedir = config['chroothome']
@@ -76,11 +75,11 @@ class Root(object):
         self.pluginConf = config['plugin_conf']
         self.pluginDir = config['plugin_dir']
         for key in self.pluginConf.keys():
-            if not key.endswith("_opts"): continue
-            self.pluginConf[key]["basedir"] = self.basedir
-            self.pluginConf[key]["cache_topdir"] = self.cache_topdir
-            self.pluginConf[key]["cachedir"] = self.cachedir
-            self.pluginConf[key]["root"] = self.sharedRootName
+            if not key.endswith('_opts'): continue
+            self.pluginConf[key]['basedir'] = self.basedir
+            self.pluginConf[key]['cache_topdir'] = self.cache_topdir
+            self.pluginConf[key]['cachedir'] = self.cachedir
+            self.pluginConf[key]['root'] = self.sharedRootName
 
         # mount/umount
         self.umountCmds = ['umount -n %s' % self.makeChrootPath('proc'),
