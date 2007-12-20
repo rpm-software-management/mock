@@ -48,6 +48,7 @@ plugins_PYTHON = \
     py/mock/plugins/bind_mount.py \
     py/mock/plugins/ccache.py \
     py/mock/plugins/root_cache.py 	\
+    py/mock/plugins/tmpfs.py \
     py/mock/plugins/yum_cache.py
 
 pkgpython_PYTHON = \
