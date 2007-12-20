@@ -3,15 +3,14 @@
 # Process this file with autoconf to produce a configure script.
 
 ####################################
-# change version here.
-AC_INIT([mock],[0.9.2])
+# change version here. --> BOTH PLACES PLEASE!
+AC_INIT([mock],[0.9.4])
 
 temp_RELEASE_NAME=mock
 temp_RELEASE_MAJOR=0
 temp_RELEASE_MINOR=9
-temp_RELEASE_SUBLEVEL=3
+temp_RELEASE_SUBLEVEL=4
 temp_RELEASE_EXTRALEVEL=
-
 ####################################
 
 AC_PREREQ(2.61)
