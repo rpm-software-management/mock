@@ -18,7 +18,7 @@ Source: http://fedoraproject.org/projects/mock/releases/%{name}-%{version}.tar.g
 URL: http://fedoraproject.org/wiki/Projects/Mock
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch: noarch
-Requires: python >= 2.4, yum >= 2.4, tar, gzip, python-ctypes, python-decoratortools
+Requires: python >= 2.4, yum >= 2.4, tar, gzip, python-ctypes, python-decoratortools, usermode
 Requires(pre): shadow-utils
 BuildRequires: python-devel
 
@@ -71,6 +71,16 @@ fi
 %attr(02775, root, mock) %dir /var/lib/mock
 
 %changelog
+* Thu Dec 20 2007 Michael Brown <mebrown@michaels-house.net> - 0.9.5-1
+- really fix file-based BuildRequires
+
+* Wed Dec 19 2007 Michael Brown <mebrown@michaels-house.net> - 0.9.4-1
+- Result dir was not honoring --uniqueext=
+- make rpmbuild run under a chroot login shell
+- mock is now noarch due to drop of all binary components
+- add tmpfs plugin (disabled by default)
+- slightly more friendly logs.
+
 * Fri Dec 14 2007 Clark Williams <williams@redhat.com> - 0.9.3-1
 - added '--copyin' and '--copyout' modes
 - added makeChrootPath() method to Root
@@ -124,10 +134,10 @@ fi
 
 * Thu Nov 29 2007 Clark Williams <williams@redhat.com> - 0.8.11-1
 - fixes from mebrown:
-- 	added back -q and -v flags
-- 	print yum output by default
-- 	added --offline option
-- 	cleaned up uid handling
+-   added back -q and -v flags
+-   print yum output by default
+-   added --offline option
+-   cleaned up uid handling
 
 * Mon Nov 26 2007 Michael Brown <mebrown@michaels-house.net> - 0.8.10-1
 - fix 'shell' command

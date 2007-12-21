@@ -33,11 +33,10 @@ class Root(object):
         self.buildrootLock = None
 
         self.sharedRootName = config['root']
-        root = self.sharedRootName
         if config.has_key('unique-ext'):
-            root = "%s-%s" % (root, config['unique-ext'])
+            config['root'] = "%s-%s" % (config['root'], config['unique-ext'])
 
-        self.basedir = os.path.join(config['basedir'], root)
+        self.basedir = os.path.join(config['basedir'], config['root'])
         self.target_arch = config['target_arch']
         self._rootdir = os.path.join(self.basedir, 'root')
         self.homedir = config['chroothome']
@@ -76,11 +75,11 @@ class Root(object):
         self.pluginConf = config['plugin_conf']
         self.pluginDir = config['plugin_dir']
         for key in self.pluginConf.keys():
-            if not key.endswith("_opts"): continue
-            self.pluginConf[key]["basedir"] = self.basedir
-            self.pluginConf[key]["cache_topdir"] = self.cache_topdir
-            self.pluginConf[key]["cachedir"] = self.cachedir
-            self.pluginConf[key]["root"] = self.sharedRootName
+            if not key.endswith('_opts'): continue
+            self.pluginConf[key]['basedir'] = self.basedir
+            self.pluginConf[key]['cache_topdir'] = self.cache_topdir
+            self.pluginConf[key]['cachedir'] = self.cachedir
+            self.pluginConf[key]['root'] = self.sharedRootName
 
         # mount/umount
         self.umountCmds = ['umount -n %s' % self.makeChrootPath('proc'),
@@ -326,27 +325,27 @@ class Root(object):
     decorate(traceLog())
     def installSrpmDeps(self, *srpms):
         """figure out deps from srpm. call yum to install them"""
-        arg_string = self.preExistingDeps
-        for hdr in mock.util.yieldSrpmHeaders(srpms, plainRpmOk=1):
-            # get text buildreqs
-            a = mock.util.requiresTextFromHdr(hdr)
-            b = mock.util.getAddtlReqs(hdr, self.more_buildreqs)
-            for item in mock.util.uniqReqs(a, b):
-                arg_string = arg_string + " '%s'" % item
-
-        # everything exists, okay, install them all.
-        # pass build reqs (as strings) to installer
-        if arg_string != "":
-            output = self._yum('resolvedep %s' % arg_string, returnOutput=1)
-            for line in output.split('\n'):
-                if line.lower().find('No Package found for'.lower()) != -1:
-                    raise mock.exception.BuildError, "Bad build req: %s. Exiting." % line
-            # nothing made us exit, so we continue
+        try:
             self.uidManager.becomeUser(0, 0)
-            try:
+            arg_string = self.preExistingDeps
+            for hdr in mock.util.yieldSrpmHeaders(srpms, plainRpmOk=1):
+                # get text buildreqs
+                a = mock.util.requiresTextFromHdr(hdr)
+                b = mock.util.getAddtlReqs(hdr, self.more_buildreqs)
+                for item in mock.util.uniqReqs(a, b):
+                    arg_string = arg_string + " '%s'" % item
+
+            # everything exists, okay, install them all.
+            # pass build reqs (as strings) to installer
+            if arg_string != "":
+                output = self._yum('resolvedep %s' % arg_string, returnOutput=1)
+                for line in output.split('\n'):
+                    if line.lower().find('No Package found for'.lower()) != -1:
+                        raise mock.exception.BuildError, "Bad build req: %s. Exiting." % line
+                # nothing made us exit, so we continue
                 self._yum('install %s' % arg_string, returnOutput=1)
-            finally:
-                self.uidManager.restorePrivs()
+        finally:
+            self.uidManager.restorePrivs()
 
 
     #
@@ -388,7 +387,7 @@ class Root(object):
             chrootspec = spec.replace(self.makeChrootPath(), '') # get rid of rootdir prefix
             # Completely/Permanently drop privs while running the following:
             self.doChroot(
-                "rpmbuild -bs --target %s --nodeps %s" % (self.target_arch, chrootspec),
+                "bash -l -c 'rpmbuild -bs --target %s --nodeps %s'" % (self.target_arch, chrootspec),
                 logger=self.build_log, timeout=timeout,
                 uidManager=self.uidManager,
                 uid=self.chrootuid,
@@ -409,7 +408,7 @@ class Root(object):
             self._callHooks('prebuild')
 
             self.doChroot(
-                "rpmbuild -bb --target %s --nodeps %s" % (self.target_arch, chrootspec),
+                "bash -l -c 'rpmbuild -bb --target %s --nodeps %s'" % (self.target_arch, chrootspec),
                 logger=self.build_log, timeout=timeout,
                 uidManager=self.uidManager,
                 uid=self.chrootuid,

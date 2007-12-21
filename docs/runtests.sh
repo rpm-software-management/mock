@@ -33,6 +33,8 @@ outdir=${CURDIR}/mock-unit-test
 MOCKCMD="sudo ./py/mock.py --resultdir=$outdir --uniqueext=$uniqueext -r $testConfig $MOCK_EXTRA_ARGS"
 CHROOT=/var/lib/mock/${testConfig}-$uniqueext/root
 
+trap '$MOCKCMD --clean' INT HUP QUIT EXIT TERM
+
 # clear out root cache so we get at least run without root cache present
 #sudo rm -rf /var/lib/mock/cache/${testConfig}/root_cache
 
@@ -90,8 +92,8 @@ fi
 # Test offline build as well as tmpfs
 #
 time $MOCKCMD --offline --enable-plugin=tmpfs --rebuild $MOCKSRPM
-if [ ! -e $outdir/mock-*.x86_64.rpm ]; then
-    echo "rebuild test FAILED. could not find $outdir/mock-*.x86_64.rpm"
+if [ ! -e $outdir/mock-*.noarch.rpm ]; then
+    echo "rebuild test FAILED. could not find $outdir/mock-*.noarch.rpm"
     exit 1
 fi
 
@@ -163,12 +165,18 @@ if [ ! -e $CHROOT/usr/bin/ccache ]; then
 fi
 
 #
+# clean up from first round of tests
+#
+time $MOCKCMD --offline --clean
+
+#
 # Test build all configs we ship.
 #
 for i in $(ls etc/mock | grep .cfg | grep -v default | grep -v ppc); do
+    MOCKCMD="sudo ./py/mock.py --resultdir=$outdir --uniqueext=$uniqueext -r $(basename $i .cfg) $MOCK_EXTRA_ARGS"
     # test tmpfs and normal
-    time sudo ./py/mock.py --resultdir=$outdir --uniqueext=$uniqueext --enable-plugin=tmpfs --rebuild $MOCKSRPM -r $(basename $i .cfg) $MOCK_EXTRA_ARGS
-    time sudo ./py/mock.py --resultdir=$outdir --uniqueext=$uniqueext rebuild $MOCKSRPM -r $(basename $i .cfg) $MOCK_EXTRA_ARGS
+    time $MOCKCMD --enable-plugin=tmpfs --rebuild $MOCKSRPM 
+    time $MOCKCMD                       --rebuild $MOCKSRPM 
 done
 
 
