@@ -45,18 +45,18 @@ man_MANS = docs/mock.1
 
 pluginsdir = $(pkgpythondir)/plugins
 plugins_PYTHON = \
- 	py/mock/plugins/bind_mount.py \
- 	py/mock/plugins/ccache.py \
-	py/mock/plugins/root_cache.py 	\
-	py/mock/plugins/yum_cache.py
+    py/mock/plugins/bind_mount.py \
+    py/mock/plugins/ccache.py \
+    py/mock/plugins/root_cache.py 	\
+    py/mock/plugins/yum_cache.py
 
 pkgpython_PYTHON = \
-	py/mock/__init__.py 	\
-	py/mock/exception.py 	\
-	py/mock/util.py 		\
-	py/mock/backend.py		\
-	py/mock/trace_decorator.py  \
-	py/mock/uid.py 
+    py/mock/__init__.py 	\
+    py/mock/exception.py 	\
+    py/mock/util.py 		\
+    py/mock/backend.py		\
+    py/mock/trace_decorator.py  \
+    py/mock/uid.py 
 
 CLEANFILES += py/*.pyc py/mock/*.pyc py/mock/plugins/*.pyc
 
@@ -71,13 +71,13 @@ REPLACE_VARS_ON_INSTALL=$(libexecdir)/mock.py
 install-exec-hook:
 	for i in $(REPLACE_VARS_ON_INSTALL); do      \
 		file=$(DESTDIR)/$$i			;\
-                perl -p -i -e 's|^__VERSION__\s*=.*|__VERSION__="$(RELEASE_VERSION)"|' $$file ;\
-                perl -p -i -e 's|^SYSCONFDIR\s*=.*|SYSCONFDIR="$(sysconfdir)"|' $$file        ;\
-                perl -p -i -e 's|^PYTHONDIR\s*=.*|PYTHONDIR="$(pythondir)"|' $$file           ;\
-                perl -p -i -e 's|^PKGPYTHONDIR\s*=.*|PKGPYTHONDIR="$(pkgpythondir)"|' $$file  ;\
-                perl -p -i -e 's|^PKGDATADIR\s*=.*|PKGDATADIR="$(pkgdatadir)"|' $$file        ;\
-                perl -p -i -e 's|^LIBDIR\s*=.*|LIBDIR="$(libdir)"|' $$file        ;\
-        done
+		perl -p -i -e 's|^__VERSION__\s*=.*|__VERSION__="$(RELEASE_VERSION)"|' $$file ;\
+		perl -p -i -e 's|^SYSCONFDIR\s*=.*|SYSCONFDIR="$(sysconfdir)"|' $$file        ;\
+		perl -p -i -e 's|^PYTHONDIR\s*=.*|PYTHONDIR="$(pythondir)"|' $$file           ;\
+		perl -p -i -e 's|^PKGPYTHONDIR\s*=.*|PKGPYTHONDIR="$(pkgpythondir)"|' $$file  ;\
+		perl -p -i -e 's|^PKGDATADIR\s*=.*|PKGDATADIR="$(pkgdatadir)"|' $$file        ;\
+		perl -p -i -e 's|^LIBDIR\s*=.*|LIBDIR="$(libdir)"|' $$file        ;\
+	done
 
 TOPDIR := $(shell cd $(top_builddir);pwd)
 BUILDDIR = $(TOPDIR)/_rpmbuild
