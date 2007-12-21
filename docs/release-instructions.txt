@@ -25,8 +25,9 @@ In the git tree:
      $ git commit -m 'version bump' configure.ac
   11) tag the git tree:
      $ git tag -u <your key> mock-<version>
-  12) push to main git repo:
-     $ git push
+  12) push to main git repo (only from master branch):
+     # substitute 'master' with branch name if on another branch
+     $ git push --tags origin master  
 
 =====================================================================
 
