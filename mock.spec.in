@@ -67,6 +67,22 @@ fi
 %attr(02775, root, mock) %dir /var/lib/mock
 
 %changelog
+* Thu Dec 20 2007 Michael Brown <mebrown@michaels-house.net> - 0.8.18-1
+- really fix file-based BuildRequires
+- Result dir was not honoring --uniqueext=
+- make rpmbuild run under a chroot login shell
+- mock is now noarch due to drop of all binary components
+- add tmpfs plugin (disabled by default)
+- slightly more friendly logs.
+- added '--copyin' and '--copyout' modes
+- added makeChrootPath() method to Root
+- replaced most ad hock usages of .rootdir with makeChrootPath()
+- updated man page && added test cases
+
+* Thu Dec 13 2007 Michael Brown <mebrown@michaels-house.net> - 0.9.2-1
+- add '--update' mode
+- fix '--shell' mode
+
 * Tue Dec 11 2007 Michael Brown <mebrown@michaels-house.net> - 0.8.17-1
 - fix 'mock shell' command when passing more than one arg.
 - add --orphanskill mode which only does orphankill
@@ -98,10 +114,10 @@ fi
 
 * Thu Nov 29 2007 Clark Williams <williams@redhat.com> - 0.8.11-1
 - fixes from mebrown:
-- 	added back -q and -v flags
-- 	print yum output by default
-- 	added --offline option
-- 	cleaned up uid handling
+-   added back -q and -v flags
+-   print yum output by default
+-   added --offline option
+-   cleaned up uid handling
 
 * Mon Nov 26 2007 Michael Brown <mebrown@michaels-house.net> - 0.8.10-1
 - fix 'shell' command
