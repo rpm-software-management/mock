@@ -51,7 +51,7 @@ fi
 
 # executables
 %{_bindir}/mock
-%attr(0755, root, mock) %{_sbindir}/mock
+%attr(0755, root, root) %{_sbindir}/mock
 
 # python stuff
 %{python_sitelib}/*
