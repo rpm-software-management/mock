@@ -193,7 +193,7 @@ personality_defs = {
 }
 
 import ctypes
-_libc = ctypes.cdll.LoadLibrary("libc.so.6")
+_libc = ctypes.cdll.LoadLibrary(None)
 _errno = ctypes.c_int.in_dll(_libc, "errno")
 _libc.personality.argtypes = [ctypes.c_ulong]
 _libc.personality.restype = ctypes.c_int
