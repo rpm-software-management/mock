@@ -267,6 +267,7 @@ class Root(object):
         prevMask = os.umask(0000)
         devFiles = (
             (stat.S_IFCHR | 0666, os.makedev(1, 3), "dev/null"),
+            (stat.S_IFCHR | 0666, os.makedev(1, 3), "dev/full"),
             (stat.S_IFCHR | 0666, os.makedev(1, 5), "dev/zero"),
             (stat.S_IFCHR | 0666, os.makedev(1, 8), "dev/random"),
             (stat.S_IFCHR | 0444, os.makedev(1, 9), "dev/urandom"),
