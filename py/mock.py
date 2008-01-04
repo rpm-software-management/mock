@@ -496,7 +496,7 @@ def main(ret):
         log.info("Namespace unshare failed.")
 
     # set personality (ie. setarch)
-    mock.util.condPersonality(chroot.personality)
+    mock.util.condPersonality(config_opts['target_arch'])
 
     if options.mode == 'init':
         if config_opts['clean']:
