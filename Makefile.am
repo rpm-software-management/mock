@@ -98,7 +98,7 @@ rpm: dist
 
 srpm: dist
 	mkdir -p $(BUILDDIR)
-	rpmbuild $(RPM_DEFINES) -ba --nodeps $(PACKAGE_NAME).spec
+	rpmbuild $(RPM_DEFINES) -bs --nodeps $(PACKAGE_NAME).spec
 	rm -rf $(BUILDDIR)
 
 
