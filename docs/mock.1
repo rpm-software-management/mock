@@ -61,8 +61,11 @@ Clean chroot after building. Use with \-\-resultdir. Only active for '\-\-rebuil
 \fB\-\-no\-cleanup\-after\fR
 Don't clean chroot after building. If automatic cleanup is enabled, use this to disable.
 .TP
-\fB\-\-target=\fR\fIARCH\fP, \fB\-\-arch=\fR\fIARCH\fP
-Specify target build arch.
+\fB\-\-target=\fR\fIARCH\fP
+This argument is passed to rpmbuild to specify the target arch to build. It defaults to whatever is specified for --arch, or whatever is specified in the config file as config_opts['target_arch'].
+.TP
+\fB\-\-arch=\fR\fIARCH\fP
+Calls the linux personality() syscall to tell the kernel to emulate a secondary architecture. For example, building i386 packages on an x86_64 buildhost.
 .TP
 \fB\-D \fR"\fIMACRO EXPR\fP", \fB\-\-define=\fR"\fIMACRO EXPR\fP"
 Specify macro definitions used for the build.  This option may be used multiple times, just as the rpmbuild \-\-define option can be.  For example:

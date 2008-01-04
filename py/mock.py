@@ -125,7 +125,7 @@ def command_parse(config_opts):
                       help="Dont clean chroot after building. If automatic"
                            " cleanup is enabled, use this to disable.", )
     parser.add_option("--arch", action ="store", dest="arch",
-                      default=None, help="Use to set kernel personality() to use to build.")
+                      default=None, help="Sets kernel personality().")
     parser.add_option("--target", action ="store", dest="rpmbuild_arch",
                       default=None, help="passed to rpmbuild as --target")
     parser.add_option("-D", "--define", action="append", dest="rpmmacros",
