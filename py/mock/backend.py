@@ -42,10 +42,6 @@ class Root(object):
         self.homedir = config['chroothome']
         self.builddir = os.path.join(self.homedir, 'build')
 
-        self.personality = None
-        if config['internal_setarch']:
-            self.personality = config['target_arch']
-
         # result dir
         self.resultdir = config['resultdir'] % config
 
@@ -302,7 +298,7 @@ class Root(object):
     #decorate(traceLog())
     def doChroot(self, command, env="", *args, **kargs):
         """execute given command in root"""
-        return mock.util.do( command, personality=self.personality, chrootPath=self.makeChrootPath(), *args, **kargs )
+        return mock.util.do( command, chrootPath=self.makeChrootPath(), *args, **kargs )
 
     decorate(traceLog())
     def yumInstall(self, *srpms):
@@ -485,7 +481,7 @@ class Root(object):
         output = ""
         try:
             self._callHooks("preyum")
-            output = mock.util.do(cmd, returnOutput=returnOutput, personality=self.personality)
+            output = mock.util.do(cmd, returnOutput=returnOutput)
             self._callHooks("postyum")
             return output
         except mock.exception.Error, e:
