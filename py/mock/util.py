@@ -190,10 +190,11 @@ personality_defs = {
     'x86_64': PER_LINUX, 'ppc64': PER_LINUX, 'sparc64': PER_LINUX,
     'i386': PER_LINUX32, 'i586': PER_LINUX32, 'i686': PER_LINUX32, 
     'ppc': PER_LINUX32, 'sparc': PER_LINUX32, 'sparcv9': PER_LINUX32,
+    'ia64' : PER_LINUX, 'alpha' : PER_LINUX,
 }
 
 import ctypes
-_libc = ctypes.cdll.LoadLibrary("libc.so.6")
+_libc = ctypes.cdll.LoadLibrary(None)
 _errno = ctypes.c_int.in_dll(_libc, "errno")
 _libc.personality.argtypes = [ctypes.c_ulong]
 _libc.personality.restype = ctypes.c_int

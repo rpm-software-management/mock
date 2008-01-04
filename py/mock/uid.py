@@ -70,7 +70,7 @@ class uidManager(object):
 # python doesnt have native versions of these. :(
 
 import ctypes
-_libc = ctypes.cdll.LoadLibrary("libc.so.6")
+_libc = ctypes.cdll.LoadLibrary(None)
 _errno = ctypes.c_int.in_dll(_libc, "errno")
 
 def getresuid():

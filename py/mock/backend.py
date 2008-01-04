@@ -37,14 +37,10 @@ class Root(object):
             config['root'] = "%s-%s" % (config['root'], config['unique-ext'])
 
         self.basedir = os.path.join(config['basedir'], config['root'])
-        self.target_arch = config['target_arch']
+        self.rpmbuild_arch = config['rpmbuild_arch']
         self._rootdir = os.path.join(self.basedir, 'root')
         self.homedir = config['chroothome']
         self.builddir = os.path.join(self.homedir, 'build')
-
-        self.personality = None
-        if config['internal_setarch']:
-            self.personality = config['target_arch']
 
         # result dir
         self.resultdir = config['resultdir'] % config
@@ -267,6 +263,7 @@ class Root(object):
         prevMask = os.umask(0000)
         devFiles = (
             (stat.S_IFCHR | 0666, os.makedev(1, 3), "dev/null"),
+            (stat.S_IFCHR | 0666, os.makedev(1, 7), "dev/full"),
             (stat.S_IFCHR | 0666, os.makedev(1, 5), "dev/zero"),
             (stat.S_IFCHR | 0666, os.makedev(1, 8), "dev/random"),
             (stat.S_IFCHR | 0444, os.makedev(1, 9), "dev/urandom"),
@@ -301,7 +298,7 @@ class Root(object):
     #decorate(traceLog())
     def doChroot(self, command, env="", *args, **kargs):
         """execute given command in root"""
-        return mock.util.do( command, personality=self.personality, chrootPath=self.makeChrootPath(), *args, **kargs )
+        return mock.util.do( command, chrootPath=self.makeChrootPath(), *args, **kargs )
 
     decorate(traceLog())
     def yumInstall(self, *srpms):
@@ -387,7 +384,7 @@ class Root(object):
             chrootspec = spec.replace(self.makeChrootPath(), '') # get rid of rootdir prefix
             # Completely/Permanently drop privs while running the following:
             self.doChroot(
-                "bash -l -c 'rpmbuild -bs --target %s --nodeps %s'" % (self.target_arch, chrootspec),
+                "bash --login -c 'rpmbuild -bs --target %s --nodeps %s'" % (self.rpmbuild_arch, chrootspec),
                 logger=self.build_log, timeout=timeout,
                 uidManager=self.uidManager,
                 uid=self.chrootuid,
@@ -408,7 +405,7 @@ class Root(object):
             self._callHooks('prebuild')
 
             self.doChroot(
-                "bash -l -c 'rpmbuild -bb --target %s --nodeps %s'" % (self.target_arch, chrootspec),
+                "bash --login -c 'rpmbuild -bb --target %s --nodeps %s'" % (self.rpmbuild_arch, chrootspec),
                 logger=self.build_log, timeout=timeout,
                 uidManager=self.uidManager,
                 uid=self.chrootuid,
@@ -484,7 +481,7 @@ class Root(object):
         output = ""
         try:
             self._callHooks("preyum")
-            output = mock.util.do(cmd, returnOutput=returnOutput, personality=self.personality)
+            output = mock.util.do(cmd, returnOutput=returnOutput)
             self._callHooks("postyum")
             return output
         except mock.exception.Error, e:

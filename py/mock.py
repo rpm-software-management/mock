@@ -124,8 +124,10 @@ def command_parse(config_opts):
                       dest="cleanup_after", default=None,
                       help="Dont clean chroot after building. If automatic"
                            " cleanup is enabled, use this to disable.", )
-    parser.add_option("--target", "--arch", action ="store", dest="arch",
-                      default=None, help="target build arch")
+    parser.add_option("--arch", action ="store", dest="arch",
+                      default=None, help="Use to set kernel personality() to use to build.")
+    parser.add_option("--target", action ="store", dest="rpmbuild_arch",
+                      default=None, help="passed to rpmbuild as --target")
     parser.add_option("-D", "--define", action="append", dest="rpmmacros",
                       default=[], type="string", metavar="'MACRO EXPR'",
                       help="define an rpm macro (may be used more than once)")
@@ -166,6 +168,10 @@ def command_parse(config_opts):
                       dest="disabled_plugins", type="string", default=[],
                       help="Disable plugin. Currently-available plugins: %s"
                            % repr(config_opts['plugins']))
+
+    parser.add_option("--print-root-path", help="print path to chroot root",
+                      dest="printrootpath", action="store_true",
+                      default=False)
 
     (options, args) = parser.parse_args()
     if len(args) and args[0] in ('chroot', 'shell',
@@ -243,6 +249,7 @@ def setup_default_config_opts(config_opts, unprivUid):
     config_opts['use_host_resolv'] = True
     config_opts['chroot_setup_cmd'] = 'install buildsys-build'
     config_opts['target_arch'] = 'i386'
+    config_opts['rpmbuild_arch'] = None # <-- None means set automatically from target_arch
     config_opts['yum.conf'] = ''
     config_opts['more_buildreqs'] = {}
     config_opts['files'] = {}
@@ -258,6 +265,11 @@ def set_config_opts_per_cmdline(config_opts, options, args):
     # do some other options and stuff
     if options.arch:
         config_opts['target_arch'] = options.arch
+    if options.rpmbuild_arch:
+        config_opts['rpmbuild_arch'] = options.rpmbuild_arch
+    elif config_opts['rpmbuild_arch'] is None:
+        config_opts['rpmbuild_arch'] = config_opts['target_arch']
+
     if not options.clean:
         config_opts['clean'] = options.clean
 
@@ -399,6 +411,9 @@ def main(ret):
     setup_default_config_opts(config_opts, unprivUid)
     (options, args) = command_parse(config_opts)
 
+    if options.printrootpath: 
+        options.verbose = 0
+
     # config path -- can be overridden on cmdline
     config_path = MOCKCONFDIR
     if options.configdir:
@@ -460,6 +475,10 @@ def main(ret):
     # do whatever we're here to do
     log.info("mock.py version %s starting..." % __VERSION__)
     chroot = mock.backend.Root(config_opts, uidManager)
+
+    if options.printrootpath:
+        print chroot.makeChrootPath('')
+        sys.exit(0)
 
     # dump configuration to log
     log.debug("mock final configuration:")
