@@ -167,6 +167,10 @@ def command_parse(config_opts):
                       help="Disable plugin. Currently-available plugins: %s"
                            % repr(config_opts['plugins']))
 
+    parser.add_option("--print-root-path", help="print path to chroot root",
+                      dest="printrootpath", action="store_true",
+                      default=False)
+
     (options, args) = parser.parse_args()
     if len(args) and args[0] in ('chroot', 'shell',
             'rebuild', 'install', 'installdeps', 'init', 'clean'):
@@ -399,6 +403,9 @@ def main(ret):
     setup_default_config_opts(config_opts, unprivUid)
     (options, args) = command_parse(config_opts)
 
+    if options.printrootpath: 
+        options.verbose = 0
+
     # config path -- can be overridden on cmdline
     config_path = MOCKCONFDIR
     if options.configdir:
@@ -460,6 +467,10 @@ def main(ret):
     # do whatever we're here to do
     log.info("mock.py version %s starting..." % __VERSION__)
     chroot = mock.backend.Root(config_opts, uidManager)
+
+    if options.printrootpath:
+        print chroot.makeChrootPath('')
+        sys.exit(0)
 
     # dump configuration to log
     log.debug("mock final configuration:")
