@@ -388,7 +388,7 @@ class Root(object):
             chrootspec = spec.replace(self.makeChrootPath(), '') # get rid of rootdir prefix
             # Completely/Permanently drop privs while running the following:
             self.doChroot(
-                "bash -l -c 'rpmbuild -bs --target %s --nodeps %s'" % (self.target_arch, chrootspec),
+                "bash --login -c 'rpmbuild -bs --target %s --nodeps %s'" % (self.target_arch, chrootspec),
                 logger=self.build_log, timeout=timeout,
                 uidManager=self.uidManager,
                 uid=self.chrootuid,
@@ -409,7 +409,7 @@ class Root(object):
             self._callHooks('prebuild')
 
             self.doChroot(
-                "bash -l -c 'rpmbuild -bb --target %s --nodeps %s'" % (self.target_arch, chrootspec),
+                "bash --login -c 'rpmbuild -bb --target %s --nodeps %s'" % (self.target_arch, chrootspec),
                 logger=self.build_log, timeout=timeout,
                 uidManager=self.uidManager,
                 uid=self.chrootuid,
