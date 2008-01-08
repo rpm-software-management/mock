@@ -15,7 +15,16 @@ requires_api_version = "1.0"
 # plugin entry point
 decorate(traceLog())
 def init(rootObj, conf):
-    Tmpfs(rootObj, conf)
+    system_ram_bytes = os.sysconf(os.sysconf_names['SC_PAGE_SIZE']) * os.sysconf(os.sysconf_names['SC_PHYS_PAGES'])
+    system_ram_mb = system_ram_bytes / (1024 * 1024)
+    if system_ram_mb > conf['required_ram_mb']:
+        Tmpfs(rootObj, conf)
+    else:
+        getLog().warning("Tmpfs plugin disabled. "
+            "System does not have the required amount of RAM to enable the tmpfs plugin. "
+            "System has %sMB RAM, but the config specifies the minimum required is %sMB RAM. " 
+            % 
+            (system_ram_mb, conf['required_ram_mb']))
 
 # classes
 class Tmpfs(object):

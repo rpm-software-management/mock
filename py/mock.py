@@ -240,7 +240,7 @@ def setup_default_config_opts(config_opts, unprivUid):
                 # ('/another/host/path', '/another/bind/mount/path/in/chroot/'),
                 ]},
             'tmpfs_enable': False,
-            'tmpfs_opts': {},
+            'tmpfs_opts': {'required_ram_mb': 900},
             }
 
     # dependent on guest OS
