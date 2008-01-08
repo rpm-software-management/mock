@@ -147,6 +147,14 @@ class Root(object):
 
     decorate(traceLog())
     def init(self):
+        try:
+            self._init()
+        except (KeyboardInterrupt, Exception):
+            self._callHooks('initfailed')
+            raise
+
+    decorate(traceLog())
+    def _init(self):
         self.state("init")
 
         # NOTE: removed the following stuff vs mock v0:
@@ -425,8 +433,8 @@ class Root(object):
             self.uidManager.restorePrivs()
             self._umountall()
 
-        # tell caching we are done building
-        self._callHooks('postbuild')
+            # tell caching we are done building
+            self._callHooks('postbuild')
 
     # =============
     # 'Private' API
