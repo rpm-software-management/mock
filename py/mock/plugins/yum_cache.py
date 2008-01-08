@@ -83,7 +83,7 @@ class YumCache(object):
                             os.unlink(fullPath)
                             fullPath = None
                             break
-    
+
                     if fullPath is None: continue
                     if file_age_days > self.yum_cache_opts['max_age_days']:
                         os.unlink(fullPath)

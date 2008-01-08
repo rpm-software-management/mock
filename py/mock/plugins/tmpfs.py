@@ -22,8 +22,8 @@ def init(rootObj, conf):
     else:
         getLog().warning("Tmpfs plugin disabled. "
             "System does not have the required amount of RAM to enable the tmpfs plugin. "
-            "System has %sMB RAM, but the config specifies the minimum required is %sMB RAM. " 
-            % 
+            "System has %sMB RAM, but the config specifies the minimum required is %sMB RAM. "
+            %
             (system_ram_mb, conf['required_ram_mb']))
 
 # classes
@@ -48,5 +48,5 @@ class Tmpfs(object):
         getLog().info("unmounting tmpfs.")
         mountCmd = "umount -n %s" % self.rootObj.makeChrootPath()
         mock.util.do(mountCmd)
-        
+
 

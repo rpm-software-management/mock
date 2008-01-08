@@ -102,9 +102,9 @@ def command_parse(config_opts):
                       help="Copy file(s) into the specified chroot")
 
     parser.add_option("--copyout", action="store_const", const="copyout",
-                      dest="mode", 
+                      dest="mode",
                       help="Copy file(s) from the specified chroot")
-    
+
     # options
     parser.add_option("-r", "--root", action="store", type="string", dest="chroot",
                       help="chroot name/config file name default: %default",
@@ -212,8 +212,8 @@ def setup_default_config_opts(config_opts, unprivUid):
     config_opts['cleanup_on_failure'] = 1
 
     # (global) plugins and plugin configs.
-    # ordering constraings: tmpfs must be first. 
-    #    root_cache next. 
+    # ordering constraings: tmpfs must be first.
+    #    root_cache next.
     #    after that, any plugins that must create dirs (yum_cache)
     #    any plugins without preinit hooks should be last.
     config_opts['plugins'] = ('tmpfs', 'root_cache', 'yum_cache', 'bind_mount', 'ccache')
@@ -411,7 +411,7 @@ def main(ret):
     setup_default_config_opts(config_opts, unprivUid)
     (options, args) = command_parse(config_opts)
 
-    if options.printrootpath: 
+    if options.printrootpath:
         options.verbose = 0
 
     # config path -- can be overridden on cmdline
