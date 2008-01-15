@@ -420,7 +420,7 @@ def main(ret):
         config_path = options.configdir
 
     # Read in the config files: default, and then user specified
-    for cfg in ( os.path.join(config_path, 'defaults.cfg'), '%s/%s.cfg' % (config_path, options.chroot)):
+    for cfg in ( os.path.join(config_path, 'site-defaults.cfg'), '%s/%s.cfg' % (config_path, options.chroot)):
         if os.path.exists(cfg):
             execfile(cfg)
         else:
