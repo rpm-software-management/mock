@@ -82,6 +82,14 @@ fi
 %attr(02775, root, mock) %dir /var/lib/mock
 
 %changelog
+* Wed Jan 16 2008 Clark Williams <williams@redhat.com> - 0.9.6-1
+- renamed configs and put compat symlinks in place
+- misc cleanups (whitespace fixes, info messages, etc.)
+- tmpfs plugin fix
+- split --target and --arch command line arguments
+- changed from -l to --login on bash invocations
+- create /dev/full in chroot
+
 * Thu Dec 20 2007 Michael Brown <mebrown@michaels-house.net> - 0.9.5-1
 - really fix file-based BuildRequires
 
