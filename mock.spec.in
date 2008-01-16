@@ -38,6 +38,17 @@ make DESTDIR=$RPM_BUILD_ROOT install
 mkdir -p $RPM_BUILD_ROOT/var/lib/mock
 ln -s consolehelper $RPM_BUILD_ROOT/usr/bin/mock
 
+# compatibility symlinks
+# (probably be nuked in the future)
+pushd $RPM_BUILD_ROOT/etc/mock
+ln -s epel-4-i386.cfg   fedora-4-i386-epel.cfg
+ln -s epel-4-ppc.cfg    fedora-4-ppc-epel.cfg
+ln -s epel-4-x86_64.cfg fedora-4-x86_64-epel.cfg
+ln -s epel-5-i386.cfg   fedora-5-i386-epel.cfg
+ln -s epel-5-ppc.cfg    fedora-5-ppc-epel.cfg
+ln -s epel-5-x86_64.cfg fedora-5-x86_64-epel.cfg
+popd
+
 %clean
 rm -rf $RPM_BUILD_ROOT
 
