@@ -529,7 +529,11 @@ def main(ret):
         log.info("Running in chroot: %s" % args)
         chroot.tryLockBuildRoot()
         chroot._resetLogging()
-        chroot.doChroot(args)
+        try:
+            chroot._mountall()
+            chroot.doChroot(args)
+        finally:
+            chroot._umountall()
 
     elif options.mode == 'installdeps':
         if len(args) == 0:
