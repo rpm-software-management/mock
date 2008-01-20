@@ -33,7 +33,7 @@ outdir=${CURDIR}/mock-unit-test
 MOCKCMD="sudo ./py/mock.py --resultdir=$outdir --uniqueext=$uniqueext -r $testConfig $MOCK_EXTRA_ARGS"
 CHROOT=/var/lib/mock/${testConfig}-$uniqueext/root
 
-#trap '$MOCKCMD --clean' INT HUP QUIT EXIT TERM
+trap '$MOCKCMD --clean' INT HUP QUIT EXIT TERM
 
 # clear out root cache so we get at least run without root cache present
 #sudo rm -rf /var/lib/mock/cache/${testConfig}/root_cache
