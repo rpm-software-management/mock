@@ -53,8 +53,9 @@ fi
 #
 set +e
 time $MOCKCMD --offline --chroot -- bash -c "exit 5"
-if [ $? -ne 5 ]; then
-    echo "'mock --chroot' return code not properly passed back."
+res=$?
+if [ $res -ne 5 ]; then
+    echo "'mock --chroot' return code not properly passed back: $res"
     exit 1
 fi
 set -e
@@ -64,8 +65,9 @@ set -e
 #
 set +e
 echo exit 5 | time $MOCKCMD --offline --shell
-if [ $? -ne 5 ]; then
-    echo "'mock --chroot' return code not properly passed back."
+res=$?
+if [ $res -ne 5 ]; then
+    echo "'mock --chroot' return code not properly passed back: $res"
     exit 1
 fi
 set -e
