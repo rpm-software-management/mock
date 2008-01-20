@@ -89,7 +89,7 @@ class RootCache(object):
             self.state("creating cache")
             self._rootCacheLock(shared=0)
             mock.util.do(
-                ["tar", "czf", self.rootCacheFile, "-C", self.rootObj.makeChrootPath()],
+                ["tar", "czf", self.rootCacheFile, "-C", self.rootObj.makeChrootPath(), "."],
                 shell=False
                 )
             self._rootCacheUnlock()

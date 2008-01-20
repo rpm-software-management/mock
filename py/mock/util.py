@@ -253,6 +253,7 @@ def do(command, shell=False, chrootPath=None, timeout=0, raiseExc=True, returnOu
     preexec = ChildPreExec(personality, chrootPath, uid, gid)
     try:
         child = None
+        logger.debug("Executing command: %s" % command)
         child = subprocess.Popen(
             command, 
             shell=shell,
