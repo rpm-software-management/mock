@@ -19,8 +19,8 @@ class Error(Exception):
         Exception.__init__(self)
         self.msg = msg
         self.resultcode = 1
-        if status is not None and os.WIFEXITED(status):
-            self.resultcode = os.WEXITSTATUS(status)
+        if status is not None:
+            self.resultcode = status
 
     def __str__(self):
         return self.msg

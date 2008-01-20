@@ -40,13 +40,14 @@ class Tmpfs(object):
     decorate(traceLog())
     def _tmpfsPreInitHook(self):
         getLog().info("mounting tmpfs.")
-        mountCmd = "mount -n -t tmpfs  mock_chroot_tmpfs %s" % self.rootObj.makeChrootPath()
-        mock.util.do(mountCmd)
+        mountCmd = ["mount", "-n", "-t", "tmpfs", "mock_chroot_tmpfs", 
+                    self.rootObj.makeChrootPath()]
+        mock.util.do(mountCmd, shell=False)
 
     decorate(traceLog())
     def _tmpfsPostBuildHook(self):
         getLog().info("unmounting tmpfs.")
-        mountCmd = "umount -n %s" % self.rootObj.makeChrootPath()
-        mock.util.do(mountCmd)
+        mountCmd = ["umount", "-n", self.rootObj.makeChrootPath()]
+        mock.util.do(mountCmd, shell=False)
 
 

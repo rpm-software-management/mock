@@ -6,19 +6,41 @@
 # Copyright (C) 2007 Michael E Brown <mebrown@michaels-house.net>
 
 # python library imports
+import ctypes
 import os
 import os.path
 import popen2
 import rpm
 import rpmUtils
 import rpmUtils.transaction
+import select
 import shutil
 import signal
+import subprocess
 import time
 
 # our imports
 import mock.exception
 from mock.trace_decorator import traceLog, decorate, getLog
+import mock.uid as uid
+
+_libc = ctypes.cdll.LoadLibrary(None)
+_errno = ctypes.c_int.in_dll(_libc, "errno")
+_libc.personality.argtypes = [ctypes.c_ulong]
+_libc.personality.restype = ctypes.c_int
+_libc.unshare.argtypes = [ctypes.c_int,]
+_libc.unshare.restype = ctypes.c_int
+CLONE_NEWNS = 0x00020000
+
+# taken from sys/personality.h
+PER_LINUX32=0x0008
+PER_LINUX=0x0000
+personality_defs = {
+    'x86_64': PER_LINUX, 'ppc64': PER_LINUX, 'sparc64': PER_LINUX,
+    'i386': PER_LINUX32, 'i586': PER_LINUX32, 'i686': PER_LINUX32,
+    'ppc': PER_LINUX32, 'sparc': PER_LINUX32, 'sparcv9': PER_LINUX32,
+    'ia64' : PER_LINUX, 'alpha' : PER_LINUX,
+}
 
 # classes
 class commandTimeoutExpired(mock.exception.Error):
@@ -153,29 +175,6 @@ def uniqReqs(*args):
         master.extend(l)
     return rpmUtils.miscutils.unique(master)
 
-decorate(traceLog())
-def condChroot(chrootPath, uidManager=None):
-    if chrootPath is not None:
-        getLog().debug("chroot %s" % chrootPath)
-        if uidManager:
-            getLog().debug("elevate privs to run chroot")
-            uidManager.becomeUser(0)
-        os.chdir(chrootPath)
-        os.chroot(chrootPath)
-        if uidManager:
-            getLog().debug("back to other privs")
-            uidManager.restorePrivs()
-
-decorate(traceLog())
-def condDropPrivs(uidManager, uid, gid):
-    if uidManager is not None:
-        getLog().debug("about to drop privs")
-        if uid is not None:
-            uidManager.unprivUid = uid
-        if gid is not None:
-            uidManager.unprivGid = gid
-        uidManager.dropPrivsForever()
-
 # not traced...
 def chomp(line):
     if line.endswith("\n"):
@@ -183,131 +182,124 @@ def chomp(line):
     else:
         return line
 
-# taken from sys/personality.h
-PER_LINUX32=0x0008
-PER_LINUX=0x0000
-personality_defs = {
-    'x86_64': PER_LINUX, 'ppc64': PER_LINUX, 'sparc64': PER_LINUX,
-    'i386': PER_LINUX32, 'i586': PER_LINUX32, 'i686': PER_LINUX32,
-    'ppc': PER_LINUX32, 'sparc': PER_LINUX32, 'sparcv9': PER_LINUX32,
-    'ia64' : PER_LINUX, 'alpha' : PER_LINUX,
-}
-
-import ctypes
-_libc = ctypes.cdll.LoadLibrary(None)
-_errno = ctypes.c_int.in_dll(_libc, "errno")
-_libc.personality.argtypes = [ctypes.c_ulong]
-_libc.personality.restype = ctypes.c_int
-
-decorate(traceLog())
-def condPersonality(per=None):
-    if per is None or per in ('noarch',):
-        return
-    if personality_defs.get(per, None) is None:
-        getLog().warning("Unable to find predefined setarch personality constant for '%s' arch."
-            " You may have to manually run setarch."% per)
-        return
-    res = _libc.personality(personality_defs[per])
-    if res == -1:
-        raise OSError(_errno.value, os.strerror(_errno.value))
-    getLog().debug("Ran setarch '%s'" % per)
-
-CLONE_NEWNS = 0x00020000
-
 decorate(traceLog())
 def unshare(flags):
     getLog().debug("Unsharing. Flags: %s" % flags)
     try:
-        _libc.unshare.argtypes = [ctypes.c_int,]
-        _libc.unshare.restype = ctypes.c_int
         res = _libc.unshare(flags)
         if res:
             raise OSError(_errno.value, os.strerror(_errno.value))
     except AttributeError, e:
         pass
 
+# these are called in child process, so no logging
+def condChroot(chrootPath):
+    if chrootPath is not None:
+        saved = { "ruid": os.getuid(), "euid": os.geteuid(), }
+        uid.setresuid(0,0,0)
+        os.chdir(chrootPath)
+        os.chroot(chrootPath)
+        uid.setresuid(saved['ruid'], saved['euid'])
+
+def condDropPrivs(uid, gid):
+    if gid is not None:
+        os.setregid(gid, gid)
+    if uid is not None:
+        os.setreuid(uid, uid)
+
+def condPersonality(per=None):
+    if per is None or per in ('noarch',):
+        return
+    if personality_defs.get(per, None) is None:
+        return
+    res = _libc.personality(personality_defs[per])
+    if res == -1:
+        raise OSError(_errno.value, os.strerror(_errno.value))
+
+
+def logOutput(fds, logger, returnOutput=1, start=0, timeout=0):
+    output=""
+    done = 0
+    while not done:
+        if (time.time() - start)>timeout and timeout!=0:
+            done = 1
+            break
+
+        i_rdy,o_rdy,e_rdy = select.select(fds,[],[],1) 
+        for s in i_rdy:
+            # this isnt perfect as a whole line of input may not be
+            # ready, but should be "good enough" for now
+            line = s.readline()
+            if line == "":
+                done = 1
+                break
+            logger.debug(chomp(line))
+            if returnOutput:
+                output += line
+    return output
+
 # logger =
 # output = [1|0]
 # chrootPath
 #
-# Warning: this is the function from hell. :(
+# The "Not-as-complicated" version
 #
 decorate(traceLog())
-def do(command, chrootPath=None, timeout=0, raiseExc=True, returnOutput=0, uidManager=None, uid=None, gid=None, personality=None, *args, **kargs):
-    """execute given command outside of chroot"""
+def do(command, shell=False, chrootPath=None, timeout=0, raiseExc=True, returnOutput=0, uid=None, gid=None, personality=None, *args, **kargs):
 
     logger = kargs.get("logger", getLog())
-    logger.debug("run cmd timeout(%s): %s" % (timeout, command))
-
-    def alarmhandler(signum, stackframe):
-        raise commandTimeoutExpired("Timeout(%s) exceeded for command: %s" % (timeout, command))
-
-    retval = 0
-
     output = ""
-    (r, w) = os.pipe()
-    pid = os.fork()
-    if pid: #parent
-        rpid = ret = 0
-        os.close(w)
-        oldhandler = signal.signal(signal.SIGALRM, alarmhandler)
-        # timeout=0 means disable alarm signal. no timeout
-        signal.alarm(timeout)
+    start = time.time()
+    preexec = ChildPreExec(personality, chrootPath, uid, gid)
+    try:
+        child = None
+        child = subprocess.Popen(
+            command, 
+            shell=shell,
+            bufsize=0, close_fds=True, 
+            stdin=open("/dev/null", "r"), 
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            preexec_fn = preexec,
+            )
 
-        try:
-            # read output from child
-            r_fh = os.fdopen(r, "r")
-            for line in r_fh:
-                logger.debug(chomp(line))
+        # use select() to poll for output so we dont block
+        output = logOutput([child.stdout, child.stderr], 
+                           logger, returnOutput, start, timeout)
 
-                if returnOutput:
-                    output += line
+    except:
+        # kill children if they arent done
+        if child is not None and child.returncode is None:
+            os.kill(-child.pid, 15)
+            os.kill(-child.pid, 9)
+        raise
 
-            # close read handle, get child return status, etc
-            r_fh.close()
-            (rpid, ret) = os.waitpid(pid, 0)
-            signal.alarm(0)
-            signal.signal(signal.SIGALRM, oldhandler)
+    # wait until child is done, kill it if it passes timeout
+    while child.poll() is None:
+        if (time.time() - start)>timeout and timeout!=0:
+            os.kill(-child.pid, 15)
+            os.kill(-child.pid, 9)
+            raise commandTimeoutExpired, ("Timeout(%s) expired for command:\n # %s\n%s" % (command, output))
 
-        # kill children for any exception...
-        finally:
-            try:
-                os.kill(-pid, signal.SIGTERM)
-                time.sleep(1)
-                os.kill(-pid, signal.SIGKILL)
-            except OSError:
-                pass
-            signal.signal(signal.SIGALRM, oldhandler)
 
-        # mask and return just return value, plus child output
-        if raiseExc and ((os.WIFEXITED(ret) and os.WEXITSTATUS(ret)) or os.WIFSIGNALED(ret)):
-            if returnOutput:
-                raise mock.exception.Error, ("Command failed: \n # %s\n%s" % (command, output), ret)
-            else:
-                raise mock.exception.Error, ("Command failed. See logs for output.\n # %s" % (command,), ret)
+    if raiseExc and child.returncode:
+        if returnOutput:
+            raise mock.exception.Error, ("Command failed: \n # %s\n%s" % (command, output), child.returncode)
+        else:
+            raise mock.exception.Error, ("Command failed. See logs for output.\n # %s" % (command,), child.returncode)
 
-        return output
+    return output
 
-    else: #child
-        retval = 255
-        try:
-            os.close(r)
-            # become process group leader so that our parent
-            # can kill our children
-            os.setpgrp()
+class ChildPreExec(object):
+    def __init__(self, personality, chrootPath, uid, gid):
+        self.personality = personality
+        self.chrootPath  = chrootPath
+        self.uid = uid
+        self.gid = gid
 
-            condPersonality(personality)
-            condChroot(chrootPath, uidManager)
-            condDropPrivs(uidManager, uid, gid)
+    def __call__(self, *args, **kargs):
+        os.setpgrp()
+        condPersonality(self.personality)
+        condChroot(self.chrootPath)
+        condDropPrivs(self.uid, self.gid)
 
-            child = popen2.Popen4(command)
-            child.tochild.close()
-
-            w = os.fdopen(w, "w")
-            for line in child.fromchild:
-                w.write(line)
-                w.flush()
-            w.close()
-            retval = child.wait()
-        finally:
-            os._exit(os.WEXITSTATUS(retval))

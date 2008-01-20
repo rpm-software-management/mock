@@ -284,8 +284,9 @@ class Root(object):
             os.mknod( self.makeChrootPath(i[2]), i[0], i[1])
             # set context. (only necessary if host running selinux enabled.)
             # fails gracefully if chcon not installed.
-            mock.util.do("chcon --reference=/%s %s" %
-                (i[2], self.makeChrootPath(i[2])), raiseExc=0)
+            mock.util.do(
+                ["chcon", "--reference=/%s"% i[2], self.makeChrootPath(i[2])]
+                , raiseExc=0, shell=False)
 
         os.symlink("/proc/self/fd/0", self.makeChrootPath("dev/stdin"))
         os.symlink("/proc/self/fd/1", self.makeChrootPath("dev/stdout"))
@@ -304,9 +305,10 @@ class Root(object):
     # bad hack
     # comment out decorator here so we dont get double exceptions in the root log
     #decorate(traceLog())
-    def doChroot(self, command, env="", *args, **kargs):
+    def doChroot(self, command, env="", shell=True, *args, **kargs):
         """execute given command in root"""
-        return mock.util.do( command, chrootPath=self.makeChrootPath(), *args, **kargs )
+        return mock.util.do(command, chrootPath=self.makeChrootPath(), 
+                            shell=shell, *args, **kargs )
 
     decorate(traceLog())
     def yumInstall(self, *srpms):
@@ -378,7 +380,6 @@ class Root(object):
             # Completely/Permanently drop privs while running the following:
             self.doChroot(
                 "rpm -Uvh --nodeps %s" % (srpmChrootFilename,),
-                uidManager=self.uidManager,
                 uid=self.chrootuid,
                 gid=self.chrootgid,
                 )
@@ -394,7 +395,6 @@ class Root(object):
             self.doChroot(
                 "bash --login -c 'rpmbuild -bs --target %s --nodeps %s'" % (self.rpmbuild_arch, chrootspec),
                 logger=self.build_log, timeout=timeout,
-                uidManager=self.uidManager,
                 uid=self.chrootuid,
                 gid=self.chrootgid,
                 )
@@ -415,7 +415,6 @@ class Root(object):
             self.doChroot(
                 "bash --login -c 'rpmbuild -bb --target %s --nodeps %s'" % (self.rpmbuild_arch, chrootspec),
                 logger=self.build_log, timeout=timeout,
-                uidManager=self.uidManager,
                 uid=self.chrootuid,
                 gid=self.chrootgid,
                 )
@@ -467,14 +466,14 @@ class Root(object):
         """mount 'normal' fs like /dev/ /proc/ /sys"""
         for cmd in self.mountCmds:
             self.root_log.debug(cmd)
-            mock.util.do(cmd)
+            mock.util.do(cmd, shell=True)
 
     decorate(traceLog())
     def _umountall(self):
         """umount all mounted chroot fs."""
         for cmd in self.umountCmds:
             self.root_log.debug(cmd)
-            mock.util.do(cmd, raiseExc=0)
+            mock.util.do(cmd, raiseExc=0, shell=True)
 
     decorate(traceLog())
     def _yum(self, cmd, returnOutput=0):
@@ -489,7 +488,7 @@ class Root(object):
         output = ""
         try:
             self._callHooks("preyum")
-            output = mock.util.do(cmd, returnOutput=returnOutput)
+            output = mock.util.do(cmd, returnOutput=returnOutput, shell=True)
             self._callHooks("postyum")
             return output
         except mock.exception.Error, e:

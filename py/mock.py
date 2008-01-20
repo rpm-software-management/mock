@@ -496,7 +496,8 @@ def main(ret):
         log.info("Namespace unshare failed.")
 
     # set personality (ie. setarch)
-    mock.util.condPersonality(config_opts['target_arch'])
+    if config_opts['internal_setarch']:
+        mock.util.condPersonality(config_opts['target_arch'])
 
     if options.mode == 'init':
         if config_opts['clean']:
@@ -510,8 +511,6 @@ def main(ret):
         chroot.tryLockBuildRoot()
         try:
             chroot._mountall()
-            if config_opts['internal_setarch']:
-                mock.util.condPersonality(config_opts['target_arch'])
             cmd = ' '.join(args)
             status = os.system("PS1='mock-chroot> ' /usr/sbin/chroot %s %s" % (chroot.makeChrootPath(), cmd))
             ret['exitStatus'] = os.WEXITSTATUS(status)
@@ -520,18 +519,20 @@ def main(ret):
             chroot._umountall()
 
     elif options.mode == 'chroot':
+        shell=False
         if len(args) == 0:
             log.critical("You must specify a command to run")
             sys.exit(50)
         elif len(args) == 1:
             args = args[0]
+            shell=True
 
         log.info("Running in chroot: %s" % args)
         chroot.tryLockBuildRoot()
         chroot._resetLogging()
         try:
             chroot._mountall()
-            chroot.doChroot(args)
+            chroot.doChroot(args, shell=shell)
         finally:
             chroot._umountall()
 
@@ -626,12 +627,7 @@ if __name__ == '__main__':
         exitStatus = 7
         log.error("Exiting on user interrupt, <CTRL>-C")
 
-    except (mock.exception.BadCmdline), exc:
-        exitStatus = exc.resultcode
-        log.error(str(exc))
-        killOrphans = 0
-
-    except (mock.exception.BuildRootLocked), exc:
+    except (mock.exception.BadCmdline, mock.exception.BuildRootLocked), exc:
         exitStatus = exc.resultcode
         log.error(str(exc))
         killOrphans = 0
