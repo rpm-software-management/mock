@@ -39,7 +39,7 @@ class CCache(object):
     # ccache itself manages size and settings.
     decorate(traceLog())
     def _ccacheBuildHook(self):
-        self.rootObj.doChroot("ccache -M %s" % self.ccache_opts['max_cache_size'])
+        self.rootObj.doChroot(["ccache", "-M", str(self.ccache_opts['max_cache_size'])], shell=False)
 
     # basic idea here is that we add 'cc', 'gcc', 'g++' shell scripts to
     # to /tmp/ccache, which is bind-mounted from a shared location.

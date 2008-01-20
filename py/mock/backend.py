@@ -379,7 +379,8 @@ class Root(object):
             os.environ["HOME"] = self.homedir
             # Completely/Permanently drop privs while running the following:
             self.doChroot(
-                "rpm -Uvh --nodeps %s" % (srpmChrootFilename,),
+                ["rpm", "-Uvh", "--nodeps", srpmChrootFilename],
+                shell=False,
                 uid=self.chrootuid,
                 gid=self.chrootgid,
                 )
@@ -393,7 +394,8 @@ class Root(object):
             chrootspec = spec.replace(self.makeChrootPath(), '') # get rid of rootdir prefix
             # Completely/Permanently drop privs while running the following:
             self.doChroot(
-                "bash --login -c 'rpmbuild -bs --target %s --nodeps %s'" % (self.rpmbuild_arch, chrootspec),
+                ["bash", "--login", "-c", 'rpmbuild -bs --target %s --nodeps %s' % (self.rpmbuild_arch, chrootspec)],
+                shell=False,
                 logger=self.build_log, timeout=timeout,
                 uid=self.chrootuid,
                 gid=self.chrootgid,
@@ -413,7 +415,8 @@ class Root(object):
             self._callHooks('prebuild')
 
             self.doChroot(
-                "bash --login -c 'rpmbuild -bb --target %s --nodeps %s'" % (self.rpmbuild_arch, chrootspec),
+                ["bash", "--login", "-c", 'rpmbuild -bb --target %s --nodeps %s' % (self.rpmbuild_arch, chrootspec)],
+                shell=False,
                 logger=self.build_log, timeout=timeout,
                 uid=self.chrootuid,
                 gid=self.chrootgid,
@@ -501,14 +504,16 @@ class Root(object):
 
         # safe and easy. blow away existing /builddir and completely re-create.
         mock.util.rmtree(self.makeChrootPath(self.homedir))
-        dets = { 'uid': self.chrootuid, 'gid': self.chrootgid, 'user': self.chrootuser, 'group': self.chrootgroup, 'home': self.homedir }
+        dets = { 'uid': str(self.chrootuid), 'gid': str(self.chrootgid), 'user': self.chrootuser, 'group': self.chrootgroup, 'home': self.homedir }
 
-        self.doChroot('/usr/sbin/userdel -r %(user)s' % dets, raiseExc=False)
-        self.doChroot('/usr/sbin/groupdel %(group)s' % dets, raiseExc=False)
+        self.doChroot(['/usr/sbin/userdel', '-r', dets['user']], shell=False, raiseExc=False)
+        self.doChroot(['/usr/sbin/groupdel', dets['group']], shell=False, raiseExc=False)
 
-        self.doChroot('/usr/sbin/groupadd -g %(gid)s %(group)s' % dets)
-        self.doChroot(self.useradd % dets)
-        self.doChroot("perl -p -i -e 's/^(%s:)!!/$1/;' /etc/passwd" % (self.chrootuser), raiseExc=True)
+        self.doChroot(['/usr/sbin/groupadd', '-g', dets['gid'], dets['group']], shell=False)
+        self.doChroot(self.useradd % dets, shell=True)
+        self.doChroot(
+            ["perl", "-p", "-i", "-e", 's/^(%s:)!!/$1/;' % self.chrootuser, "/etc/passwd"],
+            shell=False, raiseExc=True)
 
     decorate(traceLog())
     def _resetLogging(self):
