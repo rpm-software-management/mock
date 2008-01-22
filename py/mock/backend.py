@@ -147,6 +147,14 @@ class Root(object):
 
     decorate(traceLog())
     def init(self):
+        try:
+            self._init()
+        except (KeyboardInterrupt, Exception):
+            self._callHooks('initfailed')
+            raise
+
+    decorate(traceLog())
+    def _init(self):
         self.state("init")
 
         # NOTE: removed the following stuff vs mock v0:
@@ -276,8 +284,9 @@ class Root(object):
             os.mknod( self.makeChrootPath(i[2]), i[0], i[1])
             # set context. (only necessary if host running selinux enabled.)
             # fails gracefully if chcon not installed.
-            mock.util.do("chcon --reference=/%s %s" %
-                (i[2], self.makeChrootPath(i[2])), raiseExc=0)
+            mock.util.do(
+                ["chcon", "--reference=/%s"% i[2], self.makeChrootPath(i[2])]
+                , raiseExc=0, shell=False)
 
         os.symlink("/proc/self/fd/0", self.makeChrootPath("dev/stdin"))
         os.symlink("/proc/self/fd/1", self.makeChrootPath("dev/stdout"))
@@ -296,9 +305,10 @@ class Root(object):
     # bad hack
     # comment out decorator here so we dont get double exceptions in the root log
     #decorate(traceLog())
-    def doChroot(self, command, env="", *args, **kargs):
+    def doChroot(self, command, env="", shell=True, *args, **kargs):
         """execute given command in root"""
-        return mock.util.do( command, chrootPath=self.makeChrootPath(), *args, **kargs )
+        return mock.util.do(command, chrootPath=self.makeChrootPath(), 
+                            shell=shell, *args, **kargs )
 
     decorate(traceLog())
     def yumInstall(self, *srpms):
@@ -369,8 +379,8 @@ class Root(object):
             os.environ["HOME"] = self.homedir
             # Completely/Permanently drop privs while running the following:
             self.doChroot(
-                "rpm -Uvh --nodeps %s" % (srpmChrootFilename,),
-                uidManager=self.uidManager,
+                ["rpm", "-Uvh", "--nodeps", srpmChrootFilename],
+                shell=False,
                 uid=self.chrootuid,
                 gid=self.chrootgid,
                 )
@@ -384,9 +394,9 @@ class Root(object):
             chrootspec = spec.replace(self.makeChrootPath(), '') # get rid of rootdir prefix
             # Completely/Permanently drop privs while running the following:
             self.doChroot(
-                "bash --login -c 'rpmbuild -bs --target %s --nodeps %s'" % (self.rpmbuild_arch, chrootspec),
+                ["bash", "--login", "-c", 'rpmbuild -bs --target %s --nodeps %s' % (self.rpmbuild_arch, chrootspec)],
+                shell=False,
                 logger=self.build_log, timeout=timeout,
-                uidManager=self.uidManager,
                 uid=self.chrootuid,
                 gid=self.chrootgid,
                 )
@@ -405,9 +415,9 @@ class Root(object):
             self._callHooks('prebuild')
 
             self.doChroot(
-                "bash --login -c 'rpmbuild -bb --target %s --nodeps %s'" % (self.rpmbuild_arch, chrootspec),
+                ["bash", "--login", "-c", 'rpmbuild -bb --target %s --nodeps %s' % (self.rpmbuild_arch, chrootspec)],
+                shell=False,
                 logger=self.build_log, timeout=timeout,
-                uidManager=self.uidManager,
                 uid=self.chrootuid,
                 gid=self.chrootgid,
                 )
@@ -425,8 +435,8 @@ class Root(object):
             self.uidManager.restorePrivs()
             self._umountall()
 
-        # tell caching we are done building
-        self._callHooks('postbuild')
+            # tell caching we are done building
+            self._callHooks('postbuild')
 
     # =============
     # 'Private' API
@@ -459,14 +469,14 @@ class Root(object):
         """mount 'normal' fs like /dev/ /proc/ /sys"""
         for cmd in self.mountCmds:
             self.root_log.debug(cmd)
-            mock.util.do(cmd)
+            mock.util.do(cmd, shell=True)
 
     decorate(traceLog())
     def _umountall(self):
         """umount all mounted chroot fs."""
         for cmd in self.umountCmds:
             self.root_log.debug(cmd)
-            mock.util.do(cmd, raiseExc=0)
+            mock.util.do(cmd, raiseExc=0, shell=True)
 
     decorate(traceLog())
     def _yum(self, cmd, returnOutput=0):
@@ -481,7 +491,7 @@ class Root(object):
         output = ""
         try:
             self._callHooks("preyum")
-            output = mock.util.do(cmd, returnOutput=returnOutput)
+            output = mock.util.do(cmd, returnOutput=returnOutput, shell=True)
             self._callHooks("postyum")
             return output
         except mock.exception.Error, e:
@@ -494,14 +504,16 @@ class Root(object):
 
         # safe and easy. blow away existing /builddir and completely re-create.
         mock.util.rmtree(self.makeChrootPath(self.homedir))
-        dets = { 'uid': self.chrootuid, 'gid': self.chrootgid, 'user': self.chrootuser, 'group': self.chrootgroup, 'home': self.homedir }
+        dets = { 'uid': str(self.chrootuid), 'gid': str(self.chrootgid), 'user': self.chrootuser, 'group': self.chrootgroup, 'home': self.homedir }
 
-        self.doChroot('/usr/sbin/userdel -r %(user)s' % dets, raiseExc=False)
-        self.doChroot('/usr/sbin/groupdel %(group)s' % dets, raiseExc=False)
+        self.doChroot(['/usr/sbin/userdel', '-r', dets['user']], shell=False, raiseExc=False)
+        self.doChroot(['/usr/sbin/groupdel', dets['group']], shell=False, raiseExc=False)
 
-        self.doChroot('/usr/sbin/groupadd -g %(gid)s %(group)s' % dets)
-        self.doChroot(self.useradd % dets)
-        self.doChroot("perl -p -i -e 's/^(%s:)!!/$1/;' /etc/passwd" % (self.chrootuser), raiseExc=True)
+        self.doChroot(['/usr/sbin/groupadd', '-g', dets['gid'], dets['group']], shell=False)
+        self.doChroot(self.useradd % dets, shell=True)
+        self.doChroot(
+            ["perl", "-p", "-i", "-e", 's/^(%s:)!!/$1/;' % self.chrootuser, "/etc/passwd"],
+            shell=False, raiseExc=True)
 
     decorate(traceLog())
     def _resetLogging(self):

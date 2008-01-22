@@ -15,7 +15,16 @@ requires_api_version = "1.0"
 # plugin entry point
 decorate(traceLog())
 def init(rootObj, conf):
-    Tmpfs(rootObj, conf)
+    system_ram_bytes = os.sysconf(os.sysconf_names['SC_PAGE_SIZE']) * os.sysconf(os.sysconf_names['SC_PHYS_PAGES'])
+    system_ram_mb = system_ram_bytes / (1024 * 1024)
+    if system_ram_mb > conf['required_ram_mb']:
+        Tmpfs(rootObj, conf)
+    else:
+        getLog().warning("Tmpfs plugin disabled. "
+            "System does not have the required amount of RAM to enable the tmpfs plugin. "
+            "System has %sMB RAM, but the config specifies the minimum required is %sMB RAM. "
+            %
+            (system_ram_mb, conf['required_ram_mb']))
 
 # classes
 class Tmpfs(object):
@@ -26,16 +35,19 @@ class Tmpfs(object):
         self.conf = conf
         rootObj.addHook("preinit",  self._tmpfsPreInitHook)
         rootObj.addHook("postbuild",  self._tmpfsPostBuildHook)
+        rootObj.addHook("initfailed",  self._tmpfsPostBuildHook)
 
     decorate(traceLog())
     def _tmpfsPreInitHook(self):
         getLog().info("mounting tmpfs.")
-        mountCmd = "mount -n -t tmpfs  mock_chroot_tmpfs %s" % self.rootObj.makeChrootPath()
-        mock.util.do(mountCmd)
+        mountCmd = ["mount", "-n", "-t", "tmpfs", "mock_chroot_tmpfs", 
+                    self.rootObj.makeChrootPath()]
+        mock.util.do(mountCmd, shell=False)
 
+    decorate(traceLog())
     def _tmpfsPostBuildHook(self):
         getLog().info("unmounting tmpfs.")
-        mountCmd = "umount -n %s" % self.rootObj.makeChrootPath()
-        mock.util.do(mountCmd)
-        
+        mountCmd = ["umount", "-n", self.rootObj.makeChrootPath()]
+        mock.util.do(mountCmd, shell=False)
+
 

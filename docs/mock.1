@@ -33,14 +33,55 @@ The content of a chroot is specified by the configuration specified with the
 \fB\-r\fR option. The default configuration file is /etc/mock/default.cfg,
 which is usually a symlink to one of the installed configurations.
 .LP
-There is a site-wide configuration file, /etc/mock/defaults.cfg, which can be
-used to specify site-wide options. The shipped version of this file has no
+There is a site-wide configuration file, /etc/mock/site-defaults.cfg, which can
+be used to specify site-wide options. The shipped version of this file has no
 active options, but does have a list of all of the configuration options,
 examples of how to set them, and their default values.
 .LP
 For backwards compatibility, old-style commands, ("rebuild", "init", "clean",
 etc.) without leading '\-\-' are still accepted, but are deprecated. See
 COMMANDS section, below, for detailed listing of all commands.
+
+.SH "COMMANDS"
+.LP
+.TP
+\fB\-\-clean\fP
+Purge the chroot tree
+.TP
+\fB\-\-init\fP
+Initialize a chroot (clean, install chroot packages, etc.)
+.TP
+\fB\-\-rebuild\fP
+If no command is specified, rebuild is assumed. Rebuilds the specified SRPM(s). The buildroot is cleaned first, unless --no-clean is specified.
+.TP
+\fB\-\-shell\fP
+Run the specified command interactively within the chroot (which must already be initialized -- no 'clean' is performed). If no command specified, /bin/sh is run.
+.TP
+\fB\-\-chroot\fP 
+Run the specified command non-interactively within the chroot (which must already be initialized -- no 'clean' is performed). Command output will be sent to the log files.
+.TP
+\fB\-\-installdeps\fP 
+Find out deps for SRPM or RPM, and do a yum install to put them in the buildroot. Buildroot must already be initialized -- no 'clean' is performed
+.TP
+\fB\-\-install\fP
+Do a yum install PACKAGE inside the buildroot. Buildroot must already be initialized -- no 'clean' is performed
+.TP
+\fB\-\-update\fP 
+Do a yum update inside the buildroot. Buildroot must already be initialized -- no 'clean' is performed
+.TP
+\fB\-\-orphanskill\fP
+No-op mode that simply checks that no stray processes are running in the chroot. Kills any processes that it finds using specified root.
+.TP
+\fB\-\-copyin\fP
+Copies the source paths (files or directory trees) into the chroot at
+the specified destination path. 
+.TP
+\fB\-\-copyout\fP
+Copies the source paths (files or directory trees) from the chroot to
+the specified destination path. 
+
+
+
 .SH "OPTIONS"
 .LP
 .TP
@@ -110,43 +151,7 @@ Show usage information and exit.
 .TP
 \fB\-\-version\fR
 Show version number and exit.
-.SH "COMMANDS"
-.LP
-.TP
-\fB\-\-clean\fP
-Purge the chroot tree
-.TP
-\fB\-\-init\fP
-Initialize a chroot (clean, install chroot packages, etc.)
-.TP
-\fB\-\-rebuild\fP
-If no command is specified, rebuild is assumed. Rebuilds the specified SRPM(s). The buildroot is cleaned first, unless --no-clean is specified.
-.TP
-\fB\-\-shell\fP
-Run the specified command interactively within the chroot (which must already be initialized -- no 'clean' is performed). If no command specified, /bin/sh is run.
-.TP
-\fB\-\-chroot\fP 
-Run the specified command non-interactively within the chroot (which must already be initialized -- no 'clean' is performed). Command output will be sent to the log files.
-.TP
-\fB\-\-installdeps\fP 
-Find out deps for SRPM or RPM, and do a yum install to put them in the buildroot. Buildroot must already be initialized -- no 'clean' is performed
-.TP
-\fB\-\-install\fP
-Do a yum install PACKAGE inside the buildroot. Buildroot must already be initialized -- no 'clean' is performed
-.TP
-\fB\-\-update\fP 
-Do a yum update inside the buildroot. Buildroot must already be initialized -- no 'clean' is performed
-.TP
-\fB\-\-orphanskill\fP
-No-op mode that simply checks that no stray processes are running in the chroot. Kills any processes that it finds using specified root.
-.TP
-\fB\-\-copyin\fP
-Copies the source paths (files or directory trees) into the chroot at
-the specified destination path. 
-.TP
-\fB\-\-copyout\fP
-Copies the source paths (files or directory trees) from the chroot to
-the specified destination path. 
+
 
 .SH "FILES"
 .LP
@@ -155,16 +160,23 @@ the specified destination path.
 \fI/var/lib/mock\fP \- directory where chroots are created
 .SH "EXAMPLES"
 .LP
-To rebuild test.src.rpm under the default chroot:
+To rebuild test.src.rpm under the default chroot.
+The output RPMs will be placed under /var/lib/mock/CHROOT/results/ by default.
 .LP
 .RS 5
-\fBmock --rebuild /path/to/test.src.rpm\fR
+\fBmock --rebuild /path/to/your.src.rpm\fR
 .RE
 .LP
-To specify a different chroot (which must be defined in /etc/mock):
+To specify a different chroot, which must be defined in /etc/mock/. The argument to \-r is the name of the file in /etc/mock without the trailing .cfg.
 .LP
 .RS 5
-\fBmock \-r fedora\-8\-i386\-core --rebuild /path/to/test.src.rpm\fR
+\fBmock \-r fedora\-8\-i386 --rebuild /path/to/your.src.rpm\fR
+.RE
+.LP
+To specify a different chroot and place the output RPMs and logs in a specified location.
+.LP
+.RS 5
+\fBmock \-r fedora\-8\-i386 --resultdir=./my-results /path/to/your.src.rpm\fR
 .RE
 .SH "BUGS"
 .LP

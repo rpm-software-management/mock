@@ -102,9 +102,9 @@ def command_parse(config_opts):
                       help="Copy file(s) into the specified chroot")
 
     parser.add_option("--copyout", action="store_const", const="copyout",
-                      dest="mode", 
+                      dest="mode",
                       help="Copy file(s) from the specified chroot")
-    
+
     # options
     parser.add_option("-r", "--root", action="store", type="string", dest="chroot",
                       help="chroot name/config file name default: %default",
@@ -212,8 +212,8 @@ def setup_default_config_opts(config_opts, unprivUid):
     config_opts['cleanup_on_failure'] = 1
 
     # (global) plugins and plugin configs.
-    # ordering constraings: tmpfs must be first. 
-    #    root_cache next. 
+    # ordering constraings: tmpfs must be first.
+    #    root_cache next.
     #    after that, any plugins that must create dirs (yum_cache)
     #    any plugins without preinit hooks should be last.
     config_opts['plugins'] = ('tmpfs', 'root_cache', 'yum_cache', 'bind_mount', 'ccache')
@@ -240,7 +240,7 @@ def setup_default_config_opts(config_opts, unprivUid):
                 # ('/another/host/path', '/another/bind/mount/path/in/chroot/'),
                 ]},
             'tmpfs_enable': False,
-            'tmpfs_opts': {},
+            'tmpfs_opts': {'required_ram_mb': 900},
             }
 
     # dependent on guest OS
@@ -411,7 +411,7 @@ def main(ret):
     setup_default_config_opts(config_opts, unprivUid)
     (options, args) = command_parse(config_opts)
 
-    if options.printrootpath: 
+    if options.printrootpath:
         options.verbose = 0
 
     # config path -- can be overridden on cmdline
@@ -420,7 +420,7 @@ def main(ret):
         config_path = options.configdir
 
     # Read in the config files: default, and then user specified
-    for cfg in ( os.path.join(config_path, 'defaults.cfg'), '%s/%s.cfg' % (config_path, options.chroot)):
+    for cfg in ( os.path.join(config_path, 'site-defaults.cfg'), '%s/%s.cfg' % (config_path, options.chroot)):
         if os.path.exists(cfg):
             execfile(cfg)
         else:
@@ -496,7 +496,8 @@ def main(ret):
         log.info("Namespace unshare failed.")
 
     # set personality (ie. setarch)
-    mock.util.condPersonality(config_opts['target_arch'])
+    if config_opts['internal_setarch']:
+        mock.util.condPersonality(config_opts['target_arch'])
 
     if options.mode == 'init':
         if config_opts['clean']:
@@ -510,8 +511,6 @@ def main(ret):
         chroot.tryLockBuildRoot()
         try:
             chroot._mountall()
-            if config_opts['internal_setarch']:
-                mock.util.condPersonality(config_opts['target_arch'])
             cmd = ' '.join(args)
             status = os.system("PS1='mock-chroot> ' /usr/sbin/chroot %s %s" % (chroot.makeChrootPath(), cmd))
             ret['exitStatus'] = os.WEXITSTATUS(status)
@@ -520,16 +519,22 @@ def main(ret):
             chroot._umountall()
 
     elif options.mode == 'chroot':
+        shell=False
         if len(args) == 0:
             log.critical("You must specify a command to run")
             sys.exit(50)
         elif len(args) == 1:
             args = args[0]
+            shell=True
 
         log.info("Running in chroot: %s" % args)
         chroot.tryLockBuildRoot()
         chroot._resetLogging()
-        chroot.doChroot(args)
+        try:
+            chroot._mountall()
+            chroot.doChroot(args, shell=shell)
+        finally:
+            chroot._umountall()
 
     elif options.mode == 'installdeps':
         if len(args) == 0:
@@ -622,12 +627,7 @@ if __name__ == '__main__':
         exitStatus = 7
         log.error("Exiting on user interrupt, <CTRL>-C")
 
-    except (mock.exception.BadCmdline), exc:
-        exitStatus = exc.resultcode
-        log.error(str(exc))
-        killOrphans = 0
-
-    except (mock.exception.BuildRootLocked), exc:
+    except (mock.exception.BadCmdline, mock.exception.BuildRootLocked), exc:
         exitStatus = exc.resultcode
         log.error(str(exc))
         killOrphans = 0

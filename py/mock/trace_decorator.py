@@ -18,7 +18,7 @@ class getLog(object):
         if name is None:
             frame = sys._getframe(1)
             name = frame.f_globals["__name__"]
-    
+
         self.name = prefix + name
 
     def __getattr__(self, name):
@@ -44,11 +44,11 @@ def traceLog(log = None):
             # can override by passing logger=foo as function parameter.
             # make sure this doesnt conflict with one of the parameters
             # you are expecting
-    
+
             filename = os.path.normcase(func.func_code.co_filename)
             func_name = func.func_code.co_name
             lineno = func.func_code.co_firstlineno
-    
+
             l2 = kw.get('logger', log)
             if l2 is None:
                 l2 = logging.getLogger("trace.%s" % func.__module__)
@@ -61,7 +61,7 @@ def traceLog(log = None):
             for k,v in kw.items():
                 message = message + "%s=%s" % (k,repr(v))
             message = message + ")"
-    
+
             frame = sys._getframe(2)
             doLog(l2, logging.INFO, os.path.normcase(frame.f_code.co_filename), frame.f_lineno, message, args=[], exc_info=None, func=frame.f_code.co_name)
             try:
