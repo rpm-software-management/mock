@@ -48,23 +48,8 @@ class CCache(object):
     # cache.
     decorate(traceLog())
     def _ccachePreInitHook(self):
+        getLog().info("enabled ccache")
         mock.util.mkdirIfAbsent(self.rootObj.makeChrootPath('/tmp/ccache'))
         mock.util.mkdirIfAbsent(self.ccachePath)
-        os.environ['PATH'] = "/tmp/ccache:%s" % (os.environ['PATH'])
         os.environ['CCACHE_DIR'] = "/tmp/ccache"
         os.environ['CCACHE_UMASK'] = "002"
-        for i in ("cc", "gcc", "gcc296", "gcc32", "gcc33", "gcc34",
-                "g++", "c++", "c++32", "c++33", "c++34", "g++296", "g++32", "g++33", "g++34",
-                "g++-libstdc++-so_7",):
-            forceLink("/usr/bin/ccache", os.path.join(self.ccachePath, "%s" % i))
-            forceLink("/usr/bin/ccache", os.path.join(self.ccachePath, "x86_64-redhat-linux-%s" % i))
-            forceLink("/usr/bin/ccache", os.path.join(self.ccachePath, "i386-redhat-linux-%s" % i))
-
-decorate(traceLog())
-def forceLink( existing, linkname ):
-    try:
-        os.unlink(linkname)
-    except OSError:
-        pass
-
-    os.symlink(existing, linkname)
