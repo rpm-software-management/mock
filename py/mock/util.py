@@ -201,6 +201,10 @@ def condChroot(chrootPath):
         os.chroot(chrootPath)
         uid.setresuid(saved['ruid'], saved['euid'])
 
+def condChdir(cwd):
+    if cwd is not None:
+        os.chdir(cwd)
+
 def condDropPrivs(uid, gid):
     if gid is not None:
         os.setregid(gid, gid)
@@ -245,12 +249,12 @@ def logOutput(fds, logger, returnOutput=1, start=0, timeout=0):
 # The "Not-as-complicated" version
 #
 decorate(traceLog())
-def do(command, shell=False, chrootPath=None, timeout=0, raiseExc=True, returnOutput=0, uid=None, gid=None, personality=None, *args, **kargs):
+def do(command, shell=False, chrootPath=None, cwd=None, timeout=0, raiseExc=True, returnOutput=0, uid=None, gid=None, personality=None, *args, **kargs):
 
     logger = kargs.get("logger", getLog())
     output = ""
     start = time.time()
-    preexec = ChildPreExec(personality, chrootPath, uid, gid)
+    preexec = ChildPreExec(personality, chrootPath, cwd, uid, gid)
     try:
         child = None
         logger.debug("Executing command: %s" % command)
@@ -292,9 +296,10 @@ def do(command, shell=False, chrootPath=None, timeout=0, raiseExc=True, returnOu
     return output
 
 class ChildPreExec(object):
-    def __init__(self, personality, chrootPath, uid, gid):
+    def __init__(self, personality, chrootPath, cwd, uid, gid):
         self.personality = personality
         self.chrootPath  = chrootPath
+        self.cwd = cwd
         self.uid = uid
         self.gid = gid
 
@@ -303,4 +308,4 @@ class ChildPreExec(object):
         condPersonality(self.personality)
         condChroot(self.chrootPath)
         condDropPrivs(self.uid, self.gid)
-
+        condChdir(self.cwd)

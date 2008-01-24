@@ -152,6 +152,10 @@ def command_parse(config_opts):
                            " seconds ")
     parser.add_option("--unpriv", action="store_true", default=False,
                       help="Drop privileges before running command when using --chroot")
+    parser.add_option("--cwd", action="store", default=None,
+                      metavar="DIR",
+                      help="Change to the specified directory (relative to the chroot)"
+                           " before running command when using --chroot")
 
     # verbosity
     parser.add_option("-v", "--verbose", action="store_const", const=2,
@@ -536,9 +540,9 @@ def main(ret):
             chroot._mountall()
             if options.unpriv:
                 chroot.doChroot(args, shell=shell,
-                                uid=chroot.chrootuid, gid=chroot.chrootgid)
+                                uid=chroot.chrootuid, gid=chroot.chrootgid, cwd=options.cwd)
             else:
-                chroot.doChroot(args, shell=shell)
+                chroot.doChroot(args, shell=shell, cwd=options.cwd)
         finally:
             chroot._umountall()
 
