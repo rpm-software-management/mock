@@ -150,6 +150,8 @@ def command_parse(config_opts):
                       dest="rpmbuild_timeout", type="int", default=None,
                       help="Fail build if rpmbuild takes longer than 'timeout'"
                            " seconds ")
+    parser.add_option("--unpriv", action="store_true", default=False,
+                      help="Drop privileges before running command when using --chroot")
 
     # verbosity
     parser.add_option("-v", "--verbose", action="store_const", const=2,
@@ -532,7 +534,11 @@ def main(ret):
         chroot._resetLogging()
         try:
             chroot._mountall()
-            chroot.doChroot(args, shell=shell)
+            if options.unpriv:
+                chroot.doChroot(args, shell=shell,
+                                uid=chroot.chrootuid, gid=chroot.chrootgid)
+            else:
+                chroot.doChroot(args, shell=shell)
         finally:
             chroot._umountall()
 
