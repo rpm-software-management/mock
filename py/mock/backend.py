@@ -386,7 +386,7 @@ class Root(object):
                 )
 
             # rebuild srpm/rpm from SPEC file
-            specs = glob.glob("%s/%s/SPECS/*.spec" % (self.makeChrootPath(), self.builddir))
+            specs = glob.glob(self.makeChrootPath(self.builddir, "SPECS", "*.spec"))
             if len(specs) < 1:
                 raise mock.exception.PkgError, "No Spec file found in srpm: %s" % srpmBasename
 

@@ -224,6 +224,13 @@ def condPersonality(per=None):
 def logOutput(fds, logger, returnOutput=1, start=0, timeout=0):
     output=""
     done = 0
+
+    # set all fds to nonblocking
+    for fd in fds:
+        flags = fcntl.fcntl(fd, fcntl.F_GETFL)
+        if not fd.closed:
+            fcntl.fcntl(fd, fcntl.F_SETFL, flags| os.O_NONBLOCK)
+
     while not done:
         if (time.time() - start)>timeout and timeout!=0:
             done = 1
@@ -231,15 +238,19 @@ def logOutput(fds, logger, returnOutput=1, start=0, timeout=0):
 
         i_rdy,o_rdy,e_rdy = select.select(fds,[],[],1) 
         for s in i_rdy:
-            # this isnt perfect as a whole line of input may not be
-            # ready, but should be "good enough" for now
-            line = s.readline()
-            if line == "":
+            # slurp as much input as is ready
+            input = s.read()
+            if input == "":
                 done = 1
                 break
-            logger.debug(chomp(line))
+            if logger is not None:
+                for line in input.split("\n"):
+                    if line == '': continue
+                    logger.debug(chomp(line))
+                for h in logger.handlers:
+                    h.flush()
             if returnOutput:
-                output += line
+                output += input
     return output
 
 # logger =
@@ -275,17 +286,26 @@ def do(command, shell=False, chrootPath=None, cwd=None, timeout=0, raiseExc=True
     except:
         # kill children if they arent done
         if child is not None and child.returncode is None:
-            os.kill(-child.pid, 15)
-            os.kill(-child.pid, 9)
+            os.killpg(child.pid, 9)
+        try:
+            if child is not None:
+                os.waitpid(child.pid, 0)
+        except: 
+            pass
         raise
 
     # wait until child is done, kill it if it passes timeout
+    niceExit=1
     while child.poll() is None:
         if (time.time() - start)>timeout and timeout!=0:
-            os.kill(-child.pid, 15)
-            os.kill(-child.pid, 9)
-            raise commandTimeoutExpired, ("Timeout(%s) expired for command:\n # %s\n%s" % (command, output))
+            niceExit=0
+            os.killpg(child.pid, 15)
+        if (time.time() - start)>(timeout+1) and timeout!=0:
+            niceExit=0
+            os.killpg(child.pid, 9)
 
+    if not niceExit:
+        raise commandTimeoutExpired, ("Timeout(%s) expired for command:\n # %s\n%s" % (timeout, cmd, output))
 
     if raiseExc and child.returncode:
         if returnOutput:
