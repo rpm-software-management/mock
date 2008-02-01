@@ -82,6 +82,16 @@ fi
 %attr(02775, root, mock) %dir /var/lib/mock
 
 %changelog
+* Thu Jan 31 2008 Michael Brown <mebrown@michaels-house.net> - 0.9.7-1
+- redo mock.util.do() to use python subprocess module, which should be
+  much more maintainable than our old homegrown code.
+- Fix exclude= lines once again. Yum fnmatch parser doesnt understand [!x]
+  notation
+- add --unpriv and --cwd options to run chroot commands without elevated privs
+  and in a specific working directory (under the root).
+- mount all filesystems when running chroot commands
+- remove redundant ccache init since we now source /etc/profile.d/ccache.sh
+
 * Wed Jan 16 2008 Clark Williams <williams@redhat.com> - 0.9.6-1
 - renamed configs and put compat symlinks in place
 - misc cleanups (whitespace fixes, info messages, etc.)
