@@ -7,6 +7,7 @@
 
 # python library imports
 import ctypes
+import fcntl
 import os
 import os.path
 import popen2
