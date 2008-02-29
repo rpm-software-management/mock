@@ -50,6 +50,7 @@ class Root(object):
         self._state_log = getLog("mock.Root.state")
 
         # config options
+        self.configs = config['config_paths']
         self.chrootuid = config['chrootuid']
         self.chrootuser = 'mockbuild'
         self.chrootgid = config['chrootgid']

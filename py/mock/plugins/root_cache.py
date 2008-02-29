@@ -61,12 +61,21 @@ class RootCache(object):
         if self.rootCacheLock is None:
             self.rootCacheLock = open(os.path.join(self.rootSharedCachePath, "rootcache.lock"), "a+")
 
-        # check cache age:
+        # check cache status
         try:
+            # see if it aged out
             statinfo = os.stat(self.rootCacheFile)
             file_age_days = (time.time() - statinfo.st_ctime) / (60 * 60 * 24)
             if file_age_days > self.root_cache_opts['max_age_days']:
+                getLog().info("root cache aged out! cache will be rebuilt")
                 os.unlink(self.rootCacheFile)
+            else:
+                # make sure no config file is newer than the cache file
+                for cfg in self.rootObj.configs:
+                    if os.stat(cfg).st_mtime > statinfo.st_mtime:
+                        getLog().info("%s newer than root cache; cache will be rebuilt" % cfg)
+                        os.unlink(self.rootCacheFile)
+                        break
         except OSError:
             pass
 

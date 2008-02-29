@@ -425,9 +425,13 @@ def main(ret):
     if options.configdir:
         config_path = options.configdir
 
+    # array to save config paths
+    config_opts['config_paths'] = []
+
     # Read in the config files: default, and then user specified
     for cfg in ( os.path.join(config_path, 'site-defaults.cfg'), '%s/%s.cfg' % (config_path, options.chroot)):
         if os.path.exists(cfg):
+            config_opts['config_paths'].append(cfg)
             execfile(cfg)
         else:
             log.error("Could not find required config file: %s" % cfg)
