@@ -269,6 +269,7 @@ class Root(object):
         # files in /dev
         mock.util.rmtree(self.makeChrootPath("dev"))
         mock.util.mkdirIfAbsent(self.makeChrootPath("dev", "pts"))
+        mock.util.mkdirIfAbsent(self.makeChrootPath("dev", "shm"))
         prevMask = os.umask(0000)
         devFiles = (
             (stat.S_IFCHR | 0666, os.makedev(1, 3), "dev/null"),
@@ -295,13 +296,17 @@ class Root(object):
         os.umask(prevMask)
 
         # mount/umount
-        umntCmd = 'umount -n %s' % self.makeChrootPath('/dev/pts')
-        if umntCmd not in self.umountCmds:
-            self.umountCmds.append(umntCmd)
+        for devUnmtCmd in (
+                'umount -n %s' % self.makeChrootPath('/dev/pts'),
+                'umount -n %s' % self.makeChrootPath('/dev/shm') ):
+            if devUnmtCmd not in self.umountCmds:
+                self.umountCmds.append(devUnmtCmd)
 
-        mntCmd = 'mount -n -t devpts mock_chroot_devpts %s' % self.makeChrootPath('/dev/pts')
-        if mntCmd not in self.mountCmds:
-            self.mountCmds.append(mntCmd)
+        for devMntCmd in (
+                'mount -n -t devpts mock_chroot_devpts %s' % self.makeChrootPath('/dev/pts'),
+                'mount -n -t tmpfs mock_chroot_shmfs %s' % self.makeChrootPath('/dev/shm') ):
+            if devMntCmd not in self.mountCmds:
+                self.mountCmds.append(devMntCmd)
 
     # bad hack
     # comment out decorator here so we dont get double exceptions in the root log
