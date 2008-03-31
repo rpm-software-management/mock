@@ -47,6 +47,11 @@ ln -s epel-4-x86_64.cfg fedora-4-x86_64-epel.cfg
 ln -s epel-5-i386.cfg   fedora-5-i386-epel.cfg
 ln -s epel-5-ppc.cfg    fedora-5-ppc-epel.cfg
 ln -s epel-5-x86_64.cfg fedora-5-x86_64-epel.cfg
+# more compat, from devel/rawhide rename
+ln -s fedora-rawhide-i386.cfg fedora-devel-i386.cfg
+ln -s fedora-rawhide-x86_64.cfg fedora-devel-x86_64.cfg
+ln -s fedora-rawhide-ppc.cfg fedora-devel-ppc.cfg
+ln -s fedora-rawhide-ppc64.cfg fedora-devel-ppc64.cfg
 popd
 
 %clean
@@ -82,6 +87,12 @@ fi
 %attr(02775, root, mock) %dir /var/lib/mock
 
 %changelog
+* Mon Mar 31 2008 Jesse Keating <jkeating@redhat.com> - 0.9.8-1
+- modify rootcache logic to rebuild cache if config files have newer timestamp
+- For Fedora 8 and higher, use priority failover method
+- Point to the correct static-repo for rawhide stuff.
+- Move "devel" to "rawhide" to match current Fedora naming schemes.
+
 * Thu Jan 31 2008 Michael Brown <mebrown@michaels-house.net> - 0.9.7-1
 - redo mock.util.do() to use python subprocess module, which should be
   much more maintainable than our old homegrown code.
