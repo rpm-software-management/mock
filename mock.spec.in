@@ -87,6 +87,12 @@ fi
 %attr(02775, root, mock) %dir /var/lib/mock
 
 %changelog
+* Mon Mar 31 2008 Jesse Keating <jkeating@redhat.com> - 0.9.8-1
+- modify rootcache logic to rebuild cache if config files have newer timestamp
+- For Fedora 8 and higher, use priority failover method
+- Point to the correct static-repo for rawhide stuff.
+- Move "devel" to "rawhide" to match current Fedora naming schemes.
+
 * Thu Jan 31 2008 Michael Brown <mebrown@michaels-house.net> - 0.9.7-1
 - redo mock.util.do() to use python subprocess module, which should be
   much more maintainable than our old homegrown code.
