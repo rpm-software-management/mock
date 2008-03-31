@@ -306,7 +306,7 @@ def do(command, shell=False, chrootPath=None, cwd=None, timeout=0, raiseExc=True
             os.killpg(child.pid, 9)
 
     if not niceExit:
-        raise commandTimeoutExpired, ("Timeout(%s) expired for command:\n # %s\n%s" % (timeout, cmd, output))
+        raise commandTimeoutExpired, ("Timeout(%s) expired for command:\n # %s\n%s" % (timeout, command, output))
 
     logger.debug("Child returncode was: %s" % str(child.returncode))
     if raiseExc and child.returncode:
