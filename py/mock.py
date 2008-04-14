@@ -637,6 +637,17 @@ if __name__ == '__main__':
     except (SystemExit,):
         raise
 
+    except (OSError,), e:
+        if e.errno == 1:
+            print
+            log.error("%s" % str(e))
+            print
+            log.error("The most common cause for this error is trying to run /usr/sbin/mock as an unprivileged user.")
+            log.error("Check your path to make sure that /usr/bin/ is listed before /usr/sbin, or manually run /usr/bin/mock to see if that fixes this problem.")
+            print
+        else:
+            raise
+
     except (KeyboardInterrupt,):
         exitStatus = 7
         log.error("Exiting on user interrupt, <CTRL>-C")
