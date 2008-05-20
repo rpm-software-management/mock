@@ -27,6 +27,12 @@ Mock takes a srpm and builds it in a chroot
 
 %prep
 %setup -q
+%if "%{?dist}" == ".fc8"
+pushd etc/mock
+sed -i -e 's/^#exclude=/exclude=/' -e '/^# The above is not/d' \
+    fedora-9-x86_64.cfg fedora-rawhide-x86_64.cfg
+popd
+%endif
 
 %build
 %configure
