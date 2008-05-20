@@ -93,6 +93,10 @@ fi
 %attr(02775, root, mock) %dir /var/lib/mock
 
 %changelog
+* Tue May 20 2008 Jesse Keating <jkeating@redhat.com> - 0.9.10-1
+- added fix for building F-8 mock (clark)
+- Update epel configs
+
 * Tue Apr 22 2008 Jesse Keating <jkeating@redhat.com> - 0.9.9-1
 - Update config files for Fedora 9
 - Comment out multilib excludes, no longer needed in F9+ with yum multilib changes
