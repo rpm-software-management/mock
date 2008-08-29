@@ -93,13 +93,19 @@ class RootCache(object):
 
     decorate(traceLog())
     def _rootCachePostInitHook(self):
-        # never rebuild cache unless it was a clean build.
-        if self.rootObj.chrootWasCleaned:
-            self.state("creating cache")
+        try:
             self._rootCacheLock(shared=0)
+            # nuke any rpmdb tmp files
             mock.util.do(
-                ["tar", "czf", self.rootCacheFile, "-C", self.rootObj.makeChrootPath(), "."],
-                shell=False
-                )
+                ['rm', '-f', self.rootObj.makeChrootPath('var/lib/rpm/__db*')])
+            
+            # never rebuild cache unless it was a clean build.
+            if self.rootObj.chrootWasCleaned:
+                self.state("creating cache")
+                mock.util.do(
+                    ["tar", "czf", self.rootCacheFile,
+                     "-C", self.rootObj.makeChrootPath(), "."],
+                    shell=False
+                    )
+        finally:
             self._rootCacheUnlock()
-
