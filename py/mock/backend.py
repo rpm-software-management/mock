@@ -558,7 +558,7 @@ class Root(object):
         self.uidManager.becomeUser(self.chrootuid, self.chrootgid)
         try:
             # create dir structure
-            for subdir in [self.makeChrootPath(self.builddir, s) for s in ('RPMS', 'SRPMS', 'SOURCES', 'SPECS', 'BUILD', 'originals')]:
+            for subdir in [self.makeChrootPath(self.builddir, s) for s in ('RPMS', 'SRPMS', 'SOURCES', 'SPECS', 'BUILD', 'BUILDROOT', 'originals')]:
                 mock.util.mkdirIfAbsent(subdir)
 
             # change ownership so we can write to build home dir
