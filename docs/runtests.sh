@@ -176,8 +176,9 @@ time $MOCKCMD --offline --clean
 #
 for i in $(ls etc/mock | grep .cfg | grep -v default | grep -v ppc); do
     MOCKCMD="sudo ./py/mock.py --resultdir=$outdir --uniqueext=$uniqueext -r $(basename $i .cfg) $MOCK_EXTRA_ARGS"
-    # test tmpfs and normal
-    time $MOCKCMD --enable-plugin=tmpfs --rebuild $MOCKSRPM 
+    if [ "${i#epel-4-x86_64.cfg}" != "" ]; then
+	time $MOCKCMD --enable-plugin=tmpfs --rebuild $MOCKSRPM 
+    fi
     time $MOCKCMD                       --rebuild $MOCKSRPM 
 done
 
