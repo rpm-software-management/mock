@@ -93,6 +93,11 @@ fi
 %attr(02775, root, mock) %dir /var/lib/mock
 
 %changelog
+* Thu Sep  4 2008 Clark Williams <williams@redhat.com> - 0.9.11-1
+- added workarounds for rawhide rpm (BZ 455387 and 458234)
+- disabled tmpfs plugin on epel-4-x86_64
+- fixed autotools breakage in configure.ac
+
 * Tue May 20 2008 Jesse Keating <jkeating@redhat.com> - 0.9.10-1
 - added fix for building F-8 mock (clark)
 - Update epel configs
