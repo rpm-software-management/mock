@@ -41,6 +41,7 @@ personality_defs = {
     'i386': PER_LINUX32, 'i586': PER_LINUX32, 'i686': PER_LINUX32,
     'ppc': PER_LINUX32, 'sparc': PER_LINUX32, 'sparcv9': PER_LINUX32,
     'ia64' : PER_LINUX, 'alpha' : PER_LINUX,
+    's390' : PER_LINUX32, 's390x' : PER_LINUX,
 }
 
 # classes
