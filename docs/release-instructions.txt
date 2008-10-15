@@ -14,18 +14,20 @@ In the git tree:
       $ git checkout master
    2) merge any changes from local branches
       $ git merge mybranch
-   3) run 'autogen.sh' to update autoconf files
-   4) run 'configure' to generate Makefile and mock.spec
-   5) run 'make rpm' to generate binary RPM and propagate version changes
-   6) run 'make check' until it passes
-   7) check in any changes
-   8) remove ChangeLog and AUTHORS
-   9) run 'make dist' to generate ChangeLog and AUTHORS files
-  10) update version info in 'configure.ac' and commit it:
+   3) update configure.ac with new version info
+   4) update the %changelog section of mock.spec.in
+   5) run 'autogen.sh' to update autoconf files
+   6) run 'configure' to generate Makefile and mock.spec
+   7) run 'make rpm' to generate binary RPM and propagate version changes
+   8) run 'make check' until it passes
+   9) check in any changes
+  10) remove ChangeLog and AUTHORS
+  11) run 'make dist' to generate ChangeLog and AUTHORS files
+  12) update version info in 'configure.ac' and commit it:
      $ git commit -m 'version bump' configure.ac
-  11) tag the git tree:
+  13) tag the git tree:
      $ git tag -u <your key> mock-<version>
-  12) push to main git repo (only from master branch):
+  14) push to main git repo (only from master branch):
      # substitute 'master' with branch name if on another branch
      $ git push --tags origin master  
 
