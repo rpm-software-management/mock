@@ -7,6 +7,7 @@
 import fcntl
 import os
 import time
+from glob import glob
 
 # our imports
 from mock.trace_decorator import decorate, traceLog, getLog
@@ -96,8 +97,9 @@ class RootCache(object):
         try:
             self._rootCacheLock(shared=0)
             # nuke any rpmdb tmp files
-            mock.util.do(
-                ['rm', '-f', self.rootObj.makeChrootPath('var/lib/rpm/__db*')])
+            for tmp in glob(self.rootObj.makeChrootPath('var/lib/rpm/__db*')):
+                os.unlink(tmp)
+
             
             # never rebuild cache unless it was a clean build.
             if self.rootObj.chrootWasCleaned:
