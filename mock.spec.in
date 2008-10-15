@@ -93,6 +93,11 @@ fi
 %attr(02775, root, mock) %dir /var/lib/mock
 
 %changelog
+* Tue Oct 14 2008 Clark Williams <williams@redhat.com> - 0.9.12-1
+- internal setarch support for s390/s390x (mikem)
+- Refer to the .newkey location of current Fedora 8/9 updates. (jkeating)
+- [bz458234] Picked up corrected patch (pmatilai)
+
 * Thu Sep  4 2008 Clark Williams <williams@redhat.com> - 0.9.11-1
 - added workarounds for rawhide rpm (BZ 455387 and 458234)
 - disabled tmpfs plugin on epel-4-x86_64
