@@ -233,6 +233,7 @@ def logOutput(fds, logger, returnOutput=1, start=0, timeout=0):
         if not fd.closed:
             fcntl.fcntl(fd, fcntl.F_SETFL, flags| os.O_NONBLOCK)
 
+    tail = ""
     while not done:
         if (time.time() - start)>timeout and timeout!=0:
             done = 1
@@ -246,13 +247,20 @@ def logOutput(fds, logger, returnOutput=1, start=0, timeout=0):
                 done = 1
                 break
             if logger is not None:
-                for line in input.split("\n"):
+                lines = input.split("\n")
+                if tail:
+                    lines[0] = tail + lines[0]
+                # we may not have all of the last line
+                tail = lines.pop()
+                for line in lines:
                     if line == '': continue
-                    logger.debug(chomp(line))
+                    logger.debug(line)
                 for h in logger.handlers:
                     h.flush()
             if returnOutput:
                 output += input
+    if tail and logger is not None:
+        logger.debug(tail)
     return output
 
 # logger =
