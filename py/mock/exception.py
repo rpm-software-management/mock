@@ -35,6 +35,7 @@ class Error(Exception):
 # 40 = some error in the pkg we're building
 # 50 = tried to fork a subcommand and it errored out
 # 60 = buildroot locked
+# 70 = result dir could not be created
 
 class BuildError(Error):
     "rpmbuild failed."
@@ -77,3 +78,16 @@ class BadCmdline(Error):
         Error.__init__(self, msg)
         self.msg = msg
         self.resultcode = 05
+
+class ResultDirNotAccessible(Error):
+    """
+Could not create output directory for built rpms. The directory specified was:
+    %s
+
+Try using the --resultdir= option to select another location. Recommended location is --resultdir=~/mock/.
+"""
+    def __init__(self, msg):
+        Error.__init__(self, msg)
+        self.msg = msg
+        self.resultcode = 70
+
