@@ -31,6 +31,7 @@ class Root(object):
         self.preExistingDeps = ""
         self.logging_initialized = False
         self.buildrootLock = None
+        self.version = config['version']
 
         self.sharedRootName = config['root']
         if config.has_key('unique-ext'):
@@ -544,6 +545,7 @@ class Root(object):
                 fh.setFormatter(formatter)
                 fh.setLevel(logging.NOTSET)
                 log.addHandler(fh)
+                log.info("Mock Version: %s" % self.version)
         finally:
             self.uidManager.restorePrivs()
 
