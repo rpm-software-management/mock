@@ -3,3 +3,17 @@ dist
 \#*
 .\#*
 *~
+*.py[co]
+*.rpm
+AUTHORS
+ChangeLog
+Makefile
+Makefile.in
+aclocal.m4
+autom4te.cache
+build
+config.log
+config.status
+configure
+mock.spec
+noarch
