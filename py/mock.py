@@ -72,6 +72,9 @@ def command_parse(config_opts):
     parser.add_option("--rebuild", action="store_const", const="rebuild",
                       dest="mode", default='rebuild',
                       help="rebuild the specified SRPM(s)")
+    parser.add_option("--buildsrpm", action="store_const", const="buildsrpm",
+                      dest="mode",
+                      help="Build a SRPM from spec (--spec ...) and sources (--sources ...)")
     parser.add_option("--shell", action="store_const",
                       const="shell", dest="mode",
                       help="run the specified command interactively within the chroot."
@@ -156,6 +159,11 @@ def command_parse(config_opts):
                       metavar="DIR",
                       help="Change to the specified directory (relative to the chroot)"
                            " before running command when using --chroot")
+
+    parser.add_option("--spec", action="store",
+                    help="Specifies spec file to use to build an SRPM (used only with --buildsrpm)")
+    parser.add_option("--sources", action="store",
+                    help="Specifies sources to use to build an SRPM (used only with --buildsrpm)")
 
     # verbosity
     parser.add_option("-v", "--verbose", action="store_const", const=2,
@@ -377,6 +385,38 @@ def do_rebuild(config_opts, chroot, srpms):
             chroot.clean()
         raise
 
+def do_buildsrpm(config_opts, chroot, options, args):
+    start = time.time()
+    try:
+        log.info("Start(%s)  Config(%s)" % (srpm, chroot.sharedRootName))
+        if config_opts['clean'] and chroot.state() != "clean":
+            chroot.clean()
+        chroot.init()
+
+        # TODO: validate spec path
+        # TODO: validate SOURCES path
+
+        chroot.buildsrpm(spec=options.spec, sources=options.sources, timeout=config_opts['rpmbuild_timeout'])
+
+        elapsed = time.time() - start
+        log.info("Done(%s) Config(%s) %d minutes %d seconds"
+            % (srpm, config_opts['chroot_name'], elapsed//60, elapsed%60))
+        log.info("Results and/or logs in: %s" % chroot.resultdir)
+
+        if config_opts["cleanup_on_success"]:
+            log.info("Cleaning up build root ('clean_on_success=True')")
+            chroot.clean()
+
+    except (Exception, KeyboardInterrupt):
+        elapsed = time.time() - start
+        log.error("Exception(%s) Config(%s) %d minutes %d seconds"
+            % (srpm, chroot.sharedRootName, elapsed//60, elapsed%60))
+        log.info("Results and/or logs in: %s" % chroot.resultdir)
+        if config_opts["cleanup_on_failure"]:
+            log.info("Cleaning up build root ('clean_on_failure=True')")
+            chroot.clean()
+        raise
+
 def main(ret):
     "Main executable entry point."
     # drop unprivleged to parse args, etc.
@@ -577,6 +617,9 @@ def main(ret):
 
     elif options.mode == 'rebuild':
         do_rebuild(config_opts, chroot, args)
+
+    elif options.mode == 'buildsrpm':
+        do_buildsrpm(config_opts, chroot, options, args)
 
     elif options.mode == 'orphanskill':
         mock.util.orphansKill(chroot.makeChrootPath())
