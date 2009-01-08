@@ -388,19 +388,19 @@ def do_rebuild(config_opts, chroot, srpms):
 def do_buildsrpm(config_opts, chroot, options, args):
     start = time.time()
     try:
-        log.info("Start(%s)  Config(%s)" % (srpm, chroot.sharedRootName))
+        # TODO: validate spec path (exists)
+        # TODO: validate SOURCES path (exists)
+
+        log.info("Start(%s)  Config(%s)" % (os.path.basename(options.spec), chroot.sharedRootName))
         if config_opts['clean'] and chroot.state() != "clean":
             chroot.clean()
         chroot.init()
-
-        # TODO: validate spec path
-        # TODO: validate SOURCES path
 
         chroot.buildsrpm(spec=options.spec, sources=options.sources, timeout=config_opts['rpmbuild_timeout'])
 
         elapsed = time.time() - start
         log.info("Done(%s) Config(%s) %d minutes %d seconds"
-            % (srpm, config_opts['chroot_name'], elapsed//60, elapsed%60))
+            % (os.path.basename(options.spec), config_opts['chroot_name'], elapsed//60, elapsed%60))
         log.info("Results and/or logs in: %s" % chroot.resultdir)
 
         if config_opts["cleanup_on_success"]:
