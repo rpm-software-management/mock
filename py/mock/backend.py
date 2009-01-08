@@ -471,6 +471,7 @@ class Root(object):
             chrootspec = spec.replace(self.makeChrootPath(), '') # get rid of rootdir prefix
 
             # Completely/Permanently drop privs while running the following:
+            self.state("buildsrpm")
             os.environ["HOME"] = self.homedir
             self.doChroot(
                 ["bash", "--login", "-c", 'rpmbuild -bs --target %s --nodeps %s' % (self.rpmbuild_arch, chrootspec)],

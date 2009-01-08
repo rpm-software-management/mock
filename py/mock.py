@@ -410,7 +410,7 @@ def do_buildsrpm(config_opts, chroot, options, args):
     except (Exception, KeyboardInterrupt):
         elapsed = time.time() - start
         log.error("Exception(%s) Config(%s) %d minutes %d seconds"
-            % (srpm, chroot.sharedRootName, elapsed//60, elapsed%60))
+            % (os.path.basename(options.spec), chroot.sharedRootName, elapsed//60, elapsed%60))
         log.info("Results and/or logs in: %s" % chroot.resultdir)
         if config_opts["cleanup_on_failure"]:
             log.info("Cleaning up build root ('clean_on_failure=True')")
