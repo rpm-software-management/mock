@@ -464,7 +464,7 @@ class Root(object):
 
             # copy spec/sources
             shutil.copy(spec, self.makeChrootPath(self.builddir, "SPECS"))
-            os.unlink(self.makeChrootPath(self.builddir, "SOURCES"))
+            os.rmdir(self.makeChrootPath(self.builddir, "SOURCES"))
             shutil.copytree(sources, self.makeChrootPath(self.builddir, "SOURCES"))
 
             spec =  self.makeChrootPath(self.builddir, "SPECS", os.path.basename(spec))
