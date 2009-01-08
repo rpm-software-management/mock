@@ -653,6 +653,11 @@ if __name__ == '__main__':
         exitStatus = 7
         log.error("Exiting on user interrupt, <CTRL>-C")
 
+    except (mock.exception.ResultDirNotAccessible,), exc:
+        exitStatus = exc.resultcode
+        log.error(str(exc))
+        killOrphans = 0
+
     except (mock.exception.BadCmdline, mock.exception.BuildRootLocked), exc:
         exitStatus = exc.resultcode
         log.error(str(exc))
