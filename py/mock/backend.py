@@ -444,6 +444,65 @@ class Root(object):
             # tell caching we are done building
             self._callHooks('postbuild')
 
+
+    #
+    # UNPRIVLEGED:
+    #   Everything in this function runs as the build user
+    #       -> except hooks. :)
+    #
+    decorate(traceLog())
+    def buildsrpm(self, spec, sources, timeout):
+        """build an srpm into binary rpms, capture log"""
+
+        # tell caching we are building
+        self._callHooks('earlyprebuild')
+
+        try:
+            self._mountall()
+            self.uidManager.becomeUser(self.chrootuid, self.chrootgid)
+            self.state("setup")
+
+            # copy spec/sources
+            shutil.copy(spec, self.makeChrootPath(self.builddir, "SPECS"))
+            os.rmdir(self.makeChrootPath(self.builddir, "SOURCES"))
+            shutil.copytree(sources, self.makeChrootPath(self.builddir, "SOURCES"))
+
+            spec =  self.makeChrootPath(self.builddir, "SPECS", os.path.basename(spec))
+            chrootspec = spec.replace(self.makeChrootPath(), '') # get rid of rootdir prefix
+
+            # Completely/Permanently drop privs while running the following:
+            self.state("buildsrpm")
+            os.environ["HOME"] = self.homedir
+            self.doChroot(
+                ["bash", "--login", "-c", 'rpmbuild -bs --target %s --nodeps %s' % (self.rpmbuild_arch, chrootspec)],
+                shell=False,
+                logger=self.build_log, timeout=timeout,
+                uid=self.chrootuid,
+                gid=self.chrootgid,
+                )
+
+            rebuiltSrpmFile = glob.glob("%s/%s/SRPMS/*.src.rpm" % (self.makeChrootPath(), self.builddir))
+            if len(rebuiltSrpmFile) != 1:
+                raise mock.exception.PkgError, "Didnt find single rebuilt srpm."
+
+            rebuiltSrpmFile = rebuiltSrpmFile[0]
+
+            srpms = glob.glob(self.makeChrootPath(self.builddir) + '/SRPMS/*.rpm')
+            self.root_log.debug("Copying packages to result dir")
+            for item in srpms:
+                shutil.copy2(item, self.resultdir)
+
+        finally:
+            self.uidManager.restorePrivs()
+            self._umountall()
+
+            # tell caching we are done building
+            self._callHooks('postbuild')
+
+
+
+
+
     # =============
     # 'Private' API
     # =============
