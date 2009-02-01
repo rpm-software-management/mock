@@ -383,8 +383,6 @@ class Root(object):
             srpmChrootFilename = self._copySrpmIntoChroot(srpm)
             srpmBasename = os.path.basename(srpmChrootFilename)
 
-            # install srpm
-            os.environ["HOME"] = self.homedir
             # Completely/Permanently drop privs while running the following:
             self.doChroot(
                 ["rpm", "-Uvh", "--nodeps", srpmChrootFilename],

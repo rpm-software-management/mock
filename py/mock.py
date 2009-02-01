@@ -411,7 +411,6 @@ def main(ret):
 
     uidManager = mock.uid.uidManager(unprivUid, unprivGid)
     uidManager._becomeUser(unprivUid, unprivGid)
-    del(os.environ["HOME"])
 
     # defaults
     config_opts = {}
@@ -499,6 +498,7 @@ def main(ret):
     ret["chroot"] = chroot
     ret["config_opts"] = config_opts
     os.umask(002)
+    os.environ["HOME"] = chroot.homedir
 
     # New namespace starting from here
     try:
