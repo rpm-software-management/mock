@@ -191,9 +191,10 @@ decorate(traceLog())
 def setup_default_config_opts(config_opts, unprivUid):
     "sets up default configuration."
     # global
-    config_opts['basedir'] = '/var/lib/mock/' # root name is automatically added to this
+    config_opts['version'] = __VERSION__
+    config_opts['basedir'] = '/var/lib/mock' # root name is automatically added to this
     config_opts['resultdir'] = '%(basedir)s/%(root)s/result'
-    config_opts['cache_topdir'] = '/var/lib/mock/cache'
+    config_opts['cache_topdir'] = '/var/cache/mock'
     config_opts['clean'] = True
     config_opts['chroothome'] = '/builddir'
     config_opts['log_config_file'] = 'logging.ini'
@@ -651,6 +652,11 @@ if __name__ == '__main__':
     except (KeyboardInterrupt,):
         exitStatus = 7
         log.error("Exiting on user interrupt, <CTRL>-C")
+
+    except (mock.exception.ResultDirNotAccessible,), exc:
+        exitStatus = exc.resultcode
+        log.error(str(exc))
+        killOrphans = 0
 
     except (mock.exception.BadCmdline, mock.exception.BuildRootLocked), exc:
         exitStatus = exc.resultcode

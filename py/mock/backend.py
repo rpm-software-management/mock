@@ -31,6 +31,7 @@ class Root(object):
         self.preExistingDeps = ""
         self.logging_initialized = False
         self.buildrootLock = None
+        self.version = config['version']
 
         self.sharedRootName = config['root']
         if config.has_key('unique-ext'):
@@ -169,8 +170,9 @@ class Root(object):
         self.uidManager.dropPrivsTemp()
         try:
             mock.util.mkdirIfAbsent(self.resultdir)
-        except OSError:
-            pass
+        except (OSError,), e:
+            if e.errno == 13:
+                raise mock.exception.ResultDirNotAccessible( ResultDirNotAccessible.__doc__ % self.resultdir )
         self.uidManager.restorePrivs()
 
         # lock this buildroot so we dont get stomped on.
@@ -544,6 +546,7 @@ class Root(object):
                 fh.setFormatter(formatter)
                 fh.setLevel(logging.NOTSET)
                 log.addHandler(fh)
+                log.info("Mock Version: %s" % self.version)
         finally:
             self.uidManager.restorePrivs()
 

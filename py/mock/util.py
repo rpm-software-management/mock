@@ -10,7 +10,6 @@ import ctypes
 import fcntl
 import os
 import os.path
-import popen2
 import rpm
 import rpmUtils
 import rpmUtils.transaction
