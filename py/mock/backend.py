@@ -481,15 +481,15 @@ class Root(object):
                 )
 
             rebuiltSrpmFile = glob.glob("%s/%s/SRPMS/*.src.rpm" % (self.makeChrootPath(), self.builddir))
-            if len(rebuiltSrpmFile) != 1:
-                raise mock.exception.PkgError, "Didnt find single rebuilt srpm."
+            if len(rebuiltSrpmFile) == 0:
+                raise mock.exception.PkgError, "No rebuilt srpms found"
+            elif len(rebuiltSrpmFile) > 1:
+                raise mock.exception.PkgError, "Multiple rebuilt srpms found"
 
             rebuiltSrpmFile = rebuiltSrpmFile[0]
 
-            srpms = glob.glob(self.makeChrootPath(self.builddir) + '/SRPMS/*.rpm')
-            self.root_log.debug("Copying packages to result dir")
-            for item in srpms:
-                shutil.copy2(item, self.resultdir)
+            self.root_log.debug("Copying package to result dir")
+            shutil.copy2(rebuiltSrpmFile, self.resultdir)
 
         finally:
             self.uidManager.restorePrivs()
