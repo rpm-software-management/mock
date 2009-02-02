@@ -627,7 +627,7 @@ def main(ret):
     elif options.mode == 'copyin':
         chroot.tryLockBuildRoot()
         chroot._resetLogging()
-        uidManager.dropPrivsForever()
+        #uidManager.dropPrivsForever()
         if len(args) < 2:
             log.critical("Must have source and destinations for copyin")
             sys.exit(50)
