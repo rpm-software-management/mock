@@ -263,6 +263,13 @@ class Root(object):
         # create rpmbuild dir
         self._buildDirSetup()
 
+        # set up timezone to match host
+        localtimedir = self.makeChrootPath('etc')
+        localtimepath = self.makeChrootPath('etc', 'localtime')
+        if os.path.exists(localtimepath):
+            os.remove(localtimepath)
+        shutil.copy2('/etc/localtime', localtimedir)
+
         # done with init
         self._callHooks('postinit')
 
