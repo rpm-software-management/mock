@@ -40,6 +40,7 @@ import pwd
 import sys
 import time
 from optparse import OptionParser
+from socket import gethostname
 
 # all of the variables below are substituted by the build system
 __VERSION__ = "unreleased_version"
@@ -268,7 +269,6 @@ def setup_default_config_opts(config_opts, unprivUid):
     config_opts['yum.conf'] = ''
     config_opts['more_buildreqs'] = {}
     config_opts['files'] = {}
-    config_opts['files']['etc/hosts'] = "127.0.0.1 localhost localhost.localdomain\n"
     config_opts['macros'] = {
         '%_topdir': '%s/build' % config_opts['chroothome'],
         '%_rpmfilename': '%%{NAME}-%%{VERSION}-%%{RELEASE}.%%{ARCH}.rpm',
@@ -518,6 +518,10 @@ def main(ret):
 
     # cmdline options override config options
     set_config_opts_per_cmdline(config_opts, options, args)
+
+    # default /etc/hosts contents
+    if not config_opts['use_host_resolv'] and not config_opts['files'].has_key('etc/hosts'):
+        config_opts['files']['etc/hosts'] = "127.0.0.1 localhost localhost.localdomain %s\n" % gethostname();
 
     # elevate privs
     uidManager._becomeUser(0, 0)

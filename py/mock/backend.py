@@ -227,13 +227,19 @@ class Root(object):
             pass
         os.symlink('yum/yum.conf', self.makeChrootPath("etc", "yum.conf"))
 
-        # set up resolv.conf
+        # set up resolver configuration
         if self.use_host_resolv:
-            resolvdir = self.makeChrootPath('etc')
-            resolvpath = self.makeChrootPath('etc', 'resolv.conf')
-            if os.path.exists(resolvpath):
-                os.remove(resolvpath)
-            shutil.copy2('/etc/resolv.conf', resolvdir)
+            etcdir = self.makeChrootPath('etc')
+
+            resolvconfpath = self.makeChrootPath('etc', 'resolv.conf')
+            if os.path.exists(resolvconfpath):
+                os.remove(resolvconfpath)
+            shutil.copy2('/etc/resolv.conf', etcdir)
+
+            hostspath = self.makeChrootPath('etc', 'hosts')
+            if os.path.exists(hostspath):
+                os.remove(hostspath)
+            shutil.copy2('/etc/hosts', etcdir)
 
         # files in /etc that need doing
         for key in self.chroot_file_contents:
