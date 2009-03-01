@@ -28,8 +28,14 @@ class RootCache(object):
         self.rootObj = rootObj
         self.root_cache_opts = conf
         self.rootSharedCachePath = self.root_cache_opts['dir'] % self.root_cache_opts
-        self.rootCacheFile = os.path.join(self.rootSharedCachePath, "cache.tar.gz")
+        self.rootCacheFile = os.path.join(self.rootSharedCachePath, "cache.tar")
         self.rootCacheLock = None
+        self.compressProgram = self.root_cache_opts['compress_program']
+        if self.compressProgram:
+             self.compressArgs = ['--use-compress-program', self.compressProgram]
+             self.rootCacheFile = self.rootCacheFile + self.root_cache_opts['extension']
+        else:
+             self.compressArgs = []
         self.state = rootObj.state
         rootObj.rootCacheObj = self
         rootObj.addHook("preinit", self._rootCachePreInitHook)
@@ -85,7 +91,7 @@ class RootCache(object):
             self.state("unpacking root cache")
             self._rootCacheLock()
             mock.util.do(
-                ["tar", "xzf", self.rootCacheFile, "-C", self.rootObj.makeChrootPath()],
+                ["tar"] + self.compressArgs + ["-xf", self.rootCacheFile, "-C", self.rootObj.makeChrootPath()],
                 shell=False
                 )
             self._rootCacheUnlock()
@@ -105,7 +111,7 @@ class RootCache(object):
             if self.rootObj.chrootWasCleaned:
                 self.state("creating cache")
                 mock.util.do(
-                    ["tar", "czf", self.rootCacheFile,
+                    ["tar"] + self.compressArgs + ["-cf", self.rootCacheFile,
                      "-C", self.rootObj.makeChrootPath(), "."],
                     shell=False
                     )

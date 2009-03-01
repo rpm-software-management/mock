@@ -248,7 +248,9 @@ def setup_default_config_opts(config_opts, unprivUid):
             'root_cache_enable': True,
             'root_cache_opts': {
                 'max_age_days': 15,
-                'dir': "%(cache_topdir)s/%(root)s/root_cache/"},
+                'dir': "%(cache_topdir)s/%(root)s/root_cache/",
+                'compress_program': 'gzip',
+                'extension': '.gz'},
             'bind_mount_enable': True,
             'bind_mount_opts': {'dirs': [
                 # specify like this:
