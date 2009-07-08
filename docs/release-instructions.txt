@@ -19,15 +19,17 @@ In the git tree:
    5) run 'autogen.sh' to update autoconf files
    6) run 'configure' to generate Makefile and mock.spec
    7) run 'make rpm' to generate binary RPM and propagate version changes
-   8) run 'make check' until it passes
-   9) check in any changes
-  10) remove ChangeLog and AUTHORS
-  11) run 'make dist' to generate ChangeLog and AUTHORS files
-  12) update version info in 'configure.ac' and commit it:
+   8) verify that docs/runtests.sh uses a supported config file
+      (i.e. released fedora minus one). If not, edit and commit
+   9) run 'make check' until it passes
+  10) check in any changes
+  11) remove ChangeLog and AUTHORS
+  12) run 'make dist' to generate ChangeLog and AUTHORS files
+  13) update version info in 'configure.ac' and commit it:
      $ git commit -m 'version bump' configure.ac
-  13) tag the git tree:
+  14) tag the git tree:
      $ git tag -u <your key> mock-<version>
-  14) push to main git repo (only from master branch):
+  15) push to main git repo (only from master branch):
      # substitute 'master' with branch name if on another branch
      $ git push --tags origin master  
 
