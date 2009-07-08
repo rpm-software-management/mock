@@ -331,7 +331,7 @@ class Root(object):
 
         mountopt = 'gid=%d,mode=620' % grp.getgrnam('tty').gr_gid
         if os.uname()[2] >= '2.6.29':
-            mountopt +== ',newinstance'
+            mountopt += ',newinstance'
 
         for devMntCmd in (
                 'mount -n -t devpts -o %s mock_chroot_devpts %s' % (mountopt, self.makeChrootPath('/dev/pts')),
