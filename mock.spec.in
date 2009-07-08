@@ -97,6 +97,16 @@ fi
 %attr(02775, root, mock) %dir /var/cache/mock
 
 %changelog
+* Wed Jul  8 2009 Clark Williams <williams@redhat.com>- 0.9.17-1
+- Patch from Jakub Jelinek <jakub@redhat.com> for mounting
+  /dev/pts correctly in the chroot (BZ# 510183)
+- raise exception when --shell specified for uninitialized chroot
+  (BZ# 506288)
+- add directory and infrastructure to allow dbus to run inside
+  chroot (BZ# 460574)
+- patch from Levente Farkas <lfarkas@lfarkas.org> to fix exclude
+  in EPEL 5 x86_64 config
+
 * Mon May 11 2009 Jesse Keating <jkeating@redhat.com> - 0.9.16-1
 - Make F11 and rawhide build i586 on i386 targets.
 
