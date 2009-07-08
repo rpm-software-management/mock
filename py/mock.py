@@ -566,6 +566,8 @@ def main(ret):
 
     elif options.mode == 'shell':
         chroot.tryLockBuildRoot()
+        if not os.path.exists(chroot.makeChrootPath()):
+            raise RuntimeError, "chroot %s not initialized!" % chroot.makeChrootPath()
         try:
             chroot._mountall()
             cmd = ' '.join(args)
