@@ -13,6 +13,7 @@ import logging
 import os
 import shutil
 import stat
+import uuid
 
 # our imports
 import mock.util
@@ -193,6 +194,7 @@ class Root(object):
         for item in [
                      'var/lib/rpm',
                      'var/lib/yum',
+                     'var/lib/dbus',
                      'var/log',
                      'var/lock/rpm',
                      'etc/rpm',
@@ -240,6 +242,15 @@ class Root(object):
             if os.path.exists(hostspath):
                 os.remove(hostspath)
             shutil.copy2('/etc/hosts', etcdir)
+
+        # Anything that tries to use libdbus inside the chroot will require this
+        # FIXME - merge this code with other OS-image building code
+        machine_uuid = uuid.uuid4().hex
+        dbus_uuid_path = self.makeChrootPath('var', 'lib', 'dbus', 'machine-id')
+        f = open(dbus_uuid_path, 'w')
+        f.write(machine_uuid)
+        f.write('\n')
+        f.close()
 
         # files in /etc that need doing
         for key in self.chroot_file_contents:
