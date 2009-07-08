@@ -318,7 +318,7 @@ class Root(object):
                 self.umountCmds.append(devUnmtCmd)
 
         for devMntCmd in (
-                'mount -n -t devpts mock_chroot_devpts %s' % self.makeChrootPath('/dev/pts'),
+                'mount -n -t devpts -o gid=5,mode=620 mock_chroot_devpts %s' % self.makeChrootPath('/dev/pts'),
                 'mount -n -t tmpfs mock_chroot_shmfs %s' % self.makeChrootPath('/dev/shm') ):
             if devMntCmd not in self.mountCmds:
                 self.mountCmds.append(devMntCmd)
