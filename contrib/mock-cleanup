@@ -1,0 +1,30 @@
+#! /bin/sh
+#
+# mock-cleanup
+#
+# clean packages in mock's cache directories
+#
+
+NEWCACHEDIR=/var/cache/mock
+OLDCACHEDIR=/var/lib/mock/cache
+
+dirs=
+for d in $NEWCACHEDIR $OLDCACHEDIR
+do
+    if [ -d $d -a ! -z "$d/*/yum_cache" ]
+    then
+	dirs="$dirs $d/*/yum_cache"
+    fi
+done
+
+for d in $dirs
+do
+    echo -n "Clean in $d:"
+    cd $d
+    for r in */packages
+    do
+	echo -n " `dirname $r`"
+	repomanage --old --nocheck $r 2>/dev/null | xargs --no-run-if-empty rm
+    done
+    echo " done"
+done
