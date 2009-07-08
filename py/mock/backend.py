@@ -14,6 +14,7 @@ import os
 import shutil
 import stat
 import uuid
+import grp
 
 # our imports
 import mock.util
@@ -328,8 +329,12 @@ class Root(object):
             if devUnmtCmd not in self.umountCmds:
                 self.umountCmds.append(devUnmtCmd)
 
+        mountopt = 'gid=%d,mode=620' % grp.getgrnam('tty').gr_gid
+        if os.uname()[2] >= '2.6.29':
+            mountopt +== ',newinstance'
+
         for devMntCmd in (
-                'mount -n -t devpts -o gid=5,mode=620 mock_chroot_devpts %s' % self.makeChrootPath('/dev/pts'),
+                'mount -n -t devpts -o %s mock_chroot_devpts %s' % (mountopt, self.makeChrootPath('/dev/pts')),
                 'mount -n -t tmpfs mock_chroot_shmfs %s' % self.makeChrootPath('/dev/shm') ):
             if devMntCmd not in self.mountCmds:
                 self.mountCmds.append(devMntCmd)
