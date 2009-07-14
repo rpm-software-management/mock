@@ -293,10 +293,12 @@ def set_config_opts_per_cmdline(config_opts, options, args):
         config_opts['clean'] = options.clean
 
     for option in options.rpmwith:
-        options.rpmmacros.append("_with_%s 1" % option)
+        options.rpmmacros.append("_with_%s --with-%s" %
+                                 (option.replace("-", "_"), option))
 
     for option in options.rpmwithout:
-        options.rpmmacros.append("_without_%s 1" % option)
+        options.rpmmacros.append("_without_%s --without-%s" %
+                                 (option.replace("-", "_"), option))
 
     for macro in options.rpmmacros:
         try:
