@@ -269,9 +269,8 @@ class Root(object):
         self.state("running yum")
         try:
             self._mountall()
-            if not self.chrootWasCleaned:
-                self.chroot_setup_cmd = 'update'
-            self._yum(self.chroot_setup_cmd, returnOutput=1)
+            if self.chrootWasCleaned:
+                self._yum(self.chroot_setup_cmd, returnOutput=1)
         finally:
             self._umountall()
 
