@@ -90,15 +90,21 @@ RPM_DEFINES = --define "_topdir $(TOPDIR)" \
     --define "_specdir $(SPECDIR)" \
     --define "_srcrpmdir $(SRCRPMDIR)"
 
+if USE_MD5
+RPMBUILD := rpmbuild-md5
+else
+RPMBUILD := rpmbuild
+endif
+
 .PHONY: rpm srpm help
 rpm: dist
 	mkdir -p $(BUILDDIR)
-	rpmbuild $(RPM_DEFINES) -ba --nodeps $(PACKAGE_NAME).spec
+	$(RPMBUILD) $(RPM_DEFINES) -ba --nodeps $(PACKAGE_NAME).spec
 	rm -rf $(BUILDDIR)
 
 srpm: dist
 	mkdir -p $(BUILDDIR)
-	rpmbuild $(RPM_DEFINES) -bs --nodeps $(PACKAGE_NAME).spec
+	$(RPMBUILD) $(RPM_DEFINES) -bs --nodeps $(PACKAGE_NAME).spec
 	rm -rf $(BUILDDIR)
 
 
