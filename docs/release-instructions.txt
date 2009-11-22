@@ -53,6 +53,7 @@ In the fedora CVS (koji) tree
     7) initiate a koji build
        $ make build
     8) repeat above for released tree and released tree -1
+    9) repeat builds for EPEL-5 and EPEL-4
 
 =====================================================================
 Michaels old stuff
