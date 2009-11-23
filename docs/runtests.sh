@@ -27,7 +27,7 @@ cd $TOP_SRCTREE
 #
 # most tests below will use this mock command line
 # 
-testConfig=fedora-10-x86_64
+testConfig=fedora-11-x86_64
 uniqueext="$$-$RANDOM"
 outdir=${CURDIR}/mock-unit-test
 MOCKCMD="sudo ./py/mock.py --resultdir=$outdir --uniqueext=$uniqueext -r $testConfig $MOCK_EXTRA_ARGS"
