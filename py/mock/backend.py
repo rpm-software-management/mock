@@ -311,7 +311,6 @@ class Root(object):
             (stat.S_IFCHR | 0444, os.makedev(1, 9), "dev/urandom"),
             (stat.S_IFCHR | 0666, os.makedev(5, 0), "dev/tty"),
             (stat.S_IFCHR | 0600, os.makedev(5, 1), "dev/console"),
-            (stat.S_IFCHR | 0666, os.makedev(5, 2), "dev/ptmx"),
         )
         for i in devFiles:
             # create node
@@ -325,6 +324,7 @@ class Root(object):
         os.symlink("/proc/self/fd/0", self.makeChrootPath("dev/stdin"))
         os.symlink("/proc/self/fd/1", self.makeChrootPath("dev/stdout"))
         os.symlink("/proc/self/fd/2", self.makeChrootPath("dev/stderr"))
+        os.symlink("/dev/pts/ptmx", self.makeChrootPath("dev/ptmx"))
         os.umask(prevMask)
 
         # mount/umount
@@ -334,7 +334,7 @@ class Root(object):
             if devUnmtCmd not in self.umountCmds:
                 self.umountCmds.append(devUnmtCmd)
 
-        mountopt = 'gid=%d,mode=620' % grp.getgrnam('tty').gr_gid
+        mountopt = 'gid=%d,mode=0620,ptmxmode=0666' % grp.getgrnam('tty').gr_gid
         if os.uname()[2] >= '2.6.29':
             mountopt += ',newinstance'
 
@@ -410,6 +410,7 @@ class Root(object):
         self._callHooks('earlyprebuild')
 
         try:
+            self._setupDev()
             self._mountall()
             self.uidManager.becomeUser(self.chrootuid, self.chrootgid)
             self.state("setup")
@@ -433,6 +434,7 @@ class Root(object):
             spec = specs[0] # if there's more than one then someone is an idiot
             chrootspec = spec.replace(self.makeChrootPath(), '') # get rid of rootdir prefix
             # Completely/Permanently drop privs while running the following:
+
             self.doChroot(
                 ["bash", "--login", "-c", 'rpmbuild -bs --target %s --nodeps %s' % (self.rpmbuild_arch, chrootspec)],
                 shell=False,

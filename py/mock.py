@@ -569,6 +569,7 @@ def main(ret):
         if not os.path.exists(chroot.makeChrootPath()):
             raise RuntimeError, "chroot %s not initialized!" % chroot.makeChrootPath()
         try:
+            chroot._setupDev()
             chroot._mountall()
             cmd = ' '.join(args)
             status = os.system("PS1='mock-chroot> ' /usr/sbin/chroot %s %s" % (chroot.makeChrootPath(), cmd))
