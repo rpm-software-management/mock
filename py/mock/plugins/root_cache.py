@@ -109,11 +109,18 @@ class RootCache(object):
             
             # never rebuild cache unless it was a clean build.
             if self.rootObj.chrootWasCleaned:
+                mock.util.do(["sync"], shell=False)
                 self.state("creating cache")
-                mock.util.do(
-                    ["tar"] + self.compressArgs + ["-cf", self.rootCacheFile,
-                     "-C", self.rootObj.makeChrootPath(), "."],
-                    shell=False
-                    )
+                try:
+                    mock.util.do(
+                        ["tar"] + self.compressArgs + ["-cf", self.rootCacheFile,
+                                                       "-C", self.rootObj.makeChrootPath(), 
+                                                       "."],
+                        shell=False
+                        )
+                except:
+                    if os.path.exists(self.rootCacheFile):
+                        os.remove(self.rootCacheFile)
+                    raise
         finally:
             self._rootCacheUnlock()
