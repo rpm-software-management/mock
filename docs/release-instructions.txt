@@ -25,7 +25,7 @@ In the git tree:
   10) check in any changes
   11) remove ChangeLog and AUTHORS
   12) run 'make dist' to generate ChangeLog and AUTHORS files
-  13) commit conigure.ac and any other changes with a
+  13) commit configure.ac and any other changes with a
       version bump message:
      $ git commit -m 'version bump' configure.ac
   14) tag the git tree:
