@@ -523,8 +523,10 @@ def main(ret):
 
     # default /etc/hosts contents
     if not config_opts['use_host_resolv'] and not config_opts['files'].has_key('etc/hosts'):
-        config_opts['files']['etc/hosts'] = "127.0.0.1 localhost localhost.localdomain %s\n" % gethostname();
-
+        config_opts['files']['etc/hosts'] = '''
+127.0.0.1 localhost localhost.localdomain
+::1       localhost localhost.localdomain localhost6 localhost6.localdomain6
+'''
     # elevate privs
     uidManager._becomeUser(0, 0)
 
