@@ -303,7 +303,7 @@ class Root(object):
         mock.util.mkdirIfAbsent(self.makeChrootPath("dev", "pts"))
         mock.util.mkdirIfAbsent(self.makeChrootPath("dev", "shm"))
         prevMask = os.umask(0000)
-        devFiles = (
+        devFiles = [
             (stat.S_IFCHR | 0666, os.makedev(1, 3), "dev/null"),
             (stat.S_IFCHR | 0666, os.makedev(1, 7), "dev/full"),
             (stat.S_IFCHR | 0666, os.makedev(1, 5), "dev/zero"),
@@ -311,7 +311,12 @@ class Root(object):
             (stat.S_IFCHR | 0444, os.makedev(1, 9), "dev/urandom"),
             (stat.S_IFCHR | 0666, os.makedev(5, 0), "dev/tty"),
             (stat.S_IFCHR | 0600, os.makedev(5, 1), "dev/console"),
-        )
+        ]
+        kver = os.uname()[2]
+        # make the device node for el4 and el5
+        if kver < '2.6.19':
+            devFiles.append((stat.S_IFCHR | 0666, os.makedev(5, 2), "dev/ptmx"))
+
         for i in devFiles:
             # create node
             os.mknod( self.makeChrootPath(i[2]), i[0], i[1])
@@ -324,7 +329,11 @@ class Root(object):
         os.symlink("/proc/self/fd/0", self.makeChrootPath("dev/stdin"))
         os.symlink("/proc/self/fd/1", self.makeChrootPath("dev/stdout"))
         os.symlink("/proc/self/fd/2", self.makeChrootPath("dev/stderr"))
-        os.symlink("/dev/pts/ptmx", self.makeChrootPath("dev/ptmx"))
+
+        # symlink it for FC hosts
+        if kver >= '2.6.19':
+            os.symlink("/dev/pts/ptmx", self.makeChrootPath("dev/ptmx"))
+
         os.umask(prevMask)
 
         # mount/umount
@@ -335,7 +344,7 @@ class Root(object):
                 self.umountCmds.append(devUnmtCmd)
 
         mountopt = 'gid=%d,mode=0620,ptmxmode=0666' % grp.getgrnam('tty').gr_gid
-        if os.uname()[2] >= '2.6.29':
+        if kver >= '2.6.29':
             mountopt += ',newinstance'
 
         for devMntCmd in (
