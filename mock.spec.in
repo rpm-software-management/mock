@@ -97,11 +97,15 @@ fi
 %attr(02775, root, mock) %dir /var/cache/mock
 
 %changelog
+* Mon Jan 18 2010 Clark Williams <williams@redhat.com>- 1.0.3-1
+- add logic for handling --unpriv with --shell (BZ# 522505)
+
 * Wed Dec 23 2009 Clark Williams <williams@redhat.com>- 1.0.2-1
 - added IPv6 localhost entry for default /etc/hosts (BZ# 545435)
 - removed output of gethostname() in IPv4 localhost entry as this
   caused koji problems and cause 'localhost' to be put into generated
   rpms, rather than the output of hostname
+- add code to setup /dev/pts differently on EL* than on FC* hosts
 
 * Wed Nov 25 2009 Clark Williams <williams@redhat.com>- 1.0.1-1
 - Patch from Paul Howarth to fix intermittent problems generating
