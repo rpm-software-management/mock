@@ -262,6 +262,17 @@ def logOutput(fds, logger, returnOutput=1, start=0, timeout=0):
         logger.debug(tail)
     return output
 
+decorate(traceLog())
+def selinuxEnabled():
+    p = subprocess.Popen(["/usr/sbin/getenforce"], 
+                         shell=True, 
+                         stdout=subprocess.PIPE, 
+                         close_fds=True)
+    p.wait()
+    if p.stdout.read().strip() == "Disabled":
+        return False
+    return True
+
 # logger =
 # output = [1|0]
 # chrootPath

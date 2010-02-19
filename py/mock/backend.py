@@ -101,6 +101,9 @@ class Root(object):
         self.state("init plugins")
         self._initPlugins()
 
+        # figure out if SELinux is enabled on the host
+        self.selinux = mock.util.selinuxEnabled()
+
         # officially set state so it is logged
         self.state("start")
 
@@ -322,9 +325,10 @@ class Root(object):
             os.mknod( self.makeChrootPath(i[2]), i[0], i[1])
             # set context. (only necessary if host running selinux enabled.)
             # fails gracefully if chcon not installed.
-            mock.util.do(
-                ["chcon", "--reference=/%s"% i[2], self.makeChrootPath(i[2])]
-                , raiseExc=0, shell=False)
+            if self.selinux:
+                mock.util.do(
+                    ["chcon", "--reference=/%s"% i[2], self.makeChrootPath(i[2])]
+                    , raiseExc=0, shell=False)
 
         os.symlink("/proc/self/fd/0", self.makeChrootPath("dev/stdin"))
         os.symlink("/proc/self/fd/1", self.makeChrootPath("dev/stdout"))
