@@ -22,9 +22,12 @@ Requires: python >= 2.4, yum >= 2.4, tar, gzip, python-ctypes, python-decoratort
 Requires: createrepo
 Requires(pre): shadow-utils
 BuildRequires: python-devel
+%if "%{?dist}" == ".el5"
+Requires: python-hashlib
+%endif
 
 %description
-Mock takes a srpm and builds it in a chroot
+Mock takes an SRPM and builds it in a chroot
 
 %prep
 %setup -q
