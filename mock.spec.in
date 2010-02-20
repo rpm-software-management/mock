@@ -101,10 +101,16 @@ fi
 %attr(02775, root, mock) %dir /var/cache/mock
 
 %changelog
+* Fri Feb 19 2010 Clark Williams <williams@redhat.com>- 1.0.6-1
+- added code to check for SELinux being enabled or disabled
+  and avoid calling 'chcon' if disabled
+- add conditional Require of python-hashlib if building for
+  the EL5 distro
+
 * Wed Feb 17 2010 Clark Williams <williams@redhat.com>- 1.0.5-1
-  - from Jesse Keating <jkeating@redhat.com>:
-    - fixed 'useradd' option conflict with EPEL (-N vs -n)
-    - added Fedora 13 configs
+- from Jesse Keating <jkeating@redhat.com>:
+  - fixed 'useradd' option conflict with EPEL (-N vs -n)
+  - added Fedora 13 configs
 
 * Wed Feb 10 2010 Clark Williams <williams@redhat.com>- 1.0.4-1
 - added patch from Seth Vidal <skvidal@fedoraproject.org> to 
