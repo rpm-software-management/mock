@@ -264,7 +264,7 @@ def setup_default_config_opts(config_opts, unprivUid):
 
     # dependent on guest OS
     config_opts['useradd'] = \
-        '/usr/sbin/useradd -o -m -u %(uid)s -g %(gid)s -d %(home)s -N %(user)s'
+        '/usr/sbin/useradd -o -m -u %(uid)s -g %(gid)s -d %(home)s -n %(user)s'
     config_opts['use_host_resolv'] = True
     config_opts['chroot_setup_cmd'] = 'groupinstall buildsys-build'
     config_opts['target_arch'] = 'i386'
