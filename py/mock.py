@@ -228,6 +228,7 @@ def setup_default_config_opts(config_opts, unprivUid):
     config_opts['cleanup_on_failure'] = 1
 
     config_opts['createrepo_on_rpms'] = True
+    config_opts['createrepo_command'] = '/usr/bin/createrepo -d -q -x *.src.rpm' # default command
     # (global) plugins and plugin configs.
     # ordering constraings: tmpfs must be first.
     #    root_cache next.
@@ -382,7 +383,8 @@ def do_rebuild(config_opts, chroot, srpms):
             
         if config_opts["createrepo_on_rpms"]:
             log.info("Running createrepo on binary rpms in resultdir")
-            cmd = ['/usr/bin/createrepo', '-d', '-q', '-x', '*.src.rpm', chroot.resultdir]
+            cmd = config_opts["createrepo_command"].split()
+            cmd.append(chroot.resultdir)
             mock.util.do(cmd)
             
     except (Exception, KeyboardInterrupt):
