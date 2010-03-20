@@ -89,6 +89,7 @@ fi
 %config(noreplace) %{_sysconfdir}/%{name}/*.ini
 %config(noreplace) %{_sysconfdir}/pam.d/%{name}
 %config(noreplace) %{_sysconfdir}/security/console.apps/%{name}
+%{_sysconfdir}/bash_completion.d
 
 # docs
 %{_mandir}/man1/mock.1*

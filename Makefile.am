@@ -38,6 +38,9 @@ pam_DATA = etc/pam/mock
 consoledir = $(sysconfdir)/security/console.apps/
 console_DATA = etc/consolehelper/mock
 
+bashcompdir = $(sysconfdir)/bash_completion.d/
+bashcomp_DATA = contrib/mock.bash
+
 pluginsdir = $(pkgpythondir)/plugins
 plugins_PYTHON = \
     py/mock/plugins/bind_mount.py \
@@ -75,6 +78,10 @@ install-exec-hook:
                 perl -p -i -e 's|^LIBDIR\s*=.*|LIBDIR="$(libdir)"|' $$file        ;\
         done
 	mv $(DESTDIR)/$(sbindir)/mock.py $(DESTDIR)/$(sbindir)/mock
+
+install-data-hook:
+	perl -p -i -e 's|(=\s*)/etc/mock\b|$$1$(sysconfdir)/mock|' \
+		$(DESTDIR)$(bashcompdir)/mock.bash
 
 TOPDIR := $(shell cd $(top_builddir);pwd)
 BUILDDIR = $(TOPDIR)/_rpmbuild
