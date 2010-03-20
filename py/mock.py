@@ -40,7 +40,6 @@ import pwd
 import sys
 import time
 from optparse import OptionParser
-from socket import gethostname
 
 # all of the variables below are substituted by the build system
 __VERSION__ = "unreleased_version"

@@ -15,7 +15,6 @@ import rpmUtils
 import rpmUtils.transaction
 import select
 import shutil
-import signal
 import subprocess
 import time
 
