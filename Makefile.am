@@ -21,7 +21,7 @@ DISTCLEANFILES=*~ mock-unit-test/* x86_64/* noarch/* i386/*
 TESTS=./docs/runtests.sh
 $(TESTS): srpm
 
-EXTRA_DIST =
+EXTRA_DIST = contrib
 bin_PROGRAMS=
 CLEANFILES += $(EXTRA_PROGRAMS)
 
