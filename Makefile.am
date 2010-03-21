@@ -39,7 +39,7 @@ consoledir = $(sysconfdir)/security/console.apps/
 console_DATA = etc/consolehelper/mock
 
 bashcompdir = $(sysconfdir)/bash_completion.d/
-bashcomp_DATA = contrib/mock.bash
+bashcomp_DATA = etc/bash_completion.d/mock.bash
 
 pluginsdir = $(pkgpythondir)/plugins
 plugins_PYTHON = \
