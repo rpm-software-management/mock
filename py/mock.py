@@ -462,7 +462,9 @@ def main(ret):
         unprivGid = pwd.getpwuid(unprivUid)[3]
 
     uidManager = mock.uid.uidManager(unprivUid, unprivGid)
-    uidManager._becomeUser(unprivUid, unprivGid)
+    # go unpriv only when root to make --help etc work for non-mock users
+    if os.geteuid() == 0:
+        uidManager._becomeUser(unprivUid, unprivGid)
 
     # defaults
     config_opts = {}
