@@ -4,7 +4,6 @@
 # Copyright (C) 2007 Michael E Brown <mebrown@michaels-house.net>
 
 # python library imports
-import logging
 import fcntl
 import time
 import os

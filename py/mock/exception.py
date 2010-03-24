@@ -8,7 +8,6 @@
 
 # python library imports
 #from exceptions import Exception
-import os
 
 # our imports
 

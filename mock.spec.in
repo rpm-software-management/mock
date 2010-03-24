@@ -18,7 +18,7 @@ Source: https://fedorahosted.org/mock/attachment/wiki/MockTarballs/%{name}-%{ver
 URL: http://fedoraproject.org/wiki/Projects/Mock
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch: noarch
-Requires: python >= 2.4, yum >= 2.4, tar, gzip, python-ctypes, python-decoratortools, usermode
+Requires: python >= 2.4, yum >= 2.4, tar, pigz, python-ctypes, python-decoratortools, usermode
 Requires: createrepo
 Requires(pre): shadow-utils
 BuildRequires: python-devel
@@ -89,6 +89,7 @@ fi
 %config(noreplace) %{_sysconfdir}/%{name}/*.ini
 %config(noreplace) %{_sysconfdir}/pam.d/%{name}
 %config(noreplace) %{_sysconfdir}/security/console.apps/%{name}
+%{_sysconfdir}/bash_completion.d
 
 # docs
 %{_mandir}/man1/mock.1*

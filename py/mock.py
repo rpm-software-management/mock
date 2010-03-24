@@ -40,7 +40,6 @@ import pwd
 import sys
 import time
 from optparse import OptionParser
-from socket import gethostname
 
 # all of the variables below are substituted by the build system
 __VERSION__ = "unreleased_version"
@@ -251,7 +250,7 @@ def setup_default_config_opts(config_opts, unprivUid):
             'root_cache_opts': {
                 'max_age_days': 15,
                 'dir': "%(cache_topdir)s/%(root)s/root_cache/",
-                'compress_program': 'gzip',
+                'compress_program': 'pigz',
                 'extension': '.gz'},
             'bind_mount_enable': True,
             'bind_mount_opts': {'dirs': [
@@ -463,7 +462,9 @@ def main(ret):
         unprivGid = pwd.getpwuid(unprivUid)[3]
 
     uidManager = mock.uid.uidManager(unprivUid, unprivGid)
-    uidManager._becomeUser(unprivUid, unprivGid)
+    # go unpriv only when root to make --help etc work for non-mock users
+    if os.geteuid() == 0:
+        uidManager._becomeUser(unprivUid, unprivGid)
 
     # defaults
     config_opts = {}

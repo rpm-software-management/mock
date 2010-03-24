@@ -4,10 +4,9 @@
 # Copyright (C) 2007 Michael E Brown <mebrown@michaels-house.net>
 
 # python library imports
-import os
 
 # our imports
-from mock.trace_decorator import decorate, traceLog, getLog
+from mock.trace_decorator import decorate, traceLog
 
 import mock.util
 
