@@ -25,8 +25,7 @@ _mock()
             ;;
         -r|--root)
             COMPREPLY=( $( compgen -W "$( command ls $cfgdir 2>/dev/null | \
-                sed -e '/^site-defaults\.cfg$/d' -ne 's/\.cfg$//p' )" \
-                -- "$2" ) )
+                sed -ne 's/\.cfg$//p' )" -X site-defaults -- "$2" ) )
             return 0
             ;;
         --configdir|--resultdir)
