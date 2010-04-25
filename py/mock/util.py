@@ -263,14 +263,13 @@ def logOutput(fds, logger, returnOutput=1, start=0, timeout=0):
 
 decorate(traceLog())
 def selinuxEnabled():
-    p = subprocess.Popen(["/usr/sbin/getenforce"], 
-                         shell=True, 
-                         stdout=subprocess.PIPE, 
-                         close_fds=True)
-    p.wait()
-    if p.stdout.read().strip() == "Disabled":
-        return False
-    return True
+    """Check if SELinux is enabled (enforcing or permissive)."""
+    try:
+        if open("/selinux/enforce").read().strip() in ("1", "0"):
+            return True
+    except:
+        pass
+    return False
 
 # logger =
 # output = [1|0]
