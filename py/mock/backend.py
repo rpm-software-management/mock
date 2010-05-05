@@ -262,10 +262,12 @@ class Root(object):
             f.write('\n')
             f.close()
 
-        # files in /etc that need doing
+        # files that need doing
         for key in self.chroot_file_contents:
             p = self.makeChrootPath(key)
             if not os.path.exists(p):
+                # create directory if necessary
+                mock.util.mkdirIfAbsent(os.path.dirname(p))
                 # write file
                 fo = open(p, 'w+')
                 fo.write(self.chroot_file_contents[key])
