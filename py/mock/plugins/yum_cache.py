@@ -77,7 +77,7 @@ class YumCache(object):
                     file_age_days = (time.time() - statinfo.st_ctime) / (60 * 60 * 24)
                     # prune repodata so yum redownloads.
                     # prevents certain errors where yum gets stuck due to bad metadata
-                    for ext in (".sqllite", ".xml", ".bz2", ".gz"):
+                    for ext in (".sqlite", ".xml", ".bz2", ".gz"):
                         if filename.endswith(ext) and file_age_days > self.yum_cache_opts['max_metadata_age_days']:
                             os.unlink(fullPath)
                             fullPath = None
