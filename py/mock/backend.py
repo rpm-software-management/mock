@@ -135,6 +135,29 @@ class Root(object):
         self.chrootWasCleaned = True
 
     decorate(traceLog())
+    def scrub(self, scrub_opts):
+        """clean out chroot and/or cache dirs with extreme prejudice :)"""
+        self.tryLockBuildRoot()
+        self.state("clean")
+        self._callHooks('clean')
+        for scrub in scrub_opts:
+            if scrub == 'all':
+                mock.util.rmtree(self.basedir)
+                self.chrootWasCleaned = True
+                mock.util.rmtree(self.cachedir)
+            elif scrub == 'chroot':
+                mock.util.rmtree(self.basedir)
+                self.chrootWasCleaned = True
+            elif scrub == 'cache':
+                mock.util.rmtree(self.cachedir)
+            elif scrub == 'c-cache':
+                mock.util.rmtree(os.path.join(self.cachedir, 'ccache'))
+            elif scrub == 'root-cache':
+                mock.util.rmtree(os.path.join(self.cachedir, 'root_cache'))
+            elif scrub == 'yum-cache':
+                mock.util.rmtree(os.path.join(self.cachedir, 'yum_cache'))
+
+    decorate(traceLog())
     def tryLockBuildRoot(self):
         self.state("lock buildroot")
         try:
@@ -282,24 +305,24 @@ class Root(object):
             self._mountall()
             if self.chrootWasCleaned:
                 self._yum(self.chroot_setup_cmd, returnOutput=1)
+
+            # create user
+            self._makeBuildUser()
+
+            # create rpmbuild dir
+            self._buildDirSetup()
+
+            # set up timezone to match host
+            localtimedir = self.makeChrootPath('etc')
+            localtimepath = self.makeChrootPath('etc', 'localtime')
+            if os.path.exists(localtimepath):
+                os.remove(localtimepath)
+            shutil.copy2('/etc/localtime', localtimedir)
+
+            # done with init
+            self._callHooks('postinit')
         finally:
             self._umountall()
-
-        # create user
-        self._makeBuildUser()
-
-        # create rpmbuild dir
-        self._buildDirSetup()
-
-        # set up timezone to match host
-        localtimedir = self.makeChrootPath('etc')
-        localtimepath = self.makeChrootPath('etc', 'localtime')
-        if os.path.exists(localtimepath):
-            os.remove(localtimepath)
-        shutil.copy2('/etc/localtime', localtimedir)
-
-        # done with init
-        self._callHooks('postinit')
 
     decorate(traceLog())
     def _setupDev(self):
@@ -589,7 +612,10 @@ class Root(object):
     decorate(traceLog())
     def _umountall(self):
         """umount all mounted chroot fs."""
-        for cmd in self.umountCmds:
+        # Unwind mounts by umounting in the opposite order of the mounts
+        umountCmds = self.umountCmds
+        umountCmds.reverse()
+        for cmd in umountCmds:
             self.root_log.debug(cmd)
             mock.util.do(cmd, raiseExc=0, shell=True)
 
