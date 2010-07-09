@@ -20,7 +20,7 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 """
     usage:
-           mock [options] {--init|--clean}
+           mock [options] {--init|--clean|--scrub=[all,chroot,cache,root-cache,c-cache,yum-cache]}
            mock [options] [--rebuild] /path/to/srpm(s)
            mock [options] {--shell|--chroot} <cmd>
            mock [options] --installdeps {SRPM|RPM}
@@ -65,6 +65,10 @@ import mock.backend
 import mock.uid
 import mock.util
 
+def scrub_callback(option, opt, value, parser):
+    parser.values.scrub.append(value)
+    parser.values.mode = "clean"
+
 def command_parse(config_opts):
     """return options and args from parsing the command line"""
     parser = OptionParser(usage=__doc__, version=__VERSION__)
@@ -86,6 +90,12 @@ def command_parse(config_opts):
     parser.add_option("--clean", action="store_const", const="clean",
                       dest="mode",
                       help="completely remove the specified chroot")
+    scrub_choices = ('chroot', 'cache', 'root-cache', 'c-cache', 'yum-cache', 'all')
+    scrub_metavar = "[all|chroot|cache|root-cache|c-cache|yum-cache]"
+    parser.add_option("--scrub", action="callback", type="choice", default=[],
+                      choices=scrub_choices, metavar=scrub_metavar,
+                      callback=scrub_callback,
+                      help="completely remove the specified chroot or cache dir or all of the chroot and cache")
     parser.add_option("--init", action="store_const", const="init", dest="mode",
                       help="initialize the chroot, do not build anything")
     parser.add_option("--installdeps", action="store_const", const="installdeps",
@@ -564,7 +574,10 @@ def main(ret):
         chroot.init()
 
     elif options.mode == 'clean':
-        chroot.clean()
+        if len(options.scrub) == 0:
+            chroot.clean()
+        else:
+            chroot.scrub(options.scrub)
 
     elif options.mode == 'shell':
         chroot.tryLockBuildRoot()
