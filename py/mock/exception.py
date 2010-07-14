@@ -79,6 +79,13 @@ class BadCmdline(Error):
         self.msg = msg
         self.resultcode = 05
 
+class InvalidArchitecture(Error):
+    "invalid host/target architecture specified."
+    def __init(self, msg):
+        Error.__init__(self, msg)
+        self.msg = msg
+        self.resultcode = 06
+
 class ResultDirNotAccessible(Error):
     """
 Could not create output directory for built rpms. The directory specified was:
