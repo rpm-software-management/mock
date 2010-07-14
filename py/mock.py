@@ -363,6 +363,27 @@ def set_config_opts_per_cmdline(config_opts, options, args):
 
     config_opts['online'] = options.online
 
+legal_arches = {
+    'i386'   : ('i386'),
+    'x86_64' : ('i386', 'x86_64'),
+    'ppc'    : ('ppc'),
+    'ppc64'  : ('ppc', 'ppc64'),
+    'sparc'  : ('sparc'),
+    'sparc64': ('sparc', 'sparc64'),
+    's390x'  : ('s390x'),
+}
+
+decorate(traceLog())
+def check_arch_combination(target_arch):
+    host_arch = os.uname()[-1]
+    try:
+        if target_arch not in legal_arches[host_arch]:
+            raise mock.exception.InvalidArchitecture(
+                "Cannot build target %d on arch %s" % (target_arch, host_arch))
+    except KeyError:
+        raise mock.exception.InvalidArchitecture(
+            "Unknown target architcture: %s" % target_arch)
+        
 decorate(traceLog())
 def do_rebuild(config_opts, chroot, srpms):
     "rebuilds a list of srpms using provided chroot"
@@ -542,6 +563,9 @@ def main(ret):
 
     # cmdline options override config options
     set_config_opts_per_cmdline(config_opts, options, args)
+
+    # verify that we're not trying to build an arch that we can't
+    check_arch_combination(config_opts['rpmbuild_arch'])
 
     # default /etc/hosts contents
     if not config_opts['use_host_resolv'] and not config_opts['files'].has_key('etc/hosts'):
