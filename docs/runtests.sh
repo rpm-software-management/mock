@@ -18,6 +18,17 @@
 set -e
 set -x
 
+header() {
+    set +x
+    echo "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
+    echo $1
+    echo "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"
+    echo ""
+    set -x
+}
+
+#MOCK_EXTRA_ARGS=--trace
+
 CURDIR=$(pwd)
 MOCKSRPM=${CURDIR}/mock-*.src.rpm
 DIR=$(cd $(dirname $0); pwd)
@@ -27,7 +38,7 @@ cd $TOP_SRCTREE
 #
 # most tests below will use this mock command line
 # 
-testConfig=fedora-12-x86_64
+testConfig=fedora-13-x86_64
 uniqueext="$$-$RANDOM"
 outdir=${CURDIR}/mock-unit-test
 MOCKCMD="sudo ./py/mock.py --resultdir=$outdir --uniqueext=$uniqueext -r $testConfig $MOCK_EXTRA_ARGS"
@@ -41,6 +52,7 @@ trap '$MOCKCMD --clean' INT HUP QUIT EXIT TERM
 #
 # pre-populate yum cache for the rest of the commands below
 #
+header "pre-populating the cache"
 time $MOCKCMD --init
 time $MOCKCMD --installdeps $MOCKSRPM
 if [ ! -e $CHROOT/usr/include/python* ]; then
@@ -51,6 +63,7 @@ fi
 #
 # Test that chroot return code is properly passed up
 #
+header "testing that chroot return code is passed back correctly"
 set +e
 time $MOCKCMD --offline --chroot -- bash -c "exit 5"
 res=$?
@@ -63,6 +76,7 @@ set -e
 #
 # test mock shell (interactive) and return code passing
 #
+header "testing interactive shell and return code"
 set +e
 echo exit 5 | time $MOCKCMD --offline --shell
 res=$?
@@ -75,6 +89,7 @@ set -e
 #
 # Test that chroot with one arg is getting passed though a shell (via os.system())
 #
+header "testing that args are passed correctly to a shell"
 time $MOCKCMD --offline --chroot 'touch /tmp/{foo,bar,baz}'
 if [ ! -f $CHROOT/tmp/foo ] || [ ! -f $CHROOT/tmp/bar ] || [ ! -f $CHROOT/tmp/baz ]; then
     echo "'mock --chroot' with one argument is not being passed to os.system()"
@@ -84,6 +99,7 @@ fi
 #
 # Test that chroot with more than one arg is not getting passed through a shell
 #
+header "Test that chroot with more than one arg is not getting passed through a shell"
 time $MOCKCMD --offline --chroot touch '/tmp/{quux,wibble}'
 if [ ! -f $CHROOT/tmp/\{quux,wibble\} ] || [ -f $CHROOT/tmp/quux ] || [ -f $CHROOT/tmp/wibble ]; then
     echo "'mock --chroot' with more than one argument is being passed to os.system()"
@@ -93,6 +109,7 @@ fi
 #
 # Test offline build as well as tmpfs
 #
+header "Test offline build as well as tmpfs"
 time $MOCKCMD --offline --enable-plugin=tmpfs --rebuild $MOCKSRPM
 if [ ! -e $outdir/mock-*.noarch.rpm ]; then
     echo "rebuild test FAILED. could not find $outdir/mock-*.noarch.rpm"
@@ -102,6 +119,7 @@ fi
 #
 # Test orphanskill feature (std)
 #
+header "Test orphanskill feature (std)"
 if pgrep daemontest; then
     echo "Exiting because there is already a daemontest running."
     exit 1
@@ -118,6 +136,7 @@ fi
 #
 # Test orphanskill feature (explicit)
 #
+header "Test orphanskill feature (explicit)"
 time $MOCKCMD --offline --init
 time $MOCKCMD --offline --copyin docs/daemontest.c /tmp
 time $MOCKCMD --offline --chroot -- gcc -Wall -o /tmp/daemontest /tmp/daemontest.c
@@ -142,6 +161,7 @@ fi
 #
 # test init/clean
 #
+header "test init/clean"
 time $MOCKCMD --offline --clean
 if [ -e $CHROOT ]; then
     echo "clean test FAILED. still found $CHROOT dir."
@@ -158,6 +178,7 @@ fi
 #
 # test old-style cmdline options
 #
+header "test old-style cmdline options"
 time $MOCKCMD --offline clean
 time $MOCKCMD --offline init
 time $MOCKCMD --offline install ccache
@@ -169,6 +190,7 @@ fi
 #
 # clean up from first round of tests
 #
+header "clean up from first round of tests"
 time $MOCKCMD --offline --clean
 
 #
@@ -177,6 +199,7 @@ time $MOCKCMD --offline --clean
 for i in $(ls etc/mock | grep .cfg | grep -v default | egrep -v 'ppc|s390|sparc'); do
     MOCKCMD="sudo ./py/mock.py --resultdir=$outdir --uniqueext=$uniqueext -r $(basename $i .cfg) $MOCK_EXTRA_ARGS"
     if [ "${i#epel-4-x86_64.cfg}" != "" ]; then
+	header "testing config $(basename $i .cfg)"
 	time $MOCKCMD --enable-plugin=tmpfs --rebuild $MOCKSRPM 
     fi
     time $MOCKCMD                       --rebuild $MOCKSRPM 
