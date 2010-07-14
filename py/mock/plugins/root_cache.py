@@ -115,9 +115,9 @@ class RootCache(object):
                     mock.util.do(
                         ["tar"] + self.compressArgs + ["-cf", self.rootCacheFile,
                                                        "-C", self.rootObj.makeChrootPath(), 
-                                                       "--exclude=proc",
-                                                       "--exclude=sys",
-                                                       "--exclude=dev",
+                                                       "--exclude=./proc",
+                                                       "--exclude=./sys",
+                                                       "--exclude=./dev",
                                                        "."],
                         shell=False
                         )
