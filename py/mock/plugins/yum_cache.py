@@ -89,13 +89,13 @@ class YumCache(object):
                         os.unlink(fullPath)
                         continue
 
-            # yum made an rpmdb cache dir in $cachedir/installed for a while;
-            # things can go wrong in a specific mock case if this happened.
-            # So - just nuke the dir and all that's in it.
-            if os.path.exists(self.yumSharedCachePath + '/installed'):
-                for fn in glob.glob(self.yumSharedCachePath + '/installed/*'):
-                    os.unlink(fn)
-                os.rmdir(self.yumSharedCachePath + '/installed')
+        # yum made an rpmdb cache dir in $cachedir/installed for a while;
+        # things can go wrong in a specific mock case if this happened.
+        # So - just nuke the dir and all that's in it.
+        if os.path.exists(self.yumSharedCachePath + '/installed'):
+            for fn in glob.glob(self.yumSharedCachePath + '/installed/*'):
+                os.unlink(fn)
+            os.rmdir(self.yumSharedCachePath + '/installed')
 
         self._yumCachePostYumHook()
 
