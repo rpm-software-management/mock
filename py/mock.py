@@ -361,8 +361,9 @@ def set_config_opts_per_cmdline(config_opts, options, args):
     config_opts['online'] = options.online
 
 legal_arches = {
-    'i386'   : ('i386'),
-    'x86_64' : ('i386', 'x86_64'),
+    'i386'   : ('i386', 'i686'),
+    'i686'   : ('i386', 'i686'),
+    'x86_64' : ('i386', 'i686', 'x86_64'),
     'ppc'    : ('ppc'),
     'ppc64'  : ('ppc', 'ppc64'),
     'sparc'  : ('sparc'),
@@ -376,7 +377,7 @@ def check_arch_combination(target_arch):
     try:
         if target_arch not in legal_arches[host_arch]:
             raise mock.exception.InvalidArchitecture(
-                "Cannot build target %d on arch %s" % (target_arch, host_arch))
+                "Cannot build target %s on arch %s" % (target_arch, host_arch))
     except KeyError:
         raise mock.exception.InvalidArchitecture(
             "Unknown target architcture: %s" % target_arch)
