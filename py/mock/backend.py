@@ -359,6 +359,10 @@ class Root(object):
         os.symlink("/proc/self/fd/1", self.makeChrootPath("dev/stdout"))
         os.symlink("/proc/self/fd/2", self.makeChrootPath("dev/stderr"))
 
+        # don't symlink for RHEL4 systems
+        if kver > '2.6.9':
+            os.symlink("/proc/self/fd",   self.makeChrootPath("dev/fd"))
+
         # symlink it for FC hosts
         if kver >= '2.6.19':
             os.symlink("/dev/pts/ptmx", self.makeChrootPath("dev/ptmx"))
