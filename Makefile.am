@@ -15,10 +15,10 @@ RELEASE_STRING = $(RELEASE_NAME)-$(RELEASE_VERSION)
 VERSION = $(RELEASE_VERSION)
 PACKAGE = $(RELEASE_NAME)
 
-CLEANFILES=mock-*.tar.gz mock-*.tar.bz2 mock-*.rpm _buildtemp version docs/daemontest
+CLEANFILES=mock-*.tar.gz mock-*.tar.bz2 mock-*.rpm _buildtemp version tests/daemontest
 DISTCLEANFILES=*~ mock-unit-test/* x86_64/* noarch/* i386/*
 
-TESTS=./docs/runtests.sh
+TESTS=./tests/runtests.sh
 $(TESTS): srpm
 
 EXTRA_DIST = contrib
