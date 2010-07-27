@@ -172,10 +172,11 @@ def command_parse(config_opts):
                            " before running command when using --chroot")
 
     parser.add_option("--spec", action="store",
-                    help="Specifies spec file to use to build an SRPM (used only with --buildsrpm)")
+                      help="Specifies spec file to use to build an SRPM (used only with --buildsrpm)")
     parser.add_option("--sources", action="store",
-                    help="Specifies sources to use to build an SRPM (used only with --buildsrpm)")
-
+                      help="Specifies sources (either a single file or a directory of files)"
+                      "to use to build an SRPM (used only with --buildsrpm)")
+ 
     # verbosity
     parser.add_option("-v", "--verbose", action="store_const", const=2,
                       dest="verbose", default=1, help="verbose build")
