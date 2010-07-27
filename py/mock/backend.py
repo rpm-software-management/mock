@@ -542,8 +542,18 @@ class Root(object):
 
             # copy spec/sources
             shutil.copy(spec, self.makeChrootPath(self.builddir, "SPECS"))
-            os.rmdir(self.makeChrootPath(self.builddir, "SOURCES"))
-            shutil.copytree(sources, self.makeChrootPath(self.builddir, "SOURCES"))
+
+            # Resolve any symlinks
+            sources = os.path.realpath(sources)
+            
+            if os.path.isdir(sources):
+                os.rmdir(self.makeChrootPath(self.builddir, "SOURCES"))
+                shutil.copytree(sources, self.makeChrootPath(self.builddir, "SOURCES"))
+            else:
+                shutil.copy(sources, self.makeChrootPath(self.builddir, "SOURCES"))
+                
+             spec =  self.makeChrootPath(self.builddir, "SPECS", os.path.basename(spec))
+             chrootspec = spec.replace(self.makeChrootPath(), '') # get rid of rootdir prefix
 
             spec =  self.makeChrootPath(self.builddir, "SPECS", os.path.basename(spec))
             chrootspec = spec.replace(self.makeChrootPath(), '') # get rid of rootdir prefix
