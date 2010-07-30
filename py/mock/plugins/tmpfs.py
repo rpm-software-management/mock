@@ -33,6 +33,11 @@ class Tmpfs(object):
     def __init__(self, rootObj, conf):
         self.rootObj = rootObj
         self.conf = conf
+        self.maxSize = self.conf['max_fs_size']
+        if self.maxSize:
+            self.optArgs = ['-o', 'size=' + self.maxSize]
+        else:
+            self.optArgs = []
         rootObj.addHook("preinit",  self._tmpfsPreInitHook)
         rootObj.addHook("postbuild",  self._tmpfsPostBuildHook)
         rootObj.addHook("initfailed",  self._tmpfsPostBuildHook)
@@ -40,8 +45,8 @@ class Tmpfs(object):
     decorate(traceLog())
     def _tmpfsPreInitHook(self):
         getLog().info("mounting tmpfs.")
-        mountCmd = ["mount", "-n", "-t", "tmpfs", "mock_chroot_tmpfs", 
-                    self.rootObj.makeChrootPath()]
+        mountCmd = ["mount", "-n", "-t", "tmpfs"] + self.optArgs + \
+                   ["mock_chroot_tmpfs", self.rootObj.makeChrootPath()]
         mock.util.do(mountCmd, shell=False)
 
     decorate(traceLog())
