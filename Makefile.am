@@ -47,7 +47,9 @@ plugins_PYTHON = \
     py/mock/plugins/ccache.py     \
     py/mock/plugins/root_cache.py \
     py/mock/plugins/tmpfs.py \
-    py/mock/plugins/yum_cache.py
+    py/mock/plugins/yum_cache.py \
+    py/mock/plugins/selinux.py
+
 
 pkgpython_PYTHON = \
     py/mock/__init__.py        \
