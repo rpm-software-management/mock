@@ -92,11 +92,7 @@ RPM_DEFINES = --define "_topdir $(TOPDIR)" \
     --define "_specdir $(SPECDIR)" \
     --define "_srcrpmdir $(SRCRPMDIR)"
 
-if USE_MD5
-RPMBUILD := rpmbuild-md5
-else
-RPMBUILD := rpmbuild
-endif
+RPMBUILD := $(shell if [ -e /usr/bin/rpmbuild-md5 ]; then echo rpmbuild-md5; else echo rpmbuild; fi)
 
 .PHONY: rpm srpm help
 rpm: dist
