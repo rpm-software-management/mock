@@ -101,8 +101,14 @@ class Root(object):
         self.state("init plugins")
         self._initPlugins()
 
-        # figure out if SELinux is enabled on the host
-        self.selinux = mock.util.selinuxEnabled()
+        # default to not doing selinux things
+        self.selinux = False
+
+        # if the selinux plugin is disabled and we have SELinux enabled
+        # on the host, we need to do SELinux things, so set the selinux
+        # state variable to true
+        if self.pluginConf['selinux_enable'] == False and mock.util.selinuxEnabled():
+            self.selinux = True
 
         # officially set state so it is logged
         self.state("start")
