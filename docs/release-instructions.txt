@@ -5,23 +5,35 @@ A note on mock versions:
   There are now two main branches to be aware of:
   	- mock-1.0 (pre-F13 and EPEL5)
 	- mock-1.1+ (F-13+ and EPEL6+)
-  In the git tree, mock-1.0 is tracked on the branch origin/mock-1.0,
+  In the upstream git tree, mock-1.0 is tracked on the branch origin/mock-1.0,
   while mock-1.1+ is in the master branch. Please be careful when
   updating the various distro to use the correct branch and version
   number when generating tarfiles for RPM generation.
+
+Note that we've now switched over to using git for the package
+repositories (as opposed to the old CVS repositories). To make use of
+the new format, you must install the fedora-packager package and clone
+the mock package repository:
+
+    $ sudo yum install fedora-packager
+    $ fedpkg clone mock
+    $ mv mock mock-fedora.git
+
+The last step is not strictly required, but I do it to keep from
+confusing the package repository with the upstream (source) repository
 
 =====================================================================
 
 Release checklist overview:
 
-   1) git tree: pull, merge, checkin, tag and push
-   2) koji tree: for each release: checkin tarball and spec, kick off builds
+   1) upstream git tree: pull, merge, checkin, tag and push
+   2) koji git tree: for each release: checkin tarball and spec, kick off builds
    3) bodhi: schedule releases
 
 =====================================================================
 For a mock 1.1+ release
 
-In the git tree:
+In the upstream git tree:
 
    0) fetch updates from origin and fast forward your local master
       $ git fetch origin
@@ -58,25 +70,25 @@ In the git tree:
   16) push to main git repo (only from master branch):
      $ git push --tags origin master  
 
-In the fedora CVS (koji) tree
+In the fedora git (koji) tree
 
-    1) update the cvs tree
-       $ cvs update
-    2) cd to the devel dir and upload the tarball
-       $ cd devel
-       $ make new-source FILES=../../mock.git/mock-1.1.2.tar.gz
-    3) copy the new specfile from the git tree
-       $ cp ../../mock.git/mock.spec .
-    4) create a changelog entry (clog)
-       $ make clog
-    5) checkin the new specfile using the clog
-       $ cvs commit -F clog 
-    6) create the koji tag
-       $ make tag
-    7) initiate a koji build
-       $ make build
-    8) repeat above for released tree and released tree -1
-    9) repeat builds for EL-6
+   1) cd to the previously cloned mock package repository
+       $ cd ../mock-fedora.git
+   2) upload the new source tarball from the upstream git tree
+       $ fedpkg new-sources ../mock.git/mock-1.1.3.tar.gz
+   3) copy in the new specfile that matches the tarball
+       $ cp ../mock.git/mock.spec .
+   4) create a clog from the new specfile
+       $ fedpkg clog
+   5) commit and push the new sources
+       $ fedpkg commit -F clog -p
+   6) initiate a koji build
+       $ fedpkg build --notwait
+   7) switch branches to the latest released fedora
+       $ fedpkg switch-branch f14
+   8) repeat steps 2 through 6 for the new branch
+   9) repeat for all supported fedora releases and EPEL releases
+      (e.g. f14, f13, el6)
 
 At this point you should push the just built packages to their
 respective testing repositories. This can be done either with the
@@ -125,28 +137,22 @@ In the git tree:
   16) push to main git repo (only from master branch):
      $ git push --tags origin master  
 
-In the fedora CVS (koji) tree
+In the fedora git (koji) tree
 
-    1) update the cvs tree
-       $ cvs update
-    2) cd to the EL-5 dir and upload the tarball
-       $ cd EL-5
-       $ make new-source FILES=../../mock.git/mock-1.0.9.tar.gz
-    3) copy the new specfile from the git tree
-       $ cp ../../mock.git/mock.spec .
-    4) create a changelog entry (clog)
-       $ make clog
-    5) checkin the new specfile using the clog
-       $ cvs commit -F clog 
-    6) create the koji tag
-       $ make tag
+    1) cd to the previously cloned mock package repository
+       $ cd mock-fedora.git
+    2) switch to the EPEL5 branch
+       $ fedpkg switch-branch el5
+    3) install a new tarball from the upstream git tree
+       $ fedpkg new-source ../mock.git/mock-1.0.9.tar.gz
+    4) copy the matching specfile
+       $ cp ../mock.git/mock.spec .
+    5) create a changelong entry file (clog)
+       $ fedpkg clog
+    6) commit and push the new tarball and specfile
+       $ fedpkg commit -F clog -p
     7) initiate a koji build
-       $ make build
-    8) repeat above for released tree and released tree -1
-    9) repeat builds for F-11/F-12 (while they're still supported)
-
-
-
+       $ fedpkg build --nowait
 
 
 
