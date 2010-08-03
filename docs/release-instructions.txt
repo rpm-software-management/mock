@@ -1,14 +1,36 @@
 # Work in progress...
 
+A note on mock versions: 
+
+  There are now two main branches to be aware of:
+  	- mock-1.0 (pre-F13 and EPEL5)
+	- mock-1.1+ (F-13+ and EPEL6+)
+  In the upstream git tree, mock-1.0 is tracked on the branch origin/mock-1.0,
+  while mock-1.1+ is in the master branch. Please be careful when
+  updating the various distro to use the correct branch and version
+  number when generating tarfiles for RPM generation.
+
+Note that we've now switched over to using git for the package
+repositories (as opposed to the old CVS repositories). To make use of
+the new format, you must install the fedora-packager package and clone
+the mock package repository:
+
+    $ sudo yum install fedora-packager
+    $ fedpkg clone mock
+    $ mv mock mock-fedora.git
+
+The last step is not strictly required, but I do it to keep from
+confusing the package repository with the upstream (source) repository
+
 Release checklist overview:
 
-   1) git tree: pull, merge, checkin, tag and push
-   2) koji tree: for each release: checkin tarball and spec, kick off builds
+   1) upstream git tree: pull, merge, checkin, tag and push
+   2) koji git tree: for each release: checkin tarball and spec, kick off builds
    3) bodhi: schedule releases
 
 =====================================================================
 
-In the git tree:
+In the upstream git tree:
 
    1) switch to the master branch
       $ git checkout master
@@ -34,127 +56,89 @@ In the git tree:
      # substitute 'master' with branch name if on another branch
      $ git push --tags origin master  
 
+In the fedora git (koji) tree
+
+   1) cd to the previously cloned mock package repository
+       $ cd ../mock-fedora.git
+   2) upload the new source tarball from the upstream git tree
+       $ fedpkg new-sources ../mock.git/mock-1.1.3.tar.gz
+   3) copy in the new specfile that matches the tarball
+       $ cp ../mock.git/mock.spec .
+   4) create a clog from the new specfile
+       $ fedpkg clog
+   5) commit and push the new sources
+       $ fedpkg commit -F clog -p
+   6) initiate a koji build
+       $ fedpkg build --notwait
+   7) switch branches to the latest released fedora
+       $ fedpkg switch-branch f14
+   8) repeat steps 2 through 6 for the new branch
+   9) repeat for all supported fedora releases and EPEL releases
+      (e.g. f14, f13, el6)
+
+At this point you should push the just built packages to their
+respective testing repositories. This can be done either with the
+Bodhi WebUI at https://admin.fedoraproject.org/updates/ or if there
+are no other package dependencies, using the 'make update' target of
+the CVS Makefile. Note that you do not need to do this for the devel
+branch since it automatically gets pushed to testing.
+
 =====================================================================
+For a mock 1.0 release
 
-In the fedora CVS (koji) tree
+In the git tree:
 
-    1) update the cvs tree
-       $ cvs update
-    2) upload the tarball for the devel release
-       $ cd devel
-       $ make new-source FILES=../../mock.git/mock-0.9.3.tar.gz
-    3) copy the new specfile from the git tree
-       $ cp ../../mock.git/mock.spec .
-    4) create a changelog entry (clog)
-       $ make clog
-    5) checkin the new specfile using the clog
-       $ cvs commit -F clog 
-    6) create the koji tag
-       $ make tag
+   0) fetch updates from origin and fast forward your local mock-1.0
+      $ git fetch origin
+      $ git checkout mock-1.0
+      $ git merge origin/mock-1.0
+   1) create a branch from mock-1.0 (e.g. 'prerelease') and switch to it
+      $ git branch prelease mock-1.0
+      $ git checkout prerelease
+   2) fetch remotes and merge remote updates
+      $ git fetch jkeating
+      $ git merge jkeating/mock-1.0-updates
+   3) merge any local branch work and reolve any conflicts
+      $ git merge work
+   4) update configure.ac with new version info (don't commit yet)
+   5) update the %changelog section of mock.spec.in
+   6) run 'autogen.sh' to update autoconf files
+   7) run 'configure' to generate Makefile and mock.spec
+   8) run 'make rpm' to generate binary RPM and propagate version
+      changes (Note this also generates a tar file for use later).
+   9) verify that docs/runtests.sh uses a supported config file
+      (i.e. epel5 or F11/F12). If not, edit and commit
+  10) run 'make check' and fix any reported failures until it passes
+  11) check in any changes from above
+  12) remove ChangeLog and AUTHORS
+  13) run 'make dist' to generate ChangeLog and AUTHORS files
+  14) commit configure.ac and any other changes with a
+      version bump message:
+     $ git commit -m 'version bump' configure.ac
+  15) tag the git tree:
+     $ git tag -u <your key> mock-<version>
+  16) checkout master and merge your work directory:
+      $ git checkout master
+      $ git merge prerelease
+  16) push to main git repo (only from master branch):
+     $ git push --tags origin master  
+
+In the fedora git (koji) tree
+
+    1) cd to the previously cloned mock package repository
+       $ cd mock-fedora.git
+    2) switch to the EPEL5 branch
+       $ fedpkg switch-branch el5
+    3) install a new tarball from the upstream git tree
+       $ fedpkg new-source ../mock.git/mock-1.0.9.tar.gz
+    4) copy the matching specfile
+       $ cp ../mock.git/mock.spec .
+    5) create a changelong entry file (clog)
+       $ fedpkg clog
+    6) commit and push the new tarball and specfile
+       $ fedpkg commit -F clog -p
     7) initiate a koji build
-       $ make build
-    8) repeat above for released tree and released tree -1
-    9) repeat builds for EPEL-5 and EPEL-4
-
-=====================================================================
-Michaels old stuff
-
-   1) check release into fedora cvs
-   2) do build for -devel
-   3) do build for F-8, push to testing, then stable
-   4) do a build for F-7
-
-## script form:
-# vim ChangeLog  mock.spec.in
-# vim configure.ac
-# autoreconf
-# make rpm
-# git commit -m 'version bump' configure.ac configure src/mock.py
-# git tag -u YOURKEY mock-VERSION_HERE
-
-
-In the mock git tree, first ensure that you are:
-  --> on the master branch (or correct branch per branching guidelines)
-  --> updated changelog
-  --> fully-up-to-date wrt official tree
-  --> have no local changes that havent been pushed
-  --> test build rpm
-  --> tag build and push tag
-
-  $ git status
-  # On branch master
-  nothing to commit (working directory clean)
-
-  $ git pull
-  Already up-to-date.
-
-  $ git diff origin
-
-  $ make rpm
-    ...
-  Wrote: /.../mock/dist/mock-0.7.5-1.fc7.src.rpm
-  Wrote: /.../mock/dist/x86_64/mock-0.7.5-1.fc7.x86_64.rpm
-  Wrote: /.../mock/dist/x86_64/mock-debuginfo-0.7.5-1.fc7.x86_64.rpm
-
-  $ git tag -s mock-$VERSION
-
-
-In the fedora CVS tree:
-  --> update CVS to latest
-  --> upload new source tarball
-  --> merge in spec changes
-  --> ensure good changelog
-
-  $ cd fedora/mock
-  $ cvs up
-
-  $ cd devel
-  $ make new-sources FILES=~/git/mock/mock-0.7.5.tar.gz 
-  $ cp ~/git/mock/mock.spec .
-  $ cvs diff mock.spec
-     --> if spec was changed outside of git directly in fedora cvs, fixup and merge changes in, add changes back to git
-     --> if there is no changelog entry, do one now.
-  $ make clog
-  $ cvs commit -F clog
-  $ make tag
-  $ make build
-
-  $ cd ../F-7
-  $ make new-sources FILES=~/git/mock/mock-0.7.5.tar.gz 
-  $ cp ~/git/mock/mock.spec .
-  $ cvs diff mock.spec
-     --> if spec was changed outside of git directly in fedora cvs, fixup and merge changes in, add changes back to git
-     --> if there is no changelog entry, do one now.
-  $ make clog
-  $ cvs commit -F clog
-  $ make tag
-  $ make build
- 
-# in Bodhi
-  --> create a proposed update for F7
-  --> push to testing
-  --> wait for email saying it has been two weeks and would be a good time to push to stable. :)
-  --> push to stable
-
-# in fedora CVS tree:
-  --> update F6 (try to ensure that we do F7/devel upgrades first to not break upgrade paths.)
-
-  $ cd fedora/mock
-  $ cvs up
-
-  $ cd ../FC-6
-  $ make new-sources FILES=~/git/mock/mock-0.7.5.tar.gz 
-  $ cp ~/git/mock/mock.spec .
-  $ cvs diff mock.spec
-     --> if spec was changed outside of git directly in fedora cvs, fixup and merge changes in, add changes back to git
-     --> if there is no changelog entry, do one now.
-  $ make clog
-  $ cvs commit -F clog
-  $ make tag
-  $ make build
-
-
-
+       $ fedpkg build --nowait
 
 
 
