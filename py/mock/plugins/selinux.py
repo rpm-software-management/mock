@@ -60,7 +60,7 @@ class SELinux(object):
         host.close()
 
         self.rootObj.mountCmds.append("mount -n --bind %s %s" % (self.filesystems, self.chrootFilesystems))
-        self.rootObj.umountCmds.insert(0, "umount -n %s" % self.chrootFilesystems)
+        self.rootObj.umountCmds.append("umount -n %s" % self.chrootFilesystems)
 
     decorate(traceLog())
     def _selinuxPostBuildHook(self):
