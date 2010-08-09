@@ -366,9 +366,9 @@ def set_config_opts_per_cmdline(config_opts, options, args):
     config_opts['online'] = options.online
 
 legal_arches = {
-    'i386'   : ('i386', 'i686', 'noarch'),
-    'i686'   : ('i386', 'i686', 'noarch'),
-    'x86_64' : ('i386', 'i686', 'x86_64', 'noarch'),
+    'i386'   : ('i386', 'i586', 'i686', 'noarch'),
+    'i686'   : ('i386', 'i586', 'i686', 'noarch'),
+    'x86_64' : ('i386', 'i586', 'i686', 'x86_64', 'noarch'),
     'ppc'    : ('ppc', 'noarch'),
     'ppc64'  : ('ppc', 'ppc64', 'noarch'),
     'sparc'  : ('sparc', 'noarch'),
