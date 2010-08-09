@@ -369,14 +369,14 @@ def set_config_opts_per_cmdline(config_opts, options, args):
     config_opts['online'] = options.online
 
 legal_arches = {
-    'i386'   : ('i386', 'i686'),
-    'i686'   : ('i386', 'i686'),
-    'x86_64' : ('i386', 'i686', 'x86_64'),
-    'ppc'    : ('ppc'),
-    'ppc64'  : ('ppc', 'ppc64'),
-    'sparc'  : ('sparc'),
-    'sparc64': ('sparc', 'sparc64'),
-    's390x'  : ('s390x'),
+    'i386'   : ('i386', 'i686', 'noarch'),
+    'i686'   : ('i386', 'i686', 'noarch'),
+    'x86_64' : ('i386', 'i686', 'x86_64', 'noarch'),
+    'ppc'    : ('ppc', 'noarch'),
+    'ppc64'  : ('ppc', 'ppc64', 'noarch'),
+    'sparc'  : ('sparc', 'noarch'),
+    'sparc64': ('sparc', 'sparc64', 'noarch'),
+    's390x'  : ('s390x', 'noarch'),
 }
 
 decorate(traceLog())
