@@ -17,6 +17,7 @@ import select
 import shutil
 import subprocess
 import time
+import errno
 
 # our imports
 import mock.exception
@@ -80,9 +81,9 @@ def rmtree(path, *args, **kargs):
         try:
             shutil.rmtree(path, *args, **kargs)
         except OSError, e:
-            if e.errno == 2: # no such file or directory
+            if e.errno == errno.ENOENT: # no such file or directory
                 pass
-            elif e.errno==1 or e.errno==13:
+            elif e.errno==errno.EPERM or e.errno==errno.EACCES:
                 tryAgain = 1
                 if failedFilename == e.filename:
                     raise
