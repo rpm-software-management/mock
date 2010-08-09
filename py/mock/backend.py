@@ -138,7 +138,7 @@ class Root(object):
         self.tryLockBuildRoot()
         self.state("clean")
         self._callHooks('clean')
-        mock.util.rmtree(self.basedir)
+        mock.util.rmtree(self.basedir, selinux=self.selinux)
         self.chrootWasCleaned = True
 
     decorate(traceLog())
@@ -149,20 +149,20 @@ class Root(object):
         self._callHooks('clean')
         for scrub in scrub_opts:
             if scrub == 'all':
-                mock.util.rmtree(self.basedir)
+                mock.util.rmtree(self.basedir, selinux=self.selinux)
                 self.chrootWasCleaned = True
-                mock.util.rmtree(self.cachedir)
+                mock.util.rmtree(self.cachedir, selinux=self.selinux)
             elif scrub == 'chroot':
-                mock.util.rmtree(self.basedir)
+                mock.util.rmtree(self.basedir, selinux=self.selinux)
                 self.chrootWasCleaned = True
             elif scrub == 'cache':
-                mock.util.rmtree(self.cachedir)
+                mock.util.rmtree(self.cachedir, selinux=self.selinux)
             elif scrub == 'c-cache':
-                mock.util.rmtree(os.path.join(self.cachedir, 'ccache'))
+                mock.util.rmtree(os.path.join(self.cachedir, 'ccache'), selinux=self.selinux)
             elif scrub == 'root-cache':
-                mock.util.rmtree(os.path.join(self.cachedir, 'root_cache'))
+                mock.util.rmtree(os.path.join(self.cachedir, 'root_cache'), selinux=self.selinux)
             elif scrub == 'yum-cache':
-                mock.util.rmtree(os.path.join(self.cachedir, 'yum_cache'))
+                mock.util.rmtree(os.path.join(self.cachedir, 'yum_cache'), selinux=self.selinux)
 
     decorate(traceLog())
     def tryLockBuildRoot(self):
@@ -336,7 +336,7 @@ class Root(object):
     decorate(traceLog())
     def _setupDev(self):
         # files in /dev
-        mock.util.rmtree(self.makeChrootPath("dev"))
+        mock.util.rmtree(self.makeChrootPath("dev"), selinux=self.selinux)
         mock.util.mkdirIfAbsent(self.makeChrootPath("dev", "pts"))
         mock.util.mkdirIfAbsent(self.makeChrootPath("dev", "shm"))
         prevMask = os.umask(0000)
@@ -669,7 +669,7 @@ class Root(object):
             raise mock.exception.RootError, "Could not find useradd in chroot, maybe the install failed?"
 
         # safe and easy. blow away existing /builddir and completely re-create.
-        mock.util.rmtree(self.makeChrootPath(self.homedir))
+        mock.util.rmtree(self.makeChrootPath(self.homedir), selinux=self.selinux)
         dets = { 'uid': str(self.chrootuid), 'gid': str(self.chrootgid), 'user': self.chrootuser, 'group': self.chrootgroup, 'home': self.homedir }
 
         self.doChroot(['/usr/sbin/userdel', '-r', dets['user']], shell=False, raiseExc=False)

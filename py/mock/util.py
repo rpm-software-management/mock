@@ -17,6 +17,7 @@ import select
 import shutil
 import subprocess
 import time
+import errno
 
 # our imports
 import mock.exception
@@ -72,6 +73,10 @@ decorate(traceLog())
 def rmtree(path, *args, **kargs):
     """version os shutil.rmtree that ignores no-such-file-or-directory errors,
        and tries harder if it finds immutable files"""
+    do_selinux_ops = False
+    if kargs.has_key('selinux'):
+        do_selinux_ops = kargs['selinux']
+        del kargs['selinux']
     tryAgain = 1
     failedFilename = None
     getLog().debug("remove tree: %s" % path)
@@ -80,9 +85,9 @@ def rmtree(path, *args, **kargs):
         try:
             shutil.rmtree(path, *args, **kargs)
         except OSError, e:
-            if e.errno == 2: # no such file or directory
+            if e.errno == errno.ENOENT: # no such file or directory
                 pass
-            elif e.errno==1 or e.errno==13:
+            elif do_selinux_ops and (e.errno==errno.EPERM or e.errno==errno.EACCES):
                 tryAgain = 1
                 if failedFilename == e.filename:
                     raise
