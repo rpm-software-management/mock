@@ -86,7 +86,7 @@ class RootCache(object):
         except OSError:
             pass
 
-        # optimization: dont unpack root cache if chroot was not cleaned
+        # optimization: don't unpack root cache if chroot was not cleaned
         if os.path.exists(self.rootCacheFile) and self.rootObj.chrootWasCleaned:
             self.state("unpacking root cache")
             self._rootCacheLock()
@@ -95,8 +95,8 @@ class RootCache(object):
                 shell=False
                 )
             self._rootCacheUnlock()
-            self.chroot_setup_cmd = "update"
             self.rootObj.chrootWasCleaned = False
+            self.rootObj.chrootWasCached = True
 
     decorate(traceLog())
     def _rootCachePostInitHook(self):
