@@ -638,6 +638,8 @@ class Root(object):
         for cmd in umountCmds:
             self.root_log.debug(cmd)
             mock.util.do(cmd, raiseExc=0, shell=True)
+        # Reverse the order back again, ready for next time
+        umountCmds.reverse()
 
     decorate(traceLog())
     def _yum(self, cmd, returnOutput=0):
