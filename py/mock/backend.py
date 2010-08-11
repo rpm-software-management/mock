@@ -34,6 +34,7 @@ class Root(object):
         self._state = 'unstarted'
         self.uidManager = uidManager
         self._hooks = {}
+        self.chrootWasCached = False
         self.chrootWasCleaned = False
         self.preExistingDeps = ""
         self.logging_initialized = False
@@ -311,6 +312,8 @@ class Root(object):
             self._mountall()
             if self.chrootWasCleaned:
                 self._yum(self.chroot_setup_cmd, returnOutput=1)
+            if self.chrootWasCached:
+                self._yum('update', returnOutput=1)
 
             # create user
             self._makeBuildUser()
