@@ -118,6 +118,8 @@ class RootCache(object):
                                                        "--exclude=./proc",
                                                        "--exclude=./sys",
                                                        "--exclude=./dev",
+                                                       "--exclude=./tmp/ccache",
+                                                       "--exclude=./var/cache/yum",
                                                        "."],
                         shell=False
                         )
