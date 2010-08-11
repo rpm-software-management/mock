@@ -380,7 +380,7 @@ decorate(traceLog())
 def check_arch_combination(target_arch):
     host_arch = os.uname()[-1]
     try:
-        if target_arch not in legal_arches[host_arch]:
+        if target_arch not in legal_arches[host_arch] + ('noarch',):
             raise mock.exception.InvalidArchitecture(
                 "Cannot build target %s on arch %s" % (target_arch, host_arch))
     except KeyError:
