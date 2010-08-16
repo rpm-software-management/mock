@@ -81,7 +81,7 @@ class BadCmdline(Error):
 
 class InvalidArchitecture(Error):
     "invalid host/target architecture specified."
-    def __init(self, msg):
+    def __init__(self, msg):
         Error.__init__(self, msg)
         self.msg = msg
         self.resultcode = 06
