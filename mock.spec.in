@@ -100,6 +100,16 @@ fi
 %attr(02775, root, mock) %dir /var/cache/mock
 
 %changelog
+* Sat Aug 14 2010 Clark Williams <williams@redhat.com> - 1.0.11-1
+- fix problem with mock.util.rmtree interaction with selinux plugin
+- change integer constants to symbolic from errno package
+- from Paul Howarth <paul@city-fan.org>:
+  - add i586 as a legal target arch
+  - Retain order of umountCmds
+  - Exclude bind-mounted cache dirs from root cache
+  - noarch is always a legal arch
+  - Update packages after unpacking root cache
+
 * Tue Aug  3 2010 Clark Williams <williams@redhat.com> - 1.0.10-1
 - append rather than insert umount of /proc/filesystems (BZ# 620825)
 - set state correctly for SELinux (BZ# 620143)
