@@ -102,6 +102,16 @@ fi
 %attr(02775, root, mock) %dir /var/cache/mock
 
 %changelog
+* Mon Aug 09 2010 Clark Williams <williams@redhat.com> - 1.1.4-1
+- pass selinux status to mock.util.rmtree() (BZ# 614440)
+- change integer constants to symbolic errno constants in util.py
+- from Paul Howarth <paul@city-fan.org>
+  - update packages after unpacking root cache (BZ# 557526)
+  - noarch is always a legal arch (BZ# 622170)
+  - exclude bind-mounted cache dirs from root cache
+  - retain order of umount commands (BZ# 620825)
+  - add i586 as legal build target (BZ# 622544)
+
 * Tue Aug 03 2010 Clark Williams <williams@redhat.com> - 1.1.3-1
 - fix umount ordering problem with selinux plugin (BZ# 620825)
 - setup SELinux state properly (BZ# 620143)

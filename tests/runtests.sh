@@ -33,7 +33,7 @@ outdir=${CURDIR}/mock-unit-test
 MOCKCMD="sudo ./py/mock.py --resultdir=$outdir --uniqueext=$uniqueext -r $testConfig $MOCK_EXTRA_ARGS"
 CHROOT=/var/lib/mock/${testConfig}-$uniqueext/root
 
-trap '$MOCKCMD --clean; exit 1' INT HUP QUIT EXIT TERM
+trap '$MOCKCMD --clean; exit 1' INT HUP QUIT TERM
 
 export CURDIR MOCKSRPM DIR TOP_SRCTREE testConfig uniqueext outdir MOCKCMD CHROOT
 
@@ -60,11 +60,12 @@ for i in ${CURDIR}/tests/*.tst; do
     sh $i
     if [ $? != 0 ]; then
 	fails=$(($fails + 1))
-	echo "**************** %i failed"
+	echo "**************** $i failed"
     fi
 done
 
-printf "%d regression failures\n" $fails
+msg=$(printf "%d regression failures\n" $fails)
+header "$msg"
 
 #
 # clean up
@@ -80,11 +81,19 @@ for i in $(ls etc/mock | grep .cfg | grep -v default | egrep -v 'ppc|s390|sparc'
     if [ "${i#epel-4-x86_64.cfg}" != "" ]; then
 	header "testing config $(basename $i .cfg) with tmpfs plugin"
 	runcmd "$MOCKCMD --enable-plugin=tmpfs --rebuild $MOCKSRPM "
-	if [ $? != 0 ]; then fails=$(($fails+1)); fi
+	if [ $? != 0 ]; then 
+	    echo "FAILED!"
+	    fails=$(($fails+1))
+	fi
     fi
     header "testing config $(basename $i .cfg) *without* tmpfs plugin"
     runcmd "$MOCKCMD                       --rebuild $MOCKSRPM"
-    if [ $? != 0 ]; then fails=$(($fails+1)); fi
+    if [ $? != 0 ]; then 
+	echo "FAILED!"
+	fails=$(($fails+1))
+    fi
 done
 
-printf "%d total failures\n" $fails
+msg=$(printf "%d total failures\n" $fails)
+header "$msg"
+exit $fails
