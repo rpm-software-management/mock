@@ -157,6 +157,13 @@ def getNEVRA(hdr):
     return (name, epoch, ver, rel, arch)
 
 decorate(traceLog())
+def cmpKernelEVR(str1, str2):
+    'compare two kernel version strings and return -1, 0, 1 for less, equal, greater'
+    evr1 = str1.split('.', 2)
+    evr2 = str2.split('.', 2)
+    return rpmUtils.miscutils.compareEVR(evr1, evr2)
+
+decorate(traceLog())
 def getAddtlReqs(hdr, conf):
     # Add the 'more_buildreqs' for this SRPM (if defined in config file)
     (name, epoch, ver, rel, arch) = getNEVRA(hdr)
