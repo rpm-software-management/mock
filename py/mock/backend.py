@@ -351,7 +351,7 @@ class Root(object):
         ]
         kver = os.uname()[2]
         # make the device node for el4 and el5
-        if kver < '2.6.19':
+        if mock.util.cmpKernelEVR(kver, '2.6.18') <= 0:
             devFiles.append((stat.S_IFCHR | 0666, os.makedev(5, 2), "dev/ptmx"))
 
         for i in devFiles:
@@ -369,11 +369,11 @@ class Root(object):
         os.symlink("/proc/self/fd/2", self.makeChrootPath("dev/stderr"))
 
         # don't symlink for RHEL4 systems
-        if kver > '2.6.9':
+        if mock.util.cmpKernelEVR(kver, '2.6.9') > 0:
             os.symlink("/proc/self/fd",   self.makeChrootPath("dev/fd"))
 
-        # symlink it for FC hosts
-        if kver >= '2.6.19':
+        # symlink it for FC and el6 hosts
+        if mock.util.cmpKernelEVR(kver, '2.6.18') > 0:
             os.symlink("/dev/pts/ptmx", self.makeChrootPath("dev/ptmx"))
 
         os.umask(prevMask)
@@ -386,7 +386,7 @@ class Root(object):
                 self.umountCmds.append(devUnmtCmd)
 
         mountopt = 'gid=%d,mode=0620,ptmxmode=0666' % grp.getgrnam('tty').gr_gid
-        if kver >= '2.6.29':
+        if mock.util.cmpKernelEVR(kver, '2.6.29') >= 0:
             mountopt += ',newinstance'
 
         for devMntCmd in (
