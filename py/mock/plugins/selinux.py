@@ -6,6 +6,7 @@
 # python library imports
 import os
 import sys
+import tempfile
 
 # our imports
 from mock.trace_decorator import decorate, traceLog, getLog
@@ -35,7 +36,7 @@ class SELinux(object):
         self.rootObj = rootObj
         self.conf = conf
 
-        self.filesystems = os.path.join(conf["cachedir"], "filesystems")
+        (self.fd, self.filesystems) = tempfile.mkstemp(prefix="mock-selinux-plugin")
         self.chrootFilesystems = rootObj.makeChrootPath("/proc/filesystems")
 
         rootObj.addHook("preinit", self._selinuxPreInitHook)
@@ -50,13 +51,12 @@ class SELinux(object):
     decorate(traceLog())
     def _selinuxPreInitHook(self):
         host = open("/proc/filesystems")
-        build = open(self.filesystems, "w")
 
         for line in host:
             if not "selinuxfs" in line:
-                build.write(line)
+                os.write(self.fd,line)
 
-        build.close()
+        os.close(self.fd)
         host.close()
 
         self.rootObj.mountCmds.append("mount -n --bind %s %s" % (self.filesystems, self.chrootFilesystems))
