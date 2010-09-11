@@ -205,6 +205,13 @@ def command_parse(config_opts):
         options.mode = args[0]
         args = args[1:]
 
+    if options.mode == 'buildsrpm' and not (options.spec and options.sources):
+        raise mock.exception.BadCmdline, "Must specify both --spec and --sources with --buildsrpm"
+    if options.spec:
+        options.spec = os.path.expanduser(options.spec)
+    if options.sources:
+        options.sources = os.path.expanduser(options.sources)
+
     return (options, args)
 
 decorate(traceLog())
