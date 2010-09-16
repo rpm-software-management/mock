@@ -106,6 +106,11 @@ class RootCache(object):
             for tmp in glob(self.rootObj.makeChrootPath('var/lib/rpm/__db*')):
                 os.unlink(tmp)
 
+            # truncate the sparse files in /var/log
+            for logfile in ('/var/log/lastlog', '/var/log/faillog'):
+                f = open(self.rootObj.makeChrootPath(logfile), "w")
+                f.truncate(0)
+                f.close()
             
             # never rebuild cache unless it was a clean build.
             if self.rootObj.chrootWasCleaned:
