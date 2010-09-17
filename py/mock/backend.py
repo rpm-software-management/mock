@@ -150,7 +150,12 @@ class Root(object):
             mock.util.rmtree(t, selinux=self.selinux)
         os.rename(self.basedir, t)
         self.buildrootLock.close()
-        mock.util.rmtree(t, selinux=self.selinux)
+        try:
+            mock.util.rmtree(t, selinux=self.selinux)
+        except OSError, e:
+            self.root_log.error(e)
+            self.root_log.error("contents of /proc/mounts:\n%s" % open('/proc/mounts').read())
+            raise
         self.root_log.info("chroot (%s) unlocked and deleted" % self.basedir)
 
     decorate(traceLog())
