@@ -100,6 +100,15 @@ fi
 %attr(02775, root, mock) %dir /var/cache/mock
 
 %changelog
+* Fri Sep 17 2010 Clark Williams <williams@redhat.com> - 1.0.12-1
+- add cmpKernelEVR function to compare kernel versions (BZ# 526414)
+- added commandline argument checking for --buildsrpm (BZ# 605800)
+- create empty faillog and lastlog in <chroot>/var/log (BZ# 585973 & 633435)
+- changed copyin/copyout prints from debug to info
+- from Alan Franzoni <mailing@franzoni.eu>:
+  - reworked the root object _umountall() method
+- fix epel4 chroot cleanup and umountall issue
+
 * Sat Aug 14 2010 Clark Williams <williams@redhat.com> - 1.0.11-1
 - fix problem with mock.util.rmtree interaction with selinux plugin
 - change integer constants to symbolic from errno package
