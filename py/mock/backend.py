@@ -635,14 +635,23 @@ class Root(object):
     decorate(traceLog())
     def _umountall(self):
         """umount all mounted chroot fs."""
-        # Unwind mounts by umounting in the opposite order of the mounts
-        umountCmds = self.umountCmds
-        umountCmds.reverse()
-        for cmd in umountCmds:
-            self.root_log.debug(cmd)
-            mock.util.do(cmd, raiseExc=0, shell=True)
-        # Reverse the order back again, ready for next time
-        umountCmds.reverse()
+        # first try removing all expected mountpoints. 
+        for cmd in reversed(self.umountCmds):
+            try:
+                mock.util.do(cmd, raiseExc=1, shell=True)
+            except mock.exception.Error, e:
+                # the exception already contains info about the error.
+                self.root_log.warning(e) 
+        # then remove anything that might be left around.
+        mountpoints = open("/proc/mounts").read().strip().split("\n")
+        # umount in reverse mount order to prevent nested mount issues that
+        # may prevent clean unmount.
+        for mountline in reversed(mountpoints):
+            mountpoint = mountline.split()[1]
+            if os.path.realpath(mountpoint).startswith(os.path.realpath(self.makeChrootPath() + "/")):
+                cmd = "umount -n %s" % mountpoint
+                self.root_log.warning("Forcibly unmounting '%s' from chroot." % mountpoint)
+                mock.util.do(cmd, raiseExc=0, shell=True)
 
     decorate(traceLog())
     def _yum(self, cmd, returnOutput=0):
