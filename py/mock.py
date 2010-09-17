@@ -715,7 +715,7 @@ def main(ret):
         args = args[:-1]
         import shutil
         for src in args:
-            log.debug("copying %s to %s" % (src, dest))
+            log.info("copying %s to %s" % (src, dest))
             if os.path.isdir(src):
                 shutil.copytree(src, dest)
             else:
@@ -735,7 +735,7 @@ def main(ret):
         import shutil
         for f in args:
             src = chroot.makeChrootPath(f)
-            log.debug("copying %s to %s" % (src, dest))
+            log.info("copying %s to %s" % (src, dest))
             if os.path.isdir(src):
                 shutil.copytree(src, dest)
             else:
