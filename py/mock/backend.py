@@ -138,8 +138,20 @@ class Root(object):
         self.tryLockBuildRoot()
         self.state("clean")
         self._callHooks('clean')
-        mock.util.rmtree(self.basedir, selinux=self.selinux)
+        self._unlock_and_rm_chroot()
         self.chrootWasCleaned = True
+
+    decorate(traceLog())
+    def _unlock_and_rm_chroot(self):
+        if not os.path.exists(self.basedir):
+            return
+        t = self.basedir + ".tmp"
+        if os.path.exists(t):
+            mock.util.rmtree(t, selinux=self.selinux)
+        os.rename(self.basedir, t)
+        self.buildrootLock.close()
+        mock.util.rmtree(t, selinux=self.selinux)
+        self.root_log.info("chroot (%s) unlocked and deleted" % self.basedir)
 
     decorate(traceLog())
     def scrub(self, scrub_opts):
@@ -149,11 +161,11 @@ class Root(object):
         self._callHooks('clean')
         for scrub in scrub_opts:
             if scrub == 'all':
-                mock.util.rmtree(self.basedir, selinux=self.selinux)
+                self._unlock_and_rm_chroot()
                 self.chrootWasCleaned = True
                 mock.util.rmtree(self.cachedir, selinux=self.selinux)
             elif scrub == 'chroot':
-                mock.util.rmtree(self.basedir, selinux=self.selinux)
+                self._unlock_and_rm_chroot()
                 self.chrootWasCleaned = True
             elif scrub == 'cache':
                 mock.util.rmtree(self.cachedir, selinux=self.selinux)
@@ -648,7 +660,7 @@ class Root(object):
         # may prevent clean unmount.
         for mountline in reversed(mountpoints):
             mountpoint = mountline.split()[1]
-            if os.path.realpath(mountpoint).startswith(os.path.realpath(self.makeChrootPath() + "/")):
+            if os.path.realpath(mountpoint).startswith(os.path.realpath(self.makeChrootPath()) + "/"):
                 cmd = "umount -n %s" % mountpoint
                 self.root_log.warning("Forcibly unmounting '%s' from chroot." % mountpoint)
                 mock.util.do(cmd, raiseExc=0, shell=True)
