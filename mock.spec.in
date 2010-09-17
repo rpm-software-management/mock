@@ -102,6 +102,18 @@ fi
 %attr(02775, root, mock) %dir /var/cache/mock
 
 %changelog
+* Fri Sep 17 2010 Clark Williams <williams@redhat.com> - 1.1.5-1
+- fix typo in exception.py
+- add cmpKernelEVR function to compare kernel versions (BZ# 526414)
+- change selinux plugin to use tempfilej
+- added commandline argument checking for --buildsrpm (BZ# 605800)
+- create empty faillog and lastlog in <chroot>/var/log (BZ# 585973 & 633435)
+- changed copyin/copyout prints from debug to info
+- from Alan Franzoni <mailing@franzoni.eu>:
+  - reworked the root object _umountall() method
+- fix epel4 chroot cleanup and umountall issue
+- add exception trapping code to _unlock_and_rm_chroot() method
+
 * Mon Aug 09 2010 Clark Williams <williams@redhat.com> - 1.1.4-1
 - pass selinux status to mock.util.rmtree() (BZ# 614440)
 - change integer constants to symbolic errno constants in util.py
