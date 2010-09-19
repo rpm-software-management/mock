@@ -513,7 +513,7 @@ class Root(object):
 
             rebuiltSrpmFile = glob.glob("%s/%s/SRPMS/*.src.rpm" % (self.makeChrootPath(), self.builddir))
             if len(rebuiltSrpmFile) != 1:
-                raise mock.exception.PkgError, "Didnt find single rebuilt srpm."
+                raise mock.exception.PkgError, "Expected to find single rebuilt srpm, found %d." % len(rebuiltSrpmFile)
 
             rebuiltSrpmFile = rebuiltSrpmFile[0]
             self.installSrpmDeps(rebuiltSrpmFile)
@@ -595,10 +595,8 @@ class Root(object):
                 )
 
             rebuiltSrpmFile = glob.glob("%s/%s/SRPMS/*.src.rpm" % (self.makeChrootPath(), self.builddir))
-            if len(rebuiltSrpmFile) == 0:
-                raise mock.exception.PkgError, "No rebuilt srpms found"
-            elif len(rebuiltSrpmFile) > 1:
-                raise mock.exception.PkgError, "Multiple rebuilt srpms found"
+            if len(rebuiltSrpmFile) != 1:
+                raise mock.exception.PkgError, "Expected to find single rebuilt srpm, found %d." % len(rebuiltSrpmFile)
 
             rebuiltSrpmFile = rebuiltSrpmFile[0]
 
