@@ -551,7 +551,7 @@ class Root(object):
     #
     decorate(traceLog())
     def buildsrpm(self, spec, sources, timeout):
-        """build an srpm into binary rpms, capture log"""
+        """build an srpm, capture log"""
 
         # tell caching we are building
         self._callHooks('earlyprebuild')
