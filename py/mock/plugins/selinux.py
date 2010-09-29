@@ -7,6 +7,10 @@
 import os
 import sys
 import tempfile
+import stat
+
+# permissions for the faux filesystems file
+perms = stat.S_IRUSR|stat.S_IRGRP|stat.S_IROTH
 
 # our imports
 from mock.trace_decorator import decorate, traceLog, getLog
@@ -36,7 +40,12 @@ class SELinux(object):
         self.rootObj = rootObj
         self.conf = conf
 
+        # create our faux filesystems file as a temp file
         (self.fd, self.filesystems) = tempfile.mkstemp(prefix="mock-selinux-plugin")
+
+        # allow read access for everyone
+        os.chmod(self.filesystems, perms)
+
         self.chrootFilesystems = rootObj.makeChrootPath("/proc/filesystems")
 
         rootObj.addHook("preinit", self._selinuxPreInitHook)
