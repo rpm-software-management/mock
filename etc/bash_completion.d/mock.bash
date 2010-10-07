@@ -63,7 +63,7 @@ _mock()
         return 0
     fi
 
-    COMPREPLY=( $( compgen -f -o plusdirs -X '!*.?(no)src.rpm' -- "$2" ) )
+    COMPREPLY=( $( compgen -f -o plusdirs -X '!*.@(?(no)src.r|s)pm' -- "$2" ) )
 } &&
 complete -F _mock -o filenames mock mock.py
 
