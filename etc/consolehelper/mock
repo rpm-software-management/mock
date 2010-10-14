@@ -2,3 +2,4 @@ USER=root
 PROGRAM=/usr/sbin/mock
 SESSION=false
 FALLBACK=false
+KEEP_ENV_VARS=COLUMNS
