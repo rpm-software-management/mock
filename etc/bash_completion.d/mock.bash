@@ -3,8 +3,6 @@
 _mock()
 {
     COMPREPLY=()
-
-    local plugins="tmpfs root_cache yum_cache bind_mount ccache"
     local cfgdir=/etc/mock
 
     local word count=0
@@ -47,7 +45,8 @@ _mock()
             return 0
             ;;
         --enable-plugin|--disable-plugin)
-            COMPREPLY=( $( compgen -W "$plugins" -- "$2" ) )
+            COMPREPLY=( $( compgen -W "$( $1 $3=DOES_NOT_EXIST 2>&1 | \
+                sed -ne "s/[\',]//g" -e 's/.*(\([^)]*\))/\1/p' )" -- "$2" ) )
             return 0
             ;;
         --scrub)
