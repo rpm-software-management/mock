@@ -20,7 +20,7 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 """
     usage:
-           mock [options] {--init|--clean}
+           mock [options] {--init|--clean|--scrub=[all,chroot,cache,root-cache,c-cache,yum-cache]}
            mock [options] [--rebuild] /path/to/srpm(s)
            mock [options] {--shell|--chroot} <cmd>
            mock [options] --installdeps {SRPM|RPM}
@@ -65,6 +65,10 @@ import mock.backend
 import mock.uid
 import mock.util
 
+def scrub_callback(option, opt, value, parser):
+    parser.values.scrub.append(value)
+    parser.values.mode = "clean"
+
 def command_parse(config_opts):
     """return options and args from parsing the command line"""
     parser = OptionParser(usage=__doc__, version=__VERSION__)
@@ -86,6 +90,12 @@ def command_parse(config_opts):
     parser.add_option("--clean", action="store_const", const="clean",
                       dest="mode",
                       help="completely remove the specified chroot")
+    scrub_choices = ('chroot', 'cache', 'root-cache', 'c-cache', 'yum-cache', 'all')
+    scrub_metavar = "[all|chroot|cache|root-cache|c-cache|yum-cache]"
+    parser.add_option("--scrub", action="callback", type="choice", default=[],
+                      choices=scrub_choices, metavar=scrub_metavar,
+                      callback=scrub_callback,
+                      help="completely remove the specified chroot or cache dir or all of the chroot and cache")
     parser.add_option("--init", action="store_const", const="init", dest="mode",
                       help="initialize the chroot, do not build anything")
     parser.add_option("--installdeps", action="store_const", const="installdeps",
@@ -162,10 +172,11 @@ def command_parse(config_opts):
                            " before running command when using --chroot")
 
     parser.add_option("--spec", action="store",
-                    help="Specifies spec file to use to build an SRPM (used only with --buildsrpm)")
+                      help="Specifies spec file to use to build an SRPM (used only with --buildsrpm)")
     parser.add_option("--sources", action="store",
-                    help="Specifies sources to use to build an SRPM (used only with --buildsrpm)")
-
+                      help="Specifies sources (either a single file or a directory of files)"
+                      "to use to build an SRPM (used only with --buildsrpm)")
+ 
     # verbosity
     parser.add_option("-v", "--verbose", action="store_const", const=2,
                       dest="verbose", default=1, help="verbose build")
@@ -193,6 +204,13 @@ def command_parse(config_opts):
             'rebuild', 'install', 'installdeps', 'init', 'clean'):
         options.mode = args[0]
         args = args[1:]
+
+    if options.mode == 'buildsrpm' and not (options.spec and options.sources):
+        raise mock.exception.BadCmdline, "Must specify both --spec and --sources with --buildsrpm"
+    if options.spec:
+        options.spec = os.path.expanduser(options.spec)
+    if options.sources:
+        options.sources = os.path.expanduser(options.sources)
 
     return (options, args)
 
@@ -232,7 +250,7 @@ def setup_default_config_opts(config_opts, unprivUid):
     #    root_cache next.
     #    after that, any plugins that must create dirs (yum_cache)
     #    any plugins without preinit hooks should be last.
-    config_opts['plugins'] = ('tmpfs', 'root_cache', 'yum_cache', 'bind_mount', 'ccache')
+    config_opts['plugins'] = ('tmpfs', 'root_cache', 'yum_cache', 'bind_mount', 'ccache', 'selinux')
     config_opts['plugin_dir'] = os.path.join(PKGPYTHONDIR, "plugins")
     config_opts['plugin_conf'] = {
             'ccache_enable': True,
@@ -258,7 +276,11 @@ def setup_default_config_opts(config_opts, unprivUid):
                 # ('/another/host/path', '/another/bind/mount/path/in/chroot/'),
                 ]},
             'tmpfs_enable': False,
-            'tmpfs_opts': {'required_ram_mb': 900},
+            'tmpfs_opts': {
+                'required_ram_mb': 900,
+                'max_fs_size': None},
+            'selinux_enable': True,
+            'selinux_opts': {},
             }
 
     # dependent on guest OS
@@ -350,6 +372,28 @@ def set_config_opts_per_cmdline(config_opts, options, args):
 
     config_opts['online'] = options.online
 
+legal_arches = {
+    'i386'   : ('i386', 'i586', 'i686'),
+    'i686'   : ('i386', 'i586', 'i686'),
+    'x86_64' : ('i386', 'i586', 'i686', 'x86_64'),
+    'ppc'    : ('ppc'),
+    'ppc64'  : ('ppc', 'ppc64'),
+    'sparc'  : ('sparc'),
+    'sparc64': ('sparc', 'sparc64'),
+    's390x'  : ('s390x'),
+}
+
+decorate(traceLog())
+def check_arch_combination(target_arch):
+    host_arch = os.uname()[-1]
+    try:
+        if target_arch not in legal_arches[host_arch] + ('noarch',):
+            raise mock.exception.InvalidArchitecture(
+                "Cannot build target %s on arch %s" % (target_arch, host_arch))
+    except KeyError:
+        raise mock.exception.InvalidArchitecture(
+            "Unknown target architcture: %s" % target_arch)
+        
 decorate(traceLog())
 def do_rebuild(config_opts, chroot, srpms):
     "rebuilds a list of srpms using provided chroot"
@@ -521,6 +565,9 @@ def main(ret):
     # cmdline options override config options
     set_config_opts_per_cmdline(config_opts, options, args)
 
+    # verify that we're not trying to build an arch that we can't
+    check_arch_combination(config_opts['rpmbuild_arch'])
+
     # default /etc/hosts contents
     if not config_opts['use_host_resolv'] and not config_opts['files'].has_key('etc/hosts'):
         config_opts['files']['etc/hosts'] = '''
@@ -564,7 +611,10 @@ def main(ret):
         chroot.init()
 
     elif options.mode == 'clean':
-        chroot.clean()
+        if len(options.scrub) == 0:
+            chroot.clean()
+        else:
+            chroot.scrub(options.scrub)
 
     elif options.mode == 'shell':
         chroot.tryLockBuildRoot()
@@ -653,7 +703,7 @@ def main(ret):
         args = args[:-1]
         import shutil
         for src in args:
-            log.debug("copying %s to %s" % (src, dest))
+            log.info("copying %s to %s" % (src, dest))
             if os.path.isdir(src):
                 shutil.copytree(src, dest)
             else:
@@ -673,7 +723,7 @@ def main(ret):
         import shutil
         for f in args:
             src = chroot.makeChrootPath(f)
-            log.debug("copying %s to %s" % (src, dest))
+            log.info("copying %s to %s" % (src, dest))
             if os.path.isdir(src):
                 shutil.copytree(src, dest)
             else:

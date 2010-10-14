@@ -86,7 +86,7 @@ class RootCache(object):
         except OSError:
             pass
 
-        # optimization: dont unpack root cache if chroot was not cleaned
+        # optimization: don't unpack root cache if chroot was not cleaned
         if os.path.exists(self.rootCacheFile) and self.rootObj.chrootWasCleaned:
             self.state("unpacking root cache")
             self._rootCacheLock()
@@ -95,8 +95,8 @@ class RootCache(object):
                 shell=False
                 )
             self._rootCacheUnlock()
-            self.chroot_setup_cmd = "update"
             self.rootObj.chrootWasCleaned = False
+            self.rootObj.chrootWasCached = True
 
     decorate(traceLog())
     def _rootCachePostInitHook(self):
@@ -106,6 +106,11 @@ class RootCache(object):
             for tmp in glob(self.rootObj.makeChrootPath('var/lib/rpm/__db*')):
                 os.unlink(tmp)
 
+            # truncate the sparse files in /var/log
+            for logfile in ('/var/log/lastlog', '/var/log/faillog'):
+                f = open(self.rootObj.makeChrootPath(logfile), "w")
+                f.truncate(0)
+                f.close()
             
             # never rebuild cache unless it was a clean build.
             if self.rootObj.chrootWasCleaned:
@@ -115,6 +120,11 @@ class RootCache(object):
                     mock.util.do(
                         ["tar"] + self.compressArgs + ["-cf", self.rootCacheFile,
                                                        "-C", self.rootObj.makeChrootPath(), 
+                                                       "--exclude=./proc",
+                                                       "--exclude=./sys",
+                                                       "--exclude=./dev",
+                                                       "--exclude=./tmp/ccache",
+                                                       "--exclude=./var/cache/yum",
                                                        "."],
                         shell=False
                         )

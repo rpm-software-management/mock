@@ -15,10 +15,10 @@ RELEASE_STRING = $(RELEASE_NAME)-$(RELEASE_VERSION)
 VERSION = $(RELEASE_VERSION)
 PACKAGE = $(RELEASE_NAME)
 
-CLEANFILES=mock-*.tar.gz mock-*.tar.bz2 mock-*.rpm _buildtemp version docs/daemontest
+CLEANFILES=mock-*.tar.gz mock-*.tar.bz2 mock-*.rpm _buildtemp version tests/daemontest
 DISTCLEANFILES=*~ mock-unit-test/* x86_64/* noarch/* i386/*
 
-TESTS=./docs/runtests.sh
+TESTS=./tests/runtests.sh
 $(TESTS): srpm
 
 EXTRA_DIST =
@@ -44,7 +44,9 @@ plugins_PYTHON = \
     py/mock/plugins/ccache.py     \
     py/mock/plugins/root_cache.py \
     py/mock/plugins/tmpfs.py \
-    py/mock/plugins/yum_cache.py
+    py/mock/plugins/yum_cache.py \
+    py/mock/plugins/selinux.py
+
 
 pkgpython_PYTHON = \
     py/mock/__init__.py        \
@@ -90,11 +92,7 @@ RPM_DEFINES = --define "_topdir $(TOPDIR)" \
     --define "_specdir $(SPECDIR)" \
     --define "_srcrpmdir $(SRCRPMDIR)"
 
-if USE_MD5
-RPMBUILD := rpmbuild-md5
-else
-RPMBUILD := rpmbuild
-endif
+RPMBUILD := $(shell if [ -e /usr/bin/rpmbuild-md5 ]; then echo rpmbuild-md5; else echo rpmbuild; fi)
 
 .PHONY: rpm srpm help
 rpm: dist
