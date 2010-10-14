@@ -102,6 +102,19 @@ fi
 %attr(02775, root, mock) %dir /var/cache/mock
 
 %changelog
+* Thu Oct 14 2010 Clark Williams <williams@redhat.com> - 1.1.6-1
+- replace call to perl with native python edit function
+- change permissions of selinux plugin 'filesystems' file
+- from Ville Skyttä <ville.skytta@iki.fi>:
+  - Find out completions for --*-plugin dynamically
+  - Keep $COLUMNS in consolehelper environment for --help formatting
+  - Document --scrub, --enable-plugin, and --disable-plugin
+  - Fix option name in --enable-plugin/--disable-plugin error string
+  - Add --scrub completion
+  - Complete on *.spm (*.src.rpm are sometimes named like that e.g. in SUSE)
+  - Fix buildsrpm() docstring
+  - Error message improvements
+
 * Fri Sep 17 2010 Clark Williams <williams@redhat.com> - 1.1.5-1
 - fix typo in exception.py
 - add cmpKernelEVR function to compare kernel versions (BZ# 526414)
