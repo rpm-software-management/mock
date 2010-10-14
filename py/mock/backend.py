@@ -508,7 +508,7 @@ class Root(object):
 
             rebuiltSrpmFile = glob.glob("%s/%s/SRPMS/*.src.rpm" % (self.makeChrootPath(), self.builddir))
             if len(rebuiltSrpmFile) != 1:
-                raise mock.exception.PkgError, "Didnt find single rebuilt srpm."
+                raise mock.exception.PkgError, "Expected to find single rebuilt srpm, found %d." % len(rebuiltSrpmFile)
 
             rebuiltSrpmFile = rebuiltSrpmFile[0]
             self.installSrpmDeps(rebuiltSrpmFile)
@@ -551,7 +551,7 @@ class Root(object):
     #
     decorate(traceLog())
     def buildsrpm(self, spec, sources, timeout):
-        """build an srpm into binary rpms, capture log"""
+        """build an srpm, capture log"""
 
         # tell caching we are building
         self._callHooks('earlyprebuild')
@@ -590,10 +590,8 @@ class Root(object):
                 )
 
             rebuiltSrpmFile = glob.glob("%s/%s/SRPMS/*.src.rpm" % (self.makeChrootPath(), self.builddir))
-            if len(rebuiltSrpmFile) == 0:
-                raise mock.exception.PkgError, "No rebuilt srpms found"
-            elif len(rebuiltSrpmFile) > 1:
-                raise mock.exception.PkgError, "Multiple rebuilt srpms found"
+            if len(rebuiltSrpmFile) != 1:
+                raise mock.exception.PkgError, "Expected to find single rebuilt srpm, found %d." % len(rebuiltSrpmFile)
 
             rebuiltSrpmFile = rebuiltSrpmFile[0]
 
@@ -698,9 +696,25 @@ class Root(object):
 
         self.doChroot(['/usr/sbin/groupadd', '-g', dets['gid'], dets['group']], shell=False)
         self.doChroot(self.useradd % dets, shell=True)
-        self.doChroot(
-            ["perl", "-p", "-i", "-e", 's/^(%s:)!!/$1/;' % self.chrootuser, "/etc/passwd"],
-            shell=False, raiseExc=True)
+        self._enable_chrootuser_account()
+
+    decorate(traceLog())
+    def _enable_chrootuser_account(self):
+        passwd = self.makeChrootPath('/etc/passwd')
+        lines = open(passwd).readlines()
+        disabled = False
+        newlines = []
+        for l in lines:
+            parts = l.strip().split(':')
+            if parts[0] == self.chrootuser and parts[1].startswith('!!'):
+                disabled = True
+                parts[1] = parts[1][2:]
+            newlines.append(':'.join(parts))
+        if disabled:
+            f = open(passwd, "w")
+            for l in newlines:
+                f.write(l+'\n')
+            f.close()
 
     decorate(traceLog())
     def _resetLogging(self):

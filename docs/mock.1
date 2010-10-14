@@ -54,7 +54,10 @@ Note that mock is not intended to be run directly as root.
 .LP
 .TP
 \fB\-\-clean\fP
-Purge the chroot tree
+Purge the chroot tree.
+.TP
+\fB\-\-scrub=\fR\fITYPE\fP
+Completely remove the specified chroot or cache dir or all of the chroot and cache.  \fITYPE\fR is one of all, chroot, cache, root-cache, c-cache, or yum-cache.
 .TP
 \fB\-\-init\fP
 Initialize a chroot (clean, install chroot packages, etc.)
@@ -159,6 +162,12 @@ Output verbose progress information.
 .TP
 \fB\-\-trace\fR
 Enables verbose tracing of function enter/exit with function arguments and return codes. Useful for debugging mock itself.
+.TP
+\fB\-\-enable\-plugin=\fR\fIPLUGIN\fP
+Enable the specified plugin.  This option may be used multiple times.
+.TP
+\fB\-\-disable\-plugin=\fR\fIPLUGIN\fP
+Disable the specified plugin.  This option may be used multiple times.
 .TP
 \fB\-h\fR, \fB\-\-help\fR
 Show usage information and exit.
