@@ -50,16 +50,22 @@ _mock()
             COMPREPLY=( $( compgen -W "$plugins" -- "$2" ) )
             return 0
             ;;
+        --scrub)
+            COMPREPLY=( $( compgen -W "all chroot cache root-cache c-cache
+                yum-cache" -- "$2" ) )
+            return 0
+            ;;
     esac
 
     if [[ "$2" == -* ]] ; then
         COMPREPLY=( $( compgen -W "--version --help --rebuild --buildsrpm
-            --shell --chroot --clean --init --installdeps --install --update
-            --orphanskill --copyin --copyout --root --offline --no-clean
-            --cleanup-after --no-cleanup-after --arch --target --define --with
-            --without --resultdir --uniqueext --configdir --rpmbuild_timeout
-            --unpriv --cwd --spec --sources --verbose --quiet --trace
-            --enable-plugin --disable-plugin --print-root-path" -- "$2" ) )
+            --shell --chroot --clean --scrub --init --installdeps --install
+            --update --orphanskill --copyin --copyout --root --offline
+            --no-clean --cleanup-after --no-cleanup-after --arch --target
+            --define --with --without --resultdir --uniqueext --configdir
+            --rpmbuild_timeout --unpriv --cwd --spec --sources --verbose
+            --quiet --trace --enable-plugin --disable-plugin
+            --print-root-path" -- "$2" ) )
         return 0
     fi
 
