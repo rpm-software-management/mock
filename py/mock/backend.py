@@ -69,6 +69,7 @@ class Root(object):
         self.chroot_file_contents = config['files']
         self.chroot_setup_cmd = config['chroot_setup_cmd']
         self.yum_path = '/usr/bin/yum'
+        self.yum_builddep_path = '/usr/bin/yum-builddep'
         self.macros = config['macros']
         self.more_buildreqs = config['more_buildreqs']
         self.cache_topdir = config['cache_topdir']
@@ -439,23 +440,28 @@ class Root(object):
         """figure out deps from srpm. call yum to install them"""
         try:
             self.uidManager.becomeUser(0, 0)
-            arg_string = self.preExistingDeps
-            for hdr in mock.util.yieldSrpmHeaders(srpms, plainRpmOk=1):
-                # get text buildreqs
-                a = mock.util.requiresTextFromHdr(hdr)
-                b = mock.util.getAddtlReqs(hdr, self.more_buildreqs)
-                for item in mock.util.uniqReqs(a, b):
-                    arg_string = arg_string + " '%s'" % item
 
-            # everything exists, okay, install them all.
-            # pass build reqs (as strings) to installer
-            if arg_string != "":
-                output = self._yum('resolvedep %s' % arg_string, returnOutput=1)
+            def _yum_and_check(cmd):
+                output = self._yum(cmd, returnOutput=1)
                 for line in output.split('\n'):
                     if line.lower().find('No Package found for'.lower()) != -1:
                         raise mock.exception.BuildError, "Bad build req: %s. Exiting." % line
+
+            # first, install pre-existing deps and configured additional ones
+            arg_string = self.preExistingDeps
+            for hdr in mock.util.yieldSrpmHeaders(srpms, plainRpmOk=1):
+                # get text buildreqs
+                for item in mock.util.getAddtlReqs(hdr, self.more_buildreqs):
+                    arg_string = arg_string + " '%s'" % item
+            if arg_string != "":
+                # everything exists, okay, install them all.
+                # pass build reqs (as strings) to installer
+                _yum_and_check('resolvedep %s' % arg_string)
                 # nothing made us exit, so we continue
                 self._yum('install %s' % arg_string, returnOutput=1)
+
+            # install actual build dependencies
+            _yum_and_check("builddep '%s'" % "' '".join(srpms))
         finally:
             self.uidManager.restorePrivs()
 
@@ -673,7 +679,12 @@ class Root(object):
         if not self.online:
             cmdOpts = "-C"
 
-        cmd = '%s --installroot %s %s %s' % (self.yum_path, self.makeChrootPath(), cmdOpts, cmd)
+        # invoke yum-builddep instead of yum if cmd is builddep
+        exepath = self.yum_path
+        if cmd.startswith("builddep "):
+            exepath = self.yum_builddep_path
+            cmd = cmd[len("builddep "):]
+        cmd = '%s --installroot %s %s %s' % (exepath, self.makeChrootPath(), cmdOpts, cmd)
         self.root_log.debug(cmd)
         output = ""
         try:
