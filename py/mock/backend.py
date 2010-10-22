@@ -524,6 +524,8 @@ class Root(object):
             # tell caching we are building
             self._callHooks('prebuild')
 
+            # --nodeps because rpm in the root may not be able to read rpmdb
+            # created by rpm that created it (outside of chroot)
             self.doChroot(
                 ["bash", "--login", "-c", 'rpmbuild -bb --target %s --nodeps %s' % (self.rpmbuild_arch, chrootspec)],
                 shell=False,
