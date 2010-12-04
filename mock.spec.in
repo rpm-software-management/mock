@@ -22,7 +22,7 @@ Requires: python >= 2.4, yum >= 2.4, yum-utils >= 1.1.9, tar, pigz, python-ctype
 Requires: createrepo
 Requires(pre): shadow-utils
 BuildRequires: python-devel
-%if "%{?dist}" == ".el5"
+%if 0%{?el5}
 Requires: python-hashlib
 %endif
 
