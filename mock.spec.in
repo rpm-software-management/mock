@@ -21,6 +21,7 @@ BuildArch: noarch
 Requires: python >= 2.4, yum >= 2.4, yum-utils >= 1.1.9, tar, pigz, python-ctypes, python-decoratortools, usermode
 Requires: createrepo
 Requires(pre): shadow-utils
+Requires(post): coreutils
 BuildRequires: python-devel
 %if 0%{?el5}
 Requires: python-hashlib
@@ -58,6 +59,10 @@ ln -s fedora-rawhide-x86_64.cfg fedora-devel-x86_64.cfg
 ln -s fedora-rawhide-ppc.cfg fedora-devel-ppc.cfg
 ln -s fedora-rawhide-ppc64.cfg fedora-devel-ppc64.cfg
 popd
+find $RPM_BUILD_ROOT%{_sysconfdir}/mock -name "*.cfg" \
+    | sed -e "s|^$RPM_BUILD_ROOT|%%config(noreplace) |" > %{name}.cfgs
+# just for %%ghosting purposes
+ln -s fedora-rawhide-x86_64.cfg $RPM_BUILD_ROOT%{_sysconfdir}/mock/default.cfg
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -67,7 +72,21 @@ if [ $1 -eq 1 ]; then
     groupadd -r mock >/dev/null 2>&1 || :
 fi
 
-%files
+%post
+# TODO: use dist and version of install system, not build one
+if [ ! -e %{_sysconfdir}/%{name}/default.cfg ] ; then
+    arch=$(uname -i)
+    for ver in %{?fedora}%{?rhel} rawhide ; do
+        cfg=%{?fedora:fedora}%{?rhel:epel}-$ver-$arch.cfg
+        if [ -e %{_sysconfdir}/%{name}/$cfg ] ; then
+            ln -s $cfg %{_sysconfdir}/%{name}/default.cfg
+            exit 0
+        fi
+    done
+fi
+:
+
+%files -f %{name}.cfgs
 %defattr(-, root, root)
 
 # executables
@@ -79,7 +98,7 @@ fi
 
 # config files
 %dir  %{_sysconfdir}/%{name}
-%config(noreplace) %{_sysconfdir}/%{name}/*.cfg
+%ghost %config(noreplace,missingok) %{_sysconfdir}/%{name}/default.cfg
 %config(noreplace) %{_sysconfdir}/%{name}/*.ini
 %config(noreplace) %{_sysconfdir}/pam.d/%{name}
 %config(noreplace) %{_sysconfdir}/security/console.apps/%{name}
