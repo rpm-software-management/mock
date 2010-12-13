@@ -474,8 +474,33 @@ def do_buildsrpm(config_opts, chroot, options, args):
             chroot.clean()
         raise
 
+def rootcheck():
+    "verify mock was started correctly (either by sudo or consolehelper)"
+    # if we're root due to sudo or consolehelper, we're ok
+    # if not raise an exception and bail
+    if os.getuid() == 0 and not (os.environ.get("SUDO_UID") or os.environ.get("USERHELPER_UID")):
+        raise RuntimeError, "mock will not run from the root account (needs an unprivledged uid so it can drop privs)"
+
+def groupcheck():
+    "verify that the user running mock is part of the mock group"
+    # verify that we're in the mock group (so all our uid/gid manipulations work)
+    inmockgrp = False
+    members = []
+    for g in os.getgroups():
+        name = grp.getgrgid(g).gr_name
+        members.append(name)
+        if name == "mock":
+            inmockgrp = True
+            break
+    if not inmockgrp:
+        raise RuntimeError, "Must be member of 'mock' group to run mock! (%s)" % members
+
 def main(ret):
     "Main executable entry point."
+
+    # initial sanity check for correct invocation method
+    rootcheck()
+
     # drop unprivleged to parse args, etc.
     #   uidManager saves current real uid/gid which are unpriviledged (callers)
     #   due to suid helper, our current effective uid is 0
@@ -509,6 +534,9 @@ def main(ret):
     # go unpriv only when root to make --help etc work for non-mock users
     if os.geteuid() == 0:
         uidManager._becomeUser(unprivUid, unprivGid)
+
+    # verify that our unprivledged uid is in the mock group
+    groupcheck()
 
     # defaults
     config_opts = {}
