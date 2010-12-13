@@ -125,27 +125,6 @@ def yieldSrpmHeaders(srpms, plainRpmOk=0):
         yield hdr
 
 decorate(traceLog())
-def requiresTextFromHdr(hdr):
-    """take a header and hand back a unique'd list of the requires as
-       strings"""
-
-    reqlist = []
-    names = hdr[rpm.RPMTAG_REQUIRENAME]
-    flags = hdr[rpm.RPMTAG_REQUIREFLAGS]
-    ver = hdr[rpm.RPMTAG_REQUIREVERSION]
-    if names is not None:
-        tmplst = zip(names, flags, ver)
-
-    for (n, f, v) in tmplst:
-        if n.startswith('rpmlib'):
-            continue
-
-        req = rpmUtils.miscutils.formatRequire(n, v, f)
-        reqlist.append(req)
-
-    return rpmUtils.miscutils.unique(reqlist)
-
-decorate(traceLog())
 def getNEVRA(hdr):
     name = hdr[rpm.RPMTAG_NAME]
     ver  = hdr[rpm.RPMTAG_VERSION]
@@ -179,13 +158,6 @@ def getAddtlReqs(hdr, conf):
             break
 
     return rpmUtils.miscutils.unique(reqlist)
-
-decorate(traceLog())
-def uniqReqs(*args):
-    master = []
-    for l in args:
-        master.extend(l)
-    return rpmUtils.miscutils.unique(master)
 
 # not traced...
 def chomp(line):
