@@ -384,15 +384,15 @@ legal_arches = {
 }
 
 decorate(traceLog())
-def check_arch_combination(target_arch):
-    host_arch = os.uname()[-1]
+def check_arch_combination(target_arch, config_opts):
     try:
-        if target_arch not in legal_arches[host_arch] + ('noarch',):
-            raise mock.exception.InvalidArchitecture(
-                "Cannot build target %s on arch %s" % (target_arch, host_arch))
+        legal = config_opts['legal_host_arches']
     except KeyError:
+        return
+    host_arch = os.uname()[-1]
+    if host_arch not in legal:
         raise mock.exception.InvalidArchitecture(
-            "Unknown target architcture: %s" % target_arch)
+            "Cannot build target %s on arch %s" % (target_arch, host_arch))
         
 decorate(traceLog())
 def do_rebuild(config_opts, chroot, srpms):
@@ -594,7 +594,7 @@ def main(ret):
     set_config_opts_per_cmdline(config_opts, options, args)
 
     # verify that we're not trying to build an arch that we can't
-    check_arch_combination(config_opts['rpmbuild_arch'])
+    check_arch_combination(config_opts['rpmbuild_arch'], config_opts)
 
     # default /etc/hosts contents
     if not config_opts['use_host_resolv'] and not config_opts['files'].has_key('etc/hosts'):
