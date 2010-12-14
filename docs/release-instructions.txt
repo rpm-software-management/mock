@@ -72,19 +72,26 @@ In the fedora git (koji) tree
        $ fedpkg build --notwait
    7) switch branches to the latest released fedora
        $ fedpkg switch-branch f14
-   8) repeat steps 2 through 6 for the new branch
-   9) repeat for all supported fedora releases and EPEL releases
+              or
+       $ git checkout f14
+   8) merge master into the current release
+       $ git merge master
+      if there are conflicts, resolve and commit
+   9) initiate a build for the branch
+       $ fedpkg build --nowait
+   10) repeat steps 8 and 9 for all supported fedora releases and EPEL releases
       (e.g. f14, f13, el6)
 
-At this point you should push the just built packages to their
-respective testing repositories. This can be done either with the
-Bodhi WebUI at https://admin.fedoraproject.org/updates/ or if there
-are no other package dependencies, using the 'make update' target of
-the CVS Makefile. Note that you do not need to do this for the devel
-branch since it automatically gets pushed to testing.
+Once the builds finish (successfully) you should push the just built
+packages to their respective testing repositories. This can be done
+either with the Bodhi WebUI at
+https://admin.fedoraproject.org/updates/ or if there are no other
+package dependencies, using the 'fedpkg update' command. 
+Note that you do not need to do this for the master (rawhide) branch
+since it automatically gets pushed to testing.  
 
 =====================================================================
-For a mock 1.0 release
+For a mock 1.0 release (now only for EL5)
 
 In the git tree:
 
@@ -107,7 +114,7 @@ In the git tree:
    8) run 'make rpm' to generate binary RPM and propagate version
       changes (Note this also generates a tar file for use later).
    9) verify that docs/runtests.sh uses a supported config file
-      (i.e. epel5 or F11/F12). If not, edit and commit
+      (i.e. epel5 or latest released Fedora). If not, edit and commit
   10) run 'make check' and fix any reported failures until it passes
   11) check in any changes from above
   12) remove ChangeLog and AUTHORS
@@ -117,11 +124,11 @@ In the git tree:
      $ git commit -m 'version bump' configure.ac
   15) tag the git tree:
      $ git tag -u <your key> mock-<version>
-  16) checkout master and merge your work directory:
-      $ git checkout master
+  16) checkout mock-1.0 and merge your work directory:
+      $ git checkout mock-1.0
       $ git merge prerelease
-  16) push to main git repo (only from master branch):
-     $ git push --tags origin master  
+  16) push to main git repo:
+     $ git push --tags origin mock-1.0
 
 In the fedora git (koji) tree
 
