@@ -27,6 +27,7 @@
            mock [options] --install PACKAGE
            mock [options] --copyin path [..path] destination
            mock [options] --copyout path [..path] destination
+           mock [options] --scm-enable [--scm-option key=value]
 """
 
 # library imports
@@ -62,6 +63,7 @@ log = logging.getLogger()
 import mock.exception
 from mock.trace_decorator import traceLog, decorate
 import mock.backend
+import mock.scm
 import mock.uid
 import mock.util
 
@@ -199,6 +201,14 @@ def command_parse(config_opts):
                       dest="printrootpath", action="store_true",
                       default=False)
 
+    # SCM options
+    parser.add_option("--scm-enable", help="build from SCM repository",
+                      dest="scm", action="store_true",
+                      default=None)
+    parser.add_option("--scm-option", action="append", dest="scm_opts",
+                      default=[], type="string",
+                      help="define an SCM option (may be used more than once)")
+
     (options, args) = parser.parse_args()
     if len(args) and args[0] in ('chroot', 'shell',
             'rebuild', 'install', 'installdeps', 'init', 'clean'):
@@ -206,7 +216,8 @@ def command_parse(config_opts):
         args = args[1:]
 
     if options.mode == 'buildsrpm' and not (options.spec and options.sources):
-        raise mock.exception.BadCmdline, "Must specify both --spec and --sources with --buildsrpm"
+        if not options.scm:
+            raise mock.exception.BadCmdline, "Must specify both --spec and --sources with --buildsrpm"
     if options.spec:
         options.spec = os.path.expanduser(options.spec)
     if options.sources:
@@ -296,6 +307,17 @@ def setup_default_config_opts(config_opts, unprivUid):
         config_opts['plugin_conf'][runtime_plugin + "_enable"] = False
         config_opts['plugin_conf'][runtime_plugin + "_opts"] = {}
     
+    # SCM defaults
+    config_opts['scm'] = False
+    config_opts['scm_opts'] = {
+            'method': 'git',
+            'cvs_get': 'cvs -d /srv/cvs co SCM_BRN SCM_PKG',
+            'git_get': 'git clone SCM_BRN git://localhost/SCM_PKG.git SCM_PKG',
+            'svn_get': 'svn co file:///srv/svn/SCM_PKG/SCM_BRN SCM_PKG',
+            'ext_src_dir': '/dev/null',
+            'write_tar': False,
+            }
+
     # dependent on guest OS
     config_opts['useradd'] = \
         '/usr/sbin/useradd -o -m -u %(uid)s -g %(gid)s -d %(home)s -n %(user)s'
@@ -387,6 +409,17 @@ def set_config_opts_per_cmdline(config_opts, options, args):
 
     config_opts['online'] = options.online
 
+    if options.scm:
+        config_opts['scm'] = options.scm
+        for option in options.scm_opts:
+            try:
+                k, v = option.split("=", 1)
+                config_opts['scm_opts'].update({k: v})
+            except:
+                raise mock.exception.BadCmdline(
+                "Bad option for '--scm-option' (%s).  Use --scm-option 'key=value'"
+                % option)
+
 legal_arches = {
     'i386'   : ('i386', 'i586', 'i686'),
     'i686'   : ('i386', 'i586', 'i686'),
@@ -425,7 +458,8 @@ def do_rebuild(config_opts, chroot, srpms):
         for srpm in srpms:
             start = time.time()
             log.info("Start(%s)  Config(%s)" % (srpm, chroot.sharedRootName))
-            if config_opts['clean'] and chroot.state() != "clean":
+            if config_opts['clean'] and chroot.state() != "clean" \
+               and not config_opts['scm']:
                 chroot.clean()
             chroot.init()
             chroot.build(srpm, timeout=config_opts['rpmbuild_timeout'])
@@ -465,8 +499,7 @@ def do_buildsrpm(config_opts, chroot, options, args):
             chroot.clean()
         chroot.init()
 
-        chroot.buildsrpm(spec=options.spec, sources=options.sources, timeout=config_opts['rpmbuild_timeout'])
-
+        srpm = chroot.buildsrpm(spec=options.spec, sources=options.sources, timeout=config_opts['rpmbuild_timeout']
         elapsed = time.time() - start
         log.info("Done(%s) Config(%s) %d minutes %d seconds"
             % (os.path.basename(options.spec), config_opts['chroot_name'], elapsed//60, elapsed%60))
@@ -475,6 +508,8 @@ def do_buildsrpm(config_opts, chroot, options, args):
         if config_opts["cleanup_on_success"]:
             log.info("Cleaning up build root ('clean_on_success=True')")
             chroot.clean()
+
+        return srpm
 
     except (Exception, KeyboardInterrupt):
         elapsed = time.time() - start
@@ -600,6 +635,7 @@ def main(ret):
         log.error("Log config file (%s) missing required section: %s" % (log_ini, exc))
         sys.exit(50)
 
+    # set logging verbosity
     if options.verbose == 0:
         log.handlers[0].setLevel(logging.WARNING)
         logging.getLogger("mock.Root.state").handlers[0].setLevel(logging.WARNING)
@@ -610,6 +646,7 @@ def main(ret):
         logging.getLogger("mock.Root.build").propagate = 1
         logging.getLogger("mock").propagate = 1
 
+    # enable tracing if requested
     logging.getLogger("trace").propagate=0
     if options.trace:
         logging.getLogger("trace").propagate=1
@@ -626,6 +663,7 @@ def main(ret):
 127.0.0.1 localhost localhost.localdomain
 ::1       localhost localhost.localdomain localhost6 localhost6.localdomain6
 '''
+
     # elevate privs
     uidManager._becomeUser(0, 0)
 
@@ -656,6 +694,13 @@ def main(ret):
     # set personality (ie. setarch)
     if config_opts['internal_setarch']:
         mock.util.condPersonality(config_opts['target_arch'])
+
+    # Fetch and prepare sources from SCM
+    if config_opts['scm']:
+        scmWorker = mock.scm.scmWorker(log, config_opts['scm_opts'], chroot.__dict__['selinux'])
+        chroot.addHook('postbuild', scmWorker.clean)
+        scmWorker.get_sources()
+        (options.sources, options.spec) = scmWorker.prepare_sources()
 
     if options.mode == 'init':
         if config_opts['clean']:
@@ -734,6 +779,10 @@ def main(ret):
         chroot.yumUpdate()
 
     elif options.mode == 'rebuild':
+        if config_opts['scm']:
+            srpm = do_buildsrpm(config_opts, chroot, options, args)
+            if srpm:
+                args.append(srpm)
         do_rebuild(config_opts, chroot, args)
 
     elif options.mode == 'buildsrpm':
