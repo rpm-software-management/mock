@@ -602,9 +602,12 @@ class Root(object):
                 raise mock.exception.PkgError, "Expected to find single rebuilt srpm, found %d." % len(rebuiltSrpmFile)
 
             rebuiltSrpmFile = rebuiltSrpmFile[0]
+            srpmBasename = rebuiltSrpmFile.split("/")[-1]
 
             self.root_log.debug("Copying package to result dir")
             shutil.copy2(rebuiltSrpmFile, self.resultdir)
+
+            resultSrpmFile = self.resultdir + "/" + srpmBasename
 
         finally:
             self.uidManager.restorePrivs()
@@ -613,6 +616,10 @@ class Root(object):
             # tell caching we are done building
             self._callHooks('postbuild')
 
+            try:
+                return resultSrpmFile
+            except:
+                return None
 
 
 
