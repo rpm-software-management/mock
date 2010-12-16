@@ -40,7 +40,7 @@ import pwd
 import sys
 import time
 from optparse import OptionParser
-from socket import gethostname
+from glob import glob
 
 # all of the variables below are substituted by the build system
 __VERSION__ = "unreleased_version"
@@ -250,7 +250,7 @@ def setup_default_config_opts(config_opts, unprivUid):
     #    root_cache next.
     #    after that, any plugins that must create dirs (yum_cache)
     #    any plugins without preinit hooks should be last.
-    config_opts['plugins'] = ('tmpfs', 'root_cache', 'yum_cache', 'bind_mount', 'ccache', 'selinux')
+    config_opts['plugins'] = ['tmpfs', 'root_cache', 'yum_cache', 'bind_mount', 'ccache', 'selinux']
     config_opts['plugin_dir'] = os.path.join(PKGPYTHONDIR, "plugins")
     config_opts['plugin_conf'] = {
             'ccache_enable': True,
@@ -283,6 +283,17 @@ def setup_default_config_opts(config_opts, unprivUid):
             'selinux_opts': {},
             }
 
+    runtime_plugins = [runtime_plugin 
+                       for (runtime_plugin, _)
+                       in [os.path.splitext(os.path.basename(tmp_path))
+                           for tmp_path
+                           in glob(config_opts['plugin_dir'] + "/*.py")]
+                       if runtime_plugin not in config_opts['plugins']]
+    for runtime_plugin in sorted(runtime_plugins):
+        config_opts['plugins'].append(runtime_plugin)
+        config_opts['plugin_conf'][runtime_plugin + "_enable"] = False
+        config_opts['plugin_conf'][runtime_plugin + "_opts"] = {}
+    
     # dependent on guest OS
     config_opts['useradd'] = \
         '/usr/sbin/useradd -o -m -u %(uid)s -g %(gid)s -d %(home)s -n %(user)s'
