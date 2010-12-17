@@ -57,7 +57,8 @@ pkgpython_PYTHON = \
     py/mock/util.py            \
     py/mock/backend.py         \
     py/mock/trace_decorator.py \
-    py/mock/uid.py
+    py/mock/uid.py             \
+    py/mock/scm.py
 
 CLEANFILES += py/*.pyc py/mock/*.pyc py/mock/plugins/*.pyc
 
