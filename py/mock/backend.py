@@ -716,7 +716,8 @@ class Root(object):
         mock.util.rmtree(self.makeChrootPath(self.homedir), selinux=self.selinux)
         dets = { 'uid': str(self.chrootuid), 'gid': str(self.chrootgid), 'user': self.chrootuser, 'group': self.chrootgroup, 'home': self.homedir }
 
-        self.doChroot(['/usr/sbin/userdel', '-r', dets['user']], shell=False, raiseExc=False)
+        # ok for these two to fail
+        self.doChroot(['/usr/sbin/userdel', '-r', '-f', dets['user']], shell=False, raiseExc=False)
         self.doChroot(['/usr/sbin/groupdel', dets['group']], shell=False, raiseExc=False)
 
         self.doChroot(['/usr/sbin/groupadd', '-g', dets['gid'], dets['group']], shell=False)
