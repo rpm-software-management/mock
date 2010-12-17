@@ -199,29 +199,26 @@ Show version number and exit.
 \fI/var/lib/mock\fP \- directory where chroots are created
 .SH "EXAMPLES"
 .LP
-To rebuild test.src.rpm under the default chroot.
-The output RPMs will be placed under /var/lib/mock/CHROOT/results/ by default.
+To rebuild test.src.rpm using the Fedora 14 configuration for x86_64
 .LP
 .RS 5
-\fBmock --rebuild /path/to/your.src.rpm\fR
+\fBmock -r fedora-14-x86_64 --rebuild /path/to/test.src.rpm
 .RE
 .LP
-To specify a different chroot, which must be defined in /etc/mock/. The argument to \-r is the name of the file in /etc/mock without the trailing .cfg.
+Note that the available configurations are found in the /etc/mock
+directory with the extension .cfg. To specify a configuration use the
+filename without the trailing .cfg extension.
+.LP
+To place the output RPMs and logs in a specified location.
 .LP
 .RS 5
-\fBmock \-r fedora\-8\-i386 --rebuild /path/to/your.src.rpm\fR
-.RE
-.LP
-To specify a different chroot and place the output RPMs and logs in a specified location.
-.LP
-.RS 5
-\fBmock \-r fedora\-8\-i386 --resultdir=./my-results /path/to/your.src.rpm\fR
+\fBmock \-r fedora\-14\-i386 --resultdir=./my-results /path/to/your.src.rpm\fR
 .RE
 .LP
 To build a package from the default SCM repository configured in site-defauts.cfg use the following arguments.
 .LP
 .RS 5
-\fBmock \-r fedora\-8\-i386 --scm-enable --scm-option package=pkg\fR
+\fBmock \-r fedora\-14\-i386 --scm-enable --scm-option package=pkg\fR
 .RE
 .SH "BUGS"
 .LP
