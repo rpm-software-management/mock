@@ -342,7 +342,7 @@ class Root(object):
         try:
             self._mountall()
             if self.chrootWasCleaned:
-                self._yum(self.chroot_setup_cmd, returnOutput=1)
+                self.yum_init_install_output = self._yum(self.chroot_setup_cmd, returnOutput=1)
             if self.chrootWasCached:
                 self._yum('update', returnOutput=1)
 

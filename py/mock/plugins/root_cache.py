@@ -132,5 +132,9 @@ class RootCache(object):
                     if os.path.exists(self.rootCacheFile):
                         os.remove(self.rootCacheFile)
                     raise
+                # now create the cache log file
+                l = open(os.path.join(self.rootSharedCachePath, "cache.log"), "w")
+                l.write(self.rootObj.yum_init_install_output)
+                l.close()
         finally:
             self._rootCacheUnlock()
