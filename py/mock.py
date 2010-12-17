@@ -22,6 +22,7 @@
     usage:
            mock [options] {--init|--clean|--scrub=[all,chroot,cache,root-cache,c-cache,yum-cache]}
            mock [options] [--rebuild] /path/to/srpm(s)
+           mock [options] --buildsrpm {--spec /path/to/spec --sources /path/to/src|--scm-enable [--scm-option key=value]}
            mock [options] {--shell|--chroot} <cmd>
            mock [options] --installdeps {SRPM|RPM}
            mock [options] --install PACKAGE
@@ -81,7 +82,7 @@ def command_parse(config_opts):
                       help="rebuild the specified SRPM(s)")
     parser.add_option("--buildsrpm", action="store_const", const="buildsrpm",
                       dest="mode",
-                      help="Build a SRPM from spec (--spec ...) and sources (--sources ...)")
+                      help="Build a SRPM from spec (--spec ...) and sources (--sources ...) or from SCM")
     parser.add_option("--shell", action="store_const",
                       const="shell", dest="mode",
                       help="run the specified command interactively within the chroot."
@@ -455,7 +456,7 @@ def do_rebuild(config_opts, chroot, srpms):
             start = time.time()
             log.info("Start(%s)  Config(%s)" % (srpm, chroot.sharedRootName))
             if config_opts['clean'] and chroot.state() != "clean" \
-               and not config_opts['scm']:
+                    and not config_opts['scm']:
                 chroot.clean()
             chroot.init()
             chroot.build(srpm, timeout=config_opts['rpmbuild_timeout'])
@@ -488,7 +489,7 @@ def do_buildsrpm(config_opts, chroot, options, args):
             chroot.clean()
         chroot.init()
 
-        srpm = chroot.buildsrpm(spec=options.spec, sources=options.sources, timeout=config_opts['rpmbuild_timeout']
+        srpm = chroot.buildsrpm(spec=options.spec, sources=options.sources, timeout=config_opts['rpmbuild_timeout'])
         elapsed = time.time() - start
         log.info("Done(%s) Config(%s) %d minutes %d seconds"
             % (os.path.basename(options.spec), config_opts['chroot_name'], elapsed//60, elapsed%60))

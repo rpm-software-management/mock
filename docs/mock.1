@@ -6,6 +6,8 @@ mock \- build SRPMs in a chroot
 .LP
 mock  [options] \fB\-\-rebuild\fR \fISRPM [\fISRPM...\fR]
 .LP
+mock  [options] \fB\-\-buildsrpm\fR {--spec \fIspec\fR --sources \fIsrc\fR | --scm-enable}
+.LP
 mock  [options] \fB\-\-chroot\fR \fI<cmd>\fR
 .LP
 mock  [options] {\fB\-\-init\fR|\fBclean\fR|\fBshell\fR}
@@ -21,6 +23,8 @@ mock  [options] \fB\-\-orphanskill\fR
 mock  [options] \fB\-\-copyin\fR \fIpath [\fIpath...\fR] \fIdestination\fR
 .LP
 mock  [options] \fB\-\-copyout\fR \fIpath [\fIpath...\fR] \fIdestination\fR
+.LP
+mock  [options] \fB\-\-scm-enable\fR [\fI--scm-option key=value ...\fR]
 
 .SH "DESCRIPTION"
 .LP
@@ -65,6 +69,9 @@ Initialize a chroot (clean, install chroot packages, etc.)
 \fB\-\-rebuild\fP
 If no command is specified, rebuild is assumed. Rebuilds the specified SRPM(s). The buildroot is cleaned first, unless --no-clean is specified.
 .TP
+\fB\-\-buildsrpm\fP
+Builds the specified SRPM either from a spec file and source file/directory or from SCM. The buildroot is cleaned first, unless --no-clean is specified.
+.TP
 \fB\-\-shell\fP
 Run the specified command interactively within the chroot (which must already be initialized -- no 'clean' is performed). If no command specified, /bin/sh is run.
 .TP
@@ -90,7 +97,16 @@ the specified destination path.
 \fB\-\-copyout\fP
 Copies the source paths (files or directory trees) from the chroot to
 the specified destination path. 
-
+.TP
+\fB\-\-scm-enable\fP
+Enable building from an SCM (CVS/Git/SVN). The SCM repository must be
+configured in site-defaults.cfg before SCM checkouts are possible. SCM
+package and branch can be defined with \fB\-\-scm-option\fP arguments,
+see site-defaults.cfg for more information. The spec file must be
+available as pkg/pkg.spec in SCM. \fBNote!\fP Currently building from
+SCM is incompatible with the SELinux plugin, you'll need either disable
+the SELinux plugin in the configuration file or use
+\fB\-\-disable\-plugin=selinux\fP.
 
 
 .SH "OPTIONS"
@@ -200,6 +216,12 @@ To specify a different chroot and place the output RPMs and logs in a specified 
 .LP
 .RS 5
 \fBmock \-r fedora\-8\-i386 --resultdir=./my-results /path/to/your.src.rpm\fR
+.RE
+.LP
+To build a package from the default SCM repository configured in site-defauts.cfg use the following arguments.
+.LP
+.RS 5
+\fBmock \-r fedora\-8\-i386 --scm-enable --scm-option package=pkg\fR
 .RE
 .SH "BUGS"
 .LP
