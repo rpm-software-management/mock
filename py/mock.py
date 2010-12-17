@@ -731,6 +731,7 @@ def main(ret):
 
         finally:
             chroot._umountall()
+        chroot.unlockBuildRoot()
 
     elif options.mode == 'chroot':
         shell=False
@@ -753,6 +754,7 @@ def main(ret):
                 chroot.doChroot(args, shell=shell, cwd=options.cwd)
         finally:
             chroot._umountall()
+        chroot.unlockBuildRoot()
 
     elif options.mode == 'installdeps':
         if len(args) == 0:
@@ -767,17 +769,23 @@ def main(ret):
             chroot.installSrpmDeps(*args)
         finally:
             chroot._umountall()
+        chroot.unlockBuildRoot()
 
     elif options.mode == 'install':
         if len(args) == 0:
             log.critical("You must specify a package list to install.")
             sys.exit(50)
 
+        chroot._resetLogging()
         chroot.tryLockBuildRoot()
         chroot.yumInstall(*args)
+        chroot.unlockBuildRoot()
 
     elif options.mode == 'update':
+        chroot._resetLogging()
+        chroot.tryLockBuildRoot()
         chroot.yumUpdate()
+        chroot.unlockBuildRoot()
 
     elif options.mode == 'rebuild':
         if config_opts['scm']:
@@ -810,6 +818,8 @@ def main(ret):
                 shutil.copytree(src, dest)
             else:
                 shutil.copy(src, dest)
+        chroot.unlockBuildRoot()
+
     elif options.mode == 'copyout':
         chroot.tryLockBuildRoot()
         chroot._resetLogging()
@@ -830,6 +840,7 @@ def main(ret):
                 shutil.copytree(src, dest)
             else:
                 shutil.copy(src, dest)
+        chroot.unlockBuildRoot()
 
 if __name__ == '__main__':
     # fix for python 2.4 logging module bug:
