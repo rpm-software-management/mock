@@ -60,6 +60,7 @@ class Root(object):
 
         # config options
         self.configs = config['config_paths']
+        self.config_name = config['chroot_name']
         self.chrootuid = config['chrootuid']
         self.chrootuser = 'mockbuild'
         self.chrootgid = config['chrootgid']
@@ -165,22 +166,29 @@ class Root(object):
         """clean out chroot and/or cache dirs with extreme prejudice :)"""
         self.tryLockBuildRoot()
         self.state("clean")
+        self._resetLogging()
         self._callHooks('clean')
         for scrub in scrub_opts:
             if scrub == 'all':
+                self.root_log.info("scrubbing everything for %s" % self.config_name)
                 self._unlock_and_rm_chroot()
                 self.chrootWasCleaned = True
                 mock.util.rmtree(self.cachedir, selinux=self.selinux)
             elif scrub == 'chroot':
+                self.root_log.info("scrubbing chroot for %s" % self.config_name)
                 self._unlock_and_rm_chroot()
                 self.chrootWasCleaned = True
             elif scrub == 'cache':
+                self.root_log.info("scrubbing cache for %s" % self.config_name)
                 mock.util.rmtree(self.cachedir, selinux=self.selinux)
             elif scrub == 'c-cache':
+                self.root_log.info("scrubbing c-cache for %s" % self.config_name)
                 mock.util.rmtree(os.path.join(self.cachedir, 'ccache'), selinux=self.selinux)
             elif scrub == 'root-cache':
+                self.root_log.info("scrubbing root-cache for %s" % self.config_name)
                 mock.util.rmtree(os.path.join(self.cachedir, 'root_cache'), selinux=self.selinux)
             elif scrub == 'yum-cache':
+                self.root_log.info("scrubbing yum-cache for %s" % self.config_name)
                 mock.util.rmtree(os.path.join(self.cachedir, 'yum_cache'), selinux=self.selinux)
         self.unlockBuildRoot()
 
