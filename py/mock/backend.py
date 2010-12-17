@@ -422,12 +422,14 @@ class Root(object):
                             shell=shell, *args, **kargs )
 
     decorate(traceLog())
-    def yumInstall(self, *srpms):
-        """figure out deps from srpm. call yum to install them"""
+    def yumInstall(self, *rpms):
+        """call yum to install the input rpms into the chroot"""
         # pass build reqs (as strings) to installer
+        self.root_log.info("installing package(s): %s" % " ".join(rpms))
         try:
             self._mountall()
-            self._yum('install %s' % ' '.join(srpms), returnOutput=1)
+            output = self._yum('install %s' % ' '.join(rpms), returnOutput=1)
+            self.root_log.info(output)
         finally:
             self._umountall()
 
