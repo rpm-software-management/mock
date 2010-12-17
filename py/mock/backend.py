@@ -141,6 +141,7 @@ class Root(object):
         self._callHooks('clean')
         self._unlock_and_rm_chroot()
         self.chrootWasCleaned = True
+        self.unlockBuildRoot()
 
     decorate(traceLog())
     def _unlock_and_rm_chroot(self):
@@ -176,6 +177,7 @@ class Root(object):
                 mock.util.rmtree(os.path.join(self.cachedir, 'root_cache'), selinux=self.selinux)
             elif scrub == 'yum-cache':
                 mock.util.rmtree(os.path.join(self.cachedir, 'yum_cache'), selinux=self.selinux)
+        self.unlockBuildRoot()
 
     decorate(traceLog())
     def tryLockBuildRoot(self):
@@ -191,6 +193,17 @@ class Root(object):
             raise mock.exception.BuildRootLocked, "Build root is locked by another process."
 
         return 1
+
+    decorate(traceLog())
+    def unlockBuildRoot(self):
+        self.state("unlock buildroot")
+        if self.buildrootLock:
+            self.buildrootLock.close()
+            try:
+                os.remove(os.path.join(self.basedir, "buildroot.lock"))
+            except OSError,e:
+                pass
+        return 0
 
     decorate(traceLog())
     def makeChrootPath(self, *args):
@@ -345,6 +358,7 @@ class Root(object):
             self._callHooks('postinit')
         finally:
             self._umountall()
+        self.unlockBuildRoot()
 
     decorate(traceLog())
     def _setupDev(self):
