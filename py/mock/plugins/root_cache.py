@@ -24,6 +24,8 @@ def init(rootObj, conf):
 class RootCache(object):
     """caches root environment in a tarball"""
     decorate(traceLog())
+
+
     def __init__(self, rootObj, conf):
         self.rootObj = rootObj
         self.root_cache_opts = conf
@@ -40,6 +42,8 @@ class RootCache(object):
         rootObj.rootCacheObj = self
         rootObj.addHook("preinit", self._rootCachePreInitHook)
         rootObj.addHook("postinit", self._rootCachePostInitHook)
+        self.exclude_dirs = ["./proc", "./sys", "./dev", "./tmp/ccache", "./var/cache/yum" ]
+        self.exclude_tar_cmds = [ "--exclude=" + dir for dir in self.exclude_dirs]
 
     # =============
     # 'Private' API
@@ -94,6 +98,8 @@ class RootCache(object):
                 ["tar"] + self.compressArgs + ["-xf", self.rootCacheFile, "-C", self.rootObj.makeChrootPath()],
                 shell=False
                 )
+            for dir in self.exclude_dirs:
+                mock.util.mkdirIfAbsent(self.rootObj.makeChrootPath(dir))
             self._rootCacheUnlock()
             self.rootObj.chrootWasCleaned = False
             self.rootObj.chrootWasCached = True
@@ -119,13 +125,8 @@ class RootCache(object):
                 try:
                     mock.util.do(
                         ["tar"] + self.compressArgs + ["-cf", self.rootCacheFile,
-                                                       "-C", self.rootObj.makeChrootPath(), 
-                                                       "--exclude=./proc",
-                                                       "--exclude=./sys",
-                                                       "--exclude=./dev",
-                                                       "--exclude=./tmp/ccache",
-                                                       "--exclude=./var/cache/yum",
-                                                       "."],
+                                                       "-C", self.rootObj.makeChrootPath()] +
+                        self.exclude_tar_cmds + ["."],
                         shell=False
                         )
                 except:
