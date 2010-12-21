@@ -4,12 +4,12 @@
 
 ####################################
 # change version here. --> BOTH PLACES PLEASE!
-AC_INIT([mock],[1.1.7])
+AC_INIT([mock],[1.1.8])
 
 temp_RELEASE_NAME=mock
 temp_RELEASE_MAJOR=1
 temp_RELEASE_MINOR=1
-temp_RELEASE_SUBLEVEL=7
+temp_RELEASE_SUBLEVEL=8
 temp_RELEASE_EXTRALEVEL=
 ####################################
 
