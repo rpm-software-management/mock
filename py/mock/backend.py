@@ -153,7 +153,14 @@ class Root(object):
             mock.util.rmtree(t, selinux=self.selinux)
         os.rename(self.basedir, t)
         self.buildrootLock.close()
-        mock.util.rmtree(t, selinux=self.selinux)
+        try:
+            mock.util.rmtree(t, selinux=self.selinux)
+        except OSError, e:
+            self.root_log.error(e)
+            self.root_log.error("contents of /proc/mounts:\n%s" % open('/proc/mounts').read())
+            self.root_log.error("looking for users of %s" % t)
+            self._show_path_user(t)
+            raise
         self.root_log.info("chroot (%s) unlocked and deleted" % self.basedir)
 
     decorate(traceLog())
@@ -690,7 +697,8 @@ class Root(object):
                 mock.util.do(cmd, raiseExc=1, shell=True)
             except mock.exception.Error, e:
                 # the exception already contains info about the error.
-                self.root_log.warning(e) 
+                self.root_log.warning(e)
+                self._show_path_user(cmd.split()[-1])
         # then remove anything that might be left around.
         mountpoints = open("/proc/mounts").read().strip().split("\n")
         # umount in reverse mount order to prevent nested mount issues that
@@ -701,6 +709,14 @@ class Root(object):
                 cmd = "umount -n %s" % mountpoint
                 self.root_log.warning("Forcibly unmounting '%s' from chroot." % mountpoint)
                 mock.util.do(cmd, raiseExc=0, shell=True)
+
+    decorate(traceLog())
+    def _show_path_user(self, path):
+        cmd = ['/sbin/fuser', '-a', '-v', path]
+        self.root_log.debug("using 'fuser' to find users of %s" % path)
+        out = mock.util.do(cmd, returnOutput=1)
+        self.root_log.debug(out)
+        return out
 
     decorate(traceLog())
     def _yum(self, cmd, returnOutput=0):
