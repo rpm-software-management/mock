@@ -18,3 +18,4 @@ configure
 mock.spec
 noarch
 mock-unit-test
+patches
