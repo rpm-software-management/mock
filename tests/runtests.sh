@@ -16,6 +16,9 @@
 #
 
 CURDIR=$(pwd)
+VERBOSE=
+#VERBOSE=--verbose
+export VERBOSE
 
 source ${CURDIR}/tests/functions
 
@@ -30,7 +33,7 @@ cd $TOP_SRCTREE
 testConfig=fedora-14-x86_64
 uniqueext="$$-$RANDOM"
 outdir=${CURDIR}/mock-unit-test
-MOCKCMD="sudo ./py/mock.py --verbose --resultdir=$outdir --uniqueext=$uniqueext -r $testConfig $MOCK_EXTRA_ARGS"
+MOCKCMD="sudo ./py/mock.py $VERBOSE --resultdir=$outdir --uniqueext=$uniqueext -r $testConfig $MOCK_EXTRA_ARGS"
 CHROOT=/var/lib/mock/${testConfig}-$uniqueext/root
 
 trap '$MOCKCMD --clean; exit 1' INT HUP QUIT TERM
@@ -80,7 +83,7 @@ runcmd "$MOCKCMD --offline --clean"
 # Test build all configs we ship.
 #
 for i in $(ls etc/mock | grep .cfg | grep -v default | egrep -v 'ppc|s390|sparc'); do
-    MOCKCMD="sudo ./py/mock.py --verbose --resultdir=$outdir --uniqueext=$uniqueext -r $(basename $i .cfg) $MOCK_EXTRA_ARGS"
+    MOCKCMD="sudo ./py/mock.py $VERBOSE --resultdir=$outdir --uniqueext=$uniqueext -r $(basename $i .cfg) $MOCK_EXTRA_ARGS"
     if [ "${i#epel-4-x86_64.cfg}" != "" ]; then
 	header "testing config $(basename $i .cfg) with tmpfs plugin"
 	runcmd "$MOCKCMD --enable-plugin=tmpfs --rebuild $MOCKSRPM "
