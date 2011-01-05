@@ -78,6 +78,7 @@ def rmtree(path, *args, **kargs):
         do_selinux_ops = kargs['selinux']
         del kargs['selinux']
     tryAgain = 1
+    retries = 0
     failedFilename = None
     getLog().debug("remove tree: %s" % path)
     while tryAgain:
@@ -93,6 +94,13 @@ def rmtree(path, *args, **kargs):
                     raise
                 failedFilename = e.filename
                 os.system("chattr -R -i %s" % path)
+            elif e.errno == errno.EBUSY:
+                retries += 1
+                if retries > 1:
+                    raise
+                tryAgain = 1
+                getLog().debug("retrying failed tree remove after sleeping a bit")
+                time.sleep(2)
             else:
                 raise
 
