@@ -713,7 +713,7 @@ def main(ret):
                 arg = '--userspec=%s:%s' % (chroot.chrootuid, chroot.chrootgid)
             else:
                 arg = ''
-            status = os.system("PS1='mock-chroot> ' /usr/sbin/chroot %s %s %s" % (arg, chroot.makeChrootPath(), cmd))
+            status = os.system("SHELL='/bin/sh' PS1='mock-chroot> ' /usr/sbin/chroot %s %s %s" % (arg, chroot.makeChrootPath(), cmd))
             ret['exitStatus'] = os.WEXITSTATUS(status)
 
         finally:
