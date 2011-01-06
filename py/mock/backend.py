@@ -388,10 +388,10 @@ class Root(object):
             (stat.S_IFCHR | 0666, os.makedev(1, 5), "dev/zero"),
             (stat.S_IFCHR | 0666, os.makedev(1, 8), "dev/random"),
             (stat.S_IFCHR | 0444, os.makedev(1, 9), "dev/urandom"),
-            (stat.S_IFCHR | 0666, os.makedev(5, 0), "dev/tty"),
             (stat.S_IFCHR | 0600, os.makedev(5, 1), "dev/console"),
         ]
         kver = os.uname()[2]
+        getLog().debug("kver == %s" % kver)
         # make the device node for el4 and el5
         if mock.util.cmpKernelEVR(kver, '2.6.18') <= 0:
             devFiles.append((stat.S_IFCHR | 0666, os.makedev(5, 2), "dev/ptmx"))
@@ -410,13 +410,23 @@ class Root(object):
         os.symlink("/proc/self/fd/1", self.makeChrootPath("dev/stdout"))
         os.symlink("/proc/self/fd/2", self.makeChrootPath("dev/stderr"))
 
-        # don't symlink for RHEL4 systems
+        # if hosted on EL{4,5} create /dev/tty node in chroot
+        if mock.util.cmpKernelEVR(kver, '2.6.19') <= 0:
+            os.mknod(self.makeChrootPath("dev/tty", stat.S_IFCHR|0666, os.makedev(5, 0)))
+            getLog().debug("created /dev/tty node device node")
+
+        # symlink /dev/fd in the chroot for everything except RHEL4
         if mock.util.cmpKernelEVR(kver, '2.6.9') > 0:
             os.symlink("/proc/self/fd",   self.makeChrootPath("dev/fd"))
 
-        # symlink it for FC and el6 hosts
-        if mock.util.cmpKernelEVR(kver, '2.6.18') > 0:
+        # symlinks for Fedora and el6 hosts
+        if mock.util.cmpKernelEVR(kver, '2.6.19') > 0:
             os.symlink("/dev/pts/ptmx", self.makeChrootPath("dev/ptmx"))
+            if os.path.exists(self.makeChrootPath("dev/tty")):
+                getLog().debug("removed dev/tty device node!")
+                os.remove(self.makeChrootPath("dev/tty"))
+            os.symlink("/dev/ptmx", self.makeChrootPath("dev/tty"))
+            getLog().debug("symlinked dev/tty to ptmx")
 
         os.umask(prevMask)
 
