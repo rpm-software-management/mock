@@ -90,6 +90,8 @@ for i in $(ls etc/mock | grep .cfg | grep -v default | egrep -v 'ppc|s390|sparc'
 	if [ $? != 0 ]; then 
 	    echo "FAILED!"
 	    fails=$(($fails+1))
+	else
+	    echo "PASSED!"
 	fi
     fi
     header "testing config $(basename $i .cfg) *without* tmpfs plugin"
@@ -97,6 +99,8 @@ for i in $(ls etc/mock | grep .cfg | grep -v default | egrep -v 'ppc|s390|sparc'
     if [ $? != 0 ]; then 
 	echo "FAILED!"
 	fails=$(($fails+1))
+    else
+	echo "PASSED!"
     fi
 done
 
