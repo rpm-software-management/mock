@@ -45,8 +45,8 @@ plugins_PYTHON = \
     py/mock/plugins/root_cache.py \
     py/mock/plugins/tmpfs.py \
     py/mock/plugins/yum_cache.py \
-    py/mock/plugins/selinux.py
-
+    py/mock/plugins/selinux.py \
+    py/mock/plugins/scm.py
 
 pkgpython_PYTHON = \
     py/mock/__init__.py        \
@@ -54,8 +54,7 @@ pkgpython_PYTHON = \
     py/mock/util.py            \
     py/mock/backend.py         \
     py/mock/trace_decorator.py \
-    py/mock/uid.py             \
-    py/mock/scm.py
+    py/mock/uid.py
 
 CLEANFILES += py/*.pyc py/mock/*.pyc py/mock/plugins/*.pyc
 
@@ -95,7 +94,7 @@ RPM_DEFINES = --define "_topdir $(TOPDIR)" \
 
 RPMBUILD := $(shell if [ -e /usr/bin/rpmbuild-md5 ]; then echo rpmbuild-md5; else echo rpmbuild; fi)
 
-.PHONY: rpm srpm help
+.PHONY: rpm srpm help install-devel-packages
 rpm: dist
 	mkdir -p $(BUILDDIR)
 	$(RPMBUILD) $(RPM_DEFINES) -ba --nodeps $(PACKAGE_NAME).spec
@@ -106,6 +105,8 @@ srpm: dist
 	$(RPMBUILD) $(RPM_DEFINES) -bs --nodeps $(PACKAGE_NAME).spec
 	rm -rf $(BUILDDIR)
 
+install-devel-packages:
+	yum --disablerepo='beaker*' install mock rpm-build fedora-packager vim-enhanced git-all
 
 help: 
 	@echo
