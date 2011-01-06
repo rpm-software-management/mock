@@ -57,6 +57,9 @@ class scmWorker(object):
             sys.exit(5)
         self.get = self.get.replace("SCM_PKG", self.pkg)
 
+        self.spec = opts['spec']
+        self.spec = self.spec.replace("SCM_PKG", self.pkg)
+
         self.ext_src_dir = opts['ext_src_dir']
         self.write_tar = opts['write_tar']
 
@@ -85,12 +88,13 @@ class scmWorker(object):
             self.write_tar = True
 
         # Figure out the spec file
-        self.spec = self.src_dir + "/" + self.pkg + ".spec"
-        if not os.path.exists(self.spec):
-            self.spec = self.src_dir + "/" + self.pkg.lower() + ".spec"
-        if not os.path.exists(self.spec):
-            self.log.error("Can't find spec file %s" % self.spec)
+        sf = self.src_dir + "/" + self.spec
+        if not os.path.exists(sf):
+            sf = self.src_dir + "/" + self.spec.lower()
+        if not os.path.exists(sf):
+            self.log.error("Can't find spec file %s" % self.src_dir + "/" + self.spec)
             sys.exit(5)
+        self.spec = sf
 
         # Dig out some basic information from the spec file
         self.sources = []

@@ -121,10 +121,10 @@ fi
 - added log file of root cache creation (BZ# 444796)
 - added logging to the scrub command
 - added unlockBuildRoot() method to clean up build root lockfile
-- From Michael Hampton <error@ioerror.us>
+- From Michael Hampton <error@ioerror.us>:
   - Add -f (force) option to userdel when recreating mockbuild user (BZ# 662223)
-- From Marko Myllynenn <myllynen@redhat.com>:
-  - Integrate Mock with SCMs (CVS/Git/SVN
+- From Marko Myllynen <myllynen@redhat.com>:
+  - Integrate Mock with SCMs (CVS/Git/SVN)
   - document SCM build options in usage and man page
 - From Masatake YAMATO <yamato@redhat.com>:
   - add runtime location of plugins (BZ# 634224)
