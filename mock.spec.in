@@ -121,6 +121,8 @@ fi
 - added log file of root cache creation (BZ# 444796)
 - added logging to the scrub command
 - added unlockBuildRoot() method to clean up build root lockfile
+- added retry logic to mock.util.rmtree
+- removed fedora-12 config files
 - From Michael Hampton <error@ioerror.us>:
   - Add -f (force) option to userdel when recreating mockbuild user (BZ# 662223)
 - From Marko Myllynen <myllynen@redhat.com>:
