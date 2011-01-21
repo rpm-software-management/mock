@@ -477,9 +477,11 @@ def do_rebuild(config_opts, chroot, srpms):
             
         if config_opts["createrepo_on_rpms"]:
             log.info("Running createrepo on binary rpms in resultdir")
+            chroot.uidManager.dropPrivsTemp()
             cmd = config_opts["createrepo_command"].split()
             cmd.append(chroot.resultdir)
             mock.util.do(cmd)
+            chroot.uidManager.restorePrivs()
             
     except (Exception, KeyboardInterrupt):
         elapsed = time.time() - start
