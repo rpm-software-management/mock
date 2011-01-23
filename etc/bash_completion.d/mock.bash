@@ -18,7 +18,7 @@ _mock()
 
     case "$3" in
         -h|--help|--copyin|--copyout|--arch|-D|--define|--with|--without|\
-        --uniqueext|--rpmbuild_timeout|--sources|--cwd)
+        --uniqueext|--rpmbuild_timeout|--sources|--cwd|--scm-option)
             return 0
             ;;
         -r|--root)
@@ -64,7 +64,7 @@ _mock()
             --define --with --without --resultdir --uniqueext --configdir
             --rpmbuild_timeout --unpriv --cwd --spec --sources --verbose
             --quiet --trace --enable-plugin --disable-plugin
-            --print-root-path" -- "$2" ) )
+            --print-root-path --scm-enable --scm-option" -- "$2" ) )
         return 0
     fi
 
