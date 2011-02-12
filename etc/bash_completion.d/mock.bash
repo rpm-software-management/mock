@@ -64,6 +64,12 @@ _mock()
                 yum-cache" -- "$cur" ) )
             return 0
             ;;
+        --install)
+            COMPREPLY=( $( compgen -f -o plusdirs -X '!*.rpm' -- "$cur" ) )
+            [[ "$cur" != *[/~]* ]] && type _yum_list &>/dev/null && \
+                _yum_list all "$cur"
+            return 0
+            ;;
     esac
 
     $split && return 0
