@@ -229,7 +229,7 @@ def logOutput(fds, logger, returnOutput=1, start=0, timeout=0):
             done = 1
             break
 
-        i_rdy,o_rdy,e_rdy = select.select(fds,[],[],1) 
+        i_rdy,o_rdy,e_rdy = select.select(fds,[],[],1)
         for s in i_rdy:
             # slurp as much input as is ready
             input = s.read()
@@ -280,17 +280,17 @@ def do(command, shell=False, chrootPath=None, cwd=None, timeout=0, raiseExc=True
         child = None
         logger.debug("Executing command: %s" % command)
         child = subprocess.Popen(
-            command, 
+            command,
             shell=shell,
-            bufsize=0, close_fds=True, 
-            stdin=open("/dev/null", "r"), 
+            bufsize=0, close_fds=True,
+            stdin=open("/dev/null", "r"),
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             preexec_fn = preexec,
             )
 
         # use select() to poll for output so we dont block
-        output = logOutput([child.stdout, child.stderr], 
+        output = logOutput([child.stdout, child.stderr],
                            logger, returnOutput, start, timeout)
 
     except:
@@ -300,7 +300,7 @@ def do(command, shell=False, chrootPath=None, cwd=None, timeout=0, raiseExc=True
         try:
             if child is not None:
                 os.waitpid(child.pid, 0)
-        except: 
+        except:
             pass
         raise
 
