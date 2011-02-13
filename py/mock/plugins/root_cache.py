@@ -117,7 +117,7 @@ class RootCache(object):
                 f = open(self.rootObj.makeChrootPath(logfile), "w")
                 f.truncate(0)
                 f.close()
-            
+
             # never rebuild cache unless it was a clean build.
             if self.rootObj.chrootWasCleaned:
                 mock.util.do(["sync"], shell=False)
