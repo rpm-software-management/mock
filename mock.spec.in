@@ -115,6 +115,28 @@ fi
 %attr(02775, root, mock) %dir /var/cache/mock
 
 %changelog
+* Fri Feb 18 2011 Clark Williams <williams@redhat.com> - 1.1.9-1
+- fix createrepo generated root-owned repository data (BZ# 668278)
+- commented out /dev/tty handling code in backend.py (BZ# 609201)
+- from Ville Skyttä <ville.skytta@iki.fi>
+  - Use completion goodies from bash-completion >= 1.2 if available.
+  - Add --scm-enable and --scm-option to bash completion.
+  - Delete trailing whitespace.
+  - Add --install bash completion.
+  - Make --enable/disable-plugin completion work again.
+- From Jesse Keating <jkeating@redhat.com>
+  - Make "dist" for rawhide configs be "rawhide" (BZ# 506157)
+  - Revert "turn off updates-released repository for fedora-14 configs"
+- From Mike McLean <mikem@redhat.com>
+  - fix typo in el4/5 /dev/tty creation (fh ticket #13, mwhiteley) 
+- From Dennis Gilmore <dennis@ausil.us>
+  - Revert "disable the updates repos for F-15  they dont yet exist"
+  - sparc64 boxes can build 32 bit sparc stuff
+  - add rawhide arm config
+  - use the s390 mirrorlists for s390 configs
+  - disable the updates repos for F-15  they dont yet exist
+  - add the f15 mock configs
+
 * Fri Dec 17 2010 Clark Williams <williams@redhat.com> - 1.1.8-1
 - corrected examples section of the mock.1 man page
 - added logging for 'install' and 'update' commadns (BZ# 594477)
