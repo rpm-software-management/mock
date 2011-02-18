@@ -453,7 +453,7 @@ class Root(object):
     #decorate(traceLog())
     def doChroot(self, command, env="", shell=True, *args, **kargs):
         """execute given command in root"""
-        return mock.util.do(command, chrootPath=self.makeChrootPath(), 
+        return mock.util.do(command, chrootPath=self.makeChrootPath(),
                             shell=shell, *args, **kargs )
 
     decorate(traceLog())
@@ -616,7 +616,7 @@ class Root(object):
 
             # Resolve any symlinks
             sources = os.path.realpath(sources)
-            
+
             if os.path.isdir(sources):
                 os.rmdir(self.makeChrootPath(self.builddir, "SOURCES"))
                 shutil.copytree(sources, self.makeChrootPath(self.builddir, "SOURCES"))
@@ -702,7 +702,7 @@ class Root(object):
     decorate(traceLog())
     def _umountall(self):
         """umount all mounted chroot fs."""
-        # first try removing all expected mountpoints. 
+        # first try removing all expected mountpoints.
         for cmd in reversed(self.umountCmds):
             try:
                 mock.util.do(cmd, raiseExc=1, shell=True)

@@ -115,7 +115,7 @@ srpm: dist
 install-devel-packages:
 	yum --disablerepo='beaker*' install mock rpm-build fedora-packager vim-enhanced git-all
 
-help: 
+help:
 	@echo
 	@echo "Mock Makefile targets:"
 	@echo "	dist	- generate Changelog and Authors file"

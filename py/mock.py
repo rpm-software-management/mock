@@ -178,7 +178,7 @@ def command_parse(config_opts):
     parser.add_option("--sources", action="store",
                       help="Specifies sources (either a single file or a directory of files)"
                       "to use to build an SRPM (used only with --buildsrpm)")
- 
+
     # verbosity
     parser.add_option("-v", "--verbose", action="store_const", const=2,
                       dest="verbose", default=1, help="verbose build")
@@ -298,7 +298,7 @@ def setup_default_config_opts(config_opts, unprivUid):
             'scm_opts' : {},
             }
 
-    runtime_plugins = [runtime_plugin 
+    runtime_plugins = [runtime_plugin
                        for (runtime_plugin, _)
                        in [os.path.splitext(os.path.basename(tmp_path))
                            for tmp_path
@@ -308,7 +308,7 @@ def setup_default_config_opts(config_opts, unprivUid):
         config_opts['plugins'].append(runtime_plugin)
         config_opts['plugin_conf'][runtime_plugin + "_enable"] = False
         config_opts['plugin_conf'][runtime_plugin + "_opts"] = {}
-    
+
     # SCM defaults
     config_opts['scm'] = False
     config_opts['scm_opts'] = {
@@ -444,7 +444,7 @@ def check_arch_combination(target_arch, config_opts):
     if host_arch not in legal:
         raise mock.exception.InvalidArchitecture(
             "Cannot build target %s on arch %s" % (target_arch, host_arch))
-        
+
 decorate(traceLog())
 def do_rebuild(config_opts, chroot, srpms):
     "rebuilds a list of srpms using provided chroot"
@@ -474,7 +474,7 @@ def do_rebuild(config_opts, chroot, srpms):
         if config_opts["cleanup_on_success"]:
             log.info("Cleaning up build root ('clean_on_success=True')")
             chroot.clean()
-            
+
         if config_opts["createrepo_on_rpms"]:
             log.info("Running createrepo on binary rpms in resultdir")
             chroot.uidManager.dropPrivsTemp()
