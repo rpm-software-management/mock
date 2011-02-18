@@ -419,14 +419,15 @@ class Root(object):
         if mock.util.cmpKernelEVR(kver, '2.6.9') > 0:
             os.symlink("/proc/self/fd",   self.makeChrootPath("dev/fd"))
 
+        # comment the below out for now
         # symlinks for Fedora and el6 hosts
-        if mock.util.cmpKernelEVR(kver, '2.6.19') > 0:
-            os.symlink("/dev/pts/ptmx", self.makeChrootPath("dev/ptmx"))
-            if os.path.exists(self.makeChrootPath("dev/tty")):
-                getLog().debug("removed dev/tty device node!")
-                os.remove(self.makeChrootPath("dev/tty"))
-            os.symlink("/dev/ptmx", self.makeChrootPath("dev/tty"))
-            getLog().debug("symlinked dev/tty to ptmx")
+        # if mock.util.cmpKernelEVR(kver, '2.6.19') > 0:
+        #    os.symlink("/dev/pts/ptmx", self.makeChrootPath("dev/ptmx"))
+        #    if os.path.exists(self.makeChrootPath("dev/tty")):
+        #        getLog().debug("removed dev/tty device node!")
+        #        os.remove(self.makeChrootPath("dev/tty"))
+        #    os.symlink("/dev/ptmx", self.makeChrootPath("dev/tty"))
+        #    getLog().debug("symlinked dev/tty to ptmx")
 
         os.umask(prevMask)
 
