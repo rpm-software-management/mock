@@ -411,9 +411,9 @@ class Root(object):
         os.symlink("/proc/self/fd/2", self.makeChrootPath("dev/stderr"))
 
         # if hosted on EL{4,5} create /dev/tty node in chroot
-        #if mock.util.cmpKernelEVR(kver, '2.6.19') <= 0:
-        #    os.mknod(self.makeChrootPath("dev/tty", stat.S_IFCHR|0666, os.makedev(5, 0)))
-        #    getLog().debug("created /dev/tty node device node")
+        if mock.util.cmpKernelEVR(kver, '2.6.19') <= 0:
+            os.mknod(self.makeChrootPath("dev/tty", stat.S_IFCHR|0666, os.makedev(5, 0)))
+            getLog().debug("created /dev/tty node device node")
 
         # symlink /dev/fd in the chroot for everything except RHEL4
         if mock.util.cmpKernelEVR(kver, '2.6.9') > 0:
