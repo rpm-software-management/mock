@@ -13,7 +13,7 @@ temp_RELEASE_SUBLEVEL=8
 temp_RELEASE_EXTRALEVEL=
 ####################################
 
-AC_PREREQ(2.61)
+#AC_PREREQ(2.61)
 AC_CONFIG_AUX_DIR([build])
 AM_INIT_AUTOMAKE
 AM_MAINTAINER_MODE
@@ -63,6 +63,7 @@ AC_SUBST([RELEASE_EXTRALEVEL])
 AC_SUBST([RELEASE_RPM_EXTRALEVEL])
 
 # generate files and exit
-AC_CONFIG_FILES([ Makefile ${PACKAGE_NAME}.spec ])
+#AC_CONFIG_FILES([ Makefile ${PACKAGE_NAME}.spec ])
+AC_CONFIG_FILES([ Makefile mock.spec ])
 AC_OUTPUT
 
