@@ -82,7 +82,7 @@ runcmd "$MOCKCMD --offline --clean"
 #
 # Test build all configs we ship.
 #
-for i in $(ls etc/mock | grep .cfg | grep -v default | egrep -v 'ppc|s390|sparc'); do
+for i in $(ls etc/mock | grep .cfg | grep -v default | egrep -v 'arm|ppc|s390|sparc'); do
     MOCKCMD="sudo ./py/mock.py $VERBOSE --resultdir=$outdir --uniqueext=$uniqueext -r $(basename $i .cfg) $MOCK_EXTRA_ARGS"
     if [ "${i#epel-4-x86_64.cfg}" != "" ]; then
 	header "testing config $(basename $i .cfg) with tmpfs plugin"
