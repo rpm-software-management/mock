@@ -256,6 +256,9 @@ def setup_default_config_opts(config_opts, unprivUid):
     config_opts['cleanup_on_success'] = 1
     config_opts['cleanup_on_failure'] = 1
 
+    config_opts['createrepo_on_rpms'] = False
+    config_opts['createrepo_command'] = '/usr/bin/createrepo -d -q -x *.src.rpm' # default command
+
     # (global) plugins and plugin configs.
     # ordering constraings: tmpfs must be first.
     #    root_cache next.
