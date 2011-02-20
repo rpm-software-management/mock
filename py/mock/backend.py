@@ -244,7 +244,7 @@ class Root(object):
         #   --> /etc/ is no longer 02775 (new privs model)
         #   --> no /etc/yum.conf symlink (F7 and above)
 
-         # create our base directory heirarchy
+        # create our base directory hierarchy
         mock.util.mkdirIfAbsent(self.basedir)
         mock.util.mkdirIfAbsent(self.makeChrootPath())
 
@@ -509,7 +509,7 @@ class Root(object):
 
 
     #
-    # UNPRIVLEGED:
+    # UNPRIVILEGED:
     #   Everything in this function runs as the build user
     #       -> except hooks. :)
     #
@@ -595,7 +595,7 @@ class Root(object):
 
 
     #
-    # UNPRIVLEGED:
+    # UNPRIVILEGED:
     #   Everything in this function runs as the build user
     #       -> except hooks. :)
     #
@@ -817,7 +817,7 @@ class Root(object):
 
 
     #
-    # UNPRIVLEGED:
+    # UNPRIVILEGED:
     #   Everything in this function runs as the build user
     #
     decorate(traceLog())
@@ -846,7 +846,7 @@ class Root(object):
             self.uidManager.restorePrivs()
 
     #
-    # UNPRIVLEGED:
+    # UNPRIVILEGED:
     #   Everything in this function runs as the build user
     #
     decorate(traceLog())
