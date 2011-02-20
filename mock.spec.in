@@ -114,6 +114,20 @@ fi
 %attr(02775, root, mock) %dir /var/cache/mock
 
 %changelog
+* Sat Feb 19 2011 Clark Williams <williams@redhat.com> - 1.0.16-1
+- commented out /dev/tty handling code in backend.py (BZ# 609201)
+- fix createrepo generated root-owned repository data (BZ# 668278)
+- From Jesse Keating <jkeating@redhat.com>
+  - Make "dist" for rawhide configs be "rawhide" (BZ# 506157)
+- From Ville Skyttä <ville.skytta@iki.fi>
+  - Make --enable/disable-plugin completion work again.
+  - Add --install bash completion.
+  - Delete trailing whitespace.
+- From Dennis Gilmore <dennis@ausil.us>
+   - add the f15 mock configs
+   - use the s390 mirrorlists for s390 configs
+   - add rawhide arm config
+
 * Thu Jan  6 2011 Clark Williams <williams@redhat.com> - 1.0.15-1
 - corrected examples section of the mock.1 man page
 - added logging for 'install' and 'update' commadns (BZ# 594477)
