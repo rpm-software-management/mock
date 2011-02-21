@@ -48,8 +48,7 @@ plugins_PYTHON = \
     py/mock/plugins/root_cache.py \
     py/mock/plugins/tmpfs.py \
     py/mock/plugins/yum_cache.py \
-    py/mock/plugins/selinux.py \
-    py/mock/plugins/scm.py
+    py/mock/plugins/selinux.py
 
 pkgpython_PYTHON = \
     py/mock/__init__.py        \
@@ -57,7 +56,8 @@ pkgpython_PYTHON = \
     py/mock/util.py            \
     py/mock/backend.py         \
     py/mock/trace_decorator.py \
-    py/mock/uid.py
+    py/mock/uid.py             \
+    py/mock/scm.py
 
 CLEANFILES += py/*.pyc py/mock/*.pyc py/mock/plugins/*.pyc
 
