@@ -64,6 +64,7 @@ log = logging.getLogger()
 import mock.exception
 from mock.trace_decorator import traceLog, decorate
 import mock.backend
+import mock.scm
 import mock.uid
 import mock.util
 
@@ -263,7 +264,7 @@ def setup_default_config_opts(config_opts, unprivUid):
     #    root_cache next.
     #    after that, any plugins that must create dirs (yum_cache)
     #    any plugins without preinit hooks should be last.
-    config_opts['plugins'] = ['tmpfs', 'root_cache', 'yum_cache', 'bind_mount', 'ccache', 'selinux', 'scm']
+    config_opts['plugins'] = ['tmpfs', 'root_cache', 'yum_cache', 'bind_mount', 'ccache', 'selinux']
     config_opts['plugin_dir'] = os.path.join(PKGPYTHONDIR, "plugins")
     config_opts['plugin_conf'] = {
             'ccache_enable': True,
@@ -294,8 +295,6 @@ def setup_default_config_opts(config_opts, unprivUid):
                 'max_fs_size': None},
             'selinux_enable': True,
             'selinux_opts': {},
-            'scm_enable' : False,
-            'scm_opts' : {},
             }
 
     runtime_plugins = [runtime_plugin

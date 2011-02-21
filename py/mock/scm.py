@@ -120,12 +120,12 @@ class scmWorker(object):
                   " --xform='s,^" + self.pkg + "," + tardir + ",' " + self.pkg
             mock.util.do(shlex.split(cmd), shell=False, cwd=self.wrk_dir)
 
-        # Get possible external sources from EXT_SRC_DIR
+        # Get possible external sources from an external sources directory
         for f in self.sources:
             if not os.path.exists(self.src_dir + "/" + f) and \
-                   os.path.exists(EXT_SRC_DIR + "/" + f):
-                self.log.debug("Copying " + EXT_SRC_DIR + "/" + f + " to " + self.src_dir + "/" + f)
-                shutil.copy2(EXT_SRC_DIR + "/" + f, self.src_dir + "/" + f)
+                   os.path.exists(self.ext_src_dir + "/" + f):
+                self.log.debug("Copying " + self.ext_src_dir + "/" + f + " to " + self.src_dir + "/" + f)
+                shutil.copy2(self.ext_src_dir + "/" + f, self.src_dir + "/" + f)
 
         self.log.debug("Prepared sources for building src.rpm")
 
