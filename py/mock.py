@@ -427,11 +427,11 @@ legal_arches = {
     'i386'   : ('i386', 'i586', 'i686'),
     'i686'   : ('i386', 'i586', 'i686'),
     'x86_64' : ('i386', 'i586', 'i686', 'x86_64'),
-    'ppc'    : ('ppc'),
+    'ppc'    : ('ppc',),
     'ppc64'  : ('ppc', 'ppc64'),
-    'sparc'  : ('sparc'),
+    'sparc'  : ('sparc',),
     'sparc64': ('sparc', 'sparc64'),
-    's390x'  : ('s390x'),
+    's390x'  : ('s390x',),
 }
 
 decorate(traceLog())
