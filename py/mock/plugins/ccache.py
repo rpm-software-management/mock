@@ -26,7 +26,7 @@ class CCache(object):
         self.ccache_opts = conf
         self.ccachePath = self.ccache_opts['dir'] % self.ccache_opts
         rootObj.ccacheObj = self
-        rootObj.preExistingDeps = rootObj.preExistingDeps + " ccache "
+        rootObj.preExistingDeps.append("ccache")
         rootObj.addHook("prebuild", self._ccacheBuildHook)
         rootObj.addHook("preinit",  self._ccachePreInitHook)
         rootObj.umountCmds.append('umount -n %s' % rootObj.makeChrootPath("/tmp/ccache"))
