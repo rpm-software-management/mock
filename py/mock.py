@@ -326,7 +326,7 @@ def setup_default_config_opts(config_opts, unprivUid):
     config_opts['useradd'] = \
         '/usr/sbin/useradd -o -m -u %(uid)s -g %(gid)s -d %(home)s -n %(user)s'
     config_opts['use_host_resolv'] = True
-    config_opts['chroot_setup_cmd'] = 'groupinstall buildsys-build'
+    config_opts['chroot_setup_cmd'] = ('groupinstall', 'buildsys-build')
     config_opts['target_arch'] = 'i386'
     config_opts['rpmbuild_arch'] = None # <-- None means set automatically from target_arch
     config_opts['yum.conf'] = ''
