@@ -426,11 +426,11 @@ legal_arches = {
     'i386'   : ('i386', 'i586', 'i686'),
     'i686'   : ('i386', 'i586', 'i686'),
     'x86_64' : ('i386', 'i586', 'i686', 'x86_64'),
-    'ppc'    : ('ppc'),
+    'ppc'    : ('ppc',),
     'ppc64'  : ('ppc', 'ppc64'),
-    'sparc'  : ('sparc'),
+    'sparc'  : ('sparc',),
     'sparc64': ('sparc', 'sparc64'),
-    's390x'  : ('s390x'),
+    's390x'  : ('s390x',),
 }
 
 decorate(traceLog())
@@ -530,7 +530,7 @@ def rootcheck():
     # if we're root due to sudo or consolehelper, we're ok
     # if not raise an exception and bail
     if os.getuid() == 0 and not (os.environ.get("SUDO_UID") or os.environ.get("USERHELPER_UID")):
-        raise RuntimeError, "mock will not run from the root account (needs an unprivledged uid so it can drop privs)"
+        raise RuntimeError, "mock will not run from the root account (needs an unprivileged uid so it can drop privs)"
 
 def groupcheck():
     "verify that the user running mock is part of the mock group"
@@ -552,8 +552,8 @@ def main(ret):
     # initial sanity check for correct invocation method
     rootcheck()
 
-    # drop unprivleged to parse args, etc.
-    #   uidManager saves current real uid/gid which are unpriviledged (callers)
+    # drop unprivileged to parse args, etc.
+    #   uidManager saves current real uid/gid which are unprivileged (callers)
     #   due to suid helper, our current effective uid is 0
     #   also supports being run by sudo
     #
@@ -586,7 +586,7 @@ def main(ret):
     if os.geteuid() == 0:
         uidManager._becomeUser(unprivUid, unprivGid)
 
-    # verify that our unprivledged uid is in the mock group
+    # verify that our unprivileged uid is in the mock group
     groupcheck()
 
     # defaults
