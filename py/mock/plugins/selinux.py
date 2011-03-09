@@ -8,9 +8,7 @@ import os
 import sys
 import tempfile
 import stat
-
-# permissions for the faux filesystems file
-perms = stat.S_IRUSR|stat.S_IRGRP|stat.S_IROTH
+import atexit
 
 # our imports
 from mock.trace_decorator import decorate, traceLog, getLog
@@ -40,17 +38,14 @@ class SELinux(object):
         self.rootObj = rootObj
         self.conf = conf
 
-        # create our faux filesystems file as a temp file
-        (self.fd, self.filesystems) = tempfile.mkstemp(prefix="mock-selinux-plugin")
-
-        # allow read access for everyone
-        os.chmod(self.filesystems, perms)
-
+        self.filesystems = self._selinuxCreateFauxFilesystems()
         self.chrootFilesystems = rootObj.makeChrootPath("/proc/filesystems")
 
-        rootObj.addHook("preinit", self._selinuxPreInitHook)
-        rootObj.addHook("postbuild", self._selinuxPostBuildHook)
-        rootObj.addHook("initfailed", self._selinuxPostBuildHook)
+        atexit.register(self._selinuxAtExit)
+
+        self.rootObj.mountCmds.append("mount -n --bind %s %s" % (self.filesystems, self.chrootFilesystems))
+        self.rootObj.umountCmds.append("umount -n %s" % self.chrootFilesystems)
+
         if self._selinuxYumIsSetoptSupported():
             rootObj.addHook("preyum", self._selinuxPreYumHook)
             rootObj.addHook("postyum", self._selinuxPostYumHook)
@@ -58,25 +53,25 @@ class SELinux(object):
             getLog().warn("selinux: 'yum' does not support '--setopt' option")
 
     decorate(traceLog())
-    def _selinuxPreInitHook(self):
-        host = open("/proc/filesystems")
+    def _selinuxCreateFauxFilesystems(self):
+        (fd, path) = tempfile.mkstemp(prefix="mock-selinux-plugin.")
 
-        for line in host:
-            if not "selinuxfs" in line:
-                os.write(self.fd,line)
+        with open("/proc/filesystems") as host:
+            for line in host:
+                if not "selinuxfs" in line:
+                    os.write(fd, line)
 
-        os.close(self.fd)
-        host.close()
+        os.close(fd)
+        os.chmod(path, stat.S_IRUSR|stat.S_IRGRP|stat.S_IROTH)
 
-        self.rootObj.mountCmds.append("mount -n --bind %s %s" % (self.filesystems, self.chrootFilesystems))
-        self.rootObj.umountCmds.append("umount -n %s" % self.chrootFilesystems)
+        return path
 
     decorate(traceLog())
-    def _selinuxPostBuildHook(self):
+    def _selinuxAtExit(self):
         try:
             os.unlink(self.filesystems)
         except OSError, e:
-            getLog().warning("unable to delete selinux filesystems file: %s" % e)
+            getLog().warning("unable to delete selinux filesystems (%s): %s" % (self._filesystems, e))
             pass
 
     decorate(traceLog())
