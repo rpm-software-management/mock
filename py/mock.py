@@ -722,7 +722,7 @@ def main(ret):
         if not os.path.exists(chroot.makeChrootPath()):
             raise RuntimeError, "chroot %s not initialized!" % chroot.makeChrootPath()
         try:
-            chroot._setupDev()
+            chroot._setupDev(interactive=True)
             chroot._mountall()
             cmd = ' '.join(args)
             if options.unpriv:

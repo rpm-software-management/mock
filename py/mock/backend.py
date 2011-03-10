@@ -376,7 +376,7 @@ class Root(object):
         self.unlockBuildRoot()
 
     decorate(traceLog())
-    def _setupDev(self):
+    def _setupDev(self, interactive=False):
         # files in /dev
         mock.util.rmtree(self.makeChrootPath("dev"), selinux=self.selinux)
         mock.util.mkdirIfAbsent(self.makeChrootPath("dev", "pts"))
@@ -392,8 +392,8 @@ class Root(object):
         ]
         kver = os.uname()[2]
         getLog().debug("kver == %s" % kver)
-        # make the device node for el4 and el5
-        if mock.util.cmpKernelEVR(kver, '2.6.18') <= 0:
+        # make the device node for el4 and el5 or if we're in a shell
+        if mock.util.cmpKernelEVR(kver, '2.6.18') <= 0 or interactive:
             devFiles.append((stat.S_IFCHR | 0666, os.makedev(5, 2), "dev/ptmx"))
 
         for i in devFiles:
@@ -411,7 +411,8 @@ class Root(object):
         os.symlink("/proc/self/fd/2", self.makeChrootPath("dev/stderr"))
 
         # if hosted on EL{4,5} create /dev/tty node in chroot
-        if mock.util.cmpKernelEVR(kver, '2.6.19') <= 0:
+        # (also if we're interactive)
+        if mock.util.cmpKernelEVR(kver, '2.6.19') <= 0 or interactive:
             os.mknod(self.makeChrootPath("dev/tty"), stat.S_IFCHR|0666, os.makedev(5, 0))
             getLog().debug("created /dev/tty node device node")
 
