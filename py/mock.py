@@ -846,6 +846,9 @@ def main(ret):
                 shutil.copy(src, dest)
         chroot.unlockBuildRoot()
 
+    chroot.state("end")
+
+
 if __name__ == '__main__':
     # fix for python 2.4 logging module bug:
     logging.raiseExceptions = 0
