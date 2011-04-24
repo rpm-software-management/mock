@@ -56,7 +56,7 @@ _mock()
         --enable-plugin|--disable-plugin)
             COMPREPLY=( $( compgen -W "$( $1 $prev=DOES_NOT_EXIST 2>&1 | \
                 sed -ne "s/[',]//g" -e 's/.*[[(]\([^])]*\)[])]/\1/p' )" \
-                -- "$cur" ) )
+                -- "$cur" ) ) #' unconfuse emacs
             return 0
             ;;
         --scrub)
