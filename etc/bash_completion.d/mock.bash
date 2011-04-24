@@ -5,7 +5,7 @@ _mock()
     COMPREPLY=()
     local cur prev cword cfgdir=/etc/mock
     local -a words
-    if type _get_comp_words_by_ref &>/dev/null ; then
+    if declare -F _get_comp_words_by_ref &>/dev/null ; then
         _get_comp_words_by_ref cur prev words cword
     else
         cur=$2 prev=$3 words=("${COMP_WORDS[@]}") cword=$COMP_CWORD
@@ -23,7 +23,7 @@ _mock()
     done
 
     local split=false
-    type _split_longopt &>/dev/null && _split_longopt && split=true
+    declare -F _split_longopt &>/dev/null && _split_longopt && split=true
 
     case "$prev" in
         -h|--help|--copyin|--copyout|--arch|-D|--define|--with|--without|\
@@ -66,7 +66,7 @@ _mock()
             ;;
         --install)
             COMPREPLY=( $( compgen -f -o plusdirs -X '!*.rpm' -- "$cur" ) )
-            [[ "$cur" != *[/~]* ]] && type _yum_list &>/dev/null && \
+            [[ "$cur" != *[/~]* ]] && declare -F _yum_list &>/dev/null && \
                 _yum_list all "$cur"
             return 0
             ;;
