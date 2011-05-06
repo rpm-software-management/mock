@@ -821,7 +821,7 @@ class Root(object):
                 mock.util.mkdirIfAbsent(subdir)
 
             # change ownership so we can write to build home dir
-            for (dirpath, dirnames, filenames) in os.walk(self.homedir):
+            for (dirpath, dirnames, filenames) in os.walk(self.makeChrootPath(self.homedir)):
                 for path in dirnames + filenames:
                     os.chown(os.path.join(dirpath, path), self.chrootuid, -1)
                     os.chmod(os.path.join(dirpath, path), 0755)
