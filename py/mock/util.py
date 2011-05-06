@@ -335,7 +335,7 @@ class ChildPreExec(object):
         self.gid = gid
 
     def __call__(self, *args, **kargs):
-        os.setpgrp()
+        os.setsid()
         condPersonality(self.personality)
         condChroot(self.chrootPath)
         condDropPrivs(self.uid, self.gid)
