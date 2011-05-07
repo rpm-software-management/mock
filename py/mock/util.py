@@ -340,3 +340,11 @@ class ChildPreExec(object):
         condChroot(self.chrootPath)
         condDropPrivs(self.uid, self.gid)
         condChdir(self.cwd)
+
+def is_in_dir(path, directory):
+    """Tests whether `path` is inside `directory`."""
+    # use realpath to expand symlinks
+    path = os.path.realpath(path)
+    directory = os.path.realpath(directory)
+
+    return os.path.commonprefix([path, directory]) == directory

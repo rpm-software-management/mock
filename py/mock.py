@@ -254,8 +254,8 @@ def setup_default_config_opts(config_opts, unprivUid):
 
     # cleanup_on_* only take effect for separate --resultdir
     # config_opts provides fine-grained control. cmdline only has big hammer
-    config_opts['cleanup_on_success'] = 1
-    config_opts['cleanup_on_failure'] = 1
+    config_opts['cleanup_on_success'] = True
+    config_opts['cleanup_on_failure'] = True
 
     config_opts['createrepo_on_rpms'] = False
     config_opts['createrepo_command'] = '/usr/bin/createrepo -d -q -x *.src.rpm' # default command
@@ -388,10 +388,6 @@ def set_config_opts_per_cmdline(config_opts, options, args):
                 % (i, config_opts['plugins']))
         config_opts['plugin_conf']['%s_enable' % i] = True
 
-    if options.cleanup_after and not options.resultdir:
-        raise mock.exception.BadCmdline(
-            "Must specify --resultdir when using --cleanup-after")
-
     if options.mode in ("rebuild",) and len(args) > 1 and not options.resultdir:
         raise mock.exception.BadCmdline(
             "Must specify --resultdir when building multiple RPMS.")
@@ -403,9 +399,9 @@ def set_config_opts_per_cmdline(config_opts, options, args):
     if options.cleanup_after == True:
         config_opts['cleanup_on_success'] = True
         config_opts['cleanup_on_failure'] = True
-
-    # cant cleanup unless separate resultdir
-    if not options.resultdir:
+    # cant cleanup unless resultdir is separate from the root dir 
+    rootdir = os.path.join(config_opts['basedir'], config_opts['root']) 
+    if mock.util.is_in_dir(config_opts['resultdir'] % config_opts, rootdir): 
         config_opts['cleanup_on_success'] = False
         config_opts['cleanup_on_failure'] = False
 
