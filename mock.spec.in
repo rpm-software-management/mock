@@ -115,6 +115,13 @@ fi
 %attr(02775, root, mock) %dir /var/cache/mock
 
 %changelog
+* Sat May  7 2011 Clark Williams <williams@redhat.com> - 1.1.10-1
+- Fixed problem where mock was not constrained to the chroot (BZ# 669733)
+- From  Mathieu Bridon <bochecha@fedoraproject.org>
+  - fix chroot cleanup issues (BZ# 668222)
+- Fix typo in /dev/tty creation code for EPEL{4,5} (BZ# 675803)
+- From Ville Skyttä <ville.skytta@iki.fi>:
+  - Fixes shell escaping issue by using tuples rather than strings
 * Fri Feb 18 2011 Clark Williams <williams@redhat.com> - 1.1.9-1
 - fix createrepo generated root-owned repository data (BZ# 668278)
 - commented out /dev/tty handling code in backend.py (BZ# 609201)
