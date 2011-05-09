@@ -18,7 +18,7 @@ import mock.util
 class scmWorker(object):
     """Build RPMs from SCM"""
     decorate(traceLog())
-    def __init__(self, log, opts, selinux):
+    def __init__(self, log, opts):
         self.log = log
         self.log.debug("Initializing SCM integration...")
 
@@ -63,14 +63,11 @@ class scmWorker(object):
         self.ext_src_dir = opts['ext_src_dir']
         self.write_tar = opts['write_tar']
 
-        self.selinux = selinux
-
         self.log.debug("SCM checkout command: " + self.get)
 
     decorate(traceLog())
     def get_sources(self):
         self.wrk_dir = tempfile.mkdtemp(".mock-scm." + self.pkg)
-        os.chmod(self.wrk_dir, 0755)
         self.src_dir = self.wrk_dir + "/" + self.pkg
         self.log.debug("SCM checkout directory: " + self.wrk_dir)
         mock.util.do(shlex.split(self.get), shell=False, cwd=self.wrk_dir)
@@ -93,6 +90,7 @@ class scmWorker(object):
             sf = self.src_dir + "/" + self.spec.lower()
         if not os.path.exists(sf):
             self.log.error("Can't find spec file %s" % self.src_dir + "/" + self.spec)
+            self.clean()
             sys.exit(5)
         self.spec = sf
 
@@ -134,4 +132,4 @@ class scmWorker(object):
     decorate(traceLog())
     def clean(self):
         self.log.debug("Clean SCM checkout directory")
-        mock.util.rmtree(self.wrk_dir, selinux=self.selinux)
+        mock.util.rmtree(self.wrk_dir)
