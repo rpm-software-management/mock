@@ -35,13 +35,14 @@ class scmWorker(object):
             sys.exit(5)
 
         self.branch = None
+        self.postget = None
         if 'branch' in opts:
             self.branch = opts['branch']
         if self.branch:
             if self.method == "cvs":
                 self.get = self.get.replace("SCM_BRN", "-r " + self.branch)
             elif self.method == "git":
-                self.get = self.get.replace("SCM_BRN", "-b " + self.branch)
+                self.postget = "git checkout " + self.branch
             elif self.method == "svn":
                 self.get = self.get.replace("SCM_BRN", self.branch)
             else:
@@ -65,6 +66,7 @@ class scmWorker(object):
         self.write_tar = opts['write_tar']
 
         self.log.debug("SCM checkout command: " + self.get)
+        self.log.debug("SCM checkout post command: " + str(self.postget))
 
     decorate(traceLog())
     def get_sources(self):
@@ -74,6 +76,8 @@ class scmWorker(object):
         os.environ['CVS_RSH'] = "ssh"
         os.environ['SSH_AUTH_SOCK'] = pwd.getpwuid(os.getuid()).pw_dir + "/.ssh/auth_sock"
         mock.util.do(shlex.split(self.get), shell=False, cwd=self.wrk_dir)
+        if self.postget:
+            mock.util.do(shlex.split(self.postget), shell=False, cwd=self.src_dir)
 
         self.log.debug("Fetched sources from SCM")
 
