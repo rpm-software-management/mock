@@ -8,6 +8,7 @@ import tempfile
 import shutil
 import shlex
 import sys
+import pwd
 import os
 
 # our imports
@@ -18,7 +19,7 @@ import mock.util
 class scmWorker(object):
     """Build RPMs from SCM"""
     decorate(traceLog())
-    def __init__(self, log, opts, selinux):
+    def __init__(self, log, opts):
         self.log = log
         self.log.debug("Initializing SCM integration...")
 
@@ -34,13 +35,14 @@ class scmWorker(object):
             sys.exit(5)
 
         self.branch = None
+        self.postget = None
         if 'branch' in opts:
             self.branch = opts['branch']
         if self.branch:
             if self.method == "cvs":
                 self.get = self.get.replace("SCM_BRN", "-r " + self.branch)
             elif self.method == "git":
-                self.get = self.get.replace("SCM_BRN", "-b " + self.branch)
+                self.postget = "git checkout " + self.branch
             elif self.method == "svn":
                 self.get = self.get.replace("SCM_BRN", self.branch)
             else:
@@ -63,17 +65,19 @@ class scmWorker(object):
         self.ext_src_dir = opts['ext_src_dir']
         self.write_tar = opts['write_tar']
 
-        self.selinux = selinux
-
         self.log.debug("SCM checkout command: " + self.get)
+        self.log.debug("SCM checkout post command: " + str(self.postget))
 
     decorate(traceLog())
     def get_sources(self):
         self.wrk_dir = tempfile.mkdtemp(".mock-scm." + self.pkg)
-        os.chmod(self.wrk_dir, 0755)
         self.src_dir = self.wrk_dir + "/" + self.pkg
         self.log.debug("SCM checkout directory: " + self.wrk_dir)
+        os.environ['CVS_RSH'] = "ssh"
+        os.environ['SSH_AUTH_SOCK'] = pwd.getpwuid(os.getuid()).pw_dir + "/.ssh/auth_sock"
         mock.util.do(shlex.split(self.get), shell=False, cwd=self.wrk_dir)
+        if self.postget:
+            mock.util.do(shlex.split(self.postget), shell=False, cwd=self.src_dir)
 
         self.log.debug("Fetched sources from SCM")
 
@@ -93,6 +97,7 @@ class scmWorker(object):
             sf = self.src_dir + "/" + self.spec.lower()
         if not os.path.exists(sf):
             self.log.error("Can't find spec file %s" % self.src_dir + "/" + self.spec)
+            self.clean()
             sys.exit(5)
         self.spec = sf
 
@@ -134,4 +139,4 @@ class scmWorker(object):
     decorate(traceLog())
     def clean(self):
         self.log.debug("Clean SCM checkout directory")
-        mock.util.rmtree(self.wrk_dir, selinux=self.selinux)
+        mock.util.rmtree(self.wrk_dir)

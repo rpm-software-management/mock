@@ -664,6 +664,12 @@ def main(ret):
 ::1       localhost localhost.localdomain localhost6 localhost6.localdomain6
 '''
 
+    # Fetch and prepare sources from SCM
+    if config_opts['scm']:
+        scmWorker = mock.scm.scmWorker(log, config_opts['scm_opts'])
+        scmWorker.get_sources()
+        (options.sources, options.spec) = scmWorker.prepare_sources()
+
     # elevate privs
     uidManager._becomeUser(0, 0)
 
@@ -694,13 +700,6 @@ def main(ret):
     # set personality (ie. setarch)
     if config_opts['internal_setarch']:
         mock.util.condPersonality(config_opts['target_arch'])
-
-    # Fetch and prepare sources from SCM
-    if config_opts['scm']:
-        scmWorker = mock.scm.scmWorker(log, config_opts['scm_opts'], chroot.__dict__['selinux'])
-        chroot.addHook('postbuild', scmWorker.clean)
-        scmWorker.get_sources()
-        (options.sources, options.spec) = scmWorker.prepare_sources()
 
     if options.mode == 'init':
         if config_opts['clean']:
@@ -791,6 +790,7 @@ def main(ret):
             srpm = do_buildsrpm(config_opts, chroot, options, args)
             if srpm:
                 args.append(srpm)
+            scmWorker.clean()
         do_rebuild(config_opts, chroot, args)
 
     elif options.mode == 'buildsrpm':
