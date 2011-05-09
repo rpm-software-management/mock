@@ -8,6 +8,7 @@ import tempfile
 import shutil
 import shlex
 import sys
+import pwd
 import os
 
 # our imports
@@ -70,6 +71,8 @@ class scmWorker(object):
         self.wrk_dir = tempfile.mkdtemp(".mock-scm." + self.pkg)
         self.src_dir = self.wrk_dir + "/" + self.pkg
         self.log.debug("SCM checkout directory: " + self.wrk_dir)
+        os.environ['CVS_RSH'] = "ssh"
+        os.environ['SSH_AUTH_SOCK'] = pwd.getpwuid(os.getuid()).pw_dir + "/.ssh/auth_sock"
         mock.util.do(shlex.split(self.get), shell=False, cwd=self.wrk_dir)
 
         self.log.debug("Fetched sources from SCM")
