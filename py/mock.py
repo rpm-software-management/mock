@@ -64,6 +64,7 @@ log = logging.getLogger()
 import mock.exception
 from mock.trace_decorator import traceLog, decorate
 import mock.backend
+import mock.scm
 import mock.uid
 import mock.util
 
@@ -253,8 +254,8 @@ def setup_default_config_opts(config_opts, unprivUid):
 
     # cleanup_on_* only take effect for separate --resultdir
     # config_opts provides fine-grained control. cmdline only has big hammer
-    config_opts['cleanup_on_success'] = 1
-    config_opts['cleanup_on_failure'] = 1
+    config_opts['cleanup_on_success'] = True
+    config_opts['cleanup_on_failure'] = True
 
     config_opts['createrepo_on_rpms'] = False
     config_opts['createrepo_command'] = '/usr/bin/createrepo -d -q -x *.src.rpm' # default command
@@ -263,7 +264,7 @@ def setup_default_config_opts(config_opts, unprivUid):
     #    root_cache next.
     #    after that, any plugins that must create dirs (yum_cache)
     #    any plugins without preinit hooks should be last.
-    config_opts['plugins'] = ['tmpfs', 'root_cache', 'yum_cache', 'bind_mount', 'ccache', 'selinux', 'scm']
+    config_opts['plugins'] = ['tmpfs', 'root_cache', 'yum_cache', 'bind_mount', 'ccache', 'selinux']
     config_opts['plugin_dir'] = os.path.join(PKGPYTHONDIR, "plugins")
     config_opts['plugin_conf'] = {
             'ccache_enable': True,
@@ -294,8 +295,6 @@ def setup_default_config_opts(config_opts, unprivUid):
                 'max_fs_size': None},
             'selinux_enable': True,
             'selinux_opts': {},
-            'scm_enable' : False,
-            'scm_opts' : {},
             }
 
     runtime_plugins = [runtime_plugin
@@ -389,10 +388,6 @@ def set_config_opts_per_cmdline(config_opts, options, args):
                 % (i, config_opts['plugins']))
         config_opts['plugin_conf']['%s_enable' % i] = True
 
-    if options.cleanup_after and not options.resultdir:
-        raise mock.exception.BadCmdline(
-            "Must specify --resultdir when using --cleanup-after")
-
     if options.mode in ("rebuild",) and len(args) > 1 and not options.resultdir:
         raise mock.exception.BadCmdline(
             "Must specify --resultdir when building multiple RPMS.")
@@ -404,9 +399,9 @@ def set_config_opts_per_cmdline(config_opts, options, args):
     if options.cleanup_after == True:
         config_opts['cleanup_on_success'] = True
         config_opts['cleanup_on_failure'] = True
-
-    # cant cleanup unless separate resultdir
-    if not options.resultdir:
+    # cant cleanup unless resultdir is separate from the root dir 
+    rootdir = os.path.join(config_opts['basedir'], config_opts['root']) 
+    if mock.util.is_in_dir(config_opts['resultdir'] % config_opts, rootdir): 
         config_opts['cleanup_on_success'] = False
         config_opts['cleanup_on_failure'] = False
 
@@ -669,6 +664,12 @@ def main(ret):
 ::1       localhost localhost.localdomain localhost6 localhost6.localdomain6
 '''
 
+    # Fetch and prepare sources from SCM
+    if config_opts['scm']:
+        scmWorker = mock.scm.scmWorker(log, config_opts['scm_opts'])
+        scmWorker.get_sources()
+        (options.sources, options.spec) = scmWorker.prepare_sources()
+
     # elevate privs
     uidManager._becomeUser(0, 0)
 
@@ -699,13 +700,6 @@ def main(ret):
     # set personality (ie. setarch)
     if config_opts['internal_setarch']:
         mock.util.condPersonality(config_opts['target_arch'])
-
-    # Fetch and prepare sources from SCM
-    if config_opts['scm']:
-        scmWorker = mock.scm.scmWorker(log, config_opts['scm_opts'], chroot.__dict__['selinux'])
-        chroot.addHook('postbuild', scmWorker.clean)
-        scmWorker.get_sources()
-        (options.sources, options.spec) = scmWorker.prepare_sources()
 
     if options.mode == 'init':
         if config_opts['clean']:
@@ -796,6 +790,7 @@ def main(ret):
             srpm = do_buildsrpm(config_opts, chroot, options, args)
             if srpm:
                 args.append(srpm)
+            scmWorker.clean()
         do_rebuild(config_opts, chroot, args)
 
     elif options.mode == 'buildsrpm':
