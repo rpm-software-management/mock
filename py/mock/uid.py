@@ -67,6 +67,15 @@ class uidManager(object):
             os.setregid(gid, gid)
         setresuid(uid, uid, 0)
 
+    decorate(traceLog())
+    def changeOwner(self, path, uid=None, gid=None):
+        self._elevatePrivs()
+        if uid is None:
+            uid = self.unprivUid
+        if gid is None:
+            gid = uid
+        os.chown(path, uid, gid)
+
 # python doesnt have native versions of these. :(
 
 import ctypes

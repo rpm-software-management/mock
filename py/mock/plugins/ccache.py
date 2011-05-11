@@ -50,8 +50,7 @@ class CCache(object):
     def _ccachePreInitHook(self):
         getLog().info("enabled ccache")
         mock.util.mkdirIfAbsent(self.rootObj.makeChrootPath('/tmp/ccache'))
-        self.rootObj.uidManager.dropPrivsTemp()
-        mock.util.mkdirIfAbsent(self.ccachePath)
-        self.rootObj.uidManager.restorePrivs()
         os.environ['CCACHE_DIR'] = "/tmp/ccache"
         os.environ['CCACHE_UMASK'] = "002"
+        mock.util.mkdirIfAbsent(self.ccachePath)
+        self.rootObj.uidManager.changeOwner(self.ccachePath)
