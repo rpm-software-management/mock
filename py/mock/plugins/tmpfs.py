@@ -53,6 +53,11 @@ class Tmpfs(object):
     def _tmpfsPostBuildHook(self):
         getLog().info("unmounting tmpfs.")
         mountCmd = ["umount", "-n", self.rootObj.makeChrootPath()]
-        mock.util.do(mountCmd, shell=False)
+        # since we're in a separate namespace, the mount will be cleaned up
+        # on exit, so just warn if it fails here
+        try:
+            mock.util.do(mountCmd, shell=False)
+        except:
+            getlog().warning("tmpfs-plugin: exception while umounting tmpfs! (cwd: %s)" % os.getcwd())
 
 
