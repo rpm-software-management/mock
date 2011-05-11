@@ -716,7 +716,7 @@ class Root(object):
     def _show_path_user(self, path):
         cmd = ['/sbin/fuser', '-a', '-v', path]
         self.root_log.debug("using 'fuser' to find users of %s" % path)
-        out = mock.util.do(cmd, returnOutput=1)
+        out = mock.util.do(cmd, returnOutput=1, raiseExc=False)
         self.root_log.debug(out)
         return out
 
