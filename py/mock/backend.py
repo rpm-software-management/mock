@@ -37,7 +37,7 @@ class Root(object):
         self._hooks = {}
         self.chrootWasCached = False
         self.chrootWasCleaned = False
-        self.preExistingDeps = ""
+        self.preExistingDeps = []
         self.logging_initialized = False
         self.buildrootLock = None
         self.version = config['version']
@@ -70,6 +70,9 @@ class Root(object):
         self.use_host_resolv = config['use_host_resolv']
         self.chroot_file_contents = config['files']
         self.chroot_setup_cmd = config['chroot_setup_cmd']
+        if isinstance(self.chroot_setup_cmd, basestring):
+            # accept strings in addition to other sequence types
+            self.chroot_setup_cmd = self.chroot_setup_cmd.split()
         self.yum_path = '/usr/bin/yum'
         self.yum_builddep_path = '/usr/bin/yum-builddep'
         self.macros = config['macros']
@@ -355,7 +358,7 @@ class Root(object):
             if self.chrootWasCleaned:
                 self.yum_init_install_output = self._yum(self.chroot_setup_cmd, returnOutput=1)
             if self.chrootWasCached:
-                self._yum('update', returnOutput=1)
+                self._yum(('update',), returnOutput=1)
 
             # create user
             self._makeBuildUser()
@@ -450,7 +453,7 @@ class Root(object):
         self.root_log.info("installing package(s): %s" % " ".join(rpms))
         try:
             self._mountall()
-            output = self._yum('install %s' % ' '.join(rpms), returnOutput=1)
+            output = self._yum(['install'] + list(rpms), returnOutput=1)
             self.root_log.info(output)
         finally:
             self._umountall()
@@ -460,7 +463,7 @@ class Root(object):
         """use yum to update the chroot"""
         try:
             self._mountall()
-            self._yum('update', returnOutput=1)
+            self._yum(('update',), returnOutput=1)
         finally:
             self._umountall()
 
@@ -477,20 +480,21 @@ class Root(object):
                         raise mock.exception.BuildError, "Bad build req: %s. Exiting." % line
 
             # first, install pre-existing deps and configured additional ones
-            arg_string = self.preExistingDeps
+            deps = list(self.preExistingDeps)
             for hdr in mock.util.yieldSrpmHeaders(srpms, plainRpmOk=1):
                 # get text buildreqs
-                for item in mock.util.getAddtlReqs(hdr, self.more_buildreqs):
-                    arg_string = arg_string + " '%s'" % item
-            if arg_string != "":
+                deps.extend(mock.util.getAddtlReqs(hdr, self.more_buildreqs))
+            if deps:
                 # everything exists, okay, install them all.
-                # pass build reqs (as strings) to installer
-                _yum_and_check('resolvedep %s' % arg_string)
+                # pass build reqs to installer
+                args = ['resolvedep'] + deps
+                _yum_and_check(args)
                 # nothing made us exit, so we continue
-                self._yum('install %s' % arg_string, returnOutput=1)
+                args[0] = 'install'
+                self._yum(args, returnOutput=1)
 
             # install actual build dependencies
-            _yum_and_check("builddep '%s'" % "' '".join(srpms))
+            _yum_and_check(['builddep'] + list(srpms))
         finally:
             self.uidManager.restorePrivs()
 
@@ -712,29 +716,29 @@ class Root(object):
     def _show_path_user(self, path):
         cmd = ['/sbin/fuser', '-a', '-v', path]
         self.root_log.debug("using 'fuser' to find users of %s" % path)
-        out = mock.util.do(cmd, returnOutput=1)
+        out = mock.util.do(cmd, returnOutput=1, raiseExc=False)
         self.root_log.debug(out)
         return out
 
     decorate(traceLog())
     def _yum(self, cmd, returnOutput=0):
         """use yum to install packages/package groups into the chroot"""
-        # mock-helper yum --installroot=rootdir cmd
-        cmdOpts = ""
-        if not self.online:
-            cmdOpts = "-C"
 
+        yumcmd = [self.yum_path]
+        cmdix = 0
         # invoke yum-builddep instead of yum if cmd is builddep
-        exepath = self.yum_path
-        if cmd.startswith("builddep "):
-            exepath = self.yum_builddep_path
-            cmd = cmd[len("builddep "):]
-        cmd = '%s --installroot %s %s %s' % (exepath, self.makeChrootPath(), cmdOpts, cmd)
-        self.root_log.debug(cmd)
+        if cmd[0] == "builddep":
+            yumcmd[0] = self.yum_builddep_path
+            cmdix = 1
+        yumcmd.extend(('--installroot', self.makeChrootPath()))
+        if not self.online:
+            yumcmd.append("-C")
+        yumcmd.extend(cmd[cmdix:])
+        self.root_log.debug(yumcmd)
         output = ""
         try:
             self._callHooks("preyum")
-            output = mock.util.do(cmd, returnOutput=returnOutput, shell=True)
+            output = mock.util.do(yumcmd, returnOutput=returnOutput)
             self._callHooks("postyum")
             return output
         except mock.exception.Error, e:
