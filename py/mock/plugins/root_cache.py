@@ -33,6 +33,9 @@ class RootCache(object):
         self.rootCacheFile = os.path.join(self.rootSharedCachePath, "cache.tar")
         self.rootCacheLock = None
         self.compressProgram = self.root_cache_opts['compress_program']
+        if self.compressProgram == 'pigz' and not os.path.exists('/usr/bin/pigz'):
+            getLog().warn("specified 'pigz' as the root cache compress program but not available; using gzip")
+            self.compressProgram = 'gzip'
         if self.compressProgram:
              self.compressArgs = ['--use-compress-program', self.compressProgram]
              self.rootCacheFile = self.rootCacheFile + self.root_cache_opts['extension']
