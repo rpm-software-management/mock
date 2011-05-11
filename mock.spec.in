@@ -42,6 +42,7 @@ rm -rf $RPM_BUILD_ROOT
 make DESTDIR=$RPM_BUILD_ROOT install
 mkdir -p $RPM_BUILD_ROOT/var/lib/mock
 mkdir -p $RPM_BUILD_ROOT/var/cache/mock
+chmod 2775 $RPM_BUILD_ROOT/var/cache/mock
 ln -s consolehelper $RPM_BUILD_ROOT/usr/bin/mock
 
 # compatibility symlinks
@@ -84,6 +85,8 @@ if [ ! -e %{_sysconfdir}/%{name}/default.cfg ] ; then
         fi
     done
 fi
+# fix cache permissions from old installs
+chmod 2755 /var/cache/mock
 :
 
 %files -f %{name}.cfgs
