@@ -105,16 +105,17 @@ def rmtree(path, *args, **kargs):
             else:
                 raise
 
+from signal import SIGTERM
 decorate(traceLog())
-def orphansKill(rootToKill):
+def orphansKill(rootToKill, killsig=SIGTERM):
     """kill off anything that is still chrooted."""
     getLog().debug("kill orphans")
-    for fn in os.listdir("/proc"):
+    for fn in [ d for d in os.listdir("/proc") if d.isdigit() ]:
         try:
             root = os.readlink("/proc/%s/root" % fn)
             if os.path.realpath(root) == os.path.realpath(rootToKill):
                 getLog().warning("Process ID %s still running in chroot. Killing..." % fn)
-                os.kill(int(fn, 10), 15)
+                os.kill(int(fn, 10), killsig)
         except OSError, e:
             pass
 
