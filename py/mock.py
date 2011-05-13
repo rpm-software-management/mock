@@ -426,7 +426,7 @@ legal_arches = {
     'ppc64'  : ('ppc', 'ppc64'),
     'sparc'  : ('sparc',),
     'sparc64': ('sparc', 'sparc64'),
-    's390x'  : ('s390x',),
+    's390x'  : ('s390', 's390x',),
 }
 
 decorate(traceLog())
