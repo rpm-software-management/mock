@@ -118,6 +118,29 @@ chmod 2755 /var/cache/mock
 %attr(02775, root, mock) %dir /var/cache/mock
 
 %changelog
+* Fri May 13 2011 Clark Williams <williams@redhat.com> - 1.1.10-1
+- raise exception if running mock and user not member of mock group (BZ# 630791)
+- call setsid() to kill controlling terminal in chroot (BZ# 672713,501096)
+- Went back to creating /dev/tty and /dev/ptmx in all chroots (BZ# 683111)
+- Fixed problem where mock was not constrained to the chroot (BZ# 669733)
+- Fix typo in /dev/tty creation code for EPEL{4,5} (BZ# 675803)
+- From Marko Myllynen <myllynen@redhat.com>:
+  - updated SCM integration (BZ# 670453)
+- from Masatake YAMATO <yamato@redhat.com>:
+  - fixed invocation typo in exception.py (BZ# 634555)
+- From Jan Vcelak <jvcelak@redhat.com>:
+  - updated selinux plugin (BZ# 573111, 667190)
+- From Levente Farkas <lfarkas@lfarkas.org>:
+  - adding missing macro for epel-5 configs (BZ# 695298)
+- From  Mathieu Bridon <bochecha@fedoraproject.org> and
+        Remi Collet <fedora@famillecollet.com>:
+  - fix chroot cleanup issues (BZ# 668222)
+  - fix ccache ownership issues (BZ# 700983)
+- From Dan Horák <dan@danny.cz>:
+  - added s390 back as legal arch for s390x (BZ# 678047)
+- From Ville Skyttä <ville.skytta@iki.fi>:
+  - Fixes shell escaping issue by using tuples rather than strings
+
 * Fri Feb 18 2011 Clark Williams <williams@redhat.com> - 1.1.9-1
 - fix createrepo generated root-owned repository data (BZ# 668278)
 - commented out /dev/tty handling code in backend.py (BZ# 609201)
