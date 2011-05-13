@@ -77,9 +77,11 @@ In the fedora git (koji) tree
    8) merge master into the current release
        $ git merge master
       if there are conflicts, resolve and commit
-   9) initiate a build for the branch
+   9) push changes back to origin
+       $ fedpkg push
+   10) initiate a build for the branch
        $ fedpkg build --nowait
-   10) repeat steps 8 and 9 for all supported fedora releases and EPEL releases
+   11) repeat steps 8 and 9 for all supported fedora releases and EPEL releases
       (e.g. f14, f13, el6)
 
 Once the builds finish (successfully) you should push the just built
