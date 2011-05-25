@@ -141,9 +141,11 @@ class Root(object):
     decorate(traceLog())
     def clean(self):
         """clean out chroot with extreme prejudice :)"""
+        from signal import SIGKILL
         self.tryLockBuildRoot()
         self.state("clean")
         self._callHooks('clean')
+        mock.util.orphansKill(self.makeChrootPath())
         self._unlock_and_rm_chroot()
         self.chrootWasCleaned = True
         self.unlockBuildRoot()
