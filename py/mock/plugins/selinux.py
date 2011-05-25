@@ -71,7 +71,7 @@ class SELinux(object):
         try:
             os.unlink(self.filesystems)
         except OSError, e:
-            getLog().warning("unable to delete selinux filesystems (%s): %s" % (self._filesystems, e))
+            getLog().warning("unable to delete selinux filesystems (%s): %s" % (self.filesystems, e))
             pass
 
     decorate(traceLog())
