@@ -443,10 +443,10 @@ class Root(object):
     # bad hack
     # comment out decorator here so we dont get double exceptions in the root log
     #decorate(traceLog())
-    def doChroot(self, command, env="", shell=True, *args, **kargs):
+    def doChroot(self, command, env="", shell=True, returnOutput=False, *args, **kargs):
         """execute given command in root"""
         return mock.util.do(command, chrootPath=self.makeChrootPath(),
-                            shell=shell, *args, **kargs )
+                            returnOutput=returnOutput, shell=shell, *args, **kargs )
 
     decorate(traceLog())
     def yumInstall(self, *rpms):

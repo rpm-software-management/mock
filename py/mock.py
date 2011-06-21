@@ -743,13 +743,15 @@ def main(ret):
         try:
             chroot._mountall()
             if options.unpriv:
-                chroot.doChroot(args, shell=shell,
+                output = chroot.doChroot(args, shell=shell, returnOutput=True,
                                 uid=chroot.chrootuid, gid=chroot.chrootgid, cwd=options.cwd)
             else:
-                chroot.doChroot(args, shell=shell, cwd=options.cwd)
+                output = chroot.doChroot(args, shell=shell, cwd=options.cwd, returnOutput=True)
         finally:
             chroot._umountall()
         chroot.unlockBuildRoot()
+        if output:
+            print output,
 
     elif options.mode == 'installdeps':
         if len(args) == 0:
