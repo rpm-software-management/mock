@@ -431,8 +431,6 @@ class Root(object):
                 self.umountCmds.append(devUnmtCmd)
 
         mountopt = 'gid=%d,mode=0620,ptmxmode=0666' % grp.getgrnam('tty').gr_gid
-        if mock.util.cmpKernelEVR(kver, '2.6.29') >= 0:
-            mountopt += ',newinstance'
 
         for devMntCmd in (
                 'mount -n -t devpts -o %s mock_chroot_devpts %s' % (mountopt, self.makeChrootPath('/dev/pts')),
