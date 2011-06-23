@@ -116,6 +116,17 @@ chmod 2775 /var/cache/mock
 %attr(02775, root, mock) %dir /var/cache/mock
 
 %changelog
+* Wed Jun 22 2011 Clark Williams <williams@redhat.com> - 1.0.18-1
+- remove 'newinstance' mount parameter from devpts filesystem mount (BZ# 711175)
+- modify --chroot command to print command output
+- update the python requirement to >= 2.6 for 1.1.x mock branch
+- updated build procedure using fedpkg
+- added Fedora 16 configuration files
+- from James Laska <jlaska@redhat.com>
+  - fix log message typo in SELinux plugin
+- from Yury V. Zaytsev <yury@shurup.com>
+  - Fix inconsistent permissions fixing on /var/cache/mock in SPEC template (BZ 715286)
+
 * Fri May 13 2011 Clark Williams <williams@redhat.com> - 1.0.17-1
 - rewrote part of selinux plugin for python 2.4
 - raise exception if running mock and user not member of mock group (BZ# 630791)
