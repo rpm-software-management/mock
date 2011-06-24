@@ -58,6 +58,6 @@ class Tmpfs(object):
         try:
             mock.util.do(mountCmd, shell=False)
         except:
-            getlog().warning("tmpfs-plugin: exception while umounting tmpfs! (cwd: %s)" % os.getcwd())
+            getLog().warning("tmpfs-plugin: exception while umounting tmpfs! (cwd: %s)" % os.getcwd())
 
 
