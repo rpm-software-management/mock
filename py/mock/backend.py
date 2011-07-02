@@ -431,12 +431,18 @@ class Root(object):
                 self.umountCmds.append(devUnmtCmd)
 
         mountopt = 'gid=%d,mode=0620,ptmxmode=0666' % grp.getgrnam('tty').gr_gid
+        if mock.util.cmpKernelEVR(kver, '2.6.29') >= 0:
+            mountopt += ',newinstance'
 
         for devMntCmd in (
-                'mount -n -t devpts -o %s mock_chroot_devpts %s' % (mountopt, self.makeChrootPath('/dev/pts')),
-                'mount -n -t tmpfs mock_chroot_shmfs %s' % self.makeChrootPath('/dev/shm') ):
+            'mount -n -t devpts -o %s mock_chroot_devpts %s' % (mountopt, self.makeChrootPath('/dev/pts')),
+            'mount -n -t tmpfs mock_chroot_shmfs %s' % self.makeChrootPath('/dev/shm') ):
             if devMntCmd not in self.mountCmds:
                 self.mountCmds.append(devMntCmd)
+
+        if mock.util.cmpKernelEVR(kver, '2.6.29') >= 0:
+            os.unlink(self.makeChrootPath('/dev/ptmx'))
+            os.symlink("pts/ptmx", self.makeChrootPath('/dev/ptmx'))
 
     # bad hack
     # comment out decorator here so we dont get double exceptions in the root log
