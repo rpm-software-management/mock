@@ -26,7 +26,7 @@ confusing the package repository with the upstream (source) repository
 
 Release checklist overview:
 
-   1) upstream git tree: pull, merge, checkin, tag and push
+   1) upstream git tree: pull, merge, checkin, tag and push, upload tarballs
    2) koji git tree: for each release: checkin tarball and spec, kick off builds
    3) bodhi: schedule releases
 
@@ -35,68 +35,74 @@ For a mock 1.1+ release
 
 In the upstream git tree:
 
-   0) fetch updates from origin and fast forward your local master
-      $ git fetch origin
+   0) change to the local master
       $ git checkout master
+   1) fetch git remotes and fast-forward your local master
+      $ git remote update
       $ git merge origin/master
-   1) create a branch from master (e.g. 'prerelease') and switch to it
+   2) create a branch from master (e.g. 'prerelease') and switch to it
       $ git branch prelease master
       $ git checkout prerelease
-   2) fetch remotes and merge remote updates
-      $ git fetch jkeating
+   3) merge any remote updates for specific fixes
       $ git merge jkeating/updates-for-clark
-   3) merge any local branch work and reolve any conflicts
+   4) merge any local branch work and reolve any conflicts
       $ git merge work
-   4) update configure.ac with new version info (don't commit yet)
-   5) update the %changelog section of mock.spec.in
-   6) run 'autogen.sh' to update autoconf files
-   7) run 'configure' to generate Makefile and mock.spec
-   8) run 'make rpm' to generate binary RPM and propagate version
+   5) update configure.ac with new version info (don't commit yet)
+   6) update the %changelog section of mock.spec.in
+   7) run 'autogen.sh' to update autoconf files
+   8) run 'configure' to generate Makefile and mock.spec
+   9) run 'make rpm' to generate binary RPM and propagate version
       changes (Note this also generates a tar file for use later).
-   9) verify that tests/runtests.sh uses a supported config file
-      (i.e. released fedora minus one). If not, edit and commit
-  10) run 'make check' and fix any reported failures until it passes
-  11) check in any changes required to fix test failures
-  12) remove ChangeLog and AUTHORS
-  13) run 'make dist' to generate ChangeLog and AUTHORS files and
+  10) verify that tests/runtests.sh uses a supported config file
+      (e.g. released fedora minus one). If not, edit and commit
+  11) run 'make check' and fix any reported failures until it passes
+  12) check in any changes required to fix test failures
+  13) remove ChangeLog and AUTHORS
+  14) run 'make dist' to generate ChangeLog and AUTHORS files and
       regenerate tar file
-  14) commit configure.ac and any other changes with a
+  15) commit configure.ac and any other changes with a
       version bump message:
      $ git commit -m 'version bump' configure.ac
-  15) tag the git tree:
+  16) tag the git tree:
      $ git tag -u <your key> mock-<version>
-  16) checkout master and merge your work directory:
+  17) checkout master and merge your work directory:
       $ git checkout master
       $ git merge prerelease
-  16) push to main git repo (only from master branch):
+  18) push to main git repo (only from master branch):
      $ git push --tags origin master  
+  19) push tarballs to fedora ftp site
+
 
 In the fedora git (koji) tree
 
    1) cd to the previously cloned mock package repository
        $ cd ../mock-fedora.git
-   2) upload the new source tarball from the upstream git tree
+   2) change to the master branch:
+       $ fedpkg switch-branch master
+       	     or
+       $ git checkout master
+   3) upload the new source tarball from the upstream git tree
        $ fedpkg new-sources ../mock.git/mock-1.1.3.tar.gz
-   3) copy in the new specfile that matches the tarball
+   4) copy in the new specfile that matches the tarball
        $ cp ../mock.git/mock.spec .
-   4) create a clog from the new specfile
+   5) create a clog from the new specfile
        $ fedpkg clog
-   5) commit and push the new sources
+   6) commit and push the new sources
        $ fedpkg commit -F clog -p
-   6) initiate a koji build
+   7) initiate a koji build
        $ fedpkg build --notwait
-   7) switch branches to the latest released fedora
+   8) switch branches to the latest released fedora
        $ fedpkg switch-branch f14
               or
        $ git checkout f14
-   8) merge master into the current release
+   9) merge master into the current release
        $ git merge master
       if there are conflicts, resolve and commit
-   9) push changes back to origin
+   10) push changes back to origin
        $ fedpkg push
-   10) initiate a build for the branch
+   11) initiate a build for the branch
        $ fedpkg build --nowait
-   11) repeat steps 8 and 9 for all supported fedora releases and EPEL releases
+   12) repeat steps 8 and 9 for all supported fedora releases and EPEL releases
       (e.g. f14, f13, el6)
 
 Once the builds finish (successfully) you should push the just built
