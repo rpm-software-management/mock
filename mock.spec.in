@@ -18,7 +18,7 @@ Source: https://fedorahosted.org/mock/attachment/wiki/MockTarballs/%{name}-%{ver
 URL: http://fedoraproject.org/wiki/Projects/Mock
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch: noarch
-Requires: python >= 2.6, yum >= 2.4, yum-utils >= 1.1.9, tar, pigz, python-ctypes, python-decoratortools, usermode
+Requires: python >= 2.4, yum >= 2.4, yum-utils >= 1.1.9, tar, pigz, python-ctypes, python-decoratortools, usermode
 Requires: createrepo
 Requires(pre): shadow-utils
 Requires(post): coreutils
@@ -116,6 +116,15 @@ chmod 2775 /var/cache/mock
 %attr(02775, root, mock) %dir /var/cache/mock
 
 %changelog
+* Tue Jul 26 2011 Clark Williams <williams@redhat.com> - 1.0.19-1
+- fixed incorrect python version requirement
+- remove f13 configs
+- added exception for unshare(2) failures [BZ# 718714]
+- added back 'newinstance' mount option to devpts (with symlink logic)
+- fixed epel-6-* configurations [BZ# 679885, 719740]
+- from Matt Domsch <Matt_Domsch@dell.com>
+  - tmpfs plugin typo fix
+
 * Wed Jun 22 2011 Clark Williams <williams@redhat.com> - 1.0.18-1
 - remove 'newinstance' mount parameter from devpts filesystem mount (BZ# 711175)
 - modify --chroot command to print command output
