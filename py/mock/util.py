@@ -183,7 +183,7 @@ def unshare(flags):
     try:
         res = _libc.unshare(flags)
         if res:
-            raise OSError(_errno.value, os.strerror(_errno.value))
+            raise UnshareFailed(os.strerror(_errno.value))
     except AttributeError, e:
         pass
 
