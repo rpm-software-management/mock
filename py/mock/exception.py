@@ -98,3 +98,10 @@ Try using the --resultdir= option to select another location. Recommended locati
         self.msg = msg
         self.resultcode = 70
 
+class UnshareFailed(Error):
+    "call to C library unshare(2) syscall failed"
+
+    def __init__(self, msg):
+        Error.__init__(self, msg)
+        self.msg = msg
+        self.resultcode = 80
