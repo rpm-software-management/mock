@@ -29,6 +29,7 @@ class Error(Exception):
 # 0 = yay!
 # 1 = something happened  - it's bad
 # 5 = cmdline processing error
+# 6 = invalid architecture
 # 10 = problem building the package
 # 20 = error in the chroot of some kind
 # 30 = Yum emitted an error of some sort
@@ -36,6 +37,7 @@ class Error(Exception):
 # 50 = tried to fork a subcommand and it errored out
 # 60 = buildroot locked
 # 70 = result dir could not be created
+# 80 = unshare of namespace failed
 
 class BuildError(Error):
     "rpmbuild failed."

@@ -691,8 +691,11 @@ def main(ret):
     # New namespace starting from here
     try:
         mock.util.unshare(mock.util.CLONE_NEWNS)
+    except mock.exception.UnshareFailed, e:
+        log.error("Namespace unshare failed.")
+        sys.exit(e.resultcode)
     except:
-        log.info("Namespace unshare failed.")
+        raise
 
     # set personality (ie. setarch)
     if config_opts['internal_setarch']:
