@@ -68,11 +68,12 @@ class SELinux(object):
 
     decorate(traceLog())
     def _selinuxAtExit(self):
-        try:
-            os.unlink(self.filesystems)
-        except OSError, e:
-            getLog().warning("unable to delete selinux filesystems (%s): %s" % (self.filesystems, e))
-            pass
+        if os.path.exists(self.filesystems):
+            try:
+                os.unlink(self.filesystems)
+            except OSError, e:
+                getLog().warning("unable to delete selinux filesystems (%s): %s" % (self.filesystems, e))
+                pass
 
     decorate(traceLog())
     def _selinuxPreYumHook(self):
