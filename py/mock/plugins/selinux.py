@@ -50,7 +50,7 @@ class SELinux(object):
             rootObj.addHook("preyum", self._selinuxPreYumHook)
             rootObj.addHook("postyum", self._selinuxPostYumHook)
         else:
-            getLog().warn("selinux: 'yum' does not support '--setopt' option")
+            getLog().warning("selinux: 'yum' does not support '--setopt' option")
 
     decorate(traceLog())
     def _selinuxCreateFauxFilesystems(self):
