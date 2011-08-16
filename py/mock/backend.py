@@ -67,6 +67,7 @@ class Root(object):
         self.chrootgid = config['chrootgid']
         self.chrootgroup = 'mockbuild'
         self.yum_conf_content = config['yum.conf']
+        self.yum_rhnplugin_conf_content = config['rhnplugin.conf']
         self.use_host_resolv = config['use_host_resolv']
         self.chroot_file_contents = config['files']
         self.chroot_setup_cmd = config['chroot_setup_cmd']
@@ -300,6 +301,10 @@ class Root(object):
                      self.makeChrootPath('var', 'log', 'yum.log')]:
             mock.util.touch(item)
 
+        # use yum plugin conf from chroot as needed
+        yumpluginconfdir = self.makeChrootPath('etc', 'yum', 'pluginconf.d')
+        self.yum_conf_content = self.yum_conf_content.replace("plugins=1", "plugins=1\npluginconfpath=" + yumpluginconfdir)
+
         # write in yum.conf into chroot
         # always truncate and overwrite (w+)
         self.root_log.debug('configure yum')
@@ -314,6 +319,15 @@ class Root(object):
         except OSError:
             pass
         os.symlink('yum/yum.conf', self.makeChrootPath("etc", "yum.conf"))
+
+        # write in yum rhnplugin.conf into chroot
+        # always truncate and overwrite (w+)
+        self.root_log.debug('configure yum rhnplugin')
+        mock.util.mkdirIfAbsent(yumpluginconfdir)
+        rhnconf = self.makeChrootPath('etc', 'yum', 'pluginconf.d', 'rhnplugin.conf')
+        rhnconf_fo = open(rhnconf, 'w+')
+        rhnconf_fo.write(self.yum_rhnplugin_conf_content)
+        rhnconf_fo.close()
 
         # set up resolver configuration
         if self.use_host_resolv:
