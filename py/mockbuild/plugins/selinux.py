@@ -11,15 +11,15 @@ import stat
 import atexit
 
 # our imports
-from mock.trace_decorator import decorate, traceLog, getLog
-import mock.util
+from mockbuild.trace_decorator import decorate, traceLog, getLog
+import mockbuild.util
 
 requires_api_version = "1.0"
 
 # plugin entry point
 decorate(traceLog())
 def init(rootObj, conf):
-    if mock.util.selinuxEnabled():
+    if mockbuild.util.selinuxEnabled():
         getLog().info("selinux enabled")
         SELinux(rootObj, conf)
     else:
@@ -76,12 +76,12 @@ class SELinux(object):
 
     decorate(traceLog())
     def _selinuxPreYumHook(self):
-        self._originalUtilDo = mock.util.do
-        mock.util.do = self._selinuxDoYum
+        self._originalUtilDo = mockbuild.util.do
+        mockbuild.util.do = self._selinuxDoYum
 
     decorate(traceLog())
     def _selinuxPostYumHook(self):
-        mock.util.do = self._originalUtilDo
+        mockbuild.util.do = self._originalUtilDo
 
     decorate(traceLog())
     def _selinuxDoYum(self, command, *args, **kargs):

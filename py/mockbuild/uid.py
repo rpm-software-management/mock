@@ -7,7 +7,7 @@
 import os
 
 # our imports
-from mock.trace_decorator import traceLog, decorate, getLog
+from mockbuild.trace_decorator import traceLog, decorate
 
 # class
 class uidManager(object):

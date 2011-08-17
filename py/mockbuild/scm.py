@@ -12,8 +12,8 @@ import pwd
 import os
 
 # our imports
-from mock.trace_decorator import traceLog, decorate
-import mock.util
+from mockbuild.trace_decorator import traceLog, decorate
+import mockbuild.util
 
 # class
 class scmWorker(object):
@@ -75,9 +75,9 @@ class scmWorker(object):
         self.log.debug("SCM checkout directory: " + self.wrk_dir)
         os.environ['CVS_RSH'] = "ssh"
         os.environ['SSH_AUTH_SOCK'] = pwd.getpwuid(os.getuid()).pw_dir + "/.ssh/auth_sock"
-        mock.util.do(shlex.split(self.get), shell=False, cwd=self.wrk_dir)
+        mockbuild.util.do(shlex.split(self.get), shell=False, cwd=self.wrk_dir)
         if self.postget:
-            mock.util.do(shlex.split(self.postget), shell=False, cwd=self.src_dir)
+            mockbuild.util.do(shlex.split(self.postget), shell=False, cwd=self.src_dir)
 
         self.log.debug("Fetched sources from SCM")
 
@@ -123,7 +123,7 @@ class scmWorker(object):
             cmd = "tar czf " + self.src_dir + "/" + tarball + \
                   " --exclude " + self.src_dir + "/" + tarball + \
                   " --xform='s,^" + self.pkg + "," + tardir + ",' " + self.pkg
-            mock.util.do(shlex.split(cmd), shell=False, cwd=self.wrk_dir)
+            mockbuild.util.do(shlex.split(cmd), shell=False, cwd=self.wrk_dir)
 
         # Get possible external sources from an external sources directory
         for f in self.sources:
@@ -139,4 +139,4 @@ class scmWorker(object):
     decorate(traceLog())
     def clean(self):
         self.log.debug("Clean SCM checkout directory")
-        mock.util.rmtree(self.wrk_dir)
+        mockbuild.util.rmtree(self.wrk_dir)

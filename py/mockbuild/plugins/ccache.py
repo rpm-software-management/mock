@@ -7,8 +7,8 @@
 import os
 
 # our imports
-from mock.trace_decorator import decorate, traceLog, getLog
-import mock.util
+from mockbuild.trace_decorator import decorate, traceLog, getLog
+import mockbuild.util
 
 requires_api_version = "1.0"
 
@@ -49,8 +49,8 @@ class CCache(object):
     decorate(traceLog())
     def _ccachePreInitHook(self):
         getLog().info("enabled ccache")
-        mock.util.mkdirIfAbsent(self.rootObj.makeChrootPath('/tmp/ccache'))
+        mockbuild.util.mkdirIfAbsent(self.rootObj.makeChrootPath('/tmp/ccache'))
         os.environ['CCACHE_DIR'] = "/tmp/ccache"
         os.environ['CCACHE_UMASK'] = "002"
-        mock.util.mkdirIfAbsent(self.ccachePath)
+        mockbuild.util.mkdirIfAbsent(self.ccachePath)
         self.rootObj.uidManager.changeOwner(self.ccachePath)

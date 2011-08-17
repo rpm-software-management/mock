@@ -11,8 +11,8 @@ import os
 import glob
 
 # our imports
-from mock.trace_decorator import decorate, traceLog, getLog
-import mock.util
+from mockbuild.trace_decorator import decorate, traceLog, getLog
+import mockbuild.util
 
 # set up logging, module options
 requires_api_version = "1.0"
@@ -38,7 +38,7 @@ class YumCache(object):
         rootObj.addHook("preinit", self._yumCachePreInitHook)
         rootObj.umountCmds.append('umount -n %s' % rootObj.makeChrootPath('/var/cache/yum'))
         rootObj.mountCmds.append('mount -n --bind %s  %s' % (self.yumSharedCachePath, rootObj.makeChrootPath('/var/cache/yum')))
-        mock.util.mkdirIfAbsent(self.yumSharedCachePath)
+        mockbuild.util.mkdirIfAbsent(self.yumSharedCachePath)
         self.yumCacheLock = open(os.path.join(self.yumSharedCachePath, "yumcache.lock"), "a+")
 
     # =============
@@ -65,7 +65,7 @@ class YumCache(object):
     decorate(traceLog())
     def _yumCachePreInitHook(self):
         getLog().info("enabled yum cache")
-        mock.util.mkdirIfAbsent(self.rootObj.makeChrootPath('/var/cache/yum'))
+        mockbuild.util.mkdirIfAbsent(self.rootObj.makeChrootPath('/var/cache/yum'))
 
         # lock so others dont accidentally use yum cache while we operate on it.
         self._yumCachePreYumHook()

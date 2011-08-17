@@ -7,8 +7,8 @@
 import os
 
 # our imports
-from mock.trace_decorator import decorate, traceLog, getLog
-import mock.util
+from mockbuild.trace_decorator import decorate, traceLog, getLog
+import mockbuild.util
 
 requires_api_version = "1.0"
 
@@ -47,7 +47,7 @@ class Tmpfs(object):
         getLog().info("mounting tmpfs.")
         mountCmd = ["mount", "-n", "-t", "tmpfs"] + self.optArgs + \
                    ["mock_chroot_tmpfs", self.rootObj.makeChrootPath()]
-        mock.util.do(mountCmd, shell=False)
+        mockbuild.util.do(mountCmd, shell=False)
 
     decorate(traceLog())
     def _tmpfsPostBuildHook(self):
@@ -56,7 +56,7 @@ class Tmpfs(object):
         # since we're in a separate namespace, the mount will be cleaned up
         # on exit, so just warn if it fails here
         try:
-            mock.util.do(mountCmd, shell=False)
+            mockbuild.util.do(mountCmd, shell=False)
         except:
             getLog().warning("tmpfs-plugin: exception while umounting tmpfs! (cwd: %s)" % os.getcwd())
 

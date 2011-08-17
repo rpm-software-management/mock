@@ -21,9 +21,9 @@ import time
 import errno
 
 # our imports
-import mock.exception
-from mock.trace_decorator import traceLog, decorate, getLog
-import mock.uid as uid
+import mockbuild.exception
+from mockbuild.trace_decorator import traceLog, decorate, getLog
+import mockbuild.uid as uid
 
 _libc = ctypes.cdll.LoadLibrary(None)
 _errno = ctypes.c_int.in_dll(_libc, "errno")
@@ -45,9 +45,9 @@ personality_defs = {
 }
 
 # classes
-class commandTimeoutExpired(mock.exception.Error):
+class commandTimeoutExpired(mockbuild.exception.Error):
     def __init__(self, msg):
-        mock.exception.Error.__init__(self, msg)
+        mockbuild.exception.Error.__init__(self, msg)
         self.msg = msg
         self.resultcode = 10
 
@@ -62,7 +62,7 @@ def mkdirIfAbsent(*args):
                 os.makedirs(dirName)
             except OSError, e:
                 getLog().exception("Could not create dir %s. Error: %s" % (dirName, e))
-                raise mock.exception.Error, "Could not create dir %s. Error: %s" % (dirName, e)
+                raise mockbuild.exception.Error, "Could not create dir %s. Error: %s" % (dirName, e)
 
 decorate(traceLog())
 def touch(fileName):
@@ -129,10 +129,10 @@ def yieldSrpmHeaders(srpms, plainRpmOk=0):
         try:
             hdr = rpmUtils.miscutils.hdrFromPackage(ts, srpm)
         except (rpmUtils.RpmUtilsError,), e:
-            raise mock.exception.Error, "Cannot find/open srpm: %s. Error: %s" % (srpm, ''.join(e))
+            raise mockbuild.exception.Error, "Cannot find/open srpm: %s. Error: %s" % (srpm, ''.join(e))
 
         if not plainRpmOk and hdr[rpm.RPMTAG_SOURCEPACKAGE] != 1:
-            raise mock.exception.Error("File is not an srpm: %s." % srpm )
+            raise mockbuild.exception.Error("File is not an srpm: %s." % srpm )
 
         yield hdr
 
@@ -184,7 +184,7 @@ def unshare(flags):
     try:
         res = _libc.unshare(flags)
         if res:
-            raise mock.exception.UnshareFailed(os.strerror(_errno.value))
+            raise mockbuild.exception.UnshareFailed(os.strerror(_errno.value))
     except AttributeError, e:
         pass
 
@@ -325,9 +325,9 @@ def do(command, shell=False, chrootPath=None, cwd=None, timeout=0, raiseExc=True
     logger.debug("Child returncode was: %s" % str(child.returncode))
     if raiseExc and child.returncode:
         if returnOutput:
-            raise mock.exception.Error, ("Command failed: \n # %s\n%s" % (command, output), child.returncode)
+            raise mockbuild.exception.Error, ("Command failed: \n # %s\n%s" % (command, output), child.returncode)
         else:
-            raise mock.exception.Error, ("Command failed. See logs for output.\n # %s" % (command,), child.returncode)
+            raise mockbuild.exception.Error, ("Command failed. See logs for output.\n # %s" % (command,), child.returncode)
 
     return output
 
