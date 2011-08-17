@@ -548,6 +548,10 @@ class Root(object):
                 gid=self.chrootgid,
                 )
 
+            # remove rpm db files to prevent version mismatch problems
+            for tmp in glob.glob(self.makeChrootPath('var/lib/rpm/__db*')):
+                os.unlink(tmp)
+
             # rebuild srpm/rpm from SPEC file
             specs = glob.glob(self.makeChrootPath(self.builddir, "SPECS", "*.spec"))
             if len(specs) < 1:
