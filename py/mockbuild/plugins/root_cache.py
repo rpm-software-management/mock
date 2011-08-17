@@ -10,8 +10,8 @@ import time
 from glob import glob
 
 # our imports
-from mock.trace_decorator import decorate, traceLog, getLog
-import mock.util
+from mockbuild.trace_decorator import decorate, traceLog, getLog
+import mockbuild.util
 
 requires_api_version = "1.0"
 
@@ -70,7 +70,7 @@ class RootCache(object):
     decorate(traceLog())
     def _rootCachePreInitHook(self):
         getLog().info("enabled root cache")
-        mock.util.mkdirIfAbsent(self.rootSharedCachePath)
+        mockbuild.util.mkdirIfAbsent(self.rootSharedCachePath)
         # lock so others dont accidentally use root cache while we operate on it.
         if self.rootCacheLock is None:
             self.rootCacheLock = open(os.path.join(self.rootSharedCachePath, "rootcache.lock"), "a+")
@@ -97,12 +97,12 @@ class RootCache(object):
         if os.path.exists(self.rootCacheFile) and self.rootObj.chrootWasCleaned:
             self.state("unpacking root cache")
             self._rootCacheLock()
-            mock.util.do(
+            mockbuild.util.do(
                 ["tar"] + self.compressArgs + ["-xf", self.rootCacheFile, "-C", self.rootObj.makeChrootPath()],
                 shell=False
                 )
             for dir in self.exclude_dirs:
-                mock.util.mkdirIfAbsent(self.rootObj.makeChrootPath(dir))
+                mockbuild.util.mkdirIfAbsent(self.rootObj.makeChrootPath(dir))
             self._rootCacheUnlock()
             self.rootObj.chrootWasCleaned = False
             self.rootObj.chrootWasCached = True
@@ -123,10 +123,10 @@ class RootCache(object):
             
             # never rebuild cache unless it was a clean build.
             if self.rootObj.chrootWasCleaned:
-                mock.util.do(["sync"], shell=False)
+                mockbuild.util.do(["sync"], shell=False)
                 self.state("creating cache")
                 try:
-                    mock.util.do(
+                    mockbuild.util.do(
                         ["tar"] + self.compressArgs + ["-cf", self.rootCacheFile,
                                                        "-C", self.rootObj.makeChrootPath()] +
                         self.exclude_tar_cmds + ["."],

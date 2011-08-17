@@ -43,23 +43,23 @@ bashcomp_DATA = etc/bash_completion.d/mock.bash
 
 pluginsdir = $(pkgpythondir)/plugins
 plugins_PYTHON = \
-    py/mock/plugins/bind_mount.py \
-    py/mock/plugins/ccache.py     \
-    py/mock/plugins/root_cache.py \
-    py/mock/plugins/tmpfs.py \
-    py/mock/plugins/yum_cache.py \
-    py/mock/plugins/selinux.py
+    py/mockbuild/plugins/bind_mount.py \
+    py/mockbuild/plugins/ccache.py     \
+    py/mockbuild/plugins/root_cache.py \
+    py/mockbuild/plugins/tmpfs.py \
+    py/mockbuild/plugins/yum_cache.py \
+    py/mockbuild/plugins/selinux.py
 
 pkgpython_PYTHON = \
-    py/mock/__init__.py        \
-    py/mock/exception.py       \
-    py/mock/util.py            \
-    py/mock/backend.py         \
-    py/mock/trace_decorator.py \
-    py/mock/uid.py             \
-    py/mock/scm.py
+    py/mockbuild/__init__.py        \
+    py/mockbuild/exception.py       \
+    py/mockbuild/util.py            \
+    py/mockbuild/backend.py         \
+    py/mockbuild/trace_decorator.py \
+    py/mockbuild/uid.py             \
+    py/mockbuild/scm.py
 
-CLEANFILES += py/*.pyc py/mock/*.pyc py/mock/plugins/*.pyc
+CLEANFILES += py/*.pyc py/mockbuild/*.pyc py/mockbuild/plugins/*.pyc
 
 dist: ChangeLog AUTHORS
 ChangeLog:

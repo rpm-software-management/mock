@@ -6,9 +6,9 @@
 # python library imports
 
 # our imports
-from mock.trace_decorator import decorate, traceLog
+from mockbuild.trace_decorator import decorate, traceLog
 
-import mock.util
+import mockbuild.util
 
 requires_api_version = "1.0"
 
@@ -33,4 +33,4 @@ class BindMount(object):
     decorate(traceLog())
     def _bindMountPreInitHook(self):
         for srcdir, destdir in self.bind_opts['dirs']:
-            mock.util.mkdirIfAbsent(self.rootObj.makeChrootPath(destdir))
+            mockbuild.util.mkdirIfAbsent(self.rootObj.makeChrootPath(destdir))

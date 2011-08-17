@@ -48,11 +48,11 @@ from glob import glob
 __VERSION__ = "unreleased_version"
 SYSCONFDIR = os.path.join(os.path.dirname(os.path.realpath(sys.argv[0])), "..", "etc")
 PYTHONDIR = os.path.dirname(os.path.realpath(sys.argv[0]))
-PKGPYTHONDIR = os.path.join(os.path.dirname(os.path.realpath(sys.argv[0])), "mock")
+PKGPYTHONDIR = os.path.join(os.path.dirname(os.path.realpath(sys.argv[0])), "mockbuild")
 MOCKCONFDIR = os.path.join(SYSCONFDIR, "mock")
 # end build system subs
 
-# import all mock.* modules after this.
+# import all mockbuild.* modules after this.
 sys.path.insert(0, PYTHONDIR)
 
 # set up basic logging until config file can be read
@@ -61,12 +61,12 @@ logging.basicConfig(format=FORMAT, level=logging.WARNING)
 log = logging.getLogger()
 
 # our imports
-import mock.exception
-from mock.trace_decorator import traceLog, decorate
-import mock.backend
-import mock.scm
-import mock.uid
-import mock.util
+import mockbuild.exception
+from mockbuild.trace_decorator import traceLog, decorate
+import mockbuild.backend
+import mockbuild.scm
+import mockbuild.uid
+import mockbuild.util
 
 def scrub_callback(option, opt, value, parser):
     parser.values.scrub.append(value)
@@ -218,7 +218,7 @@ def command_parse(config_opts):
 
     if options.mode == 'buildsrpm' and not (options.spec and options.sources):
         if not options.scm:
-            raise mock.exception.BadCmdline, "Must specify both --spec and --sources with --buildsrpm"
+            raise mockbuild.exception.BadCmdline, "Must specify both --spec and --sources with --buildsrpm"
     if options.spec:
         options.spec = os.path.expanduser(options.spec)
     if options.sources:
@@ -365,7 +365,7 @@ def set_config_opts_per_cmdline(config_opts, options, args):
                 k = '%%%s' % k
             config_opts['macros'].update({k: v})
         except:
-            raise mock.exception.BadCmdline(
+            raise mockbuild.exception.BadCmdline(
                 "Bad option for '--define' (%s).  Use --define 'macro expr'"
                 % macro)
 
@@ -378,19 +378,19 @@ def set_config_opts_per_cmdline(config_opts, options, args):
 
     for i in options.disabled_plugins:
         if i not in config_opts['plugins']:
-            raise mock.exception.BadCmdline(
+            raise mockbuild.exception.BadCmdline(
                 "Bad option for '--disable-plugin=%s'. Expecting one of: %s"
                 % (i, config_opts['plugins']))
         config_opts['plugin_conf']['%s_enable' % i] = False
     for i in options.enabled_plugins:
         if i not in config_opts['plugins']:
-            raise mock.exception.BadCmdline(
+            raise mockbuild.exception.BadCmdline(
                 "Bad option for '--enable-plugin=%s'. Expecting one of: %s"
                 % (i, config_opts['plugins']))
         config_opts['plugin_conf']['%s_enable' % i] = True
 
     if options.mode in ("rebuild",) and len(args) > 1 and not options.resultdir:
-        raise mock.exception.BadCmdline(
+        raise mockbuild.exception.BadCmdline(
             "Must specify --resultdir when building multiple RPMS.")
 
     if options.cleanup_after == False:
@@ -402,7 +402,7 @@ def set_config_opts_per_cmdline(config_opts, options, args):
         config_opts['cleanup_on_failure'] = True
     # cant cleanup unless resultdir is separate from the root dir 
     rootdir = os.path.join(config_opts['basedir'], config_opts['root']) 
-    if mock.util.is_in_dir(config_opts['resultdir'] % config_opts, rootdir): 
+    if mockbuild.util.is_in_dir(config_opts['resultdir'] % config_opts, rootdir): 
         config_opts['cleanup_on_success'] = False
         config_opts['cleanup_on_failure'] = False
 
@@ -415,7 +415,7 @@ def set_config_opts_per_cmdline(config_opts, options, args):
                 k, v = option.split("=", 1)
                 config_opts['scm_opts'].update({k: v})
             except:
-                raise mock.exception.BadCmdline(
+                raise mockbuild.exception.BadCmdline(
                 "Bad option for '--scm-option' (%s).  Use --scm-option 'key=value'"
                 % option)
 
@@ -438,7 +438,7 @@ def check_arch_combination(target_arch, config_opts):
         return
     host_arch = os.uname()[-1]
     if host_arch not in legal:
-        raise mock.exception.InvalidArchitecture(
+        raise mockbuild.exception.InvalidArchitecture(
             "Cannot build target %s on arch %s" % (target_arch, host_arch))
 
 decorate(traceLog())
@@ -449,7 +449,7 @@ def do_rebuild(config_opts, chroot, srpms):
         sys.exit(50)
 
     # check that everything is kosher. Raises exception on error
-    for hdr in mock.util.yieldSrpmHeaders(srpms):
+    for hdr in mockbuild.util.yieldSrpmHeaders(srpms):
         pass
 
     start = time.time()
@@ -476,7 +476,7 @@ def do_rebuild(config_opts, chroot, srpms):
             chroot.uidManager.dropPrivsTemp()
             cmd = config_opts["createrepo_command"].split()
             cmd.append(chroot.resultdir)
-            mock.util.do(cmd)
+            mockbuild.util.do(cmd)
             chroot.uidManager.restorePrivs()
             
     except (Exception, KeyboardInterrupt):
@@ -578,7 +578,7 @@ def main(ret):
         os.setgroups(groups)
         unprivGid = pwd.getpwuid(unprivUid)[3]
 
-    uidManager = mock.uid.uidManager(unprivUid, unprivGid)
+    uidManager = mockbuild.uid.uidManager(unprivUid, unprivGid)
     # go unpriv only when root to make --help etc work for non-mock users
     if os.geteuid() == 0:
         uidManager._becomeUser(unprivUid, unprivGid)
@@ -639,12 +639,12 @@ def main(ret):
     # set logging verbosity
     if options.verbose == 0:
         log.handlers[0].setLevel(logging.WARNING)
-        logging.getLogger("mock.Root.state").handlers[0].setLevel(logging.WARNING)
+        logging.getLogger("mockbuild.Root.state").handlers[0].setLevel(logging.WARNING)
     elif options.verbose == 1:
         log.handlers[0].setLevel(logging.INFO)
     elif options.verbose == 2:
         log.handlers[0].setLevel(logging.DEBUG)
-        logging.getLogger("mock.Root.build").propagate = 1
+        logging.getLogger("mockbuild.Root.build").propagate = 1
         logging.getLogger("mock").propagate = 1
 
     # enable tracing if requested
@@ -667,7 +667,7 @@ def main(ret):
 
     # Fetch and prepare sources from SCM
     if config_opts['scm']:
-        scmWorker = mock.scm.scmWorker(log, config_opts['scm_opts'])
+        scmWorker = mockbuild.scm.scmWorker(log, config_opts['scm_opts'])
         scmWorker.get_sources()
         (options.sources, options.spec) = scmWorker.prepare_sources()
 
@@ -676,7 +676,7 @@ def main(ret):
 
     # do whatever we're here to do
     log.info("mock.py version %s starting..." % __VERSION__)
-    chroot = mock.backend.Root(config_opts, uidManager)
+    chroot = mockbuild.backend.Root(config_opts, uidManager)
 
     if options.printrootpath:
         print chroot.makeChrootPath('')
@@ -694,8 +694,8 @@ def main(ret):
 
     # New namespace starting from here
     try:
-        mock.util.unshare(mock.util.CLONE_NEWNS)
-    except mock.exception.UnshareFailed, e:
+        mockbuild.util.unshare(mockbuild.util.CLONE_NEWNS)
+    except mockbuild.exception.UnshareFailed, e:
         log.error("Namespace unshare failed.")
         sys.exit(e.resultcode)
     except:
@@ -703,7 +703,7 @@ def main(ret):
 
     # set personality (ie. setarch)
     if config_opts['internal_setarch']:
-        mock.util.condPersonality(config_opts['target_arch'])
+        mockbuild.util.condPersonality(config_opts['target_arch'])
 
     if options.mode == 'init':
         if config_opts['clean']:
@@ -765,7 +765,7 @@ def main(ret):
             log.critical("You must specify an SRPM file.")
             sys.exit(50)
 
-        for hdr in mock.util.yieldSrpmHeaders(args, plainRpmOk=1):
+        for hdr in mockbuild.util.yieldSrpmHeaders(args, plainRpmOk=1):
             pass
         chroot.tryLockBuildRoot()
         try:
@@ -803,7 +803,7 @@ def main(ret):
         do_buildsrpm(config_opts, chroot, options, args)
 
     elif options.mode == 'orphanskill':
-        mock.util.orphansKill(chroot.makeChrootPath())
+        mockbuild.util.orphansKill(chroot.makeChrootPath())
     elif options.mode == 'copyin':
         chroot.tryLockBuildRoot()
         chroot._resetLogging()
@@ -882,17 +882,17 @@ if __name__ == '__main__':
         exitStatus = 7
         log.error("Exiting on user interrupt, <CTRL>-C")
 
-    except (mock.exception.ResultDirNotAccessible,), exc:
+    except (mockbuild.exception.ResultDirNotAccessible,), exc:
         exitStatus = exc.resultcode
         log.error(str(exc))
         killOrphans = 0
 
-    except (mock.exception.BadCmdline, mock.exception.BuildRootLocked), exc:
+    except (mockbuild.exception.BadCmdline, mockbuild.exception.BuildRootLocked), exc:
         exitStatus = exc.resultcode
         log.error(str(exc))
         killOrphans = 0
 
-    except (mock.exception.Error), exc:
+    except (mockbuild.exception.Error), exc:
         exitStatus = exc.resultcode
         log.error(str(exc))
 
@@ -901,7 +901,7 @@ if __name__ == '__main__':
         log.exception(exc)
 
     if killOrphans and retParams:
-        mock.util.orphansKill(retParams["chroot"].makeChrootPath())
+        mockbuild.util.orphansKill(retParams["chroot"].makeChrootPath())
 
     logging.shutdown()
     sys.exit(exitStatus)

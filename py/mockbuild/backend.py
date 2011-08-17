@@ -23,9 +23,9 @@ except:
 
 
 # our imports
-import mock.util
-import mock.exception
-from mock.trace_decorator import traceLog, decorate, getLog
+import mockbuild.util
+import mockbuild.exception
+from mockbuild.trace_decorator import traceLog, decorate, getLog
 
 # classes
 class Root(object):
@@ -56,8 +56,8 @@ class Root(object):
         self.resultdir = config['resultdir'] % config
 
         self.root_log = getLog("mock")
-        self.build_log = getLog("mock.Root.build")
-        self._state_log = getLog("mock.Root.state")
+        self.build_log = getLog("mockbuild.Root.build")
+        self._state_log = getLog("mockbuild.Root.state")
 
         # config options
         self.configs = config['config_paths']
@@ -115,7 +115,7 @@ class Root(object):
         # if the selinux plugin is disabled and we have SELinux enabled
         # on the host, we need to do SELinux things, so set the selinux
         # state variable to true
-        if self.pluginConf['selinux_enable'] == False and mock.util.selinuxEnabled():
+        if self.pluginConf['selinux_enable'] == False and mockbuild.util.selinuxEnabled():
             self.selinux = True
 
         # officially set state so it is logged
@@ -146,7 +146,7 @@ class Root(object):
         self.tryLockBuildRoot()
         self.state("clean")
         self._callHooks('clean')
-        mock.util.orphansKill(self.makeChrootPath())
+        mockbuild.util.orphansKill(self.makeChrootPath())
         self._unlock_and_rm_chroot()
         self.chrootWasCleaned = True
         self.unlockBuildRoot()
@@ -157,11 +157,11 @@ class Root(object):
             return
         t = self.basedir + ".tmp"
         if os.path.exists(t):
-            mock.util.rmtree(t, selinux=self.selinux)
+            mockbuild.util.rmtree(t, selinux=self.selinux)
         os.rename(self.basedir, t)
         self.buildrootLock.close()
         try:
-            mock.util.rmtree(t, selinux=self.selinux)
+            mockbuild.util.rmtree(t, selinux=self.selinux)
         except OSError, e:
             self.root_log.error(e)
             self.root_log.error("contents of /proc/mounts:\n%s" % open('/proc/mounts').read())
@@ -182,23 +182,23 @@ class Root(object):
                 self.root_log.info("scrubbing everything for %s" % self.config_name)
                 self._unlock_and_rm_chroot()
                 self.chrootWasCleaned = True
-                mock.util.rmtree(self.cachedir, selinux=self.selinux)
+                mockbuild.util.rmtree(self.cachedir, selinux=self.selinux)
             elif scrub == 'chroot':
                 self.root_log.info("scrubbing chroot for %s" % self.config_name)
                 self._unlock_and_rm_chroot()
                 self.chrootWasCleaned = True
             elif scrub == 'cache':
                 self.root_log.info("scrubbing cache for %s" % self.config_name)
-                mock.util.rmtree(self.cachedir, selinux=self.selinux)
+                mockbuild.util.rmtree(self.cachedir, selinux=self.selinux)
             elif scrub == 'c-cache':
                 self.root_log.info("scrubbing c-cache for %s" % self.config_name)
-                mock.util.rmtree(os.path.join(self.cachedir, 'ccache'), selinux=self.selinux)
+                mockbuild.util.rmtree(os.path.join(self.cachedir, 'ccache'), selinux=self.selinux)
             elif scrub == 'root-cache':
                 self.root_log.info("scrubbing root-cache for %s" % self.config_name)
-                mock.util.rmtree(os.path.join(self.cachedir, 'root_cache'), selinux=self.selinux)
+                mockbuild.util.rmtree(os.path.join(self.cachedir, 'root_cache'), selinux=self.selinux)
             elif scrub == 'yum-cache':
                 self.root_log.info("scrubbing yum-cache for %s" % self.config_name)
-                mock.util.rmtree(os.path.join(self.cachedir, 'yum_cache'), selinux=self.selinux)
+                mockbuild.util.rmtree(os.path.join(self.cachedir, 'yum_cache'), selinux=self.selinux)
         self.unlockBuildRoot()
 
     decorate(traceLog())
@@ -212,7 +212,7 @@ class Root(object):
         try:
             fcntl.lockf(self.buildrootLock.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
         except IOError, e:
-            raise mock.exception.BuildRootLocked, "Build root is locked by another process."
+            raise mockbuild.exception.BuildRootLocked, "Build root is locked by another process."
 
         return 1
 
@@ -252,15 +252,15 @@ class Root(object):
         #   --> no /etc/yum.conf symlink (F7 and above)
 
         # create our base directory hierarchy
-        mock.util.mkdirIfAbsent(self.basedir)
-        mock.util.mkdirIfAbsent(self.makeChrootPath())
+        mockbuild.util.mkdirIfAbsent(self.basedir)
+        mockbuild.util.mkdirIfAbsent(self.makeChrootPath())
 
         self.uidManager.dropPrivsTemp()
         try:
-            mock.util.mkdirIfAbsent(self.resultdir)
+            mockbuild.util.mkdirIfAbsent(self.resultdir)
         except (OSError,), e:
             if e.errno == 13:
-                raise mock.exception.ResultDirNotAccessible( ResultDirNotAccessible.__doc__ % self.resultdir )
+                raise mockbuild.exception.ResultDirNotAccessible( ResultDirNotAccessible.__doc__ % self.resultdir )
         self.uidManager.restorePrivs()
 
         # lock this buildroot so we dont get stomped on.
@@ -292,14 +292,14 @@ class Root(object):
                      'proc',
                      'sys',
                     ]:
-            mock.util.mkdirIfAbsent(self.makeChrootPath(item))
+            mockbuild.util.mkdirIfAbsent(self.makeChrootPath(item))
 
         # touch files
         self.root_log.debug('touch required files')
         for item in [self.makeChrootPath('etc', 'mtab'),
                      self.makeChrootPath('etc', 'fstab'),
                      self.makeChrootPath('var', 'log', 'yum.log')]:
-            mock.util.touch(item)
+            mockbuild.util.touch(item)
 
         # use yum plugin conf from chroot as needed
         yumpluginconfdir = self.makeChrootPath('etc', 'yum', 'pluginconf.d')
@@ -323,7 +323,7 @@ class Root(object):
         # write in yum rhnplugin.conf into chroot
         # always truncate and overwrite (w+)
         self.root_log.debug('configure yum rhnplugin')
-        mock.util.mkdirIfAbsent(yumpluginconfdir)
+        mockbuild.util.mkdirIfAbsent(yumpluginconfdir)
         rhnconf = self.makeChrootPath('etc', 'yum', 'pluginconf.d', 'rhnplugin.conf')
         rhnconf_fo = open(rhnconf, 'w+')
         rhnconf_fo.write(self.yum_rhnplugin_conf_content)
@@ -358,7 +358,7 @@ class Root(object):
             p = self.makeChrootPath(key)
             if not os.path.exists(p):
                 # create directory if necessary
-                mock.util.mkdirIfAbsent(os.path.dirname(p))
+                mockbuild.util.mkdirIfAbsent(os.path.dirname(p))
                 # write file
                 fo = open(p, 'w+')
                 fo.write(self.chroot_file_contents[key])
@@ -398,9 +398,9 @@ class Root(object):
     decorate(traceLog())
     def _setupDev(self, interactive=False):
         # files in /dev
-        mock.util.rmtree(self.makeChrootPath("dev"), selinux=self.selinux)
-        mock.util.mkdirIfAbsent(self.makeChrootPath("dev", "pts"))
-        mock.util.mkdirIfAbsent(self.makeChrootPath("dev", "shm"))
+        mockbuild.util.rmtree(self.makeChrootPath("dev"), selinux=self.selinux)
+        mockbuild.util.mkdirIfAbsent(self.makeChrootPath("dev", "pts"))
+        mockbuild.util.mkdirIfAbsent(self.makeChrootPath("dev", "shm"))
         prevMask = os.umask(0000)
         devFiles = [
             (stat.S_IFCHR | 0666, os.makedev(1, 3), "dev/null"),
@@ -420,7 +420,7 @@ class Root(object):
             # set context. (only necessary if host running selinux enabled.)
             # fails gracefully if chcon not installed.
             if self.selinux:
-                mock.util.do(
+                mockbuild.util.do(
                     ["chcon", "--reference=/%s"% i[2], self.makeChrootPath(i[2])]
                     , raiseExc=0, shell=False)
 
@@ -432,7 +432,7 @@ class Root(object):
         os.chown(self.makeChrootPath('dev/ptmx'), pwd.getpwnam('root')[2], grp.getgrnam('tty')[2])
 
         # symlink /dev/fd in the chroot for everything except RHEL4
-        if mock.util.cmpKernelEVR(kver, '2.6.9') > 0:
+        if mockbuild.util.cmpKernelEVR(kver, '2.6.9') > 0:
             os.symlink("/proc/self/fd",   self.makeChrootPath("dev/fd"))
 
         os.umask(prevMask)
@@ -445,7 +445,7 @@ class Root(object):
                 self.umountCmds.append(devUnmtCmd)
 
         mountopt = 'gid=%d,mode=0620,ptmxmode=0666' % grp.getgrnam('tty').gr_gid
-        if mock.util.cmpKernelEVR(kver, '2.6.29') >= 0:
+        if mockbuild.util.cmpKernelEVR(kver, '2.6.29') >= 0:
             mountopt += ',newinstance'
 
         for devMntCmd in (
@@ -454,7 +454,7 @@ class Root(object):
             if devMntCmd not in self.mountCmds:
                 self.mountCmds.append(devMntCmd)
 
-        if mock.util.cmpKernelEVR(kver, '2.6.29') >= 0:
+        if mockbuild.util.cmpKernelEVR(kver, '2.6.29') >= 0:
             os.unlink(self.makeChrootPath('/dev/ptmx'))
             os.symlink("pts/ptmx", self.makeChrootPath('/dev/ptmx'))
 
@@ -463,7 +463,7 @@ class Root(object):
     #decorate(traceLog())
     def doChroot(self, command, env="", shell=True, returnOutput=False, *args, **kargs):
         """execute given command in root"""
-        return mock.util.do(command, chrootPath=self.makeChrootPath(),
+        return mockbuild.util.do(command, chrootPath=self.makeChrootPath(),
                             returnOutput=returnOutput, shell=shell, *args, **kargs )
 
     decorate(traceLog())
@@ -497,13 +497,13 @@ class Root(object):
                 output = self._yum(cmd, returnOutput=1)
                 for line in output.split('\n'):
                     if line.lower().find('No Package found for'.lower()) != -1:
-                        raise mock.exception.BuildError, "Bad build req: %s. Exiting." % line
+                        raise mockbuild.exception.BuildError, "Bad build req: %s. Exiting." % line
 
             # first, install pre-existing deps and configured additional ones
             deps = list(self.preExistingDeps)
-            for hdr in mock.util.yieldSrpmHeaders(srpms, plainRpmOk=1):
+            for hdr in mockbuild.util.yieldSrpmHeaders(srpms, plainRpmOk=1):
                 # get text buildreqs
-                deps.extend(mock.util.getAddtlReqs(hdr, self.more_buildreqs))
+                deps.extend(mockbuild.util.getAddtlReqs(hdr, self.more_buildreqs))
             if deps:
                 # everything exists, okay, install them all.
                 # pass build reqs to installer
@@ -551,7 +551,7 @@ class Root(object):
             # rebuild srpm/rpm from SPEC file
             specs = glob.glob(self.makeChrootPath(self.builddir, "SPECS", "*.spec"))
             if len(specs) < 1:
-                raise mock.exception.PkgError, "No Spec file found in srpm: %s" % srpmBasename
+                raise mockbuild.exception.PkgError, "No Spec file found in srpm: %s" % srpmBasename
 
             spec = specs[0] # if there's more than one then someone is an idiot
             chrootspec = spec.replace(self.makeChrootPath(), '') # get rid of rootdir prefix
@@ -567,7 +567,7 @@ class Root(object):
 
             rebuiltSrpmFile = glob.glob("%s/%s/SRPMS/*.src.rpm" % (self.makeChrootPath(), self.builddir))
             if len(rebuiltSrpmFile) != 1:
-                raise mock.exception.PkgError, "Expected to find single rebuilt srpm, found %d." % len(rebuiltSrpmFile)
+                raise mockbuild.exception.PkgError, "Expected to find single rebuilt srpm, found %d." % len(rebuiltSrpmFile)
 
             rebuiltSrpmFile = rebuiltSrpmFile[0]
             self.installSrpmDeps(rebuiltSrpmFile)
@@ -652,7 +652,7 @@ class Root(object):
 
             rebuiltSrpmFile = glob.glob("%s/%s/SRPMS/*.src.rpm" % (self.makeChrootPath(), self.builddir))
             if len(rebuiltSrpmFile) != 1:
-                raise mock.exception.PkgError, "Expected to find single rebuilt srpm, found %d." % len(rebuiltSrpmFile)
+                raise mockbuild.exception.PkgError, "Expected to find single rebuilt srpm, found %d." % len(rebuiltSrpmFile)
 
             rebuiltSrpmFile = rebuiltSrpmFile[0]
             srpmBasename = rebuiltSrpmFile.split("/")[-1]
@@ -699,7 +699,7 @@ class Root(object):
                 fp.close()
 
             if not hasattr(module, 'requires_api_version'):
-                raise mock.exception.Error('Plugin "%s" doesn\'t specify required API version' % modname)
+                raise mockbuild.exception.Error('Plugin "%s" doesn\'t specify required API version' % modname)
 
             module.init(self, self.pluginConf["%s_opts" % modname])
 
@@ -708,7 +708,7 @@ class Root(object):
         """mount 'normal' fs like /dev/ /proc/ /sys"""
         for cmd in self.mountCmds:
             self.root_log.debug(cmd)
-            mock.util.do(cmd, shell=True)
+            mockbuild.util.do(cmd, shell=True)
 
     decorate(traceLog())
     def _umountall(self):
@@ -716,8 +716,8 @@ class Root(object):
         # first try removing all expected mountpoints.
         for cmd in reversed(self.umountCmds):
             try:
-                mock.util.do(cmd, raiseExc=1, shell=True)
-            except mock.exception.Error, e:
+                mockbuild.util.do(cmd, raiseExc=1, shell=True)
+            except mockbuild.exception.Error, e:
                 # the exception already contains info about the error.
                 self.root_log.warning(e)
                 self._show_path_user(cmd.split()[-1])
@@ -730,13 +730,13 @@ class Root(object):
             if os.path.realpath(mountpoint).startswith(os.path.realpath(self.makeChrootPath()) + "/"):
                 cmd = "umount -n %s" % mountpoint
                 self.root_log.warning("Forcibly unmounting '%s' from chroot." % mountpoint)
-                mock.util.do(cmd, raiseExc=0, shell=True)
+                mockbuild.util.do(cmd, raiseExc=0, shell=True)
 
     decorate(traceLog())
     def _show_path_user(self, path):
         cmd = ['/sbin/fuser', '-a', '-v', path]
         self.root_log.debug("using 'fuser' to find users of %s" % path)
-        out = mock.util.do(cmd, returnOutput=1, raiseExc=False)
+        out = mockbuild.util.do(cmd, returnOutput=1, raiseExc=False)
         self.root_log.debug(out)
         return out
 
@@ -758,19 +758,19 @@ class Root(object):
         output = ""
         try:
             self._callHooks("preyum")
-            output = mock.util.do(yumcmd, returnOutput=returnOutput)
+            output = mockbuild.util.do(yumcmd, returnOutput=returnOutput)
             self._callHooks("postyum")
             return output
-        except mock.exception.Error, e:
-            raise mock.exception.YumError, str(e)
+        except mockbuild.exception.Error, e:
+            raise mockbuild.exception.YumError, str(e)
 
     decorate(traceLog())
     def _makeBuildUser(self):
         if not os.path.exists(self.makeChrootPath('usr/sbin/useradd')):
-            raise mock.exception.RootError, "Could not find useradd in chroot, maybe the install failed?"
+            raise mockbuild.exception.RootError, "Could not find useradd in chroot, maybe the install failed?"
 
         # safe and easy. blow away existing /builddir and completely re-create.
-        mock.util.rmtree(self.makeChrootPath(self.homedir), selinux=self.selinux)
+        mockbuild.util.rmtree(self.makeChrootPath(self.homedir), selinux=self.selinux)
         dets = { 'uid': str(self.chrootuid), 'gid': str(self.chrootgid), 'user': self.chrootuser, 'group': self.chrootgroup, 'home': self.homedir }
 
         # ok for these two to fail
@@ -838,7 +838,7 @@ class Root(object):
         try:
             # create dir structure
             for subdir in [self.makeChrootPath(self.builddir, s) for s in ('RPMS', 'SRPMS', 'SOURCES', 'SPECS', 'BUILD', 'BUILDROOT', 'originals')]:
-                mock.util.mkdirIfAbsent(subdir)
+                mockbuild.util.mkdirIfAbsent(subdir)
 
             # change ownership so we can write to build home dir
             for (dirpath, dirnames, filenames) in os.walk(self.makeChrootPath(self.homedir)):
