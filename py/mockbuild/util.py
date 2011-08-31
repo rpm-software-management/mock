@@ -266,8 +266,17 @@ def logOutput(fds, logger, returnOutput=1, start=0, timeout=0):
 decorate(traceLog())
 def selinuxEnabled():
     """Check if SELinux is enabled (enforcing or permissive)."""
+    for mount in open("/proc/mounts").readlines():
+        (fstype, mountpoint, garbage) = mount.split(None, 2)
+        if fstype == "selinuxfs":
+            selinux_mountpoint = mountpoint
+            break
+    else:
+        selinux_mountpoint = "/selinux"
+
     try:
-        if open("/selinux/enforce").read().strip() in ("1", "0"):
+        enforce_filename = os.path.join(selinux_mountpoint, "enforce")
+        if open(enforce_filename).read().strip() in ("1", "0"):
             return True
     except:
         pass
