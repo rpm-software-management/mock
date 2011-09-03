@@ -328,6 +328,7 @@ def setup_default_config_opts(config_opts, unprivUid):
     config_opts['target_arch'] = 'i386'
     config_opts['rpmbuild_arch'] = None # <-- None means set automatically from target_arch
     config_opts['yum.conf'] = ''
+    config_opts['yum_builddep_opts'] = ''
     config_opts['rhnplugin.conf'] = '\n[main]\nenabled=0'
     config_opts['more_buildreqs'] = {}
     config_opts['files'] = {}

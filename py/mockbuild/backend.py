@@ -76,6 +76,7 @@ class Root(object):
             self.chroot_setup_cmd = self.chroot_setup_cmd.split()
         self.yum_path = '/usr/bin/yum'
         self.yum_builddep_path = '/usr/bin/yum-builddep'
+        self.yum_builddep_opts = config['yum_builddep_opts']
         self.macros = config['macros']
         self.more_buildreqs = config['more_buildreqs']
         self.cache_topdir = config['cache_topdir']
@@ -754,6 +755,9 @@ class Root(object):
         if cmd[0] == "builddep":
             yumcmd[0] = self.yum_builddep_path
             cmdix = 1
+       	    if self.yum_builddep_opts:
+                for eachopt in self.yum_builddep_opts.split():
+                    yumcmd.insert(1, '%s' % eachopt)
         yumcmd.extend(('--installroot', self.makeChrootPath()))
         if not self.online:
             yumcmd.append("-C")
