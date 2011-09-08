@@ -116,6 +116,17 @@ chmod 2775 /var/cache/mock
 %attr(02775, root, mock) %dir /var/cache/mock
 
 %changelog
+* Thu Sep  8 2011 Clark Williams <williams@redhat.com> - 1.0.20-1
+- add custom exception for unshare(2) failures
+- change getLog().warn to getLog().warning for consistency
+- fix namespace collision with python-mock [BZ# 601725]
+- from Kirby Zhou <kirbyzhou@sogou-inc.com>
+  - remove rpmdb files before rebuilding SRPM [BZ# 719008]
+- from Marko Myllynen <myllynen@redhat.com>
+  - integrate mock with RHN
+- from Giam Teck Choon <choon@choon.net>
+  - add support for passing options to yum-buildep via mock cfg
+
 * Tue Jul 26 2011 Clark Williams <williams@redhat.com> - 1.0.19-1
 - fixed incorrect python version requirement
 - remove f13 configs
