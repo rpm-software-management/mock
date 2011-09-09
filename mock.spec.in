@@ -117,6 +117,10 @@ chmod 2775 /var/cache/mock
 %attr(02775, root, mock) %dir /var/cache/mock
 
 %changelog
+* Fri Sep  9 2011 Clark Williams <williams@redhat.com> - 1.1.14-1
+- From Toshio Ernie Kuratomi <a.badger@gmail.com>
+  - Fix install path of mockbuild module and default path to module dir
+
 * Thu Sep  8 2011 Clark Williams <williams@redhat.com> - 1.1.13-1
 - add custom exception for unshare(2) failures
 - change getLog().warn to getLog().warning for consistency
