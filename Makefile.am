@@ -41,7 +41,7 @@ console_DATA = etc/consolehelper/mock
 bashcompdir = $(sysconfdir)/bash_completion.d/
 bashcomp_DATA = etc/bash_completion.d/mock.bash
 
-pluginsdir = $(pkgpythondir)/plugins
+pluginsdir = $(pythondir)/mockbuild/plugins
 plugins_PYTHON = \
     py/mockbuild/plugins/bind_mount.py \
     py/mockbuild/plugins/ccache.py     \
@@ -50,7 +50,8 @@ plugins_PYTHON = \
     py/mockbuild/plugins/yum_cache.py \
     py/mockbuild/plugins/selinux.py
 
-pkgpython_PYTHON = \
+mockbuilddir = $(pythondir)/mockbuild
+mockbuild_PYTHON = \
     py/mockbuild/__init__.py        \
     py/mockbuild/exception.py       \
     py/mockbuild/util.py            \
@@ -75,7 +76,7 @@ install-exec-hook:
                 perl -p -i -e 's|^__VERSION__\s*=.*|__VERSION__="$(RELEASE_VERSION)"|' $$file ;\
                 perl -p -i -e 's|^SYSCONFDIR\s*=.*|SYSCONFDIR="$(sysconfdir)"|' $$file        ;\
                 perl -p -i -e 's|^PYTHONDIR\s*=.*|PYTHONDIR="$(pythondir)"|' $$file           ;\
-                perl -p -i -e 's|^PKGPYTHONDIR\s*=.*|PKGPYTHONDIR="$(pkgpythondir)"|' $$file  ;\
+                perl -p -i -e 's|^PKGPYTHONDIR\s*=.*|PKGPYTHONDIR="$(mockbuilddir)"|' $$file  ;\
                 perl -p -i -e 's|^PKGDATADIR\s*=.*|PKGDATADIR="$(pkgdatadir)"|' $$file        ;\
                 perl -p -i -e 's|^LIBDIR\s*=.*|LIBDIR="$(libdir)"|' $$file        ;\
         done
