@@ -320,6 +320,7 @@ def setup_default_config_opts(config_opts, unprivUid):
             'spec': 'SCM_PKG.spec',
             'ext_src_dir': '/dev/null',
             'write_tar': False,
+            'git_timestamps': False,
             }
 
     # dependent on guest OS
