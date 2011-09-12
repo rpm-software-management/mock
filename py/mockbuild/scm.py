@@ -75,9 +75,15 @@ class scmWorker(object):
         self.log.debug("SCM checkout directory: " + self.wrk_dir)
         os.environ['CVS_RSH'] = "ssh"
         os.environ['SSH_AUTH_SOCK'] = pwd.getpwuid(os.getuid()).pw_dir + "/.ssh/auth_sock"
+        # Set HOME properly while checking out from SCM since tools like
+        # Subversion might have there settings needed to carry out checkout
+        # non-interactively
+        old_home = os.environ['HOME']
+        os.environ['HOME'] = pwd.getpwuid(os.getuid()).pw_dir
         mockbuild.util.do(shlex.split(self.get), shell=False, cwd=self.wrk_dir)
         if self.postget:
             mockbuild.util.do(shlex.split(self.postget), shell=False, cwd=self.src_dir)
+        os.environ['HOME'] = old_home
 
         self.log.debug("Fetched sources from SCM")
 
