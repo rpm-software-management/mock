@@ -65,6 +65,8 @@ class scmWorker(object):
         self.ext_src_dir = opts['ext_src_dir']
         self.write_tar = opts['write_tar']
 
+        self.git_timestamps = opts['git_timestamps']
+
         self.log.debug("SCM checkout command: " + self.get)
         self.log.debug("SCM checkout post command: " + str(self.postget))
 
@@ -87,6 +89,20 @@ class scmWorker(object):
 
         self.log.debug("Fetched sources from SCM")
 
+    decorate(traceLog())
+    def adjust_timestamps(self):
+        dir = os.getcwd()
+        os.chdir(self.src_dir)
+        self.log.debug("Adjusting timestamps in " + self.src_dir)
+        proc = subprocess.Popen(['git', 'ls-files'], shell=False, stdout=subprocess.PIPE)
+        for f in proc.communicate()[0].split():
+            rev = subprocess.Popen(['git', 'rev-list', 'HEAD', f], shell=False, stdout=subprocess.PIPE).stdout.readlines()[0].rstrip('\n')
+            ts = subprocess.Popen(['git', 'show', '--pretty=format:%ai', '--abbrev-commit', rev, f], shell=False, stdout=subprocess.PIPE).stdout.readlines()[0].rstrip('\n')
+            cmd = "touch -d \'" + ts + "\' " + f
+            os.system(cmd)
+        os.chdir(dir)
+
+    decorate(traceLog())
     def prepare_sources(self):
         # import rpm after setarch
         import rpm
@@ -117,6 +133,10 @@ class scmWorker(object):
         for (filename, num, flags) in rpm_spec.sources:
             self.sources.append(filename.split("/")[-1])
         self.log.debug("Sources: %s" % self.sources)
+
+        # Adjust timestamps for Git checkouts
+        if self.method == "git" and self.git_timestamps:
+            adjust_timestamps()
 
         # Generate a tarball from the checked out sources if needed
         if self.write_tar:
