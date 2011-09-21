@@ -56,9 +56,13 @@ class SELinux(object):
     def _selinuxCreateFauxFilesystems(self):
         (fd, path) = tempfile.mkstemp(prefix="mock-selinux-plugin.")
 
-        for line in open("/proc/filesystems"):
-            if not "selinuxfs" in line:
-                os.write(fd, line)
+        host = open("/proc/filesystems")
+        try:
+            for line in host:
+                if not "selinuxfs" in line:
+                    os.write(fd, line)
+        finally:
+            host.close()
 
         os.close(fd)
         os.chmod(path, stat.S_IRUSR|stat.S_IRGRP|stat.S_IROTH)
