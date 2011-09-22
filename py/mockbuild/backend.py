@@ -55,7 +55,7 @@ class Root(object):
         # result dir
         self.resultdir = config['resultdir'] % config
 
-        self.root_log = getLog("mock")
+        self.root_log = getLog("mockbuild")
         self.build_log = getLog("mockbuild.Root.build")
         self._state_log = getLog("mockbuild.Root.state")
 
