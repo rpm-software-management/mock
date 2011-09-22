@@ -535,6 +535,14 @@ class Root(object):
         try:
             self._setupDev()
             self._mountall()
+
+            # remove rpm db files to prevent version mismatch problems
+            # note: moved to do this before the user change below!
+            for tmp in glob.glob(self.makeChrootPath('var/lib/rpm/__db*')):
+                os.unlink(tmp)
+
+
+            # drop privs and become mock user
             self.uidManager.becomeUser(self.chrootuid, self.chrootgid)
             self.state("setup")
 
@@ -548,10 +556,6 @@ class Root(object):
                 uid=self.chrootuid,
                 gid=self.chrootgid,
                 )
-
-            # remove rpm db files to prevent version mismatch problems
-            for tmp in glob.glob(self.makeChrootPath('var/lib/rpm/__db*')):
-                os.unlink(tmp)
 
             # rebuild srpm/rpm from SPEC file
             specs = glob.glob(self.makeChrootPath(self.builddir, "SPECS", "*.spec"))
