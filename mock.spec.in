@@ -109,13 +109,19 @@ chmod 2775 /var/cache/mock
 %{_mandir}/man1/mock.1*
 %doc ChangeLog
 
-# build dir
-%attr(02775, root, mock) %dir /var/lib/mock
-
-# cache dir
-%attr(02775, root, mock) %dir /var/cache/mock
+# cache & build dirs
+%defattr(0775, root, mock, 02775)
+%dir /var/cache/mock
+%dir /var/lib/mock
 
 %changelog
+* Fri Sep 23 2011 Clark Williams <williams@redhat.com> - 1.0.22-1
+- Fixed logging issues due to namespace change [BZ# 740232,739550,739972]
+- Fixed error removing old RMP db files [BZ# 738052]
+- From Yury V. Zaytsev <yury@shurup.com>:
+  - SELinux plugin uses Python 2.5 syntax [BZ# 740327]
+  - Fix inconsistent permissions in specfile [BZ# 715286]
+
 * Fri Sep  9 2011 Clark Williams <williams@redhat.com> - 1.0.21-1
 - From Toshio Ernie Kuratomi <a.badger@gmail.com>
   - Fix install path of mockbuild module and default path to module dir
