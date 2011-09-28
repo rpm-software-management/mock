@@ -259,9 +259,8 @@ class Root(object):
         self.uidManager.dropPrivsTemp()
         try:
             mockbuild.util.mkdirIfAbsent(self.resultdir)
-        except (OSError,), e:
-            if e.errno == 13:
-                raise mockbuild.exception.ResultDirNotAccessible( ResultDirNotAccessible.__doc__ % self.resultdir )
+        except (mockbuild.exception.Error,), e:
+            raise mockbuild.exception.ResultDirNotAccessible( mockbuild.exception.ResultDirNotAccessible.__doc__ % self.resultdir )
         self.uidManager.restorePrivs()
 
         # lock this buildroot so we dont get stomped on.
