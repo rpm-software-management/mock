@@ -645,7 +645,7 @@ def main(ret):
     elif options.verbose == 2:
         log.handlers[0].setLevel(logging.DEBUG)
         logging.getLogger("mockbuild.Root.build").propagate = 1
-        logging.getLogger("mock").propagate = 1
+        logging.getLogger("mockbuild").propagate = 1
 
     # enable tracing if requested
     logging.getLogger("trace").propagate=0
@@ -717,52 +717,23 @@ def main(ret):
             chroot.scrub(options.scrub)
 
     elif options.mode == 'shell':
-        chroot.tryLockBuildRoot()
         if not os.path.exists(chroot.makeChrootPath()):
-            raise RuntimeError, "chroot %s not initialized!" % chroot.makeChrootPath()
-        try:
-            chroot._setupDev()
-            chroot._mountall()
-            cmd = ' '.join(args)
-            if options.unpriv:
-                arg = '--userspec=%s:%s' % (chroot.chrootuid, chroot.chrootgid)
-            else:
-                arg = ''
-            status = os.system("SHELL='/bin/sh' PS1='mock-chroot> ' /usr/sbin/chroot %s %s %s" % (arg, chroot.makeChrootPath(), cmd))
-            ret['exitStatus'] = os.WEXITSTATUS(status)
-
-        finally:
-            chroot._umountall()
-        chroot.unlockBuildRoot()
+            raise mockbuild.exception.ChrootNotInitialized, \
+                "chroot %s not initialized!" % chroot.makeChrootPath()
+        chroot.shell()
 
     elif options.mode == 'chroot':
-        shell=False
+        if not os.path.exists(chroot.makeChrootPath()):
+            raise mockbuild.exception.ChrootNotInitialized, \
+                "chroot %s not initialized!" % chroot.makeChrootPath()
         if len(args) == 0:
-            log.critical("You must specify a command to run")
+            log.critical("You must specify a command to run with --chroot")
             sys.exit(50)
-        elif len(args) == 1:
-            args = args[0]
-            shell=True
-
-        log.info("Running in chroot: %s" % args)
-        chroot.tryLockBuildRoot()
-        chroot._resetLogging()
-        try:
-            chroot._mountall()
-            if options.unpriv:
-                output = chroot.doChroot(args, shell=shell, returnOutput=True,
-                                uid=chroot.chrootuid, gid=chroot.chrootgid, cwd=options.cwd)
-            else:
-                output = chroot.doChroot(args, shell=shell, cwd=options.cwd, returnOutput=True)
-        finally:
-            chroot._umountall()
-        chroot.unlockBuildRoot()
-        if output:
-            print output,
+        chroot.chroot(args, options)
 
     elif options.mode == 'installdeps':
         if len(args) == 0:
-            log.critical("You must specify an SRPM file.")
+            log.critical("You must specify an SRPM file. with --installdeps")
             sys.exit(50)
 
         for hdr in mockbuild.util.yieldSrpmHeaders(args, plainRpmOk=1):

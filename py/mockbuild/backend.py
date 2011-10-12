@@ -275,32 +275,14 @@ class Root(object):
         self.root_log.debug('resultdir = %s' % self.resultdir)
 
         # set up plugins:
+        getLog().info("calling preinit hooks")
         self._callHooks('preinit')
 
         # create skeleton dirs
-        self.root_log.debug('create skeleton dirs')
-        for item in [
-                     'var/lib/rpm',
-                     'var/lib/yum',
-                     'var/lib/dbus',
-                     'var/log',
-                     'var/lock/rpm',
-                     'etc/rpm',
-                     'tmp',
-                     'var/tmp',
-                     'etc/yum.repos.d',
-                     'etc/yum',
-                     'proc',
-                     'sys',
-                    ]:
-            mockbuild.util.mkdirIfAbsent(self.makeChrootPath(item))
+        self._setupDirs()
 
         # touch files
-        self.root_log.debug('touch required files')
-        for item in [self.makeChrootPath('etc', 'mtab'),
-                     self.makeChrootPath('etc', 'fstab'),
-                     self.makeChrootPath('var', 'log', 'yum.log')]:
-            mockbuild.util.touch(item)
+        self._setupFiles()
 
         # use yum plugin conf from chroot as needed
         yumpluginconfdir = self.makeChrootPath('etc', 'yum', 'pluginconf.d')
@@ -459,6 +441,39 @@ class Root(object):
             os.unlink(self.makeChrootPath('/dev/ptmx'))
             os.symlink("pts/ptmx", self.makeChrootPath('/dev/ptmx'))
 
+    decorate(traceLog())
+    def _setupDirs(self):
+        # create skeleton dirs
+        self.root_log.debug('create skeleton dirs')
+        for item in [
+                     'var/lib/rpm',
+                     'var/lib/yum',
+                     'var/lib/dbus',
+                     'var/log',
+                     'var/lock/rpm',
+                     'var/cache/yum',
+                     'etc/rpm',
+                     'tmp',
+                     'tmp/ccache',
+                     'var/tmp',
+                     'etc/yum.repos.d',
+                     'etc/yum',
+                     'proc',
+                     'sys',
+                    ]:
+            mockbuild.util.mkdirIfAbsent(self.makeChrootPath(item))
+
+    decorate(traceLog())
+    def _setupFiles(self):
+        # touch files
+        self.root_log.debug('touch required files')
+        for item in [self.makeChrootPath('etc', 'mtab'),
+                     self.makeChrootPath('etc', 'fstab'),
+                     self.makeChrootPath('var', 'log', 'yum.log')]:
+            mockbuild.util.touch(item)
+
+
+
     # bad hack
     # comment out decorator here so we dont get double exceptions in the root log
     #decorate(traceLog())
@@ -613,6 +628,58 @@ class Root(object):
             # tell caching we are done building
             self._callHooks('postbuild')
 
+
+    def shell(self):
+        log = getLog()
+        self.tryLockBuildRoot()
+        log.debug("shell: calling preshell hooks")
+        self._callHooks("preshell")
+        try:
+            log.debug("shell: setting up root files")
+            self._setupDirs()
+            self._setupDev()
+            self._setupFiles()
+            log.debug("shell: mounting all filesystems")
+            self._mountall()
+            self.state("shell")
+            mockbuild.util.doshell(chrootPath=self.makeChrootPath(), 
+                                   uid=self.chrootuid,
+                                   gid=self.chrootgid)
+        finally:
+            log.debug("shell: unmounting all filesystems")
+            self._umountall()
+
+        log.debug("shell: calling postshell hooks")
+        self._callHooks('postshell')
+        self.unlockBuildRoot()
+
+    def chroot(self, args, options):
+        log = getLog()
+        shell=False
+        if len(args) == 1:
+            args = args[0]
+            shell=True
+        log.info("Running in chroot: %s" % args)
+        self.tryLockBuildRoot()
+        self._resetLogging()
+        self._callHooks("prechroot")
+        try:
+            self._setupDirs()
+            self._setupDev()
+            self._setupFiles()
+            self._mountall()
+            self.state("chroot")
+            if options.unpriv:
+                output = self.doChroot(args, shell=shell, returnOutput=True,
+                                       uid=self.chrootuid, gid=self.chrootgid, cwd=options.cwd)
+            else:
+                output = self.doChroot(args, shell=shell, returnOutput=True, cwd=options.cwd)
+        finally:
+            self._umountall()
+        self._callHooks("postchroot")
+        self.unlockBuildRoot()
+        if output:
+            print output,
 
     #
     # UNPRIVILEGED:
