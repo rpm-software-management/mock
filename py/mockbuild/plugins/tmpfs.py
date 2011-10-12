@@ -38,19 +38,24 @@ class Tmpfs(object):
             self.optArgs = ['-o', 'size=' + self.maxSize]
         else:
             self.optArgs = []
-        rootObj.addHook("preinit",  self._tmpfsPreInitHook)
-        rootObj.addHook("postbuild",  self._tmpfsPostBuildHook)
-        rootObj.addHook("initfailed",  self._tmpfsPostBuildHook)
+        rootObj.addHook("preinit",  self._tmpfsMount)
+        rootObj.addHook("preshell", self._tmpfsMount)
+        rootObj.addHook("prechroot", self._tmpfsMount)
+        rootObj.addHook("postshell", self._tmpfsUmount)
+        rootObj.addHook("postbuild",  self._tmpfsUmount)
+        rootObj.addHook("postchroot", self._tmpfsUmount)
+        rootObj.addHook("initfailed",  self._tmpfsUmount)
+        getLog().info("tmpfs initialized")
 
     decorate(traceLog())
-    def _tmpfsPreInitHook(self):
-        getLog().info("mounting tmpfs.")
+    def _tmpfsMount(self):
+        getLog().info("mounting tmpfs at %s." % self.rootObj.makeChrootPath())
         mountCmd = ["mount", "-n", "-t", "tmpfs"] + self.optArgs + \
                    ["mock_chroot_tmpfs", self.rootObj.makeChrootPath()]
         mockbuild.util.do(mountCmd, shell=False)
 
     decorate(traceLog())
-    def _tmpfsPostBuildHook(self):
+    def _tmpfsUmount(self):
         getLog().info("unmounting tmpfs.")
         mountCmd = ["umount", "-n", self.rootObj.makeChrootPath()]
         # since we're in a separate namespace, the mount will be cleaned up
