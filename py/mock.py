@@ -282,6 +282,7 @@ def setup_default_config_opts(config_opts, unprivUid):
                 'max_age_days': 15,
                 'dir': "%(cache_topdir)s/%(root)s/root_cache/",
                 'compress_program': 'pigz',
+                'exclude_dirs': ["./proc", "./sys", "./dev", "./tmp/ccache", "./var/cache/yum" ],
                 'extension': '.gz'},
             'bind_mount_enable': True,
             'bind_mount_opts': {'dirs': [
