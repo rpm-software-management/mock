@@ -491,11 +491,15 @@ def do_rebuild(config_opts, chroot, srpms):
         raise
 
 def do_buildsrpm(config_opts, chroot, options, args):
+    # verify the input command line arguments actually exist
+    if not os.path.isfile(options.spec):
+        raise mockbuild.exception.BadCmdline, \
+            "input specfile does not exist: %s" % options.spec
+    if not os.path.isdir(options.sources):
+        raise mockbuild.exception.BadCmdline, \
+            "input sources directory does not exist: %s" % options.sources
     start = time.time()
     try:
-        # TODO: validate spec path (exists)
-        # TODO: validate SOURCES path (exists)
-
         log.info("Start(%s)  Config(%s)" % (os.path.basename(options.spec), chroot.sharedRootName))
         if config_opts['clean'] and chroot.state() != "clean":
             chroot.clean()
