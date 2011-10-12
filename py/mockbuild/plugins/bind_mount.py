@@ -27,6 +27,8 @@ class BindMount(object):
         self.bind_opts = conf
         rootObj.bindMountObj = self
         rootObj.addHook("preinit",  self._bindMountPreInitHook)
+        rootObj.addHook("preshell",  self._bindMountPreInitHook)
+        rootObj.addHook("prechroot",  self._bindMountPreInitHook)
         for srcdir, destdir in self.bind_opts['dirs']:
             rootObj.umountCmds.append('umount -n %s' % rootObj.makeChrootPath(destdir))
             rootObj.mountCmds.append('mount -n --bind %s  %s' % (srcdir, rootObj.makeChrootPath(destdir)))
