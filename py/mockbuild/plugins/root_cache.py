@@ -45,7 +45,7 @@ class RootCache(object):
         rootObj.rootCacheObj = self
         rootObj.addHook("preinit", self._rootCachePreInitHook)
         rootObj.addHook("postinit", self._rootCachePostInitHook)
-        self.exclude_dirs = ["./proc", "./sys", "./dev", "./tmp/ccache", "./var/cache/yum" ]
+        self.exclude_dirs = self.root_cache_opts['exclude_dirs']
         self.exclude_tar_cmds = [ "--exclude=" + dir for dir in self.exclude_dirs]
 
     # =============
@@ -108,6 +108,17 @@ class RootCache(object):
             self.rootObj.chrootWasCached = True
 
     decorate(traceLog())
+    def _root_cache_handle_bind_mounts(self):
+        if self.rootObj.pluginConf['bind_mount_enable']:
+            bind_dirs = self.rootObj.pluginConf['bind_mount_opts']['dirs']
+            dirs = []
+            for h,c in bind_dirs:
+                if c[0] == '/':
+                    self.exclude_tar_cmds.append("--exclude=.%s" % c)
+                else:
+                    self.exclude_tar_cmds.append("--exclude=./%s" % c)
+
+    decorate(traceLog())
     def _rootCachePostInitHook(self):
         try:
             self._rootCacheLock(shared=0)
@@ -124,6 +135,7 @@ class RootCache(object):
             # never rebuild cache unless it was a clean build.
             if self.rootObj.chrootWasCleaned:
                 mockbuild.util.do(["sync"], shell=False)
+                self._root_cache_handle_bind_mounts()
                 self.state("creating cache")
                 try:
                     mockbuild.util.do(
