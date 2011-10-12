@@ -215,6 +215,13 @@ def condPersonality(per=None):
     if res == -1:
         raise OSError(_errno.value, os.strerror(_errno.value))
 
+def condEnvironment(env=None):
+    if not env:
+        return
+    getLog().debug("child environment: %s" % env)
+    os.environ.clear()
+    for k in env.keys():
+        os.putenv(k, env[k])
 
 def logOutput(fds, logger, returnOutput=1, start=0, timeout=0):
     output=""
@@ -330,16 +337,20 @@ def do(command, shell=False, chrootPath=None, cwd=None, timeout=0, raiseExc=True
     return output
 
 class ChildPreExec(object):
-    def __init__(self, personality, chrootPath, cwd, uid, gid):
+    def __init__(self, personality, chrootPath, cwd, uid, gid, env=None, shell=False):
         self.personality = personality
         self.chrootPath  = chrootPath
         self.cwd = cwd
         self.uid = uid
         self.gid = gid
+        self.env = env
+        self.shell = shell
 
     def __call__(self, *args, **kargs):
-        os.setsid()
+        if not self.shell:
+            os.setsid()
         condPersonality(self.personality)
+        condEnvironment(self.env)
         condChroot(self.chrootPath)
         condDropPrivs(self.uid, self.gid)
         condChdir(self.cwd)
@@ -351,3 +362,29 @@ def is_in_dir(path, directory):
     directory = os.path.realpath(directory)
 
     return os.path.commonprefix([path, directory]) == directory
+
+
+def doshell(chrootPath=None, uid=None, gid=None):
+    log = getLog()
+    log.debug("doshell: chrootPath:%s, uid:%d, gid:%d" % (chrootPath, uid, gid))
+    environ = clean_env()
+    environ['PS1'] = 'mock-chroot> '
+    environ['SHELL'] = '/bin/bash'
+    log.debug("doshell environment: %s", environ)
+    cmdstr = "/bin/bash -i -l"
+    preexec = ChildPreExec(personality=None, chrootPath=chrootPath, cwd=None, 
+                           uid=uid, gid=gid, env=environ, shell=True)
+    log.debug("doshell: command: %s" % cmdstr)
+    return subprocess.call(cmdstr, preexec_fn=preexec, env=environ, shell=True)
+
+
+
+def clean_env():
+    env = {'TERM' : 'vt100',
+           'SHELL' : '/bin/bash',
+           'HOME' : '/builddir', 
+           'HOSTNAME' : 'mock',
+           'TMPDIR' : '/tmp' }
+    env['LANG'] = os.environ.setdefault('LANG', 'en_US.UTF-8')
+    env['TZ'] = os.environ.setdefault('TZ', 'EST5EDT')
+    return env

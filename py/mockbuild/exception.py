@@ -37,6 +37,7 @@ class Error(Exception):
 # 60 = buildroot locked
 # 70 = result dir could not be created
 # 80 = unshare of namespace failed
+# 90 = attempted to use an uninitialized chroot
 
 class BuildError(Error):
     "rpmbuild failed."
@@ -106,3 +107,11 @@ class UnshareFailed(Error):
         Error.__init__(self, msg)
         self.msg = msg
         self.resultcode = 80
+
+class ChrootNotInitialized(Error):
+    "attempt to use uninitialized chroot"
+
+    def __init__(self, msg):
+        Error.__init__(self, msg)
+        self.msg = msg
+        self.resultcode = 90
