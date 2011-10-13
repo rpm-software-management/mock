@@ -484,10 +484,11 @@ class Root(object):
     # bad hack
     # comment out decorator here so we dont get double exceptions in the root log
     #decorate(traceLog())
-    def doChroot(self, command, env=None, shell=True, returnOutput=False, raiseExc=True, *args, **kargs):
+    def doChroot(self, command, env=None, shell=True, returnOutput=False, printOutput=False, raiseExc=True, *args, **kargs):
         """execute given command in root"""
         return mockbuild.util.do(command, chrootPath=self.makeChrootPath(), env=env, raiseExc=raiseExc,
-                                 returnOutput=returnOutput, shell=shell, *args, **kargs )
+                                 returnOutput=returnOutput, shell=shell, 
+                                 printOutput=printOutput, *args, **kargs )
 
     decorate(traceLog())
     def yumInstall(self, *rpms):
@@ -696,17 +697,14 @@ class Root(object):
             self._mountall()
             self.state("chroot")
             if options.unpriv:
-                output = self.doChroot(args, shell=shell, returnOutput=True, env=self.env,
-                                       uid=self.chrootuid, gid=self.chrootgid, cwd=options.cwd)
+                self.doChroot(args, shell=shell, printOutput=True, env=self.env,
+                              uid=self.chrootuid, gid=self.chrootgid, cwd=options.cwd)
             else:
-                output = self.doChroot(args, shell=shell, returnOutput=True, 
-                                       cwd=options.cwd, env=self.env)
+                self.doChroot(args, shell=shell, cwd=options.cwd, printOutput=True, env=self.env)
         finally:
             self._umountall()
         self._callHooks("postchroot")
         self.unlockBuildRoot()
-        if output:
-            print output,
 
     #
     # UNPRIVILEGED:
