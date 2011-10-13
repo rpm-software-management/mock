@@ -302,6 +302,7 @@ def do(command, shell=False, chrootPath=None, cwd=None, timeout=0, raiseExc=True
         child = subprocess.Popen(
             command,
             shell=shell,
+            env=clean_env(),
             bufsize=0, close_fds=True,
             stdin=open("/dev/null", "r"),
             stdout=subprocess.PIPE,
@@ -378,7 +379,7 @@ def doshell(chrootPath=None, uid=None, gid=None):
     log = getLog()
     log.debug("doshell: chrootPath:%s, uid:%d, gid:%d" % (chrootPath, uid, gid))
     environ = clean_env()
-    environ['PS1'] = 'mock-chroot> '
+    environ['PROMPT_COMMAND'] = 'echo -n "<mock-chroot>"'
     environ['SHELL'] = '/bin/bash'
     log.debug("doshell environment: %s", environ)
     cmdstr = "/bin/bash -i -l"
