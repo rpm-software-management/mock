@@ -4,6 +4,7 @@
 # Copyright (C) 2010 Marko Myllynen <myllynen@redhat.com>
 
 # python library imports
+import subprocess
 import tempfile
 import shutil
 import shlex
@@ -90,10 +91,10 @@ class scmWorker(object):
         self.log.debug("Fetched sources from SCM")
 
     decorate(traceLog())
-    def adjust_timestamps(self):
+    def adjust_git_timestamps(self):
         dir = os.getcwd()
-        os.chdir(self.src_dir)
         self.log.debug("Adjusting timestamps in " + self.src_dir)
+        os.chdir(self.src_dir)
         proc = subprocess.Popen(['git', 'ls-files'], shell=False, stdout=subprocess.PIPE)
         for f in proc.communicate()[0].split():
             rev = subprocess.Popen(['git', 'rev-list', 'HEAD', f], shell=False, stdout=subprocess.PIPE).stdout.readlines()[0].rstrip('\n')
@@ -136,7 +137,7 @@ class scmWorker(object):
 
         # Adjust timestamps for Git checkouts
         if self.method == "git" and self.git_timestamps:
-            adjust_timestamps()
+            self.adjust_git_timestamps()
 
         # Generate a tarball from the checked out sources if needed
         if self.write_tar:
