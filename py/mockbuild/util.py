@@ -224,7 +224,7 @@ def condEnvironment(env=None):
     for k in env.keys():
         os.putenv(k, env[k])
 
-def logOutput(fds, logger, returnOutput=1, start=0, timeout=0):
+def logOutput(fds, logger, returnOutput=1, start=0, timeout=0, printOutput=False):
     output=""
     done = 0
 
@@ -260,6 +260,9 @@ def logOutput(fds, logger, returnOutput=1, start=0, timeout=0):
                     h.flush()
             if returnOutput:
                 output += input
+            if printOutput:
+                print input,
+
     if tail and logger is not None:
         logger.debug(tail)
     return output
@@ -292,7 +295,7 @@ def selinuxEnabled():
 decorate(traceLog())
 def do(command, shell=False, chrootPath=None, cwd=None, timeout=0, raiseExc=True, 
        returnOutput=0, uid=None, gid=None, personality=None, 
-       env=None, *args, **kargs):
+       printOutput=False, env=None, *args, **kargs):
 
     logger = kargs.get("logger", getLog())
     output = ""
@@ -316,7 +319,7 @@ def do(command, shell=False, chrootPath=None, cwd=None, timeout=0, raiseExc=True
 
         # use select() to poll for output so we dont block
         output = logOutput([child.stdout, child.stderr],
-                           logger, returnOutput, start, timeout)
+                           logger, returnOutput, start, timeout, printOutput=printOutput)
 
     except:
         # kill children if they arent done
