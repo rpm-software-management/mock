@@ -642,7 +642,7 @@ class Root(object):
             log.debug("shell: mounting all filesystems")
             self._mountall()
             self.state("shell")
-            mockbuild.util.doshell(chrootPath=self.makeChrootPath(), 
+            ret = mockbuild.util.doshell(chrootPath=self.makeChrootPath(), 
                                    uid=self.chrootuid,
                                    gid=self.chrootgid)
         finally:
@@ -652,6 +652,7 @@ class Root(object):
         log.debug("shell: calling postshell hooks")
         self._callHooks('postshell')
         self.unlockBuildRoot()
+        return ret
 
     def chroot(self, args, options):
         log = getLog()
