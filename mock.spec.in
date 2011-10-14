@@ -59,8 +59,11 @@ ln -s fedora-rawhide-x86_64.cfg fedora-devel-x86_64.cfg
 ln -s fedora-rawhide-ppc.cfg fedora-devel-ppc.cfg
 ln -s fedora-rawhide-ppc64.cfg fedora-devel-ppc64.cfg
 popd
+echo "%defattr(0644, root, mock)" > %{name}.cfgs
 find $RPM_BUILD_ROOT%{_sysconfdir}/mock -name "*.cfg" \
-    | sed -e "s|^$RPM_BUILD_ROOT|%%config(noreplace) |" > %{name}.cfgs
+    | sed -e "s|^$RPM_BUILD_ROOT|%%config(noreplace) |" >> %{name}.cfgs
+#cat %{name}.cfgs
+
 # just for %%ghosting purposes
 ln -s fedora-rawhide-x86_64.cfg $RPM_BUILD_ROOT%{_sysconfdir}/mock/default.cfg
 
@@ -116,6 +119,21 @@ chmod 2775 /var/cache/mock
 %dir /var/lib/mock
  
 %changelog
+* Wed Oct 21 2011 Clark Williams <williams@redhat.com> - 1.1.16-1
+- modified bind_mount and tmpfs plugins to use hooks for shell and chroot
+- refactored --shell and --chroot commands [BZ# 619533,728004,745550]
+- added input validation for --buildsrpm [BZ# 743173]
+- ensured configs don't have execute bit set [BZ# 744013]
+- modified root cache pluging to not cache bind mounts [BZ# 744727]
+- removed invalid excludes from epel-{4,5}-x86_64 configs [BZ# 533762]
+- From Marko Myllynen <myllynen@redhat.com>:
+  - Set HOME properly when doing SCM checkouts [BZ# 745394]
+  - Support for setting timestamps for Git checkouts [BZ# 745396]
+- From Yury V. Zaytsev <yury@shurup.com>:
+  - fix incorrect-fsf-address rpmlint warning [BZ#741068] 
+- From Jan Vcelak <jvcelak@redhat.com>:
+  - resolve SELinux filesystem mountpoint [BZ# 734781]
+
 * Fri Sep 23 2011 Clark Williams <williams@redhat.com> - 1.1.15-1
 - Fixed logging issues due to namespace change [BZ# 740232,739550,739972]
 - Fixed error removing old RMP db files [BZ# 738052]
