@@ -66,8 +66,8 @@ _mock()
             ;;
         --install)
             COMPREPLY=( $( compgen -f -o plusdirs -X '!*.rpm' -- "$cur" ) )
-            [[ "$cur" != *[/~]* ]] && declare -F _yum_list &>/dev/null && \
-                _yum_list all "$cur"
+            [[ $cur != */* && $cur != [.~]* ]] && \
+                declare -F _yum_list &>/dev/null && _yum_list all "$cur"
             return 0
             ;;
     esac
