@@ -65,7 +65,8 @@ _mock()
             return 0
             ;;
         --install)
-            COMPREPLY=( $( compgen -f -o plusdirs -X '!*.rpm' -- "$cur" ) )
+            COMPREPLY=( $( compgen -f -o plusdirs -X '!*.rpm' -X '*src.rpm' \
+                -- "$cur" ) )
             [[ $cur != */* && $cur != [.~]* ]] && \
                 declare -F _yum_list &>/dev/null && _yum_list all "$cur"
             return 0
