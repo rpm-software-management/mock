@@ -13,7 +13,7 @@ _mock()
 
     local word count=0
     for word in "${words[@]}" ; do
-        [ $count -eq $cword ] && break
+        [[ $count -eq $cword ]] && break
         if [[ "$word" == --configdir ]] ; then
             cfgdir="${words[((count+1))]}"
         elif [[ "$word" == --configdir=* ]] ; then
