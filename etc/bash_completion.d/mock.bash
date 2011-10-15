@@ -64,7 +64,7 @@ _mock()
                 yum-cache" -- "$cur" ) )
             return 0
             ;;
-        --install)
+        --install|install)
             COMPREPLY=( $( compgen -f -o plusdirs -X '!*.rpm' -X '*src.rpm' \
                 -- "$cur" ) )
             [[ $cur != */* && $cur != [.~]* ]] && \
