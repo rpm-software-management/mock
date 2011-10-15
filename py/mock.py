@@ -740,7 +740,7 @@ def main(ret):
 
     elif options.mode == 'installdeps':
         if len(args) == 0:
-            log.critical("You must specify an SRPM file. with --installdeps")
+            log.critical("You must specify an SRPM file with --installdeps")
             sys.exit(50)
 
         for hdr in mockbuild.util.yieldSrpmHeaders(args, plainRpmOk=1):
