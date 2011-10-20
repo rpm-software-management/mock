@@ -337,7 +337,7 @@ def do(command, shell=False, chrootPath=None, cwd=None, timeout=0, raiseExc=True
     if not niceExit:
         raise commandTimeoutExpired, ("Timeout(%s) expired for command:\n # %s\n%s" % (timeout, command, output))
 
-    logger.debug("Child returncode was: %s" % str(child.returncode))
+    logger.debug("Child return code was: %s" % str(child.returncode))
     if raiseExc and child.returncode:
         if returnOutput:
             raise mockbuild.exception.Error, ("Command failed: \n # %s\n%s" % (command, output), child.returncode)
