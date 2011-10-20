@@ -506,6 +506,17 @@ class Root(object):
             self._umountall()
 
     decorate(traceLog())
+    def yumRemove(self, *rpms):
+        """call yum to remove the input rpms from the chroot"""
+        self.root_log.info("removing package(s): %s" % " ".join(rpms))
+        try:
+            self._mountall()
+            output = self._yum(['remove'] + list(rpms), returnOutput=1)
+            self.root_log.info(output)
+        finally:
+            self._umountall()
+
+    decorate(traceLog())
     def installSrpmDeps(self, *srpms):
         """figure out deps from srpm. call yum to install them"""
         try:
