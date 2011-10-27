@@ -131,7 +131,11 @@ class scmWorker(object):
         rpm_spec = ts.parseSpec(self.spec)
         self.name = rpm.expandMacro("%{name}")
         self.version = rpm.expandMacro("%{version}")
-        for (filename, num, flags) in rpm_spec.sources:
+        try:
+            sources_list = rpm_spec.sources()
+        except:
+            sources_list = rpm_spec.sources
+        for (filename, num, flags) in sources_list:
             self.sources.append(filename.split("/")[-1])
         self.log.debug("Sources: %s" % self.sources)
 
@@ -143,14 +147,16 @@ class scmWorker(object):
         if self.write_tar:
             tardir = self.name + "-" + self.version
             tarball = tardir + ".tar.gz"
+
             self.log.debug("Writing " + self.src_dir + "/" + tarball + "...")
-            if os.path.exists(self.src_dir + "/" + tarball):
-                os.unlink(self.src_dir + "/" + tarball)
-            open(self.src_dir + "/" + tarball, 'w').close()
-            cmd = "tar czf " + self.src_dir + "/" + tarball + \
-                  " --exclude " + self.src_dir + "/" + tarball + \
-                  " --xform='s,^" + self.pkg + "," + tardir + ",' " + self.pkg
+            dir = os.getcwd()
+            os.chdir(self.wrk_dir)
+            os.rename(self.name, tardir)
+            cmd = "tar czf " + tarball + " " + tardir
             mockbuild.util.do(shlex.split(cmd), shell=False, cwd=self.wrk_dir)
+            os.rename(tarball, tardir + "/" + tarball)
+            os.rename(tardir, self.name)
+            os.chdir(dir)
 
         # Get possible external sources from an external sources directory
         for f in self.sources:
