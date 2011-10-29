@@ -110,6 +110,9 @@ class Root(object):
         self.state("init plugins")
         self._initPlugins()
 
+        # do we allow interactive root shells?
+        self.no_root_shells = config['no_root_shells']
+
         # default to not doing selinux things
         self.selinux = False
 
@@ -628,11 +631,17 @@ class Root(object):
             self._callHooks('postbuild')
 
 
-    def shell(self):
+    def shell(self, options):
         log = getLog()
         self.tryLockBuildRoot()
         log.debug("shell: calling preshell hooks")
         self._callHooks("preshell")
+        if options.unpriv or self.no_root_shells:
+            uid=self.chrootuid
+            gid=self.chrootgid
+        else:
+            uid=0
+            gid=0
         try:
             log.debug("shell: setting up root files")
             self._setupDirs()
@@ -642,8 +651,8 @@ class Root(object):
             self._mountall()
             self.state("shell")
             ret = mockbuild.util.doshell(chrootPath=self.makeChrootPath(), 
-                                   uid=self.chrootuid,
-                                   gid=self.chrootgid)
+                                         uid=uid,
+                                         gid=gid)
         finally:
             log.debug("shell: unmounting all filesystems")
             self._umountall()
