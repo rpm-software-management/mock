@@ -339,6 +339,9 @@ def setup_default_config_opts(config_opts, unprivUid):
         '%_topdir': '%s/build' % config_opts['chroothome'],
         '%_rpmfilename': '%%{NAME}-%%{VERSION}-%%{RELEASE}.%%{ARCH}.rpm',
         }
+    # security config
+    config_opts['no_root_shells'] = False
+
 
 decorate(traceLog())
 def set_config_opts_per_cmdline(config_opts, options, args):
@@ -726,7 +729,7 @@ def main(ret):
         if not os.path.exists(chroot.makeChrootPath()):
             raise mockbuild.exception.ChrootNotInitialized, \
                 "chroot %s not initialized!" % chroot.makeChrootPath()
-        sys.exit(chroot.shell())
+        sys.exit(chroot.shell(options))
 
     elif options.mode == 'chroot':
         if not os.path.exists(chroot.makeChrootPath()):
