@@ -631,7 +631,7 @@ class Root(object):
             self._callHooks('postbuild')
 
 
-    def shell(self, options):
+    def shell(self, options, cmd=None):
         log = getLog()
         self.tryLockBuildRoot()
         log.debug("shell: calling preshell hooks")
@@ -651,8 +651,8 @@ class Root(object):
             self._mountall()
             self.state("shell")
             ret = mockbuild.util.doshell(chrootPath=self.makeChrootPath(), 
-                                         uid=uid,
-                                         gid=gid)
+                                         uid=uid, gid=gid,
+                                         cmd=cmd)
         finally:
             log.debug("shell: unmounting all filesystems")
             self._umountall()
