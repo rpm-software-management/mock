@@ -730,7 +730,11 @@ def main(ret):
         if not os.path.exists(chroot.makeChrootPath()):
             raise mockbuild.exception.ChrootNotInitialized, \
                 "chroot %s not initialized!" % chroot.makeChrootPath()
-        sys.exit(chroot.shell(options))
+        if len(args):
+            cmd = ' '.join(args)
+        else:
+            cmd = None
+        sys.exit(chroot.shell(options, cmd))
 
     elif options.mode == 'chroot':
         if not os.path.exists(chroot.makeChrootPath()):

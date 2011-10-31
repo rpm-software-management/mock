@@ -374,14 +374,17 @@ def is_in_dir(path, directory):
     return os.path.commonprefix([path, directory]) == directory
 
 
-def doshell(chrootPath=None, uid=None, gid=None):
+def doshell(chrootPath=None, uid=None, gid=None, cmd=None):
     log = getLog()
     log.debug("doshell: chrootPath:%s, uid:%d, gid:%d" % (chrootPath, uid, gid))
     environ = clean_env()
     environ['PROMPT_COMMAND'] = 'echo -n "<mock-chroot>"'
     environ['SHELL'] = '/bin/bash'
     log.debug("doshell environment: %s", environ)
-    cmdstr = "/bin/bash -i -l"
+    if cmd:
+        cmdstr = '/bin/bash -c "%s"' % cmd
+    else:
+        cmdstr = "/bin/bash -i -l"
     preexec = ChildPreExec(personality=None, chrootPath=chrootPath, cwd=None, 
                            uid=uid, gid=gid, env=environ, shell=True)
     log.debug("doshell: command: %s" % cmdstr)
