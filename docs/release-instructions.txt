@@ -26,9 +26,23 @@ confusing the package repository with the upstream (source) repository
 
 Release checklist overview:
 
-   1) upstream git tree: pull, merge, checkin, tag and push, upload tarballs
-   2) koji git tree: for each release: checkin tarball and spec, kick off builds
-   3) bodhi: schedule releases
+   1) upstream git tree: 
+      - update remote
+      - merge into work
+      - checkin
+      - tag
+      - merge work into master
+      - push
+      - upload tarballs
+   2) koji git tree: 
+      - checkin new source tarball in master
+      - checkin and push new specfile
+      - tag and build
+      - for each release: 
+      	- merge master
+	- push
+	- build
+   3) bodhi: schedule release
 
 =====================================================================
 For a mock 1.1+ release
@@ -60,7 +74,7 @@ In the upstream git tree:
   13) remove ChangeLog and AUTHORS
   14) run 'make dist' to generate ChangeLog and AUTHORS files and
       regenerate tar file
-  15) commit configure.ac and any other changes with a
+  15) commit configure.ac and specfile with a
       version bump message:
      $ git commit -m 'version bump' configure.ac
   16) tag the git tree:
@@ -70,7 +84,8 @@ In the upstream git tree:
       $ git merge prerelease
   18) push to main git repo (only from master branch):
      $ git push --tags origin master  
-  19) push tarballs to fedora ftp site
+  19) copy tarball to fedorahosted:
+     $ scp mock-1.1.17.tar.gz fedorahosted.org:mock
 
 
 In the fedora git (koji) tree
