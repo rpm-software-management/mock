@@ -247,6 +247,7 @@ class Root(object):
         except (KeyboardInterrupt, Exception):
             self._callHooks('initfailed')
             raise
+        self._show_installed_packages()
 
     decorate(traceLog())
     def _init(self):
@@ -537,6 +538,18 @@ class Root(object):
         finally:
             self.uidManager.restorePrivs()
 
+
+    decorate(traceLog())
+    def _show_installed_packages(self):
+        '''report the installed packages in the chroot to the root log'''
+        self.root_log.info("Installed packages:")
+        self.doChroot(
+            ["rpm", "-q", "-a" ],
+            logger=self.root_log,
+            shell=False,
+            uid=self.chrootuid,
+            gid=self.chrootgid,
+            )
 
     #
     # UNPRIVILEGED:
