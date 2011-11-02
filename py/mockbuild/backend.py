@@ -151,6 +151,7 @@ class Root(object):
         self.state("clean")
         self._callHooks('clean')
         mockbuild.util.orphansKill(self.makeChrootPath())
+        self._umountall(nowarn=True)
         self._unlock_and_rm_chroot()
         self.chrootWasCleaned = True
         self.unlockBuildRoot()
@@ -558,7 +559,6 @@ class Root(object):
             for tmp in glob.glob(self.makeChrootPath('var/lib/rpm/__db*')):
                 os.unlink(tmp)
 
-
             # drop privs and become mock user
             self.uidManager.becomeUser(self.chrootuid, self.chrootgid)
             self.state("setup")
@@ -796,7 +796,7 @@ class Root(object):
             mockbuild.util.do(cmd, shell=True)
 
     decorate(traceLog())
-    def _umountall(self):
+    def _umountall(self, nowarn=False):
         """umount all mounted chroot fs."""
         # first try removing all expected mountpoints.
         for cmd in reversed(self.umountCmds):
@@ -804,8 +804,9 @@ class Root(object):
                 mockbuild.util.do(cmd, raiseExc=1, shell=True)
             except mockbuild.exception.Error, e:
                 # the exception already contains info about the error.
-                self.root_log.warning(e)
-                self._show_path_user(cmd.split()[-1])
+                if not nowarn:
+                    self.root_log.warning(e)
+                    self._show_path_user(cmd.split()[-1])
         # then remove anything that might be left around.
         mountpoints = open("/proc/mounts").read().strip().split("\n")
         # umount in reverse mount order to prevent nested mount issues that
