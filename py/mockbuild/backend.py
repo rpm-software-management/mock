@@ -484,9 +484,9 @@ class Root(object):
     # bad hack
     # comment out decorator here so we dont get double exceptions in the root log
     #decorate(traceLog())
-    def doChroot(self, command, env=None, shell=True, returnOutput=False, *args, **kargs):
+    def doChroot(self, command, env=None, shell=True, returnOutput=False, raiseExc=True, *args, **kargs):
         """execute given command in root"""
-        return mockbuild.util.do(command, chrootPath=self.makeChrootPath(), env=env,
+        return mockbuild.util.do(command, chrootPath=self.makeChrootPath(), env=env, raiseExc=raiseExc,
                                  returnOutput=returnOutput, shell=shell, *args, **kargs )
 
     decorate(traceLog())
@@ -542,14 +542,14 @@ class Root(object):
             self.uidManager.restorePrivs()
 
 
-    decorate(traceLog())
+    #decorate(traceLog())
     def _show_installed_packages(self):
         '''report the installed packages in the chroot to the root log'''
         self.root_log.info("Installed packages:")
         self.doChroot(
             ["rpm", "-q", "-a" ],
-            logger=self.root_log,
             shell=False,
+            raiseExc=False,
             uid=self.chrootuid,
             gid=self.chrootgid,
             )
