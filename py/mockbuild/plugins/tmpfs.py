@@ -56,13 +56,22 @@ class Tmpfs(object):
 
     decorate(traceLog())
     def _tmpfsUmount(self):
+        force = False
         getLog().info("unmounting tmpfs.")
-        mountCmd = ["umount", "-n", self.rootObj.makeChrootPath()]
+        umountCmd = ["umount", "-n", self.rootObj.makeChrootPath()]
         # since we're in a separate namespace, the mount will be cleaned up
         # on exit, so just warn if it fails here
         try:
-            mockbuild.util.do(mountCmd, shell=False)
+            mockbuild.util.do(umountCmd, shell=False)
         except:
             getLog().warning("tmpfs-plugin: exception while umounting tmpfs! (cwd: %s)" % os.getcwd())
+            force = True
 
+        if force:
+            # try umounting with force option
+            umountCmd = ["umount", "-n", "-f", self.rootObj.makeChrootPath()]
+            try:
+                mockbuild.util.do(umountCmd, shell=False)
+            except:
+                getLog().warning("tmpfs-plugin: exception while force umounting tmpfs! (cwd: %s)" % os.getcwd())
 
