@@ -299,6 +299,18 @@ def setup_default_config_opts(config_opts, unprivUid):
             'selinux_opts': {},
             }
 
+    config_opts['environment'] = {
+        'TERM': 'vt100',
+        'SHELL': '/bin/bash',
+        'HOME': '/builddir',
+        'HOSTNAME': 'mock',
+        'PATH': '/usr/bin:/bin:/usr/sbin:/sbin',
+        'TMPDIR': '/tmp',
+        'PROMPT_COMMAND': 'echo -n "<mock-chroot>"',
+        'LANG': os.environ.setdefault('LANG', 'en_US.UTF-8'),
+        'TZ': os.environ.setdefault('TZ', 'EST5EDT'),
+        }
+
     runtime_plugins = [runtime_plugin
                        for (runtime_plugin, _)
                        in [os.path.splitext(os.path.basename(tmp_path))
