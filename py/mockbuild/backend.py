@@ -52,6 +52,9 @@ class Root(object):
         self.homedir = config['chroothome']
         self.builddir = os.path.join(self.homedir, 'build')
 
+        # Environment
+        self.env = config['environment']
+
         # result dir
         self.resultdir = config['resultdir'] % config
 
@@ -481,10 +484,10 @@ class Root(object):
     # bad hack
     # comment out decorator here so we dont get double exceptions in the root log
     #decorate(traceLog())
-    def doChroot(self, command, env="", shell=True, returnOutput=False, *args, **kargs):
+    def doChroot(self, command, env=None, shell=True, returnOutput=False, *args, **kargs):
         """execute given command in root"""
-        return mockbuild.util.do(command, chrootPath=self.makeChrootPath(),
-                            returnOutput=returnOutput, shell=shell, *args, **kargs )
+        return mockbuild.util.do(command, chrootPath=self.makeChrootPath(), env=env,
+                                 returnOutput=returnOutput, shell=shell, *args, **kargs )
 
     decorate(traceLog())
     def yumInstall(self, *rpms):
@@ -664,6 +667,7 @@ class Root(object):
             self._mountall()
             self.state("shell")
             ret = mockbuild.util.doshell(chrootPath=self.makeChrootPath(), 
+                                         environ=self.env,
                                          uid=uid, gid=gid,
                                          cmd=cmd)
         finally:
@@ -692,10 +696,11 @@ class Root(object):
             self._mountall()
             self.state("chroot")
             if options.unpriv:
-                output = self.doChroot(args, shell=shell, returnOutput=True,
+                output = self.doChroot(args, shell=shell, returnOutput=True, env=self.env,
                                        uid=self.chrootuid, gid=self.chrootgid, cwd=options.cwd)
             else:
-                output = self.doChroot(args, shell=shell, returnOutput=True, cwd=options.cwd)
+                output = self.doChroot(args, shell=shell, returnOutput=True, 
+                                       cwd=options.cwd, env=self.env)
         finally:
             self._umountall()
         self._callHooks("postchroot")
