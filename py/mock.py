@@ -308,7 +308,6 @@ def setup_default_config_opts(config_opts, unprivUid):
         'TMPDIR': '/tmp',
         'PROMPT_COMMAND': 'echo -n "<mock-chroot>"',
         'LANG': os.environ.setdefault('LANG', 'en_US.UTF-8'),
-        'TZ': os.environ.setdefault('TZ', 'EST5EDT'),
         }
 
     runtime_plugins = [runtime_plugin
