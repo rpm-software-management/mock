@@ -410,5 +410,4 @@ def clean_env():
            'PATH' : '/usr/bin:/bin:/usr/sbin:/sbin',
            'TMPDIR' : '/tmp' }
     env['LANG'] = os.environ.setdefault('LANG', 'en_US.UTF-8')
-    env['TZ'] = os.environ.setdefault('TZ', 'EST5EDT')
     return env
