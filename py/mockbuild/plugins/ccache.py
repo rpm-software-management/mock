@@ -49,6 +49,9 @@ class CCache(object):
         getLog().info("enabled ccache")
         self.rootObj.chrootEnvUpdate.update({
                 "CCACHE_DIR": "/tmp/ccache", "CCACHE_UMASK": "002" })
+        if self.ccache_opts.get('compress'):
+            self.rootObj.chrootEnvUpdate["CCACHE_COMPRESS"] = \
+                str(self.ccache_opts['compress'])
         mockbuild.util.mkdirIfAbsent(self.rootObj.makeChrootPath('/tmp/ccache'))
         mockbuild.util.mkdirIfAbsent(self.ccachePath)
         self.rootObj.uidManager.changeOwner(self.ccachePath)

@@ -273,6 +273,7 @@ def setup_default_config_opts(config_opts, unprivUid):
             'ccache_enable': True,
             'ccache_opts': {
                 'max_cache_size': "4G",
+                'compress': None,
                 'dir': "%(cache_topdir)s/%(root)s/ccache/"},
             'yum_cache_enable': True,
             'yum_cache_opts': {
