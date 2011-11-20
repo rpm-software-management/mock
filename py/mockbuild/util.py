@@ -294,6 +294,8 @@ def do(command, shell=False, chrootPath=None, cwd=None, timeout=0, raiseExc=True
     logger = kargs.get("logger", getLog())
     output = ""
     start = time.time()
+    environ = clean_env()
+    environ.update(kargs.get("envupd", {}))
     preexec = ChildPreExec(personality, chrootPath, cwd, uid, gid)
     try:
         child = None
@@ -301,7 +303,7 @@ def do(command, shell=False, chrootPath=None, cwd=None, timeout=0, raiseExc=True
         child = subprocess.Popen(
             command,
             shell=shell,
-            env=clean_env(),
+            env=environ,
             bufsize=0, close_fds=True,
             stdin=open("/dev/null", "r"),
             stdout=subprocess.PIPE,
@@ -374,12 +376,13 @@ def is_in_dir(path, directory):
     return os.path.commonprefix([path, directory]) == directory
 
 
-def doshell(chrootPath=None, uid=None, gid=None, cmd=None):
+def doshell(chrootPath=None, uid=None, gid=None, cmd=None, envupd={}):
     log = getLog()
     log.debug("doshell: chrootPath:%s, uid:%d, gid:%d" % (chrootPath, uid, gid))
     environ = clean_env()
     environ['PROMPT_COMMAND'] = 'echo -n "<mock-chroot>"'
     environ['SHELL'] = '/bin/bash'
+    environ.update(envupd)
     log.debug("doshell environment: %s", environ)
     if cmd:
         cmdstr = '/bin/bash -c "%s"' % cmd

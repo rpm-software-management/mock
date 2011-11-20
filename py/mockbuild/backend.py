@@ -38,6 +38,7 @@ class Root(object):
         self.chrootWasCached = False
         self.chrootWasCleaned = False
         self.preExistingDeps = []
+        self.chrootEnvUpdate = {}
         self.logging_initialized = False
         self.buildrootLock = None
         self.version = config['version']
@@ -481,6 +482,8 @@ class Root(object):
     #decorate(traceLog())
     def doChroot(self, command, env="", shell=True, returnOutput=False, *args, **kargs):
         """execute given command in root"""
+        # XXX env is unused at least within mock itself + bundled plugins
+        kargs.setdefault("envupd", self.chrootEnvUpdate);
         return mockbuild.util.do(command, chrootPath=self.makeChrootPath(),
                             returnOutput=returnOutput, shell=shell, *args, **kargs )
 
@@ -663,7 +666,7 @@ class Root(object):
             self.state("shell")
             ret = mockbuild.util.doshell(chrootPath=self.makeChrootPath(), 
                                          uid=uid, gid=gid,
-                                         cmd=cmd)
+                                         cmd=cmd, envupd=self.chrootEnvUpdate)
         finally:
             log.debug("shell: unmounting all filesystems")
             self._umountall()
