@@ -35,22 +35,20 @@ class CCache(object):
     # =============
     # 'Private' API
     # =============
-    # set the max size before we actually use it during a build.
-    # ccache itself manages size and settings.
+    # set the max size before we actually use it during a build. ccache itself
+    # manages size and settings. we also set a few variables used by ccache to
+    # find the shared cache.
     decorate(traceLog())
     def _ccacheBuildHook(self):
         self.rootObj.doChroot(["ccache", "-M", str(self.ccache_opts['max_cache_size'])], shell=False)
 
-    # basic idea here is that we add 'cc', 'gcc', 'g++' shell scripts to
-    # to /tmp/ccache, which is bind-mounted from a shared location.
-    # we then add this to the front of the path.
-    # we also set a few admin variables used by ccache to find the shared
-    # cache.
+    # set up the ccache dir.
+    # we also set a few variables used by ccache to find the shared cache.
     decorate(traceLog())
     def _ccachePreInitHook(self):
         getLog().info("enabled ccache")
+        self.rootObj.chrootEnvUpdate.update({
+                "CCACHE_DIR": "/tmp/ccache", "CCACHE_UMASK": "002" })
         mockbuild.util.mkdirIfAbsent(self.rootObj.makeChrootPath('/tmp/ccache'))
-        os.environ['CCACHE_DIR'] = "/tmp/ccache"
-        os.environ['CCACHE_UMASK'] = "002"
         mockbuild.util.mkdirIfAbsent(self.ccachePath)
         self.rootObj.uidManager.changeOwner(self.ccachePath)
