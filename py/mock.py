@@ -542,19 +542,19 @@ def rootcheck():
     if os.getuid() == 0 and not (os.environ.get("SUDO_UID") or os.environ.get("USERHELPER_UID")):
         raise RuntimeError, "mock will not run from the root account (needs an unprivileged uid so it can drop privs)"
 
-def groupcheck():
+def groupcheck(unprivGid):
     "verify that the user running mock is part of the mock group"
     # verify that we're in the mock group (so all our uid/gid manipulations work)
     inmockgrp = False
     members = []
-    for g in os.getgroups():
+    for g in os.getgroups() + [unprivGid]:
         name = grp.getgrgid(g).gr_name
-        members.append(name)
         if name == "mock":
             inmockgrp = True
             break
+        members.append(name)
     if not inmockgrp:
-        raise RuntimeError, "Must be member of 'mock' group to run mock! (%s)" % members
+        raise RuntimeError, "Must be member of 'mock' group to run mock! (%s)" % sorted(set(members))
 
 def main(ret):
     "Main executable entry point."
@@ -597,7 +597,7 @@ def main(ret):
         uidManager._becomeUser(unprivUid, unprivGid)
 
     # verify that our unprivileged uid is in the mock group
-    groupcheck()
+    groupcheck(unprivGid)
 
     # defaults
     config_opts = {}
