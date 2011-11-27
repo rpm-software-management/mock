@@ -115,6 +115,22 @@ chmod 2775 /var/cache/mock
 %dir /var/lib/mock
 
 %changelog
+* Sun Nov 27 2011 Clark Williams <williams@redhat.com> - 1.0.25-1
+- modify creation of default.cfg link to force creation if the
+  symlink exists but doesn't point to a valid config [BZ# 741145]
+- remove TZ from default environment [BZ# 754701]
+- unbuffer output from --chroot command [BZ# 744761]
+- added -debug stanzas in configs [BZ# 610823]
+- report package contents of chroot after init [BZ# 736858]
+- add _umountall() call to clean [BZ# 502922]
+- updated release checklist overview and 1.1 checklist
+- add code to tmpfs plugin to try a force umount on umount fail
+- add 'lazy' option (-l) to umount
+- prevent exceptions when showing installed packages on EPEL-4
+- deleted unused (or cannot be used) configs
+- from Davi Arnaut <davi.arnaut@gmail.com>
+  - set chroot environment variables from config files [BZ# 753179]
+
 * Mon Oct 31 2011 Clark Williams <williams@redhat.com> - 1.0.24-1
 - fixed shell command handling [BZ# 750075]
 - from Marko Myllynen <myllynen@redhat.com>:
