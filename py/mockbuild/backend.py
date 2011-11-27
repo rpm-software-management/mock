@@ -99,11 +99,11 @@ class Root(object):
             self.pluginConf[key]['root'] = self.sharedRootName
 
         # mount/umount
-        self.umountCmds = ['umount -n %s' % self.makeChrootPath('proc'),
-                'umount -n %s' % self.makeChrootPath('sys')
+        self.umountCmds = ['umount -n -l %s' % self.makeChrootPath('proc'),
+                           'umount -n -l %s' % self.makeChrootPath('sys')
                ]
         self.mountCmds = ['mount -n -t proc   mock_chroot_proc   %s' % self.makeChrootPath('proc'),
-                'mount -n -t sysfs  mock_chroot_sysfs  %s' % self.makeChrootPath('sys'),
+                          'mount -n -t sysfs  mock_chroot_sysfs  %s' % self.makeChrootPath('sys'),
                ]
 
         self.build_log_fmt_str = config['build_log_fmt_str']
@@ -429,8 +429,8 @@ class Root(object):
 
         # mount/umount
         for devUnmtCmd in (
-                'umount -n %s' % self.makeChrootPath('/dev/pts'),
-                'umount -n %s' % self.makeChrootPath('/dev/shm') ):
+                'umount -n -l %s' % self.makeChrootPath('/dev/pts'),
+                'umount -n -l %s' % self.makeChrootPath('/dev/shm') ):
             if devUnmtCmd not in self.umountCmds:
                 self.umountCmds.append(devUnmtCmd)
 
@@ -830,7 +830,7 @@ class Root(object):
         for mountline in reversed(mountpoints):
             mountpoint = mountline.split()[1]
             if os.path.realpath(mountpoint).startswith(os.path.realpath(self.makeChrootPath()) + "/"):
-                cmd = "umount -n %s" % mountpoint
+                cmd = "umount -n -l %s" % mountpoint
                 self.root_log.warning("Forcibly unmounting '%s' from chroot." % mountpoint)
                 mockbuild.util.do(cmd, raiseExc=0, shell=True)
 
