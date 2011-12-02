@@ -110,6 +110,9 @@ def command_parse(config_opts):
     parser.add_option("--update", action="store_const", const="update",
                       dest="mode",
                       help="update installed packages using yum")
+    parser.add_option("--remove", action="store_const", const="remove",
+                      dest="mode",
+                      help="remove packages using yum")
     parser.add_option("--orphanskill", action="store_const", const="orphanskill",
                       dest="mode",
                       help="Kill all processes using specified buildroot.")
@@ -212,7 +215,7 @@ def command_parse(config_opts):
 
     (options, args) = parser.parse_args()
     if len(args) and args[0] in ('chroot', 'shell',
-            'rebuild', 'install', 'installdeps', 'init', 'clean'):
+            'rebuild', 'install', 'installdeps', 'remove', 'init', 'clean'):
         options.mode = args[0]
         args = args[1:]
 
@@ -270,6 +273,7 @@ def setup_default_config_opts(config_opts, unprivUid):
             'ccache_enable': True,
             'ccache_opts': {
                 'max_cache_size': "4G",
+                'compress': None,
                 'dir': "%(cache_topdir)s/%(root)s/ccache/"},
             'yum_cache_enable': True,
             'yum_cache_opts': {
@@ -550,19 +554,19 @@ def rootcheck():
     if os.getuid() == 0 and not (os.environ.get("SUDO_UID") or os.environ.get("USERHELPER_UID")):
         raise RuntimeError, "mock will not run from the root account (needs an unprivileged uid so it can drop privs)"
 
-def groupcheck():
+def groupcheck(unprivGid):
     "verify that the user running mock is part of the mock group"
     # verify that we're in the mock group (so all our uid/gid manipulations work)
     inmockgrp = False
     members = []
-    for g in os.getgroups():
+    for g in os.getgroups() + [unprivGid]:
         name = grp.getgrgid(g).gr_name
-        members.append(name)
         if name == "mock":
             inmockgrp = True
             break
+        members.append(name)
     if not inmockgrp:
-        raise RuntimeError, "Must be member of 'mock' group to run mock! (%s)" % members
+        raise RuntimeError, "Must be member of 'mock' group to run mock! (%s)" % sorted(set(members))
 
 def main(ret):
     "Main executable entry point."
@@ -605,7 +609,7 @@ def main(ret):
         uidManager._becomeUser(unprivUid, unprivGid)
 
     # verify that our unprivileged uid is in the mock group
-    groupcheck()
+    groupcheck(unprivGid)
 
     # defaults
     config_opts = {}
@@ -785,6 +789,16 @@ def main(ret):
         chroot._resetLogging()
         chroot.tryLockBuildRoot()
         chroot.yumUpdate()
+        chroot.unlockBuildRoot()
+
+    elif options.mode == 'remove':
+        if len(args) == 0:
+            log.critical("You must specify a package list to remove.")
+            sys.exit(50)
+
+        chroot._resetLogging()
+        chroot.tryLockBuildRoot()
+        chroot.yumRemove(*args)
         chroot.unlockBuildRoot()
 
     elif options.mode == 'rebuild':

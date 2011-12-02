@@ -299,6 +299,8 @@ def do(command, shell=False, chrootPath=None, cwd=None, timeout=0, raiseExc=True
     logger = kargs.get("logger", getLog())
     output = ""
     start = time.time()
+    environ = clean_env()
+    environ.update(kargs.get("envupd", {}))
     preexec = ChildPreExec(personality, chrootPath, cwd, uid, gid)
     if env is None:
         env = clean_env()
@@ -308,7 +310,7 @@ def do(command, shell=False, chrootPath=None, cwd=None, timeout=0, raiseExc=True
         child = subprocess.Popen(
             command,
             shell=shell,
-            env=env,
+            env=environ,
             bufsize=0, close_fds=True,
             stdin=open("/dev/null", "r"),
             stdout=subprocess.PIPE,
@@ -344,7 +346,7 @@ def do(command, shell=False, chrootPath=None, cwd=None, timeout=0, raiseExc=True
     if not niceExit:
         raise commandTimeoutExpired, ("Timeout(%s) expired for command:\n # %s\n%s" % (timeout, command, output))
 
-    logger.debug("Child returncode was: %s" % str(child.returncode))
+    logger.debug("Child return code was: %s" % str(child.returncode))
     if raiseExc and child.returncode:
         if returnOutput:
             raise mockbuild.exception.Error, ("Command failed: \n # %s\n%s" % (command, output), child.returncode)
@@ -381,15 +383,13 @@ def is_in_dir(path, directory):
     return os.path.commonprefix([path, directory]) == directory
 
 
-def doshell(chrootPath=None, environ=None, uid=None, gid=None, cmd=None):
+def doshell(chrootPath=None, uid=None, gid=None, cmd=None, envupd={}):
     log = getLog()
     log.debug("doshell: chrootPath:%s, uid:%d, gid:%d" % (chrootPath, uid, gid))
-    if environ is None:
-        environ = clean_env()
-    if not 'PROMPT_COMMAND' in environ:
-        environ['PROMPT_COMMAND'] = 'echo -n "<mock-chroot>"'
-    if not 'SHELL' in environ:
-        environ['SHELL'] = '/bin/bash'
+    environ = clean_env()
+    environ['PROMPT_COMMAND'] = 'echo -n "<mock-chroot>"'
+    environ['SHELL'] = '/bin/bash'
+    environ.update(envupd)
     log.debug("doshell environment: %s", environ)
     if cmd:
         cmdstr = '/bin/bash -c "%s"' % cmd

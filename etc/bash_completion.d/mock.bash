@@ -71,6 +71,10 @@ _mock()
                 declare -F _yum_list &>/dev/null && _yum_list all "$cur"
             return 0
             ;;
+        --remove|remove)
+            declare -F _yum_list &>/dev/null && _yum_list all "$cur"
+            return 0
+            ;;
     esac
 
     $split && return 0
@@ -78,7 +82,7 @@ _mock()
     if [[ "$cur" == -* ]] ; then
         COMPREPLY=( $( compgen -W "--version --help --rebuild --buildsrpm
             --shell --chroot --clean --scrub --init --installdeps --install
-            --update --orphanskill --copyin --copyout --root --offline
+            --update --remove --orphanskill --copyin --copyout --root --offline
             --no-clean --cleanup-after --no-cleanup-after --arch --target
             --define --with --without --resultdir --uniqueext --configdir
             --rpmbuild_timeout --unpriv --cwd --spec --sources --verbose

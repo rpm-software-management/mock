@@ -38,6 +38,7 @@ class Root(object):
         self.chrootWasCached = False
         self.chrootWasCleaned = False
         self.preExistingDeps = []
+        self.chrootEnvUpdate = {}
         self.logging_initialized = False
         self.buildrootLock = None
         self.version = config['version']
@@ -486,9 +487,10 @@ class Root(object):
     #decorate(traceLog())
     def doChroot(self, command, env=None, shell=True, returnOutput=False, printOutput=False, raiseExc=True, *args, **kargs):
         """execute given command in root"""
-        return mockbuild.util.do(command, chrootPath=self.makeChrootPath(), env=env, raiseExc=raiseExc,
-                                 returnOutput=returnOutput, shell=shell, 
-                                 printOutput=printOutput, *args, **kargs )
+        # XXX env is unused at least within mock itself + bundled plugins
+        kargs.setdefault("envupd", self.chrootEnvUpdate);
+        return mockbuild.util.do(command, chrootPath=self.makeChrootPath(),
+                            returnOutput=returnOutput, shell=shell, *args, **kargs )
 
     decorate(traceLog())
     def yumInstall(self, *rpms):
@@ -508,6 +510,17 @@ class Root(object):
         try:
             self._mountall()
             self._yum(('update',), returnOutput=1)
+        finally:
+            self._umountall()
+
+    decorate(traceLog())
+    def yumRemove(self, *rpms):
+        """call yum to remove the input rpms from the chroot"""
+        self.root_log.info("removing package(s): %s" % " ".join(rpms))
+        try:
+            self._mountall()
+            output = self._yum(['remove'] + list(rpms), returnOutput=1)
+            self.root_log.info(output)
         finally:
             self._umountall()
 
@@ -670,7 +683,7 @@ class Root(object):
             ret = mockbuild.util.doshell(chrootPath=self.makeChrootPath(), 
                                          environ=self.env,
                                          uid=uid, gid=gid,
-                                         cmd=cmd)
+                                         cmd=cmd, envupd=self.chrootEnvUpdate)
         finally:
             log.debug("shell: unmounting all filesystems")
             self._umountall()
