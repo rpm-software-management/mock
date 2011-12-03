@@ -47,11 +47,11 @@ class CCache(object):
     decorate(traceLog())
     def _ccachePreInitHook(self):
         getLog().info("enabled ccache")
-        self.rootObj.chrootEnvUpdate.update({
-                "CCACHE_DIR": "/tmp/ccache", "CCACHE_UMASK": "002" })
-        if self.ccache_opts.get('compress'):
-            self.rootObj.chrootEnvUpdate["CCACHE_COMPRESS"] = \
-                str(self.ccache_opts['compress'])
+        envupd = {"CCACHE_DIR": "/tmp/ccache", "CCACHE_UMASK": "002" }
+        if self.ccache_opts.get('compress') is not None:
+            envupd["CCACHE_COMPRESS"] = str(self.ccache_opts['compress'])
+        self.rootObj.env.update(envupd)
+                
         mockbuild.util.mkdirIfAbsent(self.rootObj.makeChrootPath('/tmp/ccache'))
         mockbuild.util.mkdirIfAbsent(self.ccachePath)
         self.rootObj.uidManager.changeOwner(self.ccachePath)

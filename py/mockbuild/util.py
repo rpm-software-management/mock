@@ -302,7 +302,6 @@ def do(command, shell=False, chrootPath=None, cwd=None, timeout=0, raiseExc=True
     preexec = ChildPreExec(personality, chrootPath, cwd, uid, gid)
     if env is None:
         env = clean_env()
-    env.update(kargs.get("envupd", {}))
     try:
         child = None
         logger.debug("Executing command: %s with env %s" % (command, env))
@@ -382,7 +381,7 @@ def is_in_dir(path, directory):
     return os.path.commonprefix([path, directory]) == directory
 
 
-def doshell(chrootPath=None, environ=None, uid=None, gid=None, cmd=None, envupd={}):
+def doshell(chrootPath=None, environ=None, uid=None, gid=None, cmd=None):
     log = getLog()
     log.debug("doshell: chrootPath:%s, uid:%d, gid:%d" % (chrootPath, uid, gid))
     if environ is None:
@@ -391,7 +390,6 @@ def doshell(chrootPath=None, environ=None, uid=None, gid=None, cmd=None, envupd=
         environ['PROMPT_COMMAND'] = 'echo -n "<mock-chroot>"'
     if not 'SHELL' in environ:
         environ['SHELL'] = '/bin/bash'
-    environ.update(envupd)
     log.debug("doshell environment: %s", environ)
     if cmd:
         cmdstr = '/bin/bash -c "%s"' % cmd
