@@ -487,10 +487,11 @@ class Root(object):
     #decorate(traceLog())
     def doChroot(self, command, env=None, shell=True, returnOutput=False, printOutput=False, raiseExc=True, *args, **kargs):
         """execute given command in root"""
-        # XXX env is unused at least within mock itself + bundled plugins
         kargs.setdefault("envupd", self.chrootEnvUpdate);
         return mockbuild.util.do(command, chrootPath=self.makeChrootPath(),
-                            returnOutput=returnOutput, shell=shell, *args, **kargs )
+                                 env=env, raiseExc=raiseExc,
+                                 returnOutput=returnOutput, shell=shell,
+                                 printOutput=printOutput, *args, **kargs)
 
     decorate(traceLog())
     def yumInstall(self, *rpms):
