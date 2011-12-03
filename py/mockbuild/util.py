@@ -305,7 +305,7 @@ def do(command, shell=False, chrootPath=None, cwd=None, timeout=0, raiseExc=True
     env.update(kargs.get("envupd", {}))
     try:
         child = None
-        logger.debug("Executing command: %s" % command)
+        logger.debug("Executing command: %s with env %s" % (command, env))
         child = subprocess.Popen(
             command,
             shell=shell,
