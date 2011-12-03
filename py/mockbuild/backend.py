@@ -412,7 +412,7 @@ class Root(object):
             if self.selinux:
                 mockbuild.util.do(
                     ["chcon", "--reference=/%s"% i[2], self.makeChrootPath(i[2])]
-                    , raiseExc=0, shell=False)
+                    , raiseExc=0, shell=False, env=self.env)
 
         os.symlink("/proc/self/fd/0", self.makeChrootPath("dev/stdin"))
         os.symlink("/proc/self/fd/1", self.makeChrootPath("dev/stdout"))
@@ -484,11 +484,12 @@ class Root(object):
     # bad hack
     # comment out decorator here so we dont get double exceptions in the root log
     #decorate(traceLog())
-    def doChroot(self, command, env=None, shell=True, returnOutput=False, printOutput=False, raiseExc=True, *args, **kargs):
+    def doChroot(self, command, shell=True, returnOutput=False, printOutput=False, raiseExc=True, *args, **kargs):
         """execute given command in root"""
-        return mockbuild.util.do(command, chrootPath=self.makeChrootPath(), env=env, raiseExc=raiseExc,
-                                 returnOutput=returnOutput, shell=shell, 
-                                 printOutput=printOutput, *args, **kargs )
+        return mockbuild.util.do(command, chrootPath=self.makeChrootPath(),
+                                 env=self.env, raiseExc=raiseExc,
+                                 returnOutput=returnOutput, shell=shell,
+                                 printOutput=printOutput, *args, **kargs)
 
     decorate(traceLog())
     def yumInstall(self, *rpms):
@@ -697,10 +698,10 @@ class Root(object):
             self._mountall()
             self.state("chroot")
             if options.unpriv:
-                self.doChroot(args, shell=shell, printOutput=True, env=self.env,
+                self.doChroot(args, shell=shell, printOutput=True,
                               uid=self.chrootuid, gid=self.chrootgid, cwd=options.cwd)
             else:
-                self.doChroot(args, shell=shell, cwd=options.cwd, printOutput=True, env=self.env)
+                self.doChroot(args, shell=shell, cwd=options.cwd, printOutput=True)
         finally:
             self._umountall()
         self._callHooks("postchroot")
@@ -809,7 +810,7 @@ class Root(object):
         """mount 'normal' fs like /dev/ /proc/ /sys"""
         for cmd in self.mountCmds:
             self.root_log.debug(cmd)
-            mockbuild.util.do(cmd, shell=True)
+            mockbuild.util.do(cmd, shell=True, env=self.env)
 
     decorate(traceLog())
     def _umountall(self, nowarn=False):
@@ -817,7 +818,7 @@ class Root(object):
         # first try removing all expected mountpoints.
         for cmd in reversed(self.umountCmds):
             try:
-                mockbuild.util.do(cmd, raiseExc=1, shell=True)
+                mockbuild.util.do(cmd, raiseExc=1, shell=True, env=self.env)
             except mockbuild.exception.Error, e:
                 # the exception already contains info about the error.
                 if not nowarn:
@@ -832,13 +833,13 @@ class Root(object):
             if os.path.realpath(mountpoint).startswith(os.path.realpath(self.makeChrootPath()) + "/"):
                 cmd = "umount -n -l %s" % mountpoint
                 self.root_log.warning("Forcibly unmounting '%s' from chroot." % mountpoint)
-                mockbuild.util.do(cmd, raiseExc=0, shell=True)
+                mockbuild.util.do(cmd, raiseExc=0, shell=True, env=self.env)
 
     decorate(traceLog())
     def _show_path_user(self, path):
         cmd = ['/sbin/fuser', '-a', '-v', path]
         self.root_log.debug("using 'fuser' to find users of %s" % path)
-        out = mockbuild.util.do(cmd, returnOutput=1, raiseExc=False)
+        out = mockbuild.util.do(cmd, returnOutput=1, raiseExc=False, env=self.env)
         self.root_log.debug(out)
         return out
 
@@ -863,7 +864,7 @@ class Root(object):
         output = ""
         try:
             self._callHooks("preyum")
-            output = mockbuild.util.do(yumcmd, returnOutput=returnOutput)
+            output = mockbuild.util.do(yumcmd, returnOutput=returnOutput, env=self.env)
             self._callHooks("postyum")
             return output
         except mockbuild.exception.Error, e:
