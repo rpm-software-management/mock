@@ -35,5 +35,7 @@ class BindMount(object):
 
     decorate(traceLog())
     def _bindMountPreInitHook(self):
+        create_dirs = self.rootObj.pluginConf['bind_mount_opts']['create_dirs']
         for srcdir, destdir in self.bind_opts['dirs']:
+            if create_dirs: mockbuild.util.mkdirIfAbsent(srcdir)
             mockbuild.util.mkdirIfAbsent(self.rootObj.makeChrootPath(destdir))
