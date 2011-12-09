@@ -12,6 +12,7 @@ import glob
 # our imports
 from mockbuild.trace_decorator import decorate, traceLog, getLog
 import mockbuild.util
+from mockbuild.mounts import BindMountPoint
 
 # set up logging, module options
 requires_api_version = "1.0"
@@ -35,8 +36,7 @@ class YumCache(object):
         rootObj.addHook("preyum", self._yumCachePreYumHook)
         rootObj.addHook("postyum", self._yumCachePostYumHook)
         rootObj.addHook("preinit", self._yumCachePreInitHook)
-        rootObj.umountCmds.append('umount -n %s' % rootObj.makeChrootPath('/var/cache/yum'))
-        rootObj.mountCmds.append('mount -n --bind %s  %s' % (self.yumSharedCachePath, rootObj.makeChrootPath('/var/cache/yum')))
+        rootObj.mounts.add(BindMountPoint(srcpath=self.yumSharedCachePath, bindpath=rootObj.makeChrootPath('/var/cache/yum')))
         mockbuild.util.mkdirIfAbsent(self.yumSharedCachePath)
         self.yumCacheLock = open(os.path.join(self.yumSharedCachePath, "yumcache.lock"), "a+")
 

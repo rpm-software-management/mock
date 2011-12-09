@@ -10,6 +10,8 @@ import os
 from mockbuild.trace_decorator import decorate, traceLog, getLog
 import mockbuild.util
 
+from mockbuild.mounts import BindMountPoint
+
 requires_api_version = "1.0"
 
 # plugin entry point
@@ -29,8 +31,7 @@ class CCache(object):
         rootObj.preExistingDeps.append("ccache")
         rootObj.addHook("prebuild", self._ccacheBuildHook)
         rootObj.addHook("preinit",  self._ccachePreInitHook)
-        rootObj.umountCmds.append('umount -n %s' % rootObj.makeChrootPath("/tmp/ccache"))
-        rootObj.mountCmds.append('mount -n --bind %s  %s' % (self.ccachePath, rootObj.makeChrootPath("/tmp/ccache")))
+        rootObj.mounts.add(BindMountPoint(srcpath=self.ccachePath, bindpath=rootObj.makeChrootPath("/tmp/ccache")))
 
     # =============
     # 'Private' API

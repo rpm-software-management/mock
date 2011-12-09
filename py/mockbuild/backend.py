@@ -24,6 +24,7 @@ except:
 
 # our imports
 import mockbuild.util
+import mockbuild.mounts
 import mockbuild.exception
 from mockbuild.trace_decorator import traceLog, decorate, getLog
 
@@ -99,12 +100,7 @@ class Root(object):
             self.pluginConf[key]['root'] = self.sharedRootName
 
         # mount/umount
-        self.umountCmds = ['umount -n -l %s' % self.makeChrootPath('proc'),
-                           'umount -n -l %s' % self.makeChrootPath('sys')
-               ]
-        self.mountCmds = ['mount -n -t proc   mock_chroot_proc   %s' % self.makeChrootPath('proc'),
-                          'mount -n -t sysfs  mock_chroot_sysfs  %s' % self.makeChrootPath('sys'),
-               ]
+        self.mounts = mockbuild.mounts.Mounts(self)
 
         self.build_log_fmt_str = config['build_log_fmt_str']
         self.root_log_fmt_str = config['root_log_fmt_str']
@@ -426,23 +422,6 @@ class Root(object):
             os.symlink("/proc/self/fd",   self.makeChrootPath("dev/fd"))
 
         os.umask(prevMask)
-
-        # mount/umount
-        for devUnmtCmd in (
-                'umount -n -l %s' % self.makeChrootPath('/dev/pts'),
-                'umount -n -l %s' % self.makeChrootPath('/dev/shm') ):
-            if devUnmtCmd not in self.umountCmds:
-                self.umountCmds.append(devUnmtCmd)
-
-        mountopt = 'gid=%d,mode=0620,ptmxmode=0666' % grp.getgrnam('tty').gr_gid
-        if mockbuild.util.cmpKernelEVR(kver, '2.6.29') >= 0:
-            mountopt += ',newinstance'
-
-        for devMntCmd in (
-            'mount -n -t devpts -o %s mock_chroot_devpts %s' % (mountopt, self.makeChrootPath('/dev/pts')),
-            'mount -n -t tmpfs mock_chroot_shmfs %s' % self.makeChrootPath('/dev/shm') ):
-            if devMntCmd not in self.mountCmds:
-                self.mountCmds.append(devMntCmd)
 
         if mockbuild.util.cmpKernelEVR(kver, '2.6.29') >= 0:
             os.unlink(self.makeChrootPath('/dev/ptmx'))
@@ -818,25 +797,19 @@ class Root(object):
 
     decorate(traceLog())
     def _mountall(self):
-        """mount 'normal' fs like /dev/ /proc/ /sys"""
-        for cmd in self.mountCmds:
-            self.root_log.debug(cmd)
-            mockbuild.util.do(cmd, shell=True, env=self.env)
+        """mount everything that is queued up for mounting in the chroot"""
+        self.mounts.mountall()
 
     decorate(traceLog())
     def _umountall(self, nowarn=False):
         """umount all mounted chroot fs."""
+
         # first try removing all expected mountpoints.
-        for cmd in reversed(self.umountCmds):
-            try:
-                mockbuild.util.do(cmd, raiseExc=1, shell=True, env=self.env)
-            except mockbuild.exception.Error, e:
-                # the exception already contains info about the error.
-                if not nowarn:
-                    self.root_log.warning(e)
-                    self._show_path_user(cmd.split()[-1])
+        self.mounts.umountall(nowarn=nowarn)
+
         # then remove anything that might be left around.
         mountpoints = open("/proc/mounts").read().strip().split("\n")
+
         # umount in reverse mount order to prevent nested mount issues that
         # may prevent clean unmount.
         for mountline in reversed(mountpoints):
