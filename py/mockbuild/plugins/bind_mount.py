@@ -11,6 +11,8 @@ from mockbuild.trace_decorator import decorate, traceLog
 
 import mockbuild.util
 
+from mockbuild.mounts import BindMountPoint
+
 requires_api_version = "1.0"
 
 # plugin entry point
@@ -30,8 +32,7 @@ class BindMount(object):
         rootObj.addHook("preshell",  self._bindMountPreInitHook)
         rootObj.addHook("prechroot",  self._bindMountPreInitHook)
         for srcdir, destdir in self.bind_opts['dirs']:
-            rootObj.umountCmds.append('umount -n %s' % rootObj.makeChrootPath(destdir))
-            rootObj.mountCmds.append('mount -n --bind %s  %s' % (srcdir, rootObj.makeChrootPath(destdir)))
+            rootObj.mounts.add(BindMountPoint(srcpath=srcdir, bindpath=rootObj.makeChrootPath(destdir)))
 
     decorate(traceLog())
     def _bindMountPreInitHook(self):

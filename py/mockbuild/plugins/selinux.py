@@ -13,6 +13,7 @@ import atexit
 # our imports
 from mockbuild.trace_decorator import decorate, traceLog, getLog
 import mockbuild.util
+from mockbuild.mounts import BindMountPoint
 
 requires_api_version = "1.0"
 
@@ -43,8 +44,7 @@ class SELinux(object):
 
         atexit.register(self._selinuxAtExit)
 
-        self.rootObj.mountCmds.append("mount -n --bind %s %s" % (self.filesystems, self.chrootFilesystems))
-        self.rootObj.umountCmds.append("umount -n %s" % self.chrootFilesystems)
+        self.rootObj.mounts.add(BindMountPoint(srcpath=self.filesystems, bindpath=self.chrootFilesystems))
 
         if self._selinuxYumIsSetoptSupported():
             rootObj.addHook("preyum", self._selinuxPreYumHook)
