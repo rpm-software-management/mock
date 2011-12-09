@@ -286,11 +286,13 @@ def setup_default_config_opts(config_opts, unprivUid):
                 'exclude_dirs': ["./proc", "./sys", "./dev", "./tmp/ccache", "./var/cache/yum" ],
                 'extension': '.gz'},
             'bind_mount_enable': True,
-            'bind_mount_opts': {'dirs': [
+            'bind_mount_opts': {
+            	'dirs': [
                 # specify like this:
                 # ('/host/path', '/bind/mount/path/in/chroot/' ),
                 # ('/another/host/path', '/another/bind/mount/path/in/chroot/'),
-                ]},
+                ],
+                'create_dirs': False,},
             'tmpfs_enable': False,
             'tmpfs_opts': {
                 'required_ram_mb': 900,
