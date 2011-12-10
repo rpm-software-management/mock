@@ -366,6 +366,7 @@ class ChildPreExec(object):
     def __call__(self, *args, **kargs):
         if not self.shell:
             os.setsid()
+        os.umask(002)
         condPersonality(self.personality)
         condEnvironment(self.env)
         condChroot(self.chrootPath)
