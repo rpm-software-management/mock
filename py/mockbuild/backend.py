@@ -56,6 +56,11 @@ class Root(object):
         # Environment
         self.env = config['environment']
 
+        # proxy setting
+        if config.has_key('http_proxy') and config['http_proxy']:
+            os.environ['http_proxy'] = config['http_proxy']
+            self.env['http_proxy'] = config['http_proxy']
+
         # result dir
         self.resultdir = config['resultdir'] % config
 
