@@ -307,7 +307,6 @@ def setup_default_config_opts(config_opts, unprivUid):
         'HOME': '/builddir',
         'HOSTNAME': 'mock',
         'PATH': '/usr/bin:/bin:/usr/sbin:/sbin',
-        'TMPDIR': '/tmp',
         'PROMPT_COMMAND': 'echo -n "<mock-chroot>"',
         'LANG': os.environ.setdefault('LANG', 'en_US.UTF-8'),
         }
