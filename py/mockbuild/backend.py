@@ -726,8 +726,8 @@ class Root(object):
             sources = os.path.realpath(sources)
 
             if os.path.isdir(sources):
-                os.rmdir(self.makeChrootPath(self.builddir, "SOURCES"))
-                shutil.copytree(sources, self.makeChrootPath(self.builddir, "SOURCES"))
+                mockbuild.util.rmtree(self.makeChrootPath(self.builddir, "SOURCES"))
+                shutil.copytree(sources, self.makeChrootPath(self.builddir, "SOURCES"), symlinks=True)
             else:
                 shutil.copy(sources, self.makeChrootPath(self.builddir, "SOURCES"))
 
@@ -759,19 +759,14 @@ class Root(object):
 
             resultSrpmFile = self.resultdir + "/" + srpmBasename
 
+            return resultSrpmFile
+
         finally:
             self.uidManager.restorePrivs()
             self._umountall()
 
             # tell caching we are done building
             self._callHooks('postbuild')
-
-            try:
-                return resultSrpmFile
-            except:
-                return None
-
-
 
 
     # =============
