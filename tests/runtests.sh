@@ -33,7 +33,8 @@ cd $TOP_SRCTREE
 testConfig=epel-5-x86_64
 uniqueext="$$-$RANDOM"
 outdir=${CURDIR}/mock-unit-test
-MOCKCMD="sudo ./py/mock.py $VERBOSE --resultdir=$outdir --uniqueext=$uniqueext -r $testConfig $MOCK_EXTRA_ARGS"
+cfgdir=$(pwd)/etc/mock
+MOCKCMD="sudo ./py/mock.py $VERBOSE --resultdir=$outdir --uniqueext=$uniqueext --configdir=$cfgdir -r $testConfig $MOCK_EXTRA_ARGS"
 CHROOT=/var/lib/mock/${testConfig}-$uniqueext/root
 
 trap '$MOCKCMD --clean; exit 1' INT HUP QUIT TERM
