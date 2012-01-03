@@ -498,7 +498,7 @@ def do_rebuild(config_opts, chroot, srpms):
             chroot.uidManager.dropPrivsTemp()
             cmd = config_opts["createrepo_command"].split()
             cmd.append(chroot.resultdir)
-            mockbuild.util.do(cmd)
+            chroot.doChroot(cmd)
             chroot.uidManager.restorePrivs()
             
     except (Exception, KeyboardInterrupt):
