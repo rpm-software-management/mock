@@ -76,6 +76,7 @@ class Root(object):
         self.chrootgid = config['chrootgid']
         self.chrootgroup = 'mockbuild'
         self.yum_conf_content = config['yum.conf']
+        self.yum_priorities_conf_content = config['priorities.conf']
         self.yum_rhnplugin_conf_content = config['rhnplugin.conf']
         self.use_host_resolv = config['use_host_resolv']
         self.chroot_file_contents = config['files']
@@ -310,6 +311,15 @@ class Root(object):
         except OSError:
             pass
         os.symlink('yum/yum.conf', self.makeChrootPath("etc", "yum.conf"))
+
+        # write in yum priorities.conf into chroot
+        # always truncate and overwrite (w+)
+        self.root_log.debug('configure yum priorities')
+        mockbuild.util.mkdirIfAbsent(yumpluginconfdir)
+        prioconf = self.makeChrootPath('etc', 'yum', 'pluginconf.d', 'priorities.conf')
+        prioconf_fo = open(prioconf, 'w+')
+        prioconf_fo.write(self.yum_priorities_conf_content)
+        prioconf_fo.close()
 
         # write in yum rhnplugin.conf into chroot
         # always truncate and overwrite (w+)
