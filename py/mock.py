@@ -296,6 +296,11 @@ def setup_default_config_opts(config_opts, unprivUid):
                 # ('/another/host/path', '/another/bind/mount/path/in/chroot/'),
                 ],
                 'create_dirs': False,},
+            'mount_enable': True,
+            'mount_opts': {'dirs': [
+                # specify like this:
+                # ("/dev/device", "/mount/path/in/chroot/", "vfstype", "mount_options"),
+                ]},
             'tmpfs_enable': False,
             'tmpfs_opts': {
                 'required_ram_mb': 900,

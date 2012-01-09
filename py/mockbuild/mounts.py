@@ -19,7 +19,7 @@ class MountPoint(object):
         self.mountsource = mountsource
 
     decorate(traceLog())
-    def check(self):
+    def ismounted(self):
         if self.mountpath in [ x.split()[1] for x in open('/proc/mounts') ]:
             return True
         return False
@@ -42,7 +42,7 @@ class FileSystemMountPoint(MountPoint):
         self.path = path
         self.filetype = filetype
         self.options = options
-        self.mounted = self.check()
+        self.mounted = self.ismounted()
 
     decorate(traceLog())
     def mount(self):
@@ -79,7 +79,7 @@ class BindMountPoint(MountPoint):
         MountPoint.__init__(self, mountsource=srcpath, mountpath=bindpath)
         self.srcpath = srcpath
         self.bindpath = bindpath
-        self.mounted = self.check()
+        self.mounted = self.ismounted()
 
     decorate(traceLog())
     def mount(self):
