@@ -108,15 +108,12 @@ class RootCache(object):
             self.rootObj.chrootWasCached = True
 
     decorate(traceLog())
-    def _root_cache_handle_bind_mounts(self):
-        if self.rootObj.pluginConf['bind_mount_enable']:
-            bind_dirs = self.rootObj.pluginConf['bind_mount_opts']['dirs']
-            dirs = []
-            for h,c in bind_dirs:
-                if c[0] == '/':
-                    self.exclude_tar_cmds.append("--exclude=.%s" % c)
-                else:
-                    self.exclude_tar_cmds.append("--exclude=./%s" % c)
+    def _root_cache_handle_mounts(self):
+        for m in self.rootObj.mounts.get_mountpoints():
+            if m.startswith('/'):
+                self.exclude_tar_cmds.append('--exclude=.%s' % m)
+            else:
+                self.exclude_tar_cmds.append('--exclude=./%s' % m)
 
     decorate(traceLog())
     def _rootCachePostInitHook(self):
@@ -135,7 +132,7 @@ class RootCache(object):
             # never rebuild cache unless it was a clean build.
             if self.rootObj.chrootWasCleaned:
                 mockbuild.util.do(["sync"], shell=False)
-                self._root_cache_handle_bind_mounts()
+                self._root_cache_handle_mounts()
                 self.state("creating cache")
                 try:
                     mockbuild.util.do(
