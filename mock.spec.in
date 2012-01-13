@@ -115,6 +115,23 @@ chmod 2775 /var/cache/mock
 %dir /var/lib/mock
 
 %changelog
+* Fri Jan 13 2012 Clark Williams <williams@redhat.com> - 1.0.26-1
+- added header output for test sections
+- Added a mount plugin for handling additional user-specified mounts.
+- modify do_rebuild() to use chroot function doChroot()
+- move mount management into classes
+- remove setting TMPDIR in chroot environment [BZ# 769728]
+- add code to allow global proxy in chroot [BZ# 766199]
+- explicitly set unprivileged umask in --shell [BZ# 747119]
+- add bind-mount config to create sourcedirs [BZ# 706174]
+From Marko Myllynen <myllynen@redhat.com>:
+     - Allow mock repos to use yum priorities [BZ# 771604]
+From Alfred <alfred@leakybucket.org>:
+     - fix dangling symlink when using SCM [BZ# 758781]
+From Ville Skyttä <ville.skytta@iki.fi>:
+     - Get rid of chrootEnvUpdate, just update backend env directly, and always pass it.
+     - Log env when executing commands.
+
 * Sun Nov 27 2011 Clark Williams <williams@redhat.com> - 1.0.25-1
 - modify creation of default.cfg link to force creation if the
   symlink exists but doesn't point to a valid config [BZ# 741145]
