@@ -60,6 +60,7 @@ fails=0
 #
 # run regression tests
 #
+header "running regression tests"
 for i in ${CURDIR}/tests/*.tst; do
     sh $i
     if [ $? != 0 ]; then
@@ -82,6 +83,7 @@ runcmd "$MOCKCMD --offline --clean"
 #
 # Test build all configs we ship.
 #
+header "testing supported configurations"
 for i in $(ls etc/mock | grep .cfg | grep -v default | egrep -v 'arm|ppc|s390|sparc'); do
     MOCKCMD="sudo ./py/mock.py $VERBOSE --resultdir=$outdir --uniqueext=$uniqueext -r $(basename $i .cfg) $MOCK_EXTRA_ARGS"
     if [ "${i#epel-4-x86_64.cfg}" != "" ]; then
