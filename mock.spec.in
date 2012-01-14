@@ -11,7 +11,7 @@
 Summary: Builds packages inside chroots
 Name: mock
 Version: %{release_version}
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2+
 Group: Development/Tools
 Source: https://fedorahosted.org/mock/attachment/wiki/MockTarballs/%{name}-%{version}.tar.gz
@@ -121,6 +121,9 @@ chmod 2775 /var/cache/mock
 %dir /var/lib/mock
  
 %changelog
+* Mon Jan  2 2012 Clark Williams <williams@redhat.com> - 1.1.19-2
+- fix missing files from Makefile.am
+
 * Mon Jan  2 2012 Clark Williams <williams@redhat.com> - 1.1.19-1
 - fix dangling symlink when using SCM [BZ# 758781]
 - remove setting TMPDIR in chroot environment [BZ# 769728]

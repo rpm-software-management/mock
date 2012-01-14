@@ -48,7 +48,8 @@ plugins_PYTHON = \
     py/mockbuild/plugins/root_cache.py \
     py/mockbuild/plugins/tmpfs.py \
     py/mockbuild/plugins/yum_cache.py \
-    py/mockbuild/plugins/selinux.py
+    py/mockbuild/plugins/selinux.py   \
+    py/mockbuild/plugins/mount.py
 
 mockbuilddir = $(pythondir)/mockbuild
 mockbuild_PYTHON = \
@@ -58,7 +59,8 @@ mockbuild_PYTHON = \
     py/mockbuild/backend.py         \
     py/mockbuild/trace_decorator.py \
     py/mockbuild/uid.py             \
-    py/mockbuild/scm.py
+    py/mockbuild/scm.py             \
+    py/mockbuild/mounts.py
 
 CLEANFILES += py/*.pyc py/mockbuild/*.pyc py/mockbuild/plugins/*.pyc
 
