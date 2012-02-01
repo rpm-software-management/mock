@@ -117,6 +117,10 @@ chmod 2775 /var/cache/mock
 %changelog
 * Wed Feb  1 2012 Clark Williams <williams@redhat.com> - 1.0.27-1
 - fixed missing files from Makefile.am
+- change [local] repo definition for f16+ configs [BZ# 753735]
+- don't run createrepo inside chroot [BZ# 783926]
+- from Ville Skyttä <ville.skytta@iki.fi>
+  - llow setting https, ftp, and no proxy in addition to http.
 
 * Fri Jan 13 2012 Clark Williams <williams@redhat.com> - 1.0.26-1
 - added header output for test sections
