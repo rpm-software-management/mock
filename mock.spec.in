@@ -121,6 +121,12 @@ chmod 2775 /var/cache/mock
 %dir /var/lib/mock
  
 %changelog
+* Wed Feb  8 2012 Clark Williams <williams@redhat.com> - 1.1.21-1
+- from Dennis Gilmore <dennis@ausil.us>
+  - add Fedora 17 mock configs
+  - have configs reflect the dropping of dist- for koji repos
+  - add configs for arm hardware floating point
+
 * Mon Jan 30 2012 Clark Williams <williams@redhat.com> - 1.1.20-1
 - changed createrepo invocation to not be done inside the chroot [BZ# 783926]
 - changed [local] repo definitions in f16+ configs [BZ# 753735]
