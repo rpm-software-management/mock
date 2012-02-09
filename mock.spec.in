@@ -11,7 +11,7 @@
 Summary: Builds packages inside chroots
 Name: mock
 Version: %{release_version}
-Release: 2%{?dist}
+Release: 1%{?dist}
 License: GPLv2+
 Group: Development/Tools
 Source: https://fedorahosted.org/mock/attachment/wiki/MockTarballs/%{name}-%{version}.tar.gz
@@ -115,6 +115,12 @@ chmod 2775 /var/cache/mock
 %dir /var/lib/mock
 
 %changelog
+* Wed Feb  8 2012 Clark Williams <williams@redhat.com> - 1.0.28-1
+- From Dennis Gilmore <dennis@ausil.us>
+  - add Fedora 17 mock configs
+  - have configs reflect the dropping of dist- for koji repos
+  - add configs for arm hardware floating point
+
 * Wed Feb  1 2012 Clark Williams <williams@redhat.com> - 1.0.27-1
 - fixed missing files from Makefile.am
 - change [local] repo definition for f16+ configs [BZ# 753735]
