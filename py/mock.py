@@ -561,19 +561,21 @@ def rootcheck():
     if os.getuid() == 0 and not (os.environ.get("SUDO_UID") or os.environ.get("USERHELPER_UID")):
         raise RuntimeError, "mock will not run from the root account (needs an unprivileged uid so it can drop privs)"
 
-def groupcheck(unprivGid):
-    "verify that the user running mock is part of the mock group"
-    # verify that we're in the mock group (so all our uid/gid manipulations work)
+def groupcheck(unprivGid, tgtGid):
+    "verify that the user running mock is part of the correct group"
+    # verify that we're in the correct group (so all our uid/gid manipulations work)
     inmockgrp = False
     members = []
-    for g in os.getgroups() + [unprivGid]:
-        name = grp.getgrgid(g).gr_name
-        if name == "mock":
+    for gid in os.getgroups() + [unprivGid]:
+        name = grp.getgrgid(gid).gr_name
+        if gid == tgtGid:
             inmockgrp = True
             break
         members.append(name)
     if not inmockgrp:
-        raise RuntimeError, "Must be member of 'mock' group to run mock! (%s)" % sorted(set(members))
+        name = grp.getgrgid(tgtGid).gr_name
+        raise RuntimeError("Must be member of '%s' group to run mock! (%s)" %
+                           (name, ", ".join(members)))
 
 def main(ret):
     "Main executable entry point."
@@ -615,9 +617,6 @@ def main(ret):
     if os.geteuid() == 0:
         uidManager._becomeUser(unprivUid, unprivGid)
 
-    # verify that our unprivileged uid is in the mock group
-    groupcheck(unprivGid)
-
     # defaults
     config_opts = {}
     setup_default_config_opts(config_opts, unprivUid)
@@ -643,6 +642,9 @@ def main(ret):
             log.error("Could not find required config file: %s" % cfg)
             if options.chroot == "default": log.error("  Did you forget to specify the chroot to use with '-r'?")
             sys.exit(1)
+
+    # verify that our unprivileged uid is in the mock group
+    groupcheck(unprivGid, config_opts['chrootgid'])
 
     # configure logging
     config_opts['chroot_name'] = options.chroot
