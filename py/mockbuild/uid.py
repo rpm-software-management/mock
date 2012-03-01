@@ -73,7 +73,7 @@ class uidManager(object):
         if uid is None:
             uid = self.unprivUid
         if gid is None:
-            gid = uid
+            gid = self.unprivGid
         os.chown(path, uid, gid)
 
 # python doesnt have native versions of these. :(
