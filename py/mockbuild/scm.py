@@ -70,24 +70,23 @@ class scmWorker(object):
 
         self.log.debug("SCM checkout command: " + self.get)
         self.log.debug("SCM checkout post command: " + str(self.postget))
+        self.environ = os.environ.copy()
+        # Set HOME properly while checking out from SCM since tools like
+        # Subversion might have there settings needed to carry out checkout
+        # non-interactively
+        self.environ['HOME'] = pwd.getpwuid(os.getuid()).pw_dir
+        self.environ['CVS_RSH'] = "ssh"
+        if not self.environ.has_key('SSH_AUTH_SOCK'):
+            self.environ['SSH_AUTH_SOCK'] = pwd.getpwuid(os.getuid()).pw_dir + "/.ssh/auth_sock"
 
     decorate(traceLog())
     def get_sources(self):
         self.wrk_dir = tempfile.mkdtemp(".mock-scm." + self.pkg)
         self.src_dir = self.wrk_dir + "/" + self.pkg
         self.log.debug("SCM checkout directory: " + self.wrk_dir)
-        os.environ['CVS_RSH'] = "ssh"
-        os.environ['SSH_AUTH_SOCK'] = pwd.getpwuid(os.getuid()).pw_dir + "/.ssh/auth_sock"
-        # Set HOME properly while checking out from SCM since tools like
-        # Subversion might have there settings needed to carry out checkout
-        # non-interactively
-        old_home = os.environ['HOME']
-        os.environ['HOME'] = pwd.getpwuid(os.getuid()).pw_dir
-        mockbuild.util.do(shlex.split(self.get), shell=False, cwd=self.wrk_dir)
+        mockbuild.util.do(shlex.split(self.get), shell=False, cwd=self.wrk_dir, env=self.environ)
         if self.postget:
-            mockbuild.util.do(shlex.split(self.postget), shell=False, cwd=self.src_dir)
-        os.environ['HOME'] = old_home
-
+            mockbuild.util.do(shlex.split(self.postget), shell=False, cwd=self.src_dir, env=self.environ)
         self.log.debug("Fetched sources from SCM")
 
     decorate(traceLog())
@@ -153,7 +152,7 @@ class scmWorker(object):
             os.chdir(self.wrk_dir)
             os.rename(self.name, tardir)
             cmd = "tar czf " + tarball + " " + tardir
-            mockbuild.util.do(shlex.split(cmd), shell=False, cwd=self.wrk_dir)
+            mockbuild.util.do(shlex.split(cmd), shell=False, cwd=self.wrk_dir, env=self.environ)
             os.rename(tarball, tardir + "/" + tarball)
             os.rename(tardir, self.name)
             os.chdir(dir)
