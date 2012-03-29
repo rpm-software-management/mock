@@ -705,6 +705,10 @@ def main(ret):
         scmWorker.get_sources()
         (options.sources, options.spec) = scmWorker.prepare_sources()
 
+    # security cleanup (don't need/want this in the chroot)
+    if os.environ.has_key('SSH_AUTH_SOCK'):
+        del os.environ['SSH_AUTH_SOCK']
+
     # elevate privs
     uidManager._becomeUser(0, 0)
 

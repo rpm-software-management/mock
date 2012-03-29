@@ -76,7 +76,8 @@ class scmWorker(object):
         # non-interactively
         self.environ['HOME'] = pwd.getpwuid(os.getuid()).pw_dir
         self.environ['CVS_RSH'] = "ssh"
-        self.environ['SSH_AUTH_SOCK'] = pwd.getpwuid(os.getuid()).pw_dir + "/.ssh/auth_sock"
+        if not self.environ.has_key('SSH_AUTH_SOCK'):
+            self.environ['SSH_AUTH_SOCK'] = pwd.getpwuid(os.getuid()).pw_dir + "/.ssh/auth_sock"
 
     decorate(traceLog())
     def get_sources(self):
