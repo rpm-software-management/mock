@@ -31,6 +31,7 @@ _libc.personality.restype = ctypes.c_int
 _libc.unshare.argtypes = [ctypes.c_int,]
 _libc.unshare.restype = ctypes.c_int
 CLONE_NEWNS = 0x00020000
+CLONE_NEWUTS = 0x04000000
 
 # taken from sys/personality.h
 PER_LINUX32=0x0008
