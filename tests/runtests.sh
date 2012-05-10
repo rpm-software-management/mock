@@ -15,31 +15,16 @@
 # properly on an i386 machine.
 #
 
-CURDIR=$(pwd)
 VERBOSE=
 #VERBOSE=--verbose
 export VERBOSE
 
-source ${CURDIR}/tests/functions
+d=$(cd $(dirname $0); pwd)
+source $d/testenvironment
+source ${TESTDIR}/functions
 
-MOCKSRPM=${CURDIR}/mock-*.src.rpm
-DIR=$(cd $(dirname $0); pwd)
-TOP_SRCTREE=$DIR/../
-cd $TOP_SRCTREE
-
-#
-# most tests below will use this mock command line
-# 
-testConfig=fedora-15-x86_64
-uniqueext="$$-$RANDOM"
-outdir=${CURDIR}/mock-unit-test
-cfgdir=$(pwd)/etc/mock
-MOCKCMD="sudo ./py/mock.py $VERBOSE --resultdir=$outdir --uniqueext=$uniqueext --configdir=$cfgdir -r $testConfig $MOCK_EXTRA_ARGS"
-CHROOT=/var/lib/mock/${testConfig}-$uniqueext/root
-
+MOCKSRPM=${TOPDIR}/mock-*.src.rpm
 trap '$MOCKCMD --clean; exit 1' INT HUP QUIT TERM
-
-export CURDIR MOCKSRPM DIR TOP_SRCTREE testConfig uniqueext outdir MOCKCMD CHROOT
 
 # clear out root cache so we get at least run without root cache present
 #sudo rm -rf /var/lib/mock/cache/${testConfig}/root_cache
@@ -49,30 +34,18 @@ export CURDIR MOCKSRPM DIR TOP_SRCTREE testConfig uniqueext outdir MOCKCMD CHROO
 #
 header "pre-populating the cache"
 runcmd "$MOCKCMD --init"
+header "installing dependencies for $MOCKSRPM"
 runcmd "$MOCKCMD --installdeps $MOCKSRPM"
 if [ ! -e $CHROOT/usr/include/python* ]; then
     echo "installdeps test FAILED. could not find /usr/include/python*"
     exit 1
 fi
 
-fails=0
-
-#
-# run regression tests
-#
 header "running regression tests"
-for i in ${CURDIR}/tests/*.tst; do
-    sh $i
-    if [ $? != 0 ]; then
-	fails=$(($fails + 1))
-	echo "*  FAILED: $i"
-    else
-	echo "*  PASSED: $i"
-    fi
-    echo "****************************************************"
-done
+sh ${TESTDIR}/runregressions.sh
+fails=$?
 
-msg=$(printf "%d regression failures\n" $fails)
+msg=$(printf "%s regression failures\n" $fails)
 header "$msg"
 
 #
@@ -81,32 +54,10 @@ header "$msg"
 header "clean up from first round of tests"
 runcmd "$MOCKCMD --offline --clean"
 
-#
-# Test build all configs we ship.
-#
-header "testing supported configurations"
-for i in $(ls etc/mock | grep .cfg | grep -v default | egrep -v 'arm|ppc|s390|sparc'); do
-    MOCKCMD="sudo ./py/mock.py $VERBOSE --resultdir=$outdir --uniqueext=$uniqueext -r $(basename $i .cfg) $MOCK_EXTRA_ARGS"
-    if [ "${i#epel-4-x86_64.cfg}" != "" ]; then
-	header "testing config $(basename $i .cfg) with tmpfs plugin"
-	runcmd "$MOCKCMD --enable-plugin=tmpfs --rebuild $MOCKSRPM "
-	if [ $? != 0 ]; then 
-	    echo "FAILED!"
-	    fails=$(($fails+1))
-	else
-	    echo "PASSED!"
-	fi
-    fi
-    header "testing config $(basename $i .cfg) *without* tmpfs plugin"
-    runcmd "$MOCKCMD                       --rebuild $MOCKSRPM"
-    if [ $? != 0 ]; then 
-	echo "FAILED!"
-	fails=$(($fails+1))
-    else
-	echo "PASSED!"
-    fi
-done
+header "running configuration tests"
+sh ${TESTDIR}/runconfigs.sh
+cfgfails=$?
 
-msg=$(printf "%d total failures\n" $fails)
+msg=$(printf "%d total failures\n" $(($fails+$cfgfails)))
 header "$msg"
 exit $fails

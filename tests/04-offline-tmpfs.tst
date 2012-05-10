@@ -1,6 +1,6 @@
 #!/bin/sh
 
-source ${CURDIR}/tests/functions
+source ${TESTDIR}/functions
 
 #
 # Test offline build as well as tmpfs
