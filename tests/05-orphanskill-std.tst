@@ -1,6 +1,6 @@
 #!/bin/sh
 
-source ${CURDIR}/tests/functions
+source ${TESTDIR}/functions
 
 #
 # Test orphanskill feature (std)
