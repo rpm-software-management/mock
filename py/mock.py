@@ -716,6 +716,8 @@ def main(ret):
     log.info("mock.py version %s starting..." % __VERSION__)
     chroot = mockbuild.backend.Root(config_opts, uidManager)
 
+    chroot.start("begin")
+
     if options.printrootpath:
         print chroot.makeChrootPath('')
         sys.exit(0)
@@ -870,8 +872,8 @@ def main(ret):
                 shutil.copy(src, dest)
         chroot.unlockBuildRoot()
 
-    chroot.state("end")
-
+    chroot.finish()
+    chroot.alldone()
 
 if __name__ == '__main__':
     # fix for python 2.4 logging module bug:

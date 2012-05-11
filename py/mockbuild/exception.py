@@ -124,3 +124,11 @@ class NoRootShells(Error):
         Error.__init__(self, msg)
         self.msg = msg
         self.resultcode = 100
+
+class StateError(Error):
+    "unbalanced call to state functions"
+
+    def __init__(self, msg):
+        Error.__init__(self, msg)
+        self.msg = msg
+        self.resultcode = 110

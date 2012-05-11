@@ -41,7 +41,6 @@ class RootCache(object):
              self.rootCacheFile = self.rootCacheFile + self.root_cache_opts['extension']
         else:
              self.compressArgs = []
-        self.state = rootObj.state
         rootObj.rootCacheObj = self
         rootObj.addHook("preinit", self._rootCachePreInitHook)
         rootObj.addHook("postinit", self._rootCachePostInitHook)
@@ -58,10 +57,9 @@ class RootCache(object):
         try:
             fcntl.lockf(self.rootCacheLock.fileno(), lockType | fcntl.LOCK_NB)
         except IOError, e:
-            oldState = self.state()
-            self.state("Waiting for rootcache lock")
+            self.rootObj.start("Waiting for rootcache lock")
             fcntl.lockf(self.rootCacheLock.fileno(), lockType)
-            self.state(oldState)
+            self.rootObj.finish()
 
     decorate(traceLog())
     def _rootCacheUnlock(self):
@@ -95,7 +93,7 @@ class RootCache(object):
 
         # optimization: don't unpack root cache if chroot was not cleaned
         if os.path.exists(self.rootCacheFile) and self.rootObj.chrootWasCleaned:
-            self.state("unpacking root cache")
+            self.rootObj.start("unpacking root cache")
             self._rootCacheLock()
             mockbuild.util.do(
                 ["tar"] + self.compressArgs + ["-xf", self.rootCacheFile, "-C", self.rootObj.makeChrootPath()],
@@ -106,6 +104,7 @@ class RootCache(object):
             self._rootCacheUnlock()
             self.rootObj.chrootWasCleaned = False
             self.rootObj.chrootWasCached = True
+            self.rootObj.finish()
 
     decorate(traceLog())
     def _root_cache_handle_mounts(self):
@@ -133,7 +132,7 @@ class RootCache(object):
             if self.rootObj.chrootWasCleaned:
                 mockbuild.util.do(["sync"], shell=False)
                 self._root_cache_handle_mounts()
-                self.state("creating cache")
+                self.rootObj.start("creating cache")
                 try:
                     mockbuild.util.do(
                         ["tar", "--one-file-system"] + self.compressArgs + ["-cf", self.rootCacheFile,
@@ -149,5 +148,6 @@ class RootCache(object):
                 l = open(os.path.join(self.rootSharedCachePath, "cache.log"), "w")
                 l.write(self.rootObj.yum_init_install_output)
                 l.close()
+                self.rootObj.finish()
         finally:
             self._rootCacheUnlock()
