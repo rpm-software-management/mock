@@ -31,7 +31,6 @@ class YumCache(object):
         self.rootObj = rootObj
         self.yum_cache_opts = conf
         self.yumSharedCachePath = self.yum_cache_opts['dir'] % self.yum_cache_opts
-        self.state = rootObj.state
         self.online = rootObj.online
         rootObj.yum_cacheObj = self
         rootObj.addHook("preyum", self._yumCachePreYumHook)
@@ -53,10 +52,9 @@ class YumCache(object):
         try:
             fcntl.lockf(self.yumCacheLock.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
         except IOError, e:
-            oldState = self.state()
-            self.state("Waiting for yumcache lock")
+            self.rootObj.start("Waiting for yumcache lock")
             fcntl.lockf(self.yumCacheLock.fileno(), fcntl.LOCK_EX)
-            self.state(oldState)
+            self.rootObj.finish()
 
     decorate(traceLog())
     def _yumCachePostYumHook(self):
@@ -71,7 +69,7 @@ class YumCache(object):
         self._yumCachePreYumHook()
 
         if self.online:
-            self.state("cleaning yum metadata")
+            self.rootObj.start("cleaning yum metadata")
             for (dirpath, dirnames, filenames) in os.walk(self.yumSharedCachePath):
                 for filename in filenames:
                     fullPath = os.path.join(dirpath, filename)
@@ -89,6 +87,7 @@ class YumCache(object):
                     if file_age_days > self.yum_cache_opts['max_age_days']:
                         os.unlink(fullPath)
                         continue
+            self.rootObj.finish()
 
         # yum made an rpmdb cache dir in $cachedir/installed for a while;
         # things can go wrong in a specific mock case if this happened.
