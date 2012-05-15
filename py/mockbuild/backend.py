@@ -151,12 +151,12 @@ class Root(object):
         if state == None:
             raise mockbuild.exception.StateError, "start called with None State"
         self._state.append(state)
-        self._state_log.info("State start: %s" % state)
+        self._state_log.info("Start: %s" % state)
         
     def finish(self):
         if len(self._state) == 0:
             raise mockbuild.exception.StateError, "finish called on empty state list"
-        self._state_log.info("State finish: %s" % self._state.pop())
+        self._state_log.info("Finish: %s" % self._state.pop())
 
     def alldone(self):
         if len(self._state) != 0:
@@ -167,7 +167,7 @@ class Root(object):
         """clean out chroot with extreme prejudice :)"""
         from signal import SIGKILL
         self.tryLockBuildRoot()
-        self.start("clean")
+        self.start("clean chroot")
         self._callHooks('clean')
         mockbuild.util.orphansKill(self.makeChrootPath())
         self._umountall(nowarn=True)
@@ -199,7 +199,7 @@ class Root(object):
     def scrub(self, scrub_opts):
         """clean out chroot and/or cache dirs with extreme prejudice :)"""
         self.tryLockBuildRoot()
-        self.start("scrub")
+        self.start("scrub %s" % scrub_opts)
         self._resetLogging()
         self._callHooks('clean')
         for scrub in scrub_opts:
@@ -272,7 +272,7 @@ class Root(object):
 
     decorate(traceLog())
     def _init(self):
-        self.start("init")
+        self.start("chroot init")
 
         # NOTE: removed the following stuff vs mock v0:
         #   --> /etc/ is no longer 02775 (new privs model)
@@ -593,7 +593,9 @@ class Root(object):
         # tell caching we are building
         self._callHooks('earlyprebuild')
 
-        self.start("build %s" % srpm)
+        baserpm = os.path.basename(srpm)
+
+        self.start("build phase for %s" % baserpm)
         try:
             self._setupDev()
             self._mountall()
@@ -605,7 +607,7 @@ class Root(object):
 
             # drop privs and become mock user
             self.uidManager.becomeUser(self.chrootuid, self.chrootgid)
-            self.start("setup")
+            self.start("build setup for %s" % baserpm)
 
             srpmChrootFilename = self._copySrpmIntoChroot(srpm)
             srpmBasename = os.path.basename(srpmChrootFilename)
@@ -644,7 +646,7 @@ class Root(object):
             self.finish()
 
             #have to permanently drop privs or rpmbuild regains them
-            self.start("build")
+            self.start("rpmbuild -bb %s" % baserpm)
 
             # tell caching we are building
             self._callHooks('prebuild')
@@ -726,7 +728,7 @@ class Root(object):
             self._setupDev()
             self._setupFiles()
             self._mountall()
-            self.start("chroot")
+            self.start("chroot %s" % args)
             if options.unpriv:
                 self.doChroot(args, shell=shell, printOutput=True,
                               uid=self.chrootuid, gid=self.chrootgid, cwd=options.cwd)
@@ -766,9 +768,6 @@ class Root(object):
                 shutil.copytree(sources, self.makeChrootPath(self.builddir, "SOURCES"), symlinks=True)
             else:
                 shutil.copy(sources, self.makeChrootPath(self.builddir, "SOURCES"))
-
-            spec =  self.makeChrootPath(self.builddir, "SPECS", os.path.basename(spec))
-            chrootspec = spec.replace(self.makeChrootPath(), '') # get rid of rootdir prefix
 
             spec =  self.makeChrootPath(self.builddir, "SPECS", os.path.basename(spec))
             chrootspec = spec.replace(self.makeChrootPath(), '') # get rid of rootdir prefix
