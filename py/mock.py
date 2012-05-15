@@ -710,7 +710,7 @@ def main(ret):
     log.info("mock.py version %s starting..." % __VERSION__)
     chroot = mockbuild.backend.Root(config_opts, uidManager)
 
-    chroot.start("begin")
+    chroot.start("run")
 
     if options.printrootpath:
         print chroot.makeChrootPath('')
