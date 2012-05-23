@@ -98,6 +98,7 @@ chmod 2775 /var/cache/mock
 
 # executables
 %{_bindir}/mock
+%{_bindir}/mockchain
 %attr(0755, root, root) %{_sbindir}/mock
 
 # python stuff
@@ -121,6 +122,9 @@ chmod 2775 /var/cache/mock
 %dir /var/lib/mock
  
 %changelog
+* Wed May 23 2012 Seth Vidal <skvidal at fedoraproject.org> - 1.1.22-1
+- add mockchain to mock
+
 * Thu Mar 29 2012 Clark Williams <williams@redhat.com> - 1.1.22-1
 - fix SCM problem with SSH_AUTH_SOCK [BZ# 803217]
 - From Chris St Pierre <chris.a.st.pierre@gmail.com>:
