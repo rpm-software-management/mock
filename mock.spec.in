@@ -90,6 +90,7 @@ chmod 2775 /var/cache/mock
 
 # executables
 %{_bindir}/mock
+%{_bindir}/mockchain
 %attr(0755, root, root) %{_sbindir}/mock
 
 # python stuff
