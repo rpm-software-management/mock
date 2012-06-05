@@ -42,7 +42,7 @@ def traceLog(log = None):
         def trace(*args, **kw):
             # default to logger that was passed by module, but
             # can override by passing logger=foo as function parameter.
-            # make sure this doesnt conflict with one of the parameters
+            # make sure this doesn't conflict with one of the parameters
             # you are expecting
 
             filename = os.path.normcase(func.func_code.co_filename)

@@ -467,7 +467,7 @@ From Ville Skyttä <ville.skytta@iki.fi>:
 * Thu Jan 31 2008 Michael Brown <mebrown@michaels-house.net> - 0.9.7-1
 - redo mock.util.do() to use python subprocess module, which should be
   much more maintainable than our old homegrown code.
-- Fix exclude= lines once again. Yum fnmatch parser doesnt understand [!x]
+- Fix exclude= lines once again. Yum fnmatch parser doesn't understand [!x]
   notation
 - add --unpriv and --cwd options to run chroot commands without elevated privs
   and in a specific working directory (under the root).
@@ -527,7 +527,7 @@ From Ville Skyttä <ville.skytta@iki.fi>:
 - make logs slightly less verbose
 
 * Wed Dec 05 2007 Michael Brown <mebrown@michaels-house.net> - 0.8.15-1
-- fix traceback when root cache doesnt exist.
+- fix traceback when root cache doesn't exist.
 - add "--with", "--without", and "--define" cmdline parameters which are passed
   to rpmbuild (courtesy Todd Zullinger)
 
@@ -535,7 +535,7 @@ From Ville Skyttä <ville.skytta@iki.fi>:
 - fix traceback when cache dir was not found
 
 * Tue Dec 04 2007 Michael Brown <mebrown@michaels-house.net> - 0.8.13-1
-- brown-paper-bag bug where built rpm didnt work due to lack of path 
+- brown-paper-bag bug where built rpm didn't work due to lack of path
   substitution in mock.py
 
 * Mon Dec 03 2007 Michael Brown <mebrown@michaels-house.net> - 0.8.12-1
