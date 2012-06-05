@@ -30,7 +30,7 @@ def init(rootObj, conf):
 class SELinux(object):
     """On SELinux enabled box, this plugin will pretend, that SELinux is disabled in build environment.
 
-       - fake /proc/filesystems is mounted into build enviroment, excluding selinuxfs
+       - fake /proc/filesystems is mounted into build environment, excluding selinuxfs
        - option '--setopt=tsflags=nocontext' is appended to each 'yum' command
     """
 

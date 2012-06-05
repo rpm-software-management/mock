@@ -245,7 +245,7 @@ def setup_default_config_opts(config_opts, unprivUid):
     try:
         config_opts['chrootgid'] = grp.getgrnam("mock")[2]
     except KeyError:
-        #  'mock' group doesnt exist, must set in config file
+        #  'mock' group doesn't exist, must set in config file
         pass
     config_opts['build_log_fmt_name'] = "unadorned"
     config_opts['root_log_fmt_name']  = "detailed"
@@ -428,7 +428,7 @@ def set_config_opts_per_cmdline(config_opts, options, args):
     if options.cleanup_after == True:
         config_opts['cleanup_on_success'] = True
         config_opts['cleanup_on_failure'] = True
-    # cant cleanup unless resultdir is separate from the root dir 
+    # can't cleanup unless resultdir is separate from the root dir
     rootdir = os.path.join(config_opts['basedir'], config_opts['root']) 
     if mockbuild.util.is_in_dir(config_opts['resultdir'] % config_opts, rootdir): 
         config_opts['cleanup_on_success'] = False

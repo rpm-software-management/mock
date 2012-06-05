@@ -76,7 +76,7 @@ class uidManager(object):
             gid = self.unprivGid
         os.chown(path, uid, gid)
 
-# python doesnt have native versions of these. :(
+# python doesn't have native versions of these. :(
 
 import ctypes
 _libc = ctypes.cdll.LoadLibrary(None)
