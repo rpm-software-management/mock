@@ -390,14 +390,14 @@ class Root(object):
 
         # yum stuff
         try:
-            self.start("yum for init")
+            self.start("yum update")
             self._mountall()
             if self.chrootWasCleaned:
                 self.yum_init_install_output = self._yum(self.chroot_setup_cmd, returnOutput=1)
             if self.chrootWasCached:
                 self._yum(('update',), returnOutput=1)
 
-            self.finish("yum for init")
+            self.finish("yum update")
             # create user
             self._makeBuildUser()
 
