@@ -83,6 +83,7 @@ install-exec-hook:
                 perl -p -i -e 's|^LIBDIR\s*=.*|LIBDIR="$(libdir)"|' $$file        ;\
         done
 	mv $(DESTDIR)/$(sbindir)/mock.py $(DESTDIR)/$(sbindir)/mock
+	mv $(DESTDIR)/$(sbindir)/mockchain.py $(DESTDIR)/$(bindir)/mockchain
 
 install-data-hook:
 	perl -p -i -e 's|(=\s*)/etc/mock\b|$$1$(sysconfdir)/mock|' \
