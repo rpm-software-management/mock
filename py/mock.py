@@ -197,6 +197,10 @@ def command_parse(config_opts):
                       dest="disabled_plugins", type="string", default=[],
                       help="Disable plugin. Currently-available plugins: %s"
                            % repr(config_opts['plugins']))
+    parser.add_option("--plugin-option", action="append", dest="plugin_opts",
+                      default=[], type="string",
+                      metavar="PLUGIN:KEY=VALUE",
+                      help="define an plugin option (may be used more than once)")
 
     parser.add_option("--print-root-path", help="print path to chroot root",
                       dest="printrootpath", action="store_true",
@@ -411,6 +415,20 @@ def set_config_opts_per_cmdline(config_opts, options, args):
                 "Bad option for '--enable-plugin=%s'. Expecting one of: %s"
                 % (i, config_opts['plugins']))
         config_opts['plugin_conf']['%s_enable' % i] = True
+    for option in options.plugin_opts:
+        try:
+            p, kv = option.split(":", 1)
+            k, v  = kv.split("=", 1)
+        except:
+            raise mockbuild.exception.BadCmdline(
+                "Bad option for '--plugin-option' (%s).  Use --plugin-option 'plugin:key=value'" 
+                % option)
+        if p not in config_opts['plugins']:
+            raise mockbuild.exception.BadCmdline(
+                "Bad option for '--plugin-option' (%s).  No such plugin: %s"
+                % (option, p))
+        config_opts['plugin_conf'][p + "_opts"].update({k: v})
+        
 
     if options.mode in ("rebuild",) and len(args) > 1 and not options.resultdir:
         raise mockbuild.exception.BadCmdline(
@@ -639,6 +657,14 @@ def main(ret):
 
     # verify that our unprivileged uid is in the mock group
     groupcheck(unprivGid, config_opts['chrootgid'])
+
+    # Read user specific config file
+    cfg = '%s/%s' % (os.path.expanduser('~' + os.getlogin()), '.mock/user.cfg')
+    if os.path.exists(cfg):
+        config_opts['config_paths'].append(cfg)
+        uidManager.dropPrivsTemp()
+        execfile(cfg)
+        uidManager.restorePrivs()   
 
     # configure logging
     config_opts['chroot_name'] = options.chroot
