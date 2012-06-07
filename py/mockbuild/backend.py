@@ -117,7 +117,7 @@ class Root(object):
 
         self.start("init plugins")
         self._initPlugins()
-        self.finish()
+        self.finish("init plugins")
 
         # do we allow interactive root shells?
         self.no_root_shells = config['no_root_shells']
@@ -153,10 +153,13 @@ class Root(object):
         self._state.append(state)
         self._state_log.info("Start: %s" % state)
         
-    def finish(self):
+    def finish(self, state):
         if len(self._state) == 0:
             raise mockbuild.exception.StateError, "finish called on empty state list"
-        self._state_log.info("Finish: %s" % self._state.pop())
+        current = self._state.pop()
+        if state != current:
+            raise mockbuild.exception.StateError, "state finish mismatch: current: %s, state: %s" % (current, state)
+        self._state_log.info("Finish: %s" % state)
 
     def alldone(self):
         if len(self._state) != 0:
@@ -173,8 +176,8 @@ class Root(object):
         self._umountall(nowarn=True)
         self._unlock_and_rm_chroot()
         self.chrootWasCleaned = True
+        self.finish("clean chroot")
         self.unlockBuildRoot()
-        self.finish()
 
     decorate(traceLog())
     def _unlock_and_rm_chroot(self):
@@ -199,7 +202,8 @@ class Root(object):
     def scrub(self, scrub_opts):
         """clean out chroot and/or cache dirs with extreme prejudice :)"""
         self.tryLockBuildRoot()
-        self.start("scrub %s" % scrub_opts)
+        statestr = "scrub %s" % scrub_opts
+        self.start(statestr)
         self._resetLogging()
         self._callHooks('clean')
         for scrub in scrub_opts:
@@ -225,7 +229,7 @@ class Root(object):
                 self.root_log.info("scrubbing yum-cache for %s" % self.config_name)
                 mockbuild.util.rmtree(os.path.join(self.cachedir, 'yum_cache'), selinux=self.selinux)
         self.unlockBuildRoot()
-        self.finish()
+        self.finish(statestr)
 
     decorate(traceLog())
     def tryLockBuildRoot(self):
@@ -250,7 +254,7 @@ class Root(object):
                 os.remove(os.path.join(self.basedir, "buildroot.lock"))
             except OSError,e:
                 pass
-        self.finish()
+        self.finish("lock buildroot")
         return 0
 
     decorate(traceLog())
@@ -393,7 +397,7 @@ class Root(object):
             if self.chrootWasCached:
                 self._yum(('update',), returnOutput=1)
 
-            self.finish()
+            self.finish("yum for init")
             # create user
             self._makeBuildUser()
 
@@ -412,7 +416,7 @@ class Root(object):
         finally:
             self._umountall()
         self.unlockBuildRoot()
-        self.finish()
+        self.finish("chroot init")
 
     decorate(traceLog())
     def _setupDev(self, interactive=False):
@@ -460,7 +464,7 @@ class Root(object):
         if mockbuild.util.cmpKernelEVR(kver, '2.6.29') >= 0:
             os.unlink(self.makeChrootPath('/dev/ptmx'))
             os.symlink("pts/ptmx", self.makeChrootPath('/dev/ptmx'))
-        self.finish()
+        self.finish("device setup")
 
     decorate(traceLog())
     def _setupDirs(self):
@@ -595,7 +599,8 @@ class Root(object):
 
         baserpm = os.path.basename(srpm)
 
-        self.start("build phase for %s" % baserpm)
+        buildstate = "build phase for %s" % baserpm
+        self.start(buildstate)
         try:
             self._setupDev()
             self._mountall()
@@ -607,7 +612,8 @@ class Root(object):
 
             # drop privs and become mock user
             self.uidManager.becomeUser(self.chrootuid, self.chrootgid)
-            self.start("build setup for %s" % baserpm)
+            buildsetup = "build setup for %s" % baserpm
+            self.start(buildsetup)
 
             srpmChrootFilename = self._copySrpmIntoChroot(srpm)
             srpmBasename = os.path.basename(srpmChrootFilename)
@@ -643,10 +649,11 @@ class Root(object):
 
             rebuiltSrpmFile = rebuiltSrpmFile[0]
             self.installSrpmDeps(rebuiltSrpmFile)
-            self.finish()
+            self.finish(buildsetup)
 
             #have to permanently drop privs or rpmbuild regains them
-            self.start("rpmbuild -bb %s" % baserpm)
+            rpmbuildstate = "rpmbuild -bb %s" % baserpm
+            self.start(rpmbuildstate)
 
             # tell caching we are building
             self._callHooks('prebuild')
@@ -670,14 +677,15 @@ class Root(object):
             for item in packages:
                 shutil.copy2(item, self.resultdir)
 
+            self.finish(rpmbuildstate)
+
         finally:
-            self.finish() # build
             self.uidManager.restorePrivs()
             self._umountall()
 
             # tell caching we are done building
             self._callHooks('postbuild')
-        self.finish()
+        self.finish(buildstate)
 
 
     def shell(self, options, cmd=None):
@@ -710,7 +718,7 @@ class Root(object):
         log.debug("shell: calling postshell hooks")
         self._callHooks('postshell')
         self.unlockBuildRoot()
-        self.finish()
+        self.finish("shell")
         return ret
 
     def chroot(self, args, options):
@@ -728,7 +736,8 @@ class Root(object):
             self._setupDev()
             self._setupFiles()
             self._mountall()
-            self.start("chroot %s" % args)
+            chrootstate = "chroot %s" % args
+            self.start(chrootstate)
             if options.unpriv:
                 self.doChroot(args, shell=shell, printOutput=True,
                               uid=self.chrootuid, gid=self.chrootgid, cwd=options.cwd)
@@ -738,7 +747,7 @@ class Root(object):
             self._umountall()
         self._callHooks("postchroot")
         self.unlockBuildRoot()
-        self.finish()
+        self.finish(chrootstate)
 
     #
     # UNPRIVILEGED:
@@ -781,7 +790,7 @@ class Root(object):
                 uid=self.chrootuid,
                 gid=self.chrootgid,
                 )
-            self.finish()
+            self.finish("rpmbuild -bs")
             rebuiltSrpmFile = glob.glob("%s/%s/SRPMS/*.src.rpm" % (self.makeChrootPath(), self.builddir))
             if len(rebuiltSrpmFile) != 1:
                 raise mockbuild.exception.PkgError, "Expected to find single rebuilt srpm, found %d." % len(rebuiltSrpmFile)
@@ -802,7 +811,7 @@ class Root(object):
 
             # tell caching we are done building
             self._callHooks('postbuild')
-            self.finish()
+            self.finish("buildsrpm")
 
 
     # =============

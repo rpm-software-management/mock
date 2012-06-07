@@ -872,7 +872,7 @@ def main(ret):
                 shutil.copy(src, dest)
         chroot.unlockBuildRoot()
 
-    chroot.finish()
+    chroot.finish("run")
     chroot.alldone()
 
 if __name__ == '__main__':

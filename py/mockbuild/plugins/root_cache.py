@@ -59,7 +59,7 @@ class RootCache(object):
         except IOError, e:
             self.rootObj.start("Waiting for rootcache lock")
             fcntl.lockf(self.rootCacheLock.fileno(), lockType)
-            self.rootObj.finish()
+            self.rootObj.finish("Waiting for rootcache lock")
 
     decorate(traceLog())
     def _rootCacheUnlock(self):
@@ -104,7 +104,7 @@ class RootCache(object):
             self._rootCacheUnlock()
             self.rootObj.chrootWasCleaned = False
             self.rootObj.chrootWasCached = True
-            self.rootObj.finish()
+            self.rootObj.finish("unpacking root cache")
 
     decorate(traceLog())
     def _root_cache_handle_mounts(self):
@@ -148,6 +148,6 @@ class RootCache(object):
                 l = open(os.path.join(self.rootSharedCachePath, "cache.log"), "w")
                 l.write(self.rootObj.yum_init_install_output)
                 l.close()
-                self.rootObj.finish()
+                self.rootObj.finish("creating cache")
         finally:
             self._rootCacheUnlock()
