@@ -614,20 +614,20 @@ def main(ret):
     unprivUid = os.getuid()
     unprivGid = os.getgid()
 
+    mockgid = grp.getgrnam('mock').gr_gid
+
     # sudo
     if os.environ.get("SUDO_UID") is not None:
         unprivUid = int(os.environ['SUDO_UID'])
         username = os.environ.get("SUDO_USER")
-        groups = [ g[2] for g in grp.getgrall() if username in g[3]]
-        os.setgroups(groups)
+        os.setgroups((mockgid,))
         unprivGid = int(os.environ['SUDO_GID'])
 
     # consolehelper
     if os.environ.get("USERHELPER_UID") is not None:
         unprivUid = int(os.environ['USERHELPER_UID'])
         username = pwd.getpwuid(unprivUid)[0]
-        groups = [ g[2] for g in grp.getgrall() if username in g[3]]
-        os.setgroups(groups)
+        os.setgroups((mockgid,))
         unprivGid = pwd.getpwuid(unprivUid)[3]
 
     uidManager = mockbuild.uid.uidManager(unprivUid, unprivGid)
