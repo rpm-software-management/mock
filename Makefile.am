@@ -29,8 +29,8 @@ mocketcdir = $(sysconfdir)/mock
 mocketc_DATA = $(wildcard $(top_srcdir)/etc/mock/*.cfg) $(top_srcdir)/etc/mock/logging.ini
 
 EXTRA_DIST += docs etc
-dist_sbin_SCRIPTS = py/mock.py
-man_MANS = docs/mock.1
+dist_sbin_SCRIPTS = py/mock.py py/mockchain.py
+man_MANS = docs/mock.1 docs/mockchain.1
 
 pamdir = $(sysconfdir)/pam.d/
 pam_DATA = etc/pam/mock
