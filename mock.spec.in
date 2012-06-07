@@ -111,6 +111,7 @@ chmod 2775 /var/cache/mock
 
 # docs
 %{_mandir}/man1/mock.1*
+%{_mandir}/man1/mockchain.1*
 %doc ChangeLog
 
 # cache & build dirs
