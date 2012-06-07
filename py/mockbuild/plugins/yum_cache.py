@@ -54,7 +54,7 @@ class YumCache(object):
         except IOError, e:
             self.rootObj.start("Waiting for yumcache lock")
             fcntl.lockf(self.yumCacheLock.fileno(), fcntl.LOCK_EX)
-            self.rootObj.finish()
+            self.rootObj.finish("Waiting for yumcache lock")
 
     decorate(traceLog())
     def _yumCachePostYumHook(self):
@@ -87,7 +87,7 @@ class YumCache(object):
                     if file_age_days > self.yum_cache_opts['max_age_days']:
                         os.unlink(fullPath)
                         continue
-            self.rootObj.finish()
+            self.rootObj.finish("cleaning yum metadata")
 
         # yum made an rpmdb cache dir in $cachedir/installed for a while;
         # things can go wrong in a specific mock case if this happened.
