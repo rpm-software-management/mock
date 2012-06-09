@@ -143,7 +143,7 @@ class scmWorker(object):
             self.adjust_git_timestamps()
 
         # Generate a tarball from the checked out sources if needed
-        if self.write_tar:
+        if str(self.write_tar).lower() == "true":
             tardir = self.name + "-" + self.version
             tarball = tardir + ".tar.gz"
 
