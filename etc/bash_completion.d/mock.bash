@@ -1,4 +1,10 @@
-# bash >= 3 completion for mock(1)
+# bash >= 3 completion for mock(1) and mockchain(1)
+
+_mock_root()
+{
+    COMPREPLY+=( $( compgen -W "$( command ls ${1:-/etc/mock} 2>/dev/null | \
+        sed -ne 's/\.cfg$//p' )" -X site-defaults -- "$cur" ) )
+}
 
 _mock()
 {
@@ -31,8 +37,7 @@ _mock()
             return 0
             ;;
         -r|--root)
-            COMPREPLY=( $( compgen -W "$( command ls $cfgdir 2>/dev/null | \
-                sed -ne 's/\.cfg$//p' )" -X site-defaults -- "$cur" ) )
+            _mock_root $cfgdir
             return 0
             ;;
         --configdir|--resultdir)
@@ -91,6 +96,51 @@ _mock()
         -- "$cur" ) )
 } &&
 complete -F _mock -o filenames mock mock.py
+
+_mockchain()
+{
+    COMPREPLY=()
+    local cur prev cword
+    local -a words
+    if declare -F _get_comp_words_by_ref &>/dev/null ; then
+        _get_comp_words_by_ref cur prev words cword
+    else
+        cur=$2 prev=$3 words=("${COMP_WORDS[@]}") cword=$COMP_CWORD
+    fi
+
+    local split=false
+    declare -F _split_longopt &>/dev/null && _split_longopt && split=true
+
+    case "$prev" in
+        -h|--help|-a|--addrepo)
+            return 0
+            ;;
+        -r|--root)
+            _mock_root
+            return 0
+            ;;
+        -l|--localrepo)
+            _filedir -d
+            return 0
+            ;;
+        --log)
+            _filedir
+            return 0
+            ;;
+    esac
+
+    $split && return 0
+
+    if [[ "$cur" == -* ]] ; then
+        COMPREPLY=( $( compgen -W "--help --root --localrepo --continue
+            --addrepo --recurse --log" -- "$cur" ) )
+        return 0
+    fi
+
+    COMPREPLY=( $( compgen -f -o plusdirs -X '!*.@(?(no)src.r|s)pm' \
+        -- "$cur" ) )
+} &&
+complete -F _mockchain -o filenames mockchain mockchain.py
 
 # Local variables:
 # mode: shell-script
