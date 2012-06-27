@@ -40,9 +40,9 @@ console_DATA = etc/consolehelper/mock
 
 pluginsdir = $(pythondir)/mockbuild/plugins
 plugins_PYTHON = \
-    py/mockbuild/plugins/available_pkgs.py \
     py/mockbuild/plugins/bind_mount.py \
     py/mockbuild/plugins/ccache.py     \
+    py/mockbuild/plugins/package_state.py \
     py/mockbuild/plugins/root_cache.py \
     py/mockbuild/plugins/tmpfs.py \
     py/mockbuild/plugins/yum_cache.py \
