@@ -714,11 +714,11 @@ class Root(object):
         finally:
             log.debug("shell: unmounting all filesystems")
             self._umountall()
+            self.finish("shell")
 
         log.debug("shell: calling postshell hooks")
         self._callHooks('postshell')
         self.unlockBuildRoot()
-        self.finish("shell")
         return ret
 
     def chroot(self, args, options):
