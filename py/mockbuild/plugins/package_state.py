@@ -48,7 +48,7 @@ class PackageState(object):
                            self.rootObj.makeChrootPath(), repoquery_avail_opts, out_file)
             mockbuild.util.do(cmd, shell=True)
             self.avail_done = True
-            self.rootObj.finish()
+            self.rootObj.finish("Outputting list of available packages")
 
     decorate(traceLog())
     def _installedPreBuildHook(self):
@@ -64,7 +64,7 @@ class PackageState(object):
             mockbuild.util.do(cmd, shell=True)
             self.inst_done = True
             os.unlink(fn)
-            self.rootObj.finish()
+            self.rootObj.finish("Outputting list of installed packages")
     
 
 
