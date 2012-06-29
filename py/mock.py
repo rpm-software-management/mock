@@ -308,6 +308,7 @@ def setup_default_config_opts(config_opts, unprivUid):
                 'max_fs_size': None},
             'selinux_enable': True,
             'selinux_opts': {},
+            'package_state_enable' : True,
             }
 
     config_opts['environment'] = {
