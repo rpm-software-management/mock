@@ -90,6 +90,8 @@ class Root(object):
         self.yum_path = '/usr/bin/yum'
         self.yum_builddep_path = '/usr/bin/yum-builddep'
         self.yum_builddep_opts = config['yum_builddep_opts']
+        # place for plugins to add options to all yum commands
+        self.yum_common_opts = config['yum_common_opts']
         self.macros = config['macros']
         self.more_buildreqs = config['more_buildreqs']
         self.cache_topdir = config['cache_topdir']
@@ -877,6 +879,7 @@ class Root(object):
         yumcmd.extend(('--installroot', self.makeChrootPath()))
         if not self.online:
             yumcmd.append("-C")
+        yumcmd.extend(self.yum_common_opts)
         yumcmd.extend(cmd[cmdix:])
         self.root_log.debug(yumcmd)
         output = ""
