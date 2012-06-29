@@ -356,6 +356,7 @@ def setup_default_config_opts(config_opts, unprivUid):
     config_opts['rpmbuild_arch'] = None # <-- None means set automatically from target_arch
     config_opts['yum.conf'] = ''
     config_opts['yum_builddep_opts'] = ''
+    config_opts['yum_common_opts'] = []
     config_opts['priorities.conf'] = '\n[main]\nenabled=0'
     config_opts['rhnplugin.conf'] = '\n[main]\nenabled=0'
     config_opts['more_buildreqs'] = {}
