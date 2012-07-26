@@ -321,6 +321,7 @@ def main(args):
     
     log(opts.logfile, "Results out to: %s" % opts.local_repo_dir)
     log(opts.logfile, "Pkgs built: %s" % len(built_pkgs))
+    log(opts.logfile, "Packages successfully built in this order:")
     for pkg in built_pkgs:
         log(opts.logfile, pkg)
 
