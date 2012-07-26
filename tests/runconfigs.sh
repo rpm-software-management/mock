@@ -10,6 +10,12 @@ source ${TESTDIR}/functions
 
 cd $TOPDIR
 
+if [ "$1" != "" ]; then
+    configs=$1
+else
+    configs=$(ls etc/mock | grep .cfg | grep -v default | egrep -v 'arm|ppc|s390|sparc')
+fi
+
 trap '$MOCKCMD --clean; exit 1' INT HUP QUIT TERM
 
 fails=0
@@ -18,7 +24,7 @@ fails=0
 # Test build all configs we ship.
 #
 header "testing all supported configurations"
-for i in $(ls etc/mock | grep .cfg | grep -v default | egrep -v 'arm|ppc|s390|sparc'); do
+for i in $configs; do
     name=$(basename $i .cfg)
     MOCKCMD="sudo ./py/mock.py $VERBOSE --resultdir=$outdir --uniqueext=$uniqueext -r $name $MOCK_EXTRA_ARGS"
     if [ "${i#epel-4-x86_64.cfg}" != "" ]; then
