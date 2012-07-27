@@ -55,7 +55,7 @@ In the upstream git tree:
   15) push to main git repo (only from master branch):
      # substitute 'master' with branch name if on another branch
      $ git push --tags origin master  
-
+     
 In the fedora git (koji) tree
 
    1) cd to the previously cloned mock package repository
@@ -131,6 +131,8 @@ In the git tree:
       $ git merge prerelease
   16) push to main git repo:
      $ git push --tags origin mock-1.0
+  17) copy tarball to fedorahosted:
+      $ scp mock-1.0.31.tar.gz fedorahosted.org:mock
 
 In the fedora git (koji) tree
 
@@ -142,11 +144,9 @@ In the fedora git (koji) tree
        $ fedpkg new-source ../mock.git/mock-1.0.9.tar.gz
     4) copy the matching specfile
        $ cp ../mock.git/mock.spec .
-    5) create a changelong entry file (clog)
-       $ fedpkg clog
-    6) commit and push the new tarball and specfile
-       $ fedpkg commit -F clog -p
-    7) initiate a koji build
+    5) commit and push the new tarball and specfile
+       $ fedpkg commit --clog -push
+    6) initiate a koji build
        $ fedpkg build --nowait
 
 
