@@ -661,7 +661,7 @@ def main(ret):
     groupcheck(unprivGid, config_opts['chrootgid'])
 
     # Read user specific config file
-    cfg = '%s/%s' % (os.path.expanduser('~' + os.getlogin()), '.mock/user.cfg')
+    cfg = os.path.join(os.path.expanduser('~' + pwd.getpwuid(os.getuid())[0]), '.mock/user.cfg')
     if os.path.exists(cfg):
         config_opts['config_paths'].append(cfg)
         uidManager.dropPrivsTemp()
