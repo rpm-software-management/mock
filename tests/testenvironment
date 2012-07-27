@@ -8,7 +8,7 @@ VERBOSE=
 #
 # most tests below will use this mock command line
 # 
-testConfig=fedora-16-x86_64
+testConfig=fedora-17-x86_64
 uniqueext="$$-$RANDOM"
 outdir=${TOPDIR}/mock-unit-test
 cfgdir=${TOPDIR}/etc/mock
