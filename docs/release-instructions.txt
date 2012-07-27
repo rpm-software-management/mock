@@ -100,24 +100,22 @@ In the fedora git (koji) tree
        $ fedpkg new-sources ../mock.git/mock-1.1.3.tar.gz
    4) copy in the new specfile that matches the tarball
        $ cp ../mock.git/mock.spec .
-   5) create a clog from the new specfile
-       $ fedpkg clog
-   6) commit and push the new sources
-       $ fedpkg commit -F clog -p
-   7) initiate a koji build
+   5) commit and push the new sources
+       $ fedpkg commit --clog --push
+   6) initiate a koji build
        $ fedpkg build --notwait
-   8) switch branches to the latest released fedora
+   7) switch branches to the latest released fedora
        $ fedpkg switch-branch f14
               or
        $ git checkout f14
-   9) merge master into the current release
+   8) merge master into the current release
        $ git merge master
       if there are conflicts, resolve and commit
-   10) push changes back to origin
+   9) push changes back to origin
        $ fedpkg push
-   11) initiate a build for the branch
+   10) initiate a build for the branch
        $ fedpkg build --nowait
-   12) repeat steps 8 and 9 for all supported fedora releases and EPEL releases
+   11) repeat steps 8 and 9 for all supported fedora releases and EPEL releases
       (e.g. f14, f13, el6)
 
 Once the builds finish (successfully) you should push the just built
