@@ -120,6 +120,16 @@ chmod 2775 /var/cache/mock
 %dir /var/lib/mock
  
 %changelog
+* Fri Jul 27 2012 Clark Williams <williams@redhat.com> - 1.1.24-1
+- Fixed error when calling os.getlogin() [BZ# 843434]
+- removed fedora-15 config files
+- from Matt McCutchen <matt@mattmccutchen.net>:
+  - allowed common options to be added to yum commands [BZ# 734576]
+- from Ville Skyttä <ville.skytta@iki.fi>:
+  - added mockchain completion
+- from Seth Vidal <skvidal@fedoraproject.org>:
+  - added package_state_plugin
+
 * Thu Jun  7 2012 Clark Williams <williams@redhat.com> - 1.1.23-1
   - modified startup code to only set mock group [BZ# 809676]
   - add CLONE_NEWUTS to unshare(2) call [BZ# 818445]
