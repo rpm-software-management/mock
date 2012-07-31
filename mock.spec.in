@@ -114,6 +114,10 @@ chmod 2775 /var/cache/mock
 %dir /var/lib/mock
 
 %changelog
+* Tue Jul 31 2012 Clark Williams <williams@redhat.com> - 1.0.32-1
+- From Karsten Hopp <karsten@redhat.com>:
+  - added ppc and ppc64 configs for fedora 17
+
 * Fri Jul 27 2012 Clark Williams <williams@redhat.com> - 1.0.31-1
 - Fixed error when calling os.getlogin() [BZ# 843434]
 - removed fedora-15 config files
