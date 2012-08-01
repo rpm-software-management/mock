@@ -14,7 +14,7 @@ Version: %{release_version}
 Release: 1%{?dist}
 License: GPLv2+
 Group: Development/Tools
-Source: https://fedorahosted.org/mock/attachment/wiki/MockTarballs/%{name}-%{version}.tar.gz
+Source: https://git.fedorahosted.org/cgit/mock.git/snapshot/%{name}-%{version}.tar.gz
 URL: http://fedoraproject.org/wiki/Projects/Mock
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch: noarch
@@ -59,7 +59,6 @@ popd
 echo "%defattr(0644, root, mock)" > %{name}.cfgs
 find $RPM_BUILD_ROOT%{_sysconfdir}/mock -name "*.cfg" \
     | sed -e "s|^$RPM_BUILD_ROOT|%%config(noreplace) |" >> %{name}.cfgs
-#cat %{name}.cfgs
 
 # just for %%ghosting purposes
 ln -s fedora-rawhide-x86_64.cfg $RPM_BUILD_ROOT%{_sysconfdir}/mock/default.cfg
