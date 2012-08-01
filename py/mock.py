@@ -756,7 +756,7 @@ def main(ret):
 
     # New namespace starting from here
     try:
-        mockbuild.util.unshare(mockbuild.util.CLONE_NEWNS|mockbuild.util.CLONE_NEWUTS)
+        mockbuild.util.unshare(mockbuild.util.CLONE_NEWNS)
     except mockbuild.exception.UnshareFailed, e:
         log.error("Namespace unshare failed.")
         sys.exit(e.resultcode)
