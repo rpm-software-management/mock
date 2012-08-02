@@ -215,10 +215,17 @@ def command_parse(config_opts):
                       help="define an SCM option (may be used more than once)")
 
     (options, args) = parser.parse_args()
+
+    # handle old-style commands
     if len(args) and args[0] in ('chroot', 'shell',
             'rebuild', 'install', 'installdeps', 'init', 'clean'):
         options.mode = args[0]
         args = args[1:]
+
+    # explicitly disallow multiple targets in --target argument
+    if options.rpmbuild_arch:
+        if options.rpmbuild_arch.find(',') != -1:
+                   raise mockbuild.exception.BadCmdline, "--target option accepts only one arch. Invalid: %s" % options.rpmbuild_arch
 
     if options.mode == 'buildsrpm' and not (options.spec and options.sources):
         if not options.scm:
