@@ -119,6 +119,9 @@ chmod 2775 /var/cache/mock
 %dir /var/lib/mock
  
 %changelog
+* Mon Aug  6 2012 Clark Williams <williams@redhat.com> - 1.1.26-1
+- move the fedora-17-ppc* configs into the configs directory
+
 * Tue Jul 31 2012 Clark Williams <williams@redhat.com> - 1.1.25-1
 - From Karsten Hopp <karsten@redhat.com>:
   - added ppc and ppc64 configs for fedora 17
