@@ -114,6 +114,9 @@ chmod 2775 /var/cache/mock
 %dir /var/lib/mock
 
 %changelog
+* Mon Aug  6 2012 Clark Williams <williams@redhat.com> - 1.0.34-1
+- moved fedora-17-ppc* configs into config directory
+
 * Wed Aug  1 2012 Clark Williams <williams@redhat.com> - 1.0.33-1
 - revert the commit which added CLONE_NEWUTS to the unshare(2)
   call; the 2.6.18 el5 kernel does not support it [BZ# 844846]
