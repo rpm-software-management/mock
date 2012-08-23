@@ -114,7 +114,7 @@ class Mounts(object):
                         FileSystemMountPoint(filetype='tmpfs', device='mock_chroot_shmfs', path=rootObj.makeChrootPath('/dev/shm')),
                       ]
         opts = 'gid=%d,mode=0620,ptmxmode=0666' % grp.getgrnam('tty').gr_gid
-        if mockbuild.util.cmpKernelEVR(os.uname()[2], '2.6.29') >= 0:
+        if mockbuild.util.cmpKernelVer(os.uname()[2], '2.6.29') >= 0:
             opts += ',newinstance'
         self.mounts.append(FileSystemMountPoint(filetype='devpts', device='mock_chroot_devpts', path=rootObj.makeChrootPath('/dev/pts'), options=opts))
 

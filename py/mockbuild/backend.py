@@ -458,12 +458,12 @@ class Root(object):
         os.chown(self.makeChrootPath('dev/ptmx'), pwd.getpwnam('root')[2], grp.getgrnam('tty')[2])
 
         # symlink /dev/fd in the chroot for everything except RHEL4
-        if mockbuild.util.cmpKernelEVR(kver, '2.6.9') > 0:
+        if mockbuild.util.cmpKernelVer(kver, '2.6.9') > 0:
             os.symlink("/proc/self/fd",   self.makeChrootPath("dev/fd"))
 
         os.umask(prevMask)
 
-        if mockbuild.util.cmpKernelEVR(kver, '2.6.29') >= 0:
+        if mockbuild.util.cmpKernelVer(kver, '2.6.29') >= 0:
             os.unlink(self.makeChrootPath('/dev/ptmx'))
             os.symlink("pts/ptmx", self.makeChrootPath('/dev/ptmx'))
         self.finish("device setup")
