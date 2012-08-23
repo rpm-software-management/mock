@@ -95,6 +95,11 @@ class RootCache(object):
         if os.path.exists(self.rootCacheFile) and self.rootObj.chrootWasCleaned:
             self.rootObj.start("unpacking root cache")
             self._rootCacheLock()
+            #
+            # deal with NFS homedir and root_squash
+            #
+            if mockbuild.util.get_fs_type(os.getcwd()).startswith('nfs'):
+                os.chdir(mockbuild.util.find_non_nfs_dir())
             mockbuild.util.do(
                 ["tar"] + self.compressArgs + ["-xf", self.rootCacheFile, "-C", self.rootObj.makeChrootPath()],
                 shell=False
