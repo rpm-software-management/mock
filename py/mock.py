@@ -472,17 +472,6 @@ def set_config_opts_per_cmdline(config_opts, options, args):
                 "Bad option for '--scm-option' (%s).  Use --scm-option 'key=value'"
                 % option)
 
-legal_arches = {
-    'i386'   : ('i386', 'i586', 'i686'),
-    'i686'   : ('i386', 'i586', 'i686'),
-    'x86_64' : ('i386', 'i586', 'i686', 'x86_64'),
-    'ppc'    : ('ppc',),
-    'ppc64'  : ('ppc', 'ppc64'),
-    'sparc'  : ('sparc',),
-    'sparc64': ('sparc', 'sparc64'),
-    's390x'  : ('s390', 's390x',),
-}
-
 decorate(traceLog())
 def check_arch_combination(target_arch, config_opts):
     try:
