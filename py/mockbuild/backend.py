@@ -747,9 +747,9 @@ class Root(object):
                 self.doChroot(args, shell=shell, cwd=options.cwd, printOutput=True)
         finally:
             self._umountall()
+            self.finish(chrootstate)
         self._callHooks("postchroot")
         self.unlockBuildRoot()
-        self.finish(chrootstate)
 
     #
     # UNPRIVILEGED:
