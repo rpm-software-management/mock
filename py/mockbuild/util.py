@@ -411,3 +411,16 @@ def clean_env():
            }
     env['LANG'] = os.environ.setdefault('LANG', 'en_US.UTF-8')
     return env
+
+def get_fs_type(path):
+    cmd = '/usr/bin/stat -f -L -c %%T %s' % path
+    p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
+    p.wait()
+    return p.stdout.readline().strip()
+
+def find_non_nfs_dir():
+    dirs = ('/tmp', '/usr/tmp', '/')
+    for d in dirs:
+        if not get_fs_type(d).startswith('nfs'):
+            return d
+    raise mockbuild.exception.Error('Cannot find non-NFS directory in: %s' % dirs)
