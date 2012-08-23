@@ -294,6 +294,7 @@ def setup_default_config_opts(config_opts, unprivUid):
                 'online': True,},
             'root_cache_enable': True,
             'root_cache_opts': {
+                'age_check' : True,
                 'max_age_days': 15,
                 'dir': "%(cache_topdir)s/%(root)s/root_cache/",
                 'compress_program': 'pigz',
@@ -441,6 +442,8 @@ def set_config_opts_per_cmdline(config_opts, options, args):
             raise mockbuild.exception.BadCmdline(
                 "Bad option for '--plugin-option' (%s).  No such plugin: %s"
                 % (option, p))
+        if v == "False": v = False
+        if v == "True": v = True
         config_opts['plugin_conf'][p + "_opts"].update({k: v})
         
 
