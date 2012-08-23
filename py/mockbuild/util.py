@@ -30,8 +30,12 @@ _libc.personality.argtypes = [ctypes.c_ulong]
 _libc.personality.restype = ctypes.c_int
 _libc.unshare.argtypes = [ctypes.c_int,]
 _libc.unshare.restype = ctypes.c_int
+# See linux/include/sched.h
 CLONE_NEWNS = 0x00020000
 CLONE_NEWUTS = 0x04000000
+CLONE_NEWPID = 0x20000000
+CLONE_NEWNET = 0x40000000
+CLONE_NEWIPC = 0x08000000
 
 # taken from sys/personality.h
 PER_LINUX32=0x0008
