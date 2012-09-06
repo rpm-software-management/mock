@@ -423,50 +423,52 @@ class Root(object):
     decorate(traceLog())
     def _setupDev(self, interactive=False):
         self.start("device setup")
-        # files in /dev
-        mockbuild.util.rmtree(self.makeChrootPath("dev"), selinux=self.selinux)
-        mockbuild.util.mkdirIfAbsent(self.makeChrootPath("dev", "pts"))
-        mockbuild.util.mkdirIfAbsent(self.makeChrootPath("dev", "shm"))
-        prevMask = os.umask(0000)
-        devFiles = [
-            (stat.S_IFCHR | 0666, os.makedev(1, 3), "dev/null"),
-            (stat.S_IFCHR | 0666, os.makedev(1, 7), "dev/full"),
-            (stat.S_IFCHR | 0666, os.makedev(1, 5), "dev/zero"),
-            (stat.S_IFCHR | 0666, os.makedev(1, 8), "dev/random"),
-            (stat.S_IFCHR | 0444, os.makedev(1, 9), "dev/urandom"),
-            (stat.S_IFCHR | 0666, os.makedev(5, 0), "dev/tty"),
-            (stat.S_IFCHR | 0600, os.makedev(5, 1), "dev/console"),
-            (stat.S_IFCHR | 0666, os.makedev(5, 2), "dev/ptmx"),
-        ]
-        kver = os.uname()[2]
-        getLog().debug("kver == %s" % kver)
-        for i in devFiles:
-            # create node
-            os.mknod( self.makeChrootPath(i[2]), i[0], i[1])
-            # set context. (only necessary if host running selinux enabled.)
-            # fails gracefully if chcon not installed.
-            if self.selinux:
-                mockbuild.util.do(
-                    ["chcon", "--reference=/%s"% i[2], self.makeChrootPath(i[2])]
-                    , raiseExc=0, shell=False, env=self.env)
+        try:
+            # files in /dev
+            mockbuild.util.rmtree(self.makeChrootPath("dev"), selinux=self.selinux)
+            mockbuild.util.mkdirIfAbsent(self.makeChrootPath("dev", "pts"))
+            mockbuild.util.mkdirIfAbsent(self.makeChrootPath("dev", "shm"))
+            prevMask = os.umask(0000)
+            devFiles = [
+                (stat.S_IFCHR | 0666, os.makedev(1, 3), "dev/null"),
+                (stat.S_IFCHR | 0666, os.makedev(1, 7), "dev/full"),
+                (stat.S_IFCHR | 0666, os.makedev(1, 5), "dev/zero"),
+                (stat.S_IFCHR | 0666, os.makedev(1, 8), "dev/random"),
+                (stat.S_IFCHR | 0444, os.makedev(1, 9), "dev/urandom"),
+                (stat.S_IFCHR | 0666, os.makedev(5, 0), "dev/tty"),
+                (stat.S_IFCHR | 0600, os.makedev(5, 1), "dev/console"),
+                (stat.S_IFCHR | 0666, os.makedev(5, 2), "dev/ptmx"),
+                ]
+            kver = os.uname()[2]
+            getLog().debug("kver == %s" % kver)
+            for i in devFiles:
+                # create node
+                os.mknod( self.makeChrootPath(i[2]), i[0], i[1])
+                # set context. (only necessary if host running selinux enabled.)
+                # fails gracefully if chcon not installed.
+                if self.selinux:
+                    mockbuild.util.do(
+                        ["chcon", "--reference=/%s"% i[2], self.makeChrootPath(i[2])]
+                        , raiseExc=0, shell=False, env=self.env)
 
-        os.symlink("/proc/self/fd/0", self.makeChrootPath("dev/stdin"))
-        os.symlink("/proc/self/fd/1", self.makeChrootPath("dev/stdout"))
-        os.symlink("/proc/self/fd/2", self.makeChrootPath("dev/stderr"))
+            os.symlink("/proc/self/fd/0", self.makeChrootPath("dev/stdin"))
+            os.symlink("/proc/self/fd/1", self.makeChrootPath("dev/stdout"))
+            os.symlink("/proc/self/fd/2", self.makeChrootPath("dev/stderr"))
 
-        os.chown(self.makeChrootPath('dev/tty'), pwd.getpwnam('root')[2], grp.getgrnam('tty')[2])
-        os.chown(self.makeChrootPath('dev/ptmx'), pwd.getpwnam('root')[2], grp.getgrnam('tty')[2])
+            os.chown(self.makeChrootPath('dev/tty'), pwd.getpwnam('root')[2], grp.getgrnam('tty')[2])
+            os.chown(self.makeChrootPath('dev/ptmx'), pwd.getpwnam('root')[2], grp.getgrnam('tty')[2])
 
-        # symlink /dev/fd in the chroot for everything except RHEL4
-        if mockbuild.util.cmpKernelVer(kver, '2.6.9') > 0:
-            os.symlink("/proc/self/fd",   self.makeChrootPath("dev/fd"))
+            # symlink /dev/fd in the chroot for everything except RHEL4
+            if mockbuild.util.cmpKernelVer(kver, '2.6.9') > 0:
+                os.symlink("/proc/self/fd",   self.makeChrootPath("dev/fd"))
 
-        os.umask(prevMask)
+            os.umask(prevMask)
 
-        if mockbuild.util.cmpKernelVer(kver, '2.6.29') >= 0:
-            os.unlink(self.makeChrootPath('/dev/ptmx'))
+            if mockbuild.util.cmpKernelVer(kver, '2.6.29') >= 0:
+                os.unlink(self.makeChrootPath('/dev/ptmx'))
             os.symlink("pts/ptmx", self.makeChrootPath('/dev/ptmx'))
-        self.finish("device setup")
+        finally:
+            self.finish("device setup")
 
     decorate(traceLog())
     def _setupDirs(self):
@@ -708,6 +710,12 @@ class Root(object):
             self._setupFiles()
             log.debug("shell: mounting all filesystems")
             self._mountall()
+        except Exception as e:
+            log.error(e)
+            self.unlockBuildRoot()
+            return mockbuild.exception.RootError(e).resultcode
+
+        try:
             self.start("shell")
             ret = mockbuild.util.doshell(chrootPath=self.makeChrootPath(), 
                                          environ=self.env,
@@ -783,16 +791,19 @@ class Root(object):
             spec =  self.makeChrootPath(self.builddir, "SPECS", os.path.basename(spec))
             chrootspec = spec.replace(self.makeChrootPath(), '') # get rid of rootdir prefix
 
-            # Completely/Permanently drop privs while running the following:
-            self.start("rpmbuild -bs")
-            self.doChroot(
-                ["bash", "--login", "-c", 'rpmbuild -bs --target %s --nodeps %s' % (self.rpmbuild_arch, chrootspec)],
-                shell=False,
-                logger=self.build_log, timeout=timeout,
-                uid=self.chrootuid,
-                gid=self.chrootgid,
-                )
-            self.finish("rpmbuild -bs")
+            try:
+                # Completely/Permanently drop privs while running the following:
+                self.start("rpmbuild -bs")
+                self.doChroot(
+                    ["bash", "--login", "-c", 'rpmbuild -bs --target %s --nodeps %s' % (self.rpmbuild_arch, chrootspec)],
+                    shell=False,
+                    logger=self.build_log, timeout=timeout,
+                    uid=self.chrootuid,
+                    gid=self.chrootgid,
+                   )
+            finally:
+                self.finish("rpmbuild -bs")
+
             rebuiltSrpmFile = glob.glob("%s/%s/SRPMS/*.src.rpm" % (self.makeChrootPath(), self.builddir))
             if len(rebuiltSrpmFile) != 1:
                 raise mockbuild.exception.PkgError, "Expected to find single rebuilt srpm, found %d." % len(rebuiltSrpmFile)
