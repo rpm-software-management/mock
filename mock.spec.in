@@ -114,6 +114,18 @@ chmod 2775 /var/cache/mock
 %dir /var/lib/mock
 
 %changelog
+* Fri Sep  7 2012 Clark Williams <williams@redhat.com> - 1.0.35-1
+- fixed configs test report to indicate configuration failure total
+- remove dead code, unused array 'legal_arches'
+- add an 'age_check' parameter to root_cache
+- deal with NFS home directories and root_cache issues [BZ# 649192]
+- from Mike Miller <mtmiller@ieee.org>:
+  - Fix mock kernel version comparison [BZ# 847473]
+- from Mathieu Bridon <bochecha@fedoraproject.org>:
+  - fix various start/finish state problems [BZ# 835633]
+- from Colin Walters <walters@redhat.com>:
+  - add CLONE_NEWPID and CLONE_NEWIPC to unshare call [BZ# 851340]
+
 * Mon Aug  6 2012 Clark Williams <williams@redhat.com> - 1.0.34-1
 - moved fedora-17-ppc* configs into config directory
 
