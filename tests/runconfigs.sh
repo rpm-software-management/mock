@@ -48,6 +48,6 @@ for i in $configs; do
     fi
 done
 
-msg=$(printf "%d total failures\n" $fails)
+msg=$(printf "%d configuration failures\n" $fails)
 header "$msg"
 exit $fails
