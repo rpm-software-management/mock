@@ -154,7 +154,11 @@ def getNEVRA(hdr):
 decorate(traceLog())
 def cmpKernelVer(str1, str2):
     'compare two kernel version strings and return -1, 0, 1 for less, equal, greater'
-    return rpmUtils.miscutils.compareVerOnly(str1, str2)
+    # first try compareVerOnly and fall back to compareEVR
+    try:
+        return rpmUtils.miscutils.compareVerOnly(str1, str2)
+    except AttributeError, e:
+        return rpmUtils.miscutils.compareEVR(('', str1, ''), ('', str2, ''))
 
 decorate(traceLog())
 def getAddtlReqs(hdr, conf):
