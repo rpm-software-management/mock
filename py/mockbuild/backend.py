@@ -206,32 +206,39 @@ class Root(object):
         self.tryLockBuildRoot()
         statestr = "scrub %s" % scrub_opts
         self.start(statestr)
-        self._resetLogging()
-        self._callHooks('clean')
-        for scrub in scrub_opts:
-            if scrub == 'all':
-                self.root_log.info("scrubbing everything for %s" % self.config_name)
-                self._unlock_and_rm_chroot()
-                self.chrootWasCleaned = True
-                mockbuild.util.rmtree(self.cachedir, selinux=self.selinux)
-            elif scrub == 'chroot':
-                self.root_log.info("scrubbing chroot for %s" % self.config_name)
-                self._unlock_and_rm_chroot()
-                self.chrootWasCleaned = True
-            elif scrub == 'cache':
-                self.root_log.info("scrubbing cache for %s" % self.config_name)
-                mockbuild.util.rmtree(self.cachedir, selinux=self.selinux)
-            elif scrub == 'c-cache':
-                self.root_log.info("scrubbing c-cache for %s" % self.config_name)
-                mockbuild.util.rmtree(os.path.join(self.cachedir, 'ccache'), selinux=self.selinux)
-            elif scrub == 'root-cache':
-                self.root_log.info("scrubbing root-cache for %s" % self.config_name)
-                mockbuild.util.rmtree(os.path.join(self.cachedir, 'root_cache'), selinux=self.selinux)
-            elif scrub == 'yum-cache':
-                self.root_log.info("scrubbing yum-cache for %s" % self.config_name)
-                mockbuild.util.rmtree(os.path.join(self.cachedir, 'yum_cache'), selinux=self.selinux)
-        self.unlockBuildRoot()
-        self.finish(statestr)
+        try:
+            self._resetLogging()
+            self._callHooks('clean')
+            for scrub in scrub_opts:
+                if scrub == 'all':
+                    self.root_log.info("scrubbing everything for %s" % self.config_name)
+                    self._unlock_and_rm_chroot()
+                    self.chrootWasCleaned = True
+                    mockbuild.util.rmtree(self.cachedir, selinux=self.selinux)
+                elif scrub == 'chroot':
+                    self.root_log.info("scrubbing chroot for %s" % self.config_name)
+                    self._unlock_and_rm_chroot()
+                    self.chrootWasCleaned = True
+                elif scrub == 'cache':
+                    self.root_log.info("scrubbing cache for %s" % self.config_name)
+                    mockbuild.util.rmtree(self.cachedir, selinux=self.selinux)
+                elif scrub == 'c-cache':
+                    self.root_log.info("scrubbing c-cache for %s" % self.config_name)
+                    mockbuild.util.rmtree(os.path.join(self.cachedir, 'ccache'), selinux=self.selinux)
+                elif scrub == 'root-cache':
+                    self.root_log.info("scrubbing root-cache for %s" % self.config_name)
+                    mockbuild.util.rmtree(os.path.join(self.cachedir, 'root_cache'), selinux=self.selinux)
+                elif scrub == 'yum-cache':
+                    self.root_log.info("scrubbing yum-cache for %s" % self.config_name)
+                    mockbuild.util.rmtree(os.path.join(self.cachedir, 'yum_cache'), selinux=self.selinux)
+        except IOError, e:
+            getLog().warn("parts of chroot do not exist: %s" % e )
+            pass
+        finally:
+            print "finishing: %s" % statestr
+            self.finish(statestr)
+            print "unlocking buildroot"
+            self.unlockBuildRoot()
 
     decorate(traceLog())
     def tryLockBuildRoot(self):
@@ -245,7 +252,6 @@ class Root(object):
             fcntl.lockf(self.buildrootLock.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
         except IOError, e:
             raise mockbuild.exception.BuildRootLocked, "Build root is locked by another process."
-
         return 1
 
     decorate(traceLog())
