@@ -114,6 +114,10 @@ chmod 2775 /var/cache/mock
 %dir /var/lib/mock
 
 %changelog
+* Thu Nov  1 2012 Clark Williams <williams@redhat.com> - 1.0.36-1
+- add updates-testing stanza to fedora-1x-*.cfg [BZ# 610826]
+- modify scrub to handle non-existant chroots [BZ# 860368]
+
 * Fri Sep  7 2012 Clark Williams <williams@redhat.com> - 1.0.35-1
 - fixed configs test report to indicate configuration failure total
 - remove dead code, unused array 'legal_arches'

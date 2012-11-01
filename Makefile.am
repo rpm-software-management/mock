@@ -81,6 +81,7 @@ install-exec-hook:
                 perl -p -i -e 's|^LIBDIR\s*=.*|LIBDIR="$(libdir)"|' $$file        ;\
         done
 	mv $(DESTDIR)/$(sbindir)/mock.py $(DESTDIR)/$(sbindir)/mock
+	[ -d $(DESTDIR)/$(bindir) ] || mkdir $(DESTDIR)/$(bindir)
 	mv $(DESTDIR)/$(sbindir)/mockchain.py $(DESTDIR)/$(bindir)/mockchain
 
 install-data-hook:
