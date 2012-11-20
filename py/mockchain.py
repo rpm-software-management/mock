@@ -89,7 +89,7 @@ def add_local_repo(infile, destfile, baseurl, repoid=None):
         config_opts = {}
         execfile(infile)
         if not repoid:
-            repoid=baseurl.split('//')[1].replace('/',',')
+            repoid=baseurl.split('//')[1].replace('/','_')
         localyumrepo="""
 [%s]
 name=%s
