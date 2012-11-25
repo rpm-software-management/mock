@@ -754,8 +754,12 @@ def main(ret):
     os.environ["HOME"] = chroot.homedir
 
     # New namespace starting from here
-    base_unshare_flags = mockbuild.util.CLONE_NEWNS|mockbuild.util.CLONE_NEWUTS
-    extended_unshare_flags = base_unshare_flags|mockbuild.util.CLONE_NEWPID|mockbuild.util.CLONE_NEWIPC
+    kver = os.uname()[2]
+    base_unshare_flags = mockbuild.util.CLONE_NEWNS
+    if mockbuild.util.cmpKernelVer(kver, '2.6.19') >= 0:
+        base_unshare_flags |= mockbuild.util.CLONE_NEWUTS
+
+    extended_unshare_flags = base_unshare_flags|mockbuild.util.CLONE_NEWPID|mockbuild.util.CLONE_NEWIPC|mockbuild.util.CLONE_NEWUTS
     try:
         mockbuild.util.unshare(extended_unshare_flags)
     except mockbuild.exception.UnshareFailed, e:
