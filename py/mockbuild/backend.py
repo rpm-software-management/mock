@@ -234,11 +234,10 @@ class Root(object):
         except IOError, e:
             getLog().warn("parts of chroot do not exist: %s" % e )
             pass
-        finally:
-            print "finishing: %s" % statestr
-            self.finish(statestr)
-            print "unlocking buildroot"
-            self.unlockBuildRoot()
+        print "finishing: %s" % statestr
+        self.finish(statestr)
+        print "unlocking buildroot"
+        self.unlockBuildRoot()
 
     decorate(traceLog())
     def tryLockBuildRoot(self):
@@ -472,7 +471,8 @@ class Root(object):
 
             if mockbuild.util.cmpKernelVer(kver, '2.6.29') >= 0:
                 os.unlink(self.makeChrootPath('/dev/ptmx'))
-            os.symlink("pts/ptmx", self.makeChrootPath('/dev/ptmx'))
+            if mockbuild.util.cmpKernelVer(kver, '2.6.19') >=0:
+                os.symlink("pts/ptmx", self.makeChrootPath('/dev/ptmx'))
         finally:
             self.finish("device setup")
 
@@ -705,7 +705,7 @@ class Root(object):
             self._setupFiles()
             log.debug("shell: mounting all filesystems")
             self._mountall()
-        except Exception as e:
+        except Exception, e:
             log.error(e)
             self.unlockBuildRoot()
             return mockbuild.exception.RootError(e).resultcode
