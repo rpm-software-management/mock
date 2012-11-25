@@ -13,7 +13,14 @@ cd $TOPDIR
 if [ "$1" != "" ]; then
     configs=$1
 else
-    configs=$(ls etc/mock | grep .cfg | grep -v default | egrep -v 'arm|ppc|s390|sparc')
+    excludes='arm|ppc|s390|sparc'
+    arch=$(uname -m)
+    echo "host arch: $arch"
+    if [ "$arch" != "x86_64" ]
+    then 
+	excludes="$excludes|x86_64"
+    fi
+    configs=$(ls etc/mock | grep .cfg | grep -v default | egrep -v $excludes)
 fi
 
 trap '$MOCKCMD --clean; exit 1' INT HUP QUIT TERM
