@@ -114,6 +114,10 @@ chmod 2775 /var/cache/mock
 %dir /var/lib/mock
 
 %changelog
+* Mon Nov 26 2012 Clark Williams <williams@redhat.com> - 1.0.37-1
+- fix python2.6+ syntax that crept in [BZ# 878989]
+- update tests to work properly on i386 host
+
 * Thu Nov  1 2012 Clark Williams <williams@redhat.com> - 1.0.36-1
 - add updates-testing stanza to fedora-1x-*.cfg [BZ# 610826]
 - modify scrub to handle non-existant chroots [BZ# 860368]
