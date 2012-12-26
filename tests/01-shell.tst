@@ -1,6 +1,6 @@
 #!/bin/sh
 
-source ${TESTDIR}/functions
+. ${TESTDIR}/functions
 
 #
 # test mock shell (interactive) and return code passing

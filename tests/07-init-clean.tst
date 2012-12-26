@@ -1,6 +1,6 @@
 #!/bin/sh
 
-source ${TESTDIR}/functions
+. ${TESTDIR}/functions
 
 #
 # test init/clean

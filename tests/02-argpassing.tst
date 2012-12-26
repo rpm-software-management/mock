@@ -1,6 +1,6 @@
 #!/bin/sh
 
-source ${TESTDIR}/functions
+. ${TESTDIR}/functions
 
 #
 # Test that chroot with one arg is getting passed though a shell (via os.system())

@@ -20,8 +20,8 @@ VERBOSE=
 export VERBOSE
 
 d=$(cd $(dirname $0); pwd)
-source $d/testenvironment
-source ${TESTDIR}/functions
+. $d/testenvironment
+. ${TESTDIR}/functions
 
 MOCKSRPM=${TOPDIR}/mock-*.src.rpm
 trap '$MOCKCMD --clean; exit 1' INT HUP QUIT TERM

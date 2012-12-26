@@ -1,6 +1,6 @@
 #!/bin/sh
 
-source ${TESTDIR}/functions
+. ${TESTDIR}/functions
 
 #
 # Test that chroot with more than one arg is not getting passed through a shell
