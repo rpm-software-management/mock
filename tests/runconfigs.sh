@@ -3,10 +3,10 @@
 if [ "$MOCKCMD" = "" ]
 then
     d=$(cd $(dirname $0); pwd)
-    source $d/testenvironment
+    . $d/testenvironment
 fi
 
-source ${TESTDIR}/functions
+. ${TESTDIR}/functions
 
 cd $TOPDIR
 
