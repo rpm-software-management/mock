@@ -321,6 +321,7 @@ def setup_default_config_opts(config_opts, unprivUid):
             'selinux_enable': True,
             'selinux_opts': {},
             'package_state_enable' : True,
+            'package_state_opts' : {},
             }
 
     config_opts['environment'] = {
