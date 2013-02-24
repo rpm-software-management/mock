@@ -119,6 +119,17 @@ chmod 2775 /var/cache/mock
 %dir /var/lib/mock
  
 %changelog
+* Fri Feb 22 2013 Clark Williams <williams@redhat.com> - 1.1.29-1
+- move CLONE_NEWUTS to extended unshare options [BZ# 890695]
+- make epel-5-* config files safe to eval [BZ# 903686]
+- remove CLONE_NEWPID (for now) from unshare(2) call [BZ# 894623]
+- initialize package_state_opts so that package_state plugin will work
+- change default tests environment to be -i386
+- From Tim Woods <timw.fedora@gmail.com>
+  - Fix mockchain repo id calculation [BZ# 880849]
+- From Tzafrir Cohen <tzafrir.cohen@xorcom.com>
+  - Fix most bashism in test scripts
+
 * Mon Sep 24 2012 Clark Williams <williams@redhat.com> - 1.1.28-1
 - add updates-testing stanza to fedora-1x-*.cfg [BZ# 610826]
 - modify scrub to handle non-existant chroots [BZ# 860368]
