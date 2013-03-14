@@ -59,6 +59,9 @@ def parse_args(args):
             help="if more than one pkg and it fails to build, try to build the rest and come back to it")
     parser.add_option('--log', default=None, dest='logfile',
             help="log to the file named by this option, defaults to not logging")
+    parser.add_option('--tmp_prefix', default=None, dest='tmp_prefix',
+            help="tmp dir prefix - will default to username-pid if not specified")
+
             
     #FIXME?
     # figure out how to pass other args to mock?
@@ -179,10 +182,14 @@ def main(args):
         sys.exit(1)
 
 
-        
-    username = os.getlogin()
+    if not opts.tmp_prefix:
+        try:
+            opts.tmp_prefix = os.getlogin()
+        except OSError, e:
+            print "Could not find login name for tmp dir prefix add --tmp_prefix"
+            sys.exit(1)
     pid = os.getpid()
-    opts.uniqueext = '%s-%s' % (username, pid)
+    opts.uniqueext = '%s-%s' % (opts.tmp_prefix, pid)
 
 
     # create a tempdir for our local info
