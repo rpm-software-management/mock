@@ -410,6 +410,11 @@ def doshell(chrootPath=None, environ=None, uid=None, gid=None, cmd=None):
 
 
 
+def run(cmd, isShell=True):
+    log = getLog()
+    log.debug("run: cmd = %s\n" % cmd)
+    return subprocess.call(cmd, shell=isShell)
+
 def clean_env():
     env = {'TERM' : 'vt100',
            'SHELL' : '/bin/bash',

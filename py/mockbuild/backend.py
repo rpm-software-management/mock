@@ -100,6 +100,9 @@ class Root(object):
         self.online = config['online']
         self.internal_dev_setup = config['internal_dev_setup']
 
+        self.backup = config['backup_on_clean']
+        self.backup_base_dir = config['backup_base_dir']
+
         self.plugins = config['plugins']
         self.pluginConf = config['plugin_conf']
         self.pluginDir = config['plugin_dir']
@@ -168,10 +171,25 @@ class Root(object):
             raise mockbuild.exception.StateError, "alldone called with pending states: %s" % ",".join(self._state)
 
     decorate(traceLog())
+    def backup_results(self):
+        srcdir = os.path.join(self.basedir, "result")
+        if not os.path.exists(srcdir):
+            return
+        dstdir = os.path.join(self.backup_base_dir, self.config_name)
+        mockbuild.util.mkdirIfAbsent(dstdir)
+        rpms = glob.glob(os.path.join(srcdir, "*rpm"))
+        if len(rpms) == 0:
+            return
+        self._state_log.info("backup_results: saving with cp %s %s" % (" ".join(rpms), dstdir))
+        mockbuild.util.run(cmd="cp %s %s" % (" ".join(rpms), dstdir))
+
+    decorate(traceLog())
     def clean(self):
         """clean out chroot with extreme prejudice :)"""
         from signal import SIGKILL
         self.tryLockBuildRoot()
+        if self.backup:
+            self.backup_results()
         self.start("clean chroot")
         self._callHooks('clean')
         mockbuild.util.orphansKill(self.makeChrootPath())

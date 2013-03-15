@@ -273,6 +273,10 @@ def setup_default_config_opts(config_opts, unprivUid):
 
     config_opts['createrepo_on_rpms'] = False
     config_opts['createrepo_command'] = '/usr/bin/createrepo -d -q -x *.src.rpm' # default command
+
+    config_opts['backup_on_clean'] = False
+    config_opts['backup_base_dir'] = os.path.join(config_opts['basedir'], "backup")
+
     # (global) plugins and plugin configs.
     # ordering constraings: tmpfs must be first.
     #    root_cache next.
