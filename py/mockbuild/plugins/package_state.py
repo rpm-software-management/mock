@@ -36,12 +36,13 @@ class PackageState(object):
         self.rootObj = rootObj
         self.avail_done = False
         self.inst_done = False
+        self.online = rootObj.online
         rootObj.addHook("postyum", self._availablePostYumHook)
         rootObj.addHook("prebuild", self._installedPreBuildHook)
         
     decorate(traceLog())
     def _availablePostYumHook(self):
-        if not self.avail_done:
+        if self.online and not self.avail_done:
             self.rootObj.start("Outputting list of available packages")
             out_file = self.rootObj.resultdir + '/available_pkgs'
             cmd = "/usr/bin/repoquery -c %s/etc/yum.conf %s > %s" % (
@@ -52,7 +53,7 @@ class PackageState(object):
 
     decorate(traceLog())
     def _installedPreBuildHook(self):
-        if not self.inst_done:
+        if self.online and not self.inst_done:
             self.rootObj.start("Outputting list of installed packages")
             fd, fn = tempfile.mkstemp()
             fo = os.fdopen(fd, 'w')
