@@ -261,6 +261,7 @@ class Root(object):
     decorate(traceLog())
     def tryLockBuildRoot(self):
         self.start("lock buildroot")
+        self._nuke_rpm_db()
         try:
             self.buildrootLock = open(os.path.join(self.basedir, "buildroot.lock"), "a+")
         except IOError, e:
@@ -280,6 +281,7 @@ class Root(object):
                 os.remove(os.path.join(self.basedir, "buildroot.lock"))
             except OSError,e:
                 pass
+        self._nuke_rpm_db()
         self.finish("lock buildroot")
         return 0
 
@@ -527,13 +529,28 @@ class Root(object):
 
 
 
+    decorate(traceLog())
+    def _nuke_rpm_db(self):
+        """remove rpm DB lock files from the chroot"""
+        for tmp in glob.glob(self.makeChrootPath('var/lib/rpm/__db*')):
+            self.root_log.debug("_nuke_rpm_db: removing %s" % tmp)
+            os.unlink(tmp)
+
     # bad hack
     # comment out decorator here so we dont get double exceptions in the root log
     #decorate(traceLog())
     def doChroot(self, command, shell=True, returnOutput=False, printOutput=False, raiseExc=True, *args, **kargs):
         """execute given command in root"""
+        self._nuke_rpm_db()
         return mockbuild.util.do(command, chrootPath=self.makeChrootPath(),
                                  env=self.env, raiseExc=raiseExc,
+                                 returnOutput=returnOutput, shell=shell,
+                                 printOutput=printOutput, *args, **kargs)
+
+    def doNonChroot(self, command, shell=True, returnOutput=False, printOutput=False, raiseExc=True, *args, **kargs):
+        '''run a command *without* chrooting'''
+        self._nuke_rpm_db()
+        return mockbuild.util.do(command, env=self.env, raiseExc=raiseExc, 
                                  returnOutput=returnOutput, shell=shell,
                                  printOutput=printOutput, *args, **kargs)
 
@@ -605,9 +622,8 @@ class Root(object):
     def _show_installed_packages(self):
         '''report the installed packages in the chroot to the root log'''
         self.root_log.info("Installed packages:")
-        self.doChroot(
-            ["rpm", "-q", "-a" ],
-            shell=False,
+        self.doNonChroot(
+            "rpm --root %s -qa" % self.makeChrootPath(),
             raiseExc=False,
             uid=self.chrootuid,
             gid=self.chrootgid,
@@ -635,8 +651,7 @@ class Root(object):
 
             # remove rpm db files to prevent version mismatch problems
             # note: moved to do this before the user change below!
-            for tmp in glob.glob(self.makeChrootPath('var/lib/rpm/__db*')):
-                os.unlink(tmp)
+            self._nuke_rpm_db()
 
             # drop privs and become mock user
             self.uidManager.becomeUser(self.chrootuid, self.chrootgid)
@@ -929,6 +944,7 @@ class Root(object):
         yumcmd.extend(cmd[cmdix:])
         self.root_log.debug(yumcmd)
         output = ""
+        self._nuke_rpm_db()
         try:
             self._callHooks("preyum")
             output = mockbuild.util.do(yumcmd, returnOutput=returnOutput, env=self.env)

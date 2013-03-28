@@ -909,6 +909,7 @@ def main(ret):
                 shutil.copy(src, dest)
         chroot.unlockBuildRoot()
 
+    chroot._nuke_rpm_db()
     chroot.finish("run")
     chroot.alldone()
 
