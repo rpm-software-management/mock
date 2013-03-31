@@ -146,12 +146,17 @@ class scmWorker(object):
         if str(self.write_tar).lower() == "true":
             tardir = self.name + "-" + self.version
             tarball = tardir + ".tar.gz"
+            taropts = ""
+
+            proc = subprocess.Popen(['tar', '--help'], shell=False, stdout=subprocess.PIPE)
+            if "--exclude-vcs" in proc.communicate()[0]:
+                taropts = "--exclude-vcs"
 
             self.log.debug("Writing " + self.src_dir + "/" + tarball + "...")
             dir = os.getcwd()
             os.chdir(self.wrk_dir)
             os.rename(self.name, tardir)
-            cmd = "tar czf " + tarball + " " + tardir
+            cmd = "tar czf " + tarball + " " + taropts + " " + tardir
             mockbuild.util.do(shlex.split(cmd), shell=False, cwd=self.wrk_dir, env=self.environ)
             os.rename(tarball, tardir + "/" + tarball)
             os.rename(tardir, self.name)
