@@ -24,8 +24,6 @@ def init(rootObj, conf):
 class RootCache(object):
     """caches root environment in a tarball"""
     decorate(traceLog())
-
-
     def __init__(self, rootObj, conf):
         self.rootObj = rootObj
         self.root_cache_opts = conf
@@ -43,7 +41,13 @@ class RootCache(object):
              self.compressArgs = []
         rootObj.rootCacheObj = self
         rootObj.addHook("preinit", self._rootCachePreInitHook)
+        rootObj.addHook("preshell", self._rootCachePreShellHook)
+        rootObj.addHook("prechroot", self._rootCachePreShellHook)
+        rootObj.addHook("preyum", self._rootCachePreYumHook)
         rootObj.addHook("postinit", self._rootCachePostInitHook)
+        rootObj.addHook("postshell", self._rootCachePostShellHook)
+        rootObj.addHook("postchroot", self._rootCachePostShellHook)
+        rootObj.addHook("postyum", self._rootCachePostShellHook)
         self.exclude_dirs = self.root_cache_opts['exclude_dirs']
         self.exclude_tar_cmds = [ "--exclude=" + dir for dir in self.exclude_dirs]
 
@@ -68,11 +72,10 @@ class RootCache(object):
     decorate(traceLog())
     def _rootCachePreInitHook(self):
         getLog().info("enabled root cache")
-        mockbuild.util.mkdirIfAbsent(self.rootSharedCachePath)
-        # lock so others dont accidentally use root cache while we operate on it.
-        if self.rootCacheLock is None:
-            self.rootCacheLock = open(os.path.join(self.rootSharedCachePath, "rootcache.lock"), "a+")
+        self._unpack_root_cache()
 
+    decorate(traceLog())
+    def _unpack_root_cache(self):
         # check cache status
         try:
             if self.root_cache_opts['age_check']:
@@ -94,25 +97,42 @@ class RootCache(object):
         except OSError:
             pass
 
-        # optimization: don't unpack root cache if chroot was not cleaned
-        if os.path.exists(self.rootCacheFile) and self.rootObj.chrootWasCleaned:
-            self.rootObj.start("unpacking root cache")
-            self._rootCacheLock()
-            #
-            # deal with NFS homedir and root_squash
-            #
-            if mockbuild.util.get_fs_type(os.getcwd()).startswith('nfs'):
-                os.chdir(mockbuild.util.find_non_nfs_dir())
-            mockbuild.util.do(
-                ["tar"] + self.compressArgs + ["-xf", self.rootCacheFile, "-C", self.rootObj.makeChrootPath()],
-                shell=False
-                )
-            for dir in self.exclude_dirs:
-                mockbuild.util.mkdirIfAbsent(self.rootObj.makeChrootPath(dir))
-            self._rootCacheUnlock()
-            self.rootObj.chrootWasCleaned = False
-            self.rootObj.chrootWasCached = True
-            self.rootObj.finish("unpacking root cache")
+        mockbuild.util.mkdirIfAbsent(self.rootSharedCachePath)
+        # lock so others dont accidentally use root cache while we operate on it.
+        if self.rootCacheLock is None:
+            self.rootCacheLock = open(os.path.join(self.rootSharedCachePath, "rootcache.lock"), "a+")
+
+        # optimization: don't unpack root cache if chroot was not cleaned (unless we are using tmpfs)
+        if os.path.exists(self.rootCacheFile):
+            if self.rootObj.chrootWasCleaned or self.rootObj.pluginConf['tmpfs_enable']:
+                self.rootObj.start("unpacking root cache")
+                self._rootCacheLock()
+                #
+                # deal with NFS homedir and root_squash
+                #
+                if mockbuild.util.get_fs_type(os.getcwd()).startswith('nfs'):
+                    os.chdir(mockbuild.util.find_non_nfs_dir())
+                mockbuild.util.do(
+                    ["tar"] + self.compressArgs + ["-xf", self.rootCacheFile, "-C", self.rootObj.makeChrootPath()],
+                    shell=False
+                    )
+                for dir in self.exclude_dirs:
+                    mockbuild.util.mkdirIfAbsent(self.rootObj.makeChrootPath(dir))
+                self._rootCacheUnlock()
+                self.rootObj.chrootWasCleaned = False
+                self.rootObj.chrootWasCached = True
+                self.rootObj.finish("unpacking root cache")
+
+    decorate(traceLog())
+    def _rootCachePreShellHook(self):
+        if self.rootObj.pluginConf['tmpfs_enable']:
+            self._unpack_root_cache()
+
+    decorate(traceLog())
+    def _rootCachePreYumHook(self):
+        if self.rootObj.pluginConf['tmpfs_enable']:
+            if not os.listdir(self.rootObj.makeChrootPath()) or self.rootObj.cache_alterations:
+                self._unpack_root_cache()
 
     decorate(traceLog())
     def _root_cache_handle_mounts(self):
@@ -124,6 +144,10 @@ class RootCache(object):
 
     decorate(traceLog())
     def _rootCachePostInitHook(self):
+        self._rebuild_root_cache()
+
+    decorate(traceLog())
+    def _rebuild_root_cache(self):
         try:
             self._rootCacheLock(shared=0)
             # nuke any rpmdb tmp files
@@ -131,12 +155,15 @@ class RootCache(object):
 
             # truncate the sparse files in /var/log
             for logfile in ('/var/log/lastlog', '/var/log/faillog'):
-                f = open(self.rootObj.makeChrootPath(logfile), "w")
-                f.truncate(0)
-                f.close()
-            
-            # never rebuild cache unless it was a clean build.
-            if self.rootObj.chrootWasCleaned:
+                try:
+                    f = open(self.rootObj.makeChrootPath(logfile), "w")
+                    f.truncate(0)
+                    f.close()
+                except:
+                    pass
+
+            # never rebuild cache unless it was a clean build, or we are explicitly caching alterations
+            if self.rootObj.chrootWasCleaned or self.rootObj.cache_alterations:
                 mockbuild.util.do(["sync"], shell=False)
                 self._root_cache_handle_mounts()
                 self.rootObj.start("creating cache")
@@ -152,9 +179,18 @@ class RootCache(object):
                         os.remove(self.rootCacheFile)
                     raise
                 # now create the cache log file
-                l = open(os.path.join(self.rootSharedCachePath, "cache.log"), "w")
-                l.write(self.rootObj.yum_init_install_output)
-                l.close()
+                try:
+                    l = open(os.path.join(self.rootSharedCachePath, "cache.log"), "w")
+                    l.write(self.rootObj.yum_init_install_output)
+                    l.close()
+                except:
+                    pass
                 self.rootObj.finish("creating cache")
         finally:
             self._rootCacheUnlock()
+
+    decorate(traceLog())
+    def _rootCachePostShellHook(self):
+        if self.rootObj.pluginConf['tmpfs_enable'] and self.rootObj.cache_alterations:
+            self._rebuild_root_cache()
+

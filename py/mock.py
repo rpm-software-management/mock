@@ -144,6 +144,10 @@ def command_parse(config_opts):
                       dest="cleanup_after", default=None,
                       help="Dont clean chroot after building. If automatic"
                            " cleanup is enabled, use this to disable.", )
+    parser.add_option("--cache-alterations", action="store_true",
+                      dest="cache_alterations", default=False,
+                      help="Rebuild the root cache after making alterations to the chroot"
+                           " (i.e. --install). Only useful when using tmpfs plugin.")
     parser.add_option("--arch", action ="store", dest="arch",
                       default=None, help="Sets kernel personality().")
     parser.add_option("--target", action ="store", dest="rpmbuild_arch",
@@ -469,6 +473,8 @@ def set_config_opts_per_cmdline(config_opts, options, args):
     if mockbuild.util.is_in_dir(config_opts['resultdir'] % config_opts, rootdir): 
         config_opts['cleanup_on_success'] = False
         config_opts['cleanup_on_failure'] = False
+
+    config_opts['cache_alterations'] = options.cache_alterations
 
     config_opts['online'] = options.online
 

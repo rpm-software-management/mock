@@ -96,6 +96,7 @@ class Root(object):
         self.more_buildreqs = config['more_buildreqs']
         self.cache_topdir = config['cache_topdir']
         self.cachedir = os.path.join(self.cache_topdir, self.sharedRootName)
+        self.cache_alterations = config['cache_alterations']
         self.useradd = config['useradd']
         self.online = config['online']
         self.internal_dev_setup = config['internal_dev_setup']
@@ -934,7 +935,7 @@ class Root(object):
         if cmd[0] == "builddep":
             yumcmd[0] = self.yum_builddep_path
             cmdix = 1
-       	    if self.yum_builddep_opts:
+            if self.yum_builddep_opts:
                 for eachopt in self.yum_builddep_opts.split():
                     yumcmd.insert(1, '%s' % eachopt)
         yumcmd.extend(('--installroot', self.makeChrootPath()))

@@ -130,6 +130,9 @@ Clean chroot after building. Use with \-\-resultdir. Only active for '\-\-rebuil
 \fB\-\-no\-cleanup\-after\fR
 Don't clean chroot after building. If automatic cleanup is enabled, use this to disable.
 .TP
+\fB\-\-cache\-alterations\fR
+Rebuild the root cache after making alterations to the chroot (i.e. --install). Only useful when using tmpfs plugin.
+.TP
 \fB\-\-target=\fR\fIARCH\fP
 This argument is passed to rpmbuild to specify the target arch to build. It defaults to whatever is specified for --arch, or whatever is specified in the config file as config_opts['target_arch'].
 .TP
