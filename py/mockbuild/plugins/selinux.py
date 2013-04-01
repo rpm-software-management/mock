@@ -92,7 +92,7 @@ class SELinux(object):
         option = "--setopt=tsflags=nocontexts"
 
         if type(command) is list:
-            if command[0] == self.rootObj.yum_path:
+            if command[0].startswith(self.rootObj.yum_path):
                 command.append(option)
         elif type(command) is str:
             if command.startswith(self.rootObj.yum_path):
