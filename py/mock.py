@@ -712,7 +712,9 @@ def main(ret):
     # set logging verbosity
     if options.verbose == 0:
         log.handlers[0].setLevel(logging.WARNING)
-        logging.getLogger("mockbuild.Root.state").handlers[0].setLevel(logging.WARNING)
+        tmplog = logging.getLogger("mockbuild.Root.state")
+        if tmplog.handlers:
+            tmplog.handlers[0].setLevel(logging.WARNING)
     elif options.verbose == 1:
         log.handlers[0].setLevel(logging.INFO)
     elif options.verbose == 2:
