@@ -43,10 +43,6 @@ class Mount(object):
         rootObj.addHook("preshell", self._mountPreInitHook)
         rootObj.addHook("prechroot", self._mountPreInitHook)
         for device, dest_dir, vfstype, mount_opts in self.opts['dirs']:
-            if vfstype:
-                vfstype = "-t " + vfstype
-            else:
-                vfstype = ""
             rootObj.mounts.add(FileSystemMountPoint(rootObj.makeChrootPath(dest_dir),
                                                     filetype=vfstype,
                                                     device=device,
