@@ -287,7 +287,7 @@ def setup_default_config_opts(config_opts, unprivUid):
     #    after that, any plugins that must create dirs (yum_cache)
     #    any plugins without preinit hooks should be last.
     config_opts['plugins'] = ['tmpfs', 'root_cache', 'yum_cache', 'bind_mount', 'ccache', 'selinux', 
-                              'package_state']
+                              'package_state', 'chroot_scan']
     config_opts['plugin_dir'] = os.path.join(PKGPYTHONDIR, "plugins")
     config_opts['plugin_conf'] = {
             'ccache_enable': True,
@@ -330,6 +330,11 @@ def setup_default_config_opts(config_opts, unprivUid):
             'selinux_opts': {},
             'package_state_enable' : True,
             'package_state_opts' : {},
+            'chroot_scan_enable': False,
+            'chroot_scan_opts': { 'regexes' : [
+                "\\bcore(\\.\\d+)?$",
+                "\\.log$",
+                ]},
             }
 
     config_opts['environment'] = {
