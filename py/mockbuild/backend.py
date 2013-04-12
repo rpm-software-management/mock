@@ -225,8 +225,9 @@ class Root(object):
         self.tryLockBuildRoot()
         statestr = "scrub %s" % scrub_opts
         self.start(statestr)
-        try:
+        if os.path.exists(self.resultdir): 
             self._resetLogging()
+        try:
             self._callHooks('clean')
             for scrub in scrub_opts:
                 if scrub == 'all':
@@ -252,7 +253,8 @@ class Root(object):
                     mockbuild.util.rmtree(os.path.join(self.cachedir, 'yum_cache'), selinux=self.selinux)
         except IOError, e:
             getLog().warn("parts of chroot do not exist: %s" % e )
-            pass
+            raise
+            #pass
         finally:
             print "finishing: %s" % statestr
             self.finish(statestr)
