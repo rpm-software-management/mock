@@ -30,6 +30,14 @@ Requires: python-hashlib
 %description
 Mock takes an SRPM and builds it in a chroot
 
+%package scm
+Group: Development/Tools
+Summary: Mock SCM integration module
+Requires: mock = %{version}-%{release}, cvs, git, subversion, tar
+
+%description scm
+Mock SCM integration module
+
 %prep
 %setup -q
 
@@ -99,6 +107,7 @@ chmod 2775 /var/cache/mock
 
 # python stuff
 %{python_sitelib}/*
+%exclude %{python_sitelib}/mockbuild/scm.*
 
 # config files
 %dir  %{_sysconfdir}/%{name}
@@ -117,6 +126,10 @@ chmod 2775 /var/cache/mock
 %defattr(0775, root, mock, 02775)
 %dir /var/cache/mock
 %dir /var/lib/mock
+
+%files scm
+%defattr(-, root, root)
+%{python_sitelib}/mockbuild/scm.py*
  
 %changelog
 * Thu Mar 28 2013 Clark Williams <williams@redhat.com> - 1.1.30-1

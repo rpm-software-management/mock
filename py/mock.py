@@ -64,7 +64,6 @@ log = logging.getLogger()
 import mockbuild.exception
 from mockbuild.trace_decorator import traceLog, decorate
 import mockbuild.backend
-import mockbuild.scm
 import mockbuild.uid
 import mockbuild.util
 
@@ -484,6 +483,12 @@ def set_config_opts_per_cmdline(config_opts, options, args):
     config_opts['online'] = options.online
 
     if options.scm:
+        try:
+            from mockbuild import scm
+        except Exception as e:
+            raise mockbuild.exception.BadCmdline(
+                "Mock SCM module not installed: %s" % e)
+
         config_opts['scm'] = options.scm
         for option in options.scm_opts:
             try:
