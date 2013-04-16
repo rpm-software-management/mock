@@ -1,6 +1,6 @@
 TESTDIR=$(cd $(dirname $0); pwd; cd ..)
 TOPDIR=$(dirname $TESTDIR)
-MOCKSRPM=${TOPDIR}/mock-*.src.rpm
+MOCKSRPM=$(ls -t1 ${TOPDIR}/mock-*.src.rpm | head -1)
 
 VERBOSE=
 #VERBOSE=--verbose
