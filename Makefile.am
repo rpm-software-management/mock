@@ -88,7 +88,7 @@ install-exec-hook:
 	mv $(DESTDIR)/$(sbindir)/mockchain.py $(DESTDIR)/$(bindir)/mockchain
 
 install-data-hook:
-	perl -p -i -e 's|(=\s*)/etc/mock\b|$$1$(sysconfdir)/mock|' \
+	perl -p -i -e 's|(=\s*)/etc/mock\b|$$1$(mocketcdir)|' \
 		$(DESTDIR)$(bashcompdir)/mock.bash
 
 TOPDIR := $(shell cd $(top_builddir);pwd)
