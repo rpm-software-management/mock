@@ -8,6 +8,9 @@
 
 %{!?python_sitelib: %define python_sitelib %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib()")}
 
+# mock group id allocate for Fedora
+%global mockgid  135
+
 Summary: Builds packages inside chroots
 Name: mock
 Version: %{release_version}
@@ -75,11 +78,17 @@ ln -s fedora-rawhide-x86_64.cfg $RPM_BUILD_ROOT%{_sysconfdir}/mock/default.cfg
 rm -rf $RPM_BUILD_ROOT
 
 %pre
-if [ $1 -eq 1 ]; then
-    groupadd -r mock >/dev/null 2>&1 || :
-fi
+
+# check for existence of mock group, create it if not found
+getent groupname mock > /dev/null || groupadd -f -g %mockgid -r mock
+exit 0
 
 %post
+
+# fix cache permissions from old installs
+chmod 2775 /var/cache/mock
+
+# setup default configuration
 # TODO: use dist and version of install system, not build one
 if [ ! -e %{_sysconfdir}/%{name}/default.cfg ] ; then
     # in case of dangling symlink
@@ -93,8 +102,6 @@ if [ ! -e %{_sysconfdir}/%{name}/default.cfg ] ; then
         fi
     done
 fi
-# fix cache permissions from old installs
-chmod 2775 /var/cache/mock
 :
 
 %files -f %{name}.cfgs
@@ -132,6 +139,21 @@ chmod 2775 /var/cache/mock
 %{python_sitelib}/mockbuild/scm.py*
  
 %changelog
+* Fri Apr 12 2013 Clark Williams <williams@redhat.com> - 1.1.31-1
+- removed f16 configurations files
+- selinux plugin: modify to catch yum-builddep in callback [BZ# 923927]
+- fix logging assumption in main mock file [BZ# 912624]
+- initial cut at chroot_scan plugin [BZ# 441090]
+- updated specfile to use static mock gid 135
+- from Marko Myllynen <myllynen@redhat.com>:
+  - separate scm module into separate package [BZ# 798367]
+  - scm plugin: Handle filenames w/ spaces in SCM/git  [BZ# 915264]
+  - scm plugin: if tar supports --exlcude-vcs use it [BZ#  824848]
+- from Shad L. Lords <slords@lordsfam.net>:
+  - mounts plugin: removed redundant '-t' specified for vfstype [BZ# 910857]
+- from Justin Lewis Salmon <jsalmon@cern.ch>:
+  - root cache plugin: add the --cache-alternations option [BZ# 905363]
+
 * Thu Mar 28 2013 Clark Williams <williams@redhat.com> - 1.1.30-1
 - beef up the logic to remove RPM lock files inside the chroot
 - add backup-before-clean configuration options [BZ# 799639]
