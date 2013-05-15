@@ -18,6 +18,8 @@ import shutil
 import subprocess
 import time
 import errno
+import grp
+from glob import glob
 
 # our imports
 import mockbuild.exception
@@ -299,8 +301,8 @@ def selinuxEnabled():
 # The "Not-as-complicated" version
 #
 decorate(traceLog())
-def do(command, shell=False, chrootPath=None, cwd=None, timeout=0, raiseExc=True, 
-       returnOutput=0, uid=None, gid=None, personality=None, 
+def do(command, shell=False, chrootPath=None, cwd=None, timeout=0, raiseExc=True,
+       returnOutput=0, uid=None, gid=None, personality=None,
        printOutput=False, env=None, *args, **kargs):
 
     logger = kargs.get("logger", getLog())
@@ -403,7 +405,7 @@ def doshell(chrootPath=None, environ=None, uid=None, gid=None, cmd=None):
         cmdstr = '/bin/bash -c "%s"' % cmd
     else:
         cmdstr = "/bin/bash -i -l"
-    preexec = ChildPreExec(personality=None, chrootPath=chrootPath, cwd=None, 
+    preexec = ChildPreExec(personality=None, chrootPath=chrootPath, cwd=None,
                            uid=uid, gid=gid, env=environ, shell=True)
     log.debug("doshell: command: %s" % cmdstr)
     return subprocess.call(cmdstr, preexec_fn=preexec, env=environ, shell=True)
@@ -418,7 +420,7 @@ def run(cmd, isShell=True):
 def clean_env():
     env = {'TERM' : 'vt100',
            'SHELL' : '/bin/bash',
-           'HOME' : '/builddir', 
+           'HOME' : '/builddir',
            'HOSTNAME' : 'mock',
            'PATH' : '/usr/bin:/bin:/usr/sbin:/sbin',
            }
@@ -437,3 +439,261 @@ def find_non_nfs_dir():
         if not get_fs_type(d).startswith('nfs'):
             return d
     raise mockbuild.exception.Error('Cannot find non-NFS directory in: %s' % dirs)
+
+
+decorate(traceLog())
+def setup_default_config_opts(unprivUid, version, pkgpythondir):
+    "sets up default configuration."
+    config_opts = {}
+    config_opts['version'] = version
+    config_opts['basedir'] = '/var/lib/mock' # root name is automatically added to this
+    config_opts['resultdir'] = '%(basedir)s/%(root)s/result'
+    config_opts['cache_topdir'] = '/var/cache/mock'
+    config_opts['clean'] = True
+    config_opts['chroothome'] = '/builddir'
+    config_opts['log_config_file'] = 'logging.ini'
+    config_opts['rpmbuild_timeout'] = 0
+    config_opts['chrootuid'] = unprivUid
+    try:
+        config_opts['chrootgid'] = grp.getgrnam("mock")[2]
+    except KeyError:
+        #  'mock' group doesn't exist, must set in config file
+        pass
+    config_opts['build_log_fmt_name'] = "unadorned"
+    config_opts['root_log_fmt_name']  = "detailed"
+    config_opts['state_log_fmt_name'] = "state"
+    config_opts['online'] = True
+
+    config_opts['internal_dev_setup'] = True
+    config_opts['internal_setarch'] = True
+
+    # cleanup_on_* only take effect for separate --resultdir
+    # config_opts provides fine-grained control. cmdline only has big hammer
+    config_opts['cleanup_on_success'] = True
+    config_opts['cleanup_on_failure'] = True
+
+    config_opts['createrepo_on_rpms'] = False
+    config_opts['createrepo_command'] = '/usr/bin/createrepo -d -q -x *.src.rpm' # default command
+
+    config_opts['backup_on_clean'] = False
+    config_opts['backup_base_dir'] = os.path.join(config_opts['basedir'], "backup")
+
+    # (global) plugins and plugin configs.
+    # ordering constraings: tmpfs must be first.
+    #    root_cache next.
+    #    after that, any plugins that must create dirs (yum_cache)
+    #    any plugins without preinit hooks should be last.
+    config_opts['plugins'] = ['tmpfs', 'root_cache', 'yum_cache', 'bind_mount', 'ccache', 'selinux',
+                              'package_state', 'chroot_scan']
+    config_opts['plugin_dir'] = os.path.join(pkgpythondir, "plugins")
+    config_opts['plugin_conf'] = {
+            'ccache_enable': True,
+            'ccache_opts': {
+                'max_cache_size': "4G",
+                'compress': None,
+                'dir': "%(cache_topdir)s/%(root)s/ccache/"},
+            'yum_cache_enable': True,
+            'yum_cache_opts': {
+                'max_age_days': 30,
+                'max_metadata_age_days': 30,
+                'dir': "%(cache_topdir)s/%(root)s/yum_cache/",
+                'online': True,},
+            'root_cache_enable': True,
+            'root_cache_opts': {
+                'age_check' : True,
+                'max_age_days': 15,
+                'dir': "%(cache_topdir)s/%(root)s/root_cache/",
+                'compress_program': 'pigz',
+                'exclude_dirs': ["./proc", "./sys", "./dev", "./tmp/ccache", "./var/cache/yum" ],
+                'extension': '.gz'},
+            'bind_mount_enable': True,
+            'bind_mount_opts': {
+            	'dirs': [
+                # specify like this:
+                # ('/host/path', '/bind/mount/path/in/chroot/' ),
+                # ('/another/host/path', '/another/bind/mount/path/in/chroot/'),
+                ],
+                'create_dirs': False,},
+            'mount_enable': True,
+            'mount_opts': {'dirs': [
+                # specify like this:
+                # ("/dev/device", "/mount/path/in/chroot/", "vfstype", "mount_options"),
+                ]},
+            'tmpfs_enable': False,
+            'tmpfs_opts': {
+                'required_ram_mb': 900,
+                'max_fs_size': None},
+            'selinux_enable': True,
+            'selinux_opts': {},
+            'package_state_enable' : True,
+            'package_state_opts' : {},
+            'chroot_scan_enable': False,
+            'chroot_scan_opts': { 'regexes' : [
+                "\\bcore(\\.\\d+)?$",
+                "\\.log$",
+                ]},
+            }
+
+    config_opts['environment'] = {
+        'TERM': 'vt100',
+        'SHELL': '/bin/bash',
+        'HOME': '/builddir',
+        'HOSTNAME': 'mock',
+        'PATH': '/usr/bin:/bin:/usr/sbin:/sbin',
+        'PROMPT_COMMAND': 'echo -n "<mock-chroot>"',
+        'LANG': os.environ.setdefault('LANG', 'en_US.UTF-8'),
+        }
+
+    runtime_plugins = [runtime_plugin
+                       for (runtime_plugin, _)
+                       in [os.path.splitext(os.path.basename(tmp_path))
+                           for tmp_path
+                           in glob(config_opts['plugin_dir'] + "/*.py")]
+                       if runtime_plugin not in config_opts['plugins']]
+    for runtime_plugin in sorted(runtime_plugins):
+        config_opts['plugins'].append(runtime_plugin)
+        config_opts['plugin_conf'][runtime_plugin + "_enable"] = False
+        config_opts['plugin_conf'][runtime_plugin + "_opts"] = {}
+
+    # SCM defaults
+    config_opts['scm'] = False
+    config_opts['scm_opts'] = {
+            'method': 'git',
+            'cvs_get': 'cvs -d /srv/cvs co SCM_BRN SCM_PKG',
+            'git_get': 'git clone SCM_BRN git://localhost/SCM_PKG.git SCM_PKG',
+            'svn_get': 'svn co file:///srv/svn/SCM_PKG/SCM_BRN SCM_PKG',
+            'spec': 'SCM_PKG.spec',
+            'ext_src_dir': '/dev/null',
+            'write_tar': False,
+            'git_timestamps': False,
+            }
+
+    # dependent on guest OS
+    config_opts['useradd'] = \
+        '/usr/sbin/useradd -o -m -u %(uid)s -g %(gid)s -d %(home)s -n %(user)s'
+    config_opts['use_host_resolv'] = True
+    config_opts['chroot_setup_cmd'] = ('groupinstall', 'buildsys-build')
+    config_opts['target_arch'] = 'i386'
+    config_opts['rpmbuild_arch'] = None # <-- None means set automatically from target_arch
+    config_opts['yum.conf'] = ''
+    config_opts['yum_builddep_opts'] = ''
+    config_opts['yum_common_opts'] = []
+    config_opts['priorities.conf'] = '\n[main]\nenabled=0'
+    config_opts['rhnplugin.conf'] = '\n[main]\nenabled=0'
+    config_opts['more_buildreqs'] = {}
+    config_opts['files'] = {}
+    config_opts['macros'] = {
+        '%_topdir': '%s/build' % config_opts['chroothome'],
+        '%_rpmfilename': '%%{NAME}-%%{VERSION}-%%{RELEASE}.%%{ARCH}.rpm',
+        }
+    # security config
+    config_opts['no_root_shells'] = False
+
+    return config_opts
+
+decorate(traceLog())
+def set_config_opts_per_cmdline(config_opts, options, args):
+    "takes processed cmdline args and sets config options."
+    # do some other options and stuff
+    if options.arch:
+        config_opts['target_arch'] = options.arch
+    if options.rpmbuild_arch:
+        config_opts['rpmbuild_arch'] = options.rpmbuild_arch
+    elif config_opts['rpmbuild_arch'] is None:
+        config_opts['rpmbuild_arch'] = config_opts['target_arch']
+
+    if not options.clean:
+        config_opts['clean'] = options.clean
+
+    for option in options.rpmwith:
+        options.rpmmacros.append("_with_%s --with-%s" %
+                                 (option.replace("-", "_"), option))
+
+    for option in options.rpmwithout:
+        options.rpmmacros.append("_without_%s --without-%s" %
+                                 (option.replace("-", "_"), option))
+
+    for macro in options.rpmmacros:
+        try:
+            k, v = macro.split(" ", 1)
+            if not k.startswith('%'):
+                k = '%%%s' % k
+            config_opts['macros'].update({k: v})
+        except:
+            raise mockbuild.exception.BadCmdline(
+                "Bad option for '--define' (%s).  Use --define 'macro expr'"
+                % macro)
+
+    if options.resultdir:
+        config_opts['resultdir'] = os.path.expanduser(options.resultdir)
+    if options.uniqueext:
+        config_opts['unique-ext'] = options.uniqueext
+    if options.rpmbuild_timeout is not None:
+        config_opts['rpmbuild_timeout'] = options.rpmbuild_timeout
+
+    for i in options.disabled_plugins:
+        if i not in config_opts['plugins']:
+            raise mockbuild.exception.BadCmdline(
+                "Bad option for '--disable-plugin=%s'. Expecting one of: %s"
+                % (i, config_opts['plugins']))
+        config_opts['plugin_conf']['%s_enable' % i] = False
+    for i in options.enabled_plugins:
+        if i not in config_opts['plugins']:
+            raise mockbuild.exception.BadCmdline(
+                "Bad option for '--enable-plugin=%s'. Expecting one of: %s"
+                % (i, config_opts['plugins']))
+        config_opts['plugin_conf']['%s_enable' % i] = True
+    for option in options.plugin_opts:
+        try:
+            p, kv = option.split(":", 1)
+            k, v  = kv.split("=", 1)
+        except:
+            raise mockbuild.exception.BadCmdline(
+                "Bad option for '--plugin-option' (%s).  Use --plugin-option 'plugin:key=value'"
+                % option)
+        if p not in config_opts['plugins']:
+            raise mockbuild.exception.BadCmdline(
+                "Bad option for '--plugin-option' (%s).  No such plugin: %s"
+                % (option, p))
+        if v == "False": v = False
+        if v == "True": v = True
+        config_opts['plugin_conf'][p + "_opts"].update({k: v})
+
+
+    if options.mode in ("rebuild",) and len(args) > 1 and not options.resultdir:
+        raise mockbuild.exception.BadCmdline(
+            "Must specify --resultdir when building multiple RPMS.")
+
+    if options.cleanup_after == False:
+        config_opts['cleanup_on_success'] = False
+        config_opts['cleanup_on_failure'] = False
+
+    if options.cleanup_after == True:
+        config_opts['cleanup_on_success'] = True
+        config_opts['cleanup_on_failure'] = True
+    # can't cleanup unless resultdir is separate from the root dir
+    rootdir = os.path.join(config_opts['basedir'], config_opts['root'])
+    if mockbuild.util.is_in_dir(config_opts['resultdir'] % config_opts, rootdir):
+        config_opts['cleanup_on_success'] = False
+        config_opts['cleanup_on_failure'] = False
+
+    config_opts['cache_alterations'] = options.cache_alterations
+
+    config_opts['online'] = options.online
+
+    if options.scm:
+        try:
+            from mockbuild import scm
+        except Exception as e:
+            raise mockbuild.exception.BadCmdline(
+                "Mock SCM module not installed: %s" % e)
+
+        config_opts['scm'] = options.scm
+        for option in options.scm_opts:
+            try:
+                k, v = option.split("=", 1)
+                config_opts['scm_opts'].update({k: v})
+            except:
+                raise mockbuild.exception.BadCmdline(
+                "Bad option for '--scm-option' (%s).  Use --scm-option 'key=value'"
+                % option)
