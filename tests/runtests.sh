@@ -10,7 +10,7 @@
 
 # This test will only run on a machine with full access to internet.
 # might work with http_proxy= env var, but I havent tested that.
-# 
+#
 # This test script expects to be run on an x86_64 machine. It will *not* run
 # properly on an i386 machine.
 #
@@ -23,7 +23,6 @@ d=$(cd $(dirname $0); pwd)
 . $d/testenvironment
 . ${TESTDIR}/functions
 
-MOCKSRPM=${TOPDIR}/mock-*.src.rpm
 trap '$MOCKCMD --clean; exit 1' INT HUP QUIT TERM
 
 # clear out root cache so we get at least run without root cache present
