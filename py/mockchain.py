@@ -31,6 +31,16 @@ import shutil
 from urlgrabber import grabber
 import time
 
+import mockbuild.util
+
+# all of the variables below are substituted by the build system
+__VERSION__ = "unreleased_version"
+SYSCONFDIR = os.path.join(os.path.dirname(os.path.realpath(sys.argv[0])), "..", "etc")
+PYTHONDIR = os.path.dirname(os.path.realpath(sys.argv[0]))
+PKGPYTHONDIR = os.path.join(os.path.dirname(os.path.realpath(sys.argv[0])), "mockbuild")
+MOCKCONFDIR = os.path.join(SYSCONFDIR, "mock")
+# end build system subs
+
 mockconfig_path='/etc/mock'
 
 def createrepo(path):
@@ -47,7 +57,7 @@ def parse_args(args):
     parser = optparse.OptionParser('\nmockchain -r mockcfg pkg1 [pkg2] [pkg3]')
     parser.add_option('-r', '--root', default=None, dest='chroot',
             help="chroot config name/base to use in the mock build")
-    parser.add_option('-l', '--localrepo', default=None, 
+    parser.add_option('-l', '--localrepo', default=None,
             help="local path for the local repo, defaults to making its own")
     parser.add_option('-c', '--continue', default=False, action='store_true',
             dest='cont',
@@ -62,34 +72,34 @@ def parse_args(args):
     parser.add_option('--tmp_prefix', default=None, dest='tmp_prefix',
             help="tmp dir prefix - will default to username-pid if not specified")
 
-            
+
     #FIXME?
     # figure out how to pass other args to mock?
-    
+
     opts, args = parser.parse_args(args)
     if opts.recurse:
         opts.cont = True
-    
+
     if not opts.chroot:
         print "You must provide an argument to -r for the mock chroot"
         sys.exit(1)
-        
-        
+
+
     if len(sys.argv) < 3:
         print "You must specifiy at least 1 package to build"
         sys.exit(1)
 
 
     return opts, args
-    
+
 def add_local_repo(infile, destfile, baseurl, repoid=None):
     """take a mock chroot config and add a repo to it's yum.conf
        infile = mock chroot config file
        destfile = where to save out the result
        baseurl = baseurl of repo you wish to add"""
-        
+    global config_opts
+
     try:
-        config_opts = {}
         execfile(infile)
         if not repoid:
             repoid=baseurl.split('//')[1].replace('/','_')
@@ -119,7 +129,7 @@ def do_build(opts, cfg, pkg):
     # returns 0, cmd, out, err = failure
     # returns 1, cmd, out, err  = success
     # returns 2, None, None, None = already built
-    
+
     s_pkg = os.path.basename(pkg)
     pdn = s_pkg.replace('.src.rpm', '')
     resdir = '%s/%s' % (opts.local_repo_dir, pdn)
@@ -129,15 +139,15 @@ def do_build(opts, cfg, pkg):
 
     success_file = resdir + '/success'
     fail_file = resdir + '/fail'
-    
+
     if os.path.exists(success_file):
         return 2, None, None, None
-    
+
     # clean it up if we're starting over :)
     if os.path.exists(fail_file):
         os.unlink(fail_file)
-        
-    mockcmd = ['/usr/bin/mock', 
+
+    mockcmd = ['/usr/bin/mock',
                '--configdir', opts.config_path,
                '--resultdir', resdir,
                '--uniqueext', opts.uniqueext,
@@ -145,7 +155,7 @@ def do_build(opts, cfg, pkg):
     print 'building %s' % s_pkg
     mockcmd.append(pkg)
     cmd = subprocess.Popen(mockcmd,
-           stdout=subprocess.PIPE, 
+           stdout=subprocess.PIPE,
            stderr=subprocess.PIPE )
     out, err = cmd.communicate()
     if cmd.returncode == 0:
@@ -154,7 +164,7 @@ def do_build(opts, cfg, pkg):
     else:
         open(fail_file, 'w').write('undone\n')
         ret = 0
-    
+
     return ret, cmd, out, err
 
 
@@ -166,17 +176,21 @@ def log(lf, msg):
         except (IOError, OSError), e:
             print 'Could not write to logfile %s - %s' % (lf, str(e))
     print msg
-    
-    
-    
+
+
+config_opts = {}
+
 def main(args):
+
+    mockbuild.util.setup_default_config_opts(os.getgid(), __VERSION__, PKGPYTHONDIR)
+
     opts, args = parse_args(args)
 
     # take mock config + list of pkgs
     cfg=opts.chroot
     pkgs=args[1:]
     mockcfg = mockconfig_path + '/' + cfg + '.cfg'
-    
+
     if not os.path.exists(mockcfg):
         print "could not find config: %s" % mockcfg
         sys.exit(1)
@@ -207,24 +221,24 @@ def main(args):
         opts.logfile = os.path.join(local_tmp_dir, opts.logfile)
         if os.path.exists(opts.logfile):
             os.unlink(opts.logfile)
-            
+
     log(opts.logfile, "starting logfile: %s" % opts.logfile)
     opts.local_repo_dir = os.path.normpath(local_tmp_dir + '/results/' + cfg + '/')
 
     if not os.path.exists(opts.local_repo_dir):
         os.makedirs(opts.local_repo_dir, mode=0755)
-    
+
     local_baseurl="file://%s" % opts.local_repo_dir
     log(opts.logfile, "results dir: %s" % opts.local_repo_dir)
     opts.config_path = os.path.normpath(local_tmp_dir + '/configs/' + cfg + '/')
-    
+
     if not os.path.exists(opts.config_path):
         os.makedirs(opts.config_path, mode=0755)
 
     log(opts.logfile, "config dir: %s" % opts.config_path)
 
     my_mock_config = opts.config_path + '/' + os.path.basename(mockcfg)
-    
+
     # modify with localrepo
     res, msg = add_local_repo(mockcfg, my_mock_config, local_baseurl, 'local_build_repo')
     if not res:
@@ -237,13 +251,13 @@ def main(args):
             log(opts.logfile, "Error: Could not add: %s to yum config in mock chroot: %s" % (baseurl, msg))
             sys.exit(1)
 
-        
+
     # these files needed from the mock.config dir to make mock run
     for fn in ['site-defaults.cfg', 'logging.ini']:
         pth = mockconfig_path + '/' + fn
         shutil.copyfile(pth, opts.config_path + '/' + fn)
 
-   
+
     # createrepo on it
     out, err = createrepo(opts.local_repo_dir)
     if err.strip():
@@ -251,7 +265,7 @@ def main(args):
         log(opts.logfile, "Err: %s" % err)
         sys.exit(1)
 
- 
+
     download_dir = tempfile.mkdtemp()
     downloaded_pkgs = {}
     built_pkgs = []
@@ -264,7 +278,7 @@ def main(args):
                 log(opts.logfile, "%s doesn't appear to be an rpm - skipping" % pkg)
                 failed.append(pkg)
                 continue
-            
+
             elif pkg.startswith('http://') or pkg.startswith('https://'):
                 url = pkg
                 cwd = os.getcwd()
@@ -284,7 +298,7 @@ def main(args):
                     downloaded_pkgs[pkg] = url
             log(opts.logfile, "Start build: %s" % pkg)
             ret, cmd, out, err = do_build(opts, cfg, pkg)
-            log(opts.logfile, "End build: %s" % pkg) 
+            log(opts.logfile, "End build: %s" % pkg)
             if ret == 0:
                 if opts.recurse:
                     failed.append(pkg)
@@ -294,7 +308,7 @@ def main(args):
                     log(opts.logfile,"See logs/results in %s" % opts.local_repo_dir)
                     if not opts.cont:
                         sys.exit(1)
-                    
+
             elif ret == 1:
                 log(opts.logfile, "Success building %s" % os.path.basename(pkg))
                 built_pkgs.append(pkg)
@@ -305,7 +319,7 @@ def main(args):
                     log(opts.logfile, "Err: %s" % err)
             elif ret == 2:
                 log(opts.logfile, "Skipping already built pkg %s" % os.path.basename(pkg))
-        
+
         if failed:
             if len(failed) != len(to_be_built):
                 to_be_built = failed
@@ -322,10 +336,10 @@ def main(args):
                 try_again = False
         else:
             try_again = False
-            
+
     # cleaning up our download dir
     shutil.rmtree(download_dir, ignore_errors=True)
-    
+
     log(opts.logfile, "Results out to: %s" % opts.local_repo_dir)
     log(opts.logfile, "Pkgs built: %s" % len(built_pkgs))
     log(opts.logfile, "Packages successfully built in this order:")

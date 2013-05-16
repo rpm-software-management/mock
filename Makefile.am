@@ -72,7 +72,7 @@ ChangeLog:
 AUTHORS:
 	(GIT_DIR=.git git log | grep ^Author | sort |uniq > .authors.tmp && mv .authors.tmp AUTHORS; rm -f .authors.tmp) || (touch AUTHORS; echo 'git directory not found: installing possibly empty AUTHORS.' >&2)
 
-REPLACE_VARS_ON_INSTALL=$(sbindir)/mock.py
+REPLACE_VARS_ON_INSTALL=$(sbindir)/mock.py $(sbindir)/mockchain.py
 install-exec-hook:
 	for i in $(REPLACE_VARS_ON_INSTALL); do      \
 		file=$(DESTDIR)/$$i			;\
