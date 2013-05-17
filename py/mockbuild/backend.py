@@ -158,7 +158,7 @@ class Root(object):
             raise mockbuild.exception.StateError, "start called with None State"
         self._state.append(state)
         self._state_log.info("Start: %s" % state)
-        
+
     def finish(self, state):
         if len(self._state) == 0:
             raise mockbuild.exception.StateError, "finish called on empty state list"
@@ -225,7 +225,7 @@ class Root(object):
         self.tryLockBuildRoot()
         statestr = "scrub %s" % scrub_opts
         self.start(statestr)
-        if os.path.exists(self.resultdir): 
+        if os.path.exists(self.resultdir):
             self._resetLogging()
         try:
             self._callHooks('clean')
@@ -508,7 +508,6 @@ class Root(object):
                      'var/lib/yum',
                      'var/lib/dbus',
                      'var/log',
-                     'var/lock/rpm',
                      'var/cache/yum',
                      'etc/rpm',
                      'tmp',
@@ -553,7 +552,7 @@ class Root(object):
     def doNonChroot(self, command, shell=True, returnOutput=False, printOutput=False, raiseExc=True, *args, **kargs):
         '''run a command *without* chrooting'''
         self._nuke_rpm_db()
-        return mockbuild.util.do(command, env=self.env, raiseExc=raiseExc, 
+        return mockbuild.util.do(command, env=self.env, raiseExc=raiseExc,
                                  returnOutput=returnOutput, shell=shell,
                                  printOutput=printOutput, *args, **kargs)
 
@@ -759,7 +758,7 @@ class Root(object):
 
         try:
             self.start("shell")
-            ret = mockbuild.util.doshell(chrootPath=self.makeChrootPath(), 
+            ret = mockbuild.util.doshell(chrootPath=self.makeChrootPath(),
                                          environ=self.env,
                                          uid=uid, gid=gid,
                                          cmd=cmd)
@@ -1058,4 +1057,3 @@ class Root(object):
         dest = self.makeChrootPath(self.builddir, 'originals')
         shutil.copy2(srpm, dest)
         return os.path.join(self.builddir, 'originals', srpmFilename)
-
