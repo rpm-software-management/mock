@@ -182,7 +182,9 @@ config_opts = {}
 
 def main(args):
 
-    mockbuild.util.setup_default_config_opts(os.getgid(), __VERSION__, PKGPYTHONDIR)
+    global config_opts
+
+    config_opts = mockbuild.util.setup_default_config_opts(os.getgid(), __VERSION__, PKGPYTHONDIR)
 
     opts, args = parse_args(args)
 
