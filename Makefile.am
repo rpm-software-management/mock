@@ -61,9 +61,15 @@ mockbuild_PYTHON = \
     py/mockbuild/trace_decorator.py \
     py/mockbuild/uid.py             \
     py/mockbuild/scm.py             \
-    py/mockbuild/mounts.py
+    py/mockbuild/mounts.py          
 
-CLEANFILES += py/*.pyc py/mockbuild/*.pyc py/mockbuild/plugins/*.pyc
+buildorderdir = $(pythondir)/mockbuild/buildorder
+buildorder_PYTHON = \
+    py/mockbuild/buildorder/buildorder.py  \
+    py/mockbuild/buildorder/rad_util.py    \
+    py/mockbuild/buildorder/topsort.py
+
+CLEANFILES += py/*.pyc py/mockbuild/*.pyc py/mockbuild/plugins/*.pyc py/mockbuild/buildorder/*.pyc
 
 dist: ChangeLog AUTHORS
 ChangeLog:

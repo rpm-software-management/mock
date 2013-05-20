@@ -1,0 +1,4 @@
+buildorder.py:
+
+  - sort srpms into build order of the set of srpms
+  usage: ./buildorder.py srpm1 srpm2 srpm3
