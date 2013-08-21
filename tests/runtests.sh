@@ -15,8 +15,8 @@
 # properly on an i386 machine.
 #
 
-VERBOSE=
-#VERBOSE=--verbose
+#VERBOSE=
+VERBOSE=--verbose
 export VERBOSE
 
 d=$(cd $(dirname $0); pwd)

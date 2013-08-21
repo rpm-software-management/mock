@@ -2,13 +2,13 @@ TESTDIR=$(cd $(dirname $0); pwd; cd ..)
 TOPDIR=$(dirname $TESTDIR)
 MOCKSRPM=$(ls -t1 ${TOPDIR}/mock-*.src.rpm | head -1)
 
-VERBOSE=
-#VERBOSE=--verbose
+#VERBOSE=
+VERBOSE=--verbose
 
 #
 # most tests below will use this mock command line
 #
-testConfig=fedora-19-i386
+testConfig=fedora-18-i386
 uniqueext="$$-$RANDOM"
 outdir=${TOPDIR}/mock-unit-test
 cfgdir=${TOPDIR}/etc/mock
