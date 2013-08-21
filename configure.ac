@@ -4,12 +4,12 @@
 
 ####################################
 # change version here. --> BOTH PLACES PLEASE!
-AC_INIT([mock],[1.1.32])
+AC_INIT([mock],[1.1.33])
 
 temp_RELEASE_NAME=mock
 temp_RELEASE_MAJOR=1
 temp_RELEASE_MINOR=1
-temp_RELEASE_SUBLEVEL=32
+temp_RELEASE_SUBLEVEL=33
 temp_RELEASE_EXTRALEVEL=
 ####################################
 
@@ -66,4 +66,3 @@ AC_SUBST([RELEASE_RPM_EXTRALEVEL])
 #AC_CONFIG_FILES([ Makefile ${PACKAGE_NAME}.spec ])
 AC_CONFIG_FILES([ Makefile mock.spec ])
 AC_OUTPUT
-

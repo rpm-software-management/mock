@@ -137,8 +137,14 @@ fi
 %files scm
 %defattr(-, root, root)
 %{python_sitelib}/mockbuild/scm.py*
- 
+
 %changelog
+* Wed Aug 21 2013 Clark Williams <williams@redhat.com> - 1.1.33-1
+- removed f17 configs
+- added f20 configs
+- fixed mockchain to use mock config default setup [BZ# 962573]
+- remove bogus lockfile dir in _setupDirs() [BZ# 894305]
+
 * Thu Apr 18 2013 Clark Williams <williams@redhat.com> - 1.1.32-1
 - fixed post scriptlet to use correct keyword to getent
 
@@ -276,7 +282,7 @@ fi
 - from Ville Skyttä <ville.skytta@iki.fi>:
   - bash completion fixes
 
-* Wed Oct 21 2011 Clark Williams <williams@redhat.com> - 1.1.16-1
+* Fri Oct 21 2011 Clark Williams <williams@redhat.com> - 1.1.16-1
 - modified bind_mount and tmpfs plugins to use hooks for shell and chroot
 - refactored --shell and --chroot commands [BZ# 619533,728004,745550]
 - added input validation for --buildsrpm [BZ# 743173]
@@ -287,7 +293,7 @@ fi
   - Set HOME properly when doing SCM checkouts [BZ# 745394]
   - Support for setting timestamps for Git checkouts [BZ# 745396]
 - From Yury V. Zaytsev <yury@shurup.com>:
-  - fix incorrect-fsf-address rpmlint warning [BZ#741068] 
+  - fix incorrect-fsf-address rpmlint warning [BZ#741068]
 - From Jan Vcelak <jvcelak@redhat.com>:
   - resolve SELinux filesystem mountpoint [BZ# 734781]
 
@@ -368,7 +374,7 @@ fi
   - Make "dist" for rawhide configs be "rawhide" (BZ# 506157)
   - Revert "turn off updates-released repository for fedora-14 configs"
 - From Mike McLean <mikem@redhat.com>
-  - fix typo in el4/5 /dev/tty creation (fh ticket #13, mwhiteley) 
+  - fix typo in el4/5 /dev/tty creation (fh ticket #13, mwhiteley)
 - From Dennis Gilmore <dennis@ausil.us>
   - Revert "disable the updates repos for F-15  they dont yet exist"
   - sparc64 boxes can build 32 bit sparc stuff
@@ -485,7 +491,7 @@ fi
   - added Fedora 13 configs
 
 * Wed Feb 10 2010 Clark Williams <williams@redhat.com>- 1.0.4-1
-- added patch from Seth Vidal <skvidal@fedoraproject.org> to 
+- added patch from Seth Vidal <skvidal@fedoraproject.org> to
   automatically run createrepo on generated rpms
 
 * Mon Jan 18 2010 Clark Williams <williams@redhat.com>- 1.0.3-1
@@ -712,7 +718,7 @@ fi
 - BZ# 326561 -- update manpage
 - BZ# 235141 -- error with immutable bit
 
-* Fri Oct 20 2007 Michael Brown <mebrown@michaels-house.net> - 0.8.0-1
+* Sat Oct 20 2007 Michael Brown <mebrown@michaels-house.net> - 0.8.0-1
 - huge number of changes upstream
 - convert to setuid wrapper instead of old setuid helper
 - lots of bugfixes and improvements
