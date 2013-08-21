@@ -145,6 +145,9 @@ fi
 - fixed mockchain to use mock config default setup [BZ# 962573]
 - remove bogus lockfile dir in _setupDirs() [BZ# 894305]
 
+* Sat Aug 03 2013 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1.1.32-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_20_Mass_Rebuild
+
 * Thu Apr 18 2013 Clark Williams <williams@redhat.com> - 1.1.32-1
 - fixed post scriptlet to use correct keyword to getent
 
