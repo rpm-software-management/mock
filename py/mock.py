@@ -407,6 +407,10 @@ def main(ret):
 
     (options, args) = command_parse(config_opts)
 
+    # allow a different mock group to be specified
+    if config_opts['chrootgid'] != mockgid:
+        os.setgroups((mockgid, config_opts['chrootgid']))
+
     if options.printrootpath:
         options.verbose = 0
 
