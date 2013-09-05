@@ -39,10 +39,11 @@ class PackageState(object):
         self.online = rootObj.online
         rootObj.addHook("postyum", self._availablePostYumHook)
         rootObj.addHook("prebuild", self._installedPreBuildHook)
-        
+
     decorate(traceLog())
     def _availablePostYumHook(self):
         if self.online and not self.avail_done:
+            self.rootObj.uidManager.dropPrivsTemp()
             self.rootObj.start("Outputting list of available packages")
             out_file = self.rootObj.resultdir + '/available_pkgs'
             cmd = "/usr/bin/repoquery -c %s/etc/yum.conf %s > %s" % (
@@ -50,6 +51,7 @@ class PackageState(object):
             mockbuild.util.do(cmd, shell=True)
             self.avail_done = True
             self.rootObj.finish("Outputting list of available packages")
+            self.rootObj.uidManager.restorePrivs()
 
     decorate(traceLog())
     def _installedPreBuildHook(self):
@@ -66,9 +68,3 @@ class PackageState(object):
             self.inst_done = True
             os.unlink(fn)
             self.rootObj.finish("Outputting list of installed packages")
-    
-
-
-    
-
-
