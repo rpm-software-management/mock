@@ -88,20 +88,9 @@ exit 0
 # fix cache permissions from old installs
 chmod 2775 /var/cache/mock
 
-# setup default configuration
-# TODO: use dist and version of install system, not build one
-if [ ! -e %{_sysconfdir}/%{name}/default.cfg ] ; then
-    # in case of dangling symlink
-    rm -f %{_sysconfdir}/%{name}/default.cfg
-    arch=$(uname -i)
-    for ver in %{?fedora}%{?rhel} rawhide ; do
-        cfg=%{?fedora:fedora}%{?rhel:epel}-$ver-$arch.cfg
-        if [ -e %{_sysconfdir}/%{name}/$cfg ] ; then
-            ln -s -f $cfg %{_sysconfdir}/%{name}/default.cfg
-            exit 0
-        fi
-    done
-fi
+rm -f %{_sysconfdir}/%{name}/default.cfg
+cfg=%{?fedora:fedora}%{?rhel:epel}-$ver-$(uname -i).cfg
+ln -s -f $cfg %{_sysconfdir}/%{name}/default.cfg
 :
 
 %files -f %{name}.cfgs
