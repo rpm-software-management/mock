@@ -162,6 +162,10 @@ def cmpKernelVer(str1, str2):
         return rpmUtils.miscutils.compareEVR(('', str1, ''), ('', str2, ''))
 
 decorate(traceLog())
+def hostIsEL5():
+    return (cmpKernelVer(os.uname()[2], "2.6.19") < 0)
+
+decorate(traceLog())
 def getAddtlReqs(hdr, conf):
     # Add the 'more_buildreqs' for this SRPM (if defined in config file)
     (name, epoch, ver, rel, arch) = getNEVRA(hdr)

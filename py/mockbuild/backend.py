@@ -228,33 +228,34 @@ class Root(object):
         if os.path.exists(self.resultdir):
             self._resetLogging()
         try:
-            self._callHooks('clean')
-            for scrub in scrub_opts:
-                if scrub == 'all':
-                    self.root_log.info("scrubbing everything for %s" % self.config_name)
-                    self._unlock_and_rm_chroot()
-                    self.chrootWasCleaned = True
-                    mockbuild.util.rmtree(self.cachedir, selinux=self.selinux)
-                elif scrub == 'chroot':
-                    self.root_log.info("scrubbing chroot for %s" % self.config_name)
-                    self._unlock_and_rm_chroot()
-                    self.chrootWasCleaned = True
-                elif scrub == 'cache':
-                    self.root_log.info("scrubbing cache for %s" % self.config_name)
-                    mockbuild.util.rmtree(self.cachedir, selinux=self.selinux)
-                elif scrub == 'c-cache':
-                    self.root_log.info("scrubbing c-cache for %s" % self.config_name)
-                    mockbuild.util.rmtree(os.path.join(self.cachedir, 'ccache'), selinux=self.selinux)
-                elif scrub == 'root-cache':
-                    self.root_log.info("scrubbing root-cache for %s" % self.config_name)
-                    mockbuild.util.rmtree(os.path.join(self.cachedir, 'root_cache'), selinux=self.selinux)
-                elif scrub == 'yum-cache':
-                    self.root_log.info("scrubbing yum-cache for %s" % self.config_name)
-                    mockbuild.util.rmtree(os.path.join(self.cachedir, 'yum_cache'), selinux=self.selinux)
-        except IOError, e:
-            getLog().warn("parts of chroot do not exist: %s" % e )
-            raise
-            #pass
+            try:
+                self._callHooks('clean')
+                for scrub in scrub_opts:
+                    if scrub == 'all':
+                        self.root_log.info("scrubbing everything for %s" % self.config_name)
+                        self._unlock_and_rm_chroot()
+                        self.chrootWasCleaned = True
+                        mockbuild.util.rmtree(self.cachedir, selinux=self.selinux)
+                    elif scrub == 'chroot':
+                        self.root_log.info("scrubbing chroot for %s" % self.config_name)
+                        self._unlock_and_rm_chroot()
+                        self.chrootWasCleaned = True
+                    elif scrub == 'cache':
+                        self.root_log.info("scrubbing cache for %s" % self.config_name)
+                        mockbuild.util.rmtree(self.cachedir, selinux=self.selinux)
+                    elif scrub == 'c-cache':
+                        self.root_log.info("scrubbing c-cache for %s" % self.config_name)
+                        mockbuild.util.rmtree(os.path.join(self.cachedir, 'ccache'), selinux=self.selinux)
+                    elif scrub == 'root-cache':
+                        self.root_log.info("scrubbing root-cache for %s" % self.config_name)
+                        mockbuild.util.rmtree(os.path.join(self.cachedir, 'root_cache'), selinux=self.selinux)
+                    elif scrub == 'yum-cache':
+                        self.root_log.info("scrubbing yum-cache for %s" % self.config_name)
+                        mockbuild.util.rmtree(os.path.join(self.cachedir, 'yum_cache'), selinux=self.selinux)
+            except IOError, e:
+                getLog().warn("parts of chroot do not exist: %s" % e )
+                if mockbuild.util.hostIsEL5(): pass
+                raise
         finally:
             print "finishing: %s" % statestr
             self.finish(statestr)
@@ -493,7 +494,7 @@ class Root(object):
 
             os.umask(prevMask)
 
-            if mockbuild.util.cmpKernelVer(kver, '2.6.29') >= 0:
+            if mockbuild.util.cmpKernelVer(kver, '2.6.18') >= 0:
                 os.unlink(self.makeChrootPath('/dev/ptmx'))
             os.symlink("pts/ptmx", self.makeChrootPath('/dev/ptmx'))
         finally:
@@ -536,14 +537,19 @@ class Root(object):
         """remove rpm DB lock files from the chroot"""
         for tmp in glob.glob(self.makeChrootPath('var/lib/rpm/__db*')):
             self.root_log.debug("_nuke_rpm_db: removing %s" % tmp)
-            os.unlink(tmp)
+            try:
+                os.unlink(tmp)
+            except OSError,e:
+                getLog().error("%s" % e )
+                raise
 
     # bad hack
     # comment out decorator here so we dont get double exceptions in the root log
     #decorate(traceLog())
     def doChroot(self, command, shell=True, returnOutput=False, printOutput=False, raiseExc=True, *args, **kargs):
         """execute given command in root"""
-        self._nuke_rpm_db()
+        if not mockbuild.util.hostIsEL5():
+            self._nuke_rpm_db()
         return mockbuild.util.do(command, chrootPath=self.makeChrootPath(),
                                  env=self.env, raiseExc=raiseExc,
                                  returnOutput=returnOutput, shell=shell,
@@ -751,7 +757,7 @@ class Root(object):
             self._setupFiles()
             log.debug("shell: mounting all filesystems")
             self._mountall()
-        except Exception as e:
+        except Exception, e:
             log.error(e)
             self.unlockBuildRoot()
             return mockbuild.exception.RootError(e).resultcode
