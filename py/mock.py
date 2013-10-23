@@ -400,16 +400,12 @@ def main(ret):
     uidManager = mockbuild.uid.uidManager(unprivUid, unprivGid)
     # go unpriv only when root to make --help etc work for non-mock users
     if os.geteuid() == 0:
-        uidManager._becomeUser(unprivUid, unprivGid)
+        uidManager.dropPrivsTemp()
 
     # defaults
     config_opts = mockbuild.util.setup_default_config_opts(unprivUid, __VERSION__, PKGPYTHONDIR)
 
     (options, args) = command_parse(config_opts)
-
-    # allow a different mock group to be specified
-    if config_opts['chrootgid'] != mockgid:
-        os.setgroups((mockgid, config_opts['chrootgid']))
 
     if options.printrootpath:
         options.verbose = 0
@@ -432,16 +428,20 @@ def main(ret):
             if options.chroot == "default": log.error("  Did you forget to specify the chroot to use with '-r'?")
             sys.exit(1)
 
-    # verify that our unprivileged uid is in the mock group
-    groupcheck(unprivGid, config_opts['chrootgid'])
-
     # Read user specific config file
     cfg = os.path.join(os.path.expanduser('~' + pwd.getpwuid(os.getuid())[0]), '.mock/user.cfg')
     if os.path.exists(cfg):
         config_opts['config_paths'].append(cfg)
-        uidManager.dropPrivsTemp()
         execfile(cfg)
+
+    # allow a different mock group to be specified
+    if config_opts['chrootgid'] != mockgid:
         uidManager.restorePrivs()
+        os.setgroups((mockgid, config_opts['chrootgid']))
+        uidManager.dropPrivsTemp()
+
+    # verify that our unprivileged uid is in the mock group
+    groupcheck(unprivGid, config_opts['chrootgid'])
 
     # configure logging
     config_opts['chroot_name'] = options.chroot
