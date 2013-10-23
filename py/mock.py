@@ -147,6 +147,8 @@ def command_parse(config_opts):
                       dest="cache_alterations", default=False,
                       help="Rebuild the root cache after making alterations to the chroot"
                            " (i.e. --install). Only useful when using tmpfs plugin.")
+    parser.add_option("--nocheck", action ="store_false", dest="check",
+                      default=True, help="pass --nocheck to rpmbuild to skip 'make check' tests")
     parser.add_option("--arch", action ="store", dest="arch",
                       default=None, help="Sets kernel personality().")
     parser.add_option("--target", action ="store", dest="rpmbuild_arch",
@@ -274,7 +276,7 @@ def do_rebuild(config_opts, chroot, srpms):
                     and not config_opts['scm']:
                 chroot.clean()
             chroot.init()
-            chroot.build(srpm, timeout=config_opts['rpmbuild_timeout'])
+            chroot.build(srpm, timeout=config_opts['rpmbuild_timeout'], check=config_opts['check'])
             elapsed = time.time() - start
             log.info("Done(%s) Config(%s) %d minutes %d seconds"
                 % (srpm, config_opts['chroot_name'], elapsed//60, elapsed%60))

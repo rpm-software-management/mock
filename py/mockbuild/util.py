@@ -454,6 +454,7 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
     config_opts['resultdir'] = '%(basedir)s/%(root)s/result'
     config_opts['cache_topdir'] = '/var/cache/mock'
     config_opts['clean'] = True
+    config_opts['check'] = True
     config_opts['chroothome'] = '/builddir'
     config_opts['log_config_file'] = 'logging.ini'
     config_opts['rpmbuild_timeout'] = 0
@@ -608,6 +609,9 @@ def set_config_opts_per_cmdline(config_opts, options, args):
 
     if not options.clean:
         config_opts['clean'] = options.clean
+
+    if not options.check:
+        config_opts['check'] = options.check
 
     for option in options.rpmwith:
         options.rpmmacros.append("_with_%s --with-%s" %

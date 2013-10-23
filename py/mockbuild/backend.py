@@ -643,7 +643,7 @@ class Root(object):
     #       -> except hooks. :)
     #
     decorate(traceLog())
-    def build(self, srpm, timeout):
+    def build(self, srpm, timeout, check=True):
         """build an srpm into binary rpms, capture log"""
 
         # tell caching we are building
@@ -709,10 +709,14 @@ class Root(object):
             # tell caching we are building
             self._callHooks('prebuild')
 
+            check_opt = ''
+            if not check:
+                check_opt = '--nocheck'
+
             # --nodeps because rpm in the root may not be able to read rpmdb
             # created by rpm that created it (outside of chroot)
             self.doChroot(
-                ["bash", "--login", "-c", 'rpmbuild -bb --target %s --nodeps %s' % (self.rpmbuild_arch, chrootspec)],
+                ["bash", "--login", "-c", 'rpmbuild -bb --target %s --nodeps %s %s' % (self.rpmbuild_arch, check_opt, chrootspec)],
                 shell=False,
                 logger=self.build_log, timeout=timeout,
                 uid=self.chrootuid,
