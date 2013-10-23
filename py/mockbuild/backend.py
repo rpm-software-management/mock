@@ -603,7 +603,7 @@ class Root(object):
             def _yum_and_check(cmd):
                 output = self._yum(cmd, returnOutput=1)
                 for line in output.split('\n'):
-                    if line.lower().find('No Package found for'.lower()) != -1:
+                    if line.lower().find('No Package found for'.lower()) != -1 or line.lower().find('Missing Dependency'.lower()) != -1:
                         raise mockbuild.exception.BuildError, "Bad build req: %s. Exiting." % line
 
             # first, install pre-existing deps and configured additional ones
