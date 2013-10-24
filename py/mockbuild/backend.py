@@ -535,13 +535,24 @@ class Root(object):
     decorate(traceLog())
     def _nuke_rpm_db(self):
         """remove rpm DB lock files from the chroot"""
-        for tmp in glob.glob(self.makeChrootPath('var/lib/rpm/__db*')):
-            self.root_log.debug("_nuke_rpm_db: removing %s" % tmp)
-            try:
-                os.unlink(tmp)
-            except OSError,e:
-                getLog().error("%s" % e )
-                raise
+
+        dbfiles = glob.glob(self.makeChrootPath('var/lib/rpm/__db*'))
+        if not dbfiles:
+            return
+        self.root_log.debug("removing %d rpm db files" % len(dbfiles))
+        # become root
+        self.uidManager.becomeUser(0, 0)
+        try:
+            for tmp in dbfiles:
+                self.root_log.debug("_nuke_rpm_db: removing %s" % tmp)
+                try:
+                    os.unlink(tmp)
+                except OSError,e:
+                    getLog().error("%s" % e )
+                    raise
+        finally:
+            #restore previous privs
+            self.uidManager.restorePrivs()
 
     # bad hack
     # comment out decorator here so we dont get double exceptions in the root log
