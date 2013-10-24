@@ -53,6 +53,8 @@ class Root(object):
         self.homedir = config['chroothome']
         self.builddir = os.path.join(self.homedir, 'build')
 
+        self.clean_the_chroot = config['clean']
+
         # Environment
         self.env = config['environment']
 
@@ -170,6 +172,9 @@ class Root(object):
     def alldone(self):
         if len(self._state) != 0:
             raise mockbuild.exception.StateError, "alldone called with pending states: %s" % ",".join(self._state)
+        # if the chroot wasn't cleaned try to clean up orphan processes
+        if not self.clean_the_chroot:
+            mockbuild.util.orphansKill(self.makeChrootPath())
 
     decorate(traceLog())
     def backup_results(self):
