@@ -64,7 +64,7 @@ class PackageState(object):
             fo.close()
             out_file = self.rootObj.resultdir + '/installed_pkgs'
             cmd = "/usr/bin/repoquery -c %s %s > %s" % (fn, repoquery_install_opts, out_file)
-            mockbuild.util.do(cmd, shell=True)
+            mockbuild.util.do(cmd, shell=True, environ=self.rootObj.env)
             self.inst_done = True
             os.unlink(fn)
             self.rootObj.finish("Outputting list of installed packages")
