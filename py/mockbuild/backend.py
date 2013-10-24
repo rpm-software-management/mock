@@ -986,8 +986,10 @@ class Root(object):
         if not os.path.exists(self.makeChrootPath('usr/sbin/useradd')):
             raise mockbuild.exception.RootError, "Could not find useradd in chroot, maybe the install failed?"
 
-        # safe and easy. blow away existing /builddir and completely re-create.
-        mockbuild.util.rmtree(self.makeChrootPath(self.homedir), selinux=self.selinux)
+        if self.clean_the_chroot:
+            # safe and easy. blow away existing /builddir and completely re-create.
+            mockbuild.util.rmtree(self.makeChrootPath(self.homedir), selinux=self.selinux)
+
         dets = { 'uid': str(self.chrootuid), 'gid': str(self.chrootgid), 'user': self.chrootuser, 'group': self.chrootgroup, 'home': self.homedir }
 
         # ok for these two to fail
