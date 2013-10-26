@@ -20,6 +20,7 @@ import time
 import errno
 import grp
 from glob import glob
+from ast import literal_eval
 
 # our imports
 import mockbuild.exception
@@ -663,8 +664,10 @@ def set_config_opts_per_cmdline(config_opts, options, args):
             raise mockbuild.exception.BadCmdline(
                 "Bad option for '--plugin-option' (%s).  No such plugin: %s"
                 % (option, p))
-        if v == "False": v = False
-        if v == "True": v = True
+        try:
+            v = literal_eval(v)
+        except:
+          pass
         config_opts['plugin_conf'][p + "_opts"].update({k: v})
 
 
