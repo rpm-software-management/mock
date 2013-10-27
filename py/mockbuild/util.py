@@ -237,7 +237,7 @@ def condEnvironment(env=None):
     for k in env.keys():
         os.putenv(k, env[k])
 
-def logOutput(fds, logger, returnOutput=1, start=0, timeout=0, printOutput=False):
+def logOutput(fds, logger, returnOutput=1, start=0, timeout=0, printOutput=False, child=None, chrootPath=None):
     output=""
     done = 0
 
@@ -254,6 +254,16 @@ def logOutput(fds, logger, returnOutput=1, start=0, timeout=0, printOutput=False
             break
 
         i_rdy,o_rdy,e_rdy = select.select(fds,[],[],1)
+
+        if not i_rdy and not o_rdy and not e_rdy:
+            if child and child.poll() is not None:
+                logger.info("Child pid '%s' is dead" % child.pid)
+                done = True
+                if chrootPath:
+                    logger.info("Child dead, killing orphans")
+                    orphansKill(chrootPath)
+                continue
+
         for s in i_rdy:
             # slurp as much input as is ready
             input = s.read()
@@ -332,7 +342,7 @@ def do(command, shell=False, chrootPath=None, cwd=None, timeout=0, raiseExc=True
 
         # use select() to poll for output so we dont block
         output = logOutput([child.stdout, child.stderr],
-                           logger, returnOutput, start, timeout, printOutput=printOutput)
+                           logger, returnOutput, start, timeout, printOutput=printOutput, child=child, chrootPath=chrootPath)
 
     except:
         # kill children if they arent done
