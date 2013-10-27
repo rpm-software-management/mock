@@ -34,10 +34,10 @@ class Tmpfs(object):
         self.rootObj = rootObj
         self.conf = conf
         self.maxSize = self.conf['max_fs_size']
+        self.mode = self.conf['mode']
+        self.optArgs = ['-o', 'mode=%s' % self.mode]
         if self.maxSize:
-            self.optArgs = ['-o', 'size=' + self.maxSize]
-        else:
-            self.optArgs = []
+            self.optArgs += ['-o', 'size=' + self.maxSize]
         rootObj.addHook("preinit",  self._tmpfsMount)
         rootObj.addHook("preshell", self._tmpfsMount)
         rootObj.addHook("prechroot", self._tmpfsMount)
@@ -74,4 +74,3 @@ class Tmpfs(object):
                 mockbuild.util.do(umountCmd, shell=False)
             except:
                 getLog().warning("tmpfs-plugin: exception while force umounting tmpfs! (cwd: %s)" % os.getcwd())
-
