@@ -128,6 +128,22 @@ ln -s -f $cfg %{_sysconfdir}/%{name}/default.cfg
 %{python_sitelib}/mockbuild/scm.py*
 
 %changelog
+* Tue Oct 29 2013 Clark Williams <williams@redhat.com> - 1.1.34-1
+- fixed specfile to include mass rebuild changelog entry
+- package_state: drop privs when writing available_packages data [BZ# 916685]
+- unconditionally update default.cfg on install [BZ# 858822]
+- attempt to make mock more EL5 friendly [BZ# 949616]
+- do not ignore missing dependencies [BZ# 955478]
+- set the group defined in chrootgid [BZ# 953519]
+- add the --nocheck option to mock [BZ# 1015790]
+- raise privs before deleting rpm db files in chroot [BZ# 973617]
+- clean up orphan processes even if chroot not cleaned [BZ# 972868]
+- do not remove the chroot builddir if not cleaning the chroot [BZ# 483486]
+- use root object environment in package_state plugin [BZ# 921221]
+- Pass values of --plugin-option through literal_eval [BZ# 1018359]
+- add default mode to mount in tmpfs plugin [BZ# 598257]
+- exit mockbuild.util.logOutput() when child process dies [BZ# 885405]
+
 * Wed Aug 21 2013 Clark Williams <williams@redhat.com> - 1.1.33-1
 - removed f17 configs
 - added f20 configs
