@@ -72,10 +72,10 @@ def parse_args(args):
             help="log to the file named by this option, defaults to not logging")
     parser.add_option('--tmp_prefix', default=None, dest='tmp_prefix',
             help="tmp dir prefix - will default to username-pid if not specified")
+    parser.add_option('-m','--mock-option', default=[], action='append',
+            dest='mock_option',
+            help="option to pass directly to mock")
 
-
-    #FIXME?
-    # figure out how to pass other args to mock?
 
     opts, args = parser.parse_args(args)
     if opts.recurse:
@@ -154,6 +154,21 @@ def do_build(opts, cfg, pkg):
                '--resultdir', resdir,
                '--uniqueext', opts.uniqueext,
                '-r', cfg, ]
+    # heuristic here, if user pass for mock "-d foo", but we must be care to leave
+    # "-d'foo bar'" or "--define='foo bar'" as is
+    compiled_re_1 = re.compile(r'^(-\S)\s+(.+)')
+    compiled_re_2 = re.compile(r'^(--[^ =])[ =](\.+)')
+    for option in opts.mock_option:
+        r_match = compiled_re_1.match(option)
+        if r_match:
+            mockcmd.extend([r_match.group(1), r_match.group(2)])
+        else:
+            r_match = compiled_re_2.match(option)
+            if r_match:
+                mockcmd.extend([r_match.group(1), r_match.group(2)])
+            else:
+                mockcmd.append(option)
+
     print 'building %s' % s_pkg
     mockcmd.append(pkg)
     cmd = subprocess.Popen(mockcmd,
