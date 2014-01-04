@@ -21,7 +21,7 @@ Source: https://git.fedorahosted.org/cgit/mock.git/snapshot/%{name}-%{version}.t
 URL: http://fedoraproject.org/wiki/Projects/Mock
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch: noarch
-Requires: python >= 2.6, yum >= 2.4, yum-utils >= 1.1.9, tar, pigz, python-ctypes, python-decoratortools, usermode
+Requires: python >= 2.6, yum >= 2.4, yum-utils >= 1.1.31, tar, pigz, python-ctypes, python-decoratortools, usermode
 Requires: createrepo
 Requires(pre): shadow-utils
 Requires(post): coreutils
@@ -144,6 +144,9 @@ ln -s -f $cfg %{_sysconfdir}/%{name}/default.cfg
 %{python_sitelib}/mockbuild/scm.py*
 
 %changelog
+* Sat Jan  4 2014 Clark Williams <williams@redhat.com> - 1.1.36-1
+- first try at using repoquery installroot arg
+
 * Tue Nov  5 2013 Clark Williams <williams@redhat.com> - 1.1.35-1
 - modified %%post logic to set default config correctly
 
