@@ -605,6 +605,7 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
         }
     # security config
     config_opts['no_root_shells'] = False
+    config_opts['extra_chroot_dirs'] = []
 
     return config_opts
 

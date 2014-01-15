@@ -139,6 +139,8 @@ class Root(object):
         if self.pluginConf['selinux_enable'] == False and mockbuild.util.selinuxEnabled():
             self.selinux = True
 
+        self.extra_chroot_dirs = config['extra_chroot_dirs']
+
     # =============
     #  'Public' API
     # =============
@@ -523,7 +525,7 @@ class Root(object):
                      'etc/yum',
                      'proc',
                      'sys',
-                    ]:
+                    ] + self.extra_chroot_dirs :
             mockbuild.util.mkdirIfAbsent(self.makeChrootPath(item))
 
     decorate(traceLog())
