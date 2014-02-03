@@ -49,7 +49,7 @@ class PackageState(object):
             chrootpath = self.rootObj.makeChrootPath()
             cmd = "/usr/bin/repoquery --installroot=%s -c %s/etc/yum.conf %s > %s" % (
                            chrootpath, chrootpath, repoquery_avail_opts, out_file)
-            mockbuild.util.do(cmd, shell=True)
+            mockbuild.util.do(cmd, shell=True, env=self.rootObj.env)
             self.avail_done = True
             self.rootObj.finish("Outputting list of available packages")
             self.rootObj.uidManager.restorePrivs()
@@ -66,7 +66,7 @@ class PackageState(object):
             out_file = self.rootObj.resultdir + '/installed_pkgs'
             cmd = "/usr/bin/repoquery --installroot=%s -c %s %s > %s" % (
                 self.rootObj.makeChrootPath(), fn, repoquery_install_opts, out_file)
-            mockbuild.util.do(cmd, shell=True, environ=self.rootObj.env)
+            mockbuild.util.do(cmd, shell=True, env=self.rootObj.env)
             self.inst_done = True
             os.unlink(fn)
             self.rootObj.finish("Outputting list of installed packages")
