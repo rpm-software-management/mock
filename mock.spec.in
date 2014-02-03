@@ -45,6 +45,7 @@ Mock SCM integration module
 %setup -q
 
 %build
+autoreconf -vif
 %configure
 make
 
@@ -145,7 +146,8 @@ ln -s -f $cfg %{_sysconfdir}/%{name}/default.cfg
 
 %changelog
 * Sat Jan  4 2014 Clark Williams <williams@redhat.com> - 1.1.36-1
-- first try at using repoquery installroot arg
+- use repoquery --installroot to avoid yum cache corruption [BZ# 1029352 and 985681]
+- mockchain: avoid special characters in repoid [BZ# 1034805]
 
 * Tue Nov  5 2013 Clark Williams <williams@redhat.com> - 1.1.35-1
 - modified %%post logic to set default config correctly
