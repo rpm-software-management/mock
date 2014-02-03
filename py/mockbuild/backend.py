@@ -89,6 +89,7 @@ class Root(object):
         if isinstance(self.chroot_setup_cmd, basestring):
             # accept strings in addition to other sequence types
             self.chroot_setup_cmd = self.chroot_setup_cmd.split()
+        self.releasever = config['releasever']
         self.yum_path = '/usr/bin/yum'
         self.yum_builddep_path = '/usr/bin/yum-builddep'
         self.yum_builddep_opts = config['yum_builddep_opts']
@@ -968,6 +969,8 @@ class Root(object):
                 for eachopt in self.yum_builddep_opts.split():
                     yumcmd.insert(1, '%s' % eachopt)
         yumcmd.extend(('--installroot', self.makeChrootPath()))
+        if self.releasever:
+            yumcmd.extend(('--releasever', self.releasever))
         if not self.online:
             yumcmd.append("-C")
         yumcmd.extend(self.yum_common_opts)
