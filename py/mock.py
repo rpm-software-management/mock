@@ -659,7 +659,7 @@ def main(ret):
     elif options.mode == 'copyout':
         chroot.tryLockBuildRoot()
         chroot._resetLogging()
-        uidManager.dropPrivsForever()
+        chroot.uidManager.dropPrivsTemp()
         if len(args) < 2:
             log.critical("Must have source and destinations for copyout")
             sys.exit(50)
@@ -676,6 +676,7 @@ def main(ret):
                 shutil.copytree(src, dest)
             else:
                 shutil.copy(src, dest)
+        chroot.uidManager.restorePrivs()
         chroot.unlockBuildRoot()
 
     chroot._nuke_rpm_db()
