@@ -282,7 +282,7 @@ def main(args):
                 failed.append(pkg)
                 continue
 
-            elif pkg.startswith('http://') or pkg.startswith('https://'):
+            elif pkg.startswith('http://') or pkg.startswith('https://') or pkg.startswith('ftp://'):
                 url = pkg
                 cwd = os.getcwd()
                 os.chdir(download_dir)
