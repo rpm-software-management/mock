@@ -25,7 +25,7 @@ Requires: python >= 2.6, yum >= 2.4, yum-utils >= 1.1.31, tar, pigz, python-ctyp
 Requires: createrepo
 Requires(pre): shadow-utils
 Requires(post): coreutils
-BuildRequires: python-devel
+BuildRequires: python-devel, autoconf
 %if 0%{?el5}
 Requires: python-hashlib
 %endif
@@ -145,9 +145,20 @@ ln -s -f $cfg %{_sysconfdir}/%{name}/default.cfg
 %{python_sitelib}/mockbuild/scm.py*
 
 %changelog
-* Sat Jan  4 2014 Clark Williams <williams@redhat.com> - 1.1.36-1
+* Wed Feb  5 2014 Clark Williams <williams@redhat.com> - 1.1.36-1
+- configs: first cut at epel-7 configs for x86_64 and ppc64
+- Add 'extra_chroot_dirs' config option
 - use repoquery --installroot to avoid yum cache corruption [BZ# 1029352 and 985681]
 - mockchain: avoid special characters in repoid [BZ# 1034805]
+- from Jon Disnard <jdisnard@gmail.com>:
+  - implement autoreconf call in build phase of mock rpm [BZ# 926154]
+  - fix --copyout by temporary drop and restore of privs [BZ# 1002142]
+- from Dennis Gilmore <dennis@ausil.us>:
+  - rawhide and f19/f18 is hardware floating point only for arm, drop the unneeded configs
+- from Yann Droneaud <yann@droneaud.fr>:
+  - pass root environment to repoquery calls for proxy config [BZ# 974499]
+- from Miroslav Suchý <msuchy@redhat.com>:
+  - add releasever config option to configs [BZ# 1056039]
 
 * Tue Nov  5 2013 Clark Williams <williams@redhat.com> - 1.1.35-1
 - modified %%post logic to set default config correctly
