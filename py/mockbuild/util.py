@@ -68,8 +68,9 @@ def mkdirIfAbsent(*args):
                 getLog().debug("creating dir: %s" % dirName)
                 os.makedirs(dirName)
             except OSError, e:
-                getLog().exception("Could not create dir %s. Error: %s" % (dirName, e))
-                raise mockbuild.exception.Error, "Could not create dir %s. Error: %s" % (dirName, e)
+                if e.errno != errno.EEXIST:
+                    getLog().exception("Could not create dir %s. Error: %s" % (dirName, e))
+                    raise mockbuild.exception.Error, "Could not create dir %s. Error: %s" % (dirName, e)
 
 decorate(traceLog())
 def touch(fileName):
