@@ -25,7 +25,7 @@ Requires: python >= 2.6, yum >= 2.4, yum-utils >= 1.1.31, tar, pigz, python-ctyp
 Requires: createrepo
 Requires(pre): shadow-utils
 Requires(post): coreutils
-BuildRequires: python-devel, autoconf
+BuildRequires: python-devel, autoconf, automake
 %if 0%{?el5}
 Requires: python-hashlib
 %endif
