@@ -425,8 +425,7 @@ class Root(object):
                 fo.write(self.chroot_file_contents[key])
                 fo.close()
 
-        if self.internal_dev_setup:
-            self._setupDev()
+        self._setupDev()
 
         # yum stuff
         try:
@@ -460,6 +459,9 @@ class Root(object):
 
     decorate(traceLog())
     def _setupDev(self, interactive=False):
+        if not self.internal_dev_setup:
+            self._state_log.info("Skipping device setup due to config")
+            return
         self.start("device setup")
         try:
             # files in /dev
