@@ -66,7 +66,9 @@ class PackageState(object):
             out_file = self.rootObj.resultdir + '/installed_pkgs'
             cmd = "/usr/bin/repoquery --installroot=%s -c %s %s > %s" % (
                 self.rootObj.makeChrootPath(), fn, repoquery_install_opts, out_file)
+            self.rootObj.uidManager.restorePrivs()
             mockbuild.util.do(cmd, shell=True, env=self.rootObj.env)
+            self.rootObj.uidManager.dropPrivsTemp()
             self.inst_done = True
             os.unlink(fn)
             self.rootObj.finish("Outputting list of installed packages")
