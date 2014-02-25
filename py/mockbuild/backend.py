@@ -195,7 +195,6 @@ class Root(object):
     decorate(traceLog())
     def clean(self):
         """clean out chroot with extreme prejudice :)"""
-        from signal import SIGKILL
         self.tryLockBuildRoot()
         if self.backup:
             self.backup_results()

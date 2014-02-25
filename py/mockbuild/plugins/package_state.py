@@ -11,7 +11,7 @@
 #             installed_pkgs
 
 # our imports
-from mockbuild.trace_decorator import decorate, traceLog, getLog
+from mockbuild.trace_decorator import decorate, traceLog
 import mockbuild.util
 import tempfile
 import os
