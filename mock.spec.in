@@ -26,6 +26,9 @@ Requires: createrepo
 Requires(pre): shadow-utils
 Requires(post): coreutils
 BuildRequires: python-devel, autoconf, automake
+%if 0%{?fedora} || 0%{?rhel} > 6
+BuildRequires: bash-completion
+%endif
 %if 0%{?el5}
 Requires: python-hashlib
 %endif
@@ -74,6 +77,12 @@ find $RPM_BUILD_ROOT%{_sysconfdir}/mock -name "*.cfg" \
 
 # just for %%ghosting purposes
 ln -s fedora-rawhide-x86_64.cfg $RPM_BUILD_ROOT%{_sysconfdir}/mock/default.cfg
+
+if [ -d $RPM_BUILD_ROOT%{_datadir}/bash-completion ]; then
+    echo %{_datadir}/bash-completion >> %{name}.cfgs
+elif [ -d $RPM_BUILD_ROOT%{_sysconfdir}/bash_completion.d ]; then
+    echo %{_sysconfdir}/bash_completion.d >> %{name}.cfgs
+fi
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -128,7 +137,6 @@ ln -s -f $cfg %{_sysconfdir}/%{name}/default.cfg
 %config(noreplace) %{_sysconfdir}/%{name}/*.ini
 %config(noreplace) %{_sysconfdir}/pam.d/%{name}
 %config(noreplace) %{_sysconfdir}/security/console.apps/%{name}
-%{_sysconfdir}/bash_completion.d
 
 # docs
 %{_mandir}/man1/mock.1*

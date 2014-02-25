@@ -41,10 +41,12 @@ _mock()
             return 0
             ;;
         --configdir|--resultdir)
+            local IFS=$'\n'
             COMPREPLY=( $( compgen -d -- "$cur" ) )
             return 0
             ;;
         --spec)
+            local IFS=$'\n'
             COMPREPLY=( $( compgen -f -o plusdirs -X "!*.spec" -- "$cur" ) )
             return 0
             ;;
@@ -70,6 +72,7 @@ _mock()
             return 0
             ;;
         --install|install)
+            local IFS=$'\n'
             COMPREPLY=( $( compgen -f -o plusdirs -X '!*.rpm' -X '*src.rpm' \
                 -- "$cur" ) )
             [[ $cur != */* && $cur != [.~]* ]] && \
@@ -96,6 +99,7 @@ _mock()
         return 0
     fi
 
+    local IFS=$'\n'
     COMPREPLY=( $( compgen -f -o plusdirs -X '!*.@(?(no)src.r|s)pm' \
         -- "$cur" ) )
 } &&
@@ -141,6 +145,7 @@ _mockchain()
         return 0
     fi
 
+    local IFS=$'\n'
     COMPREPLY=( $( compgen -f -o plusdirs -X '!*.@(?(no)src.r|s)pm' \
         -- "$cur" ) )
 } &&

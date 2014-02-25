@@ -38,8 +38,8 @@ pam_DATA = etc/pam/mock
 consoledir = $(sysconfdir)/security/console.apps/
 console_DATA = etc/consolehelper/mock
 
-bashcompdir = $(sysconfdir)/bash_completion.d/
-bashcomp_DATA = etc/bash_completion.d/mock.bash
+bashcompdir = @BASHCOMPDIR@
+bashcomp_DATA = etc/bash_completion.d/mock
 
 pluginsdir = $(pythondir)/mockbuild/plugins
 plugins_PYTHON = \
@@ -89,7 +89,8 @@ install-exec-hook:
 
 install-data-hook:
 	perl -p -i -e 's|(=\s*)/etc/mock\b|$$1$(mocketcdir)|' \
-		$(DESTDIR)$(bashcompdir)/mock.bash
+		$(DESTDIR)$(bashcompdir)/mock
+	[ ! "@HAVE_BASHCOMP2@" ] || ln -s mock $(DESTDIR)$(bashcompdir)/mockchain
 
 TOPDIR := $(shell cd $(top_builddir);pwd)
 BUILDDIR = $(TOPDIR)/_rpmbuild
