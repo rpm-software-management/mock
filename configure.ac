@@ -55,12 +55,18 @@ VERSION=$PACKAGE_VERSION
 
 AM_CONDITIONAL(USE_MD5, test -e /usr/bin/rpmbuild-md5)
 
+PKG_CHECK_EXISTS([bash-completion >= 1.99],
+    [BASHCOMPDIR=`$PKG_CONFIG bash-completion --variable=completionsdir`;HAVE_BASHCOMP2=true],
+    [BASHCOMPDIR="\$(sysconfdir)/bash_completion.d"])
+
 AC_SUBST([RELEASE_NAME])
 AC_SUBST([RELEASE_MAJOR])
 AC_SUBST([RELEASE_MINOR])
 AC_SUBST([RELEASE_SUBLEVEL])
 AC_SUBST([RELEASE_EXTRALEVEL])
 AC_SUBST([RELEASE_RPM_EXTRALEVEL])
+AC_SUBST([BASHCOMPDIR])
+AC_SUBST([HAVE_BASHCOMP2])
 
 # generate files and exit
 #AC_CONFIG_FILES([ Makefile ${PACKAGE_NAME}.spec ])

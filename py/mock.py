@@ -42,7 +42,6 @@ import pwd
 import sys
 import time
 from optparse import OptionParser
-from glob import glob
 
 # all of the variables below are substituted by the build system
 __VERSION__ = "unreleased_version"

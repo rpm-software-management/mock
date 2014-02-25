@@ -2,10 +2,7 @@
 
 import os
 import os.path
-import sys
 import grp
-import subprocess
-import logging
 
 import mockbuild.util
 import mockbuild.exception

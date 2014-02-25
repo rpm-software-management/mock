@@ -7,7 +7,6 @@
 import fcntl
 import os
 import time
-from glob import glob
 
 # our imports
 from mockbuild.trace_decorator import decorate, traceLog, getLog
