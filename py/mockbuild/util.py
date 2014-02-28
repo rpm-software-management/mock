@@ -584,6 +584,7 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
             'ext_src_dir': '/dev/null',
             'write_tar': False,
             'git_timestamps': False,
+            'exclude_vcs': True,
             }
 
     # dependent on guest OS

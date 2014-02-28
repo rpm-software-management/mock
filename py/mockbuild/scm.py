@@ -65,7 +65,7 @@ class scmWorker(object):
 
         self.ext_src_dir = opts['ext_src_dir']
         self.write_tar = opts['write_tar']
-        self.exclude_vcs = opts['exclude_vcs]'
+        self.exclude_vcs = opts['exclude_vcs']
 
         self.git_timestamps = opts['git_timestamps']
 
@@ -149,7 +149,7 @@ class scmWorker(object):
             taropts = ""
 
             # Always exclude vcs data from tarball unless told not to
-            if not str(self.exclude_vcs).lower() == "false":
+            if not self.exclude_vcs:
                 proc = subprocess.Popen(['tar', '--help'], shell=False, stdout=subprocess.PIPE)
                 if "--exclude-vcs" in proc.communicate()[0]:
                     taropts = "--exclude-vcs"
