@@ -26,11 +26,10 @@ fails=0
 header "testing all supported configurations"
 for i in $configs; do
     name=$(basename $i .cfg)
-    MOCKCMD="sudo ./py/mock.py $VERBOSE --resultdir=$outdir --uniqueext=$uniqueext -r $name $MOCK_EXTRA_ARGS"
     if [ "${i#epel-4-x86_64.cfg}" != "" ]; then
 	header "testing config $name.cfg with tmpfs plugin"
 	runcmd "$MOCKCMD --enable-plugin=tmpfs --rebuild $MOCKSRPM "
-	if [ $? != 0 ]; then 
+	if [ $? != 0 ]; then
 	    echo "FAILED!"
 	    fails=$(($fails+1))
 	else
@@ -40,7 +39,7 @@ for i in $configs; do
     fi
     header "testing config $name.cfg *without* tmpfs plugin"
     runcmd "$MOCKCMD                       --rebuild $MOCKSRPM"
-    if [ $? != 0 ]; then 
+    if [ $? != 0 ]; then
 	echo "FAILED!"
 	fails=$(($fails+1))
     else
