@@ -13,7 +13,7 @@ cd $TOPDIR
 if [ "$1" != "" ]; then
     configs=$1
 else
-    configs=$(ls etc/mock | grep .cfg | grep -v default | egrep -v 'arm|ppc|s390|sparc')
+    configs=$(ls etc/mock | grep .cfg | grep -v default | egrep -v 'arm|ppc|s390|sparc|aarch')
 fi
 
 trap '$MOCKCMD --clean; exit 1' INT HUP QUIT TERM
