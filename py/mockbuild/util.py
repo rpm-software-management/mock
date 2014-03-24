@@ -543,7 +543,7 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
                 'mode': '0755'},
             'selinux_enable': True,
             'selinux_opts': {},
-            'package_state_enable' : True,
+            'package_state_enable' : False,
             'package_state_opts' : {},
             'chroot_scan_enable': False,
             'chroot_scan_opts': { 'regexes' : [
