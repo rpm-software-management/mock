@@ -79,9 +79,10 @@ find $RPM_BUILD_ROOT%{_sysconfdir}/mock -name "*.cfg" \
 ln -s fedora-rawhide-x86_64.cfg $RPM_BUILD_ROOT%{_sysconfdir}/mock/default.cfg
 
 if [ -d $RPM_BUILD_ROOT%{_datadir}/bash-completion ]; then
-    echo %{_datadir}/bash-completion >> %{name}.cfgs
+    echo %{_datadir}/bash-completion/completions/mock >> %{name}.cfgs
+    echo %{_datadir}/bash-completion/completions/mockchain >> %{name}.cfgs
 elif [ -d $RPM_BUILD_ROOT%{_sysconfdir}/bash_completion.d ]; then
-    echo %{_sysconfdir}/bash_completion.d >> %{name}.cfgs
+    echo %{_sysconfdir}/bash_completion.d/mock >> %{name}.cfgs
 fi
 
 %clean
@@ -100,17 +101,10 @@ chmod 2775 /var/cache/mock
 
 if [ -e /etc/fedora-release ]
 then
-    if grep -i rawhide /etc/fedora-release > /dev/null 2>&1
-    then
-	# Fedora release XX (Rawhide)
-	ver=rawhide
-    else
-	# Fedora release XX (name)
-	ver=$(cat /etc/fedora-release | awk '{print $3;}')
-    fi
+    ver=$(rpm -q --nosignature --qf "%{VERSION}" --whatprovides fedora-release)
 else
-    # Red Hat Enterprise Linux Server Release X.YY (name)
-    ver=$(cat /etc/redhat-release | awk '{print $7;}' | sed -e 's/\..*$//')
+
+    ver=$(rpm -q --nosignature --qf "%{VERSION}" --whatprovides redhat-release)
 fi
 
 rm -f %{_sysconfdir}/%{name}/default.cfg
@@ -153,6 +147,34 @@ ln -s -f $cfg %{_sysconfdir}/%{name}/default.cfg
 %{python_sitelib}/mockbuild/scm.py*
 
 %changelog
+* Mon Mar 24 2014 Clark Williams <williams@redhat.com> - 1.1.37-1
+- fix thinko in test script for running configs
+- plugins: turn off package_state plugin by default
+- fix automake to use 'xz' compression
+- additional commits needed by scm commit
+- elevate privs when accessing the chroot rpmdb [BZ# 1051474]
+- quote --shell args like a shell [BZ# 966144]
+- from Tuomo Soini <tis@foobar.fi>
+  - Fix for race in directory creation [BZ# 1052045]
+- from Peter Jönsson <peter.jonsson@klarna.com>
+  - Add support for creating tarballs with scm data still inside
+- from Tomas Kopecek <tkopecek@redhat.com>
+  - internal_dev_setup option used consistently
+- from Dennis Gilmore <dennis@ausil.us>
+  - add rawhide aarch64 config
+  - remove sparc rawhide configs, she be dead
+- from Ville Skyttä <ville.skytta@iki.fi>
+  - Use $(mocketcdir) in install-data-hook instead of duplicating its value
+  - Use xz tarball to save a bit of space
+  - Clean up unused imports
+  - Install bash completion to proper dir with bash-completion 2
+  - Remove Fedora 18 configs
+  - Use install @foo instead of groupinstall foo in chroot_setup_cmd
+- from Rodrigo Dias Cruz <rodrigodc+redhatbugzilla@gmail.com>
+  -  fix scm problem with specfiles using rpm macros [BZ# 1056271]
+- from Tomas Kopecek <tkopecek@redhat.com>
+  - avoid undefined variable error in try/finally block [BZ# 1063275]
+
 * Wed Feb  5 2014 Clark Williams <williams@redhat.com> - 1.1.36-1
 - configs: first cut at epel-7 configs for x86_64 and ppc64
 - Add 'extra_chroot_dirs' config option
