@@ -812,12 +812,12 @@ class Root(object):
         self.tryLockBuildRoot()
         self._resetLogging()
         self._callHooks("prechroot")
+        chrootstate = "chroot %s" % args
         try:
             self._setupDirs()
             self._setupDev()
             self._setupFiles()
             self._mountall()
-            chrootstate = "chroot %s" % args
             self.start(chrootstate)
             if options.unpriv:
                 self.doChroot(args, shell=shell, printOutput=True,
