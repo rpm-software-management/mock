@@ -20,9 +20,11 @@ import mockbuild.util
 class scmWorker(object):
     """Build RPMs from SCM"""
     decorate(traceLog())
-    def __init__(self, log, opts):
+    def __init__(self, log, opts, macros):
         self.log = log
         self.log.debug("Initializing SCM integration...")
+
+        self.macros = macros
 
         self.method = opts['method']
         if self.method == "cvs":
@@ -122,6 +124,10 @@ class scmWorker(object):
             self.clean()
             sys.exit(5)
         self.spec = sf
+
+       # Add passed RPM macros before parsing spec file
+        for macro, expression in self.macros.iteritems():
+            rpm.addMacro(macro.lstrip('%'), expression)
 
         # Dig out some basic information from the spec file
         self.sources = []

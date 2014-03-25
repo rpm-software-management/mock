@@ -502,7 +502,7 @@ def main(ret):
 
     # Fetch and prepare sources from SCM
     if config_opts['scm']:
-        scmWorker = mockbuild.scm.scmWorker(log, config_opts['scm_opts'])
+        scmWorker = mockbuild.scm.scmWorker(log, config_opts['scm_opts'], config_opts['macros'])
         scmWorker.get_sources()
         (options.sources, options.spec) = scmWorker.prepare_sources()
 
