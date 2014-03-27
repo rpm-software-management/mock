@@ -14,14 +14,19 @@
 Summary: Builds packages inside chroots
 Name: mock
 Version: %{release_version}
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2+
 Group: Development/Tools
 Source: https://git.fedorahosted.org/cgit/mock.git/snapshot/%{name}-%{version}.tar.xz
 URL: http://fedoraproject.org/wiki/Projects/Mock
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch: noarch
-Requires: python >= 2.6, yum >= 2.4, yum-utils >= 1.1.31, tar, pigz, python-ctypes, python-decoratortools, usermode
+Requires: python >= 2.6, yum >= 2.4, tar, pigz, python-ctypes, python-decoratortools, usermode
+%if 0%{?rhel} == 6
+Requires: yum-utils
+%else
+Requires: yum-utils >= 1.1.31
+%endif
 Requires: createrepo
 Requires(pre): shadow-utils
 Requires(post): coreutils
@@ -147,6 +152,9 @@ ln -s -f $cfg %{_sysconfdir}/%{name}/default.cfg
 %{python_sitelib}/mockbuild/scm.py*
 
 %changelog
+* Thu Mar 27 2014 Clark Williams <williams@redhat.com> - 1.1.37-2
+- fix el6 requires for yum-utils
+
 * Mon Mar 24 2014 Clark Williams <williams@redhat.com> - 1.1.37-1
 - fix thinko in test script for running configs
 - plugins: turn off package_state plugin by default
