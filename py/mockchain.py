@@ -30,6 +30,7 @@ import tempfile
 import shutil
 from urlgrabber import grabber
 import time
+import re
 
 import mockbuild.util
 
