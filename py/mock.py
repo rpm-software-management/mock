@@ -282,7 +282,7 @@ def do_rebuild(config_opts, chroot, srpms):
             log.info("Results and/or logs in: %s" % chroot.resultdir)
 
         if config_opts["cleanup_on_success"]:
-            log.info("Cleaning up build root ('clean_on_success=True')")
+            log.info("Cleaning up build root ('cleanup_on_success=True')")
             chroot.clean()
 
         if config_opts["createrepo_on_rpms"]:
@@ -325,7 +325,7 @@ def do_buildsrpm(config_opts, chroot, options, args):
         log.info("Results and/or logs in: %s" % chroot.resultdir)
 
         if config_opts["cleanup_on_success"]:
-            log.info("Cleaning up build root ('clean_on_success=True')")
+            log.info("Cleaning up build root ('cleanup_on_success=True')")
             chroot.clean()
 
         return srpm
