@@ -813,12 +813,12 @@ class Root(object):
         self._resetLogging()
         self._callHooks("prechroot")
         chrootstate = "chroot %s" % args
+        self.start(chrootstate)
         try:
             self._setupDirs()
             self._setupDev()
             self._setupFiles()
             self._mountall()
-            self.start(chrootstate)
             if options.unpriv:
                 self.doChroot(args, shell=shell, printOutput=True,
                               uid=self.chrootuid, gid=self.chrootgid, cwd=options.cwd)
