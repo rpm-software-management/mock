@@ -562,13 +562,11 @@ def main(ret):
             chroot.scrub(options.scrub)
 
     elif options.mode == 'shell':
-        from subprocess import list2cmdline
-
         if not os.path.exists(chroot.makeChrootPath()):
             raise mockbuild.exception.ChrootNotInitialized, \
                 "chroot %s not initialized!" % chroot.makeChrootPath()
         if len(args):
-            cmd = list2cmdline(args)
+            cmd = ' '.join(args)
         else:
             cmd = None
         sys.exit(chroot.shell(options, cmd))
