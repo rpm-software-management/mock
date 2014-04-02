@@ -263,7 +263,7 @@ def do_rebuild(config_opts, chroot, srpms):
         sys.exit(50)
 
     # check that everything is kosher. Raises exception on error
-    for hdr in mockbuild.util.yieldSrpmHeaders(srpms):
+    for dummy in mockbuild.util.yieldSrpmHeaders(srpms):
         pass
 
     start = time.time()
@@ -585,7 +585,7 @@ def main(ret):
             log.critical("You must specify an SRPM file with --installdeps")
             sys.exit(50)
 
-        for hdr in mockbuild.util.yieldSrpmHeaders(args, plainRpmOk=1):
+        for dummy in mockbuild.util.yieldSrpmHeaders(args, plainRpmOk=1):
             pass
         chroot.tryLockBuildRoot()
         try:
