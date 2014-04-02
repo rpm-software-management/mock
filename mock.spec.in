@@ -32,7 +32,7 @@ BuildRequires: bash-completion
 %endif
 
 %description
-Mock takes an SRPM and builds it in a chroot
+Mock takes an SRPM and builds it in a chroot.
 
 %package scm
 Group: Development/Tools
@@ -40,7 +40,7 @@ Summary: Mock SCM integration module
 Requires: mock = %{version}-%{release}, cvs, git, subversion, tar
 
 %description scm
-Mock SCM integration module
+Mock SCM integration module.
 
 %prep
 %setup -q
