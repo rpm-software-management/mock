@@ -28,7 +28,6 @@ from mockbuild.trace_decorator import traceLog, decorate, getLog
 import mockbuild.uid as uid
 
 _libc = ctypes.cdll.LoadLibrary(None)
-_errno = ctypes.c_int.in_dll(_libc, "errno")
 _libc.personality.argtypes = [ctypes.c_ulong]
 _libc.personality.restype = ctypes.c_int
 _libc.unshare.argtypes = [ctypes.c_int,]
@@ -198,7 +197,7 @@ def unshare(flags):
     try:
         res = _libc.unshare(flags)
         if res:
-            raise mockbuild.exception.UnshareFailed(os.strerror(_errno.value))
+            raise mockbuild.exception.UnshareFailed(os.strerror(ctypes.get_errno()))
     except AttributeError, e:
         pass
 
@@ -228,7 +227,7 @@ def condPersonality(per=None):
         return
     res = _libc.personality(personality_defs[per])
     if res == -1:
-        raise OSError(_errno.value, os.strerror(_errno.value))
+        raise OSError(ctypes.get_errno(), os.strerror(ctypes.get_errno()))
 
 def condEnvironment(env=None):
     if not env:

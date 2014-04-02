@@ -5,6 +5,7 @@
 
 # python library imports
 import os
+import ctypes
 
 # our imports
 from mockbuild.trace_decorator import traceLog, decorate
@@ -80,7 +81,6 @@ class uidManager(object):
 
 import ctypes
 _libc = ctypes.cdll.LoadLibrary(None)
-_errno = ctypes.c_int.in_dll(_libc, "errno")
 
 def getresuid():
     ruid = ctypes.c_long()
@@ -88,7 +88,7 @@ def getresuid():
     suid = ctypes.c_long()
     res = _libc.getresuid(ctypes.byref(ruid), ctypes.byref(euid), ctypes.byref(suid))
     if res:
-        raise OSError(_errno.value, os.strerror(_errno.value))
+        raise OSError(ctypes.get_errno(), os.strerror(ctypes.get_errno()))
     return (ruid.value, euid.value, suid.value)
 
 def setresuid(ruid=-1, euid=-1, suid=-1):
@@ -97,7 +97,7 @@ def setresuid(ruid=-1, euid=-1, suid=-1):
     suid = ctypes.c_long(suid)
     res = _libc.setresuid(ruid, euid, suid)
     if res:
-        raise OSError(_errno.value, os.strerror(_errno.value))
+        raise OSError(ctypes.get_errno(), os.strerror(ctypes.get_errno()))
 
 def getresgid():
     rgid = ctypes.c_long()
@@ -105,7 +105,7 @@ def getresgid():
     sgid = ctypes.c_long()
     res = _libc.getresgid(ctypes.byref(rgid), ctypes.byref(egid), ctypes.byref(sgid))
     if res:
-        raise OSError(_errno.value, os.strerror(_errno.value))
+        raise OSError(ctypes.get_errno(), os.strerror(ctypes.get_errno()))
     return (rgid.value, egid.value, sgid.value)
 
 def setresgid(rgid=-1, egid=-1, sgid=-1):
@@ -114,5 +114,5 @@ def setresgid(rgid=-1, egid=-1, sgid=-1):
     sgid = ctypes.c_long(sgid)
     res = _libc.setresgid(rgid, egid, sgid)
     if res:
-        raise OSError(_errno.value, os.strerror(_errno.value))
+        raise OSError(ctypes.get_errno(), os.strerror(ctypes.get_errno()))
 
