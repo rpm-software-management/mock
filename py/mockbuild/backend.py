@@ -981,7 +981,9 @@ class Root(object):
         self._nuke_rpm_db()
         try:
             self._callHooks("preyum")
-            output = mockbuild.util.do(yumcmd, returnOutput=returnOutput, env=self.env)
+            env_copy = self.env.copy()
+            env_copy['LC_MESSAGES'] = 'C'
+            output = mockbuild.util.do(yumcmd, returnOutput=returnOutput, env=env_copy)
             self._callHooks("postyum")
             return output
         except mockbuild.exception.Error, e:
