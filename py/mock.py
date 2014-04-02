@@ -387,14 +387,12 @@ def main(ret):
     # sudo
     if os.environ.get("SUDO_UID") is not None:
         unprivUid = int(os.environ['SUDO_UID'])
-        username = os.environ.get("SUDO_USER")
         os.setgroups((mockgid,))
         unprivGid = int(os.environ['SUDO_GID'])
 
     # consolehelper
     if os.environ.get("USERHELPER_UID") is not None:
         unprivUid = int(os.environ['USERHELPER_UID'])
-        username = pwd.getpwuid(unprivUid)[0]
         os.setgroups((mockgid,))
         unprivGid = pwd.getpwuid(unprivUid)[3]
 
