@@ -479,7 +479,7 @@ class Root(object):
                 (stat.S_IFCHR | 0666, os.makedev(5, 2), "dev/ptmx"),
                 ]
             kver = os.uname()[2]
-            getLog().debug("kver == %s" % kver)
+            getLog().debug("kernel version == %s" % kver)
             for i in devFiles:
                 # create node
                 os.mknod( self.makeChrootPath(i[2]), i[0], i[1])
