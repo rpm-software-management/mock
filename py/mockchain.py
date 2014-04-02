@@ -261,8 +261,8 @@ def main(args):
     # modify with localrepo
     res, msg = add_local_repo(mockcfg, my_mock_config, local_baseurl, 'local_build_repo')
     if not res:
-         log(opts.logfile, "Error: Could not write out local config: %s" % msg)
-         sys.exit(1)
+        log(opts.logfile, "Error: Could not write out local config: %s" % msg)
+        sys.exit(1)
 
     for baseurl in opts.repos:
         res, msg = add_local_repo(my_mock_config, my_mock_config, baseurl)
