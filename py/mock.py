@@ -681,9 +681,6 @@ def main(ret):
     chroot.alldone()
 
 if __name__ == '__main__':
-    # fix for python 2.4 logging module bug:
-    logging.raiseExceptions = 0
-
     exitStatus = 0
     killOrphans = 1
 
