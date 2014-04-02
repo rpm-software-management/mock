@@ -19,7 +19,6 @@ License: GPLv2+
 Group: Development/Tools
 Source: https://git.fedorahosted.org/cgit/mock.git/snapshot/%{name}-%{version}.tar.xz
 URL: http://fedoraproject.org/wiki/Projects/Mock
-BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch: noarch
 Requires: python >= 2.6, yum >= 2.4, tar, pigz, python-ctypes, python-decoratortools, usermode
 Requires: yum-utils
@@ -82,9 +81,6 @@ if [ -d $RPM_BUILD_ROOT%{_datadir}/bash-completion ]; then
 elif [ -d $RPM_BUILD_ROOT%{_sysconfdir}/bash_completion.d ]; then
     echo %{_sysconfdir}/bash_completion.d/mock >> %{name}.cfgs
 fi
-
-%clean
-rm -rf $RPM_BUILD_ROOT
 
 %pre
 
