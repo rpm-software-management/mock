@@ -42,7 +42,7 @@ PKGPYTHONDIR = os.path.join(os.path.dirname(os.path.realpath(sys.argv[0])), "moc
 MOCKCONFDIR = os.path.join(SYSCONFDIR, "mock")
 # end build system subs
 
-mockconfig_path='/etc/mock'
+mockconfig_path = '/etc/mock'
 
 def createrepo(path):
     if os.path.exists(path + '/repodata/repomd.xml'):
@@ -63,7 +63,7 @@ def parse_args(args):
     parser.add_option('-c', '--continue', default=False, action='store_true',
             dest='cont',
             help="if a pkg fails to build, continue to the next one")
-    parser.add_option('-a','--addrepo', default=[], action='append',
+    parser.add_option('-a', '--addrepo', default=[], action='append',
             dest='repos',
             help="add these repo baseurls to the chroot's yum config")
     parser.add_option('--recurse', default=False, action='store_true',
@@ -72,7 +72,7 @@ def parse_args(args):
             help="log to the file named by this option, defaults to not logging")
     parser.add_option('--tmp_prefix', default=None, dest='tmp_prefix',
             help="tmp dir prefix - will default to username-pid if not specified")
-    parser.add_option('-m','--mock-option', default=[], action='append',
+    parser.add_option('-m', '--mock-option', default=[], action='append',
             dest='mock_option',
             help="option to pass directly to mock")
 
@@ -103,9 +103,9 @@ def add_local_repo(infile, destfile, baseurl, repoid=None):
     try:
         execfile(infile)
         if not repoid:
-            repoid = baseurl.split('//')[1].replace('/','_')
+            repoid = baseurl.split('//')[1].replace('/', '_')
             repoid = re.sub(r'[^a-zA-Z0-9_]', '', repoid)
-        localyumrepo="""
+        localyumrepo = """
 [%s]
 name=%s
 baseurl=%s
@@ -117,7 +117,7 @@ cost=1
 
         config_opts['yum.conf'] += localyumrepo
         br_dest = open(destfile, 'w')
-        for k,v in config_opts.items():
+        for k, v in config_opts.items():
             br_dest.write("config_opts[%r] = %r\n" % (k, v))
         br_dest.close()
         return True, ''
@@ -173,7 +173,7 @@ def do_build(opts, cfg, pkg):
     mockcmd.append(pkg)
     cmd = subprocess.Popen(mockcmd,
            stdout=subprocess.PIPE,
-           stderr=subprocess.PIPE )
+           stderr=subprocess.PIPE)
     out, err = cmd.communicate()
     if cmd.returncode == 0:
         open(success_file, 'w').write('done\n')
@@ -206,8 +206,8 @@ def main(args):
     opts, args = parse_args(args)
 
     # take mock config + list of pkgs
-    cfg=opts.chroot
-    pkgs=args[1:]
+    cfg = opts.chroot
+    pkgs = args[1:]
     mockcfg = mockconfig_path + '/' + cfg + '.cfg'
 
     if not os.path.exists(mockcfg):
@@ -247,7 +247,7 @@ def main(args):
     if not os.path.exists(opts.local_repo_dir):
         os.makedirs(opts.local_repo_dir, mode=0755)
 
-    local_baseurl="file://%s" % opts.local_repo_dir
+    local_baseurl = "file://%s" % opts.local_repo_dir
     log(opts.logfile, "results dir: %s" % opts.local_repo_dir)
     opts.config_path = os.path.normpath(local_tmp_dir + '/configs/' + cfg + '/')
 
@@ -265,7 +265,7 @@ def main(args):
          sys.exit(1)
 
     for baseurl in opts.repos:
-        res, msg =  add_local_repo(my_mock_config, my_mock_config, baseurl)
+        res, msg = add_local_repo(my_mock_config, my_mock_config, baseurl)
         if not res:
             log(opts.logfile, "Error: Could not add: %s to yum config in mock chroot: %s" % (baseurl, msg))
             sys.exit(1)
@@ -323,8 +323,8 @@ def main(args):
                     failed.append(pkg)
                     log(opts.logfile, "Error building %s, will try again" % os.path.basename(pkg))
                 else:
-                    log(opts.logfile,"Error building %s" % os.path.basename(pkg))
-                    log(opts.logfile,"See logs/results in %s" % opts.local_repo_dir)
+                    log(opts.logfile, "Error building %s" % os.path.basename(pkg))
+                    log(opts.logfile, "See logs/results in %s" % opts.local_repo_dir)
                     if not opts.cont:
                         sys.exit(1)
 
