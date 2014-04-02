@@ -141,7 +141,6 @@ ln -s -f $cfg %{_sysconfdir}/%{name}/default.cfg
 %dir /var/lib/mock
 
 %files scm
-%defattr(-, root, root)
 %{python_sitelib}/mockbuild/scm.py*
 
 %changelog
