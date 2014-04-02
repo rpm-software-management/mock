@@ -46,9 +46,9 @@ mockconfig_path = '/etc/mock'
 
 def createrepo(path):
     if os.path.exists(path + '/repodata/repomd.xml'):
-        comm = ['/usr/bin/createrepo', '--update', path]
+        comm = ['/usr/bin/createrepo_c', '--update', path]
     else:
-        comm = ['/usr/bin/createrepo', path]
+        comm = ['/usr/bin/createrepo_c', path]
     cmd = subprocess.Popen(comm,
              stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err = cmd.communicate()

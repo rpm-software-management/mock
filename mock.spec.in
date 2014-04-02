@@ -27,7 +27,7 @@ Requires: yum-utils
 %else
 Requires: yum-utils >= 1.1.31
 %endif
-Requires: createrepo
+Requires: createrepo_c
 Requires(pre): shadow-utils
 Requires(post): coreutils
 BuildRequires: python-devel, autoconf, automake
