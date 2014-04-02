@@ -22,20 +22,13 @@ URL: http://fedoraproject.org/wiki/Projects/Mock
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch: noarch
 Requires: python >= 2.6, yum >= 2.4, tar, pigz, python-ctypes, python-decoratortools, usermode
-%if 0%{?rhel} == 6
 Requires: yum-utils
-%else
-Requires: yum-utils >= 1.1.31
-%endif
 Requires: createrepo_c
 Requires(pre): shadow-utils
 Requires(post): coreutils
 BuildRequires: python-devel, autoconf, automake
 %if 0%{?fedora} || 0%{?rhel} > 6
 BuildRequires: bash-completion
-%endif
-%if 0%{?el5}
-Requires: python-hashlib
 %endif
 
 %description
