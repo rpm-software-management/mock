@@ -263,7 +263,7 @@ def do_rebuild(config_opts, chroot, srpms):
         sys.exit(50)
 
     # check that everything is kosher. Raises exception on error
-    for hdr in mockbuild.util.yieldSrpmHeaders(srpms):
+    for dummy in mockbuild.util.yieldSrpmHeaders(srpms):
         pass
 
     start = time.time()
@@ -387,14 +387,12 @@ def main(ret):
     # sudo
     if os.environ.get("SUDO_UID") is not None:
         unprivUid = int(os.environ['SUDO_UID'])
-        username = os.environ.get("SUDO_USER")
         os.setgroups((mockgid,))
         unprivGid = int(os.environ['SUDO_GID'])
 
     # consolehelper
     if os.environ.get("USERHELPER_UID") is not None:
         unprivUid = int(os.environ['USERHELPER_UID'])
-        username = pwd.getpwuid(unprivUid)[0]
         os.setgroups((mockgid,))
         unprivGid = pwd.getpwuid(unprivUid)[3]
 
@@ -585,7 +583,7 @@ def main(ret):
             log.critical("You must specify an SRPM file with --installdeps")
             sys.exit(50)
 
-        for hdr in mockbuild.util.yieldSrpmHeaders(args, plainRpmOk=1):
+        for dummy in mockbuild.util.yieldSrpmHeaders(args, plainRpmOk=1):
             pass
         chroot.tryLockBuildRoot()
         try:
@@ -683,9 +681,6 @@ def main(ret):
     chroot.alldone()
 
 if __name__ == '__main__':
-    # fix for python 2.4 logging module bug:
-    logging.raiseExceptions = 0
-
     exitStatus = 0
     killOrphans = 1
 

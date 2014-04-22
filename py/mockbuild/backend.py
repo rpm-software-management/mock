@@ -479,7 +479,7 @@ class Root(object):
                 (stat.S_IFCHR | 0666, os.makedev(5, 2), "dev/ptmx"),
                 ]
             kver = os.uname()[2]
-            getLog().debug("kver == %s" % kver)
+            getLog().debug("kernel version == %s" % kver)
             for i in devFiles:
                 # create node
                 os.mknod( self.makeChrootPath(i[2]), i[0], i[1])
@@ -981,7 +981,9 @@ class Root(object):
         self._nuke_rpm_db()
         try:
             self._callHooks("preyum")
-            output = mockbuild.util.do(yumcmd, returnOutput=returnOutput, env=self.env)
+            env_copy = self.env.copy()
+            env_copy['LC_MESSAGES'] = 'C'
+            output = mockbuild.util.do(yumcmd, returnOutput=returnOutput, env=env_copy)
             self._callHooks("postyum")
             return output
         except mockbuild.exception.Error, e:

@@ -19,27 +19,19 @@ License: GPLv2+
 Group: Development/Tools
 Source: https://git.fedorahosted.org/cgit/mock.git/snapshot/%{name}-%{version}.tar.xz
 URL: http://fedoraproject.org/wiki/Projects/Mock
-BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch: noarch
 Requires: python >= 2.6, yum >= 2.4, tar, pigz, python-ctypes, python-decoratortools, usermode
-%if 0%{?rhel} == 6
 Requires: yum-utils
-%else
-Requires: yum-utils >= 1.1.31
-%endif
-Requires: createrepo
+Requires: createrepo_c
 Requires(pre): shadow-utils
 Requires(post): coreutils
 BuildRequires: python-devel, autoconf, automake
 %if 0%{?fedora} || 0%{?rhel} > 6
 BuildRequires: bash-completion
 %endif
-%if 0%{?el5}
-Requires: python-hashlib
-%endif
 
 %description
-Mock takes an SRPM and builds it in a chroot
+Mock takes an SRPM and builds it in a chroot.
 
 %package scm
 Group: Development/Tools
@@ -47,7 +39,7 @@ Summary: Mock SCM integration module
 Requires: mock = %{version}-%{release}, cvs, git, subversion, tar
 
 %description scm
-Mock SCM integration module
+Mock SCM integration module.
 
 %prep
 %setup -q
@@ -89,9 +81,6 @@ if [ -d $RPM_BUILD_ROOT%{_datadir}/bash-completion ]; then
 elif [ -d $RPM_BUILD_ROOT%{_sysconfdir}/bash_completion.d ]; then
     echo %{_sysconfdir}/bash_completion.d/mock >> %{name}.cfgs
 fi
-
-%clean
-rm -rf $RPM_BUILD_ROOT
 
 %pre
 
@@ -152,7 +141,6 @@ ln -s -f $cfg %{_sysconfdir}/%{name}/default.cfg
 %dir /var/lib/mock
 
 %files scm
-%defattr(-, root, root)
 %{python_sitelib}/mockbuild/scm.py*
 
 %changelog

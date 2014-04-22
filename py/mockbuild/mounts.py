@@ -1,5 +1,3 @@
-#!/usr/bin/python -tt
-
 import os
 import os.path
 import grp
