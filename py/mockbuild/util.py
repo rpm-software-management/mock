@@ -599,6 +599,7 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
     config_opts['yum_common_opts'] = []
     config_opts['priorities.conf'] = '\n[main]\nenabled=0'
     config_opts['rhnplugin.conf'] = '\n[main]\nenabled=0'
+    config_opts['subscription-manager.conf'] = ''
     config_opts['more_buildreqs'] = {}
     config_opts['files'] = {}
     config_opts['macros'] = {

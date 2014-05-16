@@ -83,6 +83,7 @@ class Root(object):
         self.yum_conf_content = config['yum.conf']
         self.yum_priorities_conf_content = config['priorities.conf']
         self.yum_rhnplugin_conf_content = config['rhnplugin.conf']
+        self.yum_subscription_manager_conf_content = config['subscription-manager.conf']
         self.use_host_resolv = config['use_host_resolv']
         self.chroot_file_contents = config['files']
         self.chroot_setup_cmd = config['chroot_setup_cmd']
@@ -314,6 +315,16 @@ class Root(object):
         self._show_installed_packages()
 
     decorate(traceLog())
+    def _write_plugin_conf(self, yumpluginconfdir, name, content):
+        """ Write 'name' file into yumpluginconfdir """
+        # always truncate and overwrite (w+)
+        mockbuild.util.mkdirIfAbsent(yumpluginconfdir)
+        conf = self.makeChrootPath('etc', 'yum', 'pluginconf.d', name)
+        conf_fo = open(conf, 'w+')
+        conf_fo.write(content)
+        conf_fo.close()
+
+    decorate(traceLog())
     def _init(self):
         self.start("chroot init")
 
@@ -371,23 +382,24 @@ class Root(object):
             pass
         os.symlink('yum/yum.conf', self.makeChrootPath("etc", "yum.conf"))
 
-        # write in yum priorities.conf into chroot
-        # always truncate and overwrite (w+)
+        # write in yum plugins into chroot
         self.root_log.debug('configure yum priorities')
-        mockbuild.util.mkdirIfAbsent(yumpluginconfdir)
-        prioconf = self.makeChrootPath('etc', 'yum', 'pluginconf.d', 'priorities.conf')
-        prioconf_fo = open(prioconf, 'w+')
-        prioconf_fo.write(self.yum_priorities_conf_content)
-        prioconf_fo.close()
-
-        # write in yum rhnplugin.conf into chroot
-        # always truncate and overwrite (w+)
+        self._write_plugin_conf(yumpluginconfdir, 'priorities.conf', self.yum_priorities_conf_content)
         self.root_log.debug('configure yum rhnplugin')
-        mockbuild.util.mkdirIfAbsent(yumpluginconfdir)
-        rhnconf = self.makeChrootPath('etc', 'yum', 'pluginconf.d', 'rhnplugin.conf')
-        rhnconf_fo = open(rhnconf, 'w+')
-        rhnconf_fo.write(self.yum_rhnplugin_conf_content)
-        rhnconf_fo.close()
+        self._write_plugin_conf(yumpluginconfdir, 'rhnplugin.conf', self.yum_rhnplugin_conf_content)
+        if self.yum_subscription_manager_conf_content:
+            self.root_log.debug('configure RHSM rhnplugin')
+            self._write_plugin_conf(yumpluginconfdir, 'subscription-manager.conf', self.yum_subscription_manager_conf_content)
+            pem_dir = self.makeChrootPath('etc', 'pki', 'entitlement')
+            mockbuild.util.mkdirIfAbsent(pem_dir)
+            for pem_file in glob.glob("/etc/pki/entitlement/*.pem"):
+                shutil.copy(pem_file, pem_dir)
+            consumer_dir = self.makeChrootPath('etc', 'pki', 'consumer')
+            mockbuild.util.mkdirIfAbsent(consumer_dir)
+            for consumer_file in glob.glob("/etc/pki/consumer/*.pem"):
+                shutil.copy(consumer_file, consumer_dir)
+            shutil.copy('/etc/rhsm/rhsm.conf', self.makeChrootPath('etc', 'rhsm'))
+            self._yum(['repolist'])
 
         # set up resolver configuration
         if self.use_host_resolv:
