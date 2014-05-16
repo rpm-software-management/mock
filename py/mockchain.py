@@ -290,7 +290,10 @@ def main(args):
     built_pkgs = []
     try_again = True
     to_be_built = pkgs
+    return_code = 0
+    num_of_tries = 0
     while try_again:
+        num_of_tries += 1
         failed = []
         for pkg in to_be_built:
             if not pkg.endswith('.rpm'):
@@ -319,14 +322,12 @@ def main(args):
             ret, cmd, out, err = do_build(opts, cfg, pkg)
             log(opts.logfile, "End build: %s" % pkg)
             if ret == 0:
+                failed.append(pkg)
+                log(opts.logfile, "Error building %s." % os.path.basename(pkg))
                 if opts.recurse:
-                    failed.append(pkg)
-                    log(opts.logfile, "Error building %s, will try again" % os.path.basename(pkg))
+                    log(opts.logfile, "Will try to build again (if some other package will succeed).")
                 else:
-                    log(opts.logfile, "Error building %s" % os.path.basename(pkg))
                     log(opts.logfile, "See logs/results in %s" % opts.local_repo_dir)
-                    if not opts.cont:
-                        sys.exit(1)
             elif ret == 1:
                 log(opts.logfile, "Success building %s" % os.path.basename(pkg))
                 built_pkgs.append(pkg)
@@ -338,32 +339,39 @@ def main(args):
             elif ret == 2:
                 log(opts.logfile, "Skipping already built pkg %s" % os.path.basename(pkg))
 
-        if failed:
+        if failed and opts.recurse:
             if len(failed) != len(to_be_built):
                 to_be_built = failed
                 try_again = True
-                log(opts.logfile, 'Trying to rebuild %s failed pkgs' % len(failed))
+                log(opts.logfile, 'Some package succeeded, some failed.')
+                log(opts.logfile, 'Trying to rebuild %s failed pkgs, because --recurse is set.' % len(failed))
             else:
-                log(opts.logfile, "Tried twice - following pkgs could not be successfully built:")
+                log(opts.logfile, "Tried %s times - following pkgs could not be successfully built:" % num_of_tries)
                 for pkg in failed:
                     msg = pkg
                     if pkg in downloaded_pkgs:
                         msg = downloaded_pkgs[pkg]
                     log(opts.logfile, msg)
-
                 try_again = False
         else:
             try_again = False
+            if failed:
+                return_code = 2
 
     # cleaning up our download dir
     shutil.rmtree(download_dir, ignore_errors=True)
 
     log(opts.logfile, "Results out to: %s" % opts.local_repo_dir)
     log(opts.logfile, "Pkgs built: %s" % len(built_pkgs))
-    log(opts.logfile, "Packages successfully built in this order:")
-    for pkg in built_pkgs:
-        log(opts.logfile, pkg)
+    if built_pkgs:
+        if failed:
+            if len(built_pkgs):
+                log(opts.logfile, "Some packages successfully built in this order:")
+        else:
+            log(opts.logfile, "Packages successfully built in this order:")
+        for pkg in built_pkgs:
+            log(opts.logfile, pkg)
+    return return_code
 
 if __name__ == "__main__":
-    main(sys.argv)
-    sys.exit(0)
+    sys.exit(main(sys.argv))
