@@ -96,9 +96,9 @@ chmod 2775 /var/cache/mock
 if [ -e /etc/fedora-release ]
 then
     if grep -Fq Rawhide /etc/fedora-release; then
-	ver=rawhide
+        ver=rawhide
     else
-	ver=$(rpm -q --nosignature --qf "%{VERSION}" --whatprovides fedora-release)
+        ver=$(rpm -q --nosignature --qf "%{VERSION}" --whatprovides fedora-release)
     fi
 else
     ver=$(rpm -q --nosignature --qf "%{VERSION}" --whatprovides redhat-release | cut -d. -f1)
