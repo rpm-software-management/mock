@@ -23,6 +23,7 @@ BuildArch: noarch
 Requires: python >= 2.6, yum >= 2.4, tar, pigz, python-ctypes, python-decoratortools, usermode
 Requires: yum-utils
 Requires: createrepo_c
+Requires: pyliblzma
 Requires(pre): shadow-utils
 Requires(post): coreutils
 BuildRequires: python-devel, autoconf, automake
