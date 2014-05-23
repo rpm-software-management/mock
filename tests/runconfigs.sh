@@ -26,17 +26,15 @@ fails=0
 header "testing all supported configurations"
 for i in $configs; do
     name=$(basename $i .cfg)
-    if [ "${i#epel-4-x86_64.cfg}" != "" ]; then
-	header "testing config $name.cfg with tmpfs plugin"
-	runcmd "$MOCKCMD --enable-plugin=tmpfs --rebuild $MOCKSRPM "
-	if [ $? != 0 ]; then
-	    echo "FAILED!"
-	    fails=$(($fails+1))
-	else
-	    echo "PASSED!"
-	fi
-	sudo python ${TESTDIR}/dropcache.py
+    header "testing config $name.cfg with tmpfs plugin"
+    runcmd "$MOCKCMD --enable-plugin=tmpfs --rebuild $MOCKSRPM "
+    if [ $? != 0 ]; then
+        echo "FAILED!"
+        fails=$(($fails+1))
+    else
+        echo "PASSED!"
     fi
+    sudo python ${TESTDIR}/dropcache.py
     header "testing config $name.cfg *without* tmpfs plugin"
     runcmd "$MOCKCMD                       --rebuild $MOCKSRPM"
     if [ $? != 0 ]; then
