@@ -102,7 +102,7 @@ then
         ver=$(rpm -q --nosignature --qf "%{VERSION}" --whatprovides fedora-release)
     fi
 else
-    ver=$(rpm -q --nosignature --qf "%{VERSION}" --whatprovides redhat-release | cut -d. -f1)
+    ver=$(rpm -q --nosignature --qf "%{VERSION}" --whatprovides redhat-release | cut -d. -f1 | grep -o '[0-9]\+')
 fi
 
 rm -f %{_sysconfdir}/%{name}/default.cfg
