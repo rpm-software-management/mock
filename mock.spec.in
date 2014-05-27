@@ -144,6 +144,34 @@ ln -s -f $cfg %{_sysconfdir}/%{name}/default.cfg
 %{python_sitelib}/mockbuild/scm.py*
 
 %changelog
+* Wed May 21 2014 Clark Williams <williams@redhat.com> - 1.1.39-1
+- configs: update epel-7 koji repo to use correct URL
+- from Ken Dreyer <ktdryer@ktdryder.com>
+  - Use RHEL 7 RC mirrorlist URLs
+from Miroslav Suchý <msuchy@redhat.com>
+  - add support for subscription-manager (RHSM)
+  - expand tabs for better readablity
+  - cut of everything after decimal point, if there is some [BZ# 1098477]
+  - better code readablity
+  - clarify the log messages
+  - use metalink instead of mirrorlist in yum config
+  - set LC_MESSAGE to C before executing command [BZ# 519258]
+  - use ctypes.get_errno() instead of ctypes.c_int.in_dll(_libc, "errno")
+  - revert 7ec6a1e9d202ab56fb31c914dbf7516c045e56ab (python 2.4 workarounds)
+  - buildroot and %clean is not needed for el6 and fedoras
+  - description should always end with dot
+  - remove shebang from mockbuild/mounts.py
+  - %defattr is not needed since rpm 4.4
+  - remove el5 conditional
+  - use createrepo_c which is much faster
+  - whitespace fixes
+  - remove unused variables: 'username' and 'hdr'
+  - better logging of kernel version [BZ# 1048826]
+  - partially revert 9db6edb33cc34a450e762eb5d2bedf9067ebc419 [BZ# 1034805]
+  - teach mockchain about ftp [BZ# 1061776]
+from Jerry James <loganjerry@gmail.com>
+  - fix post scriptlet to deal with rawhide [BZ# 1083689]
+
 * Mon Mar 31 2014 Clark Williams <williams@redhat.com> - 1.1.38-1
 - revert commit 34d0b1d815e4 for quoting (breaks fedora-review)
 
