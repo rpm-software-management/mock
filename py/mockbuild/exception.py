@@ -27,6 +27,7 @@ class Error(Exception):
 # result/exit codes
 # 0 = yay!
 # 1 = something happened  - it's bad
+# 3 = invalid configuration
 # 5 = cmdline processing error
 # 6 = invalid architecture
 # 10 = problem building the package
@@ -132,3 +133,11 @@ class StateError(Error):
         Error.__init__(self, msg)
         self.msg = msg
         self.resultcode = 110
+
+class ConfigError(Error):
+    "invalid configuration"
+
+    def __init__(self, msg):
+        Error.__init__(self, msg)
+        self.msg = msg
+        self.resultcode = 3

@@ -421,7 +421,7 @@ def main(ret):
     for cfg in ( os.path.join(config_path, 'site-defaults.cfg'), '%s/%s.cfg' % (config_path, options.chroot)):
         if os.path.exists(cfg):
             config_opts['config_paths'].append(cfg)
-            execfile(cfg)
+            mockbuild.util.update_config_from_file(config_opts, cfg, uidManager)
         else:
             log.error("Could not find required config file: %s" % cfg)
             if options.chroot == "default": log.error("  Did you forget to specify the chroot to use with '-r'?")
@@ -431,7 +431,7 @@ def main(ret):
     cfg = os.path.join(os.path.expanduser('~' + pwd.getpwuid(os.getuid())[0]), '.mock/user.cfg')
     if os.path.exists(cfg):
         config_opts['config_paths'].append(cfg)
-        execfile(cfg)
+        mockbuild.util.update_config_from_file(config_opts, cfg, uidManager)
 
     # allow a different mock group to be specified
     if config_opts['chrootgid'] != mockgid:

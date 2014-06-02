@@ -10,12 +10,14 @@ import ctypes
 import fcntl
 import os
 import os.path
+import pickle
 import rpm
 import rpmUtils
 import rpmUtils.transaction
 import select
 import shutil
 import subprocess
+import sys
 import time
 import errno
 import grp
@@ -723,3 +725,42 @@ def set_config_opts_per_cmdline(config_opts, options, args):
                 raise mockbuild.exception.BadCmdline(
                 "Bad option for '--scm-option' (%s).  Use --scm-option 'key=value'"
                 % option)
+
+def update_config_from_file(config_opts, config_file, uidManager):
+    config_file = os.path.realpath(config_file)
+    r_pipe, w_pipe = os.pipe()
+    if os.fork() == 0:
+        try:
+            os.close(r_pipe)
+            uidManager.dropPrivsForever()
+            assert all(os.getresuid())
+            execfile(config_file)
+            writer = os.fdopen(w_pipe, 'w')
+            pickle.dump(config_opts, writer)
+        except:
+            import traceback
+            etype, evalue, raw_tb = sys.exc_info()
+            tb = traceback.extract_tb(raw_tb)
+            tb = [entry for entry in tb if entry[0] == config_file]
+            print >> sys.stderr, '\n'.join(traceback.format_list(tb))
+            print >> sys.stderr, '\n'.join(traceback.format_exception_only(etype, evalue))
+            sys.exit(1)
+        sys.exit(0)
+    else:
+        os.close(w_pipe)
+        reader = os.fdopen(r_pipe)
+        try:
+            while True:
+                try:
+                    new_config = reader.read()
+                    break
+                except OSError, e:
+                    if e.errno != errno.EINTR:
+                        raise
+            _, ret = os.wait()
+            if ret != 0:
+                raise mockbuild.exception.ConfigError('Error in configuration')
+            if new_config:
+                config_opts.update(pickle.loads(new_config))
+        finally:
+            reader.close()
