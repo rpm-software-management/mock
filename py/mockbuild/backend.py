@@ -401,6 +401,12 @@ class Root(object):
             shutil.copy('/etc/rhsm/rhsm.conf', self.makeChrootPath('etc', 'rhsm'))
             self._yum(['repolist'])
 
+        # Copy RPM GPG keys
+        pki_dir = self.makeChrootPath('etc', 'pki', 'mock')
+        mockbuild.util.mkdirIfAbsent(pki_dir)
+        for pki_file in glob.glob("/etc/pki/mock/RPM-GPG-KEY-*"):
+            shutil.copy(pki_file, pki_dir)
+
         # set up resolver configuration
         if self.use_host_resolv:
             etcdir = self.makeChrootPath('etc')

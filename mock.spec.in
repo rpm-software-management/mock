@@ -135,6 +135,10 @@ ln -s -f $cfg %{_sysconfdir}/%{name}/default.cfg
 %config(noreplace) %{_sysconfdir}/pam.d/%{name}
 %config(noreplace) %{_sysconfdir}/security/console.apps/%{name}
 
+# gpg keys
+%dir %{_sysconfdir}/pki/mock
+%config(noreplace) %{_sysconfdir}/pki/mock/*
+
 # docs
 %{_mandir}/man1/mock.1*
 %{_mandir}/man1/mockchain.1*
