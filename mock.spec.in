@@ -83,8 +83,6 @@ elif [ -d $RPM_BUILD_ROOT%{_sysconfdir}/bash_completion.d ]; then
     echo %{_sysconfdir}/bash_completion.d/mock >> %{name}.cfgs
 fi
 
-echo %{_sysconfdir}/pki/mock >> %{name}.cfgs
-
 %if 0%{?rhel} == 6
     # can be removed when yum-utils >= 1.1.31 lands in el6
     echo "config_opts['plugin_conf']['package_state_enable'] = False" >> $RPM_BUILD_ROOT%{_sysconfdir}/mock/site-defaults.cfg
