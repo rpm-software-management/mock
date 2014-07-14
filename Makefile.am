@@ -28,6 +28,9 @@ CLEANFILES += $(EXTRA_PROGRAMS)
 mocketcdir = $(sysconfdir)/mock
 mocketc_DATA = $(wildcard $(top_srcdir)/etc/mock/*.cfg) $(top_srcdir)/etc/mock/logging.ini
 
+mockgpgdir = $(sysconfdir)/pki/mock
+mockgpg_DATA = $(wildcard $(top_srcdir)/etc/pki/RPM-GPG-KEY-*)
+
 EXTRA_DIST += docs etc
 dist_sbin_SCRIPTS = py/mock.py py/mockchain.py
 man_MANS = docs/mock.1 docs/mockchain.1
