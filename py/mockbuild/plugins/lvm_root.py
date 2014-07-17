@@ -122,3 +122,4 @@ def init(plugins, lvm_conf, buildroot):
     plugins.add_hook('postclean', rollback)
     plugins.add_hook('postinit', postinit)
     plugins.add_hook('scrub', scrub_root)
+    plugins.add_hook('make_snapshot', make_snapshot)

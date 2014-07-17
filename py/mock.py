@@ -144,6 +144,10 @@ def command_parse():
                       dest="mode",
                       help="Execute package management command with dnf")
 
+    parser.add_option("--snapshot", action="store_const", const="snapshot",
+                      dest="mode",
+                      help="Create a new LVM snapshot with given name")
+
     # options
     parser.add_option("-r", "--root", action="store", type="string", dest="chroot",
                       help="chroot name/config file name default: %default",
@@ -721,6 +725,12 @@ def run_command(options, args, config_opts, commands, buildroot, state):
                                           ' '.join(args)))
         commands.init()
         buildroot.pkg_manager.execute(*args)
+    elif options.mode == 'snapshot':
+        if len(args) < 1:
+            log.critical("Requires a snapshot name")
+            sys.exit(50)
+        buildroot.plugins.call_hooks('make_snapshot', args[0])
+
 
     buildroot._nuke_rpm_db()
     state.finish("run")
