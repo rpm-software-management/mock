@@ -157,6 +157,10 @@ def command_parse():
                       dest="mode",
                       help="Rollback to given snapshot")
 
+    parser.add_option("--umount", action="store_const", const="umount",
+                      dest="mode", help="Umount the buildroot if it's "
+                      "mounted from separate device (LVM)")
+
     # options
     parser.add_option("-r", "--root", action="store", type="string", dest="chroot",
                       help="chroot name/config file name default: %default",
@@ -744,6 +748,8 @@ def run_command(options, args, config_opts, commands, buildroot, state):
             log.critical("Requires a snapshot name")
             sys.exit(50)
         buildroot.plugins.call_hooks('remove_snapshot', args[0])
+    elif options.mode == 'umount':
+        buildroot.plugins.call_hooks('umount_root')
 
     buildroot._nuke_rpm_db()
     state.finish("run")
