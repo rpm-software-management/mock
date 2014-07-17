@@ -114,10 +114,11 @@ class Commands(object):
     def init(self):
         try:
             self.buildroot.initialize()
+            if not self.buildroot.chroot_was_initialized:
+                self._show_installed_packages()
         except (KeyboardInterrupt, Exception):
             self.plugins.call_hooks('initfailed')
             raise
-        self._show_installed_packages()
 
     def install(self, *rpms):
         """Call package manager to install the input rpms into the chroot"""
