@@ -104,14 +104,14 @@ class Mounts(object):
     decorate(traceLog())
     def __init__(self, rootObj):
         self.rootObj = rootObj
-        self.mounts = [ FileSystemMountPoint(filetype='proc', device='mock_chroot_proc', path=rootObj.makeChrootPath('/proc')),
-                        FileSystemMountPoint(filetype='sysfs', device='mock_chroot_sys', path=rootObj.makeChrootPath('/sys')),
-                        FileSystemMountPoint(filetype='tmpfs', device='mock_chroot_shmfs', path=rootObj.makeChrootPath('/dev/shm')),
+        self.mounts = [ FileSystemMountPoint(filetype='proc', device='mock_chroot_proc', path=rootObj.make_chroot_path('/proc')),
+                        FileSystemMountPoint(filetype='sysfs', device='mock_chroot_sys', path=rootObj.make_chroot_path('/sys')),
+                        FileSystemMountPoint(filetype='tmpfs', device='mock_chroot_shmfs', path=rootObj.make_chroot_path('/dev/shm')),
                       ]
         opts = 'gid=%d,mode=0620,ptmxmode=0666' % grp.getgrnam('tty').gr_gid
         if mockbuild.util.cmpKernelVer(os.uname()[2], '2.6.29') >= 0:
             opts += ',newinstance'
-        self.mounts.append(FileSystemMountPoint(filetype='devpts', device='mock_chroot_devpts', path=rootObj.makeChrootPath('/dev/pts'), options=opts))
+        self.mounts.append(FileSystemMountPoint(filetype='devpts', device='mock_chroot_devpts', path=rootObj.make_chroot_path('/dev/pts'), options=opts))
 
     decorate(traceLog())
     def add(self, mount):

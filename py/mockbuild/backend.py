@@ -5,7 +5,6 @@
 # Major reorganization and adaptation by Michael Brown
 # Copyright (C) 2007 Michael E Brown <mebrown@michaels-house.net>
 
-# python library imports
 import fcntl
 import glob
 import imp
@@ -15,22 +14,20 @@ import shutil
 import stat
 import pwd
 import grp
+
 try:
     import uuid
-    gotuuid = True
-except:
-    gotuuid = False
+except ImportError:
+    uuid = None
 
-
-# our imports
 import mockbuild.util
-import mockbuild.mounts
 import mockbuild.exception
 
+from mockbuild.exception import BuildRootLocked
 from mockbuild.trace_decorator import traceLog, decorate, getLog
 from mockbuild.package_manager import PackageManager
+from mockbuild.buildroot import Buildroot
 
-# classes
 class Root(object):
     """controls setup of chroot environment"""
     decorate(traceLog())
@@ -42,26 +39,21 @@ class Root(object):
         self.chrootWasCleaned = False
         self.preExistingDeps = []
         self.logging_initialized = False
-        self.buildrootLock = None
         self.version = config['version']
 
         self.sharedRootName = config['root']
         if config.has_key('unique-ext'):
             config['root'] = "%s-%s" % (config['root'], config['unique-ext'])
 
-        self.basedir = os.path.join(config['basedir'], config['root'])
-        self.rpmbuild_arch = config['rpmbuild_arch']
-        self._rootdir = os.path.join(self.basedir, 'root')
+        self.buildroot = Buildroot(config)
+        self.env = self.buildroot.env
+
+        self.basedir = self.buildroot.basedir
         self.homedir = config['chroothome']
         self.builddir = os.path.join(self.homedir, 'build')
+        self.rpmbuild_arch = config['rpmbuild_arch']
 
         self.clean_the_chroot = config['clean']
-
-        # Environment
-        self.env = config['environment']
-        proxy_env = util.get_proxy_environment(config)
-        self.env.update(proxy_env)
-        os.environ.update(proxy_env)
 
         # result dir
         self.resultdir = config['resultdir'] % config
@@ -109,9 +101,6 @@ class Root(object):
             self.pluginConf[key]['cachedir'] = self.cachedir
             self.pluginConf[key]['root'] = self.sharedRootName
 
-        # mount/umount
-        self.mounts = mockbuild.mounts.Mounts(self)
-
         self.build_log_fmt_str = config['build_log_fmt_str']
         self.root_log_fmt_str = config['root_log_fmt_str']
         self._state_log_fmt_str = config['state_log_fmt_str']
@@ -135,6 +124,10 @@ class Root(object):
         self.extra_chroot_dirs = config['extra_chroot_dirs']
 
         self.pkg_manager = PackageManager(config, self)
+
+    @property
+    def mounts(self):
+        return self.buildroot.mounts
 
     # =============
     #  'Public' API
@@ -172,6 +165,7 @@ class Root(object):
         # if the chroot wasn't cleaned try to clean up orphan processes
         if not self.clean_the_chroot:
             mockbuild.util.orphansKill(self.makeChrootPath())
+        self.buildroot.finalize()
 
     decorate(traceLog())
     def backup_results(self):
@@ -189,41 +183,17 @@ class Root(object):
     decorate(traceLog())
     def clean(self):
         """clean out chroot with extreme prejudice :)"""
-        self.tryLockBuildRoot()
         if self.backup:
             self.backup_results()
         self.start("clean chroot")
-        self._callHooks('clean')
         mockbuild.util.orphansKill(self.makeChrootPath())
-        self._umountall(nowarn=True)
-        self._unlock_and_rm_chroot()
+        self.buildroot.delete()
         self.chrootWasCleaned = True
         self.finish("clean chroot")
-        self.unlockBuildRoot()
-
-    decorate(traceLog())
-    def _unlock_and_rm_chroot(self):
-        if not os.path.exists(self.basedir):
-            return
-        t = self.basedir + ".tmp"
-        if os.path.exists(t):
-            mockbuild.util.rmtree(t, selinux=self.selinux)
-        os.rename(self.basedir, t)
-        self.buildrootLock.close()
-        try:
-            mockbuild.util.rmtree(t, selinux=self.selinux)
-        except OSError, e:
-            self.root_log.error(e)
-            self.root_log.error("contents of /proc/mounts:\n%s" % open('/proc/mounts').read())
-            self.root_log.error("looking for users of %s" % t)
-            self._show_path_user(t)
-            raise
-        self.root_log.info("chroot (%s) unlocked and deleted" % self.basedir)
 
     decorate(traceLog())
     def scrub(self, scrub_opts):
         """clean out chroot and/or cache dirs with extreme prejudice :)"""
-        self.tryLockBuildRoot()
         statestr = "scrub %s" % scrub_opts
         self.start(statestr)
         if os.path.exists(self.resultdir):
@@ -234,12 +204,12 @@ class Root(object):
                 for scrub in scrub_opts:
                     if scrub == 'all':
                         self.root_log.info("scrubbing everything for %s" % self.config_name)
-                        self._unlock_and_rm_chroot()
+                        self.buildroot.delete()
                         self.chrootWasCleaned = True
                         mockbuild.util.rmtree(self.cachedir, selinux=self.selinux)
                     elif scrub == 'chroot':
                         self.root_log.info("scrubbing chroot for %s" % self.config_name)
-                        self._unlock_and_rm_chroot()
+                        self.buildroot.delete()
                         self.chrootWasCleaned = True
                     elif scrub == 'cache':
                         self.root_log.info("scrubbing cache for %s" % self.config_name)
@@ -260,43 +230,13 @@ class Root(object):
         finally:
             print "finishing: %s" % statestr
             self.finish(statestr)
-            print "unlocking buildroot"
-            self.unlockBuildRoot()
-
-    decorate(traceLog())
-    def tryLockBuildRoot(self):
-        self.start("lock buildroot")
-        self._nuke_rpm_db()
-        try:
-            self.buildrootLock = open(os.path.join(self.basedir, "buildroot.lock"), "a+")
-        except IOError, e:
-            return 0
-
-        try:
-            fcntl.lockf(self.buildrootLock.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
-        except IOError, e:
-            raise mockbuild.exception.BuildRootLocked, "Build root is locked by another process."
-        return 1
-
-    decorate(traceLog())
-    def unlockBuildRoot(self):
-        if self.buildrootLock:
-            self.buildrootLock.close()
-            try:
-                os.remove(os.path.join(self.basedir, "buildroot.lock"))
-            except OSError,e:
-                pass
-        self._nuke_rpm_db()
-        self.finish("lock buildroot")
-        return 0
 
     decorate(traceLog())
     def makeChrootPath(self, *args):
         '''For safety reasons, self._rootdir should not be used directly. Instead
         use this handy helper function anytime you want to reference a path in
         relation to the chroot.'''
-        tmp = self._rootdir + "/" + "/".join(args)
-        return tmp.replace("//", "/")
+        return self.buildroot.make_chroot_path(*args)
 
     decorate(traceLog())
     def init(self):
@@ -325,19 +265,14 @@ class Root(object):
         #   --> /etc/ is no longer 02775 (new privs model)
         #   --> no /etc/yum.conf symlink (F7 and above)
 
-        # create our base directory hierarchy
-        mockbuild.util.mkdirIfAbsent(self.basedir)
-        mockbuild.util.mkdirIfAbsent(self.makeChrootPath())
+        self.buildroot.initialize()
 
         self.uidManager.dropPrivsTemp()
         try:
             mockbuild.util.mkdirIfAbsent(self.resultdir)
-        except (mockbuild.exception.Error,), e:
-            raise mockbuild.exception.ResultDirNotAccessible( mockbuild.exception.ResultDirNotAccessible.__doc__ % self.resultdir )
+        except mockbuild.exception.Error:
+            raise mockbuild.exception.ResultDirNotAccessible(mockbuild.exception.ResultDirNotAccessible.__doc__ % self.resultdir)
         self.uidManager.restorePrivs()
-
-        # lock this buildroot so we dont get stomped on.
-        self.tryLockBuildRoot()
 
         # create our log files. (if they havent already)
         self._resetLogging()
@@ -349,12 +284,6 @@ class Root(object):
         # set up plugins:
         getLog().info("calling preinit hooks")
         self._callHooks('preinit')
-
-        # create skeleton dirs
-        self._setupDirs()
-
-        # touch files
-        self._setupFiles()
 
         # use yum plugin conf from chroot as needed
         yumpluginconfdir = self.makeChrootPath('etc', 'yum', 'pluginconf.d')
@@ -414,7 +343,7 @@ class Root(object):
                 os.remove(hostspath)
             shutil.copy2('/etc/hosts', etcdir)
 
-        if gotuuid:
+        if uuid:
             # Anything that tries to use libdbus inside the chroot will require this
             # FIXME - merge this code with other OS-image building code
             machine_uuid = uuid.uuid4().hex
@@ -435,125 +364,30 @@ class Root(object):
                 fo.write(self.chroot_file_contents[key])
                 fo.close()
 
-        self._setupDev()
-
         # yum stuff
-        try:
-            self.start("yum update")
-            self._mountall()
-            if self.chrootWasCleaned:
-                self.yum_init_install_output = self._yum(self.chroot_setup_cmd, returnOutput=1)
-            if self.chrootWasCached:
-                self._yum(('update',), returnOutput=1)
+        self.start("yum update")
+        if self.chrootWasCleaned:
+            self.yum_init_install_output = self._yum(self.chroot_setup_cmd, returnOutput=1)
+        if self.chrootWasCached:
+            self._yum(('update',), returnOutput=1)
 
-            self.finish("yum update")
-            # create user
-            self._makeBuildUser()
+        self.finish("yum update")
+        # create user
+        self._makeBuildUser()
 
-            # create rpmbuild dir
-            self._buildDirSetup()
+        # create rpmbuild dir
+        self._buildDirSetup()
 
-            # set up timezone to match host
-            localtimedir = self.makeChrootPath('etc')
-            localtimepath = self.makeChrootPath('etc', 'localtime')
-            if os.path.exists(localtimepath):
-                os.remove(localtimepath)
-            shutil.copy2('/etc/localtime', localtimedir)
+        # set up timezone to match host
+        localtimedir = self.makeChrootPath('etc')
+        localtimepath = self.makeChrootPath('etc', 'localtime')
+        if os.path.exists(localtimepath):
+            os.remove(localtimepath)
+        shutil.copy2('/etc/localtime', localtimedir)
 
-            # done with init
-            self._callHooks('postinit')
-        finally:
-            self._umountall()
-        self.unlockBuildRoot()
+        # done with init
+        self._callHooks('postinit')
         self.finish("chroot init")
-
-    decorate(traceLog())
-    def _setupDev(self, interactive=False):
-        if not self.internal_dev_setup:
-            self._state_log.info("Skipping device setup due to config")
-            return
-        self.start("device setup")
-        try:
-            # files in /dev
-            mockbuild.util.rmtree(self.makeChrootPath("dev"), selinux=self.selinux)
-            mockbuild.util.mkdirIfAbsent(self.makeChrootPath("dev", "pts"))
-            mockbuild.util.mkdirIfAbsent(self.makeChrootPath("dev", "shm"))
-            prevMask = os.umask(0000)
-            devFiles = [
-                (stat.S_IFCHR | 0666, os.makedev(1, 3), "dev/null"),
-                (stat.S_IFCHR | 0666, os.makedev(1, 7), "dev/full"),
-                (stat.S_IFCHR | 0666, os.makedev(1, 5), "dev/zero"),
-                (stat.S_IFCHR | 0666, os.makedev(1, 8), "dev/random"),
-                (stat.S_IFCHR | 0444, os.makedev(1, 9), "dev/urandom"),
-                (stat.S_IFCHR | 0666, os.makedev(5, 0), "dev/tty"),
-                (stat.S_IFCHR | 0600, os.makedev(5, 1), "dev/console"),
-                (stat.S_IFCHR | 0666, os.makedev(5, 2), "dev/ptmx"),
-                ]
-            kver = os.uname()[2]
-            getLog().debug("kernel version == %s" % kver)
-            for i in devFiles:
-                # create node
-                os.mknod( self.makeChrootPath(i[2]), i[0], i[1])
-                # set context. (only necessary if host running selinux enabled.)
-                # fails gracefully if chcon not installed.
-                if self.selinux:
-                    mockbuild.util.do(
-                        ["chcon", "--reference=/%s"% i[2], self.makeChrootPath(i[2])]
-                        , raiseExc=0, shell=False, env=self.env)
-
-            os.symlink("/proc/self/fd/0", self.makeChrootPath("dev/stdin"))
-            os.symlink("/proc/self/fd/1", self.makeChrootPath("dev/stdout"))
-            os.symlink("/proc/self/fd/2", self.makeChrootPath("dev/stderr"))
-
-            if os.path.isfile(self.makeChrootPath('etc', 'mtab')):
-                os.remove(self.makeChrootPath('etc', 'mtab'))
-            os.symlink("/proc/self/mounts", self.makeChrootPath('etc', 'mtab'))
-
-            os.chown(self.makeChrootPath('dev/tty'), pwd.getpwnam('root')[2], grp.getgrnam('tty')[2])
-            os.chown(self.makeChrootPath('dev/ptmx'), pwd.getpwnam('root')[2], grp.getgrnam('tty')[2])
-
-            # symlink /dev/fd in the chroot for everything except RHEL4
-            if mockbuild.util.cmpKernelVer(kver, '2.6.9') > 0:
-                os.symlink("/proc/self/fd",   self.makeChrootPath("dev/fd"))
-
-            os.umask(prevMask)
-
-            if mockbuild.util.cmpKernelVer(kver, '2.6.18') >= 0:
-                os.unlink(self.makeChrootPath('/dev/ptmx'))
-            os.symlink("pts/ptmx", self.makeChrootPath('/dev/ptmx'))
-        finally:
-            self.finish("device setup")
-
-    decorate(traceLog())
-    def _setupDirs(self):
-        # create skeleton dirs
-        self.root_log.debug('create skeleton dirs')
-        for item in [
-                     'var/lib/rpm',
-                     'var/lib/yum',
-                     'var/lib/dbus',
-                     'var/log',
-                     'var/cache/yum',
-                     'etc/rpm',
-                     'tmp',
-                     'tmp/ccache',
-                     'var/tmp',
-                     'etc/yum.repos.d',
-                     'etc/yum',
-                     'proc',
-                     'sys',
-                    ] + self.extra_chroot_dirs :
-            mockbuild.util.mkdirIfAbsent(self.makeChrootPath(item))
-
-    decorate(traceLog())
-    def _setupFiles(self):
-        # touch files
-        self.root_log.debug('touch required files')
-        for item in [self.makeChrootPath('etc', 'fstab'),
-                     self.makeChrootPath('var', 'log', 'yum.log')]:
-            mockbuild.util.touch(item)
-
-
 
     decorate(traceLog())
     def _nuke_rpm_db(self):
@@ -601,32 +435,20 @@ class Root(object):
         """call yum to install the input rpms into the chroot"""
         # pass build reqs (as strings) to installer
         self.root_log.info("installing package(s): %s" % " ".join(rpms))
-        try:
-            self._mountall()
-            output = self._yum(['install'] + list(rpms), returnOutput=1)
-            self.root_log.info(output)
-        finally:
-            self._umountall()
+        output = self._yum(['install'] + list(rpms), returnOutput=1)
+        self.root_log.info(output)
 
     decorate(traceLog())
     def yumUpdate(self):
         """use yum to update the chroot"""
-        try:
-            self._mountall()
-            self._yum(('update',), returnOutput=1)
-        finally:
-            self._umountall()
+        self._yum(('update',), returnOutput=1)
 
     decorate(traceLog())
     def yumRemove(self, *rpms):
         """call yum to remove the input rpms from the chroot"""
         self.root_log.info("removing package(s): %s" % " ".join(rpms))
-        try:
-            self._mountall()
-            output = self._yum(['remove'] + list(rpms), returnOutput=1)
-            self.root_log.info(output)
-        finally:
-            self._umountall()
+        output = self._yum(['remove'] + list(rpms), returnOutput=1)
+        self.root_log.info(output)
 
     decorate(traceLog())
     def installSrpmDeps(self, *srpms):
@@ -671,6 +493,9 @@ class Root(object):
             gid=self.chrootgid,
             )
 
+
+
+
     #
     # UNPRIVILEGED:
     #   Everything in this function runs as the build user
@@ -688,9 +513,6 @@ class Root(object):
         buildstate = "build phase for %s" % baserpm
         self.start(buildstate)
         try:
-            self._setupDev()
-            self._mountall()
-
             # remove rpm db files to prevent version mismatch problems
             # note: moved to do this before the user change below!
             self._nuke_rpm_db()
@@ -770,7 +592,6 @@ class Root(object):
 
         finally:
             self.uidManager.restorePrivs()
-            self._umountall()
 
             # tell caching we are done building
             self._callHooks('postbuild')
@@ -779,7 +600,6 @@ class Root(object):
 
     def shell(self, options, cmd=None):
         log = getLog()
-        self.tryLockBuildRoot()
         log.debug("shell: calling preshell hooks")
         self._callHooks("preshell")
         if options.unpriv or self.no_root_shells:
@@ -788,17 +608,6 @@ class Root(object):
         else:
             uid=0
             gid=0
-        try:
-            log.debug("shell: setting up root files")
-            self._setupDirs()
-            self._setupDev()
-            self._setupFiles()
-            log.debug("shell: mounting all filesystems")
-            self._mountall()
-        except Exception, e:
-            log.error(e)
-            self.unlockBuildRoot()
-            return mockbuild.exception.RootError(e).resultcode
 
         try:
             self.start("shell")
@@ -808,12 +617,10 @@ class Root(object):
                                          cmd=cmd)
         finally:
             log.debug("shell: unmounting all filesystems")
-            self._umountall()
             self.finish("shell")
 
         log.debug("shell: calling postshell hooks")
         self._callHooks('postshell')
-        self.unlockBuildRoot()
         return ret
 
     def chroot(self, args, options):
@@ -823,33 +630,26 @@ class Root(object):
             args = args[0]
             shell=True
         log.info("Running in chroot: %s" % args)
-        self.tryLockBuildRoot()
         self._resetLogging()
         self._callHooks("prechroot")
         chrootstate = "chroot %s" % args
         self.start(chrootstate)
         try:
-            self._setupDirs()
-            self._setupDev()
-            self._setupFiles()
-            self._mountall()
             if options.unpriv:
                 self.doChroot(args, shell=shell, printOutput=True,
                               uid=self.chrootuid, gid=self.chrootgid, cwd=options.cwd)
             else:
                 self.doChroot(args, shell=shell, cwd=options.cwd, printOutput=True)
         finally:
-            self._umountall()
             self.finish(chrootstate)
         self._callHooks("postchroot")
-        self.unlockBuildRoot()
 
     #
     # UNPRIVILEGED:
     #   Everything in this function runs as the build user
     #       -> except hooks. :)
     #
-    decorate(traceLog())
+    #decorate(traceLog())
     def buildsrpm(self, spec, sources, timeout):
         """build an srpm, capture log"""
 
@@ -857,7 +657,6 @@ class Root(object):
         self._callHooks('earlyprebuild')
 
         try:
-            self._mountall()
             self.uidManager.becomeUser(self.chrootuid, self.chrootgid)
             self.start("buildsrpm")
 
@@ -905,7 +704,6 @@ class Root(object):
 
         finally:
             self.uidManager.restorePrivs()
-            self._umountall()
 
             # tell caching we are done building
             self._callHooks('postbuild')
@@ -938,29 +736,6 @@ class Root(object):
 
             module.init(self, self.pluginConf["%s_opts" % modname])
 
-    decorate(traceLog())
-    def _mountall(self):
-        """mount everything that is queued up for mounting in the chroot"""
-        self.mounts.mountall()
-
-    decorate(traceLog())
-    def _umountall(self, nowarn=False):
-        """umount all mounted chroot fs."""
-
-        # first try removing all expected mountpoints.
-        self.mounts.umountall(nowarn=nowarn)
-
-        # then remove anything that might be left around.
-        mountpoints = open("/proc/mounts").read().strip().split("\n")
-
-        # umount in reverse mount order to prevent nested mount issues that
-        # may prevent clean unmount.
-        for mountline in reversed(mountpoints):
-            mountpoint = mountline.split()[1]
-            if os.path.realpath(mountpoint).startswith(os.path.realpath(self.makeChrootPath()) + "/"):
-                cmd = "umount -n -l %s" % mountpoint
-                self.root_log.warning("Forcibly unmounting '%s' from chroot." % mountpoint)
-                mockbuild.util.do(cmd, raiseExc=0, shell=True, env=self.env)
 
     decorate(traceLog())
     def _show_path_user(self, path):
