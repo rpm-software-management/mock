@@ -275,46 +275,60 @@ class Root(object):
 
     decorate(traceLog())
     def _init(self):
-        if self.chroot_was_initialized():
-            return
-        self.start("chroot init")
         if self.chroot_was_cleaned:
             self.buildroot.initialize()
-
-        self.uidManager.dropPrivsTemp()
-        try:
-            mockbuild.util.mkdirIfAbsent(self.resultdir)
-        except mockbuild.exception.Error:
-            raise mockbuild.exception.ResultDirNotAccessible(mockbuild.exception.ResultDirNotAccessible.__doc__ % self.resultdir)
-        self.uidManager.restorePrivs()
-
-        # create our log files. (if they havent already)
-        self._resetLogging()
-
-        # write out config details
-        self.root_log.debug('rootdir = %s' % self.makeChrootPath())
-        self.root_log.debug('resultdir = %s' % self.resultdir)
 
         # set up plugins:
         getLog().info("calling preinit hooks")
         self._callHooks('preinit')
 
-        # set up resolver configuration
-        if self.use_host_resolv:
-            self._setup_resolver_config()
+        if not self.chroot_was_initialized():
+            self.start("chroot init")
+            self.uidManager.dropPrivsTemp()
+            try:
+                mockbuild.util.mkdirIfAbsent(self.resultdir)
+            except mockbuild.exception.Error:
+                raise mockbuild.exception.ResultDirNotAccessible(mockbuild.exception.ResultDirNotAccessible.__doc__ % self.resultdir)
+            self.uidManager.restorePrivs()
 
-        self._setup_dbus_uuid()
+            # create our log files. (if they havent already)
+            self._resetLogging()
 
-        # files that need doing
-        for key in self.chroot_file_contents:
-            p = self.makeChrootPath(key)
-            if not os.path.exists(p):
-                # create directory if necessary
-                mockbuild.util.mkdirIfAbsent(os.path.dirname(p))
-                # write file
-                fo = open(p, 'w+')
-                fo.write(self.chroot_file_contents[key])
-                fo.close()
+            # write out config details
+            self.root_log.debug('rootdir = %s' % self.makeChrootPath())
+            self.root_log.debug('resultdir = %s' % self.resultdir)
+
+            # set up resolver configuration
+            if self.use_host_resolv:
+                self._setup_resolver_config()
+
+            self._setup_dbus_uuid()
+
+            # files that need doing
+            for key in self.chroot_file_contents:
+                p = self.makeChrootPath(key)
+                if not os.path.exists(p):
+                    # create directory if necessary
+                    mockbuild.util.mkdirIfAbsent(os.path.dirname(p))
+                    # write file
+                    fo = open(p, 'w+')
+                    fo.write(self.chroot_file_contents[key])
+                    fo.close()
+            # create user
+            self._makeBuildUser()
+
+            # create rpmbuild dir
+            self._buildDirSetup()
+
+            # set up timezone to match host
+            self._setup_timezone()
+
+            # mark the buildroot as initialized
+            util.touch(self.makeChrootPath('.initialized'))
+
+            # done with init
+            self._callHooks('postinit')
+            self.finish("chroot init")
 
         self.pkg_manager.initialize_config()
 
@@ -326,21 +340,6 @@ class Root(object):
             self._yum(('update',), returnOutput=1)
 
         self.finish("yum update")
-        # create user
-        self._makeBuildUser()
-
-        # create rpmbuild dir
-        self._buildDirSetup()
-
-        # set up timezone to match host
-        self._setup_timezone()
-
-        # mark the buildroot as initialized
-        util.touch(self.makeChrootPath('.initialized'))
-
-        # done with init
-        self._callHooks('postinit')
-        self.finish("chroot init")
 
     decorate(traceLog())
     def _nuke_rpm_db(self):

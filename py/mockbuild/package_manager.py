@@ -19,6 +19,7 @@ def PackageManager(config_opts, chroot):
 
 class _PackageManager(object):
     command = None
+    builddep_command = None
 
     def __init__(self, config, buildroot):
         self.config = config
@@ -55,13 +56,13 @@ class _PackageManager(object):
         self.buildroot._callHooks("postyum")
         return out
 
-    def install(self, *args):
+    def install(self, *args, **kwargs):
         return self.execute('install', *args)
 
-    def remove(self, *args):
+    def remove(self, *args, **kwargs):
         return self.execute('remove', *args)
 
-    def update(self, *args):
+    def update(self, *args, **kwargs):
         return self.execute('update', *args)
 
     def builddep(self, *args, **kwargs):
