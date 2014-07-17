@@ -603,39 +603,23 @@ def main(ret):
 
         for dummy in mockbuild.util.yieldSrpmHeaders(args, plainRpmOk=1):
             pass
-        chroot.tryLockBuildRoot()
-        try:
-            chroot._mountall()
-            chroot.installSrpmDeps(*args)
-        finally:
-            chroot._umountall()
-        chroot.unlockBuildRoot()
+        chroot.installSrpmDeps(*args)
 
     elif options.mode == 'install':
         if len(args) == 0:
             log.critical("You must specify a package list to install.")
             sys.exit(50)
 
-        chroot._resetLogging()
-        chroot.tryLockBuildRoot()
         chroot.yumInstall(*args)
-        chroot.unlockBuildRoot()
 
     elif options.mode == 'update':
-        chroot._resetLogging()
-        chroot.tryLockBuildRoot()
         chroot.yumUpdate()
-        chroot.unlockBuildRoot()
 
     elif options.mode == 'remove':
         if len(args) == 0:
             log.critical("You must specify a package list to remove.")
             sys.exit(50)
-
-        chroot._resetLogging()
-        chroot.tryLockBuildRoot()
         chroot.yumRemove(*args)
-        chroot.unlockBuildRoot()
 
     elif options.mode == 'rebuild':
         if config_opts['scm']:
@@ -650,9 +634,8 @@ def main(ret):
 
     elif options.mode == 'orphanskill':
         mockbuild.util.orphansKill(chroot.makeChrootPath())
+
     elif options.mode == 'copyin':
-        chroot.tryLockBuildRoot()
-        chroot._resetLogging()
         #uidManager.dropPrivsForever()
         if len(args) < 2:
             log.critical("Must have source and destinations for copyin")
@@ -669,11 +652,8 @@ def main(ret):
                 shutil.copytree(src, dest)
             else:
                 shutil.copy(src, dest)
-        chroot.unlockBuildRoot()
 
     elif options.mode == 'copyout':
-        chroot.tryLockBuildRoot()
-        chroot._resetLogging()
         chroot.uidManager.dropPrivsTemp()
         if len(args) < 2:
             log.critical("Must have source and destinations for copyout")
@@ -692,7 +672,6 @@ def main(ret):
             else:
                 shutil.copy(src, dest)
         chroot.uidManager.restorePrivs()
-        chroot.unlockBuildRoot()
 
     chroot._nuke_rpm_db()
     chroot.finish("run")

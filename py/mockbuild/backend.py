@@ -125,6 +125,8 @@ class Root(object):
 
         self.pkg_manager = PackageManager(config, self)
 
+        self._resetLogging()
+
     @property
     def mounts(self):
         return self.buildroot.mounts
@@ -196,8 +198,6 @@ class Root(object):
         """clean out chroot and/or cache dirs with extreme prejudice :)"""
         statestr = "scrub %s" % scrub_opts
         self.start(statestr)
-        if os.path.exists(self.resultdir):
-            self._resetLogging()
         try:
             try:
                 self._callHooks('clean')
@@ -585,7 +585,6 @@ class Root(object):
             args = args[0]
             shell=True
         log.info("Running in chroot: %s" % args)
-        self._resetLogging()
         self._callHooks("prechroot")
         chrootstate = "chroot %s" % args
         self.start(chrootstate)
