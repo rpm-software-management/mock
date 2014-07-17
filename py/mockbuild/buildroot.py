@@ -110,6 +110,7 @@ class Buildroot(object):
         else:
             self._setup_devices()
             self.mounts.mountall()
+            self.pkg_manager.initialize_config()
 
         # mark the buildroot as initialized
         util.touch(self.make_chroot_path('.initialized'))

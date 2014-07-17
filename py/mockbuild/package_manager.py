@@ -45,7 +45,6 @@ class _PackageManager(object):
         return invocation
 
     def execute(self, *args, **kwargs):
-        self.initialize_config()
         self.plugins.call_hooks("preyum")
         env = self.config['environment'].copy()
         env.update(util.get_proxy_environment(self.config))
