@@ -120,3 +120,20 @@ class Yum(_PackageManager):
 
 class Dnf(_PackageManager):
     command = 'dnf'
+
+    def build_invocation(self, *args):
+        if not 'dnf_builddep_opts' in self.config:
+            self.config['dnf_builddep_opts'] = self.config['yum_builddep_opts']
+        if not 'dnf_common_opts' in self.config:
+            self.config['dnf_common_opts'] = self.config['yum_common_opts']
+        return super(Dnf, self).build_invocation(*args)
+
+    def initialize_config(self):
+        if 'dnf.conf' in self.config:
+            config_content = self.config['dnf.conf']
+        else:
+            config_content = self.config['yum.conf']
+        util.mkdirIfAbsent(self.buildroot.makeChrootPath('etc', 'dnf'))
+        dnfconf_path = self.buildroot.makeChrootPath('etc', 'dnf', 'dnf.conf')
+        with open(dnfconf_path, 'w+') as dnfconf_file:
+            dnfconf_file.write(config_content)
