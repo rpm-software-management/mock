@@ -436,13 +436,27 @@ class Buildroot(object):
 
 
     def _umount_residual(self):
-        mountpoints = open("/proc/mounts").read().strip().split("\n")
+        def force_umount(mountpoint):
+            cmd = "umount -n -l %s" % mountpoint
+            self.root_log.warning("Forcibly unmounting '%s' from chroot." % mountpoint)
+            util.do(cmd, raiseExc=0, shell=True, env=self.env)
 
-        # umount in reverse mount order to prevent nested mount issues that
-        # may prevent clean unmount.
-        for mountline in reversed(mountpoints):
-            mountpoint = mountline.split()[1]
-            if self._mount_is_ours(mountpoint):
-                cmd = "umount -n -l %s" % mountpoint
-                self.root_log.warning("Forcibly unmounting '%s' from chroot." % mountpoint)
-                util.do(cmd, raiseExc=0, shell=True, env=self.env)
+        def get_our_mounts():
+            mountpoints = open("/proc/mounts").read().strip().split("\n")
+            our_mounts = []
+            # umount in reverse mount order to prevent nested mount issues that
+            # may prevent clean unmount.
+            for mountline in reversed(mountpoints):
+                mountpoint = mountline.split()[1]
+                if self._mount_is_ours(mountpoint):
+                    our_mounts.append(mountpoint)
+            return our_mounts
+
+        prev_mounts = []
+        while True:
+            current_mounts = get_our_mounts()
+            if current_mounts == prev_mounts:
+                return
+            for mount in current_mounts:
+                force_umount(mount)
+            prev_mounts = current_mounts
