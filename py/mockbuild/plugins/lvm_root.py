@@ -132,6 +132,8 @@ class LvmPlugin(object):
         size = self.lvm_conf.get('size', '2G')
         pool_id = self.vg_name + '/' + self.pool_name
         create_pool = ['lvcreate', '-T', pool_id, '-L', str(size)]
+        if 'poolmetadatasize' in self.lvm_conf:
+            create_pool += ['--poolmetadatasize', self.lvm_conf['poolmetadatasize']]
         util.do(create_pool, printOutput=True)
         create_lv = ['lvcreate', '-T', pool_id, '-V', str(size), '-n', self.lv_name]
         util.do(create_lv, printOutput=True)
