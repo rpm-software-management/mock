@@ -121,10 +121,15 @@ def init(plugins, lvm_conf, buildroot):
             util.do(['lvremove', '-f', vg_name + '/' + pool_name],
                     printOutput=True)
 
+    def prefix_name(fn):
+        def decorated(name):
+            return fn(pool_name + '-' + name)
+        return decorated
+
     plugins.add_hook('mount_root', mount_root)
     plugins.add_hook('umount_root', umount_root)
     plugins.add_hook('postclean', rollback)
     plugins.add_hook('postinit', postinit)
     plugins.add_hook('scrub', scrub_root)
-    plugins.add_hook('make_snapshot', lambda name: make_snapshot(pool_name + '-' + name))
-    plugins.add_hook('rollback_to', rollback_to)
+    plugins.add_hook('make_snapshot', prefix_name(make_snapshot))
+    plugins.add_hook('rollback_to', prefix_name(rollback_to))
