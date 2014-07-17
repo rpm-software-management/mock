@@ -717,6 +717,7 @@ def run_command(options, args, config_opts, commands, buildroot, state):
     elif options.mode in ('pm-cmd', 'yum-cmd', 'dnf-cmd'):
         log.info('Running {0} {1}'.format(buildroot.pkg_manager.command,
                                           ' '.join(args)))
+        commands.init()
         buildroot.pkg_manager.execute(*args)
 
     buildroot._nuke_rpm_db()
