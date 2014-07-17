@@ -338,6 +338,8 @@ def do(command, shell=False, chrootPath=None, cwd=None, timeout=0, raiseExc=True
     logger = kargs.get("logger", getLog())
     output = ""
     start = time.time()
+    master_pty, slave_pty = os.openpty()
+    reader = os.fdopen(master_pty)
     preexec = ChildPreExec(personality, chrootPath, cwd, uid, gid)
     if env is None:
         env = clean_env()
@@ -350,13 +352,13 @@ def do(command, shell=False, chrootPath=None, cwd=None, timeout=0, raiseExc=True
             env=env,
             bufsize=0, close_fds=True,
             stdin=open("/dev/null", "r"),
-            stdout=subprocess.PIPE,
+            stdout=slave_pty,
             stderr=subprocess.PIPE,
-            preexec_fn = preexec,
+            preexec_fn=preexec,
             )
 
         # use select() to poll for output so we dont block
-        output = logOutput([child.stdout, child.stderr],
+        output = logOutput([reader, child.stderr],
                            logger, returnOutput, start, timeout, printOutput=printOutput, child=child, chrootPath=chrootPath)
 
     except:
@@ -369,6 +371,9 @@ def do(command, shell=False, chrootPath=None, cwd=None, timeout=0, raiseExc=True
         except:
             pass
         raise
+    finally:
+        os.close(slave_pty)
+        reader.close()
 
     # wait until child is done, kill it if it passes timeout
     niceExit=1
@@ -393,7 +398,8 @@ def do(command, shell=False, chrootPath=None, cwd=None, timeout=0, raiseExc=True
     return output
 
 class ChildPreExec(object):
-    def __init__(self, personality, chrootPath, cwd, uid, gid, env=None, shell=False):
+    def __init__(self, personality, chrootPath, cwd, uid, gid, env=None,
+                 shell=False):
         self.personality = personality
         self.chrootPath  = chrootPath
         self.cwd = cwd
