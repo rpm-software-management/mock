@@ -12,14 +12,29 @@ def PackageManager(config_opts, chroot):
 
 
 class _PackageManager(object):
-    #TODO hooks
+    command = None
 
     def __init__(self, config, buildroot):
         self.config = config
         self.buildroot = buildroot
 
     def build_invocation(self, *args):
-        raise NotImplementedError()
+        if args[0] == 'builddep':
+            args = args[1:]
+            invocation = [self.command + '-builddep']
+            common_opts = self.config[self.command + '_builddep_opts']
+        else:
+            invocation = [self.command]
+            common_opts = self.config[self.command + '_common_opts']
+        invocation += ['--installroot', self.buildroot.makeChrootPath()]
+        releasever = self.config['releasever']
+        if releasever:
+            invocation += ['--releasever', releasever]
+        if not self.config['online']:
+            invocation.append('-C')
+        invocation += common_opts
+        invocation += args
+        return invocation
 
     def execute(self, *args, **kwargs):
         self.buildroot._callHooks("preyum")
@@ -44,23 +59,7 @@ class _PackageManager(object):
         return self.execute('update', *args)
 
 class Yum(_PackageManager):
-    def build_invocation(self, *args):
-        if args[0] == 'builddep':
-            args = args[1:]
-            invocation = ['yum-builddep']
-            common_opts = self.config['yum_builddep_opts']
-        else:
-            invocation = ['yum']
-            common_opts = self.config['yum_common_opts']
-        invocation += ['--installroot', self.buildroot.makeChrootPath()]
-        releasever = self.config['releasever']
-        if releasever:
-            invocation += ['--releasever', releasever]
-        if not self.config['online']:
-            invocation.append('-C')
-        invocation += common_opts
-        invocation += args
-        return invocation
+    command = 'yum'
 
 class Dnf(_PackageManager):
-    pass
+    command = 'dnf'
