@@ -252,8 +252,19 @@ def condEnvironment(env=None):
     for k in env.keys():
         os.putenv(k, env[k])
 
+def process_input(line):
+    out = []
+    for char in line.rstrip('\r'):
+        if char == '\r':
+            out = []
+        elif char == '\b':
+            out.pop()
+        else:
+            out.append(char)
+    return ''.join(out)
+
 def logOutput(fds, logger, returnOutput=1, start=0, timeout=0, printOutput=False, child=None, chrootPath=None):
-    output=""
+    output = ""
     done = 0
 
     # set all fds to nonblocking
@@ -264,11 +275,11 @@ def logOutput(fds, logger, returnOutput=1, start=0, timeout=0, printOutput=False
 
     tail = ""
     while not done:
-        if (time.time() - start)>timeout and timeout!=0:
+        if (time.time() - start) > timeout and timeout != 0:
             done = 1
             break
 
-        i_rdy,o_rdy,e_rdy = select.select(fds,[],[],1)
+        i_rdy, o_rdy, e_rdy = select.select(fds, [], [], 1)
 
         if not i_rdy and not o_rdy and not e_rdy:
             if child and child.poll() is not None:
@@ -285,24 +296,34 @@ def logOutput(fds, logger, returnOutput=1, start=0, timeout=0, printOutput=False
             if input == "":
                 done = 1
                 break
+            if printOutput:
+                print input,
+            lines = input.split("\n")
+            if tail:
+                lines[0] = tail + lines[0]
+            # we may not have all of the last line
+            tail = lines.pop()
+            if not lines:
+                continue
+            lines = [process_input(line) for line in lines]
+            processed_input = '\n'.join(lines) + '\n'
             if logger is not None:
-                lines = input.split("\n")
-                if tail:
-                    lines[0] = tail + lines[0]
-                # we may not have all of the last line
-                tail = lines.pop()
                 for line in lines:
-                    if line == '': continue
-                    logger.debug(line)
+                    if line != '':
+                        logger.debug(line)
                 for h in logger.handlers:
                     h.flush()
             if returnOutput:
-                output += input
-            if printOutput:
-                print input,
+                output += processed_input
 
-    if tail and logger is not None:
-        logger.debug(tail)
+    if tail:
+        tail = process_input(tail) + '\n'
+        if logger is not None:
+            logger.debug(tail)
+        if returnOutput:
+            output += tail
+        if printOutput:
+            print tail,
     return output
 
 decorate(traceLog())
