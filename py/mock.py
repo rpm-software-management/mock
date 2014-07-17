@@ -91,7 +91,7 @@ def command_parse():
 
     # modes (basic commands)
     parser.add_option("--rebuild", action="store_const", const="rebuild",
-                      dest="mode", default='rebuild',
+                      dest="mode", default='__default__',
                       help="rebuild the specified SRPM(s)")
     parser.add_option("--buildsrpm", action="store_const", const="buildsrpm",
                       dest="mode",
@@ -286,11 +286,14 @@ def command_parse():
 
     (options, args) = parser.parse_args()
 
-    # handle old-style commands
-    if len(args) and args[0] in ('chroot', 'shell',
-            'rebuild', 'install', 'installdeps', 'remove', 'init', 'clean'):
-        options.mode = args[0]
-        args = args[1:]
+    if options.mode == '__default__':
+        # handle old-style commands
+        if len(args) and args[0] in ('chroot', 'shell',
+                'rebuild', 'install', 'installdeps', 'remove', 'init', 'clean'):
+            options.mode = args[0]
+            args = args[1:]
+        else:
+            options.mode = 'rebuild'
 
     # explicitly disallow multiple targets in --target argument
     if options.rpmbuild_arch:
