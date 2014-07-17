@@ -13,8 +13,6 @@ import os
 import os.path
 import pickle
 import rpm
-import rpmUtils
-import rpmUtils.transaction
 import select
 import shutil
 import subprocess
@@ -149,18 +147,27 @@ def orphansKill(rootToKill, killsig=SIGTERM):
         except OSError as e:
             pass
 
-
 @traceLog()
 def yieldSrpmHeaders(srpms, plainRpmOk=0):
-    ts = rpmUtils.transaction.initReadOnlyTransaction()
+    ts = rpm.TransactionSet('/')
+    flags = (rpm._RPMVSF_NOSIGNATURES|rpm._RPMVSF_NODIGESTS)
+    ts.setVSFlags(flags)
     for srpm in srpms:
         try:
-            hdr = rpmUtils.miscutils.hdrFromPackage(ts, srpm)
-        except (rpmUtils.RpmUtilsError,) as e:
-            raise mockbuild.exception.Error("Cannot find/open srpm: %s. Error: %s" % (srpm, ''.join(e)))
+            fd = os.open(srpm, os.O_RDONLY)
+        except OSError as e:
+            raise mockbuild.exception.Error("Cannot find/open srpm: %s. Error: %s"
+                                            % (srpm, e))
+        try:
+            hdr = ts.hdrFromFdno(fd)
+        except rpm.error as e:
+            raise mockbuild.exception.Error(
+                    "Cannot find/open srpm: %s. Error: %s" % (srpm, ''.join(e)))
+        finally:
+            os.close(fd)
 
         if not plainRpmOk and hdr[rpm.RPMTAG_SOURCEPACKAGE] != 1:
-            raise mockbuild.exception.Error("File is not an srpm: %s." % srpm )
+            raise mockbuild.exception.Error("File is not an srpm: %s." % srpm)
 
         yield hdr
 
@@ -183,11 +190,7 @@ def getNEVRA(hdr):
 @traceLog()
 def cmpKernelVer(str1, str2):
     'compare two kernel version strings and return -1, 0, 1 for less, equal, greater'
-    # first try compareVerOnly and fall back to compareEVR
-    try:
-        return rpmUtils.miscutils.compareVerOnly(str1, str2)
-    except AttributeError as e:
-        return rpmUtils.miscutils.compareEVR(('', str1, ''), ('', str2, ''))
+    return rpm.labelCompare(('', str1, ''), ('', str2, ''))
 
 @traceLog()
 def hostIsEL5():
@@ -209,7 +212,7 @@ def getAddtlReqs(hdr, conf):
                 reqlist.extend(more_reqs)
             break
 
-    return rpmUtils.miscutils.unique(reqlist)
+    return set(reqlist)
 
 # not traced...
 def chomp(line):
