@@ -60,6 +60,7 @@ mockbuild_PYTHON = \
     py/mockbuild/__init__.py        \
     py/mockbuild/exception.py       \
     py/mockbuild/util.py            \
+    py/mockbuild/package_manager.py \
     py/mockbuild/backend.py         \
     py/mockbuild/trace_decorator.py \
     py/mockbuild/uid.py             \

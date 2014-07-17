@@ -27,8 +27,8 @@ import mockbuild.util
 import mockbuild.mounts
 import mockbuild.exception
 
-from mockbuild import util
 from mockbuild.trace_decorator import traceLog, decorate, getLog
+from mockbuild.package_manager import PackageManager
 
 # classes
 class Root(object):
@@ -87,12 +87,6 @@ class Root(object):
         if isinstance(self.chroot_setup_cmd, basestring):
             # accept strings in addition to other sequence types
             self.chroot_setup_cmd = self.chroot_setup_cmd.split()
-        self.releasever = config['releasever']
-        self.yum_path = '/usr/bin/yum'
-        self.yum_builddep_path = '/usr/bin/yum-builddep'
-        self.yum_builddep_opts = config['yum_builddep_opts']
-        # place for plugins to add options to all yum commands
-        self.yum_common_opts = config['yum_common_opts']
         self.macros = config['macros']
         self.more_buildreqs = config['more_buildreqs']
         self.cache_topdir = config['cache_topdir']
@@ -139,6 +133,8 @@ class Root(object):
             self.selinux = True
 
         self.extra_chroot_dirs = config['extra_chroot_dirs']
+
+        self.pkg_manager = PackageManager(config, self)
 
     # =============
     #  'Public' API
@@ -978,34 +974,7 @@ class Root(object):
     def _yum(self, cmd, returnOutput=0):
         """use yum to install packages/package groups into the chroot"""
 
-        yumcmd = [self.yum_path]
-        cmdix = 0
-        # invoke yum-builddep instead of yum if cmd is builddep
-        if cmd[0] == "builddep":
-            yumcmd[0] = self.yum_builddep_path
-            cmdix = 1
-            if self.yum_builddep_opts:
-                for eachopt in self.yum_builddep_opts.split():
-                    yumcmd.insert(1, '%s' % eachopt)
-        yumcmd.extend(('--installroot', self.makeChrootPath()))
-        if self.releasever:
-            yumcmd.extend(('--releasever', self.releasever))
-        if not self.online:
-            yumcmd.append("-C")
-        yumcmd.extend(self.yum_common_opts)
-        yumcmd.extend(cmd[cmdix:])
-        self.root_log.debug(yumcmd)
-        output = ""
-        self._nuke_rpm_db()
-        try:
-            self._callHooks("preyum")
-            env_copy = self.env.copy()
-            env_copy['LC_MESSAGES'] = 'C'
-            output = mockbuild.util.do(yumcmd, returnOutput=returnOutput, env=env_copy)
-            self._callHooks("postyum")
-            return output
-        except mockbuild.exception.Error, e:
-            raise mockbuild.exception.YumError, str(e)
+        self.pkg_manager.execute(*cmd, returnOutput=returnOutput)
 
     decorate(traceLog())
     def _makeBuildUser(self):
