@@ -121,16 +121,15 @@ class Buildroot(object):
         self.root_log.debug('rootdir = %s' % self.make_chroot_path())
         self.root_log.debug('resultdir = %s' % self.resultdir)
 
-        self._setup_resolver_config()
-        self._setup_dbus_uuid()
-        self._init_aux_files()
-        self._setup_timezone()
-        self._init_pkg_management()
-
+        self.pkg_manager.initialize()
         if not self.chroot_was_initialized:
+            self._setup_resolver_config()
+            self._setup_dbus_uuid()
+            self._init_aux_files()
+            self._setup_timezone()
+            self._init_pkg_management()
             self._make_build_user()
-
-        self._setup_build_dirs()
+            self._setup_build_dirs()
 
         # mark the buildroot as initialized
         util.touch(self.make_chroot_path('.initialized'))
@@ -183,15 +182,13 @@ class Buildroot(object):
 
     @traceLog()
     def _init_pkg_management(self):
-        self.pkg_manager.initialize_config()
-        if not self.chroot_was_initialized:
-            update_state = '{0} update'.format(self.pkg_manager.command)
-            self.state.start(update_state)
-            cmd = self.config['chroot_setup_cmd']
-            if isinstance(cmd, util.basestring):
-                cmd = cmd.split()
-            self.pkg_manager.execute(*cmd)
-            self.state.finish(update_state)
+        update_state = '{0} update'.format(self.pkg_manager.command)
+        self.state.start(update_state)
+        cmd = self.config['chroot_setup_cmd']
+        if isinstance(cmd, util.basestring):
+            cmd = cmd.split()
+        self.pkg_manager.execute(*cmd)
+        self.state.finish(update_state)
 
     @traceLog()
     def _make_build_user(self):
