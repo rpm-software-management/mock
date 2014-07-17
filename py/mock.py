@@ -20,7 +20,7 @@
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA.
 """
     usage:
-           mock [options] {--init|--clean|--scrub=[all,chroot,cache,root-cache,c-cache,yum-cache]}
+           mock [options] {--init|--clean|--scrub=[all,chroot,cache,root-cache,c-cache,yum-cache,lvm]}
            mock [options] [--rebuild] /path/to/srpm(s)
            mock [options] --buildsrpm {--spec /path/to/spec --sources /path/to/src|--scm-enable [--scm-option key=value]}
            mock [options] {--shell|--chroot} <cmd>
@@ -29,6 +29,8 @@
            mock [options] --copyin path [..path] destination
            mock [options] --copyout path [..path] destination
            mock [options] --scm-enable [--scm-option key=value]
+           mock [options] --dnf-cmd arguments
+           mock [options] --yum-cmd arguments
 """
 
 # library imports
