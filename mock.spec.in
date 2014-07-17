@@ -153,6 +153,23 @@ ln -s -f $cfg %{_sysconfdir}/%{name}/default.cfg
 %{python_sitelib}/mockbuild/scm.py*
 
 %changelog
+* Thu Jul 10 2014 Clark Williams <williams@redhat.com> - 1.1.40-1
+- from Miroslav Suchý <msuchy@redhat.com>:
+  - mock: Revert "revert 7ec6a1e9d202ab56fb31c914dbf7516c045e56ab" [BZ# 1103239]
+  - configs: use final Centos 7 path in configs [BZ# 1108402]
+  - configs: fix typo in fedora-rawhide-armhfp config [BZ# 1108847]
+  - mockchain: use getuid() instead of getgid() [BZ# 1108265]
+  - configs: check gpg key of packages from Fedora, Centos, Epel
+  - plugins: disable package_state by default on el6
+  - make /etc/mtab symlink to /proc/self/mounts [BZ# 1116158]
+  - do not list pki files twice
+  - deploy etc/pki to buildroot
+- from Michael Simacek <msimacek@redhat.com>:
+  - mock: do not allow config scripts to regain root priviledges
+- from Igor Gnatenko <i.gnatenko.brain@gmail.com>:
+  - Add F21 configs
+  - Change releasever to 22 for rawhide
+
 * Wed May 21 2014 Clark Williams <williams@redhat.com> - 1.1.39-1
 - configs: update epel-7 koji repo to use correct URL
 - from Ken Dreyer <ktdryer@ktdryder.com>
