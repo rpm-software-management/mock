@@ -234,6 +234,10 @@ def command_parse():
                       help="Pass short-circuit option to rpmbuild to skip already "
                       "complete stages. Warning: produced packages are unusable. "
                       "Implies --no-clean. Valid options: build, install, binary")
+    parser.add_option("--enablerepo", action="store",
+                      help="Pass enablerepo option to yum/dnf")
+    parser.add_option("--disablerepo", action="store",
+                      help="Pass disablerepo option to yum/dnf")
 
     # verbosity
     parser.add_option("-v", "--verbose", action="store_const", const=2,

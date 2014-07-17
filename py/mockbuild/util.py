@@ -780,6 +780,9 @@ def set_config_opts_per_cmdline(config_opts, options, args):
         config_opts['short_circuit'] = options.short_circuit
         config_opts['clean'] = False
 
+    config_opts['enablerepo'] = options.enablerepo
+    config_opts['disablerepo'] = options.disablerepo
+
     if options.scm:
         try:
             from mockbuild import scm
