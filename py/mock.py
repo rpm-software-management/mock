@@ -67,6 +67,11 @@ import mockbuild.backend
 import mockbuild.uid
 import mockbuild.util
 
+from mockbuild.backend import Commands
+from mockbuild.state import State
+from mockbuild.plugins import Plugins
+from mockbuild.buildroot import Buildroot
+
 def scrub_callback(option, opt, value, parser):
     parser.values.scrub.append(value)
     parser.values.mode = "clean"
@@ -358,7 +363,7 @@ def setup_uid_manager(mockgid):
         os.setgroups((mockgid,))
         unprivGid = pwd.getpwuid(unprivUid)[3]
 
-    uidManager = mockbuild.uid.uidManager(unprivUid, unprivGid)
+    uidManager = mockbuild.uid.UidManager(unprivUid, unprivGid)
     return uidManager
 
 
@@ -374,7 +379,7 @@ def check_arch_combination(target_arch, config_opts):
             "Cannot build target %s on arch %s" % (target_arch, host_arch))
 
 decorate(traceLog())
-def do_rebuild(config_opts, chroot, srpms):
+def do_rebuild(config_opts, commands, buildroot, srpms):
     "rebuilds a list of srpms using provided chroot"
     if len(srpms) < 1:
         log.critical("No package specified to rebuild command.")
@@ -388,40 +393,39 @@ def do_rebuild(config_opts, chroot, srpms):
     try:
         for srpm in srpms:
             start = time.time()
-            log.info("Start(%s)  Config(%s)" % (srpm, chroot.sharedRootName))
-            if config_opts['clean'] and chroot.state() != "clean" \
-                    and not config_opts['scm']:
-                chroot.clean()
-            chroot.init()
-            chroot.build(srpm, timeout=config_opts['rpmbuild_timeout'], check=config_opts['check'])
+            log.info("Start(%s)  Config(%s)" % (srpm, buildroot.shared_root_name))
+            if config_opts['clean'] and not config_opts['scm']:
+                commands.clean()
+            commands.init()
+            commands.build(srpm, timeout=config_opts['rpmbuild_timeout'], check=config_opts['check'])
             elapsed = time.time() - start
             log.info("Done(%s) Config(%s) %d minutes %d seconds"
                 % (srpm, config_opts['chroot_name'], elapsed//60, elapsed%60))
-            log.info("Results and/or logs in: %s" % chroot.resultdir)
+            log.info("Results and/or logs in: %s" % buildroot.resultdir)
 
         if config_opts["cleanup_on_success"]:
             log.info("Cleaning up build root ('cleanup_on_success=True')")
-            chroot.clean()
+            commands.clean()
 
         if config_opts["createrepo_on_rpms"]:
             log.info("Running createrepo on binary rpms in resultdir")
-            chroot.uidManager.dropPrivsTemp()
+            buildroot.uid_manager.dropPrivsTemp()
             cmd = config_opts["createrepo_command"].split()
-            cmd.append(chroot.resultdir)
+            cmd.append(buildroot.resultdir)
             mockbuild.util.do(cmd)
-            chroot.uidManager.restorePrivs()
+            buildroot.uid_manager.restorePrivs()
 
     except (Exception, KeyboardInterrupt):
         elapsed = time.time() - start
         log.error("Exception(%s) Config(%s) %d minutes %d seconds"
-            % (srpm, chroot.sharedRootName, elapsed//60, elapsed%60))
-        log.info("Results and/or logs in: %s" % chroot.resultdir)
+            % (srpm, buildroot.shared_root_name, elapsed//60, elapsed%60))
+        log.info("Results and/or logs in: %s" % buildroot.resultdir)
         if config_opts["cleanup_on_failure"]:
             log.info("Cleaning up build root ('clean_on_failure=True')")
-            chroot.clean()
+            commands.clean()
         raise
 
-def do_buildsrpm(config_opts, chroot, options, args):
+def do_buildsrpm(config_opts, commands, buildroot, options, args):
     # verify the input command line arguments actually exist
     if not os.path.isfile(options.spec):
         raise mockbuild.exception.BadCmdline, \
@@ -431,31 +435,31 @@ def do_buildsrpm(config_opts, chroot, options, args):
             "input sources directory does not exist: %s" % options.sources
     start = time.time()
     try:
-        log.info("Start(%s)  Config(%s)" % (os.path.basename(options.spec), chroot.sharedRootName))
-        if config_opts['clean'] and chroot.state() != "clean":
-            chroot.clean()
-        chroot.init()
+        log.info("Start(%s)  Config(%s)" % (os.path.basename(options.spec), buildroot.shared_root_name))
+        if config_opts['clean']:
+            commands.clean()
+        commands.init()
 
-        srpm = chroot.buildsrpm(spec=options.spec, sources=options.sources, timeout=config_opts['rpmbuild_timeout'])
+        srpm = commands.buildsrpm(spec=options.spec, sources=options.sources, timeout=config_opts['rpmbuild_timeout'])
         elapsed = time.time() - start
         log.info("Done(%s) Config(%s) %d minutes %d seconds"
             % (os.path.basename(options.spec), config_opts['chroot_name'], elapsed//60, elapsed%60))
-        log.info("Results and/or logs in: %s" % chroot.resultdir)
+        log.info("Results and/or logs in: %s" % buildroot.resultdir)
 
         if config_opts["cleanup_on_success"]:
             log.info("Cleaning up build root ('cleanup_on_success=True')")
-            chroot.clean()
+            commands.clean()
 
         return srpm
 
     except (Exception, KeyboardInterrupt):
         elapsed = time.time() - start
         log.error("Exception(%s) Config(%s) %d minutes %d seconds"
-            % (os.path.basename(options.spec), chroot.sharedRootName, elapsed//60, elapsed%60))
-        log.info("Results and/or logs in: %s" % chroot.resultdir)
+            % (os.path.basename(options.spec), buildroot.shared_root_name, elapsed//60, elapsed%60))
+        log.info("Results and/or logs in: %s" % buildroot.resultdir)
         if config_opts["cleanup_on_failure"]:
             log.info("Cleaning up build root ('clean_on_failure=True')")
-            chroot.clean()
+            commands.clean()
         raise
 
 def rootcheck():
@@ -559,12 +563,15 @@ def main():
 
     # do whatever we're here to do
     log.info("mock.py version %s starting..." % __VERSION__)
-    chroot = mockbuild.backend.Root(config_opts, uidManager)
+    state = State()
+    plugins = Plugins(config_opts, state)
+    buildroot = Buildroot(config_opts, uidManager, state, plugins)
+    commands = Commands(config_opts, uidManager, plugins, state, buildroot)
 
-    chroot.start("run")
+    state.start("run")
 
     if options.printrootpath:
-        print chroot.makeChrootPath('')
+        print buildroot.make_chroot_path('')
         sys.exit(0)
 
     # dump configuration to log
@@ -573,7 +580,7 @@ def main():
         log.debug("    %s:  %s" % (k, v))
 
     os.umask(002)
-    os.environ["HOME"] = chroot.homedir
+    os.environ["HOME"] = buildroot.homedir
 
     # New namespace starting from here
     unshare_namespace()
@@ -583,11 +590,11 @@ def main():
         mockbuild.util.condPersonality(config_opts['target_arch'])
 
     try:
-        run_command(options, args, config_opts, chroot)
+        run_command(options, args, config_opts, commands, buildroot, state)
     finally:
-        chroot.buildroot.finalize()
+        buildroot.finalize()
 
-def run_command(options, args, config_opts, chroot):
+def run_command(options, args, config_opts, commands, buildroot, state):
     #TODO separate this
     # Fetch and prepare sources from SCM
     if config_opts['scm']:
@@ -597,14 +604,14 @@ def run_command(options, args, config_opts, chroot):
 
     if options.mode == 'init':
         if config_opts['clean']:
-            chroot.clean()
-        chroot.init()
+            commands.clean()
+        commands.init()
 
     elif options.mode == 'clean':
         if len(options.scrub) == 0:
-            chroot.clean()
+            commands.clean()
         else:
-            chroot.scrub(options.scrub)
+            commands.scrub(options.scrub)
 
     elif options.mode == 'shell':
         if not os.path.exists(chroot.makeChrootPath()):
@@ -614,16 +621,18 @@ def run_command(options, args, config_opts, chroot):
             cmd = ' '.join(args)
         else:
             cmd = None
-        sys.exit(chroot.shell(options, cmd))
+        commands.init()
+        sys.exit(commands.shell(options, cmd))
 
     elif options.mode == 'chroot':
-        if not os.path.exists(chroot.makeChrootPath()):
+        if not os.path.exists(buildroot.make_chroot_path()):
             raise mockbuild.exception.ChrootNotInitialized, \
-                "chroot %s not initialized!" % chroot.makeChrootPath()
+                "chroot %s not initialized!" % buildroot.make_chroot_path()
         if len(args) == 0:
             log.critical("You must specify a command to run with --chroot")
             sys.exit(50)
-        chroot.chroot(args, options)
+        commands.init()
+        commands.chroot(args, options)
 
     elif options.mode == 'installdeps':
         if len(args) == 0:
@@ -632,44 +641,49 @@ def run_command(options, args, config_opts, chroot):
 
         for dummy in mockbuild.util.yieldSrpmHeaders(args, plainRpmOk=1):
             pass
-        chroot.installSrpmDeps(*args)
+        commands.init()
+        commands.installSrpmDeps(*args)
 
     elif options.mode == 'install':
         if len(args) == 0:
             log.critical("You must specify a package list to install.")
             sys.exit(50)
 
-        chroot.install(*args)
+        commands.init()
+        commands.install(*args)
 
     elif options.mode == 'update':
-        chroot.update()
+        commands.init()
+        commands.update()
 
     elif options.mode == 'remove':
         if len(args) == 0:
             log.critical("You must specify a package list to remove.")
             sys.exit(50)
-        chroot.remove(*args)
+        commands.init()
+        commands.remove(*args)
 
     elif options.mode == 'rebuild':
         if config_opts['scm']:
-            srpm = do_buildsrpm(config_opts, chroot, options, args)
+            srpm = do_buildsrpm(config_opts, commands, buildroot, options, args)
             if srpm:
                 args.append(srpm)
             scmWorker.clean()
-        do_rebuild(config_opts, chroot, args)
+        do_rebuild(config_opts, commands, buildroot, args)
 
     elif options.mode == 'buildsrpm':
-        do_buildsrpm(config_opts, chroot, options, args)
+        do_buildsrpm(config_opts, commands, buildroot, options, args)
 
     elif options.mode == 'orphanskill':
-        mockbuild.util.orphansKill(chroot.makeChrootPath())
+        mockbuild.util.orphansKill(buildroot.make_chroot_path())
 
     elif options.mode == 'copyin':
+        commands.init()
         #uidManager.dropPrivsForever()
         if len(args) < 2:
             log.critical("Must have source and destinations for copyin")
             sys.exit(50)
-        dest = chroot.makeChrootPath(args[-1])
+        dest = buildroot.make_chroot_path(args[-1])
         if len(args) > 2 and not os.path.isdir(dest):
             log.critical("multiple source files and %s is not a directory!" % dest)
             sys.exit(50)
@@ -683,7 +697,8 @@ def run_command(options, args, config_opts, chroot):
                 shutil.copy(src, dest)
 
     elif options.mode == 'copyout':
-        chroot.uidManager.dropPrivsTemp()
+        commands.init()
+        buildroot.uid_manager.dropPrivsTemp()
         if len(args) < 2:
             log.critical("Must have source and destinations for copyout")
             sys.exit(50)
@@ -694,22 +709,23 @@ def run_command(options, args, config_opts, chroot):
         args = args[:-1]
         import shutil
         for f in args:
-            src = chroot.makeChrootPath(f)
+            src = buildroot.make_chroot_path(f)
             log.info("copying %s to %s" % (src, dest))
             if os.path.isdir(src):
                 shutil.copytree(src, dest)
             else:
                 shutil.copy(src, dest)
-        chroot.uidManager.restorePrivs()
+        buildroot.uid_manager.restorePrivs()
 
     elif options.mode in ('pm-cmd', 'yum-cmd', 'dnf-cmd'):
-        log.info('Running {0} {1}'.format(chroot.pkg_manager.command,
+        log.info('Running {0} {1}'.format(buildroot.pkg_manager.command,
                                           ' '.join(args)))
-        chroot.pkg_manager.execute(*args)
+        buildroot.pkg_manager.execute(*args)
 
-    chroot._nuke_rpm_db()
-    chroot.finish("run")
-    chroot.alldone()
+    buildroot._nuke_rpm_db()
+    state.finish("run")
+    state.alldone()
+    buildroot.finalize()
 
 if __name__ == '__main__':
     # fix for python 2.4 logging module bug:
