@@ -94,6 +94,9 @@ class Buildroot(object):
 
         self.state.start("chroot init")
         util.mkdirIfAbsent(self.basedir)
+        mockgid = grp.getgrnam('mock').gr_gid
+        os.chown(self.basedir, os.getuid(), mockgid)
+        os.chmod(self.basedir, 0o2775)
         util.mkdirIfAbsent(self.make_chroot_path())
         self.chroot_was_initialized = self.chroot_is_initialized()
         self._setup_result_dir()
