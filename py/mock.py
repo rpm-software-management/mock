@@ -223,6 +223,12 @@ def command_parse():
                       default=[], type="string",
                       help="define an SCM option (may be used more than once)")
 
+    # Package management options
+    parser.add_option("--yum", help="use yum as package manager",
+                      dest="pkg_manager", action="store_const", const="yum")
+    parser.add_option("--dnf", help="use dnf as package manager",
+                      dest="pkg_manager", action="store_const", const="dnf")
+
     (options, args) = parser.parse_args()
 
     # handle old-style commands

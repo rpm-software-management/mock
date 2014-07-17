@@ -721,6 +721,9 @@ def set_config_opts_per_cmdline(config_opts, options, args):
 
     config_opts['online'] = options.online
 
+    if options.pkg_manager:
+        config_opts['package_manager'] = options.pkg_manager
+
     if options.scm:
         try:
             from mockbuild import scm
