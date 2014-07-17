@@ -144,5 +144,15 @@ class TraceDecoratorTest(unittest.TestCase):
         msg = captured[3][2][2]
         self.assertEqual("LEAVE exampleNested --> 42\n", msg)
 
+    def test_get_log(self):
+        global __name__
+        oldname = __name__
+        __name__ = 'test_name'
+        try:
+            logger = trace_decorator.getLog()
+            self.assertEqual('test_name', logger.name)
+        finally:
+            __name__ = oldname
+
 if __name__ == '__main__':
     unittest.main()
