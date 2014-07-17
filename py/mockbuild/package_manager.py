@@ -5,6 +5,7 @@ from textwrap import dedent
 
 from mockbuild import util
 from mockbuild.exception import BuildError
+from mockbuild.trace_decorator import traceLog
 
 def PackageManager(config_opts, chroot, plugins):
     pm = config_opts.get('package_manager', 'yum')
@@ -21,11 +22,13 @@ class _PackageManager(object):
     command = None
     builddep_command = None
 
+    @traceLog()
     def __init__(self, config, buildroot, plugins):
         self.config = config
         self.plugins = plugins
         self.buildroot = buildroot
 
+    @traceLog()
     def build_invocation(self, *args):
         if args[0] == 'builddep':
             args = args[1:]
@@ -48,6 +51,7 @@ class _PackageManager(object):
         invocation += args
         return invocation
 
+    @traceLog()
     def execute(self, *args, **kwargs):
         self.plugins.call_hooks("preyum")
         env = self.config['environment'].copy()
@@ -61,15 +65,19 @@ class _PackageManager(object):
         self.plugins.call_hooks("postyum")
         return out
 
+    @traceLog()
     def install(self, *args, **kwargs):
         return self.execute('install', *args)
 
+    @traceLog()
     def remove(self, *args, **kwargs):
         return self.execute('remove', *args)
 
+    @traceLog()
     def update(self, *args, **kwargs):
         return self.execute('update', *args)
 
+    @traceLog()
     def builddep(self, *args, **kwargs):
         return self.execute('builddep', *args)
 
@@ -88,12 +96,14 @@ class Yum(_PackageManager):
     command = 'yum'
     builddep_command = ['yum-builddep']
 
+    @traceLog()
     def _write_plugin_conf(self, name):
         """ Write 'name' file into pluginconf.d """
         conf_path = self.buildroot.make_chroot_path('etc', 'yum', 'pluginconf.d', name)
         with open(conf_path, 'w+') as conf_file:
             conf_file.write(self.config[name])
 
+    @traceLog()
     def initialize_config(self):
         # use yum plugin conf from chroot as needed
         pluginconf_dir = self.buildroot.make_chroot_path('etc', 'yum', 'pluginconf.d')
@@ -161,6 +171,7 @@ class Dnf(_PackageManager):
     command = 'dnf'
     builddep_command = ['dnf', 'builddep']
 
+    @traceLog()
     def build_invocation(self, *args):
         if not 'dnf_builddep_opts' in self.config:
             self.config['dnf_builddep_opts'] = self.config['yum_builddep_opts']
@@ -168,6 +179,7 @@ class Dnf(_PackageManager):
             self.config['dnf_common_opts'] = self.config['yum_common_opts']
         return super(Dnf, self).build_invocation(*args)
 
+    @traceLog()
     def initialize_config(self):
         if 'dnf.conf' in self.config:
             config_content = self.config['dnf.conf']

@@ -1,8 +1,10 @@
 import imp
 
 from mockbuild.exception import Error
+from mockbuild.trace_decorator import traceLog
 
 class Plugins(object):
+    @traceLog()
     def __init__(self, config, state):
         self.config = config
         self._hooks = {}
@@ -12,6 +14,7 @@ class Plugins(object):
         self.plugin_conf = config['plugin_conf']
         self.plugin_dir = config['plugin_dir']
 
+    @traceLog()
     def init_plugins(self, buildroot):
         for key in list(self.plugin_conf.keys()):
             if key.endswith('_opts'):
@@ -37,11 +40,13 @@ class Plugins(object):
                 module.init(self, self.plugin_conf["{0}_opts".format(plugin)], buildroot)
         self.state.finish("init plugins")
 
+    @traceLog()
     def call_hooks(self, stage, *args, **kwargs):
         hooks = self._hooks.get(stage, [])
         for hook in hooks:
             hook(*args, **kwargs)
 
+    @traceLog()
     def add_hook(self, stage, function):
         hooks = self._hooks.get(stage, [])
         if function not in hooks:

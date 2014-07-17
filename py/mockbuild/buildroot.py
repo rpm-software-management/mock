@@ -12,9 +12,10 @@ from mockbuild import mounts
 from mockbuild.exception import BuildRootLocked, RootError, \
                                 ResultDirNotAccessible, Error
 from mockbuild.package_manager import PackageManager
-from mockbuild.trace_decorator import getLog
+from mockbuild.trace_decorator import getLog, traceLog
 
 class Buildroot(object):
+    @traceLog()
     def __init__(self, config, uid_manager, state, plugins):
         self.config = config
         self.uid_manager = uid_manager
@@ -53,6 +54,7 @@ class Buildroot(object):
         self.preexisting_deps = []
         self.plugins.init_plugins(self)
 
+    @traceLog()
     def make_chroot_path(self, *paths):
         new_path = self.rootdir
         for path in paths:
@@ -61,6 +63,7 @@ class Buildroot(object):
             new_path = os.path.join(new_path, path)
         return new_path
 
+    @traceLog()
     def initialize(self):
         """
         Initialize the builroot to a point where it's possible to execute
@@ -76,9 +79,11 @@ class Buildroot(object):
             self._lock_buildroot(exclusive=False)
         self._resetLogging()
 
+    @traceLog()
     def chroot_is_initialized(self):
         return os.path.exists(self.make_chroot_path('.initialized'))
 
+    @traceLog()
     def _setup_result_dir(self):
         self.uid_manager.dropPrivsTemp()
         try:
@@ -88,6 +93,7 @@ class Buildroot(object):
         finally:
             self.uid_manager.restorePrivs()
 
+    @traceLog()
     def _init(self):
         # If previous run didn't finish properly
         self._umount_residual()
@@ -133,8 +139,6 @@ class Buildroot(object):
         self.plugins.call_hooks('postinit')
         self.state.finish("chroot init")
 
-    # bad hack
-    # comment out decorator here so we dont get double exceptions in the root log
     def doChroot(self, command, shell=True, *args, **kargs):
         """execute given command in root"""
         if not util.hostIsEL5():
@@ -142,6 +146,7 @@ class Buildroot(object):
         return util.do(command, chrootPath=self.make_chroot_path(),
                                  env=self.env, shell=shell, *args, **kargs)
 
+    @traceLog()
     def _setup_resolver_config(self):
         if self.config['use_host_resolv']:
             etcdir = self.make_chroot_path('etc')
@@ -156,6 +161,7 @@ class Buildroot(object):
                 os.remove(hostspath)
             shutil.copy2('/etc/hosts', etcdir)
 
+    @traceLog()
     def _setup_dbus_uuid(self):
         try:
             import uuid
@@ -167,6 +173,7 @@ class Buildroot(object):
         except ImportError:
             pass
 
+    @traceLog()
     def _setup_timezone(self):
         localtimedir = self.make_chroot_path('etc')
         localtimepath = self.make_chroot_path('etc', 'localtime')
@@ -174,6 +181,7 @@ class Buildroot(object):
             os.remove(localtimepath)
         shutil.copy2('/etc/localtime', localtimedir)
 
+    @traceLog()
     def _init_pkg_management(self):
         self.pkg_manager.initialize_config()
         if not self.chroot_was_initialized:
@@ -185,6 +193,7 @@ class Buildroot(object):
             self.pkg_manager.execute(*cmd)
             self.state.finish(update_state)
 
+    @traceLog()
     def _make_build_user(self):
         if not os.path.exists(self.make_chroot_path('usr/sbin/useradd')):
             raise RootError("Could not find useradd in chroot, maybe the install failed?")
@@ -199,6 +208,7 @@ class Buildroot(object):
         self.doChroot(self.config['useradd'] % dets, shell=True)
         self._enable_chrootuser_account()
 
+    @traceLog()
     def _enable_chrootuser_account(self):
         passwd = self.make_chroot_path('/etc/passwd')
         lines = open(passwd).readlines()
@@ -216,6 +226,7 @@ class Buildroot(object):
                 f.write(l+'\n')
             f.close()
 
+    @traceLog()
     def _resetLogging(self):
         # ensure we dont attach the handlers multiple times.
         if self.logging_initialized:
@@ -244,6 +255,7 @@ class Buildroot(object):
         finally:
             self.uid_manager.restorePrivs()
 
+    @traceLog()
     def _init_aux_files(self):
         chroot_file_contents = self.config['files']
         for key in chroot_file_contents:
@@ -253,6 +265,7 @@ class Buildroot(object):
                 with open(p, 'w+') as fo:
                     fo.write(chroot_file_contents[key])
 
+    @traceLog()
     def _nuke_rpm_db(self):
         """remove rpm DB lock files from the chroot"""
 
@@ -273,10 +286,12 @@ class Buildroot(object):
         finally:
             self.uid_manager.restorePrivs()
 
+    @traceLog()
     def _open_lock(self):
         util.mkdirIfAbsent(self.basedir)
         self._lock_file = open(os.path.join(self.basedir, "buildroot.lock"), "a+")
 
+    @traceLog()
     def _lock_buildroot(self, exclusive):
         lock_type = fcntl.LOCK_EX if exclusive else fcntl.LOCK_SH
         if not self._lock_file:
@@ -286,11 +301,13 @@ class Buildroot(object):
         except IOError:
             raise BuildRootLocked("Build root is locked by another process.")
 
+    @traceLog()
     def _unlock_buildroot(self):
         if self._lock_file:
             self._lock_file.close()
         self._lock_file = None
 
+    @traceLog()
     def _setup_dirs(self):
         self.root_log.debug('create skeleton dirs')
         dirs = ['var/lib/rpm',
@@ -311,6 +328,7 @@ class Buildroot(object):
         for item in dirs:
             util.mkdirIfAbsent(self.make_chroot_path(item))
 
+    @traceLog()
     def _setup_build_dirs(self):
         build_dirs = ['RPMS', 'SPECS', 'SRPMS', 'SOURCES', 'BUILD', 'BUILDROOT',
                       'originals']
@@ -334,6 +352,7 @@ class Buildroot(object):
         finally:
             self.uid_manager.restorePrivs()
 
+    @traceLog()
     def _setup_devices(self):
         if self.config['internal_dev_setup']:
             util.rmtree(self.make_chroot_path("dev"), selinux=self.selinux)
@@ -383,12 +402,14 @@ class Buildroot(object):
                 os.unlink(self.make_chroot_path('/dev/ptmx'))
             os.symlink("pts/ptmx", self.make_chroot_path('/dev/ptmx'))
 
+    @traceLog()
     def _setup_files(self):
         #self.root_log.debug('touch required files')
         for item in [self.make_chroot_path('etc', 'fstab'),
                      self.make_chroot_path('var', 'log', 'yum.log')]:
             util.touch(item)
 
+    @traceLog()
     def finalize(self):
         """
         Do the cleanup if this is the last process working with the buildroot.
@@ -404,6 +425,7 @@ class Buildroot(object):
             finally:
                 self._unlock_buildroot()
 
+    @traceLog()
     def delete(self):
         """
         Deletes the buildroot contents.
@@ -418,6 +440,7 @@ class Buildroot(object):
         self.chroot_was_initialized = False
         self.plugins.call_hooks('postclean')
 
+    @traceLog()
     def _umount_all(self):
         """umount all mounted chroot fs."""
 
@@ -427,6 +450,7 @@ class Buildroot(object):
         # then remove anything that might be left around.
         self._umount_residual()
 
+    @traceLog()
     def _mount_is_ours(self, mountpoint):
         mountpoint = os.path.realpath(mountpoint)
         our_dir = os.path.realpath(self.make_chroot_path())
@@ -436,6 +460,7 @@ class Buildroot(object):
         return False
 
 
+    @traceLog()
     def _umount_residual(self):
         def force_umount(mountpoint):
             cmd = "umount -n -l %s" % mountpoint

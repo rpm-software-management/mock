@@ -171,6 +171,7 @@ def yieldSrpmHeaders(srpms, plainRpmOk=0):
 
         yield hdr
 
+@traceLog()
 def checkSrpmHeaders(srpms, plainRpmOk=0):
     for dummy in yieldSrpmHeaders(srpms, plainRpmOk):
         pass
@@ -800,6 +801,7 @@ def set_config_opts_per_cmdline(config_opts, options, args):
                 "Bad option for '--scm-option' (%s).  Use --scm-option 'key=value'"
                 % option)
 
+@traceLog()
 def update_config_from_file(config_opts, config_file, uid_manager):
     config_file = os.path.realpath(config_file)
     r_pipe, w_pipe = os.pipe()

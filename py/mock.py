@@ -307,6 +307,7 @@ def command_parse():
 
     return (options, args)
 
+@traceLog()
 def load_config(config_path, name, uidManager):
     config_opts = util.setup_default_config_opts(uidManager.unprivUid,
             __VERSION__, PKGPYTHONDIR)
@@ -344,6 +345,7 @@ def load_config(config_path, name, uidManager):
 
     return config_opts
 
+@traceLog()
 def setup_logging(log_ini, config_opts, options):
     if not os.path.exists(log_ini):
         log.error("Could not find required logging config file: %s" % log_ini)
@@ -385,6 +387,7 @@ def setup_logging(log_ini, config_opts, options):
     if options.trace:
         logging.getLogger("trace").propagate = 1
 
+@traceLog()
 def setup_uid_manager(mockgid):
     unprivUid = os.getuid()
     unprivGid = os.getgid()
@@ -416,6 +419,7 @@ def check_arch_combination(target_arch, config_opts):
         raise mockbuild.exception.InvalidArchitecture(
             "Cannot build target %s on arch %s" % (target_arch, host_arch))
 
+@traceLog()
 def rebuild_generic(items, commands, buildroot, config_opts, cmd, post=None, clean=True):
     start = time.time()
     try:
@@ -473,6 +477,7 @@ def do_rebuild(config_opts, commands, buildroot, srpms):
     rebuild_generic(srpms, commands, buildroot, config_opts, cmd=build,
                     post=createrepo_on_rpms, clean=clean)
 
+@traceLog()
 def do_buildsrpm(config_opts, commands, buildroot, options, args):
     # verify the input command line arguments actually exist
     if not os.path.isfile(options.spec):
@@ -487,6 +492,7 @@ def do_buildsrpm(config_opts, commands, buildroot, options, args):
     return rebuild_generic([options.spec], commands, buildroot, config_opts,
                            cmd=cmd, post=None, clean=clean)
 
+@traceLog()
 def rootcheck():
     "verify mock was started correctly (either by sudo or consolehelper)"
     # if we're root due to sudo or consolehelper, we're ok
@@ -494,6 +500,7 @@ def rootcheck():
     if os.getuid() == 0 and not (os.environ.get("SUDO_UID") or os.environ.get("USERHELPER_UID")):
         raise RuntimeError("mock will not run from the root account (needs an unprivileged uid so it can drop privs)")
 
+@traceLog()
 def groupcheck(unprivGid, tgtGid):
     "verify that the user running mock is part of the correct group"
     # verify that we're in the correct group (so all our uid/gid manipulations work)
@@ -510,6 +517,7 @@ def groupcheck(unprivGid, tgtGid):
         raise RuntimeError("Must be member of '%s' group to run mock! (%s)" %
                            (name, ", ".join(members)))
 
+@traceLog()
 def unshare_namespace():
     base_unshare_flags = util.CLONE_NEWNS
     extended_unshare_flags = base_unshare_flags #| util.CLONE_NEWIPC \
@@ -525,7 +533,7 @@ def unshare_namespace():
             log.error("Namespace unshare failed.")
             sys.exit(e.resultcode)
 
-
+@traceLog()
 def main():
     "Main executable entry point."
 
@@ -625,6 +633,7 @@ def main():
     finally:
         buildroot.finalize()
 
+@traceLog()
 def run_command(options, args, config_opts, commands, buildroot, state):
     #TODO separate this
     # Fetch and prepare sources from SCM

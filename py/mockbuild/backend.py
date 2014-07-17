@@ -11,10 +11,11 @@ import shutil
 
 from mockbuild import util
 from mockbuild.exception import PkgError, BuildError
-from mockbuild.trace_decorator import getLog
+from mockbuild.trace_decorator import getLog, traceLog
 
 class Commands(object):
     """Executes mock commands in the buildroot"""
+    @traceLog()
     def __init__(self, config, uid_manager, plugins, state, buildroot):
         self.uid_manager = uid_manager
         self.buildroot = buildroot
@@ -47,6 +48,7 @@ class Commands(object):
         # do we allow interactive root shells?
         self.no_root_shells = config['no_root_shells']
 
+    @traceLog()
     def backup_results(self):
         srcdir = os.path.join(self.buildroot.basedir, "result")
         if not os.path.exists(srcdir):
@@ -59,6 +61,7 @@ class Commands(object):
         self.state.state_log.info("backup_results: saving with cp %s %s" % (" ".join(rpms), dstdir))
         util.run(cmd="cp %s %s" % (" ".join(rpms), dstdir))
 
+    @traceLog()
     def clean(self):
         """clean out chroot with extreme prejudice :)"""
         if self.backup:
@@ -67,6 +70,7 @@ class Commands(object):
         self.buildroot.delete()
         self.state.finish("clean chroot")
 
+    @traceLog()
     def scrub(self, scrub_opts):
         """clean out chroot and/or cache dirs with extreme prejudice :)"""
         statestr = "scrub %s" % scrub_opts
@@ -105,12 +109,14 @@ class Commands(object):
             print("finishing: %s" % statestr)
             self.state.finish(statestr)
 
+    @traceLog()
     def make_chroot_path(self, *args):
         '''For safety reasons, self._rootdir should not be used directly. Instead
         use this handy helper function anytime you want to reference a path in
         relation to the chroot.'''
         return self.buildroot.make_chroot_path(*args)
 
+    @traceLog()
     def init(self):
         try:
             self.buildroot.initialize()
@@ -120,6 +126,7 @@ class Commands(object):
             self.plugins.call_hooks('initfailed')
             raise
 
+    @traceLog()
     def install(self, *rpms):
         """Call package manager to install the input rpms into the chroot"""
         # pass build reqs (as strings) to installer
@@ -127,16 +134,19 @@ class Commands(object):
         output = self.buildroot.pkg_manager.install(*rpms, returnOutput=1)
         self.buildroot.root_log.info(output)
 
+    @traceLog()
     def update(self):
         """Use package manager to update the chroot"""
         self.buildroot.pkg_manager.update()
 
+    @traceLog()
     def remove(self, *rpms):
         """Call package manager to remove the input rpms from the chroot"""
         self.buildroot.root_log.info("removing package(s): %s" % " ".join(rpms))
         output = self.buildroot.pkg_manager.remove(*rpms, returnOutput=1)
         self.buildroot.root_log.info(output)
 
+    @traceLog()
     def installSrpmDeps(self, *srpms):
         """Figure out deps from srpm. Call package manager to install them"""
         try:
@@ -156,6 +166,7 @@ class Commands(object):
             self.uid_manager.restorePrivs()
 
 
+    @traceLog()
     def _show_installed_packages(self):
         '''report the installed packages in the chroot to the root log'''
         self.buildroot.root_log.info("Installed packages:")
@@ -174,6 +185,7 @@ class Commands(object):
     #   Everything in this function runs as the build user
     #       -> except hooks. :)
     #
+    @traceLog()
     def build(self, srpm, timeout, check=True):
         """build an srpm into binary rpms, capture log"""
 
@@ -230,6 +242,7 @@ class Commands(object):
         self.state.finish(buildstate)
 
 
+    @traceLog()
     def shell(self, options, cmd=None):
         log = getLog()
         log.debug("shell: calling preshell hooks")
@@ -255,6 +268,7 @@ class Commands(object):
         self.plugins.call_hooks('postshell')
         return ret
 
+    @traceLog()
     def chroot(self, args, options):
         log = getLog()
         shell = False
@@ -280,6 +294,7 @@ class Commands(object):
     #   Everything in this function runs as the build user
     #       -> except hooks. :)
     #
+    @traceLog()
     def buildsrpm(self, spec, sources, timeout):
         """build an srpm, capture log"""
 
@@ -327,6 +342,7 @@ class Commands(object):
             self.state.finish("buildsrpm")
 
 
+    @traceLog()
     def _show_path_user(self, path):
         cmd = ['/sbin/fuser', '-a', '-v', path]
         self.buildroot.root_log.debug("using 'fuser' to find users of %s" % path)
@@ -343,12 +359,14 @@ class Commands(object):
     # UNPRIVILEGED:
     #   Everything in this function runs as the build user
     #
+    @traceLog()
     def copy_srpm_into_chroot(self, srpm_path):
         srpmFilename = os.path.basename(srpm_path)
         dest = self.buildroot.make_chroot_path(self.buildroot.builddir, 'originals')
         shutil.copy2(srpm_path, dest)
         return os.path.join(self.buildroot.builddir, 'originals', srpmFilename)
 
+    @traceLog()
     def get_specfile_name(self, srpm_path):
         files = self.buildroot.doChroot(["rpm", "-qpl", srpm_path],
                     shell=False, uid=self.buildroot.chrootuid, gid=self.buildroot.chrootgid,
@@ -360,10 +378,12 @@ class Commands(object):
         return specs[0]
 
 
+    @traceLog()
     def install_srpm(self, srpm_path):
         self.buildroot.doChroot(["rpm", "-Uvh", "--nodeps", srpm_path],
             shell=False, uid=self.buildroot.chrootuid, gid=self.buildroot.chrootgid)
 
+    @traceLog()
     def rebuild_installed_srpm(self, spec_path, timeout):
         self.buildroot.doChroot(["bash", "--login", "-c",
                              'rpmbuild -bs --target {0} --nodeps {1}'\
@@ -378,6 +398,7 @@ class Commands(object):
                            % len(results))
         return results[0]
 
+    @traceLog()
     def rebuild_package(self, spec_path, timeout, check):
         # --nodeps because rpm in the root may not be able to read rpmdb
         # created by rpm that created it (outside of chroot)
@@ -404,6 +425,7 @@ class Commands(object):
         results += glob.glob(bd_out + '/SRPMS/*.rpm')
         return results
 
+    @traceLog()
     def copy_build_results(self, results):
         self.buildroot.root_log.debug("Copying packages to result dir")
         for item in results:
