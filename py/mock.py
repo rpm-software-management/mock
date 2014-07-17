@@ -573,7 +573,9 @@ def main():
     uidManager._becomeUser(0, 0)
 
     # do whatever we're here to do
-    log.info("mock.py version %s starting..." % __VERSION__)
+    py_version = '{0}.{1}.{2}'.format(*sys.version_info[:3])
+    log.info("mock.py version %s starting (python version = %s)..." %
+                (__VERSION__, py_version))
     state = State()
     plugins = Plugins(config_opts, state)
     buildroot = Buildroot(config_opts, uidManager, state, plugins)
