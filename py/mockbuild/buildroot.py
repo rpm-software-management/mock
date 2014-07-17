@@ -121,7 +121,9 @@ class Buildroot(object):
         self._setup_timezone()
         self._init_pkg_management()
 
-        self._make_build_user()
+        if not self.chroot_was_initialized:
+            self._make_build_user()
+
         self._setup_build_dirs()
 
         # mark the buildroot as initialized
@@ -186,10 +188,6 @@ class Buildroot(object):
     def _make_build_user(self):
         if not os.path.exists(self.make_chroot_path('usr/sbin/useradd')):
             raise RootError("Could not find useradd in chroot, maybe the install failed?")
-
-        if self.config['clean']:
-            # safe and easy. blow away existing /builddir and completely re-create.
-            util.rmtree(self.make_chroot_path(self.homedir), selinux=self.selinux)
 
         dets = {'uid': str(self.chrootuid), 'gid': str(self.chrootgid), 'user': self.chrootuser, 'group': self.chrootgroup, 'home': self.homedir}
 
