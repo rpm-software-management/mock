@@ -59,9 +59,11 @@ class LvmPlugin(object):
         name = lv_name or self.lv_name
         return self._lv_predicate(name, lambda lv: True)
 
+    def _open_lv_is_our(self, lv):
+        return lv.getAttr()[0] == 'V' and lv.getProperty('pool_lv')[0] == self.pool_name
+
     def lv_is_our(self, name):
-        predicate = lambda lv: lv.getProperty('pool_lv')[0] == self.pool_name
-        return self._lv_predicate(name, predicate)
+        return self._lv_predicate(name, self._open_lv_is_our)
 
     def get_current_snapshot(self):
         if os.path.exists(self.snap_info):
@@ -150,6 +152,21 @@ class LvmPlugin(object):
             self.unset_current_snapshot()
             util.do(['lvremove', '-f', self.vg_name + '/' + self.pool_name],
                     printOutput=True)
+
+    def hook_list_snapshots(self):
+        with volume_group(self.vg_name) as vg:
+            current = self.get_current_snapshot()
+            lvs = vg.listLVs()
+            print 'Snapshots for {0}:'.format(self.pool_name)
+            for lv in lvs:
+                if self._open_lv_is_our(lv):
+                    name = lv.getName()
+                    if name == current:
+                        print '* ' + name.replace(self.prefix_name(''), '')
+                    elif name == self.lv_name:
+                        pass
+                    else:
+                        print '  ' + name.replace(self.prefix_name(''), '')
 
 def init(plugins, lvm_conf, buildroot):
     LvmPlugin(plugins, lvm_conf, buildroot)

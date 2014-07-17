@@ -242,6 +242,11 @@ def command_parse():
                       dest="printrootpath", action="store_true",
                       default=False)
 
+    parser.add_option("--list-snapshots",
+                      help="list LVM snapshots associated with buildroot",
+                      dest="list_snapshots", action="store_true",
+                      default=False)
+
     # SCM options
     parser.add_option("--scm-enable", help="build from SCM repository",
                       dest="scm", action="store_true",
@@ -535,7 +540,7 @@ def main():
 
     (options, args) = command_parse()
 
-    if options.printrootpath:
+    if options.printrootpath or options.list_snapshots:
         options.verbose = 0
 
     # config path -- can be overridden on cmdline
@@ -582,6 +587,10 @@ def main():
 
     if options.printrootpath:
         print buildroot.make_chroot_path('')
+        sys.exit(0)
+
+    if options.list_snapshots:
+        plugins.call_hooks('list_snapshots')
         sys.exit(0)
 
     # dump configuration to log
