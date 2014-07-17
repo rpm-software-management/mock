@@ -125,6 +125,18 @@ def command_parse():
                       dest="mode",
                       help="Copy file(s) from the specified chroot")
 
+    parser.add_option("--pm-cmd", action="store_const", const="pm-cmd",
+                      dest="mode",
+                      help="Execute package management command (with yum or dnf)")
+
+    parser.add_option("--yum-cmd", action="store_const", const="yum-cmd",
+                      dest="mode",
+                      help="Execute package management command with yum")
+
+    parser.add_option("--dnf-cmd", action="store_const", const="dnf-cmd",
+                      dest="mode",
+                      help="Execute package management command with dnf")
+
     # options
     parser.add_option("-r", "--root", action="store", type="string", dest="chroot",
                       help="chroot name/config file name default: %default",
@@ -689,6 +701,12 @@ def run_command(options, args, config_opts, chroot):
             else:
                 shutil.copy(src, dest)
         chroot.uidManager.restorePrivs()
+
+    elif options.mode in ('pm-cmd', 'yum-cmd', 'dnf-cmd'):
+        log.info('Running {0} {1}'.format(chroot.pkg_manager.command,
+                                          ' '.join(args)))
+        output = chroot.pkg_manager.execute(*args, returnOutput=True)
+        print output
 
     chroot._nuke_rpm_db()
     chroot.finish("run")

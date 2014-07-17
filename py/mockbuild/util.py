@@ -723,6 +723,10 @@ def set_config_opts_per_cmdline(config_opts, options, args):
 
     if options.pkg_manager:
         config_opts['package_manager'] = options.pkg_manager
+    if options.mode == 'yum-cmd':
+        config_opts['package_manager'] = 'yum'
+    if options.mode == 'dnf-cmd':
+        config_opts['package_manager'] = 'dnf'
 
     if options.scm:
         try:
