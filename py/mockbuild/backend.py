@@ -736,6 +736,8 @@ class Root(object):
             return
         self.logging_initialized = True
 
+        util.mkdirIfAbsent(self.resultdir)
+
         try:
             self.uidManager.dropPrivsTemp()
 

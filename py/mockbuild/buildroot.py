@@ -181,6 +181,17 @@ class Buildroot(object):
         # then remove anything that might be left around.
         self._umount_residual()
 
+    def _mount_is_ours(self, mountpoint):
+        mountpoint = os.path.realpath(mountpoint)
+        our_dirs = [os.path.realpath(self.make_chroot_path()) + '/',
+                    os.path.realpath(self.make_chroot_path()) + '.tmp/']
+        for our_dir in our_dirs:
+            assert our_dir and our_dir != '/'
+            if mountpoint.startswith(our_dir):
+                return True
+        return False
+
+
     def _umount_residual(self):
         mountpoints = open("/proc/mounts").read().strip().split("\n")
 
@@ -188,7 +199,7 @@ class Buildroot(object):
         # may prevent clean unmount.
         for mountline in reversed(mountpoints):
             mountpoint = mountline.split()[1]
-            if os.path.realpath(mountpoint).startswith(os.path.realpath(self.make_chroot_path()) + "/"):
+            if self._mount_is_ours(mountpoint):
                 cmd = "umount -n -l %s" % mountpoint
                 #self.root_log.warning("Forcibly unmounting '%s' from chroot." % mountpoint)
                 util.do(cmd, raiseExc=0, shell=True, env=self.env)
