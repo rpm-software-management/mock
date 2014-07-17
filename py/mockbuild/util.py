@@ -263,7 +263,7 @@ def process_input(line):
             out.append(char)
     return ''.join(out)
 
-def logOutput(fds, logger, returnOutput=1, start=0, timeout=0, printOutput=False, child=None, chrootPath=None):
+def logOutput(fds, logger, returnOutput=1, start=0, timeout=0, printOutput=False, child=None, chrootPath=None, pty=False):
     output = ""
     done = 0
 
@@ -305,7 +305,8 @@ def logOutput(fds, logger, returnOutput=1, start=0, timeout=0, printOutput=False
             tail = lines.pop()
             if not lines:
                 continue
-            lines = [process_input(line) for line in lines]
+            if pty:
+                lines = [process_input(line) for line in lines]
             processed_input = '\n'.join(lines) + '\n'
             if logger is not None:
                 for line in lines:
@@ -317,7 +318,8 @@ def logOutput(fds, logger, returnOutput=1, start=0, timeout=0, printOutput=False
                 output += processed_input
 
     if tail:
-        tail = process_input(tail) + '\n'
+        if pty:
+            tail = process_input(tail) + '\n'
         if logger is not None:
             logger.debug(tail)
         if returnOutput:
@@ -354,13 +356,14 @@ def selinuxEnabled():
 decorate(traceLog())
 def do(command, shell=False, chrootPath=None, cwd=None, timeout=0, raiseExc=True,
        returnOutput=0, uid=None, gid=None, personality=None,
-       printOutput=False, env=None, *args, **kargs):
+       printOutput=False, env=None, pty=False, *args, **kargs):
 
     logger = kargs.get("logger", getLog())
     output = ""
     start = time.time()
-    master_pty, slave_pty = os.openpty()
-    reader = os.fdopen(master_pty)
+    if pty:
+        master_pty, slave_pty = os.openpty()
+        reader = os.fdopen(master_pty)
     preexec = ChildPreExec(personality, chrootPath, cwd, uid, gid)
     if env is None:
         env = clean_env()
@@ -373,14 +376,15 @@ def do(command, shell=False, chrootPath=None, cwd=None, timeout=0, raiseExc=True
             env=env,
             bufsize=0, close_fds=True,
             stdin=open("/dev/null", "r"),
-            stdout=slave_pty,
+            stdout=slave_pty if pty else subprocess.PIPE,
             stderr=subprocess.PIPE,
             preexec_fn=preexec,
             )
 
         # use select() to poll for output so we dont block
-        output = logOutput([reader, child.stderr],
-                           logger, returnOutput, start, timeout, printOutput=printOutput, child=child, chrootPath=chrootPath)
+        output = logOutput([reader if pty else child.stdout, child.stderr],
+                           logger, returnOutput, start, timeout, pty=pty,
+                           printOutput=printOutput, child=child, chrootPath=chrootPath)
 
     except:
         # kill children if they arent done
@@ -393,8 +397,9 @@ def do(command, shell=False, chrootPath=None, cwd=None, timeout=0, raiseExc=True
             pass
         raise
     finally:
-        os.close(slave_pty)
-        reader.close()
+        if pty:
+            os.close(slave_pty)
+            reader.close()
 
     # wait until child is done, kill it if it passes timeout
     niceExit=1
