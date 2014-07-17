@@ -36,7 +36,6 @@ class Root(object):
         self.uidManager = uidManager
         self._hooks = {}
         self.chrootWasCached = False
-        self.chrootWasCleaned = False
         self.preExistingDeps = []
         self.logging_initialized = False
         self.version = config['version']
@@ -120,8 +119,9 @@ class Root(object):
         self.extra_chroot_dirs = config['extra_chroot_dirs']
 
         self.pkg_manager = PackageManager(config, self)
-
         self._resetLogging()
+        self.buildroot.initialize()
+        self.chroot_was_cleaned = False
 
     @property
     def mounts(self):
@@ -181,10 +181,9 @@ class Root(object):
         if self.backup:
             self.backup_results()
         self.start("clean chroot")
-        mockbuild.util.orphansKill(self.makeChrootPath())
         self.buildroot.delete()
-        self.chrootWasCleaned = True
         self.finish("clean chroot")
+        self.chroot_was_cleaned = True
 
     decorate(traceLog())
     def scrub(self, scrub_opts):
@@ -198,12 +197,10 @@ class Root(object):
                     if scrub == 'all':
                         self.root_log.info("scrubbing everything for %s" % self.config_name)
                         self.buildroot.delete()
-                        self.chrootWasCleaned = True
                         mockbuild.util.rmtree(self.cachedir, selinux=self.selinux)
                     elif scrub == 'chroot':
                         self.root_log.info("scrubbing chroot for %s" % self.config_name)
                         self.buildroot.delete()
-                        self.chrootWasCleaned = True
                     elif scrub == 'cache':
                         self.root_log.info("scrubbing cache for %s" % self.config_name)
                         mockbuild.util.rmtree(self.cachedir, selinux=self.selinux)
@@ -273,10 +270,16 @@ class Root(object):
             os.remove(localtimepath)
         shutil.copy2('/etc/localtime', localtimedir)
 
+    def chroot_was_initialized(self):
+        return os.path.exists(self.makeChrootPath('.initialized'))
+
     decorate(traceLog())
     def _init(self):
+        if self.chroot_was_initialized():
+            return
         self.start("chroot init")
-        self.buildroot.initialize()
+        if self.chroot_was_cleaned:
+            self.buildroot.initialize()
 
         self.uidManager.dropPrivsTemp()
         try:
@@ -317,7 +320,7 @@ class Root(object):
 
         # yum stuff
         self.start("yum update")
-        if self.chrootWasCleaned:
+        if not self.chroot_was_initialized():
             self.yum_init_install_output = self._yum(self.chroot_setup_cmd, returnOutput=1)
         elif self.chrootWasCached:
             self._yum(('update',), returnOutput=1)
@@ -331,6 +334,9 @@ class Root(object):
 
         # set up timezone to match host
         self._setup_timezone()
+
+        # mark the buildroot as initialized
+        util.touch(self.makeChrootPath('.initialized'))
 
         # done with init
         self._callHooks('postinit')

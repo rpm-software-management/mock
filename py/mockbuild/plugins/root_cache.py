@@ -103,7 +103,8 @@ class RootCache(object):
 
         # optimization: don't unpack root cache if chroot was not cleaned (unless we are using tmpfs)
         if os.path.exists(self.rootCacheFile):
-            if self.rootObj.chrootWasCleaned or self.rootObj.pluginConf['tmpfs_enable']:
+            if (not self.rootObj.chroot_was_initialized()
+                    or self.rootObj.pluginConf['tmpfs_enable']):
                 self.rootObj.start("unpacking root cache")
                 self._rootCacheLock()
                 #
@@ -118,7 +119,6 @@ class RootCache(object):
                 for dir in self.exclude_dirs:
                     mockbuild.util.mkdirIfAbsent(self.rootObj.makeChrootPath(dir))
                 self._rootCacheUnlock()
-                self.rootObj.chrootWasCleaned = False
                 self.rootObj.chrootWasCached = True
                 self.rootObj.finish("unpacking root cache")
 
@@ -162,7 +162,7 @@ class RootCache(object):
                     pass
 
             # never rebuild cache unless it was a clean build, or we are explicitly caching alterations
-            if self.rootObj.chrootWasCleaned or self.rootObj.cache_alterations:
+            if not self.rootObj.chroot_was_initialized() or self.rootObj.cache_alterations:
                 mockbuild.util.do(["sync"], shell=False)
                 self._root_cache_handle_mounts()
                 self.rootObj.start("creating cache")
