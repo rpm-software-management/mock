@@ -69,10 +69,6 @@ class Root(object):
         self.chrootuser = 'mockbuild'
         self.chrootgid = config['chrootgid']
         self.chrootgroup = 'mockbuild'
-        self.yum_conf_content = config['yum.conf']
-        self.yum_priorities_conf_content = config['priorities.conf']
-        self.yum_rhnplugin_conf_content = config['rhnplugin.conf']
-        self.yum_subscription_manager_conf_content = config['subscription-manager.conf']
         self.use_host_resolv = config['use_host_resolv']
         self.chroot_file_contents = config['files']
         self.chroot_setup_cmd = config['chroot_setup_cmd']
@@ -245,16 +241,6 @@ class Root(object):
         self._show_installed_packages()
 
     decorate(traceLog())
-    def _write_plugin_conf(self, yumpluginconfdir, name, content):
-        """ Write 'name' file into yumpluginconfdir """
-        # always truncate and overwrite (w+)
-        mockbuild.util.mkdirIfAbsent(yumpluginconfdir)
-        conf = self.makeChrootPath('etc', 'yum', 'pluginconf.d', name)
-        conf_fo = open(conf, 'w+')
-        conf_fo.write(content)
-        conf_fo.close()
-
-    decorate(traceLog())
     def _setup_resolver_config(self):
         etcdir = self.makeChrootPath('etc')
 
@@ -310,50 +296,6 @@ class Root(object):
         getLog().info("calling preinit hooks")
         self._callHooks('preinit')
 
-        # use yum plugin conf from chroot as needed
-        yumpluginconfdir = self.makeChrootPath('etc', 'yum', 'pluginconf.d')
-        self.yum_conf_content = self.yum_conf_content.replace("plugins=1", "plugins=1\npluginconfpath=" + yumpluginconfdir)
-
-        # write in yum.conf into chroot
-        # always truncate and overwrite (w+)
-        self.root_log.debug('configure yum')
-        yumconf = self.makeChrootPath('etc', 'yum', 'yum.conf')
-        yumconf_fo = open(yumconf, 'w+')
-        yumconf_fo.write(self.yum_conf_content)
-        yumconf_fo.close()
-
-        # symlink /etc/yum.conf to /etc/yum/yum.conf (FC6 requires)
-        try:
-            os.unlink(self.makeChrootPath("etc", "yum.conf"))
-        except OSError:
-            pass
-        os.symlink('yum/yum.conf', self.makeChrootPath("etc", "yum.conf"))
-
-        # write in yum plugins into chroot
-        self.root_log.debug('configure yum priorities')
-        self._write_plugin_conf(yumpluginconfdir, 'priorities.conf', self.yum_priorities_conf_content)
-        self.root_log.debug('configure yum rhnplugin')
-        self._write_plugin_conf(yumpluginconfdir, 'rhnplugin.conf', self.yum_rhnplugin_conf_content)
-        if self.yum_subscription_manager_conf_content:
-            self.root_log.debug('configure RHSM rhnplugin')
-            self._write_plugin_conf(yumpluginconfdir, 'subscription-manager.conf', self.yum_subscription_manager_conf_content)
-            pem_dir = self.makeChrootPath('etc', 'pki', 'entitlement')
-            mockbuild.util.mkdirIfAbsent(pem_dir)
-            for pem_file in glob.glob("/etc/pki/entitlement/*.pem"):
-                shutil.copy(pem_file, pem_dir)
-            consumer_dir = self.makeChrootPath('etc', 'pki', 'consumer')
-            mockbuild.util.mkdirIfAbsent(consumer_dir)
-            for consumer_file in glob.glob("/etc/pki/consumer/*.pem"):
-                shutil.copy(consumer_file, consumer_dir)
-            shutil.copy('/etc/rhsm/rhsm.conf', self.makeChrootPath('etc', 'rhsm'))
-            self._yum(['repolist'])
-
-        # Copy RPM GPG keys
-        pki_dir = self.makeChrootPath('etc', 'pki', 'mock')
-        mockbuild.util.mkdirIfAbsent(pki_dir)
-        for pki_file in glob.glob("/etc/pki/mock/RPM-GPG-KEY-*"):
-            shutil.copy(pki_file, pki_dir)
-
         # set up resolver configuration
         if self.use_host_resolv:
             self._setup_resolver_config()
@@ -371,11 +313,13 @@ class Root(object):
                 fo.write(self.chroot_file_contents[key])
                 fo.close()
 
+        self.pkg_manager.initialize_config()
+
         # yum stuff
         self.start("yum update")
         if self.chrootWasCleaned:
             self.yum_init_install_output = self._yum(self.chroot_setup_cmd, returnOutput=1)
-        if self.chrootWasCached:
+        elif self.chrootWasCached:
             self._yum(('update',), returnOutput=1)
 
         self.finish("yum update")

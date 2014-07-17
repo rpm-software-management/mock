@@ -1,3 +1,8 @@
+import glob
+import shutil
+
+from textwrap import dedent
+
 from mockbuild import util
 
 def PackageManager(config_opts, chroot):
@@ -58,8 +63,60 @@ class _PackageManager(object):
     def update(self, *args):
         return self.execute('update', *args)
 
+    def initialize_config(self):
+        raise NotImplementedError()
+
 class Yum(_PackageManager):
     command = 'yum'
+
+    def _write_plugin_conf(self, name):
+        """ Write 'name' file into pluginconf.d """
+        conf_path = self.buildroot.makeChrootPath('etc', 'yum', 'pluginconf.d', name)
+        with open(conf_path, 'w+') as conf_file:
+            conf_file.write(self.config[name])
+
+    def initialize_config(self):
+        # use yum plugin conf from chroot as needed
+        pluginconf_dir = self.buildroot.makeChrootPath('etc', 'yum', 'pluginconf.d')
+        util.mkdirIfAbsent(pluginconf_dir)
+        config_content = self.config['yum.conf']\
+                          .replace("plugins=1",
+                           dedent("""\
+                           plugins=1
+                           pluginconfpath={0}""".format(pluginconf_dir)))
+
+        # write in yum.conf into chroot
+        # always truncate and overwrite (w+)
+        self.buildroot.root_log.debug('configure yum')
+        yumconf_path = self.buildroot.makeChrootPath('etc', 'yum', 'yum.conf')
+        with open(yumconf_path, 'w+') as yumconf_file:
+            yumconf_file.write(config_content)
+
+        # write in yum plugins into chroot
+        self.buildroot.root_log.debug('configure yum priorities')
+        self._write_plugin_conf('priorities.conf')
+        self.buildroot.root_log.debug('configure yum rhnplugin')
+        self._write_plugin_conf('rhnplugin.conf')
+        if self.config['subscription-manager.conf']:
+            self.buildroot.root_log.debug('configure RHSM rhnplugin')
+            self._write_plugin_conf('subscription-manager.conf')
+            pem_dir = self.buildroot.makeChrootPath('etc', 'pki', 'entitlement')
+            util.mkdirIfAbsent(pem_dir)
+            for pem_file in glob.glob("/etc/pki/entitlement/*.pem"):
+                shutil.copy(pem_file, pem_dir)
+            consumer_dir = self.buildroot.makeChrootPath('etc', 'pki', 'consumer')
+            util.mkdirIfAbsent(consumer_dir)
+            for consumer_file in glob.glob("/etc/pki/consumer/*.pem"):
+                shutil.copy(consumer_file, consumer_dir)
+            shutil.copy('/etc/rhsm/rhsm.conf',
+                    self.buildroot.makeChrootPath('etc', 'rhsm'))
+            self.execute('repolist')
+
+        # Copy RPM GPG keys
+        pki_dir = self.buildroot.makeChrootPath('etc', 'pki', 'mock')
+        util.mkdirIfAbsent(pki_dir)
+        for pki_file in glob.glob("/etc/pki/mock/RPM-GPG-KEY-*"):
+            shutil.copy(pki_file, pki_dir)
 
 class Dnf(_PackageManager):
     command = 'dnf'
