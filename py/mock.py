@@ -487,8 +487,8 @@ def groupcheck(unprivGid, tgtGid):
 
 def unshare_namespace():
     base_unshare_flags = mockbuild.util.CLONE_NEWNS
-    extended_unshare_flags = base_unshare_flags | mockbuild.util.CLONE_NEWIPC \
-                             | mockbuild.util.CLONE_NEWUTS
+    extended_unshare_flags = base_unshare_flags #| mockbuild.util.CLONE_NEWIPC \
+                             #| mockbuild.util.CLONE_NEWUTS
     try:
         mockbuild.util.unshare(extended_unshare_flags)
     except mockbuild.exception.UnshareFailed, e:
