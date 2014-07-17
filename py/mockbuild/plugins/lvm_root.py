@@ -15,28 +15,31 @@ def volume_group(name, mode='r'):
     finally:
         vg.close()
 
-def lv_exists(vg_name, lv_name):
-    with volume_group(vg_name) as vg:
-        try:
-            vg.lvFromName(lv_name)
-            return True
-        except lvm.LibLVMError:
-            return False
-
 class SnapshotRegistry(object):
-    def __init__(self, vg_name, snap_info):
+    def __init__(self, vg_name, pool_name, snap_info):
         self.vg_name = vg_name
+        self.pool_name = pool_name
         self.snap_info = snap_info
+
+    def lv_is_our(self, name):
+        with volume_group(self.vg_name) as vg:
+            try:
+                lv = vg.lvFromName(name)
+                if lv.getProperty('pool_lv')[0] == self.pool_name:
+                    return True
+            except lvm.LibLVMError:
+                pass
+        return False
 
     def get_current_snapshot(self):
         if os.path.exists(self.snap_info):
             with open(self.snap_info) as ac_record:
                 name = ac_record.read().rstrip()
-            if lv_exists(self.vg_name, name):
+            if self.lv_is_our(name):
                 return name
 
     def set_current_snapshot(self, name):
-        if not lv_exists(self.vg_name, name):
+        if not self.lv_is_our(name):
             raise RuntimeError("Snapshot {0} doesn't exist".format(name))
         with open(self.snap_info, 'w') as ac_record:
             ac_record.write(name)
@@ -62,7 +65,7 @@ def init(plugins, lvm_conf, buildroot):
 
     snap_info = os.path.normpath(os.path.join(buildroot.basedir, '..',
                                  '.snapinfo-' + pool_name))
-    registry = SnapshotRegistry(vg_name, snap_info)
+    registry = SnapshotRegistry(vg_name, pool_name, snap_info)
 
     def create_base():
         size = lvm_conf.get('size', '2G')
