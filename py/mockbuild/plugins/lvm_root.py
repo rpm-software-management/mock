@@ -2,6 +2,7 @@ import os
 import lvm
 
 from contextlib import contextmanager
+from textwrap import dedent
 
 from mockbuild import util, mounts
 
@@ -16,6 +17,8 @@ def volume_group(name, mode='r'):
         vg.close()
 
 class LvmPlugin(object):
+    postinit_name = 'postinit'
+
     def __init__(self, plugins, lvm_conf, buildroot):
         self.buildroot = buildroot
         self.lvm_conf = lvm_conf
@@ -143,7 +146,7 @@ class LvmPlugin(object):
 
     def hook_postinit(self):
         if not self.buildroot.chroot_was_initialized:
-            snapshot_name = self.prefix_name('postinit')
+            snapshot_name = self.prefix_name(self.postinit_name)
             self.make_snapshot(snapshot_name)
             self.set_current_snapshot(snapshot_name)
 
@@ -167,6 +170,19 @@ class LvmPlugin(object):
                         pass
                     else:
                         print '  ' + name.replace(self.prefix_name(''), '')
+
+    def hook_remove_snapshot(self, name):
+        if name == self.postinit_name:
+            raise RuntimeError(dedent("""\
+                    Won't remove postinit snapshot. To remove all logical
+                    volumes associated with this buildroot, use --scrub lvm"""))
+        name = self.prefix_name(name)
+        if not self.lv_is_our(name):
+            raise RuntimeError("Snapshot {0} doesn't exist".format(name))
+        if name == self.get_current_snapshot():
+            self.set_current_snapshot(self.prefix_name(self.postinit_name))
+        util.do(['lvremove', '-f', self.vg_name + '/' + name],
+                printOutput=True)
 
 def init(plugins, lvm_conf, buildroot):
     LvmPlugin(plugins, lvm_conf, buildroot)

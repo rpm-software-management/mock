@@ -148,6 +148,10 @@ def command_parse():
                       dest="mode",
                       help="Create a new LVM snapshot with given name")
 
+    parser.add_option("--remove-snapshot", action="store_const", const="remove_snapshot",
+                      dest="mode",
+                      help="Remove LVM snapshot with given name")
+
     parser.add_option("--rollback-to", action="store_const", const="rollback-to",
                       dest="mode",
                       help="Rollback to given snapshot")
@@ -748,6 +752,11 @@ def run_command(options, args, config_opts, commands, buildroot, state):
             log.critical("Requires a snapshot name")
             sys.exit(50)
         buildroot.plugins.call_hooks('rollback_to', args[0])
+    elif options.mode == 'remove_snapshot':
+        if len(args) < 1:
+            log.critical("Requires a snapshot name")
+            sys.exit(50)
+        buildroot.plugins.call_hooks('remove_snapshot', args[0])
 
     buildroot._nuke_rpm_db()
     state.finish("run")
