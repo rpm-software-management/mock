@@ -98,6 +98,7 @@ class Buildroot(object):
         os.chown(self.basedir, os.getuid(), mockgid)
         os.chmod(self.basedir, 0o2775)
         util.mkdirIfAbsent(self.make_chroot_path())
+        self.plugins.call_hooks('mount_root')
         self.chroot_was_initialized = self.chroot_is_initialized()
         self._setup_result_dir()
         getLog().info("calling preinit hooks")
@@ -415,21 +416,23 @@ class Buildroot(object):
             self._unlock_buildroot()
             util.rmtree(self.basedir, selinux=self.selinux)
         self.chroot_was_initialized = False
+        self.plugins.call_hooks('postclean')
 
     def _umount_all(self):
         """umount all mounted chroot fs."""
 
         # first try removing all expected mountpoints.
         self.mounts.umountall()
+        self.plugins.call_hooks('umount_root')
 
         # then remove anything that might be left around.
         self._umount_residual()
 
     def _mount_is_ours(self, mountpoint):
         mountpoint = os.path.realpath(mountpoint)
-        our_dir = os.path.realpath(self.make_chroot_path()) + '/'
-        assert our_dir and our_dir != '/'
-        if mountpoint.startswith(our_dir):
+        our_dir = os.path.realpath(self.make_chroot_path())
+        assert our_dir
+        if mountpoint.startswith(our_dir + '/') or mountpoint == our_dir:
             return True
         return False
 
