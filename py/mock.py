@@ -229,6 +229,11 @@ def command_parse():
     parser.add_option("--sources", action="store",
                       help="Specifies sources (either a single file or a directory of files)"
                       "to use to build an SRPM (used only with --buildsrpm)")
+    parser.add_option("--short-circuit", action="store", type='choice',
+                      choices=['install', 'build', 'binary'],
+                      help="Pass short-circuit option to rpmbuild to skip already "
+                      "complete stages. Warning: produced packages are unusable. "
+                      "Implies --no-clean. Valid options: build, install, binary")
 
     # verbosity
     parser.add_option("-v", "--verbose", action="store_const", const=2,

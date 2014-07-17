@@ -776,6 +776,10 @@ def set_config_opts_per_cmdline(config_opts, options, args):
     if options.mode == 'dnf-cmd':
         config_opts['package_manager'] = 'dnf'
 
+    if options.short_circuit:
+        config_opts['short_circuit'] = options.short_circuit
+        config_opts['clean'] = False
+
     if options.scm:
         try:
             from mockbuild import scm
