@@ -63,6 +63,7 @@ mockbuild_PYTHON = \
     py/mockbuild/buildroot.py       \
     py/mockbuild/package_manager.py \
     py/mockbuild/state.py           \
+    py/mockbuild/plugins.py         \
     py/mockbuild/backend.py         \
     py/mockbuild/trace_decorator.py \
     py/mockbuild/uid.py             \
