@@ -106,13 +106,13 @@ def command_parse():
                       help="install build dependencies for a specified SRPM")
     parser.add_option("--install", action="store_const", const="install",
                       dest="mode",
-                      help="install packages using yum")
+                      help="install packages using package manager")
     parser.add_option("--update", action="store_const", const="update",
                       dest="mode",
-                      help="update installed packages using yum")
+                      help="update installed packages using package manager")
     parser.add_option("--remove", action="store_const", const="remove",
                       dest="mode",
-                      help="remove packages using yum")
+                      help="remove packages using package manager")
     parser.add_option("--orphanskill", action="store_const", const="orphanskill",
                       dest="mode",
                       help="Kill all processes using specified buildroot.")
@@ -639,16 +639,16 @@ def run_command(options, args, config_opts, chroot):
             log.critical("You must specify a package list to install.")
             sys.exit(50)
 
-        chroot.yumInstall(*args)
+        chroot.install(*args)
 
     elif options.mode == 'update':
-        chroot.yumUpdate()
+        chroot.update()
 
     elif options.mode == 'remove':
         if len(args) == 0:
             log.critical("You must specify a package list to remove.")
             sys.exit(50)
-        chroot.yumRemove(*args)
+        chroot.remove(*args)
 
     elif options.mode == 'rebuild':
         if config_opts['scm']:

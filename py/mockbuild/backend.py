@@ -332,14 +332,14 @@ class Root(object):
 
         self.pkg_manager.initialize_config()
 
-        # yum stuff
-        self.start("yum update")
+        update_state = '{0} update'.format(self.pkg_manager.command)
+        self.start(update_state)
         if not self.chroot_was_initialized():
-            self.yum_init_install_output = self._yum(self.chroot_setup_cmd, returnOutput=1)
+            self.pkg_manager.execute(self.chroot_setup_cmd)
         elif self.chrootWasCached:
-            self._yum(('update',), returnOutput=1)
+            self.pkg_manager.update()
 
-        self.finish("yum update")
+        self.finish(update_state)
 
     decorate(traceLog())
     def _nuke_rpm_db(self):
@@ -383,28 +383,28 @@ class Root(object):
                                  printOutput=printOutput, *args, **kargs)
 
     decorate(traceLog())
-    def yumInstall(self, *rpms):
-        """call yum to install the input rpms into the chroot"""
+    def install(self, *rpms):
+        """Call package manager to install the input rpms into the chroot"""
         # pass build reqs (as strings) to installer
         self.root_log.info("installing package(s): %s" % " ".join(rpms))
-        output = self._yum(['install'] + list(rpms), returnOutput=1)
+        output = self.pkg_manager.install(*rpms, returnOutput=1)
         self.root_log.info(output)
 
     decorate(traceLog())
-    def yumUpdate(self):
-        """use yum to update the chroot"""
-        self._yum(('update',), returnOutput=1)
+    def update(self):
+        """Use package manager to update the chroot"""
+        self.pkg_manager.update()
 
     decorate(traceLog())
-    def yumRemove(self, *rpms):
-        """call yum to remove the input rpms from the chroot"""
+    def remove(self, *rpms):
+        """Call package manager to remove the input rpms from the chroot"""
         self.root_log.info("removing package(s): %s" % " ".join(rpms))
-        output = self._yum(['remove'] + list(rpms), returnOutput=1)
+        output = self.pkg_manager.remove(*rpms, returnOutput=1)
         self.root_log.info(output)
 
     decorate(traceLog())
     def installSrpmDeps(self, *srpms):
-        """figure out deps from srpm. call yum to install them"""
+        """Figure out deps from srpm. Call package manager to install them"""
         try:
             self.uidManager.becomeUser(0, 0)
 
