@@ -79,12 +79,24 @@ class Buildroot(object):
     def chroot_is_initialized(self):
         return os.path.exists(self.make_chroot_path('.initialized'))
 
+    def _setup_result_dir(self):
+        self.uid_manager.dropPrivsTemp()
+        try:
+            util.mkdirIfAbsent(self.resultdir)
+        except Error:
+            raise ResultDirNotAccessible(ResultDirNotAccessible.__doc__ % self.resultdir)
+        finally:
+            self.uid_manager.restorePrivs()
+
     def _init(self):
         # If previous run didn't finish properly
         self._umount_residual()
 
         self.state.start("chroot init")
+        util.mkdirIfAbsent(self.basedir)
+        util.mkdirIfAbsent(self.make_chroot_path())
         self.chroot_was_initialized = self.chroot_is_initialized()
+        self._setup_result_dir()
         getLog().info("calling preinit hooks")
         self.plugins.call_hooks('preinit')
         self.chroot_was_initialized = self.chroot_is_initialized()
@@ -300,13 +312,6 @@ class Buildroot(object):
         dirs += self.config['extra_chroot_dirs']
         for item in dirs:
             util.mkdirIfAbsent(self.make_chroot_path(item))
-        self.uid_manager.dropPrivsTemp()
-        try:
-            util.mkdirIfAbsent(self.resultdir)
-        except Error:
-            raise ResultDirNotAccessible(ResultDirNotAccessible.__doc__ % self.resultdir)
-        finally:
-            self.uid_manager.restorePrivs()
 
     def _setup_build_dirs(self):
         build_dirs = ['RPMS', 'SPECS', 'SRPMS', 'SOURCES', 'BUILD', 'BUILDROOT',
