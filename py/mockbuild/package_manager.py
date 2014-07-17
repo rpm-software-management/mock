@@ -4,6 +4,7 @@ import shutil
 from textwrap import dedent
 
 from mockbuild import util
+from mockbuild.exception import BuildError
 
 def PackageManager(config_opts, chroot):
     pm = config_opts.get('package_manager', 'yum')
@@ -63,6 +64,9 @@ class _PackageManager(object):
     def update(self, *args):
         return self.execute('update', *args)
 
+    def builddep(self, *args, **kwargs):
+        return self.execute('builddep', *args)
+
     def initialize_config(self):
         raise NotImplementedError()
 
@@ -117,6 +121,24 @@ class Yum(_PackageManager):
         util.mkdirIfAbsent(pki_dir)
         for pki_file in glob.glob("/etc/pki/mock/RPM-GPG-KEY-*"):
             shutil.copy(pki_file, pki_dir)
+
+    def install(self, *pkgs, **kwargs):
+        out = self.execute('resolvedep', *pkgs, returnOutput=True,
+                           printOutput=False, pty=False)
+        _check_missing(out)
+        out = super(Yum, self).install(*pkgs, **kwargs)
+        _check_missing(out)
+
+    def builddep(self, *pkgs, **kwargs):
+        out = super(Yum, self).builddep(*pkgs, **kwargs)
+        _check_missing(out)
+
+def _check_missing(output):
+    for i, line in enumerate(output.split('\n')):
+        for msg in ('no package found for', 'no packages found for',
+                    'missing dependency', 'error:'):
+            if msg in line.lower():
+                raise BuildError('\n'.join(output.split('\n')[i:]))
 
 class Dnf(_PackageManager):
     command = 'dnf'

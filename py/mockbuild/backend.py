@@ -409,28 +409,16 @@ class Root(object):
         try:
             self.uidManager.becomeUser(0, 0)
 
-            def _yum_and_check(cmd):
-                output = self._yum(cmd, returnOutput=1)
-                for line in output.split('\n'):
-                    if line.lower().find('No Package found for'.lower()) != -1 or line.lower().find('Missing Dependency'.lower()) != -1:
-                        raise mockbuild.exception.BuildError, "Bad build req: %s. Exiting." % line
-
             # first, install pre-existing deps and configured additional ones
             deps = list(self.preExistingDeps)
             for hdr in mockbuild.util.yieldSrpmHeaders(srpms, plainRpmOk=1):
                 # get text buildreqs
                 deps.extend(mockbuild.util.getAddtlReqs(hdr, self.more_buildreqs))
             if deps:
-                # everything exists, okay, install them all.
-                # pass build reqs to installer
-                args = ['resolvedep'] + deps
-                _yum_and_check(args)
-                # nothing made us exit, so we continue
-                args[0] = 'install'
-                self._yum(args, returnOutput=1)
+                self.pkg_manager.install(*deps, returnOutput=1)
 
             # install actual build dependencies
-            _yum_and_check(['builddep'] + list(srpms))
+            self.pkg_manager.builddep(*srpms)
         finally:
             self.uidManager.restorePrivs()
 
