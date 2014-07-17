@@ -37,10 +37,10 @@ class Plugins(object):
                 module.init(self, self.plugin_conf["{0}_opts".format(plugin)], buildroot)
         self.state.finish("init plugins")
 
-    def call_hooks(self, stage):
+    def call_hooks(self, stage, *args, **kwargs):
         hooks = self._hooks.get(stage, [])
         for hook in hooks:
-            hook()
+            hook(*args, **kwargs)
 
     def add_hook(self, stage, function):
         hooks = self._hooks.get(stage, [])

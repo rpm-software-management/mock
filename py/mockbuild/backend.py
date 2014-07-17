@@ -75,6 +75,8 @@ class Commands(object):
             try:
                 self.plugins.call_hooks('clean')
                 for scrub in scrub_opts:
+                    #FIXME hooks for all plugins
+                    self.plugins.call_hooks('scrub', scrub)
                     if scrub == 'all':
                         self.buildroot.root_log.info("scrubbing everything for %s" % self.config_name)
                         self.buildroot.delete()

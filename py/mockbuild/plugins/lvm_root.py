@@ -57,7 +57,17 @@ def init(plugins, lvm_conf, buildroot):
             lv_mounts[0].mount()
             buildroot.mounts.mountall()
 
+    def scrub_root(what):
+        if what in ('lvm', 'all'):
+            if os.path.exists(snapshot_path):
+                util.do(['lvremove', '-f', vg_name + '/' + snapshot_name],
+                        printOutput=True)
+            if os.path.exists(lv_path):
+                util.do(['lvremove', '-f', vg_name + '/' + lv_name],
+                        printOutput=True)
+
     plugins.add_hook('mount_root', mount_root)
     plugins.add_hook('umount_root', umount_root)
     plugins.add_hook('postclean', rollback)
     plugins.add_hook('postinit', postinit)
+    plugins.add_hook('scrub', scrub_root)
