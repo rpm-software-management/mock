@@ -56,7 +56,7 @@ VERSION=$PACKAGE_VERSION
 AM_CONDITIONAL(USE_MD5, test -e /usr/bin/rpmbuild-md5)
 
 PKG_CHECK_EXISTS([bash-completion >= 1.99],
-    [BASHCOMPDIR=`$PKG_CONFIG bash-completion --variable=completionsdir`;HAVE_BASHCOMP2=true],
+    [BASHCOMPDIR="$($PKG_CONFIG bash-completion --variable=completionsdir|sed 's|^/usr|${prefix}|;s|^/etc|${sysconfdir}|')";HAVE_BASHCOMP2=true],
     [BASHCOMPDIR="\$(sysconfdir)/bash_completion.d"])
 
 AC_SUBST([RELEASE_NAME])
