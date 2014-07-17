@@ -35,11 +35,15 @@ class SnapshotRegistry(object):
             if lv_exists(self.vg_name, name):
                 return name
 
-    def set_active_snapshot(self, name):
+    def set_current_snapshot(self, name):
         if not lv_exists(self.vg_name, name):
             raise RuntimeError("Snapshot {0} doesn't exist".format(name))
         with open(self.snap_info, 'w') as ac_record:
             ac_record.write(name)
+
+    def unset_current_snapshot(self):
+        if os.path.exists(self.snap_info):
+            os.remove(self.snap_info)
 
     def get_snapshot_origin(self, name):
         with volume_group(self.vg_name) as vg:
@@ -85,7 +89,7 @@ def init(plugins, lvm_conf, buildroot):
     def make_snapshot(snapshot_name):
         lvcreate = ['lvcreate', '-s', vg_name + '/' + lv_name, '-n', snapshot_name]
         util.do(lvcreate, printOutput=True)
-        registry.set_active_snapshot(snapshot_name)
+        registry.set_current_snapshot(snapshot_name)
 
     def rollback():
         snapshot_name = registry.get_current_snapshot()
@@ -100,26 +104,20 @@ def init(plugins, lvm_conf, buildroot):
             make_snapshot(snapshot_name)
 
     def rollback_to(name):
-        registry.set_active_snapshot(name)
+        registry.set_current_snapshot(name)
         rollback()
 
     def postinit():
         if not buildroot.chroot_was_initialized:
             snapshot_name = '{0}-postinit'.format(pool_name)
             make_snapshot(snapshot_name)
-            registry.set_active_snapshot(snapshot_name)
-            snapshot_path = os.path.join('/dev', vg_name, snapshot_name)
+            registry.set_current_snapshot(snapshot_name)
 
     def scrub_root(what):
-        #TODO remove whole thinpool
         if what in ('lvm', 'all'):
-            registry.set_active_snapshot('')
-            if os.path.exists(snapshot_path):
-                util.do(['lvremove', '-f', vg_name + '/' + snapshot_name],
-                        printOutput=True)
-            if os.path.exists(lv_path):
-                util.do(['lvremove', '-f', vg_name + '/' + lv_name],
-                        printOutput=True)
+            registry.unset_current_snapshot()
+            util.do(['lvremove', '-f', vg_name + '/' + pool_name],
+                    printOutput=True)
 
     plugins.add_hook('mount_root', mount_root)
     plugins.add_hook('umount_root', umount_root)
