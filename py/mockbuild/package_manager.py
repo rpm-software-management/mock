@@ -27,7 +27,7 @@ class _PackageManager(object):
     def build_invocation(self, *args):
         if args[0] == 'builddep':
             args = args[1:]
-            invocation = [self.command + '-builddep']
+            invocation = self.builddep_command
             common_opts = self.config[self.command + '_builddep_opts']
         else:
             invocation = [self.command]
@@ -72,6 +72,7 @@ class _PackageManager(object):
 
 class Yum(_PackageManager):
     command = 'yum'
+    builddep_command = ['yum-builddep']
 
     def _write_plugin_conf(self, name):
         """ Write 'name' file into pluginconf.d """
@@ -142,6 +143,7 @@ def _check_missing(output):
 
 class Dnf(_PackageManager):
     command = 'dnf'
+    builddep_command = ['dnf', 'builddep']
 
     def build_invocation(self, *args):
         if not 'dnf_builddep_opts' in self.config:
