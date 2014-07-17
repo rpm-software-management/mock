@@ -627,35 +627,22 @@ class Root(object):
             else:
                 shutil.copy(sources, self.makeChrootPath(self.builddir, "SOURCES"))
 
-            spec =  self.makeChrootPath(self.builddir, "SPECS", os.path.basename(spec))
-            chrootspec = spec.replace(self.makeChrootPath(), '') # get rid of rootdir prefix
+            spec = self.makeChrootPath(self.builddir, "SPECS", os.path.basename(spec))
+            # get rid of rootdir prefix
+            chrootspec = spec.replace(self.makeChrootPath(), '')
 
+            self.start("rpmbuild -bs")
             try:
-                # Completely/Permanently drop privs while running the following:
-                self.start("rpmbuild -bs")
-                self.doChroot(
-                    ["bash", "--login", "-c", 'rpmbuild -bs --target %s --nodeps %s' % (self.rpmbuild_arch, chrootspec)],
-                    shell=False,
-                    logger=self.build_log, timeout=timeout,
-                    uid=self.chrootuid,
-                    gid=self.chrootgid,
-                   )
+                rebuilt_srpm = self.rebuild_installed_srpm(chrootspec, timeout)
             finally:
                 self.finish("rpmbuild -bs")
 
-            rebuiltSrpmFile = glob.glob("%s/%s/SRPMS/*.src.rpm" % (self.makeChrootPath(), self.builddir))
-            if len(rebuiltSrpmFile) != 1:
-                raise mockbuild.exception.PkgError, "Expected to find single rebuilt srpm, found %d." % len(rebuiltSrpmFile)
-
-            rebuiltSrpmFile = rebuiltSrpmFile[0]
-            srpmBasename = rebuiltSrpmFile.split("/")[-1]
+            srpm_basename = os.path.basename(rebuilt_srpm)
 
             self.root_log.debug("Copying package to result dir")
-            shutil.copy2(rebuiltSrpmFile, self.resultdir)
+            shutil.copy2(self.makeChrootPath(rebuilt_srpm), self.resultdir)
 
-            resultSrpmFile = self.resultdir + "/" + srpmBasename
-
-            return resultSrpmFile
+            return os.path.join(self.resultdir, srpm_basename)
 
         finally:
             self.uidManager.restorePrivs()
