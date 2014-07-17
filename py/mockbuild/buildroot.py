@@ -20,6 +20,8 @@ class Buildroot(object):
         self.uid_manager = uid_manager
         self.state = state
         self.plugins = plugins
+        if config.has_key('unique-ext'):
+            config['root'] = "%s-%s" % (config['root'], config['unique-ext'])
         self.basedir = os.path.join(config['basedir'], config['root'])
         self.rootdir = os.path.join(self.basedir, 'root')
         self.resultdir = config['resultdir'] % config
@@ -348,9 +350,9 @@ class Buildroot(object):
             os.symlink("/proc/self/fd/1", self.make_chroot_path("dev/stdout"))
             os.symlink("/proc/self/fd/2", self.make_chroot_path("dev/stderr"))
 
-            if os.path.isfile(self.makeChrootPath('etc', 'mtab')):
-                os.remove(self.makeChrootPath('etc', 'mtab'))
-                os.symlink("/proc/self/mounts", self.makeChrootPath('etc', 'mtab'))
+            if os.path.isfile(self.make_chroot_path('etc', 'mtab')):
+                os.remove(self.make_chroot_path('etc', 'mtab'))
+                os.symlink("/proc/self/mounts", self.make_chroot_path('etc', 'mtab'))
 
             os.chown(self.make_chroot_path('dev/tty'), pwd.getpwnam('root')[2], grp.getgrnam('tty')[2])
             os.chown(self.make_chroot_path('dev/ptmx'), pwd.getpwnam('root')[2], grp.getgrnam('tty')[2])

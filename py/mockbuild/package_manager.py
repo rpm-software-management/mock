@@ -119,7 +119,7 @@ class Yum(_PackageManager):
             self.execute('repolist')
 
         # Copy RPM GPG keys
-        pki_dir = self.buildroot.makeChrootPath('etc', 'pki', 'mock')
+        pki_dir = self.buildroot.make_chroot_path('etc', 'pki', 'mock')
         util.mkdirIfAbsent(pki_dir)
         for pki_file in glob.glob("/etc/pki/mock/RPM-GPG-KEY-*"):
             shutil.copy(pki_file, pki_dir)

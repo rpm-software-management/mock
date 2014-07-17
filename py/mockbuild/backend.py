@@ -5,60 +5,32 @@
 # Major reorganization and adaptation by Michael Brown
 # Copyright (C) 2007 Michael E Brown <mebrown@michaels-house.net>
 
-import fcntl
 import glob
-import imp
-import logging
 import os
 import shutil
-import stat
-import pwd
-import grp
 
-import mockbuild.util
-import mockbuild.exception
+from mockbuild import util
+from mockbuild.exception import PkgError, BuildError
+from mockbuild.trace_decorator import getLog
 
-from mockbuild.exception import BuildRootLocked
-from mockbuild.trace_decorator import traceLog, decorate, getLog
-from mockbuild.package_manager import PackageManager
-from mockbuild.buildroot import Buildroot
+class Commands(object):
+    """Executes mock commands in the buildroot"""
+    def __init__(self, config, uid_manager, plugins, state, buildroot):
+        self.uid_manager = uid_manager
+        self.buildroot = buildroot
+        self.state = state
+        self.plugins = plugins
+        self.config = config
 
-class Root(object):
-    """controls setup of chroot environment"""
-    decorate(traceLog())
-    def __init__(self, config, uidManager):
-        self._state = []
-        self.uidManager = uidManager
-        self._hooks = {}
-        self.chrootWasCached = False
-        self.preExistingDeps = []
-        self.logging_initialized = False
-        self.version = config['version']
-
-        self.sharedRootName = config['root']
-        if config.has_key('unique-ext'):
-            config['root'] = "%s-%s" % (config['root'], config['unique-ext'])
-
-        self.buildroot = Buildroot(config)
-        self.env = self.buildroot.env
-
-        self.basedir = self.buildroot.basedir
-        self.homedir = config['chroothome']
-        self.builddir = os.path.join(self.homedir, 'build')
         self.rpmbuild_arch = config['rpmbuild_arch']
-
         self.clean_the_chroot = config['clean']
-
-        # result dir
-
-        self._state_log = getLog("mockbuild.Root.state")
 
         # config options
         self.configs = config['config_paths']
         self.config_name = config['chroot_name']
-        self.chrootuid = config['chrootuid']
+        self.buildroot.chrootuid = config['chrootuid']
         self.chrootuser = 'mockbuild'
-        self.chrootgid = config['chrootgid']
+        self.buildroot.chrootgid = config['chrootgid']
         self.chrootgroup = 'mockbuild'
         self.use_host_resolv = config['use_host_resolv']
         self.chroot_file_contents = config['files']
@@ -66,220 +38,132 @@ class Root(object):
         if isinstance(self.chroot_setup_cmd, basestring):
             # accept strings in addition to other sequence types
             self.chroot_setup_cmd = self.chroot_setup_cmd.split()
-        self.macros = config['macros']
         self.more_buildreqs = config['more_buildreqs']
-        self.cache_topdir = config['cache_topdir']
-        self.cachedir = os.path.join(self.cache_topdir, self.sharedRootName)
         self.cache_alterations = config['cache_alterations']
-        self.useradd = config['useradd']
-        self.online = config['online']
-        self.internal_dev_setup = config['internal_dev_setup']
 
         self.backup = config['backup_on_clean']
         self.backup_base_dir = config['backup_base_dir']
 
-        self.plugins = config['plugins']
-        self.pluginConf = config['plugin_conf']
-        self.pluginDir = config['plugin_dir']
-        for key in self.pluginConf.keys():
-            if not key.endswith('_opts'): continue
-            self.pluginConf[key]['basedir'] = self.basedir
-            self.pluginConf[key]['cache_topdir'] = self.cache_topdir
-            self.pluginConf[key]['cachedir'] = self.cachedir
-            self.pluginConf[key]['root'] = self.sharedRootName
-
-        self.build_log_fmt_str = config['build_log_fmt_str']
-        self.root_log_fmt_str = config['root_log_fmt_str']
-        self._state_log_fmt_str = config['state_log_fmt_str']
-
-        self.start("init plugins")
-        self._initPlugins()
-        self.finish("init plugins")
-
         # do we allow interactive root shells?
         self.no_root_shells = config['no_root_shells']
 
-        # default to not doing selinux things
-        self.selinux = False
-
-        # if the selinux plugin is disabled and we have SELinux enabled
-        # on the host, we need to do SELinux things, so set the selinux
-        # state variable to true
-        if self.pluginConf['selinux_enable'] == False and mockbuild.util.selinuxEnabled():
-            self.selinux = True
-
-        self.extra_chroot_dirs = config['extra_chroot_dirs']
-
-        self.pkg_manager = PackageManager(config, self)
-        self._resetLogging()
-        self.buildroot.initialize()
-        self.chroot_was_cleaned = False
-
-    @property
-    def mounts(self):
-        return self.buildroot.mounts
-
-    # =============
-    #  'Public' API
-    # =============
-    decorate(traceLog())
-    def addHook(self, stage, function):
-        hooks = self._hooks.get(stage, [])
-        if function not in hooks:
-            hooks.append(function)
-            self._hooks[stage] = hooks
-
-    decorate(traceLog())
-    def state(self):
-        if not len(self._state):
-            raise mockbuild.exception.StateError, "state called on empty state stack"
-        return self._state[-1]
-
-    def start(self, state):
-        if state == None:
-            raise mockbuild.exception.StateError, "start called with None State"
-        self._state.append(state)
-        self._state_log.info("Start: %s" % state)
-
-    def finish(self, state):
-        if len(self._state) == 0:
-            raise mockbuild.exception.StateError, "finish called on empty state list"
-        current = self._state.pop()
-        if state != current:
-            raise mockbuild.exception.StateError, "state finish mismatch: current: %s, state: %s" % (current, state)
-        self._state_log.info("Finish: %s" % state)
-
-    def alldone(self):
-        if len(self._state) != 0:
-            raise mockbuild.exception.StateError, "alldone called with pending states: %s" % ",".join(self._state)
-        self.buildroot.finalize()
-
-    decorate(traceLog())
     def backup_results(self):
-        srcdir = os.path.join(self.basedir, "result")
+        srcdir = os.path.join(self.buildroot.basedir, "result")
         if not os.path.exists(srcdir):
             return
         dstdir = os.path.join(self.backup_base_dir, self.config_name)
-        mockbuild.util.mkdirIfAbsent(dstdir)
+        util.mkdirIfAbsent(dstdir)
         rpms = glob.glob(os.path.join(srcdir, "*rpm"))
         if len(rpms) == 0:
             return
-        self._state_log.info("backup_results: saving with cp %s %s" % (" ".join(rpms), dstdir))
-        mockbuild.util.run(cmd="cp %s %s" % (" ".join(rpms), dstdir))
+        self.state.state_log.info("backup_results: saving with cp %s %s" % (" ".join(rpms), dstdir))
+        util.run(cmd="cp %s %s" % (" ".join(rpms), dstdir))
 
-    decorate(traceLog())
     def clean(self):
         """clean out chroot with extreme prejudice :)"""
         if self.backup:
             self.backup_results()
-        self.start("clean chroot")
+        self.state.start("clean chroot")
         self.buildroot.delete()
-        self.finish("clean chroot")
-        self.chroot_was_cleaned = True
+        self.state.finish("clean chroot")
 
-    decorate(traceLog())
     def scrub(self, scrub_opts):
         """clean out chroot and/or cache dirs with extreme prejudice :)"""
         statestr = "scrub %s" % scrub_opts
-        self.start(statestr)
+        self.state.start(statestr)
         try:
             try:
-                self._callHooks('clean')
+                self.plugins.call_hooks('clean')
                 for scrub in scrub_opts:
                     if scrub == 'all':
-                        self.root_log.info("scrubbing everything for %s" % self.config_name)
+                        self.buildroot.root_log.info("scrubbing everything for %s" % self.config_name)
                         self.buildroot.delete()
-                        mockbuild.util.rmtree(self.cachedir, selinux=self.selinux)
+                        util.rmtree(self.buildroot.cachedir, selinux=self.buildroot.selinux)
                     elif scrub == 'chroot':
-                        self.root_log.info("scrubbing chroot for %s" % self.config_name)
+                        self.buildroot.root_log.info("scrubbing chroot for %s" % self.config_name)
                         self.buildroot.delete()
                     elif scrub == 'cache':
-                        self.root_log.info("scrubbing cache for %s" % self.config_name)
-                        mockbuild.util.rmtree(self.cachedir, selinux=self.selinux)
+                        self.buildroot.root_log.info("scrubbing cache for %s" % self.config_name)
+                        util.rmtree(self.buildroot.cachedir, selinux=self.buildroot.selinux)
                     elif scrub == 'c-cache':
-                        self.root_log.info("scrubbing c-cache for %s" % self.config_name)
-                        mockbuild.util.rmtree(os.path.join(self.cachedir, 'ccache'), selinux=self.selinux)
+                        self.buildroot.root_log.info("scrubbing c-cache for %s" % self.config_name)
+                        util.rmtree(os.path.join(self.buildroot.cachedir, 'ccache'), selinux=self.buildroot.selinux)
                     elif scrub == 'root-cache':
-                        self.root_log.info("scrubbing root-cache for %s" % self.config_name)
-                        mockbuild.util.rmtree(os.path.join(self.cachedir, 'root_cache'), selinux=self.selinux)
+                        self.buildroot.root_log.info("scrubbing root-cache for %s" % self.config_name)
+                        util.rmtree(os.path.join(self.buildroot.cachedir, 'root_cache'), selinux=self.buildroot.selinux)
                     elif scrub == 'yum-cache':
-                        self.root_log.info("scrubbing yum-cache for %s" % self.config_name)
-                        mockbuild.util.rmtree(os.path.join(self.cachedir, 'yum_cache'), selinux=self.selinux)
-            except IOError, e:
-                getLog().warn("parts of chroot do not exist: %s" % e )
-                if mockbuild.util.hostIsEL5(): pass
+                        self.buildroot.root_log.info("scrubbing yum-cache for %s" % self.config_name)
+                        util.rmtree(os.path.join(self.buildroot.cachedir, 'yum_cache'), selinux=self.buildroot.selinux)
+            except IOError as e:
+                getLog().warn("parts of chroot do not exist: %s" % e)
+                if util.hostIsEL5():
+                    pass
                 raise
         finally:
             print "finishing: %s" % statestr
-            self.finish(statestr)
+            self.state.finish(statestr)
 
-    decorate(traceLog())
     def makeChrootPath(self, *args):
         '''For safety reasons, self._rootdir should not be used directly. Instead
         use this handy helper function anytime you want to reference a path in
         relation to the chroot.'''
         return self.buildroot.make_chroot_path(*args)
 
-    decorate(traceLog())
     def init(self):
         try:
-            self._init()
+            self.buildroot.initialize()
         except (KeyboardInterrupt, Exception):
-            self._callHooks('initfailed')
+            self.plugins.call_hooks('initfailed')
             raise
         self._show_installed_packages()
 
-    decorate(traceLog())
     def install(self, *rpms):
         """Call package manager to install the input rpms into the chroot"""
         # pass build reqs (as strings) to installer
-        self.root_log.info("installing package(s): %s" % " ".join(rpms))
-        output = self.pkg_manager.install(*rpms, returnOutput=1)
-        self.root_log.info(output)
+        self.buildroot.root_log.info("installing package(s): %s" % " ".join(rpms))
+        output = self.buildroot.pkg_manager.install(*rpms, returnOutput=1)
+        self.buildroot.root_log.info(output)
 
-    decorate(traceLog())
     def update(self):
         """Use package manager to update the chroot"""
-        self.pkg_manager.update()
+        self.buildroot.pkg_manager.update()
 
-    decorate(traceLog())
     def remove(self, *rpms):
         """Call package manager to remove the input rpms from the chroot"""
-        self.root_log.info("removing package(s): %s" % " ".join(rpms))
-        output = self.pkg_manager.remove(*rpms, returnOutput=1)
-        self.root_log.info(output)
+        self.buildroot.root_log.info("removing package(s): %s" % " ".join(rpms))
+        output = self.buildroot.pkg_manager.remove(*rpms, returnOutput=1)
+        self.buildroot.root_log.info(output)
 
-    decorate(traceLog())
     def installSrpmDeps(self, *srpms):
         """Figure out deps from srpm. Call package manager to install them"""
         try:
-            self.uidManager.becomeUser(0, 0)
+            self.uid_manager.becomeUser(0, 0)
 
             # first, install pre-existing deps and configured additional ones
-            deps = list(self.preExistingDeps)
-            for hdr in mockbuild.util.yieldSrpmHeaders(srpms, plainRpmOk=1):
+            deps = list(self.buildroot.preexisting_deps)
+            for hdr in util.yieldSrpmHeaders(srpms, plainRpmOk=1):
                 # get text buildreqs
-                deps.extend(mockbuild.util.getAddtlReqs(hdr, self.more_buildreqs))
+                deps.extend(util.getAddtlReqs(hdr, self.more_buildreqs))
             if deps:
-                self.pkg_manager.install(*deps, returnOutput=1)
+                self.buildroot.pkg_manager.install(*deps, returnOutput=1)
 
             # install actual build dependencies
-            self.pkg_manager.builddep(*srpms)
+            self.buildroot.pkg_manager.builddep(*srpms)
         finally:
-            self.uidManager.restorePrivs()
+            self.uid_manager.restorePrivs()
 
 
-    #decorate(traceLog())
     def _show_installed_packages(self):
         '''report the installed packages in the chroot to the root log'''
-        self.root_log.info("Installed packages:")
-        self._nuke_rpm_db()
-        mockbuild.util.do(
-            "rpm --root %s -qa" % self.makeChrootPath(),
+        self.buildroot.root_log.info("Installed packages:")
+        self.buildroot._nuke_rpm_db()
+        util.do(
+            "rpm --root %s -qa" % self.buildroot.make_chroot_path(),
             raiseExc=False,
-            env=self.env,
-            uid=self.chrootuid,
-            gid=self.chrootgid,
+            shell=True,
+            env=self.buildroot.env,
+            uid=self.buildroot.chrootuid,
+            gid=self.buildroot.chrootgid,
             )
 
     #
@@ -287,234 +171,203 @@ class Root(object):
     #   Everything in this function runs as the build user
     #       -> except hooks. :)
     #
-    decorate(traceLog())
     def build(self, srpm, timeout, check=True):
         """build an srpm into binary rpms, capture log"""
 
         # tell caching we are building
-        self._callHooks('earlyprebuild')
+        self.plugins.call_hooks('earlyprebuild')
 
         baserpm = os.path.basename(srpm)
 
         buildstate = "build phase for %s" % baserpm
-        self.start(buildstate)
+        self.state.start(buildstate)
         try:
             # remove rpm db files to prevent version mismatch problems
             # note: moved to do this before the user change below!
-            self._nuke_rpm_db()
+            self.buildroot._nuke_rpm_db()
 
             # drop privs and become mock user
-            self.uidManager.becomeUser(self.chrootuid, self.chrootgid)
+            self.uid_manager.becomeUser(self.buildroot.chrootuid, self.buildroot.chrootgid)
             buildsetup = "build setup for %s" % baserpm
-            self.start(buildsetup)
+            self.state.start(buildsetup)
 
             srpm = self.copy_srpm_into_chroot(srpm)
             self.install_srpm(srpm)
 
             spec = self.get_specfile_name(srpm)
-            spec_path = os.path.join(self.builddir, 'SPECS', spec)
+            spec_path = os.path.join(self.buildroot.builddir, 'SPECS', spec)
 
             rebuilt_srpm = self.rebuild_installed_srpm(spec_path, timeout)
 
             self.installSrpmDeps(rebuilt_srpm)
-            self.finish(buildsetup)
+            self.state.finish(buildsetup)
 
             rpmbuildstate = "rpmbuild -bb %s" % baserpm
-            self.start(rpmbuildstate)
+            self.state.start(rpmbuildstate)
 
             # tell caching we are building
-            self._callHooks('prebuild')
+            self.plugins.call_hooks('prebuild')
 
             results = self.rebuild_package(spec_path, timeout, check)
 
             self.copy_build_results(results)
 
-            self.finish(rpmbuildstate)
+            self.state.finish(rpmbuildstate)
 
         finally:
-            self.uidManager.restorePrivs()
+            self.uid_manager.restorePrivs()
 
             # tell caching we are done building
-            self._callHooks('postbuild')
-        self.finish(buildstate)
+            self.plugins.call_hooks('postbuild')
+        self.state.finish(buildstate)
 
 
     def shell(self, options, cmd=None):
         log = getLog()
         log.debug("shell: calling preshell hooks")
-        self._callHooks("preshell")
+        self.plugins.call_hooks("preshell")
         if options.unpriv or self.no_root_shells:
-            uid=self.chrootuid
-            gid=self.chrootgid
+            uid = self.buildroot.chrootuid
+            gid = self.buildroot.chrootgid
         else:
-            uid=0
-            gid=0
+            uid = 0
+            gid = 0
 
         try:
-            self.start("shell")
-            ret = mockbuild.util.doshell(chrootPath=self.makeChrootPath(),
-                                         environ=self.env,
+            self.state.start("shell")
+            ret = util.doshell(chrootPath=self.buildroot.make_chroot_path(),
+                                         environ=self.buildroot.env,
                                          uid=uid, gid=gid,
                                          cmd=cmd)
         finally:
             log.debug("shell: unmounting all filesystems")
-            self.finish("shell")
+            self.state.finish("shell")
 
         log.debug("shell: calling postshell hooks")
-        self._callHooks('postshell')
+        self.plugins.call_hooks('postshell')
         return ret
 
     def chroot(self, args, options):
         log = getLog()
-        shell=False
+        shell = False
         if len(args) == 1:
             args = args[0]
-            shell=True
+            shell = True
         log.info("Running in chroot: %s" % args)
-        self._callHooks("prechroot")
+        self.plugins.call_hooks("prechroot")
         chrootstate = "chroot %s" % args
-        self.start(chrootstate)
+        self.state.start(chrootstate)
         try:
             if options.unpriv:
-                self.doChroot(args, shell=shell, printOutput=True,
-                              uid=self.chrootuid, gid=self.chrootgid, cwd=options.cwd)
+                self.buildroot.doChroot(args, shell=shell, printOutput=True,
+                              uid=self.buildroot.chrootuid, gid=self.buildroot.chrootgid, cwd=options.cwd)
             else:
-                self.doChroot(args, shell=shell, cwd=options.cwd, printOutput=True)
+                self.buildroot.doChroot(args, shell=shell, cwd=options.cwd, printOutput=True)
         finally:
-            self.finish(chrootstate)
-        self._callHooks("postchroot")
+            self.state.finish(chrootstate)
+        self.plugins.call_hooks("postchroot")
 
     #
     # UNPRIVILEGED:
     #   Everything in this function runs as the build user
     #       -> except hooks. :)
     #
-    #decorate(traceLog())
     def buildsrpm(self, spec, sources, timeout):
         """build an srpm, capture log"""
 
         # tell caching we are building
-        self._callHooks('earlyprebuild')
+        self.plugins.call_hooks('earlyprebuild')
 
         try:
-            self.uidManager.becomeUser(self.chrootuid, self.chrootgid)
-            self.start("buildsrpm")
+            self.uid_manager.becomeUser(self.buildroot.chrootuid, self.buildroot.chrootgid)
+            self.state.start("buildsrpm")
 
             # copy spec/sources
-            shutil.copy(spec, self.makeChrootPath(self.builddir, "SPECS"))
+            shutil.copy(spec, self.buildroot.make_chroot_path(self.buildroot.builddir, "SPECS"))
 
             # Resolve any symlinks
             sources = os.path.realpath(sources)
 
             if os.path.isdir(sources):
-                mockbuild.util.rmtree(self.makeChrootPath(self.builddir, "SOURCES"))
-                shutil.copytree(sources, self.makeChrootPath(self.builddir, "SOURCES"), symlinks=True)
+                util.rmtree(self.buildroot.make_chroot_path(self.buildroot.builddir, "SOURCES"))
+                shutil.copytree(sources, self.buildroot.make_chroot_path(self.buildroot.builddir, "SOURCES"), symlinks=True)
             else:
-                shutil.copy(sources, self.makeChrootPath(self.builddir, "SOURCES"))
+                shutil.copy(sources, self.buildroot.make_chroot_path(self.buildroot.builddir, "SOURCES"))
 
-            spec = self.makeChrootPath(self.builddir, "SPECS", os.path.basename(spec))
+            spec = self.buildroot.make_chroot_path(self.buildroot.builddir, "SPECS", os.path.basename(spec))
             # get rid of rootdir prefix
-            chrootspec = spec.replace(self.makeChrootPath(), '')
+            chrootspec = spec.replace(self.buildroot.make_chroot_path(), '')
 
-            self.start("rpmbuild -bs")
+            self.state.start("rpmbuild -bs")
             try:
                 rebuilt_srpm = self.rebuild_installed_srpm(chrootspec, timeout)
             finally:
-                self.finish("rpmbuild -bs")
+                self.state.finish("rpmbuild -bs")
 
             srpm_basename = os.path.basename(rebuilt_srpm)
 
-            self.root_log.debug("Copying package to result dir")
-            shutil.copy2(self.makeChrootPath(rebuilt_srpm), self.resultdir)
+            self.buildroot.root_log.debug("Copying package to result dir")
+            shutil.copy2(self.buildroot.make_chroot_path(rebuilt_srpm), self.buildroot.resultdir)
 
-            return os.path.join(self.resultdir, srpm_basename)
+            return os.path.join(self.buildroot.resultdir, srpm_basename)
 
         finally:
-            self.uidManager.restorePrivs()
+            self.uid_manager.restorePrivs()
 
             # tell caching we are done building
-            self._callHooks('postbuild')
-            self.finish("buildsrpm")
+            self.plugins.call_hooks('postbuild')
+            self.state.finish("buildsrpm")
 
 
-    # =============
-    # 'Private' API
-    # =============
-    decorate(traceLog())
-    def _callHooks(self, stage):
-        hooks = self._hooks.get(stage, [])
-        for hook in hooks:
-            hook()
-
-    decorate(traceLog())
-    def _initPlugins(self):
-        # Import plugins  (simplified copy of what yum does). Can add yum
-        #  features later when we prove we need them.
-        for modname, modulefile in [ (p, os.path.join(self.pluginDir, "%s.py" % p)) for p in self.plugins ]:
-            if not self.pluginConf.get("%s_enable"%modname): continue
-            fp, pathname, description = imp.find_module(modname, [self.pluginDir])
-            try:
-                module = imp.load_module(modname, fp, pathname, description)
-            finally:
-                fp.close()
-
-            if not hasattr(module, 'requires_api_version'):
-                raise mockbuild.exception.Error('Plugin "%s" doesn\'t specify required API version' % modname)
-
-            module.init(self, self.pluginConf["%s_opts" % modname])
-
-
-    decorate(traceLog())
     def _show_path_user(self, path):
         cmd = ['/sbin/fuser', '-a', '-v', path]
-        self.root_log.debug("using 'fuser' to find users of %s" % path)
-        out = mockbuild.util.do(cmd, returnOutput=1, raiseExc=False, env=self.env)
-        self.root_log.debug(out)
+        self.buildroot.root_log.debug("using 'fuser' to find users of %s" % path)
+        out = util.do(cmd, returnOutput=1, raiseExc=False, env=self.buildroot.env)
+        self.buildroot.root_log.debug(out)
         return out
 
-    decorate(traceLog())
     def _yum(self, cmd, returnOutput=0):
         """use yum to install packages/package groups into the chroot"""
 
-        return self.pkg_manager.execute(*cmd, returnOutput=returnOutput)
+        return self.buildroot.pkg_manager.execute(*cmd, returnOutput=returnOutput)
 
     #
     # UNPRIVILEGED:
     #   Everything in this function runs as the build user
     #
-    decorate(traceLog())
     def copy_srpm_into_chroot(self, srpm_path):
         srpmFilename = os.path.basename(srpm_path)
-        dest = self.makeChrootPath(self.builddir, 'originals')
+        dest = self.buildroot.make_chroot_path(self.buildroot.builddir, 'originals')
         shutil.copy2(srpm_path, dest)
-        return os.path.join(self.builddir, 'originals', srpmFilename)
+        return os.path.join(self.buildroot.builddir, 'originals', srpmFilename)
 
     def get_specfile_name(self, srpm_path):
-        files = self.doChroot(["rpm", "-qpl", srpm_path],
-                    shell=False, uid=self.chrootuid, gid=self.chrootgid,
+        files = self.buildroot.doChroot(["rpm", "-qpl", srpm_path],
+                    shell=False, uid=self.buildroot.chrootuid, gid=self.buildroot.chrootgid,
                     returnOutput=True)
         specs = [item for item in files.split('\n') if item.endswith('.spec')]
         if len(specs) < 1:
-            raise mockbuild.exception.PkgError("No specfile found in srpm: "\
+            raise PkgError("No specfile found in srpm: "\
                                                + os.path.basename(srpm_path))
         return specs[0]
 
 
     def install_srpm(self, srpm_path):
-        self.doChroot(["rpm", "-Uvh", "--nodeps", srpm_path],
-            shell=False, uid=self.chrootuid, gid=self.chrootgid)
+        self.buildroot.doChroot(["rpm", "-Uvh", "--nodeps", srpm_path],
+            shell=False, uid=self.buildroot.chrootuid, gid=self.buildroot.chrootgid)
 
     def rebuild_installed_srpm(self, spec_path, timeout):
-        self.doChroot(["bash", "--login", "-c",
+        self.buildroot.doChroot(["bash", "--login", "-c",
                              'rpmbuild -bs --target {0} --nodeps {1}'\
                               .format(self.rpmbuild_arch, spec_path)],
-                shell=False, logger=self.build_log, timeout=timeout,
-                uid=self.chrootuid, gid=self.chrootgid, printOutput=True)
+                shell=False, logger=self.buildroot.build_log, timeout=timeout,
+                uid=self.buildroot.chrootuid, gid=self.buildroot.chrootgid,
+                printOutput=True)
         results = glob.glob("%s/%s/SRPMS/*.src.rpm" % (self.makeChrootPath(),
-                                                       self.builddir))
+                                                       self.buildroot.builddir))
         if len(results) != 1:
-            raise mockbuild.exception.PkgError(
-                    "Expected to find single rebuilt srpm, found %d." % len(results))
+            raise PkgError("Expected to find single rebuilt srpm, found %d."
+                           % len(results))
         return results[0]
 
     def rebuild_package(self, spec_path, timeout, check):
@@ -524,19 +377,20 @@ class Root(object):
         if not check:
             check_opt = '--nocheck'
 
-        self.doChroot(["bash", "--login", "-c",
+        self.buildroot.doChroot(["bash", "--login", "-c",
                              'rpmbuild -bb --target {0} --nodeps {1} {2}'\
                               .format(self.rpmbuild_arch, check_opt, spec_path)],
-            shell=False, logger=self.build_log, timeout=timeout,
-            uid=self.chrootuid, gid=self.chrootgid, printOutput=True)
-        bd_out = self.makeChrootPath(self.builddir)
+            shell=False, logger=self.buildroot.build_log, timeout=timeout,
+            uid=self.buildroot.chrootuid, gid=self.buildroot.chrootgid,
+            printOutput=True)
+        bd_out = self.makeChrootPath(self.buildroot.builddir)
         results = glob.glob(bd_out + '/RPMS/*.rpm')
         results += glob.glob(bd_out + '/SRPMS/*.rpm')
         if not results:
-            raise mockbuild.exception.PkgError('No build results found')
+            raise PkgError('No build results found')
         return results
 
     def copy_build_results(self, results):
-        self.root_log.debug("Copying packages to result dir")
+        self.buildroot.root_log.debug("Copying packages to result dir")
         for item in results:
-            shutil.copy2(item, self.resultdir)
+            shutil.copy2(item, self.buildroot.resultdir)
