@@ -273,6 +273,16 @@ class Root(object):
     def chroot_was_initialized(self):
         return os.path.exists(self.makeChrootPath('.initialized'))
 
+    def _init_pkg_management(self):
+        self.pkg_manager.initialize_config()
+        update_state = '{0} update'.format(self.pkg_manager.command)
+        self.start(update_state)
+        if not self.chroot_was_initialized():
+            self.pkg_manager.execute(*self.chroot_setup_cmd)
+        elif self.chrootWasCached:
+            self.pkg_manager.update()
+        self.finish(update_state)
+
     decorate(traceLog())
     def _init(self):
         if self.chroot_was_cleaned:
@@ -314,6 +324,9 @@ class Root(object):
                     fo = open(p, 'w+')
                     fo.write(self.chroot_file_contents[key])
                     fo.close()
+
+            self._init_pkg_management()
+
             # create user
             self._makeBuildUser()
 
@@ -329,17 +342,8 @@ class Root(object):
             # done with init
             self._callHooks('postinit')
             self.finish("chroot init")
-
-        self.pkg_manager.initialize_config()
-
-        update_state = '{0} update'.format(self.pkg_manager.command)
-        self.start(update_state)
-        if not self.chroot_was_initialized():
-            self.pkg_manager.execute(self.chroot_setup_cmd)
-        elif self.chrootWasCached:
-            self.pkg_manager.update()
-
-        self.finish(update_state)
+        else:
+            self._init_pkg_management()
 
     decorate(traceLog())
     def _nuke_rpm_db(self):
