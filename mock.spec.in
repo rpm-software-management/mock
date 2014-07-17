@@ -104,23 +104,24 @@ exit 0
 %post
 
 # fix cache permissions from old installs
-chmod 2775 /var/cache/mock
+chmod 2775 %{_localstatedir}/cache/%{name}
 
-if [ -e /etc/fedora-release ]
-then
-    if grep -Fq Rawhide /etc/fedora-release; then
-        ver=rawhide
+if [ ! -e %{_sysconfdir}/%{name}/default.cfg ]; then
+    if [ -e /etc/fedora-release ]
+    then
+        if grep -Fq Rawhide /etc/fedora-release; then
+            ver=rawhide
+        else
+            ver=$(rpm -q --nosignature --qf "%{VERSION}" --whatprovides fedora-release)
+        fi
     else
-        ver=$(rpm -q --nosignature --qf "%{VERSION}" --whatprovides fedora-release)
+        ver=$(rpm -q --nosignature --qf "%{VERSION}" --whatprovides redhat-release | cut -d. -f1 | grep -o '[0-9]\+')
     fi
-else
-    ver=$(rpm -q --nosignature --qf "%{VERSION}" --whatprovides redhat-release | cut -d. -f1 | grep -o '[0-9]\+')
-fi
 
-rm -f %{_sysconfdir}/%{name}/default.cfg
-cfg=%{?fedora:fedora}%{?rhel:epel}-$ver-$(uname -i).cfg
-[ -e %{_sysconfdir}/%{name}/$cfg ] || exit -2
-ln -s -f $cfg %{_sysconfdir}/%{name}/default.cfg
+    cfg=%{?fedora:fedora}%{?rhel:epel}-$ver-$(uname -i).cfg
+    [ -e %{_sysconfdir}/%{name}/$cfg ] || exit -2
+    ln -s -f $cfg %{_sysconfdir}/%{name}/default.cfg
+fi
 :
 
 %files -f %{name}.cfgs
@@ -153,8 +154,8 @@ ln -s -f $cfg %{_sysconfdir}/%{name}/default.cfg
 
 # cache & build dirs
 %defattr(0775, root, mock, 02775)
-%dir /var/cache/mock
-%dir /var/lib/mock
+%dir %{_localstatedir}/cache/mock
+%dir %{_localstatedir}/lib/mock
 
 %files scm
 %{python_sitelib}/mockbuild/scm.py*
