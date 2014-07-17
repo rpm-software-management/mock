@@ -67,8 +67,8 @@ import mockbuild.exception
 from mockbuild.trace_decorator import traceLog, decorate
 import mockbuild.backend
 import mockbuild.uid
-import mockbuild.util
 
+from mockbuild import util
 from mockbuild.backend import Commands
 from mockbuild.state import State
 from mockbuild.plugin import Plugins
@@ -80,7 +80,7 @@ def scrub_callback(option, opt, value, parser):
 
 def command_parse():
     """return options and args from parsing the command line"""
-    plugins = mockbuild.util.PLUGIN_LIST
+    plugins = util.PLUGIN_LIST
     parser = OptionParser(usage=__doc__, version=__VERSION__)
 
     # modes (basic commands)
@@ -289,7 +289,7 @@ def command_parse():
     return (options, args)
 
 def load_config(config_path, name, uidManager):
-    config_opts = mockbuild.util.setup_default_config_opts(uidManager.unprivUid,
+    config_opts = util.setup_default_config_opts(uidManager.unprivUid,
             __VERSION__, PKGPYTHONDIR)
 
     # array to save config paths
@@ -301,7 +301,7 @@ def load_config(config_path, name, uidManager):
                 '%s/%s.cfg' % (config_path, name)):
         if os.path.exists(cfg):
             config_opts['config_paths'].append(cfg)
-            mockbuild.util.update_config_from_file(config_opts, cfg, uidManager)
+            util.update_config_from_file(config_opts, cfg, uidManager)
         else:
             log.error("Could not find required config file: %s" % cfg)
             if name == "default":
@@ -313,7 +313,7 @@ def load_config(config_path, name, uidManager):
             '.mock/user.cfg')
     if os.path.exists(cfg):
         config_opts['config_paths'].append(cfg)
-        mockbuild.util.update_config_from_file(config_opts, cfg, uidManager)
+        util.update_config_from_file(config_opts, cfg, uidManager)
 
     # default /etc/hosts contents
     if (not config_opts['use_host_resolv']
@@ -404,9 +404,7 @@ def do_rebuild(config_opts, commands, buildroot, srpms):
         log.critical("No package specified to rebuild command.")
         sys.exit(50)
 
-    # check that everything is kosher. Raises exception on error
-    for dummy in mockbuild.util.yieldSrpmHeaders(srpms):
-        pass
+    util.checkSrpmHeaders(srpms)
 
     start = time.time()
     try:
@@ -431,7 +429,7 @@ def do_rebuild(config_opts, commands, buildroot, srpms):
             buildroot.uid_manager.dropPrivsTemp()
             cmd = config_opts["createrepo_command"].split()
             cmd.append(buildroot.resultdir)
-            mockbuild.util.do(cmd)
+            util.do(cmd)
             buildroot.uid_manager.restorePrivs()
 
     except (Exception, KeyboardInterrupt):
@@ -505,16 +503,16 @@ def groupcheck(unprivGid, tgtGid):
                            (name, ", ".join(members)))
 
 def unshare_namespace():
-    base_unshare_flags = mockbuild.util.CLONE_NEWNS
-    extended_unshare_flags = base_unshare_flags #| mockbuild.util.CLONE_NEWIPC \
-                             #| mockbuild.util.CLONE_NEWUTS
+    base_unshare_flags = util.CLONE_NEWNS
+    extended_unshare_flags = base_unshare_flags #| util.CLONE_NEWIPC \
+                             #| util.CLONE_NEWUTS
     try:
-        mockbuild.util.unshare(extended_unshare_flags)
+        util.unshare(extended_unshare_flags)
     except mockbuild.exception.UnshareFailed, e:
         log.debug("unshare(%d) failed, falling back to unshare(%d)" \
                   % (extended_unshare_flags, base_unshare_flags))
         try:
-            mockbuild.util.unshare(base_unshare_flags)
+            util.unshare(base_unshare_flags)
         except mockbuild.exception.UnshareFailed as e:
             log.error("Namespace unshare failed.")
             sys.exit(e.resultcode)
@@ -555,7 +553,7 @@ def main():
     config_opts = load_config(config_path, options.chroot, uidManager)
 
     # cmdline options override config options
-    mockbuild.util.set_config_opts_per_cmdline(config_opts, options, args)
+    util.set_config_opts_per_cmdline(config_opts, options, args)
 
     # allow a different mock group to be specified
     if config_opts['chrootgid'] != mockgid:
@@ -610,7 +608,7 @@ def main():
 
     # set personality (ie. setarch)
     if config_opts['internal_setarch']:
-        mockbuild.util.condPersonality(config_opts['target_arch'])
+        util.condPersonality(config_opts['target_arch'])
 
     try:
         run_command(options, args, config_opts, commands, buildroot, state)
@@ -659,8 +657,7 @@ def run_command(options, args, config_opts, commands, buildroot, state):
             log.critical("You must specify an SRPM file with --installdeps")
             sys.exit(50)
 
-        for dummy in mockbuild.util.yieldSrpmHeaders(args, plainRpmOk=1):
-            pass
+        util.checkSrpmHeaders(args, plainRpmOk=1)
         commands.init()
         commands.installSrpmDeps(*args)
 
@@ -695,7 +692,7 @@ def run_command(options, args, config_opts, commands, buildroot, state):
         do_buildsrpm(config_opts, commands, buildroot, options, args)
 
     elif options.mode == 'orphanskill':
-        mockbuild.util.orphansKill(buildroot.make_chroot_path())
+        util.orphansKill(buildroot.make_chroot_path())
 
     elif options.mode == 'copyin':
         commands.init()

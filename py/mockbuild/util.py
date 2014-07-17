@@ -158,6 +158,10 @@ def yieldSrpmHeaders(srpms, plainRpmOk=0):
 
         yield hdr
 
+def checkSrpmHeaders(srpms, plainRpmOk=0):
+    for dummy in yieldSrpmHeaders(srpms, plainRpmOk):
+        pass
+
 decorate(traceLog())
 def getNEVRA(hdr):
     name = hdr[rpm.RPMTAG_NAME]
