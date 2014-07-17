@@ -45,7 +45,6 @@ def doLog(logger, level, *args, **kargs):
 
 def traceLog(log=None):
     def decorator(func):
-        return func
         @functools.wraps(func)
         def trace(*args, **kw):
             # default to logger that was passed by module, but

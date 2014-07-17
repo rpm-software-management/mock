@@ -72,7 +72,6 @@ class SELinux(object):
 
         return path
 
-    @traceLog()
     def _selinuxAtExit(self):
         if os.path.exists(self.filesystems):
             try:
