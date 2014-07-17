@@ -463,6 +463,22 @@ def groupcheck(unprivGid, tgtGid):
         raise RuntimeError("Must be member of '%s' group to run mock! (%s)" %
                            (name, ", ".join(members)))
 
+def unshare_namespace():
+    base_unshare_flags = mockbuild.util.CLONE_NEWNS
+    extended_unshare_flags = base_unshare_flags | mockbuild.util.CLONE_NEWIPC \
+                             | mockbuild.util.CLONE_NEWUTS
+    try:
+        mockbuild.util.unshare(extended_unshare_flags)
+    except mockbuild.exception.UnshareFailed, e:
+        log.debug("unshare(%d) failed, falling back to unshare(%d)" \
+                  % (extended_unshare_flags, base_unshare_flags))
+        try:
+            mockbuild.util.unshare(base_unshare_flags)
+        except mockbuild.exception.UnshareFailed as e:
+            log.error("Namespace unshare failed.")
+            sys.exit(e.resultcode)
+
+
 def main():
     "Main executable entry point."
 
@@ -542,17 +558,7 @@ def main():
     os.environ["HOME"] = chroot.homedir
 
     # New namespace starting from here
-    base_unshare_flags = mockbuild.util.CLONE_NEWNS
-    extended_unshare_flags = base_unshare_flags|mockbuild.util.CLONE_NEWIPC|mockbuild.util.CLONE_NEWUTS
-    try:
-        mockbuild.util.unshare(extended_unshare_flags)
-    except mockbuild.exception.UnshareFailed, e:
-        log.debug("unshare(%d) failed, falling back to unshare(%d)" % (extended_unshare_flags, base_unshare_flags))
-        try:
-            mockbuild.util.unshare(base_unshare_flags)
-        except mockbuild.exception.UnshareFailed, e:
-            log.error("Namespace unshare failed.")
-            sys.exit(e.resultcode)
+    unshare_namespace()
 
     # set personality (ie. setarch)
     if config_opts['internal_setarch']:
