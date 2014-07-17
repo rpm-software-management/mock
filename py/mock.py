@@ -73,6 +73,7 @@ from mockbuild.backend import Commands
 from mockbuild.state import State
 from mockbuild.plugin import Plugins
 from mockbuild.buildroot import Buildroot
+from mockbuild.exception import BadCmdline
 
 def scrub_callback(option, opt, value, parser):
     parser.values.scrub.append(value)
@@ -397,6 +398,37 @@ def check_arch_combination(target_arch, config_opts):
         raise mockbuild.exception.InvalidArchitecture(
             "Cannot build target %s on arch %s" % (target_arch, host_arch))
 
+def rebuild_generic(items, commands, buildroot, config_opts, cmd, post=None, clean=True):
+    start = time.time()
+    try:
+        for item in items:
+            log.info("Start(%s)  Config(%s)" % (item, buildroot.shared_root_name))
+            if clean:
+                commands.clean()
+            commands.init()
+            ret = cmd(item)
+            elapsed = time.time() - start
+            log.info("Done(%s) Config(%s) %d minutes %d seconds"
+                % (item, config_opts['chroot_name'], elapsed // 60, elapsed % 60))
+            log.info("Results and/or logs in: %s" % buildroot.resultdir)
+
+        if config_opts["cleanup_on_success"]:
+            log.info("Cleaning up build root ('cleanup_on_success=True')")
+            commands.clean()
+        if post:
+            post()
+        return ret
+
+    except (Exception, KeyboardInterrupt):
+        elapsed = time.time() - start
+        log.error("Exception(%s) Config(%s) %d minutes %d seconds"
+            % (item, buildroot.shared_root_name, elapsed // 60, elapsed % 60))
+        log.info("Results and/or logs in: %s" % buildroot.resultdir)
+        if config_opts["cleanup_on_failure"]:
+            log.info("Cleaning up build root ('cleanup_on_failure=True')")
+            commands.clean()
+        raise
+
 decorate(traceLog())
 def do_rebuild(config_opts, commands, buildroot, srpms):
     "rebuilds a list of srpms using provided chroot"
@@ -405,25 +437,13 @@ def do_rebuild(config_opts, commands, buildroot, srpms):
         sys.exit(50)
 
     util.checkSrpmHeaders(srpms)
+    clean = config_opts['clean'] and not config_opts['scm']
 
-    start = time.time()
-    try:
-        for srpm in srpms:
-            start = time.time()
-            log.info("Start(%s)  Config(%s)" % (srpm, buildroot.shared_root_name))
-            if config_opts['clean'] and not config_opts['scm']:
-                commands.clean()
-            commands.init()
-            commands.build(srpm, timeout=config_opts['rpmbuild_timeout'], check=config_opts['check'])
-            elapsed = time.time() - start
-            log.info("Done(%s) Config(%s) %d minutes %d seconds"
-                % (srpm, config_opts['chroot_name'], elapsed//60, elapsed%60))
-            log.info("Results and/or logs in: %s" % buildroot.resultdir)
+    def build(srpm):
+        commands.build(srpm, timeout=config_opts['rpmbuild_timeout'],
+                       check=config_opts['check'])
 
-        if config_opts["cleanup_on_success"]:
-            log.info("Cleaning up build root ('cleanup_on_success=True')")
-            commands.clean()
-
+    def createrepo_on_rpms():
         if config_opts["createrepo_on_rpms"]:
             log.info("Running createrepo on binary rpms in resultdir")
             buildroot.uid_manager.dropPrivsTemp()
@@ -432,52 +452,22 @@ def do_rebuild(config_opts, commands, buildroot, srpms):
             util.do(cmd)
             buildroot.uid_manager.restorePrivs()
 
-    except (Exception, KeyboardInterrupt):
-        elapsed = time.time() - start
-        log.error("Exception(%s) Config(%s) %d minutes %d seconds"
-            % (srpm, buildroot.shared_root_name, elapsed//60, elapsed%60))
-        log.info("Results and/or logs in: %s" % buildroot.resultdir)
-        if config_opts["cleanup_on_failure"]:
-            log.info("Cleaning up build root ('clean_on_failure=True')")
-            commands.clean()
-        raise
+    rebuild_generic(srpms, commands, buildroot, config_opts, cmd=build,
+                    post=createrepo_on_rpms, clean=clean)
 
 def do_buildsrpm(config_opts, commands, buildroot, options, args):
     # verify the input command line arguments actually exist
     if not os.path.isfile(options.spec):
-        raise mockbuild.exception.BadCmdline, \
-            "input specfile does not exist: %s" % options.spec
+        raise BadCmdline("Input specfile does not exist: %s" % options.spec)
     if not os.path.isdir(options.sources):
-        raise mockbuild.exception.BadCmdline, \
-            "input sources directory does not exist: %s" % options.sources
-    start = time.time()
-    try:
-        log.info("Start(%s)  Config(%s)" % (os.path.basename(options.spec), buildroot.shared_root_name))
-        if config_opts['clean']:
-            commands.clean()
-        commands.init()
+        raise BadCmdline("Input sources directory does not exist: %s" % options.sources)
+    clean = config_opts['clean']
 
-        srpm = commands.buildsrpm(spec=options.spec, sources=options.sources, timeout=config_opts['rpmbuild_timeout'])
-        elapsed = time.time() - start
-        log.info("Done(%s) Config(%s) %d minutes %d seconds"
-            % (os.path.basename(options.spec), config_opts['chroot_name'], elapsed//60, elapsed%60))
-        log.info("Results and/or logs in: %s" % buildroot.resultdir)
-
-        if config_opts["cleanup_on_success"]:
-            log.info("Cleaning up build root ('cleanup_on_success=True')")
-            commands.clean()
-
-        return srpm
-
-    except (Exception, KeyboardInterrupt):
-        elapsed = time.time() - start
-        log.error("Exception(%s) Config(%s) %d minutes %d seconds"
-            % (os.path.basename(options.spec), buildroot.shared_root_name, elapsed//60, elapsed%60))
-        log.info("Results and/or logs in: %s" % buildroot.resultdir)
-        if config_opts["cleanup_on_failure"]:
-            log.info("Cleaning up build root ('clean_on_failure=True')")
-            commands.clean()
-        raise
+    def cmd(spec):
+        commands.buildsrpm(spec=spec, sources=options.sources,
+                           timeout=config_opts['rpmbuild_timeout'])
+    return rebuild_generic([options.spec], commands, buildroot, config_opts,
+                           cmd=cmd, post=None, clean=clean)
 
 def rootcheck():
     "verify mock was started correctly (either by sudo or consolehelper)"
