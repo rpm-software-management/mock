@@ -88,7 +88,7 @@ class RootCache(object):
                     os.unlink(self.rootCacheFile)
                 else:
                     # make sure no config file is newer than the cache file
-                    for cfg in self.config['configs_paths']:
+                    for cfg in self.config['config_paths']:
                         if os.stat(cfg).st_mtime > statinfo.st_mtime:
                             getLog().info("%s newer than root cache; cache will be rebuilt" % cfg)
                             os.unlink(self.rootCacheFile)
@@ -105,7 +105,7 @@ class RootCache(object):
 
         # optimization: don't unpack root cache if chroot was not cleaned (unless we are using tmpfs)
         if os.path.exists(self.rootCacheFile):
-            if (not self.buildroot.chroot_was_initialized()
+            if (not self.buildroot.chroot_was_initialized
                     or self.config['plugin_conf']['tmpfs_enable']):
                 self.state.start("unpacking root cache")
                 self._rootCacheLock()
@@ -114,9 +114,10 @@ class RootCache(object):
                 #
                 if mockbuild.util.get_fs_type(os.getcwd()).startswith('nfs'):
                     os.chdir(mockbuild.util.find_non_nfs_dir())
+                mockbuild.util.mkdirIfAbsent(self.buildroot.make_chroot_path())
                 mockbuild.util.do(
                     ["tar"] + self.compressArgs + ["-xf", self.rootCacheFile, "-C", self.buildroot.make_chroot_path()],
-                    shell=False
+                    shell=False, printOutput=True
                     )
                 for item in self.exclude_dirs:
                     mockbuild.util.mkdirIfAbsent(self.buildroot.make_chroot_path(item))
@@ -164,7 +165,7 @@ class RootCache(object):
                     pass
 
             # never rebuild cache unless it was a clean build, or we are explicitly caching alterations
-            if not self.buildroot.chroot_was_initialized() or self.config['cache_alterations']:
+            if not self.buildroot.chroot_was_initialized or self.config['cache_alterations']:
                 mockbuild.util.do(["sync"], shell=False)
                 self._root_cache_handle_mounts()
                 self.state.start("creating cache")
@@ -184,7 +185,7 @@ class RootCache(object):
                     l = open(os.path.join(self.rootSharedCachePath, "cache.log"), "w")
                     l.write(self.buildroot.yum_init_install_output)
                     l.close()
-                except (IOError, OSError):
+                except:
                     pass
                 self.state.finish("creating cache")
         finally:

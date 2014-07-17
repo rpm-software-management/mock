@@ -74,31 +74,42 @@ class Buildroot(object):
             pass
         finally:
             self._lock_buildroot(exclusive=False)
+        self._resetLogging()
+
+    def chroot_is_initialized(self):
+        return os.path.exists(self.make_chroot_path('.initialized'))
 
     def _init(self):
         # If previous run didn't finish properly
         self._umount_residual()
 
+        self.state.start("chroot init")
+        self.chroot_was_initialized = self.chroot_is_initialized()
         getLog().info("calling preinit hooks")
         self.plugins.call_hooks('preinit')
+        self.chroot_was_initialized = self.chroot_is_initialized()
 
-        self.state.start("chroot init")
-        self._setup_dirs()
-        self._setup_devices()
-        self._setup_files()
-        self.mounts.mountall()
-        self._resetLogging()
+        if not self.chroot_was_initialized:
+            self._setup_dirs()
+            self._setup_devices()
+            self._setup_files()
+            self.mounts.mountall()
+            self._resetLogging()
 
-        # write out config details
-        self.root_log.debug('rootdir = %s' % self.make_chroot_path())
-        self.root_log.debug('resultdir = %s' % self.resultdir)
+            # write out config details
+            self.root_log.debug('rootdir = %s' % self.make_chroot_path())
+            self.root_log.debug('resultdir = %s' % self.resultdir)
 
-        self._setup_resolver_config()
-        self._setup_dbus_uuid()
-        self._init_aux_files()
-        self._setup_timezone()
-        self._make_build_user()
-        self._init_pkg_management()
+            self._setup_resolver_config()
+            self._setup_dbus_uuid()
+            self._init_aux_files()
+            self._setup_timezone()
+            self._init_pkg_management()
+            self._make_build_user()
+            self._setup_build_dirs()
+        else:
+            self._setup_devices()
+            self.mounts.mountall()
 
         # mark the buildroot as initialized
         util.touch(self.make_chroot_path('.initialized'))
@@ -147,9 +158,6 @@ class Buildroot(object):
         if os.path.exists(localtimepath):
             os.remove(localtimepath)
         shutil.copy2('/etc/localtime', localtimedir)
-
-    def chroot_was_initialized(self):
-        return os.path.exists(self.make_chroot_path('.initialized'))
 
     def _init_pkg_management(self):
         self.pkg_manager.initialize_config()
@@ -288,18 +296,22 @@ class Buildroot(object):
                      'etc/yum',
                      'proc',
                      'sys']
-        build_dirs = ['RPMS', 'SPECS', 'SRPMS', 'SOURCES', 'BUILD', 'BUILDROOT',
-                      'originals']
         dirs += self.config['extra_chroot_dirs']
         for item in dirs:
             util.mkdirIfAbsent(self.make_chroot_path(item))
-
         self.uid_manager.dropPrivsTemp()
         try:
-            try:
-                util.mkdirIfAbsent(self.resultdir)
-            except Error:
-                raise ResultDirNotAccessible(ResultDirNotAccessible.__doc__ % self.resultdir)
+            util.mkdirIfAbsent(self.resultdir)
+        except Error:
+            raise ResultDirNotAccessible(ResultDirNotAccessible.__doc__ % self.resultdir)
+        finally:
+            self.uid_manager.restorePrivs()
+
+    def _setup_build_dirs(self):
+        build_dirs = ['RPMS', 'SPECS', 'SRPMS', 'SOURCES', 'BUILD', 'BUILDROOT',
+                      'originals']
+        self.uid_manager.dropPrivsTemp()
+        try:
             for item in build_dirs:
                 util.mkdirIfAbsent(self.make_chroot_path(self.builddir, item))
 
@@ -395,11 +407,9 @@ class Buildroot(object):
             self._lock_buildroot(exclusive=True)
             util.orphansKill(self.make_chroot_path())
             self._umount_all()
-            tmp = self.basedir + ".tmp"
-            util.rmtree(tmp, selinux=self.selinux)
-            os.rename(self.basedir, tmp)
             self._unlock_buildroot()
-            util.rmtree(tmp, selinux=self.selinux)
+            util.rmtree(self.basedir, selinux=self.selinux)
+        self.chroot_was_initialized = False
 
     def _umount_all(self):
         """umount all mounted chroot fs."""
@@ -412,12 +422,10 @@ class Buildroot(object):
 
     def _mount_is_ours(self, mountpoint):
         mountpoint = os.path.realpath(mountpoint)
-        our_dirs = [os.path.realpath(self.make_chroot_path()) + '/',
-                    os.path.realpath(self.make_chroot_path()) + '.tmp/']
-        for our_dir in our_dirs:
-            assert our_dir and our_dir != '/'
-            if mountpoint.startswith(our_dir):
-                return True
+        our_dir = os.path.realpath(self.make_chroot_path()) + '/'
+        assert our_dir and our_dir != '/'
+        if mountpoint.startswith(our_dir):
+            return True
         return False
 
 
