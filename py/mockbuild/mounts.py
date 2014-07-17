@@ -48,10 +48,7 @@ class FileSystemMountPoint(MountPoint):
         if self.options:
             cmd += ['-o', self.options ]
         cmd += [self.device, self.path]
-        try:
-            mockbuild.util.do(cmd)
-        except mockbuild.exception.Error, e:
-            return False
+        mockbuild.util.do(cmd)
         self.mounted = True
         return True
 
@@ -81,10 +78,7 @@ class BindMountPoint(MountPoint):
         if not self.mounted:
             cmd = ['/bin/mount', '-n',
                    '--bind', self.srcpath, self.bindpath ]
-            try:
-                mockbuild.util.do(cmd)
-            except mockbuild.exception.Error, e:
-                return False
+            mockbuild.util.do(cmd)
         self.mounted = True
         return True
 
