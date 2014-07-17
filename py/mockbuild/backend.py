@@ -255,13 +255,41 @@ class Root(object):
         conf_fo.close()
 
     decorate(traceLog())
+    def _setup_resolver_config(self):
+        etcdir = self.makeChrootPath('etc')
+
+        resolvconfpath = self.makeChrootPath('etc', 'resolv.conf')
+        if os.path.exists(resolvconfpath):
+            os.remove(resolvconfpath)
+        shutil.copy2('/etc/resolv.conf', etcdir)
+
+        hostspath = self.makeChrootPath('etc', 'hosts')
+        if os.path.exists(hostspath):
+            os.remove(hostspath)
+        shutil.copy2('/etc/hosts', etcdir)
+
+    decorate(traceLog())
+    def _setup_dbus_uuid(self):
+        if uuid:
+            # Anything that tries to use libdbus inside the chroot will require this
+            # FIXME - merge this code with other OS-image building code
+            machine_uuid = uuid.uuid4().hex
+            dbus_uuid_path = self.makeChrootPath('var', 'lib', 'dbus', 'machine-id')
+            with open(dbus_uuid_path, 'w') as uuid_file:
+                uuid_file.write(machine_uuid)
+                uuid_file.write('\n')
+
+    decorate(traceLog())
+    def _setup_timezone(self):
+        localtimedir = self.makeChrootPath('etc')
+        localtimepath = self.makeChrootPath('etc', 'localtime')
+        if os.path.exists(localtimepath):
+            os.remove(localtimepath)
+        shutil.copy2('/etc/localtime', localtimedir)
+
+    decorate(traceLog())
     def _init(self):
         self.start("chroot init")
-
-        # NOTE: removed the following stuff vs mock v0:
-        #   --> /etc/ is no longer 02775 (new privs model)
-        #   --> no /etc/yum.conf symlink (F7 and above)
-
         self.buildroot.initialize()
 
         self.uidManager.dropPrivsTemp()
@@ -328,27 +356,9 @@ class Root(object):
 
         # set up resolver configuration
         if self.use_host_resolv:
-            etcdir = self.makeChrootPath('etc')
+            self._setup_resolver_config()
 
-            resolvconfpath = self.makeChrootPath('etc', 'resolv.conf')
-            if os.path.exists(resolvconfpath):
-                os.remove(resolvconfpath)
-            shutil.copy2('/etc/resolv.conf', etcdir)
-
-            hostspath = self.makeChrootPath('etc', 'hosts')
-            if os.path.exists(hostspath):
-                os.remove(hostspath)
-            shutil.copy2('/etc/hosts', etcdir)
-
-        if uuid:
-            # Anything that tries to use libdbus inside the chroot will require this
-            # FIXME - merge this code with other OS-image building code
-            machine_uuid = uuid.uuid4().hex
-            dbus_uuid_path = self.makeChrootPath('var', 'lib', 'dbus', 'machine-id')
-            f = open(dbus_uuid_path, 'w')
-            f.write(machine_uuid)
-            f.write('\n')
-            f.close()
+        self._setup_dbus_uuid()
 
         # files that need doing
         for key in self.chroot_file_contents:
@@ -376,11 +386,7 @@ class Root(object):
         self._buildDirSetup()
 
         # set up timezone to match host
-        localtimedir = self.makeChrootPath('etc')
-        localtimepath = self.makeChrootPath('etc', 'localtime')
-        if os.path.exists(localtimepath):
-            os.remove(localtimepath)
-        shutil.copy2('/etc/localtime', localtimedir)
+        self._setup_timezone()
 
         # done with init
         self._callHooks('postinit')
