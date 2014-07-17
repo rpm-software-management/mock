@@ -15,21 +15,53 @@ def volume_group(name, mode='r'):
     finally:
         vg.close()
 
-class SnapshotRegistry(object):
-    def __init__(self, vg_name, pool_name, snap_info):
-        self.vg_name = vg_name
-        self.pool_name = pool_name
-        self.snap_info = snap_info
+class LvmPlugin(object):
+    def __init__(self, plugins, lvm_conf, buildroot):
+        self.buildroot = buildroot
+        self.lvm_conf = lvm_conf
+        self.vg_name = lvm_conf.get('volume_group')
+        self.pool_name = buildroot.shared_root_name
+        self.lv_name = '{0}-current'.format(self.pool_name)
+        self.fs_type = lvm_conf.get('filesystem', 'ext4')
+        if not self.vg_name:
+            raise RuntimeError("Volume group must be specified")
 
-    def lv_is_our(self, name):
+        self.snap_info = os.path.normpath(os.path.join(buildroot.basedir, '..',
+                                     '.snapinfo-' + self.pool_name))
+        self.mount = None
+
+        prefix = 'hook_'
+        for member in dir(self):
+            if member.startswith(prefix):
+                method = getattr(self, member)
+                hook_name = member[len(prefix):]
+                plugins.add_hook(hook_name, method)
+
+    def prefix_name(self, name):
+        return self.pool_name + '-' + name
+
+    def get_lv_path(self, lv_name=None):
+        name = lv_name or self.lv_name
+        with volume_group(self.vg_name) as vg:
+            lv = vg.lvFromName(name)
+            return lv.getProperty('lv_path')[0]
+
+    def _lv_predicate(self, name, predicate):
         with volume_group(self.vg_name) as vg:
             try:
                 lv = vg.lvFromName(name)
-                if lv.getProperty('pool_lv')[0] == self.pool_name:
-                    return True
+                return predicate(lv)
             except lvm.LibLVMError:
                 pass
         return False
+
+    def lv_exists(self, lv_name=None):
+        name = lv_name or self.lv_name
+        return self._lv_predicate(name, lambda lv: True)
+
+    def lv_is_our(self, name):
+        predicate = lambda lv: lv.getProperty('pool_lv')[0] == self.pool_name
+        return self._lv_predicate(name, predicate)
 
     def get_current_snapshot(self):
         if os.path.exists(self.snap_info):
@@ -53,86 +85,71 @@ class SnapshotRegistry(object):
             lv = vg.lvFromName(name)
             return lv.getOrigin()
 
-def init(plugins, lvm_conf, buildroot):
-    vg_name = lvm_conf.get('volume_group')
-    pool_name = buildroot.shared_root_name
-    lv_name = '{0}-current'.format(pool_name)
-    lv_path = os.path.join('/dev', vg_name, lv_name)
-    fs_type = lvm_conf.get('filesystem', 'ext4')
-    mount_options = lvm_conf.get('mount_options')
-    if not vg_name:
-        raise RuntimeError("Volume group must be specified")
-
-    snap_info = os.path.normpath(os.path.join(buildroot.basedir, '..',
-                                 '.snapinfo-' + pool_name))
-    registry = SnapshotRegistry(vg_name, pool_name, snap_info)
-
-    def create_base():
-        size = lvm_conf.get('size', '2G')
-        pool_id = vg_name + '/' + pool_name
-        create_pool = ['lvcreate', '-T', pool_id, '-L', str(size)]
-        util.do(create_pool, printOutput=True)
-        create_lv = ['lvcreate', '-T', pool_id, '-V', str(size), '-n', lv_name]
-        util.do(create_lv, printOutput=True)
-        mkfs = lvm_conf.get('mkfs_command', 'mkfs.' + fs_type)
-        mkfs_args = lvm_conf.get('mkfs_args', [])
-        util.do([mkfs, lv_path] + mkfs_args)
-
-    lv_mounts = []
-    def mount_root():
-        if not os.path.exists(lv_path):
-            create_base()
-        lv_mounts.append(mounts.FileSystemMountPoint(buildroot.make_chroot_path(),
-                                                     fs_type, lv_path,
-                                                     options=mount_options))
-        lv_mounts[0].mount()
-
-    def umount_root():
-        for mount in lv_mounts:
-            mount.umount()
-
-    def make_snapshot(snapshot_name):
-        lvcreate = ['lvcreate', '-s', vg_name + '/' + lv_name, '-n', snapshot_name]
+    def make_snapshot(self, name):
+        lvcreate = ['lvcreate', '-s', self.vg_name + '/' + self.lv_name, '-n', name]
         util.do(lvcreate, printOutput=True)
-        registry.set_current_snapshot(snapshot_name)
+        self.set_current_snapshot(name)
 
-    def rollback():
-        snapshot_name = registry.get_current_snapshot()
+    def rollback(self):
+        snapshot_name = self.get_current_snapshot()
         if snapshot_name:
-            lvremove = ['lvremove', '-f', vg_name + '/' + lv_name]
+            lvremove = ['lvremove', '-f', self.vg_name + '/' + self.lv_name]
             util.do(lvremove, printOutput=True)
-            lvrename = ['lvrename', vg_name, snapshot_name, lv_name]
+            lvrename = ['lvrename', self.vg_name, snapshot_name, self.lv_name]
             util.do(lvrename, printOutput=True)
-            lvchange = ['lvchange', vg_name + '/' + lv_name,
+            lvchange = ['lvchange', self.vg_name + '/' + self.lv_name,
                         '-a', 'y', '-k', 'n', '-K']
             util.do(lvchange, printOutput=True)
-            make_snapshot(snapshot_name)
+            self.make_snapshot(snapshot_name)
 
-    def rollback_to(name):
-        registry.set_current_snapshot(name)
-        rollback()
+    def hook_make_snapshot(self, name):
+        name = self.prefix_name(name)
+        self.make_snapshot(name)
 
-    def postinit():
-        if not buildroot.chroot_was_initialized:
-            snapshot_name = '{0}-postinit'.format(pool_name)
-            make_snapshot(snapshot_name)
-            registry.set_current_snapshot(snapshot_name)
+    def hook_postclean(self):
+        self.rollback()
 
-    def scrub_root(what):
+    def hook_rollback_to(self, name):
+        name = self.prefix_name(name)
+        self.set_current_snapshot(name)
+        self.rollback()
+
+    def create_base(self):
+        size = self.lvm_conf.get('size', '2G')
+        pool_id = self.vg_name + '/' + self.pool_name
+        create_pool = ['lvcreate', '-T', pool_id, '-L', str(size)]
+        util.do(create_pool, printOutput=True)
+        create_lv = ['lvcreate', '-T', pool_id, '-V', str(size), '-n', self.lv_name]
+        util.do(create_lv, printOutput=True)
+        mkfs = self.lvm_conf.get('mkfs_command', 'mkfs.' + self.fs_type)
+        mkfs_args = self.lvm_conf.get('mkfs_args', [])
+        util.do([mkfs, self.get_lv_path()] + mkfs_args)
+
+    def hook_mount_root(self):
+        if not self.lv_exists():
+            self.create_base()
+        mount_options = self.lvm_conf.get('mount_options')
+        root_path = self.buildroot.make_chroot_path()
+        self.mount = mounts.FileSystemMountPoint(root_path, self.fs_type,
+                                                 self.get_lv_path(),
+                                                 options=mount_options)
+        self.mount.mount()
+
+    def hook_umount_root(self):
+        if self.mount:
+            self.mount.umount()
+
+    def hook_postinit(self):
+        if not self.buildroot.chroot_was_initialized:
+            snapshot_name = self.prefix_name('postinit')
+            self.make_snapshot(snapshot_name)
+            self.set_current_snapshot(snapshot_name)
+
+    def hook_scrub(self, what):
         if what in ('lvm', 'all'):
-            registry.unset_current_snapshot()
-            util.do(['lvremove', '-f', vg_name + '/' + pool_name],
+            self.unset_current_snapshot()
+            util.do(['lvremove', '-f', self.vg_name + '/' + self.pool_name],
                     printOutput=True)
 
-    def prefix_name(fn):
-        def decorated(name):
-            return fn(pool_name + '-' + name)
-        return decorated
-
-    plugins.add_hook('mount_root', mount_root)
-    plugins.add_hook('umount_root', umount_root)
-    plugins.add_hook('postclean', rollback)
-    plugins.add_hook('postinit', postinit)
-    plugins.add_hook('scrub', scrub_root)
-    plugins.add_hook('make_snapshot', prefix_name(make_snapshot))
-    plugins.add_hook('rollback_to', prefix_name(rollback_to))
+def init(plugins, lvm_conf, buildroot):
+    LvmPlugin(plugins, lvm_conf, buildroot)
