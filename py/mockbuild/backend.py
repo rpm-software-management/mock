@@ -512,6 +512,10 @@ class Root(object):
             os.symlink("/proc/self/fd/1", self.makeChrootPath("dev/stdout"))
             os.symlink("/proc/self/fd/2", self.makeChrootPath("dev/stderr"))
 
+            if os.path.isfile(self.makeChrootPath('etc', 'mtab')):
+                os.remove(self.makeChrootPath('etc', 'mtab'))
+            os.symlink("/proc/self/mounts", self.makeChrootPath('etc', 'mtab'))
+
             os.chown(self.makeChrootPath('dev/tty'), pwd.getpwnam('root')[2], grp.getgrnam('tty')[2])
             os.chown(self.makeChrootPath('dev/ptmx'), pwd.getpwnam('root')[2], grp.getgrnam('tty')[2])
 
@@ -552,8 +556,7 @@ class Root(object):
     def _setupFiles(self):
         # touch files
         self.root_log.debug('touch required files')
-        for item in [self.makeChrootPath('etc', 'mtab'),
-                     self.makeChrootPath('etc', 'fstab'),
+        for item in [self.makeChrootPath('etc', 'fstab'),
                      self.makeChrootPath('var', 'log', 'yum.log')]:
             mockbuild.util.touch(item)
 
