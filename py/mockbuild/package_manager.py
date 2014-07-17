@@ -6,12 +6,12 @@ from textwrap import dedent
 from mockbuild import util
 from mockbuild.exception import BuildError
 
-def PackageManager(config_opts, chroot):
+def PackageManager(config_opts, chroot, plugins):
     pm = config_opts.get('package_manager', 'yum')
     if pm == 'yum':
-        return Yum(config_opts, chroot)
+        return Yum(config_opts, chroot, plugins)
     elif pm == 'dnf':
-        return Dnf(config_opts, chroot)
+        return Dnf(config_opts, chroot, plugins)
     else:
         #TODO specific exception type
         raise Exception('Unrecognized package manager')
@@ -21,8 +21,9 @@ class _PackageManager(object):
     command = None
     builddep_command = None
 
-    def __init__(self, config, buildroot):
+    def __init__(self, config, buildroot, plugins):
         self.config = config
+        self.plugins = plugins
         self.buildroot = buildroot
 
     def build_invocation(self, *args):
@@ -44,7 +45,8 @@ class _PackageManager(object):
         return invocation
 
     def execute(self, *args, **kwargs):
-        self.buildroot._call_hooks("preyum")
+        self.initialize_config()
+        self.plugins.call_hooks("preyum")
         env = self.config['environment'].copy()
         env.update(util.get_proxy_environment(self.config))
         env['LC_MESSAGES'] = 'C'
@@ -53,7 +55,7 @@ class _PackageManager(object):
         # log?
         self.buildroot._nuke_rpm_db()
         out = util.do(invocation, env=env, printOutput=True, **kwargs)
-        self.buildroot._call_hooks("postyum")
+        self.plugins.call_hooks("postyum")
         return out
 
     def install(self, *args, **kwargs):
