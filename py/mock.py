@@ -148,6 +148,10 @@ def command_parse():
                       dest="mode",
                       help="Create a new LVM snapshot with given name")
 
+    parser.add_option("--rollback-to", action="store_const", const="rollback-to",
+                      dest="mode",
+                      help="Rollback to given snapshot")
+
     # options
     parser.add_option("-r", "--root", action="store", type="string", dest="chroot",
                       help="chroot name/config file name default: %default",
@@ -730,7 +734,11 @@ def run_command(options, args, config_opts, commands, buildroot, state):
             log.critical("Requires a snapshot name")
             sys.exit(50)
         buildroot.plugins.call_hooks('make_snapshot', args[0])
-
+    elif options.mode == 'rollback-to':
+        if len(args) < 1:
+            log.critical("Requires a snapshot name")
+            sys.exit(50)
+        buildroot.plugins.call_hooks('rollback_to', args[0])
 
     buildroot._nuke_rpm_db()
     state.finish("run")

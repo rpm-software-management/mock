@@ -99,6 +99,10 @@ def init(plugins, lvm_conf, buildroot):
             util.do(lvchange, printOutput=True)
             make_snapshot(snapshot_name)
 
+    def rollback_to(name):
+        registry.set_active_snapshot(name)
+        rollback()
+
     def postinit():
         if not buildroot.chroot_was_initialized:
             snapshot_name = '{0}-postinit'.format(pool_name)
@@ -123,3 +127,4 @@ def init(plugins, lvm_conf, buildroot):
     plugins.add_hook('postinit', postinit)
     plugins.add_hook('scrub', scrub_root)
     plugins.add_hook('make_snapshot', make_snapshot)
+    plugins.add_hook('rollback_to', rollback_to)
