@@ -15,11 +15,6 @@ import stat
 import pwd
 import grp
 
-try:
-    import uuid
-except ImportError:
-    uuid = None
-
 import mockbuild.util
 import mockbuild.exception
 
@@ -55,10 +50,7 @@ class Root(object):
         self.clean_the_chroot = config['clean']
 
         # result dir
-        self.resultdir = config['resultdir'] % config
 
-        self.root_log = getLog("mockbuild")
-        self.build_log = getLog("mockbuild.Root.build")
         self._state_log = getLog("mockbuild.Root.state")
 
         # config options
@@ -238,155 +230,6 @@ class Root(object):
         self._show_installed_packages()
 
     decorate(traceLog())
-    def _setup_resolver_config(self):
-        etcdir = self.makeChrootPath('etc')
-
-        resolvconfpath = self.makeChrootPath('etc', 'resolv.conf')
-        if os.path.exists(resolvconfpath):
-            os.remove(resolvconfpath)
-        shutil.copy2('/etc/resolv.conf', etcdir)
-
-        hostspath = self.makeChrootPath('etc', 'hosts')
-        if os.path.exists(hostspath):
-            os.remove(hostspath)
-        shutil.copy2('/etc/hosts', etcdir)
-
-    decorate(traceLog())
-    def _setup_dbus_uuid(self):
-        if uuid:
-            # Anything that tries to use libdbus inside the chroot will require this
-            # FIXME - merge this code with other OS-image building code
-            machine_uuid = uuid.uuid4().hex
-            dbus_uuid_path = self.makeChrootPath('var', 'lib', 'dbus', 'machine-id')
-            with open(dbus_uuid_path, 'w') as uuid_file:
-                uuid_file.write(machine_uuid)
-                uuid_file.write('\n')
-
-    decorate(traceLog())
-    def _setup_timezone(self):
-        localtimedir = self.makeChrootPath('etc')
-        localtimepath = self.makeChrootPath('etc', 'localtime')
-        if os.path.exists(localtimepath):
-            os.remove(localtimepath)
-        shutil.copy2('/etc/localtime', localtimedir)
-
-    def chroot_was_initialized(self):
-        return os.path.exists(self.makeChrootPath('.initialized'))
-
-    def _init_pkg_management(self):
-        self.pkg_manager.initialize_config()
-        update_state = '{0} update'.format(self.pkg_manager.command)
-        self.start(update_state)
-        if not self.chroot_was_initialized():
-            self.pkg_manager.execute(*self.chroot_setup_cmd)
-        elif self.chrootWasCached:
-            self.pkg_manager.update()
-        self.finish(update_state)
-
-    decorate(traceLog())
-    def _init(self):
-        if self.chroot_was_cleaned:
-            self.buildroot.initialize()
-
-        # set up plugins:
-        getLog().info("calling preinit hooks")
-        self._callHooks('preinit')
-
-        if not self.chroot_was_initialized():
-            self.start("chroot init")
-            self.uidManager.dropPrivsTemp()
-            try:
-                mockbuild.util.mkdirIfAbsent(self.resultdir)
-            except mockbuild.exception.Error:
-                raise mockbuild.exception.ResultDirNotAccessible(mockbuild.exception.ResultDirNotAccessible.__doc__ % self.resultdir)
-            self.uidManager.restorePrivs()
-
-            # create our log files. (if they havent already)
-            self._resetLogging()
-
-            # write out config details
-            self.root_log.debug('rootdir = %s' % self.makeChrootPath())
-            self.root_log.debug('resultdir = %s' % self.resultdir)
-
-            # set up resolver configuration
-            if self.use_host_resolv:
-                self._setup_resolver_config()
-
-            self._setup_dbus_uuid()
-
-            # files that need doing
-            for key in self.chroot_file_contents:
-                p = self.makeChrootPath(key)
-                if not os.path.exists(p):
-                    # create directory if necessary
-                    mockbuild.util.mkdirIfAbsent(os.path.dirname(p))
-                    # write file
-                    fo = open(p, 'w+')
-                    fo.write(self.chroot_file_contents[key])
-                    fo.close()
-
-            self._init_pkg_management()
-
-            # create user
-            self._makeBuildUser()
-
-            # create rpmbuild dir
-            self._buildDirSetup()
-
-            # set up timezone to match host
-            self._setup_timezone()
-
-            # mark the buildroot as initialized
-            util.touch(self.makeChrootPath('.initialized'))
-
-            # done with init
-            self._callHooks('postinit')
-            self.finish("chroot init")
-        else:
-            self._init_pkg_management()
-
-    decorate(traceLog())
-    def _nuke_rpm_db(self):
-        """remove rpm DB lock files from the chroot"""
-
-        dbfiles = glob.glob(self.makeChrootPath('var/lib/rpm/__db*'))
-        if not dbfiles:
-            return
-        self.root_log.debug("removing %d rpm db files" % len(dbfiles))
-        # become root
-        self.uidManager.becomeUser(0, 0)
-        try:
-            for tmp in dbfiles:
-                self.root_log.debug("_nuke_rpm_db: removing %s" % tmp)
-                try:
-                    os.unlink(tmp)
-                except OSError,e:
-                    getLog().error("%s" % e )
-                    raise
-        finally:
-            #restore previous privs
-            self.uidManager.restorePrivs()
-
-    # bad hack
-    # comment out decorator here so we dont get double exceptions in the root log
-    #decorate(traceLog())
-    def doChroot(self, command, shell=True, returnOutput=False, printOutput=False, raiseExc=True, *args, **kargs):
-        """execute given command in root"""
-        if not mockbuild.util.hostIsEL5():
-            self._nuke_rpm_db()
-        return mockbuild.util.do(command, chrootPath=self.makeChrootPath(),
-                                 env=self.env, raiseExc=raiseExc,
-                                 returnOutput=returnOutput, shell=shell,
-                                 printOutput=printOutput, *args, **kargs)
-
-    def doNonChroot(self, command, shell=True, returnOutput=False, printOutput=False, raiseExc=True, *args, **kargs):
-        '''run a command *without* chrooting'''
-        self._nuke_rpm_db()
-        return mockbuild.util.do(command, env=self.env, raiseExc=raiseExc,
-                                 returnOutput=returnOutput, shell=shell,
-                                 printOutput=printOutput, *args, **kargs)
-
-    decorate(traceLog())
     def install(self, *rpms):
         """Call package manager to install the input rpms into the chroot"""
         # pass build reqs (as strings) to installer
@@ -430,15 +273,14 @@ class Root(object):
     def _show_installed_packages(self):
         '''report the installed packages in the chroot to the root log'''
         self.root_log.info("Installed packages:")
-        self.doNonChroot(
+        self._nuke_rpm_db()
+        mockbuild.util.do(
             "rpm --root %s -qa" % self.makeChrootPath(),
             raiseExc=False,
+            env=self.env,
             uid=self.chrootuid,
             gid=self.chrootgid,
             )
-
-
-
 
     #
     # UNPRIVILEGED:
@@ -635,102 +477,6 @@ class Root(object):
         """use yum to install packages/package groups into the chroot"""
 
         return self.pkg_manager.execute(*cmd, returnOutput=returnOutput)
-
-    decorate(traceLog())
-    def _makeBuildUser(self):
-        if not os.path.exists(self.makeChrootPath('usr/sbin/useradd')):
-            raise mockbuild.exception.RootError, "Could not find useradd in chroot, maybe the install failed?"
-
-        if self.clean_the_chroot:
-            # safe and easy. blow away existing /builddir and completely re-create.
-            mockbuild.util.rmtree(self.makeChrootPath(self.homedir), selinux=self.selinux)
-
-        dets = { 'uid': str(self.chrootuid), 'gid': str(self.chrootgid), 'user': self.chrootuser, 'group': self.chrootgroup, 'home': self.homedir }
-
-        # ok for these two to fail
-        self.doChroot(['/usr/sbin/userdel', '-r', '-f', dets['user']], shell=False, raiseExc=False)
-        self.doChroot(['/usr/sbin/groupdel', dets['group']], shell=False, raiseExc=False)
-
-        self.doChroot(['/usr/sbin/groupadd', '-g', dets['gid'], dets['group']], shell=False)
-        self.doChroot(self.useradd % dets, shell=True)
-        self._enable_chrootuser_account()
-
-    decorate(traceLog())
-    def _enable_chrootuser_account(self):
-        passwd = self.makeChrootPath('/etc/passwd')
-        lines = open(passwd).readlines()
-        disabled = False
-        newlines = []
-        for l in lines:
-            parts = l.strip().split(':')
-            if parts[0] == self.chrootuser and parts[1].startswith('!!'):
-                disabled = True
-                parts[1] = parts[1][2:]
-            newlines.append(':'.join(parts))
-        if disabled:
-            f = open(passwd, "w")
-            for l in newlines:
-                f.write(l+'\n')
-            f.close()
-
-    decorate(traceLog())
-    def _resetLogging(self):
-        # ensure we dont attach the handlers multiple times.
-        if self.logging_initialized:
-            return
-        self.logging_initialized = True
-
-        util.mkdirIfAbsent(self.resultdir)
-
-        try:
-            self.uidManager.dropPrivsTemp()
-
-            # attach logs to log files.
-            # This happens in addition to anything that
-            # is set up in the config file... ie. logs go everywhere
-            for (log, filename, fmt_str) in (
-                    (self._state_log, "state.log", self._state_log_fmt_str),
-                    (self.build_log, "build.log", self.build_log_fmt_str),
-                    (self.root_log, "root.log", self.root_log_fmt_str)):
-                fullPath = os.path.join(self.resultdir, filename)
-                fh = logging.FileHandler(fullPath, "a+")
-                formatter = logging.Formatter(fmt_str)
-                fh.setFormatter(formatter)
-                fh.setLevel(logging.NOTSET)
-                log.addHandler(fh)
-                log.info("Mock Version: %s" % self.version)
-        finally:
-            self.uidManager.restorePrivs()
-
-
-    #
-    # UNPRIVILEGED:
-    #   Everything in this function runs as the build user
-    #
-    decorate(traceLog())
-    def _buildDirSetup(self):
-        # create all dirs as the user who will be dropping things there.
-        self.uidManager.becomeUser(self.chrootuid, self.chrootgid)
-        try:
-            # create dir structure
-            for subdir in [self.makeChrootPath(self.builddir, s) for s in ('RPMS', 'SRPMS', 'SOURCES', 'SPECS', 'BUILD', 'BUILDROOT', 'originals')]:
-                mockbuild.util.mkdirIfAbsent(subdir)
-
-            # change ownership so we can write to build home dir
-            for (dirpath, dirnames, filenames) in os.walk(self.makeChrootPath(self.homedir)):
-                for path in dirnames + filenames:
-                    os.chown(os.path.join(dirpath, path), self.chrootuid, -1)
-                    os.chmod(os.path.join(dirpath, path), 0755)
-
-            # rpmmacros default
-            macrofile_out = self.makeChrootPath(self.homedir, ".rpmmacros")
-            rpmmacros = open(macrofile_out, 'w+')
-            for key, value in self.macros.items():
-                rpmmacros.write( "%s %s\n" % (key, value) )
-            rpmmacros.close()
-
-        finally:
-            self.uidManager.restorePrivs()
 
     #
     # UNPRIVILEGED:

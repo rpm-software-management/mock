@@ -33,7 +33,7 @@ class _PackageManager(object):
         else:
             invocation = [self.command]
             common_opts = self.config[self.command + '_common_opts']
-        invocation += ['--installroot', self.buildroot.makeChrootPath()]
+        invocation += ['--installroot', self.buildroot.make_chroot_path()]
         releasever = self.config['releasever']
         if releasever:
             invocation += ['--releasever', releasever]
@@ -77,13 +77,13 @@ class Yum(_PackageManager):
 
     def _write_plugin_conf(self, name):
         """ Write 'name' file into pluginconf.d """
-        conf_path = self.buildroot.makeChrootPath('etc', 'yum', 'pluginconf.d', name)
+        conf_path = self.buildroot.make_chroot_path('etc', 'yum', 'pluginconf.d', name)
         with open(conf_path, 'w+') as conf_file:
             conf_file.write(self.config[name])
 
     def initialize_config(self):
         # use yum plugin conf from chroot as needed
-        pluginconf_dir = self.buildroot.makeChrootPath('etc', 'yum', 'pluginconf.d')
+        pluginconf_dir = self.buildroot.make_chroot_path('etc', 'yum', 'pluginconf.d')
         util.mkdirIfAbsent(pluginconf_dir)
         config_content = self.config['yum.conf']\
                           .replace("plugins=1",
@@ -94,7 +94,7 @@ class Yum(_PackageManager):
         # write in yum.conf into chroot
         # always truncate and overwrite (w+)
         self.buildroot.root_log.debug('configure yum')
-        yumconf_path = self.buildroot.makeChrootPath('etc', 'yum', 'yum.conf')
+        yumconf_path = self.buildroot.make_chroot_path('etc', 'yum', 'yum.conf')
         with open(yumconf_path, 'w+') as yumconf_file:
             yumconf_file.write(config_content)
 
@@ -106,16 +106,16 @@ class Yum(_PackageManager):
         if self.config['subscription-manager.conf']:
             self.buildroot.root_log.debug('configure RHSM rhnplugin')
             self._write_plugin_conf('subscription-manager.conf')
-            pem_dir = self.buildroot.makeChrootPath('etc', 'pki', 'entitlement')
+            pem_dir = self.buildroot.make_chroot_path('etc', 'pki', 'entitlement')
             util.mkdirIfAbsent(pem_dir)
             for pem_file in glob.glob("/etc/pki/entitlement/*.pem"):
                 shutil.copy(pem_file, pem_dir)
-            consumer_dir = self.buildroot.makeChrootPath('etc', 'pki', 'consumer')
+            consumer_dir = self.buildroot.make_chroot_path('etc', 'pki', 'consumer')
             util.mkdirIfAbsent(consumer_dir)
             for consumer_file in glob.glob("/etc/pki/consumer/*.pem"):
                 shutil.copy(consumer_file, consumer_dir)
             shutil.copy('/etc/rhsm/rhsm.conf',
-                    self.buildroot.makeChrootPath('etc', 'rhsm'))
+                    self.buildroot.make_chroot_path('etc', 'rhsm'))
             self.execute('repolist')
 
         # Copy RPM GPG keys
@@ -158,7 +158,7 @@ class Dnf(_PackageManager):
             config_content = self.config['dnf.conf']
         else:
             config_content = self.config['yum.conf']
-        util.mkdirIfAbsent(self.buildroot.makeChrootPath('etc', 'dnf'))
-        dnfconf_path = self.buildroot.makeChrootPath('etc', 'dnf', 'dnf.conf')
+        util.mkdirIfAbsent(self.buildroot.make_chroot_path('etc', 'dnf'))
+        dnfconf_path = self.buildroot.make_chroot_path('etc', 'dnf', 'dnf.conf')
         with open(dnfconf_path, 'w+') as dnfconf_file:
             dnfconf_file.write(config_content)
