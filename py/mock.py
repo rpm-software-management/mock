@@ -71,7 +71,7 @@ import mockbuild.util
 
 from mockbuild.backend import Commands
 from mockbuild.state import State
-from mockbuild.plugins import Plugins
+from mockbuild.plugin import Plugins
 from mockbuild.buildroot import Buildroot
 
 def scrub_callback(option, opt, value, parser):
