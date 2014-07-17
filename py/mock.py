@@ -614,9 +614,6 @@ def run_command(options, args, config_opts, commands, buildroot, state):
             commands.scrub(options.scrub)
 
     elif options.mode == 'shell':
-        if not os.path.exists(chroot.makeChrootPath()):
-            raise mockbuild.exception.ChrootNotInitialized, \
-                "chroot %s not initialized!" % chroot.makeChrootPath()
         if len(args):
             cmd = ' '.join(args)
         else:
