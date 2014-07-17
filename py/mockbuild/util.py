@@ -61,6 +61,16 @@ class commandTimeoutExpired(mockbuild.exception.Error):
 
 # functions
 decorate(traceLog())
+def get_proxy_environment(config):
+    env = {}
+    for proto in ('http', 'https', 'ftp', 'no'):
+        key = '%s_proxy' % proto
+        value = config.get(key)
+        if value:
+            env[key] = value
+    return env
+
+decorate(traceLog())
 def mkdirIfAbsent(*args):
     for dirName in args:
         getLog().debug("ensuring that dir exists: %s" % dirName)

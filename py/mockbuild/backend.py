@@ -26,6 +26,8 @@ except:
 import mockbuild.util
 import mockbuild.mounts
 import mockbuild.exception
+
+from mockbuild import util
 from mockbuild.trace_decorator import traceLog, decorate, getLog
 
 # classes
@@ -57,14 +59,9 @@ class Root(object):
 
         # Environment
         self.env = config['environment']
-
-        # proxy settings
-        for proto in ('http', 'https', 'ftp', 'no'):
-            key = '%s_proxy' % proto
-            value = config.get(key)
-            if value:
-                os.environ[key] = value
-                self.env[key] = value
+        proxy_env = util.get_proxy_environment(config)
+        self.env.update(proxy_env)
+        os.environ.update(proxy_env)
 
         # result dir
         self.resultdir = config['resultdir'] % config
