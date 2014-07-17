@@ -51,7 +51,7 @@ class _PackageManager(object):
         self.buildroot.root_log.debug(invocation)
         # log?
         self.buildroot._nuke_rpm_db()
-        out = util.do(invocation, env=env, **kwargs)
+        out = util.do(invocation, env=env, printOutput=True, **kwargs)
         self.buildroot._callHooks("postyum")
         return out
 

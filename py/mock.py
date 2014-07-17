@@ -705,8 +705,7 @@ def run_command(options, args, config_opts, chroot):
     elif options.mode in ('pm-cmd', 'yum-cmd', 'dnf-cmd'):
         log.info('Running {0} {1}'.format(chroot.pkg_manager.command,
                                           ' '.join(args)))
-        output = chroot.pkg_manager.execute(*args, returnOutput=True)
-        print output
+        chroot.pkg_manager.execute(*args)
 
     chroot._nuke_rpm_db()
     chroot.finish("run")

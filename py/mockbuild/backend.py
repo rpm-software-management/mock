@@ -760,7 +760,7 @@ class Root(object):
                              'rpmbuild -bs --target {0} --nodeps {1}'\
                               .format(self.rpmbuild_arch, spec_path)],
                 shell=False, logger=self.build_log, timeout=timeout,
-                uid=self.chrootuid, gid=self.chrootgid, returnOutput=True)
+                uid=self.chrootuid, gid=self.chrootgid, printOutput=True)
         results = glob.glob("%s/%s/SRPMS/*.src.rpm" % (self.makeChrootPath(),
                                                        self.builddir))
         if len(results) != 1:
@@ -779,7 +779,7 @@ class Root(object):
                              'rpmbuild -bb --target {0} --nodeps {1} {2}'\
                               .format(self.rpmbuild_arch, check_opt, spec_path)],
             shell=False, logger=self.build_log, timeout=timeout,
-            uid=self.chrootuid, gid=self.chrootgid, returnOutput=True)
+            uid=self.chrootuid, gid=self.chrootgid, printOutput=True)
         bd_out = self.makeChrootPath(self.builddir)
         results = glob.glob(bd_out + '/RPMS/*.rpm')
         results += glob.glob(bd_out + '/SRPMS/*.rpm')
