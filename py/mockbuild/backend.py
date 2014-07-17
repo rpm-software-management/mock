@@ -227,7 +227,7 @@ class Commands(object):
 
             if results:
                 self.copy_build_results(results)
-            elif self.config['short_circuit']:
+            elif self.config.get('short_circuit'):
                 self.buildroot.root_log.info("Short circuit builds don't produce RPMs")
             else:
                 raise PkgError('No build results found')
@@ -413,9 +413,10 @@ class Commands(object):
                     'build': '-bc',
                     'binary': '-bb'}[sc]
             mode += ' --short-circuit'
-        rpmbuild_cmd = 'rpmbuild {mode} --target {0} --nodeps {1} {2}'\
+        additional_opts = self.config.get('rpmbuild_opts', '')
+        rpmbuild_cmd = 'rpmbuild {mode} --target {0} --nodeps {1} {2} {3}'\
                               .format(self.rpmbuild_arch, check_opt, spec_path,
-                                      mode=mode)
+                                      additional_opts, mode=mode)
         out = self.buildroot.doChroot(["bash", "--login", "-c", rpmbuild_cmd],
             shell=False, logger=self.buildroot.build_log, timeout=timeout,
             uid=self.buildroot.chrootuid, gid=self.buildroot.chrootgid,

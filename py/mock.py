@@ -234,6 +234,8 @@ def command_parse():
                       help="Pass short-circuit option to rpmbuild to skip already "
                       "complete stages. Warning: produced packages are unusable. "
                       "Implies --no-clean. Valid options: build, install, binary")
+    parser.add_option("--rpmbuild-opts", action="store",
+                      help="Pass additional options to rpmbuild")
     parser.add_option("--enablerepo", action="append", default=[],
                       help="Pass enablerepo option to yum/dnf")
     parser.add_option("--disablerepo", action="append", default=[],
