@@ -56,6 +56,7 @@ def init(plugins, lvm_conf, buildroot):
     lv_name = '{0}-current'.format(pool_name)
     lv_path = os.path.join('/dev', vg_name, lv_name)
     fs_type = lvm_conf.get('filesystem', 'ext4')
+    mount_options = lvm_conf.get('mount_options')
     if not vg_name:
         raise RuntimeError("Volume group must be specified")
 
@@ -79,7 +80,8 @@ def init(plugins, lvm_conf, buildroot):
         if not os.path.exists(lv_path):
             create_base()
         lv_mounts.append(mounts.FileSystemMountPoint(buildroot.make_chroot_path(),
-                                                     fs_type, lv_path))
+                                                     fs_type, lv_path,
+                                                     options=mount_options))
         lv_mounts[0].mount()
 
     def umount_root():
