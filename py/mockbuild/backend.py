@@ -522,71 +522,26 @@ class Root(object):
             buildsetup = "build setup for %s" % baserpm
             self.start(buildsetup)
 
-            srpmChrootFilename = self._copySrpmIntoChroot(srpm)
-            srpmBasename = os.path.basename(srpmChrootFilename)
+            srpm = self.copy_srpm_into_chroot(srpm)
+            self.install_srpm(srpm)
 
-            # Completely/Permanently drop privs while running the following:
-            self.doChroot(
-                ["rpm", "-Uvh", "--nodeps", srpmChrootFilename],
-                shell=False,
-                uid=self.chrootuid,
-                gid=self.chrootgid,
-                )
+            spec = self.get_specfile_name(srpm)
+            spec_path = os.path.join(self.builddir, 'SPECS', spec)
 
-            # rebuild srpm/rpm from SPEC file
-            specs = glob.glob(self.makeChrootPath(self.builddir, "SPECS", "*.spec"))
-            if len(specs) < 1:
-                raise mockbuild.exception.PkgError, "No Spec file found in srpm: %s" % srpmBasename
+            rebuilt_srpm = self.rebuild_installed_srpm(spec_path, timeout)
 
-            spec = specs[0] # if there's more than one then someone is an idiot
-            chrootspec = spec.replace(self.makeChrootPath(), '') # get rid of rootdir prefix
-            # Completely/Permanently drop privs while running the following:
-
-            self.doChroot(
-                ["bash", "--login", "-c", 'rpmbuild -bs --target %s --nodeps %s' % (self.rpmbuild_arch, chrootspec)],
-                shell=False,
-                logger=self.build_log, timeout=timeout,
-                uid=self.chrootuid,
-                gid=self.chrootgid,
-                )
-
-            rebuiltSrpmFile = glob.glob("%s/%s/SRPMS/*.src.rpm" % (self.makeChrootPath(), self.builddir))
-            if len(rebuiltSrpmFile) != 1:
-                raise mockbuild.exception.PkgError, "Expected to find single rebuilt srpm, found %d." % len(rebuiltSrpmFile)
-
-            rebuiltSrpmFile = rebuiltSrpmFile[0]
-            self.installSrpmDeps(rebuiltSrpmFile)
+            self.installSrpmDeps(rebuilt_srpm)
             self.finish(buildsetup)
 
-            #have to permanently drop privs or rpmbuild regains them
             rpmbuildstate = "rpmbuild -bb %s" % baserpm
             self.start(rpmbuildstate)
 
             # tell caching we are building
             self._callHooks('prebuild')
 
-            check_opt = ''
-            if not check:
-                check_opt = '--nocheck'
+            results = self.rebuild_package(spec_path, timeout, check)
 
-            # --nodeps because rpm in the root may not be able to read rpmdb
-            # created by rpm that created it (outside of chroot)
-            self.doChroot(
-                ["bash", "--login", "-c", 'rpmbuild -bb --target %s --nodeps %s %s' % (self.rpmbuild_arch, check_opt, chrootspec)],
-                shell=False,
-                logger=self.build_log, timeout=timeout,
-                uid=self.chrootuid,
-                gid=self.chrootgid,
-                )
-
-            bd_out = self.makeChrootPath(self.builddir)
-            rpms = glob.glob(bd_out + '/RPMS/*.rpm')
-            srpms = glob.glob(bd_out + '/SRPMS/*.rpm')
-            packages = rpms + srpms
-
-            self.root_log.debug("Copying packages to result dir")
-            for item in packages:
-                shutil.copy2(item, self.resultdir)
+            self.copy_build_results(results)
 
             self.finish(rpmbuildstate)
 
@@ -749,7 +704,7 @@ class Root(object):
     def _yum(self, cmd, returnOutput=0):
         """use yum to install packages/package groups into the chroot"""
 
-        self.pkg_manager.execute(*cmd, returnOutput=returnOutput)
+        return self.pkg_manager.execute(*cmd, returnOutput=returnOutput)
 
     decorate(traceLog())
     def _makeBuildUser(self):
@@ -850,8 +805,60 @@ class Root(object):
     #   Everything in this function runs as the build user
     #
     decorate(traceLog())
-    def _copySrpmIntoChroot(self, srpm):
-        srpmFilename = os.path.basename(srpm)
+    def copy_srpm_into_chroot(self, srpm_path):
+        srpmFilename = os.path.basename(srpm_path)
         dest = self.makeChrootPath(self.builddir, 'originals')
-        shutil.copy2(srpm, dest)
+        shutil.copy2(srpm_path, dest)
         return os.path.join(self.builddir, 'originals', srpmFilename)
+
+    def get_specfile_name(self, srpm_path):
+        files = self.doChroot(["rpm", "-qpl", srpm_path],
+                    shell=False, uid=self.chrootuid, gid=self.chrootgid,
+                    returnOutput=True)
+        specs = [item for item in files.split('\n') if item.endswith('.spec')]
+        if len(specs) < 1:
+            raise mockbuild.exception.PkgError("No specfile found in srpm: "\
+                                               + os.path.basename(srpm_path))
+        return specs[0]
+
+
+    def install_srpm(self, srpm_path):
+        self.doChroot(["rpm", "-Uvh", "--nodeps", srpm_path],
+            shell=False, uid=self.chrootuid, gid=self.chrootgid)
+
+    def rebuild_installed_srpm(self, spec_path, timeout):
+        self.doChroot(["bash", "--login", "-c",
+                             'rpmbuild -bs --target {0} --nodeps {1}'\
+                              .format(self.rpmbuild_arch, spec_path)],
+                shell=False, logger=self.build_log, timeout=timeout,
+                uid=self.chrootuid, gid=self.chrootgid, returnOutput=True)
+        results = glob.glob("%s/%s/SRPMS/*.src.rpm" % (self.makeChrootPath(),
+                                                       self.builddir))
+        if len(results) != 1:
+            raise mockbuild.exception.PkgError(
+                    "Expected to find single rebuilt srpm, found %d." % len(results))
+        return results[0]
+
+    def rebuild_package(self, spec_path, timeout, check):
+        # --nodeps because rpm in the root may not be able to read rpmdb
+        # created by rpm that created it (outside of chroot)
+        check_opt = ''
+        if not check:
+            check_opt = '--nocheck'
+
+        self.doChroot(["bash", "--login", "-c",
+                             'rpmbuild -bb --target {0} --nodeps {1} {2}'\
+                              .format(self.rpmbuild_arch, check_opt, spec_path)],
+            shell=False, logger=self.build_log, timeout=timeout,
+            uid=self.chrootuid, gid=self.chrootgid, returnOutput=True)
+        bd_out = self.makeChrootPath(self.builddir)
+        results = glob.glob(bd_out + '/RPMS/*.rpm')
+        results += glob.glob(bd_out + '/SRPMS/*.rpm')
+        if not results:
+            raise mockbuild.exception.PkgError('No build results found')
+        return results
+
+    def copy_build_results(self, results):
+        self.root_log.debug("Copying packages to result dir")
+        for item in results:
+            shutil.copy2(item, self.resultdir)
