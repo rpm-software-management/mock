@@ -262,7 +262,6 @@ def condPersonality(per=None):
 def condEnvironment(env=None):
     if not env:
         return
-    getLog().debug("child environment: %s" % env)
     os.environ.clear()
     for k in list(env.keys()):
         os.putenv(k, env[k])
@@ -442,12 +441,13 @@ class ChildPreExec(object):
     def __init__(self, personality, chrootPath, cwd, uid, gid, env=None,
                  shell=False):
         self.personality = personality
-        self.chrootPath  = chrootPath
+        self.chrootPath = chrootPath
         self.cwd = cwd
         self.uid = uid
         self.gid = gid
         self.env = env
         self.shell = shell
+        getLog().debug("child environment: %s" % env)
 
     def __call__(self, *args, **kargs):
         if not self.shell:
