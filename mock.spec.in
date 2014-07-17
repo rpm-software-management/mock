@@ -3,7 +3,6 @@
 %define minor @RELEASE_MINOR@
 %define sub @RELEASE_SUBLEVEL@
 %define extralevel @RELEASE_RPM_EXTRALEVEL@
-%define release_name mock
 %define release_version %{major}.%{minor}.%{sub}%{extralevel}
 
 %{!?python_sitelib: %define python_sitelib %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib()")}
@@ -16,11 +15,16 @@ Name: mock
 Version: %{release_version}
 Release: 1%{?dist}
 License: GPLv2+
-Group: Development/Tools
 Source: https://git.fedorahosted.org/cgit/mock.git/snapshot/%{name}-%{version}.tar.xz
 URL: http://fedoraproject.org/wiki/Projects/Mock
 BuildArch: noarch
-Requires: python >= 2.6, yum >= 2.4, tar, pigz, python-ctypes, python-decoratortools, usermode
+Requires: python >= 2.6
+Requires: yum >= 2.4
+Requires: tar
+Requires: pigz
+Requires: python-ctypes
+Requires: python-decoratortools
+Requires: usermode
 Requires: yum-utils
 Requires: createrepo_c
 Requires: pyliblzma
@@ -35,9 +39,12 @@ BuildRequires: bash-completion
 Mock takes an SRPM and builds it in a chroot.
 
 %package scm
-Group: Development/Tools
 Summary: Mock SCM integration module
-Requires: mock = %{version}-%{release}, cvs, git, subversion, tar
+Requires: %{name} = %{version}-%{release}
+Requires: cvs
+Requires: git
+Requires: subversion
+Requires: tar
 
 %description scm
 Mock SCM integration module.
