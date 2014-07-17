@@ -59,9 +59,10 @@ class _PackageManager(object):
         env['LC_MESSAGES'] = 'C'
         invocation = self.build_invocation(*args)
         self.buildroot.root_log.debug(invocation)
-        # log?
+        kwargs['printOutput'] = kwargs.get('printOutput', True)
+        kwargs['pty'] = kwargs.get('pty', True)
         self.buildroot._nuke_rpm_db()
-        out = util.do(invocation, env=env, printOutput=True, pty=True, **kwargs)
+        out = util.do(invocation, env=env, **kwargs)
         self.plugins.call_hooks("postyum")
         return out
 
@@ -80,6 +81,17 @@ class _PackageManager(object):
     @traceLog()
     def builddep(self, *args, **kwargs):
         return self.execute('builddep', *args)
+
+    @traceLog()
+    def copy_gpg_keys(self):
+        pki_dir = self.buildroot.make_chroot_path('etc', 'pki', 'mock')
+        util.mkdirIfAbsent(pki_dir)
+        for pki_file in glob.glob("/etc/pki/mock/RPM-GPG-KEY-*"):
+            shutil.copy(pki_file, pki_dir)
+
+    def initialize(self):
+        self.copy_gpg_keys()
+        self.initialize_config()
 
     def initialize_config(self):
         raise NotImplementedError()
@@ -142,12 +154,6 @@ class Yum(_PackageManager):
             shutil.copy('/etc/rhsm/rhsm.conf',
                     self.buildroot.make_chroot_path('etc', 'rhsm'))
             self.execute('repolist')
-
-        # Copy RPM GPG keys
-        pki_dir = self.buildroot.make_chroot_path('etc', 'pki', 'mock')
-        util.mkdirIfAbsent(pki_dir)
-        for pki_file in glob.glob("/etc/pki/mock/RPM-GPG-KEY-*"):
-            shutil.copy(pki_file, pki_dir)
 
     def install(self, *pkgs, **kwargs):
         out = self.execute('resolvedep', *pkgs, returnOutput=True,
