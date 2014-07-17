@@ -42,6 +42,7 @@ import pwd
 import sys
 import time
 from optparse import OptionParser
+from textwrap import dedent
 
 # all of the variables below are substituted by the build system
 __VERSION__ = "unreleased_version"
@@ -70,8 +71,9 @@ def scrub_callback(option, opt, value, parser):
     parser.values.scrub.append(value)
     parser.values.mode = "clean"
 
-def command_parse(config_opts):
+def command_parse():
     """return options and args from parsing the command line"""
+    plugins = mockbuild.util.PLUGIN_LIST
     parser = OptionParser(usage=__doc__, version=__VERSION__)
 
     # modes (basic commands)
@@ -199,11 +201,11 @@ def command_parse(config_opts):
     parser.add_option("--enable-plugin", action="append",
                       dest="enabled_plugins", type="string", default=[],
                       help="Enable plugin. Currently-available plugins: %s"
-                        % repr(config_opts['plugins']))
+                        % repr(plugins))
     parser.add_option("--disable-plugin", action="append",
                       dest="disabled_plugins", type="string", default=[],
                       help="Disable plugin. Currently-available plugins: %s"
-                           % repr(config_opts['plugins']))
+                           % repr(plugins))
     parser.add_option("--plugin-option", action="append", dest="plugin_opts",
                       default=[], type="string",
                       metavar="PLUGIN:KEY=VALUE",
@@ -243,6 +245,104 @@ def command_parse(config_opts):
         options.sources = os.path.expanduser(options.sources)
 
     return (options, args)
+
+def load_config(config_path, name, uidManager):
+    config_opts = mockbuild.util.setup_default_config_opts(uidManager.unprivUid,
+            __VERSION__, PKGPYTHONDIR)
+
+    # array to save config paths
+    config_opts['config_paths'] = []
+    config_opts['chroot_name'] = name
+
+    # Read in the config files: default, and then user specified
+    for cfg in (os.path.join(config_path, 'site-defaults.cfg'),
+                '%s/%s.cfg' % (config_path, name)):
+        if os.path.exists(cfg):
+            config_opts['config_paths'].append(cfg)
+            mockbuild.util.update_config_from_file(config_opts, cfg, uidManager)
+        else:
+            log.error("Could not find required config file: %s" % cfg)
+            if name == "default":
+                log.error("  Did you forget to specify the chroot to use with '-r'?")
+            sys.exit(1)
+
+    # Read user specific config file
+    cfg = os.path.join(os.path.expanduser('~' + pwd.getpwuid(os.getuid())[0]),
+            '.mock/user.cfg')
+    if os.path.exists(cfg):
+        config_opts['config_paths'].append(cfg)
+        mockbuild.util.update_config_from_file(config_opts, cfg, uidManager)
+
+    # default /etc/hosts contents
+    if (not config_opts['use_host_resolv']
+        and not config_opts['files'].has_key('etc/hosts')):
+        config_opts['files']['etc/hosts'] = dedent('''\
+            127.0.0.1 localhost localhost.localdomain
+            ::1       localhost localhost.localdomain localhost6 localhost6.localdomain6
+            ''')
+
+    return config_opts
+
+def setup_logging(log_ini, config_opts, options):
+    if not os.path.exists(log_ini):
+        log.error("Could not find required logging config file: %s" % log_ini)
+        sys.exit(50)
+    try:
+        if not os.path.exists(log_ini):
+            raise IOError, "Could not find log config file %s" % log_ini
+        log_cfg = ConfigParser.ConfigParser()
+        logging.config.fileConfig(log_ini)
+        log_cfg.read(log_ini)
+    except (IOError, OSError, ConfigParser.NoSectionError), exc:
+        log.error("Log config file(%s) not correctly configured: %s" % (log_ini, exc))
+        sys.exit(50)
+
+    try:
+        # set up logging format strings
+        config_opts['build_log_fmt_str'] = log_cfg.get("formatter_%s" % config_opts['build_log_fmt_name'], "format", raw=1)
+        config_opts['root_log_fmt_str'] = log_cfg.get("formatter_%s" % config_opts['root_log_fmt_name'], "format", raw=1)
+        config_opts['state_log_fmt_str'] = log_cfg.get("formatter_%s" % config_opts['state_log_fmt_name'], "format", raw=1)
+    except ConfigParser.NoSectionError, exc:
+        log.error("Log config file (%s) missing required section: %s" % (log_ini, exc))
+        sys.exit(50)
+
+    # set logging verbosity
+    if options.verbose == 0:
+        log.handlers[0].setLevel(logging.WARNING)
+        tmplog = logging.getLogger("mockbuild.Root.state")
+        if tmplog.handlers:
+            tmplog.handlers[0].setLevel(logging.WARNING)
+    elif options.verbose == 1:
+        log.handlers[0].setLevel(logging.INFO)
+    elif options.verbose == 2:
+        log.handlers[0].setLevel(logging.DEBUG)
+        logging.getLogger("mockbuild.Root.build").propagate = 1
+        logging.getLogger("mockbuild").propagate = 1
+
+    # enable tracing if requested
+    logging.getLogger("trace").propagate = 0
+    if options.trace:
+        logging.getLogger("trace").propagate = 1
+
+def setup_uid_manager(mockgid):
+    unprivUid = os.getuid()
+    unprivGid = os.getgid()
+
+    # sudo
+    if os.environ.get("SUDO_UID") is not None:
+        unprivUid = int(os.environ['SUDO_UID'])
+        os.setgroups((mockgid,))
+        unprivGid = int(os.environ['SUDO_GID'])
+
+    # consolehelper
+    if os.environ.get("USERHELPER_UID") is not None:
+        unprivUid = int(os.environ['USERHELPER_UID'])
+        os.setgroups((mockgid,))
+        unprivGid = pwd.getpwuid(unprivUid)[3]
+
+    uidManager = mockbuild.uid.uidManager(unprivUid, unprivGid)
+    return uidManager
+
 
 decorate(traceLog())
 def check_arch_combination(target_arch, config_opts):
@@ -378,33 +478,14 @@ def main(ret):
     #   sudo sets real/effective = 0, and sets env vars
     #   setuid wrapper clears environment, so there wont be any conflict between these two
 
-    # old setuid wrapper
-    unprivUid = os.getuid()
-    unprivGid = os.getgid()
-
     mockgid = grp.getgrnam('mock').gr_gid
+    uidManager = setup_uid_manager(mockgid)
 
-    # sudo
-    if os.environ.get("SUDO_UID") is not None:
-        unprivUid = int(os.environ['SUDO_UID'])
-        os.setgroups((mockgid,))
-        unprivGid = int(os.environ['SUDO_GID'])
-
-    # consolehelper
-    if os.environ.get("USERHELPER_UID") is not None:
-        unprivUid = int(os.environ['USERHELPER_UID'])
-        os.setgroups((mockgid,))
-        unprivGid = pwd.getpwuid(unprivUid)[3]
-
-    uidManager = mockbuild.uid.uidManager(unprivUid, unprivGid)
     # go unpriv only when root to make --help etc work for non-mock users
     if os.geteuid() == 0:
         uidManager.dropPrivsTemp()
 
-    # defaults
-    config_opts = mockbuild.util.setup_default_config_opts(unprivUid, __VERSION__, PKGPYTHONDIR)
-
-    (options, args) = command_parse(config_opts)
+    (options, args) = command_parse()
 
     if options.printrootpath:
         options.verbose = 0
@@ -414,24 +495,10 @@ def main(ret):
     if options.configdir:
         config_path = options.configdir
 
-    # array to save config paths
-    config_opts['config_paths'] = []
+    config_opts = load_config(config_path, options.chroot, uidManager)
 
-    # Read in the config files: default, and then user specified
-    for cfg in ( os.path.join(config_path, 'site-defaults.cfg'), '%s/%s.cfg' % (config_path, options.chroot)):
-        if os.path.exists(cfg):
-            config_opts['config_paths'].append(cfg)
-            mockbuild.util.update_config_from_file(config_opts, cfg, uidManager)
-        else:
-            log.error("Could not find required config file: %s" % cfg)
-            if options.chroot == "default": log.error("  Did you forget to specify the chroot to use with '-r'?")
-            sys.exit(1)
-
-    # Read user specific config file
-    cfg = os.path.join(os.path.expanduser('~' + pwd.getpwuid(os.getuid())[0]), '.mock/user.cfg')
-    if os.path.exists(cfg):
-        config_opts['config_paths'].append(cfg)
-        mockbuild.util.update_config_from_file(config_opts, cfg, uidManager)
+    # cmdline options override config options
+    mockbuild.util.set_config_opts_per_cmdline(config_opts, options, args)
 
     # allow a different mock group to be specified
     if config_opts['chrootgid'] != mockgid:
@@ -440,63 +507,14 @@ def main(ret):
         uidManager.dropPrivsTemp()
 
     # verify that our unprivileged uid is in the mock group
-    groupcheck(unprivGid, config_opts['chrootgid'])
+    groupcheck(uidManager.unprivGid, config_opts['chrootgid'])
 
     # configure logging
-    config_opts['chroot_name'] = options.chroot
     log_ini = os.path.join(config_path, config_opts["log_config_file"])
-    if not os.path.exists(log_ini):
-        log.error("Could not find required logging config file: %s" % log_ini)
-        sys.exit(50)
-    try:
-        if not os.path.exists(log_ini): raise IOError, "Could not find log config file %s" % log_ini
-        log_cfg = ConfigParser.ConfigParser()
-        logging.config.fileConfig(log_ini)
-        log_cfg.read(log_ini)
-    except (IOError, OSError, ConfigParser.NoSectionError), exc:
-        log.error("Log config file(%s) not correctly configured: %s" % (log_ini, exc))
-        sys.exit(50)
-
-    try:
-        # set up logging format strings
-        config_opts['build_log_fmt_str'] = log_cfg.get("formatter_%s" % config_opts['build_log_fmt_name'], "format", raw=1)
-        config_opts['root_log_fmt_str'] = log_cfg.get("formatter_%s" % config_opts['root_log_fmt_name'], "format", raw=1)
-        config_opts['state_log_fmt_str'] = log_cfg.get("formatter_%s" % config_opts['state_log_fmt_name'], "format", raw=1)
-    except ConfigParser.NoSectionError, exc:
-        log.error("Log config file (%s) missing required section: %s" % (log_ini, exc))
-        sys.exit(50)
-
-    # set logging verbosity
-    if options.verbose == 0:
-        log.handlers[0].setLevel(logging.WARNING)
-        tmplog = logging.getLogger("mockbuild.Root.state")
-        if tmplog.handlers:
-            tmplog.handlers[0].setLevel(logging.WARNING)
-    elif options.verbose == 1:
-        log.handlers[0].setLevel(logging.INFO)
-    elif options.verbose == 2:
-        log.handlers[0].setLevel(logging.DEBUG)
-        logging.getLogger("mockbuild.Root.build").propagate = 1
-        logging.getLogger("mockbuild").propagate = 1
-
-    # enable tracing if requested
-    logging.getLogger("trace").propagate=0
-    if options.trace:
-        logging.getLogger("trace").propagate=1
-
-    # cmdline options override config options
-    #set_config_opts_per_cmdline(config_opts, options, args)
-    mockbuild.util.set_config_opts_per_cmdline(config_opts, options, args)
+    setup_logging(log_ini, config_opts, options)
 
     # verify that we're not trying to build an arch that we can't
     check_arch_combination(config_opts['rpmbuild_arch'], config_opts)
-
-    # default /etc/hosts contents
-    if not config_opts['use_host_resolv'] and not config_opts['files'].has_key('etc/hosts'):
-        config_opts['files']['etc/hosts'] = '''
-127.0.0.1 localhost localhost.localdomain
-::1       localhost localhost.localdomain localhost6 localhost6.localdomain6
-'''
 
     # Fetch and prepare sources from SCM
     if config_opts['scm']:

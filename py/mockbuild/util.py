@@ -52,6 +52,9 @@ personality_defs = {
     's390' : PER_LINUX32, 's390x' : PER_LINUX,
 }
 
+PLUGIN_LIST = ['tmpfs', 'root_cache', 'yum_cache', 'bind_mount',
+               'ccache', 'selinux', 'package_state', 'chroot_scan']
+
 # classes
 class commandTimeoutExpired(mockbuild.exception.Error):
     def __init__(self, msg):
@@ -511,8 +514,7 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
     #    root_cache next.
     #    after that, any plugins that must create dirs (yum_cache)
     #    any plugins without preinit hooks should be last.
-    config_opts['plugins'] = ['tmpfs', 'root_cache', 'yum_cache', 'bind_mount', 'ccache', 'selinux',
-                              'package_state', 'chroot_scan']
+    config_opts['plugins'] = PLUGIN_LIST
     config_opts['plugin_dir'] = os.path.join(pkgpythondir, "plugins")
     config_opts['plugin_conf'] = {
             'ccache_enable': True,
