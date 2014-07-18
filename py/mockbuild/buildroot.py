@@ -152,6 +152,7 @@ class Buildroot(object):
         if os.path.exists(self.make_chroot_path()):
             try:
                 self._lock_buildroot(exclusive=True)
+                util.orphansKill(self.make_chroot_path())
                 self._umount_all()
             except BuildRootLocked:
                 pass

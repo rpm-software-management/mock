@@ -463,7 +463,7 @@ def groupcheck(unprivGid, tgtGid):
         raise RuntimeError("Must be member of '%s' group to run mock! (%s)" %
                            (name, ", ".join(members)))
 
-def main(ret):
+def main():
     "Main executable entry point."
 
     # initial sanity check for correct invocation method
@@ -516,12 +516,6 @@ def main(ret):
     # verify that we're not trying to build an arch that we can't
     check_arch_combination(config_opts['rpmbuild_arch'], config_opts)
 
-    # Fetch and prepare sources from SCM
-    if config_opts['scm']:
-        scmWorker = mockbuild.scm.scmWorker(log, config_opts['scm_opts'], config_opts['macros'])
-        scmWorker.get_sources()
-        (options.sources, options.spec) = scmWorker.prepare_sources()
-
     # security cleanup (don't need/want this in the chroot)
     if os.environ.has_key('SSH_AUTH_SOCK'):
         del os.environ['SSH_AUTH_SOCK']
@@ -544,8 +538,6 @@ def main(ret):
     for k, v in config_opts.items():
         log.debug("    %s:  %s" % (k, v))
 
-    ret["chroot"] = chroot
-    ret["config_opts"] = config_opts
     os.umask(002)
     os.environ["HOME"] = chroot.homedir
 
@@ -565,6 +557,19 @@ def main(ret):
     # set personality (ie. setarch)
     if config_opts['internal_setarch']:
         mockbuild.util.condPersonality(config_opts['target_arch'])
+
+    try:
+        run_command(options, args, config_opts, chroot)
+    finally:
+        chroot.buildroot.finalize()
+
+def run_command(options, args, config_opts, chroot):
+    #TODO separate this
+    # Fetch and prepare sources from SCM
+    if config_opts['scm']:
+        scmWorker = mockbuild.scm.scmWorker(log, config_opts['scm_opts'], config_opts['macros'])
+        scmWorker.get_sources()
+        (options.sources, options.spec) = scmWorker.prepare_sources()
 
     if options.mode == 'init':
         if config_opts['clean']:
@@ -682,14 +687,9 @@ if __name__ == '__main__':
     logging.raiseExceptions = 0
 
     exitStatus = 0
-    killOrphans = 1
 
     try:
-        # sneaky way to ensure that we get passed back parameter even if
-        # we hit an exception.
-        retParams = {}
-        main(retParams)
-        exitStatus = retParams.get("exitStatus", exitStatus)
+        main()
 
     except (SystemExit,):
         raise
@@ -712,12 +712,10 @@ if __name__ == '__main__':
     except (mockbuild.exception.ResultDirNotAccessible,), exc:
         exitStatus = exc.resultcode
         log.error(str(exc))
-        killOrphans = 0
 
     except (mockbuild.exception.BadCmdline, mockbuild.exception.BuildRootLocked), exc:
         exitStatus = exc.resultcode
         log.error(str(exc))
-        killOrphans = 0
 
     except (mockbuild.exception.Error), exc:
         exitStatus = exc.resultcode
@@ -726,9 +724,6 @@ if __name__ == '__main__':
     except (Exception,), exc:
         exitStatus = 1
         log.exception(exc)
-
-    if killOrphans and retParams:
-        mockbuild.util.orphansKill(retParams["chroot"].makeChrootPath())
 
     logging.shutdown()
     sys.exit(exitStatus)

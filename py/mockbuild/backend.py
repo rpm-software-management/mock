@@ -164,9 +164,6 @@ class Root(object):
     def alldone(self):
         if len(self._state) != 0:
             raise mockbuild.exception.StateError, "alldone called with pending states: %s" % ",".join(self._state)
-        # if the chroot wasn't cleaned try to clean up orphan processes
-        if not self.clean_the_chroot:
-            mockbuild.util.orphansKill(self.makeChrootPath())
         self.buildroot.finalize()
 
     decorate(traceLog())
