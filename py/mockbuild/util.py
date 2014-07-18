@@ -733,7 +733,6 @@ def update_config_from_file(config_opts, config_file, uidManager):
         try:
             os.close(r_pipe)
             uidManager.dropPrivsForever()
-            assert all(os.getresuid())
             execfile(config_file)
             writer = os.fdopen(w_pipe, 'w')
             pickle.dump(config_opts, writer)
