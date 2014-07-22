@@ -72,6 +72,14 @@ class _PackageManager(object):
     def initialize_config(self):
         raise NotImplementedError()
 
+def check_yum_config(config, log):
+    if '\nreposdir' not in config:
+        log.warn(dedent("""\
+                reposdir option is not set in yum config. That means Yum/DNF
+                will use system-wide repos. To suppress that behavior, put
+                reposdir=/dev/null to your yum.conf in mock config.
+                """))
+
 class Yum(_PackageManager):
     command = 'yum'
     builddep_command = ['yum-builddep']
@@ -91,6 +99,8 @@ class Yum(_PackageManager):
                            dedent("""\
                            plugins=1
                            pluginconfpath={0}""".format(pluginconf_dir)))
+
+        check_yum_config(config_content, self.buildroot.root_log)
 
         # write in yum.conf into chroot
         # always truncate and overwrite (w+)
@@ -159,6 +169,7 @@ class Dnf(_PackageManager):
             config_content = self.config['dnf.conf']
         else:
             config_content = self.config['yum.conf']
+        check_yum_config(config_content, self.buildroot.root_log)
         util.mkdirIfAbsent(self.buildroot.make_chroot_path('etc', 'dnf'))
         dnfconf_path = self.buildroot.make_chroot_path('etc', 'dnf', 'dnf.conf')
         with open(dnfconf_path, 'w+') as dnfconf_file:
