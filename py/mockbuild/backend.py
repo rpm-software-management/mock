@@ -103,7 +103,7 @@ class Commands(object):
             print "finishing: %s" % statestr
             self.state.finish(statestr)
 
-    def makeChrootPath(self, *args):
+    def make_chroot_path(self, *args):
         '''For safety reasons, self._rootdir should not be used directly. Instead
         use this handy helper function anytime you want to reference a path in
         relation to the chroot.'''
@@ -363,7 +363,7 @@ class Commands(object):
                 shell=False, logger=self.buildroot.build_log, timeout=timeout,
                 uid=self.buildroot.chrootuid, gid=self.buildroot.chrootgid,
                 printOutput=True)
-        results = glob.glob("%s/%s/SRPMS/*.src.rpm" % (self.makeChrootPath(),
+        results = glob.glob("%s/%s/SRPMS/*.src.rpm" % (self.make_chroot_path(),
                                                        self.buildroot.builddir))
         if len(results) != 1:
             raise PkgError("Expected to find single rebuilt srpm, found %d."
@@ -383,7 +383,7 @@ class Commands(object):
             shell=False, logger=self.buildroot.build_log, timeout=timeout,
             uid=self.buildroot.chrootuid, gid=self.buildroot.chrootgid,
             printOutput=True)
-        bd_out = self.makeChrootPath(self.buildroot.builddir)
+        bd_out = self.make_chroot_path(self.buildroot.builddir)
         results = glob.glob(bd_out + '/RPMS/*.rpm')
         results += glob.glob(bd_out + '/SRPMS/*.rpm')
         if not results:

@@ -19,37 +19,38 @@ requires_api_version = "1.0"
 
 # plugin entry point
 decorate(traceLog())
-def init(rootObj, conf):
-    ChrootScan(rootObj, conf)
+def init(plugins, conf, buildroot):
+    ChrootScan(plugins, conf, buildroot)
 
 # classes
 class ChrootScan(object):
     """scan chroot for files of interest, copying to resultdir with relative paths"""
     decorate(traceLog())
-    def __init__(self, rootObj, conf):
-        self.rootObj = rootObj
+    def __init__(self, plugins, conf, buildroot):
+        self.buildroot = buildroot
+        self.config = buildroot.config
+        self.state = buildroot.state
         self.scan_opts = conf
-        self.regexes = self.rootObj.pluginConf['chroot_scan_opts']['regexes']
-        self.resultdir = os.path.join(rootObj.resultdir, "chroot_scan")
-        rootObj.scanObj = self
-        rootObj.addHook("postbuild",  self._scanChroot)
+        self.regexes = self.config['plugin_conf']['chroot_scan_opts']['regexes']
+        self.resultdir = os.path.join(buildroot.resultdir, "chroot_scan")
+        plugins.add_hook("postbuild", self._scanChroot)
         getLog().info("chroot_scan: initialized")
 
     decorate(traceLog())
     def _scanChroot(self):
         regexstr = "|".join(self.regexes)
         regex = re.compile(regexstr)
-        chroot = self.rootObj.makeChrootPath()
+        chroot = self.buildroot.make_chroot_path()
         mockbuild.util.mkdirIfAbsent(self.resultdir)
         count = 0
         logger = getLog()
         logger.debug("chroot_scan: Starting scan of %s" % chroot)
         copied = []
-        for root, dirs, files in os.walk(chroot):
+        for root, _, files in os.walk(chroot):
             for f in files:
                 m = regex.search(f)
                 if m:
-                    srcpath = os.path.join(root,f)
+                    srcpath = os.path.join(root, f)
                     subprocess.call("cp --parents %s %s" % (srcpath, self.resultdir), shell=True)
                     count += 1
                     copied.append(srcpath)

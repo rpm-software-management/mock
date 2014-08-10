@@ -745,7 +745,7 @@ def set_config_opts_per_cmdline(config_opts, options, args):
                 "Bad option for '--scm-option' (%s).  Use --scm-option 'key=value'"
                 % option)
 
-def update_config_from_file(config_opts, config_file, uidManager):
+def update_config_from_file(config_opts, config_file, uid_manager):
     config_file = os.path.realpath(config_file)
     r_pipe, w_pipe = os.pipe()
     if os.fork() == 0:

@@ -44,7 +44,7 @@ class _PackageManager(object):
         return invocation
 
     def execute(self, *args, **kwargs):
-        self.buildroot._callHooks("preyum")
+        self.buildroot._call_hooks("preyum")
         env = self.config['environment'].copy()
         env.update(util.get_proxy_environment(self.config))
         env['LC_MESSAGES'] = 'C'
@@ -53,7 +53,7 @@ class _PackageManager(object):
         # log?
         self.buildroot._nuke_rpm_db()
         out = util.do(invocation, env=env, printOutput=True, **kwargs)
-        self.buildroot._callHooks("postyum")
+        self.buildroot._call_hooks("postyum")
         return out
 
     def install(self, *args, **kwargs):

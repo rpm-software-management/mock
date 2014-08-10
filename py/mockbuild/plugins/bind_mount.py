@@ -16,26 +16,28 @@ requires_api_version = "1.0"
 
 # plugin entry point
 decorate(traceLog())
-def init(rootObj, conf):
-    BindMount(rootObj, conf)
+def init(plugins, conf, buildroot):
+    BindMount(plugins, conf, buildroot)
 
 # classes
 class BindMount(object):
     """bind mount dirs from host into chroot"""
     decorate(traceLog())
-    def __init__(self, rootObj, conf):
-        self.rootObj = rootObj
+    def __init__(self, plugins, conf, buildroot):
+        self.buildroot = buildroot
+        self.config = buildroot.config
+        self.state = buildroot.state
         self.bind_opts = conf
-        rootObj.bindMountObj = self
-        rootObj.addHook("preinit",  self._bindMountPreInitHook)
-        rootObj.addHook("preshell",  self._bindMountPreInitHook)
-        rootObj.addHook("prechroot",  self._bindMountPreInitHook)
+        plugins.add_hook("preinit", self._bindMountPreInitHook)
+        plugins.add_hook("preshell", self._bindMountPreInitHook)
+        plugins.add_hook("prechroot", self._bindMountPreInitHook)
         for srcdir, destdir in self.bind_opts['dirs']:
-            rootObj.mounts.add(BindMountPoint(srcpath=srcdir, bindpath=rootObj.makeChrootPath(destdir)))
+            buildroot.mounts.add(BindMountPoint(srcpath=srcdir, bindpath=buildroot.make_chroot_path(destdir)))
 
     decorate(traceLog())
     def _bindMountPreInitHook(self):
-        create_dirs = self.rootObj.pluginConf['bind_mount_opts']['create_dirs']
+        create_dirs = self.config['plugin_conf']['bind_mount_opts']['create_dirs']
         for srcdir, destdir in self.bind_opts['dirs']:
-            if create_dirs: mockbuild.util.mkdirIfAbsent(srcdir)
-            mockbuild.util.mkdirIfAbsent(self.rootObj.makeChrootPath(destdir))
+            if create_dirs:
+                mockbuild.util.mkdirIfAbsent(srcdir)
+            mockbuild.util.mkdirIfAbsent(self.buildroot.make_chroot_path(destdir))

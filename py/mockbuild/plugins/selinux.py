@@ -19,10 +19,10 @@ requires_api_version = "1.0"
 
 # plugin entry point
 decorate(traceLog())
-def init(rootObj, conf):
+def init(plugins, conf, buildroot):
     if mockbuild.util.selinuxEnabled():
         getLog().info("selinux enabled")
-        SELinux(rootObj, conf)
+        SELinux(plugins, conf, buildroot)
     else:
         getLog().info("selinux disabled")
 
@@ -35,20 +35,22 @@ class SELinux(object):
     """
 
     decorate(traceLog())
-    def __init__(self, rootObj, conf):
-        self.rootObj = rootObj
+    def __init__(self, plugins, conf, buildroot):
+        self.buildroot = buildroot
+        self.config = buildroot.config
+        self.state = buildroot.state
         self.conf = conf
 
         self.filesystems = self._selinuxCreateFauxFilesystems()
-        self.chrootFilesystems = rootObj.makeChrootPath("/proc/filesystems")
+        self.chrootFilesystems = buildroot.make_chroot_path("/proc/filesystems")
 
         atexit.register(self._selinuxAtExit)
 
-        self.rootObj.mounts.add(BindMountPoint(srcpath=self.filesystems, bindpath=self.chrootFilesystems))
+        self.buildroot.mounts.add(BindMountPoint(srcpath=self.filesystems, bindpath=self.chrootFilesystems))
 
         if self._selinuxYumIsSetoptSupported():
-            rootObj.addHook("preyum", self._selinuxPreYumHook)
-            rootObj.addHook("postyum", self._selinuxPostYumHook)
+            plugins.add_hook("preyum", self._selinuxPreYumHook)
+            plugins.add_hook("postyum", self._selinuxPostYumHook)
         else:
             getLog().warning("selinux: 'yum' does not support '--setopt' option")
 
@@ -92,10 +94,10 @@ class SELinux(object):
         option = "--setopt=tsflags=nocontexts"
 
         if type(command) is list:
-            if command[0].startswith(self.rootObj.pkg_manager.command):
+            if command[0].startswith(self.buildroot.pkg_manager.command):
                 command.append(option)
         elif type(command) is str:
-            if command.startswith(self.rootObj.pkg_manager.command):
+            if command.startswith(self.buildroot.pkg_manager.command):
                 command += " %s" % option
 
         return self._originalUtilDo(command, *args, **kargs)

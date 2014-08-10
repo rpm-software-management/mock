@@ -11,7 +11,7 @@ import ctypes
 from mockbuild.trace_decorator import traceLog, decorate
 
 # class
-class uidManager(object):
+class UidManager(object):
     decorate(traceLog())
     def __init__(self, unprivUid=-1, unprivGid=-1):
         self.privStack = []

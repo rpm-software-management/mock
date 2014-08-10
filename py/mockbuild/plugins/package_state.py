@@ -25,50 +25,52 @@ requires_api_version = "1.0"
 
 # plugin entry point
 decorate(traceLog())
-def init(rootObj, conf):
-    PackageState(rootObj, conf)
+def init(plugins, conf, buildroot):
+    PackageState(plugins, conf, buildroot)
 
 # classes
 class PackageState(object):
     """dumps out a list of packages available and in the chroot"""
     decorate(traceLog())
-    def __init__(self, rootObj, conf):
-        self.rootObj = rootObj
+    def __init__(self, plugins, conf, buildroot):
+        self.buildroot = buildroot
+        self.config = buildroot.config
+        self.state = buildroot.state
         self.avail_done = False
         self.inst_done = False
-        self.online = rootObj.online
-        rootObj.addHook("postyum", self._availablePostYumHook)
-        rootObj.addHook("prebuild", self._installedPreBuildHook)
+        self.online = self.config['online']
+        plugins.add_hook("postyum", self._availablePostYumHook)
+        plugins.add_hook("prebuild", self._installedPreBuildHook)
 
     decorate(traceLog())
     def _availablePostYumHook(self):
         if self.online and not self.avail_done:
-            self.rootObj.uidManager.dropPrivsTemp()
-            self.rootObj.start("Outputting list of available packages")
-            out_file = self.rootObj.resultdir + '/available_pkgs'
-            chrootpath = self.rootObj.makeChrootPath()
+            self.buildroot.uid_manager.dropPrivsTemp()
+            self.state.start("Outputting list of available packages")
+            out_file = self.buildroot.resultdir + '/available_pkgs'
+            chrootpath = self.buildroot.make_chroot_path()
             cmd = "/usr/bin/repoquery --installroot=%s -c %s/etc/yum.conf %s > %s" % (
                            chrootpath, chrootpath, repoquery_avail_opts, out_file)
-            mockbuild.util.do(cmd, shell=True, env=self.rootObj.env)
+            mockbuild.util.do(cmd, shell=True, env=self.buildroot.env)
             self.avail_done = True
-            self.rootObj.finish("Outputting list of available packages")
-            self.rootObj.uidManager.restorePrivs()
+            self.state.finish("Outputting list of available packages")
+            self.buildroot.uid_manager.restorePrivs()
 
     decorate(traceLog())
     def _installedPreBuildHook(self):
         if self.online and not self.inst_done:
-            self.rootObj.start("Outputting list of installed packages")
+            self.state.start("Outputting list of installed packages")
             fd, fn = tempfile.mkstemp()
             fo = os.fdopen(fd, 'w')
-            fo.write('[main]\ninstallroot=%s' % self.rootObj.makeChrootPath())
+            fo.write('[main]\ninstallroot=%s' % self.buildroot.make_chroot_path())
             fo.flush()
             fo.close()
-            out_file = self.rootObj.resultdir + '/installed_pkgs'
+            out_file = self.buildroot.resultdir + '/installed_pkgs'
             cmd = "/usr/bin/repoquery --installroot=%s -c %s %s > %s" % (
-                self.rootObj.makeChrootPath(), fn, repoquery_install_opts, out_file)
-            self.rootObj.uidManager.restorePrivs()
-            mockbuild.util.do(cmd, shell=True, env=self.rootObj.env)
-            self.rootObj.uidManager.dropPrivsTemp()
+                self.buildroot.make_chroot_path(), fn, repoquery_install_opts, out_file)
+            self.buildroot.uid_manager.restorePrivs()
+            mockbuild.util.do(cmd, shell=True, env=self.buildroot.env)
+            self.buildroot.uid_manager.dropPrivsTemp()
             self.inst_done = True
             os.unlink(fn)
-            self.rootObj.finish("Outputting list of installed packages")
+            self.state.finish("Outputting list of installed packages")
