@@ -400,6 +400,7 @@ class Buildroot(object):
                 self._lock_buildroot(exclusive=True)
                 util.orphansKill(self.make_chroot_path())
                 self._umount_all()
+                self.plugins.call_hooks('postumount')
             except BuildRootLocked:
                 pass
             finally:
@@ -413,6 +414,7 @@ class Buildroot(object):
             self._lock_buildroot(exclusive=True)
             util.orphansKill(self.make_chroot_path())
             self._umount_all()
+            self.plugins.call_hooks('umount_root')
             self._unlock_buildroot()
             util.rmtree(self.basedir, selinux=self.selinux)
         self.chroot_was_initialized = False
@@ -423,7 +425,6 @@ class Buildroot(object):
 
         # first try removing all expected mountpoints.
         self.mounts.umountall()
-        self.plugins.call_hooks('umount_root')
 
         # then remove anything that might be left around.
         self._umount_residual()
@@ -432,7 +433,7 @@ class Buildroot(object):
         mountpoint = os.path.realpath(mountpoint)
         our_dir = os.path.realpath(self.make_chroot_path())
         assert our_dir
-        if mountpoint.startswith(our_dir + '/') or mountpoint == our_dir:
+        if mountpoint.startswith(our_dir + '/'):
             return True
         return False
 

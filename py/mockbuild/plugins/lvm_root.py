@@ -16,6 +16,13 @@ def volume_group(name, mode='r'):
     finally:
         vg.close()
 
+def current_mounts():
+    with open("/proc/mounts") as proc_mounts:
+        mount_lines = proc_mounts.read().strip().split('\n')
+        for line in mount_lines:
+            src, target = [os.path.realpath(x) for x in line.split()[:2]]
+            yield src, target
+
 class LvmPlugin(object):
     postinit_name = 'postinit'
 
@@ -26,6 +33,7 @@ class LvmPlugin(object):
         self.pool_name = buildroot.shared_root_name
         self.lv_name = '{0}-current'.format(self.pool_name)
         self.fs_type = lvm_conf.get('filesystem', 'ext4')
+        self.root_path = os.path.realpath(self.buildroot.make_chroot_path())
         if not self.vg_name:
             raise RuntimeError("Volume group must be specified")
 
@@ -96,6 +104,7 @@ class LvmPlugin(object):
         self.set_current_snapshot(name)
 
     def rollback(self):
+        self.umount()
         snapshot_name = self.get_current_snapshot()
         if snapshot_name:
             lvremove = ['lvremove', '-f', self.vg_name + '/' + self.lv_name]
@@ -130,18 +139,40 @@ class LvmPlugin(object):
         mkfs_args = self.lvm_conf.get('mkfs_args', [])
         util.do([mkfs, self.get_lv_path()] + mkfs_args)
 
+    def force_umount_root(self):
+        self.buildroot.root_log.warning("Forcibly unmounting root volume")
+        util.do(['umount', '-l', self.root_path], env=self.buildroot.env)
+
+    def prepare_mount(self):
+        mount_options = self.lvm_conf.get('mount_options')
+        try:
+            lv_path = self.get_lv_path()
+            for src, target in current_mounts():
+                if target == self.root_path:
+                    if src != os.path.realpath(lv_path):
+                        self.force_umount_root()
+            self.mount = mounts.FileSystemMountPoint(self.root_path, self.fs_type,
+                                                     lv_path, options=mount_options)
+        except lvm.LibLVMError:
+            pass
+
+    def umount(self):
+        if not self.mount:
+            self.prepare_mount()
+        if self.mount:
+            self.mount.umount()
+
     def hook_mount_root(self):
         if not self.lv_exists():
             self.create_base()
-        mount_options = self.lvm_conf.get('mount_options')
-        root_path = self.buildroot.make_chroot_path()
-        self.mount = mounts.FileSystemMountPoint(root_path, self.fs_type,
-                                                 self.get_lv_path(),
-                                                 options=mount_options)
+        self.prepare_mount()
         self.mount.mount()
 
     def hook_umount_root(self):
-        if self.mount:
+        self.umount()
+
+    def hook_postumount(self):
+        if self.mount and self.lvm_conf.get('umount_root'):
             self.mount.umount()
 
     def hook_postinit(self):
@@ -151,6 +182,14 @@ class LvmPlugin(object):
             self.set_current_snapshot(snapshot_name)
 
     def hook_scrub(self, what):
+        with volume_group(self.vg_name) as vg:
+            try:
+                lv = vg.lvFromName(self.lv_name)
+                for src, _ in current_mounts():
+                    if src == os.path.realpath(lv.getProperty('lv_path')[0]):
+                        util.do(['umount', '-l', src])
+            except lvm.LibLVMError:
+                pass
         if what in ('lvm', 'all'):
             self.unset_current_snapshot()
             util.do(['lvremove', '-f', self.vg_name + '/' + self.pool_name],
@@ -179,6 +218,7 @@ class LvmPlugin(object):
         name = self.prefix_name(name)
         if not self.lv_is_our(name):
             raise RuntimeError("Snapshot {0} doesn't exist".format(name))
+        self.umount()
         if name == self.get_current_snapshot():
             self.set_current_snapshot(self.prefix_name(self.postinit_name))
         util.do(['lvremove', '-f', self.vg_name + '/' + name],
