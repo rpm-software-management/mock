@@ -331,7 +331,7 @@ class Commands(object):
             srpm_basename = os.path.basename(rebuilt_srpm)
 
             self.buildroot.root_log.debug("Copying package to result dir")
-            shutil.copy2(self.buildroot.make_chroot_path(rebuilt_srpm), self.buildroot.resultdir)
+            shutil.copy2(rebuilt_srpm, self.buildroot.resultdir)
 
             return os.path.join(self.buildroot.resultdir, srpm_basename)
 
@@ -350,11 +350,6 @@ class Commands(object):
         out = util.do(cmd, returnOutput=1, raiseExc=False, env=self.buildroot.env)
         self.buildroot.root_log.debug(out)
         return out
-
-    def _yum(self, cmd, returnOutput=0):
-        """use yum to install packages/package groups into the chroot"""
-
-        return self.buildroot.pkg_manager.execute(*cmd, returnOutput=returnOutput)
 
     #
     # UNPRIVILEGED:
