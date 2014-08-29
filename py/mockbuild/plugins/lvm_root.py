@@ -53,18 +53,19 @@ class LvmPlugin(object):
         self.buildroot = buildroot
         self.lvm_conf = lvm_conf
         self.vg_name = lvm_conf.get('volume_group')
-        self.pool_name = '{0}.{1}'.format(self.prefix, buildroot.shared_root_name)
+        self.conf_id = '{0}.{1}'.format(self.prefix, buildroot.shared_root_name)
+        self.pool_name = lvm_conf.get('pool_name', self.conf_id)
         self.ext = self.buildroot.config.get('unique-ext', 'head')
-        self.head_lv = '+{0}.{1}'.format(self.pool_name, self.ext)
+        self.head_lv = '+{0}.{1}'.format(self.conf_id, self.ext)
         self.fs_type = lvm_conf.get('filesystem', 'ext4')
         self.root_path = os.path.realpath(self.buildroot.make_chroot_path())
         if not self.vg_name:
             raise LvmError("Volume group must be specified")
 
-        snapinfo_name = '.snapinfo-{0}.{1}'.format(self.pool_name, self.ext)
+        snapinfo_name = '.snapinfo-{0}.{1}'.format(self.conf_id, self.ext)
         basepath = buildroot.mockdir
         self.snap_info = os.path.normpath(os.path.join(basepath, snapinfo_name))
-        lock_name = '.lvm_lock-{0}'.format(self.pool_name)
+        lock_name = '.lvm_lock-{0}'.format(self.conf_id)
         self.lock_path = os.path.normpath(os.path.join(basepath, lock_name))
         self.lock_file = open(self.lock_path, 'a+')
         self.mount = None
@@ -76,8 +77,8 @@ class LvmPlugin(object):
                 hook_name = member[len(prefix):]
                 plugins.add_hook(hook_name, method)
 
-    def prefix_name(self, name):
-        return self.pool_name + '.' + name
+    def prefix_name(self, name=''):
+        return self.conf_id + '.' + name
 
     def remove_prefix(self, name):
         return name.replace(self.prefix_name(''), '')
@@ -102,7 +103,9 @@ class LvmPlugin(object):
         return self._lv_predicate(name, lambda lv: True)
 
     def _open_lv_is_our(self, lv):
-        return lv.getAttr()[0] == 'V' and lv.getProperty('pool_lv')[0] == self.pool_name
+        return (lv.getAttr()[0] == 'V' and
+                lv.getProperty('pool_lv')[0] == self.pool_name and
+                lv.getName().replace('+', '').startswith(self.prefix_name()))
 
     def lv_is_our(self, name):
         return self._lv_predicate(name, self._open_lv_is_our)
@@ -155,20 +158,22 @@ class LvmPlugin(object):
         self.set_current_snapshot(name)
         self.delete_head()
 
-    def create_base(self):
+    def create_pool(self):
         size = self.lvm_conf['size']
         pool_id = self.vg_name + '/' + self.pool_name
         create_pool = ['lvcreate', '-T', pool_id, '-L', str(size)]
         if 'poolmetadatasize' in self.lvm_conf:
             create_pool += ['--poolmetadatasize', self.lvm_conf['poolmetadatasize']]
         lvm_do(create_pool)
-        create_lv = ['lvcreate', '-T', pool_id, '-V', str(size), '-n', self.lv_name]
-        lvm_do(create_lv)
+        self.buildroot.root_log.info("created LVM cache thinpool of size {size}"\
+                                     .format(size=size))
+    def create_base(self):
+        pool_id = self.vg_name + '/' + self.pool_name
+        size = self.lvm_conf['size']
+        lvm_do(['lvcreate', '-T', pool_id, '-V', str(size), '-n', self.head_lv])
         mkfs = self.lvm_conf.get('mkfs_command', 'mkfs.' + self.fs_type)
         mkfs_args = self.lvm_conf.get('mkfs_args', [])
         util.do([mkfs, self.get_lv_path()] + mkfs_args)
-        self.buildroot.root_log.info("created LVM cache thinpool of size {size}"\
-                                     .format(size=size))
 
     def force_umount_root(self):
         self.buildroot.root_log.warning("Forcibly unmounting root volume")
@@ -226,12 +231,14 @@ class LvmPlugin(object):
             else:
                 # Locked as exclusive so only one mock initializes postinit snapshot
                 if not self.lv_exists(self.pool_name):
+                    self.create_pool()
                     self.create_base()
                     break
                 elif not self.get_current_snapshot():
-                    # There's no snapshot at all but pool exists, that means init
-                    # failed. Let's start over
-                    lvm_do(['lvremove', '-f', self.vg_name + '/' + self.pool_name])
+                    if self.lv_exists():
+                        # We've got the exclusive lock but there's no postinit
+                        # This means init failed and we need to start over
+                        lvm_do(['lvremove', '-f', self.vg_name + '/' + self.head_lv])
                     self.create_base()
                     break
         else:
