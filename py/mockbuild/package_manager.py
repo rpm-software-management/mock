@@ -19,6 +19,7 @@ def PackageManager(config_opts, chroot, plugins):
 
 
 class _PackageManager(object):
+    name = None
     command = None
     builddep_command = None
 
@@ -33,10 +34,10 @@ class _PackageManager(object):
         if args[0] == 'builddep':
             args = args[1:]
             invocation = self.builddep_command
-            common_opts = self.config[self.command + '_builddep_opts']
+            common_opts = self.config[self.name + '_builddep_opts']
         else:
             invocation = [self.command]
-            common_opts = self.config[self.command + '_common_opts']
+            common_opts = self.config[self.name + '_common_opts']
         invocation += ['--installroot', self.buildroot.make_chroot_path()]
         releasever = self.config['releasever']
         if releasever:
@@ -105,8 +106,12 @@ def check_yum_config(config, log):
                 """))
 
 class Yum(_PackageManager):
-    command = 'yum'
-    builddep_command = ['yum-builddep']
+    name = 'yum'
+
+    def __init__(self, config, buildroot, plugins):
+        super(Yum, self).__init__(config, buildroot, plugins)
+        self.command = config['yum_command']
+        self.builddep_command = [config['yum_builddep_command']]
 
     @traceLog()
     def _write_plugin_conf(self, name):
@@ -174,8 +179,12 @@ def _check_missing(output):
                 raise BuildError('\n'.join(output.split('\n')[i:]))
 
 class Dnf(_PackageManager):
-    command = 'dnf'
-    builddep_command = ['dnf', 'builddep']
+    name = 'dnf'
+
+    def __init__(self, config, buildroot, plugins):
+        super(Dnf, self).__init__(config, buildroot, plugins)
+        self.command = config['dnf_command']
+        self.builddep_command = [self.command, 'builddep']
 
     @traceLog()
     def build_invocation(self, *args):
