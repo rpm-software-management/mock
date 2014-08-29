@@ -139,12 +139,9 @@ class LvmPlugin(object):
         if snapshot_name:
             lvremove = ['lvremove', '-f', self.vg_name + '/' + self.lv_name]
             lvm_do(lvremove)
-            lvrename = ['lvrename', self.vg_name, snapshot_name, self.lv_name]
-            lvm_do(lvrename)
-            lvchange = ['lvchange', self.vg_name + '/' + self.lv_name,
-                        '-a', 'y', '-k', 'n', '-K']
-            lvm_do(lvchange)
-            self.make_snapshot(snapshot_name)
+            lvcreate = ['lvcreate', '-s', self.vg_name + '/' + snapshot_name,
+                        '-n', self.lv_name, '--setactivationskip', 'n']
+            lvm_do(lvcreate)
             self.buildroot.root_log.info("rolled back to {name} snapshot"\
                                          .format(name=self.remove_prefix(snapshot_name)))
         else:
