@@ -5,6 +5,7 @@ from contextlib import contextmanager
 from textwrap import dedent
 
 from mockbuild import util, mounts
+from mockbuild.exception import LvmError
 
 requires_api_version = "1.0"
 
@@ -29,7 +30,7 @@ def volume_group(name, mode='r'):
 
 def lvm_do(*args, **kwargs):
     with restored_ipc_ns():
-        util.do(*args, printOutput=True, **kwargs)
+        util.do(*args, **kwargs)
 
 def current_mounts():
     with open("/proc/mounts") as proc_mounts:
@@ -43,7 +44,7 @@ class LvmPlugin(object):
 
     def __init__(self, plugins, lvm_conf, buildroot):
         if not util.original_ipc_ns or not util.have_setns:
-            raise RuntimeError("Cannot initialize setns support, which is "
+            raise LvmError("Cannot initialize setns support, which is "
                                "needed by LVM plugin")
         self.buildroot = buildroot
         self.lvm_conf = lvm_conf
@@ -53,7 +54,7 @@ class LvmPlugin(object):
         self.fs_type = lvm_conf.get('filesystem', 'ext4')
         self.root_path = os.path.realpath(self.buildroot.make_chroot_path())
         if not self.vg_name:
-            raise RuntimeError("Volume group must be specified")
+            raise LvmError("Volume group must be specified")
 
         self.snap_info = os.path.normpath(os.path.join(buildroot.basedir, '..',
                                      '.snapinfo-' + self.pool_name))
@@ -68,6 +69,9 @@ class LvmPlugin(object):
 
     def prefix_name(self, name):
         return self.pool_name + '-' + name
+
+    def remove_prefix(self, name):
+        return name.replace(self.prefix_name(''), '')
 
     def get_lv_path(self, lv_name=None):
         name = lv_name or self.lv_name
@@ -108,7 +112,7 @@ class LvmPlugin(object):
 
     def set_current_snapshot(self, name):
         if not self.lv_is_our(name):
-            raise RuntimeError("Snapshot {0} doesn't exist".format(name))
+            raise LvmError("Snapshot {0} doesn't exist".format(self.remove_prefix(name)))
         with open(self.snap_info, 'w') as ac_record:
             ac_record.write(name)
 
@@ -122,6 +126,9 @@ class LvmPlugin(object):
             return lv.getOrigin()
 
     def make_snapshot(self, name):
+        if self.lv_exists(name):
+            raise LvmError("Snapshot {name} already exists"\
+                           .format(name=self.remove_prefix(name)))
         lvcreate = ['lvcreate', '-s', self.vg_name + '/' + self.lv_name, '-n', name]
         lvm_do(lvcreate)
         self.set_current_snapshot(name)
@@ -138,6 +145,8 @@ class LvmPlugin(object):
                         '-a', 'y', '-k', 'n', '-K']
             lvm_do(lvchange)
             self.make_snapshot(snapshot_name)
+            self.buildroot.root_log.info("rolled back to {name} snapshot"\
+                                         .format(name=self.remove_prefix(snapshot_name)))
         else:
             if self.lv_exists(self.pool_name):
                 # There's no snapshot at all but pool exists, that means init
@@ -146,8 +155,9 @@ class LvmPlugin(object):
                 self.create_base()
 
     def hook_make_snapshot(self, name):
-        name = self.prefix_name(name)
-        self.make_snapshot(name)
+        lv_name = self.prefix_name(name)
+        self.make_snapshot(lv_name)
+        self.buildroot.root_log.info("created {name} snapshot".format(name=name))
 
     def hook_postclean(self):
         self.rollback()
@@ -169,6 +179,8 @@ class LvmPlugin(object):
         mkfs = self.lvm_conf.get('mkfs_command', 'mkfs.' + self.fs_type)
         mkfs_args = self.lvm_conf.get('mkfs_args', [])
         util.do([mkfs, self.get_lv_path()] + mkfs_args)
+        self.buildroot.root_log.info("created LVM cache thinpool of size {size}"\
+                                     .format(size=size))
 
     def force_umount_root(self):
         self.buildroot.root_log.warning("Forcibly unmounting root volume")
@@ -211,6 +223,8 @@ class LvmPlugin(object):
             snapshot_name = self.prefix_name(self.postinit_name)
             self.make_snapshot(snapshot_name)
             self.set_current_snapshot(snapshot_name)
+            self.buildroot.root_log.info("created {name} snapshot"\
+                    .format(name=self.postinit_name))
 
     def hook_scrub(self, what):
         with volume_group(self.vg_name) as vg:
@@ -224,6 +238,7 @@ class LvmPlugin(object):
         if what in ('lvm', 'all'):
             self.unset_current_snapshot()
             lvm_do(['lvremove', '-f', self.vg_name + '/' + self.pool_name])
+            self.buildroot.root_log.info("deleted LVM cache thinpool")
 
     def hook_list_snapshots(self):
         with volume_group(self.vg_name) as vg:
@@ -234,24 +249,25 @@ class LvmPlugin(object):
                 if self._open_lv_is_our(lv):
                     name = lv.getName()
                     if name == current:
-                        print('* ' + name.replace(self.prefix_name(''), ''))
+                        print('* ' + self.remove_prefix(name))
                     elif name == self.lv_name:
                         pass
                     else:
-                        print('  ' + name.replace(self.prefix_name(''), ''))
+                        print('  ' + self.remove_prefix(name))
 
     def hook_remove_snapshot(self, name):
         if name == self.postinit_name:
-            raise RuntimeError(dedent("""\
+            raise LvmError(dedent("""\
                     Won't remove postinit snapshot. To remove all logical
                     volumes associated with this buildroot, use --scrub lvm"""))
-        name = self.prefix_name(name)
-        if not self.lv_is_our(name):
-            raise RuntimeError("Snapshot {0} doesn't exist".format(name))
+        lv_name = self.prefix_name(name)
+        if not self.lv_is_our(lv_name):
+            raise LvmError("Snapshot {0} doesn't exist".format(name))
         self.umount()
-        if name == self.get_current_snapshot():
+        if lv_name == self.get_current_snapshot():
             self.set_current_snapshot(self.prefix_name(self.postinit_name))
-        lvm_do(['lvremove', '-f', self.vg_name + '/' + name])
+        lvm_do(['lvremove', '-f', self.vg_name + '/' + lv_name])
+        self.buildroot.root_log.info("deleted {name} snapshot".format(name=name))
 
 def init(plugins, lvm_conf, buildroot):
     LvmPlugin(plugins, lvm_conf, buildroot)

@@ -32,6 +32,7 @@ class Error(Exception):
 # 6 = invalid architecture
 # 10 = problem building the package
 # 20 = error in the chroot of some kind
+# 25 = LVM manipulation error
 # 30 = Yum emitted an error of some sort
 # 40 = some error in the pkg we're building
 # 50 = tried to fork a subcommand and it errored out
@@ -55,6 +56,13 @@ class RootError(Error):
         Error.__init__(self, msg)
         self.msg = msg
         self.resultcode = 20
+
+class LvmError(Error):
+    "LVM manipulation failed."
+    def __init__(self, msg):
+        Error.__init__(self, msg)
+        self.msg = msg
+        self.resultcode = 25
 
 class YumError(RootError):
     "yum failed."
