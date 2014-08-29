@@ -156,7 +156,7 @@ class LvmPlugin(object):
         self.delete_head()
 
     def create_base(self):
-        size = self.lvm_conf.get('size', '2G')
+        size = self.lvm_conf['size']
         pool_id = self.vg_name + '/' + self.pool_name
         create_pool = ['lvcreate', '-T', pool_id, '-L', str(size)]
         if 'poolmetadatasize' in self.lvm_conf:
