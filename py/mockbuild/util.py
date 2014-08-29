@@ -15,6 +15,7 @@ import pickle
 import rpm
 import select
 import shutil
+import signal
 import subprocess
 import sys
 import time
@@ -132,9 +133,8 @@ def rmtree(path, *args, **kargs):
             else:
                 raise
 
-from signal import SIGTERM
 @traceLog()
-def orphansKill(rootToKill, killsig=SIGTERM):
+def orphansKill(rootToKill, killsig=signal.SIGTERM):
     """kill off anything that is still chrooted."""
     getLog().debug("kill orphans")
     for fn in [ d for d in os.listdir("/proc") if d.isdigit() ]:
@@ -460,6 +460,10 @@ class ChildPreExec(object):
         condChroot(self.chrootPath)
         condDropPrivs(self.uid, self.gid)
         condChdir(self.cwd)
+        reset_sigpipe()
+
+def reset_sigpipe():
+    signal.signal(signal.SIGPIPE, signal.SIG_DFL)
 
 def is_in_dir(path, directory):
     """Tests whether `path` is inside `directory`."""
