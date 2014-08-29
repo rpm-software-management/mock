@@ -100,6 +100,11 @@ class LvmPlugin(object):
                 name = ac_record.read().rstrip()
             if self.lv_is_our(name):
                 return name
+        postinit = self.prefix_name(self.postinit_name)
+        if self.lv_is_our(postinit):
+            # We don't have a registered snapshot, but postinit exists, so use it
+            self.set_current_snapshot(postinit)
+            return postinit
 
     def set_current_snapshot(self, name):
         if not self.lv_is_our(name):
@@ -133,6 +138,12 @@ class LvmPlugin(object):
                         '-a', 'y', '-k', 'n', '-K']
             lvm_do(lvchange)
             self.make_snapshot(snapshot_name)
+        else:
+            if self.lv_exists(self.pool_name):
+                # There's no snapshot at all but pool exists, that means init
+                # failed. Let's start over
+                lvm_do(['lvremove', '-f', self.vg_name + '/' + self.pool_name])
+                self.create_base()
 
     def hook_make_snapshot(self, name):
         name = self.prefix_name(name)
