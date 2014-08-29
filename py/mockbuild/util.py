@@ -695,6 +695,7 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
     config_opts['rhnplugin.conf'] = '\n[main]\nenabled=0'
     config_opts['subscription-manager.conf'] = ''
     config_opts['more_buildreqs'] = {}
+    config_opts['nosync'] = False
     config_opts['files'] = {}
     config_opts['macros'] = {
         '%_topdir': '%s/build' % config_opts['chroothome'],

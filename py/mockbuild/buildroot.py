@@ -117,6 +117,7 @@ class Buildroot(object):
         self._setup_dirs()
         self._setup_devices()
         self._setup_files()
+        self._setup_nosync()
         self.mounts.mountall()
         self._resetLogging()
 
@@ -413,6 +414,41 @@ class Buildroot(object):
         for item in [self.make_chroot_path('etc', 'fstab'),
                      self.make_chroot_path('var', 'log', 'yum.log')]:
             util.touch(item)
+
+    @traceLog()
+    def _setup_nosync(self):
+        multilib = ('x86_64', 's390x')
+        tmp_libdir = '/tmp/mock/{0}/$LIB'.format(self.root_name)
+        mock_libdir = self.make_chroot_path(tmp_libdir)
+        nosync_unresolved = '/usr/$LIB/nosync/nosync.so'
+        def copy_nosync(lib64=False):
+            def resolve(path):
+                return path.replace('$LIB', 'lib64' if lib64 else 'lib')
+            nosync = resolve(nosync_unresolved)
+            if not os.path.exists(nosync):
+                return False
+            for dst_unresolved in (tmp_libdir, mock_libdir):
+                dst = resolve(dst_unresolved)
+                util.mkdirIfAbsent(dst)
+                shutil.copy2(nosync, dst)
+            return True
+
+        if self.config['nosync']:
+            target_arch = self.config['target_arch']
+            copied_lib64 = False
+            copied_lib = copy_nosync()
+            if target_arch in multilib:
+                copied_lib64 = copy_nosync(lib64=True)
+                if copied_lib != copied_lib64:
+                    self.root_log.warn("For multilib systems, both architectures "
+                                       "of nosync library need to be installed")
+                    return
+            if not copied_lib and not copied_lib64:
+                self.root_log.warn("nosync is enabled but the library wasn't "
+                                   "found on the system")
+            else:
+                self.env['LD_PRELOAD'] = os.path.join(tmp_libdir, 'nosync.so')
+
 
     @traceLog()
     def finalize(self):
