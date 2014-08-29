@@ -9,12 +9,27 @@ from mockbuild import util, mounts
 requires_api_version = "1.0"
 
 @contextmanager
-def volume_group(name, mode='r'):
+def restored_ipc_ns():
+    mock_ns = os.open('/proc/self/ns/ipc', os.O_RDONLY)
+    util.restore_ipc_ns()
     try:
-        vg = lvm.vgOpen(name, mode)
-        yield vg
+        yield
     finally:
-        vg.close()
+        util.setns(mock_ns, util.CLONE_NEWIPC)
+        os.close(mock_ns)
+
+@contextmanager
+def volume_group(name, mode='r'):
+    with restored_ipc_ns():
+        try:
+            vg = lvm.vgOpen(name, mode)
+            yield vg
+        finally:
+            vg.close()
+
+def lvm_do(*args, **kwargs):
+    with restored_ipc_ns():
+        util.do(*args, printOutput=True, **kwargs)
 
 def current_mounts():
     with open("/proc/mounts") as proc_mounts:
@@ -27,6 +42,9 @@ class LvmPlugin(object):
     postinit_name = 'postinit'
 
     def __init__(self, plugins, lvm_conf, buildroot):
+        if not util.original_ipc_ns or not util.have_setns:
+            raise RuntimeError("Cannot initialize setns support, which is "
+                               "needed by LVM plugin")
         self.buildroot = buildroot
         self.lvm_conf = lvm_conf
         self.vg_name = lvm_conf.get('volume_group')
@@ -100,7 +118,7 @@ class LvmPlugin(object):
 
     def make_snapshot(self, name):
         lvcreate = ['lvcreate', '-s', self.vg_name + '/' + self.lv_name, '-n', name]
-        util.do(lvcreate, printOutput=True)
+        lvm_do(lvcreate)
         self.set_current_snapshot(name)
 
     def rollback(self):
@@ -108,12 +126,12 @@ class LvmPlugin(object):
         snapshot_name = self.get_current_snapshot()
         if snapshot_name:
             lvremove = ['lvremove', '-f', self.vg_name + '/' + self.lv_name]
-            util.do(lvremove, printOutput=True)
+            lvm_do(lvremove)
             lvrename = ['lvrename', self.vg_name, snapshot_name, self.lv_name]
-            util.do(lvrename, printOutput=True)
+            lvm_do(lvrename)
             lvchange = ['lvchange', self.vg_name + '/' + self.lv_name,
                         '-a', 'y', '-k', 'n', '-K']
-            util.do(lvchange, printOutput=True)
+            lvm_do(lvchange)
             self.make_snapshot(snapshot_name)
 
     def hook_make_snapshot(self, name):
@@ -134,9 +152,9 @@ class LvmPlugin(object):
         create_pool = ['lvcreate', '-T', pool_id, '-L', str(size)]
         if 'poolmetadatasize' in self.lvm_conf:
             create_pool += ['--poolmetadatasize', self.lvm_conf['poolmetadatasize']]
-        util.do(create_pool, printOutput=True)
+        lvm_do(create_pool)
         create_lv = ['lvcreate', '-T', pool_id, '-V', str(size), '-n', self.lv_name]
-        util.do(create_lv, printOutput=True)
+        lvm_do(create_lv)
         mkfs = self.lvm_conf.get('mkfs_command', 'mkfs.' + self.fs_type)
         mkfs_args = self.lvm_conf.get('mkfs_args', [])
         util.do([mkfs, self.get_lv_path()] + mkfs_args)
@@ -194,8 +212,7 @@ class LvmPlugin(object):
                 pass
         if what in ('lvm', 'all'):
             self.unset_current_snapshot()
-            util.do(['lvremove', '-f', self.vg_name + '/' + self.pool_name],
-                    printOutput=True)
+            lvm_do(['lvremove', '-f', self.vg_name + '/' + self.pool_name])
 
     def hook_list_snapshots(self):
         with volume_group(self.vg_name) as vg:
@@ -223,8 +240,7 @@ class LvmPlugin(object):
         self.umount()
         if name == self.get_current_snapshot():
             self.set_current_snapshot(self.prefix_name(self.postinit_name))
-        util.do(['lvremove', '-f', self.vg_name + '/' + name],
-                printOutput=True)
+        lvm_do(['lvremove', '-f', self.vg_name + '/' + name])
 
 def init(plugins, lvm_conf, buildroot):
     LvmPlugin(plugins, lvm_conf, buildroot)

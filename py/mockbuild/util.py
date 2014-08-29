@@ -39,6 +39,13 @@ _libc.personality.argtypes = [ctypes.c_ulong]
 _libc.personality.restype = ctypes.c_int
 _libc.unshare.argtypes = [ctypes.c_int,]
 _libc.unshare.restype = ctypes.c_int
+try:
+    _libc.setns.argtypes = [ctypes.c_int, ctypes.c_int]
+    _libc.setns.restype = ctypes.c_int
+    have_setns = True
+except AttributeError:
+    have_setns = False
+
 # See linux/include/sched.h
 CLONE_NEWNS = 0x00020000
 CLONE_NEWUTS = 0x04000000
@@ -60,6 +67,12 @@ personality_defs = {
 PLUGIN_LIST = ['tmpfs', 'root_cache', 'yum_cache', 'bind_mount',
                'ccache', 'selinux', 'package_state', 'chroot_scan',
                'lvm_root']
+
+# this is executed before namespace unsharing to get fd representing previous ns
+try:
+    original_ipc_ns = os.open('/proc/self/ns/ipc', os.O_RDONLY)
+except OSError:
+    original_ipc_ns = None
 
 # classes
 class commandTimeoutExpired(mockbuild.exception.Error):
@@ -232,6 +245,14 @@ def unshare(flags):
             raise mockbuild.exception.UnshareFailed(os.strerror(ctypes.get_errno()))
     except AttributeError as e:
         pass
+
+@traceLog()
+def setns(fd, flags):
+    if have_setns:
+        getLog().debug("Setting namespace to fd %d. Flags: %s" % (fd, flags))
+        res = _libc.setns(fd, flags)
+        if res:
+            raise mockbuild.exception.SetnsFailed(os.strerror(ctypes.get_errno()))
 
 # these are called in child process, so no logging
 def condChroot(chrootPath):
@@ -461,6 +482,9 @@ class ChildPreExec(object):
         condDropPrivs(self.uid, self.gid)
         condChdir(self.cwd)
         reset_sigpipe()
+
+def restore_ipc_ns():
+    setns(original_ipc_ns, CLONE_NEWIPC)
 
 def reset_sigpipe():
     signal.signal(signal.SIGPIPE, signal.SIG_DFL)

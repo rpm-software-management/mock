@@ -38,6 +38,7 @@ class Error(Exception):
 # 60 = buildroot locked
 # 70 = result dir could not be created
 # 80 = unshare of namespace failed
+# 85 = setting namespace failed
 # 90 = attempted to use an uninitialized chroot
 # 100 = attempt to run a root shell and root shells disallowed
 
@@ -109,6 +110,14 @@ class UnshareFailed(Error):
         Error.__init__(self, msg)
         self.msg = msg
         self.resultcode = 80
+
+class SetnsFailed(Error):
+    "call to C library setns(2) syscall failed"
+
+    def __init__(self, msg):
+        Error.__init__(self, msg)
+        self.msg = msg
+        self.resultcode = 85
 
 class ChrootNotInitialized(Error):
     "attempt to use uninitialized chroot"
