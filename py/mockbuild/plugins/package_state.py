@@ -21,7 +21,7 @@ repoquery_avail_opts = "-a --qf '%{nevra} %{buildtime} %{size} %{pkgid} %{repoid
 repoquery_install_opts = "--installed -a --qf '%{nevra} %{buildtime} %{size} %{pkgid} %{yumdb_info.from_repo}'"
 
 # set up logging, module options
-requires_api_version = "1.0"
+requires_api_version = "1.1"
 
 # plugin entry point
 @traceLog()

@@ -15,7 +15,7 @@ import mockbuild.util
 from mockbuild.mounts import BindMountPoint
 
 # set up logging, module options
-requires_api_version = "1.0"
+requires_api_version = "1.1"
 
 # plugin entry point
 @traceLog()

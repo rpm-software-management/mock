@@ -15,7 +15,7 @@ from mockbuild.trace_decorator import traceLog, getLog
 import mockbuild.util
 from mockbuild.mounts import BindMountPoint
 
-requires_api_version = "1.0"
+requires_api_version = "1.1"
 
 # plugin entry point
 @traceLog()

@@ -10,7 +10,7 @@ from textwrap import dedent
 from mockbuild import util, mounts
 from mockbuild.exception import LvmError, LvmLocked
 
-requires_api_version = "1.0"
+requires_api_version = "1.1"
 
 @contextmanager
 def restored_ipc_ns():

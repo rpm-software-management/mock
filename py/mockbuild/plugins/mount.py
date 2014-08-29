@@ -22,7 +22,7 @@ import mockbuild.util
 from mockbuild.trace_decorator import traceLog
 from mockbuild.mounts import FileSystemMountPoint
 
-requires_api_version = "1.0"
+requires_api_version = "1.1"
 
 
 # plugin entry point

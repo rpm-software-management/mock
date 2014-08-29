@@ -3,6 +3,8 @@ import imp
 from mockbuild.exception import Error
 from mockbuild.trace_decorator import traceLog
 
+current_api_version = '1.1'
+
 class Plugins(object):
     @traceLog()
     def __init__(self, config, state):
@@ -42,6 +44,10 @@ class Plugins(object):
 
                 if not hasattr(module, 'requires_api_version'):
                     raise Error('Plugin "%s" doesn\'t specify required API version' % plugin)
+                requested_api_version = module.requires_api_version
+                if requested_api_version != current_api_version:
+                    raise Error('Plugin version mismatch - requested = %s, current = %s'
+                                % (requested_api_version, current_api_version))
 
                 module.init(self, self.plugin_conf["{0}_opts".format(plugin)], buildroot)
         self.state.finish("init plugins")
