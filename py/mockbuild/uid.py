@@ -10,6 +10,8 @@ import ctypes
 # our imports
 from mockbuild.trace_decorator import traceLog
 
+_libc = ctypes.CDLL(None, use_errno=True)
+
 # class
 class UidManager(object):
     @traceLog()
@@ -76,11 +78,6 @@ class UidManager(object):
         if gid is None:
             gid = self.unprivGid
         os.chown(path, uid, gid)
-
-# python doesn't have native versions of these. :(
-
-import ctypes
-_libc = ctypes.cdll.LoadLibrary(None)
 
 def getresuid():
     ruid = ctypes.c_long()
