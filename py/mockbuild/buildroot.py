@@ -437,9 +437,10 @@ class Buildroot(object):
             target_arch = self.config['target_arch']
             copied_lib64 = False
             copied_lib = copy_nosync()
+            force = self.config['nosync_force']
             if target_arch in multilib:
                 copied_lib64 = copy_nosync(lib64=True)
-                if copied_lib != copied_lib64:
+                if not force and copied_lib != copied_lib64:
                     self.root_log.warn("For multilib systems, both architectures "
                                        "of nosync library need to be installed")
                     return
