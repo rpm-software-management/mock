@@ -37,6 +37,7 @@ class Error(Exception):
 # 40 = some error in the pkg we're building
 # 50 = tried to fork a subcommand and it errored out
 # 60 = buildroot locked
+# 65 = LVM thinpool locked
 # 70 = result dir could not be created
 # 80 = unshare of namespace failed
 # 85 = setting namespace failed
@@ -84,6 +85,13 @@ class BuildRootLocked(Error):
         Error.__init__(self, msg)
         self.msg = msg
         self.resultcode = 60
+
+class LvmLocked(Error):
+    "LVM thinpool is locked."
+    def __init__(self, msg):
+        Error.__init__(self, msg)
+        self.msg = msg
+        self.resultcode = 65
 
 class BadCmdline(Error):
     "user gave bad/inconsistent command line."

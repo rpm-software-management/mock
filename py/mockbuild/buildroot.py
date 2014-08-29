@@ -24,6 +24,8 @@ class Buildroot(object):
         self.shared_root_name = config['root']
         if 'unique-ext' in config:
             config['root'] = "%s-%s" % (config['root'], config['unique-ext'])
+        self.root_name = config['root']
+        self.mockdir = config['basedir']
         self.basedir = os.path.join(config['basedir'], config['root'])
         self.rootdir = os.path.join(self.basedir, 'root')
         self.resultdir = config['resultdir'] % config
