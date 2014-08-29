@@ -40,13 +40,10 @@ class Tmpfs(object):
         self.optArgs = ['-o', 'mode=%s' % self.mode]
         if self.maxSize:
             self.optArgs += ['-o', 'size=' + self.maxSize]
-        plugins.add_hook("preinit", self._tmpfsMount)
-        plugins.add_hook("preshell", self._tmpfsMount)
-        plugins.add_hook("prechroot", self._tmpfsMount)
-        plugins.add_hook("postshell", self._tmpfsUmount)
-        plugins.add_hook("postbuild", self._tmpfsUmount)
-        plugins.add_hook("postchroot", self._tmpfsUmount)
-        plugins.add_hook("initfailed", self._tmpfsUmount)
+        plugins.add_hook("mount_root", self._tmpfsMount)
+        plugins.add_hook("postumount", self._tmpfsUmount)
+        plugins.add_hook("umount_root", self._tmpfsUmount)
+        self.mounted = False
         getLog().info("tmpfs initialized")
 
     @traceLog()
@@ -55,9 +52,12 @@ class Tmpfs(object):
         mountCmd = ["mount", "-n", "-t", "tmpfs"] + self.optArgs + \
                    ["mock_chroot_tmpfs", self.buildroot.make_chroot_path()]
         mockbuild.util.do(mountCmd, shell=False)
+        self.mounted = True
 
     @traceLog()
     def _tmpfsUmount(self):
+        if not self.mounted:
+            return
         force = False
         getLog().info("unmounting tmpfs.")
         umountCmd = ["umount", "-n", self.buildroot.make_chroot_path()]
@@ -76,3 +76,4 @@ class Tmpfs(object):
                 mockbuild.util.do(umountCmd, shell=False)
             except:
                 getLog().warning("tmpfs-plugin: exception while force umounting tmpfs! (cwd: %s)" % os.getcwd())
+        self.mounted = False
