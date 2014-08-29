@@ -553,7 +553,7 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
     config_opts['cleanup_on_failure'] = True
 
     config_opts['createrepo_on_rpms'] = False
-    config_opts['createrepo_command'] = '/usr/bin/createrepo -d -q -x *.src.rpm' # default command
+    config_opts['createrepo_command'] = '/usr/bin/createrepo_c -d -q -x *.src.rpm' # default command
 
     config_opts['backup_on_clean'] = False
     config_opts['backup_base_dir'] = os.path.join(config_opts['basedir'], "backup")
