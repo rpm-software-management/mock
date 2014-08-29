@@ -29,8 +29,6 @@ class BindMount(object):
         self.state = buildroot.state
         self.bind_opts = conf
         plugins.add_hook("preinit", self._bindMountPreInitHook)
-        plugins.add_hook("preshell", self._bindMountPreInitHook)
-        plugins.add_hook("prechroot", self._bindMountPreInitHook)
         for srcdir, destdir in self.bind_opts['dirs']:
             buildroot.mounts.add(BindMountPoint(srcpath=srcdir, bindpath=buildroot.make_chroot_path(destdir)))
 

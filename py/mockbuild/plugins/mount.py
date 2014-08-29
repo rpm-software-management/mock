@@ -40,8 +40,6 @@ class Mount(object):
         self.state = buildroot.state
         self.opts = conf
         plugins.add_hook("preinit", self._mountPreInitHook)
-        plugins.add_hook("preshell", self._mountPreInitHook)
-        plugins.add_hook("prechroot", self._mountPreInitHook)
         for device, dest_dir, vfstype, mount_opts in self.opts['dirs']:
             builroot.mounts.add(FileSystemMountPoint(buildroot.make_chroot_path(dest_dir),
                                                     filetype=vfstype,
