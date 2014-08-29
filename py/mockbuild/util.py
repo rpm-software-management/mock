@@ -21,6 +21,7 @@ import sys
 import time
 import errno
 import grp
+import locale
 from glob import glob
 from ast import literal_eval
 
@@ -329,7 +330,8 @@ def logOutput(fds, logger, returnOutput=1, start=0, timeout=0, printOutput=False
 
         for s in i_rdy:
             # slurp as much input as is ready
-            input = s.read().decode()
+            input = s.read().decode(encoding=locale.getpreferredencoding(False),
+                                    errors='replace')
             if input == "":
                 done = 1
                 break
