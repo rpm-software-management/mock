@@ -172,7 +172,8 @@ class Commands(object):
         self.buildroot.root_log.info("Installed packages:")
         self.buildroot._nuke_rpm_db()
         util.do(
-            "rpm --root %s -qa" % self.buildroot.make_chroot_path(),
+            "%s --root %s -qa" % (self.config['rpm_command'],
+                                  self.buildroot.make_chroot_path()),
             raiseExc=False,
             shell=True,
             env=self.buildroot.env,
@@ -368,7 +369,7 @@ class Commands(object):
 
     @traceLog()
     def get_specfile_name(self, srpm_path):
-        files = self.buildroot.doChroot(["rpm", "-qpl", srpm_path],
+        files = self.buildroot.doChroot([self.config['rpm_command'], "-qpl", srpm_path],
                     shell=False, uid=self.buildroot.chrootuid, gid=self.buildroot.chrootgid,
                     returnOutput=True)
         specs = [item for item in files.split('\n') if item.endswith('.spec')]
@@ -380,14 +381,15 @@ class Commands(object):
 
     @traceLog()
     def install_srpm(self, srpm_path):
-        self.buildroot.doChroot(["rpm", "-Uvh", "--nodeps", srpm_path],
+        self.buildroot.doChroot([self.config['rpm_command'], "-Uvh", "--nodeps", srpm_path],
             shell=False, uid=self.buildroot.chrootuid, gid=self.buildroot.chrootgid)
 
     @traceLog()
     def rebuild_installed_srpm(self, spec_path, timeout):
         self.buildroot.doChroot(["bash", "--login", "-c",
-                             'rpmbuild -bs --target {0} --nodeps {1}'\
-                              .format(self.rpmbuild_arch, spec_path)],
+                                 '{command} -bs --target {0} --nodeps {1}'\
+                                 .format(self.rpmbuild_arch, spec_path,
+                                      command=self.config['rpmbuild_command'])],
                 shell=False, logger=self.buildroot.build_log, timeout=timeout,
                 uid=self.buildroot.chrootuid, gid=self.buildroot.chrootgid,
                 printOutput=True)
@@ -414,10 +416,11 @@ class Commands(object):
                     'binary': '-bb'}[sc]
             mode += ' --short-circuit'
         additional_opts = self.config.get('rpmbuild_opts', '')
-        rpmbuild_cmd = 'rpmbuild {mode} --target {0} --nodeps {1} {2} {3}'\
+        rpmbuild_cmd = '{command} {mode} --target {0} --nodeps {1} {2} {3}'\
                               .format(self.rpmbuild_arch, check_opt, spec_path,
-                                      additional_opts, mode=mode)
-        out = self.buildroot.doChroot(["bash", "--login", "-c", rpmbuild_cmd],
+                                      additional_opts, mode=mode,
+                                      command=self.config['rpmbuild_command'])
+        self.buildroot.doChroot(["bash", "--login", "-c", rpmbuild_cmd],
             shell=False, logger=self.buildroot.build_log, timeout=timeout,
             uid=self.buildroot.chrootuid, gid=self.buildroot.chrootgid,
             printOutput=True)

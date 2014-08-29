@@ -673,6 +673,10 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
     config_opts['no_root_shells'] = False
     config_opts['extra_chroot_dirs'] = []
 
+    # configurable commands executables
+    config_opts['rpm_command'] = '/usr/bin/rpm'
+    config_opts['rpmbuild_command'] = '/usr/bin/rpmbuild'
+
     return config_opts
 
 @traceLog()
