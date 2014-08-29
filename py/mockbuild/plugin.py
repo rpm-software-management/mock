@@ -28,7 +28,13 @@ class Plugins(object):
         # features later when we prove we need them.
         for plugin in self.plugins:
             if self.plugin_conf.get("{0}_enable".format(plugin)):
-                fp, pathname, description = imp.find_module(plugin, [self.plugin_dir])
+                try:
+                    fp, pathname, description = imp.find_module(plugin, [self.plugin_dir])
+                except ImportError:
+                    buildroot.root_log.warn(
+                            "{0} plugin is enabled in configuration but is not installed"\
+                            .format(plugin))
+                    continue
                 try:
                     module = imp.load_module(plugin, fp, pathname, description)
                 finally:

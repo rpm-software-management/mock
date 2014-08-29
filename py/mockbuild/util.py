@@ -57,7 +57,8 @@ personality_defs = {
 }
 
 PLUGIN_LIST = ['tmpfs', 'root_cache', 'yum_cache', 'bind_mount',
-               'ccache', 'selinux', 'package_state', 'chroot_scan']
+               'ccache', 'selinux', 'package_state', 'chroot_scan',
+               'lvm_root']
 
 # classes
 class commandTimeoutExpired(mockbuild.exception.Error):
