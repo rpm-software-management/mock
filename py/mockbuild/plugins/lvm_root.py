@@ -296,19 +296,26 @@ class LvmPlugin(object):
         self.pool_lock.lock(exclusive=True)
         if what not in ('lvm', 'all'):
             return
-        with volume_group(self.vg_name) as vg:
-            try:
-                lvs = vg.listLVs()
-                for lv in lvs:
-                    if self._open_lv_is_our(lv):
+        with volume_group(self.vg_name, mode='w+') as vg:
+            lvs = vg.listLVs()
+            for lv in lvs:
+                if self._open_lv_is_our(lv):
+                    try:
                         for src, _ in current_mounts():
                             if src == os.path.realpath(lv.getProperty('lv_path')[0]):
                                 util.do(['umount', '-l', src])
-            except lvm.LibLVMError:
-                pass
+                    except lvm.LibLVMError:
+                        pass
+                    self.buildroot.root_log.info(
+                            "removing {0} volume".format(lv.getName()))
+                    lv.remove()
+            remaining = [lv for lv in vg.listLVs() if lv.getAttr()[0] == 'V' and
+                         lv.getProperty('pool_lv')[0] == self.pool_name]
+            if not remaining:
+                pool = vg.lvFromName(self.pool_name)
+                pool.remove()
+                self.buildroot.root_log.info("deleted LVM cache thinpool")
         self.unset_current_snapshot()
-        lvm_do(['lvremove', '-f', self.vg_name + '/' + self.pool_name])
-        self.buildroot.root_log.info("deleted LVM cache thinpool")
 
     def hook_list_snapshots(self):
         with volume_group(self.vg_name) as vg:
