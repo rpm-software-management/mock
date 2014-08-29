@@ -525,8 +525,8 @@ def groupcheck(unprivGid, tgtGid):
 @traceLog()
 def unshare_namespace():
     base_unshare_flags = util.CLONE_NEWNS
-    extended_unshare_flags = base_unshare_flags #| util.CLONE_NEWIPC \
-                             #| util.CLONE_NEWUTS
+    extended_unshare_flags = base_unshare_flags | util.CLONE_NEWIPC \
+                             | util.CLONE_NEWUTS
     try:
         util.unshare(extended_unshare_flags)
     except mockbuild.exception.UnshareFailed as e:
