@@ -330,8 +330,7 @@ def logOutput(fds, logger, returnOutput=1, start=0, timeout=0, printOutput=False
 
         for s in i_rdy:
             # slurp as much input as is ready
-            input = s.read().decode(encoding=locale.getpreferredencoding(False),
-                                    errors='replace')
+            input = s.read().decode(locale.getpreferredencoding(False), 'replace')
             if input == "":
                 done = 1
                 break
