@@ -48,7 +48,13 @@ class Plugins(object):
 
     @traceLog()
     def call_hooks(self, stage, *args, **kwargs):
+        required = kwargs.get('required', False)
+        if 'required' in kwargs:
+            del kwargs['required']
         hooks = self._hooks.get(stage, [])
+        if required and not hooks:
+            raise Error("Feature {0} is not provided by any of enabled plugins"\
+                        .format(stage))
         for hook in hooks:
             hook(*args, **kwargs)
 
