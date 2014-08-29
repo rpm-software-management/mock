@@ -146,19 +146,18 @@ class Buildroot(object):
                                  env=self.env, shell=shell, *args, **kargs)
 
     @traceLog()
+    def _copy_config(self, filename):
+        etcdir = self.make_chroot_path('etc')
+        conf_file = os.path.join(etcdir, filename)
+        if os.path.exists(conf_file):
+            os.remove(conf_file)
+        shutil.copy2(os.path.join('/etc', filename), etcdir)
+
+    @traceLog()
     def _setup_resolver_config(self):
         if self.config['use_host_resolv']:
-            etcdir = self.make_chroot_path('etc')
-
-            resolvconfpath = self.make_chroot_path('etc', 'resolv.conf')
-            if os.path.exists(resolvconfpath):
-                os.remove(resolvconfpath)
-            shutil.copy2('/etc/resolv.conf', etcdir)
-
-            hostspath = self.make_chroot_path('etc', 'hosts')
-            if os.path.exists(hostspath):
-                os.remove(hostspath)
-            shutil.copy2('/etc/hosts', etcdir)
+            self._copy_config('resolv.conf')
+            self._copy_config('hosts')
 
     @traceLog()
     def _setup_dbus_uuid(self):
@@ -174,11 +173,7 @@ class Buildroot(object):
 
     @traceLog()
     def _setup_timezone(self):
-        localtimedir = self.make_chroot_path('etc')
-        localtimepath = self.make_chroot_path('etc', 'localtime')
-        if os.path.exists(localtimepath):
-            os.remove(localtimepath)
-        shutil.copy2('/etc/localtime', localtimedir)
+        self._copy_config('localtime')
 
     @traceLog()
     def _init_pkg_management(self):
