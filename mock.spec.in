@@ -48,6 +48,21 @@ Requires: tar
 %description scm
 Mock SCM integration module.
 
+%if 0%{?rhel} != 6
+# lvm plugin requires lvm2-python-libs, kernel >= 3.0 and glibc >= 2.14, which
+# are not available on el6
+%package lvm
+Summary: LVM plugin for mock
+Requires: %{name} = %{version}-%{release}
+Requires: lvm2
+Requires: lvm2-python-libs
+Requires: glibc >= 2.14
+
+%description lvm
+Mock plugin that enables using LVM as a backend and support creating snapshots
+of the buildroot.
+%endif
+
 %prep
 %setup -q
 
@@ -134,6 +149,7 @@ fi
 # python stuff
 %{python_sitelib}/*
 %exclude %{python_sitelib}/mockbuild/scm.*
+%exclude %{python_sitelib}/mockbuild/plugins/lvm_root.*
 
 # config files
 %dir  %{_sysconfdir}/%{name}
@@ -158,6 +174,11 @@ fi
 
 %files scm
 %{python_sitelib}/mockbuild/scm.py*
+
+%if 0%{?rhel} != 6
+%files lvm
+%{python_sitelib}/mockbuild/plugins/lvm_root.*
+%endif
 
 %changelog
 * Fri Jul 18 2014 Clark Williams <williams@redhat.com> - 1.1.41-1
