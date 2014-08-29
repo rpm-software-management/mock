@@ -4,6 +4,7 @@
 # Sections by Seth Vidal
 # Sections taken from Mach by Thomas Vander Stichele
 # Copyright (C) 2007 Michael E Brown <mebrown@michaels-house.net>
+from __future__ import print_function
 
 # python library imports
 import ctypes
@@ -26,8 +27,13 @@ from ast import literal_eval
 
 # our imports
 import mockbuild.exception
-from mockbuild.trace_decorator import traceLog, decorate, getLog
+from mockbuild.trace_decorator import traceLog, getLog
 import mockbuild.uid as uid
+
+try:
+    basestring = basestring
+except NameError:
+    basestring = str
 
 _libc = ctypes.cdll.LoadLibrary(None)
 _libc.personality.argtypes = [ctypes.c_ulong]
@@ -63,7 +69,7 @@ class commandTimeoutExpired(mockbuild.exception.Error):
         self.resultcode = 10
 
 # functions
-decorate(traceLog())
+@traceLog()
 def get_proxy_environment(config):
     env = {}
     for proto in ('http', 'https', 'ftp', 'no'):
@@ -73,7 +79,7 @@ def get_proxy_environment(config):
             env[key] = value
     return env
 
-decorate(traceLog())
+@traceLog()
 def mkdirIfAbsent(*args):
     for dirName in args:
         getLog().debug("ensuring that dir exists: %s" % dirName)
@@ -81,23 +87,23 @@ def mkdirIfAbsent(*args):
             try:
                 getLog().debug("creating dir: %s" % dirName)
                 os.makedirs(dirName)
-            except OSError, e:
+            except OSError as e:
                 if e.errno != errno.EEXIST:
                     getLog().exception("Could not create dir %s. Error: %s" % (dirName, e))
-                    raise mockbuild.exception.Error, "Could not create dir %s. Error: %s" % (dirName, e)
+                    raise mockbuild.exception.Error("Could not create dir %s. Error: %s" % (dirName, e))
 
-decorate(traceLog())
+@traceLog()
 def touch(fileName):
     getLog().debug("touching file: %s" % fileName)
     fo = open(fileName, 'w')
     fo.close()
 
-decorate(traceLog())
+@traceLog()
 def rmtree(path, *args, **kargs):
     """version os shutil.rmtree that ignores no-such-file-or-directory errors,
        and tries harder if it finds immutable files"""
     do_selinux_ops = False
-    if kargs.has_key('selinux'):
+    if 'selinux' in kargs:
         do_selinux_ops = kargs['selinux']
         del kargs['selinux']
     tryAgain = 1
@@ -108,7 +114,7 @@ def rmtree(path, *args, **kargs):
         tryAgain = 0
         try:
             shutil.rmtree(path, *args, **kargs)
-        except OSError, e:
+        except OSError as e:
             if e.errno == errno.ENOENT: # no such file or directory
                 pass
             elif do_selinux_ops and (e.errno==errno.EPERM or e.errno==errno.EACCES):
@@ -128,7 +134,7 @@ def rmtree(path, *args, **kargs):
                 raise
 
 from signal import SIGTERM
-decorate(traceLog())
+@traceLog()
 def orphansKill(rootToKill, killsig=SIGTERM):
     """kill off anything that is still chrooted."""
     getLog().debug("kill orphans")
@@ -140,18 +146,18 @@ def orphansKill(rootToKill, killsig=SIGTERM):
                 pid = int(fn, 10)
                 os.kill(pid, killsig)
                 os.waitpid(pid, 0)
-        except OSError, e:
+        except OSError as e:
             pass
 
 
-decorate(traceLog())
+@traceLog()
 def yieldSrpmHeaders(srpms, plainRpmOk=0):
     ts = rpmUtils.transaction.initReadOnlyTransaction()
     for srpm in srpms:
         try:
             hdr = rpmUtils.miscutils.hdrFromPackage(ts, srpm)
-        except (rpmUtils.RpmUtilsError,), e:
-            raise mockbuild.exception.Error, "Cannot find/open srpm: %s. Error: %s" % (srpm, ''.join(e))
+        except (rpmUtils.RpmUtilsError,) as e:
+            raise mockbuild.exception.Error("Cannot find/open srpm: %s. Error: %s" % (srpm, ''.join(e)))
 
         if not plainRpmOk and hdr[rpm.RPMTAG_SOURCEPACKAGE] != 1:
             raise mockbuild.exception.Error("File is not an srpm: %s." % srpm )
@@ -162,30 +168,32 @@ def checkSrpmHeaders(srpms, plainRpmOk=0):
     for dummy in yieldSrpmHeaders(srpms, plainRpmOk):
         pass
 
-decorate(traceLog())
+@traceLog()
 def getNEVRA(hdr):
     name = hdr[rpm.RPMTAG_NAME]
-    ver  = hdr[rpm.RPMTAG_VERSION]
-    rel  = hdr[rpm.RPMTAG_RELEASE]
+    ver = hdr[rpm.RPMTAG_VERSION]
+    rel = hdr[rpm.RPMTAG_RELEASE]
     epoch = hdr[rpm.RPMTAG_EPOCH]
     arch = hdr[rpm.RPMTAG_ARCH]
-    if epoch is None: epoch = 0
-    return (name, epoch, ver, rel, arch)
+    if epoch is None:
+        epoch = 0
+    ret = (name, epoch, ver, rel, arch)
+    return tuple(x.decode() if i != 1 else x for i, x in enumerate(ret))
 
-decorate(traceLog())
+@traceLog()
 def cmpKernelVer(str1, str2):
     'compare two kernel version strings and return -1, 0, 1 for less, equal, greater'
     # first try compareVerOnly and fall back to compareEVR
     try:
         return rpmUtils.miscutils.compareVerOnly(str1, str2)
-    except AttributeError, e:
+    except AttributeError as e:
         return rpmUtils.miscutils.compareEVR(('', str1, ''), ('', str2, ''))
 
-decorate(traceLog())
+@traceLog()
 def hostIsEL5():
     return (cmpKernelVer(os.uname()[2], "2.6.19") < 0)
 
-decorate(traceLog())
+@traceLog()
 def getAddtlReqs(hdr, conf):
     # Add the 'more_buildreqs' for this SRPM (if defined in config file)
     (name, epoch, ver, rel, arch) = getNEVRA(hdr)
@@ -193,9 +201,9 @@ def getAddtlReqs(hdr, conf):
     for this_srpm in ['-'.join([name, ver, rel]),
                       '-'.join([name, ver]),
                       '-'.join([name]),]:
-        if conf.has_key(this_srpm):
+        if this_srpm in conf:
             more_reqs = conf[this_srpm]
-            if type(more_reqs) in (type(u''), type(''),):
+            if isinstance(type(more_reqs), basestring):
                 reqlist.append(more_reqs)
             else:
                 reqlist.extend(more_reqs)
@@ -210,14 +218,14 @@ def chomp(line):
     else:
         return line
 
-decorate(traceLog())
+@traceLog()
 def unshare(flags):
     getLog().debug("Unsharing. Flags: %s" % flags)
     try:
         res = _libc.unshare(flags)
         if res:
             raise mockbuild.exception.UnshareFailed(os.strerror(ctypes.get_errno()))
-    except AttributeError, e:
+    except AttributeError as e:
         pass
 
 # these are called in child process, so no logging
@@ -253,7 +261,7 @@ def condEnvironment(env=None):
         return
     getLog().debug("child environment: %s" % env)
     os.environ.clear()
-    for k in env.keys():
+    for k in list(env.keys()):
         os.putenv(k, env[k])
 
 def process_input(line):
@@ -296,12 +304,12 @@ def logOutput(fds, logger, returnOutput=1, start=0, timeout=0, printOutput=False
 
         for s in i_rdy:
             # slurp as much input as is ready
-            input = s.read()
+            input = s.read().decode()
             if input == "":
                 done = 1
                 break
             if printOutput:
-                print input,
+                print(input, end='')
             lines = input.split("\n")
             if tail:
                 lines[0] = tail + lines[0]
@@ -329,10 +337,10 @@ def logOutput(fds, logger, returnOutput=1, start=0, timeout=0, printOutput=False
         if returnOutput:
             output += tail
         if printOutput:
-            print tail,
+            print(tail, end='')
     return output
 
-decorate(traceLog())
+@traceLog()
 def selinuxEnabled():
     """Check if SELinux is enabled (enforcing or permissive)."""
     for mount in open("/proc/mounts").readlines():
@@ -357,7 +365,7 @@ def selinuxEnabled():
 #
 # The "Not-as-complicated" version
 #
-decorate(traceLog())
+@traceLog()
 def do(command, shell=False, chrootPath=None, cwd=None, timeout=0, raiseExc=True,
        returnOutput=0, uid=None, gid=None, personality=None,
        printOutput=False, env=None, pty=False, *args, **kargs):
@@ -367,7 +375,7 @@ def do(command, shell=False, chrootPath=None, cwd=None, timeout=0, raiseExc=True
     start = time.time()
     if pty:
         master_pty, slave_pty = os.openpty()
-        reader = os.fdopen(master_pty)
+        reader = os.fdopen(master_pty, 'rb')
     preexec = ChildPreExec(personality, chrootPath, cwd, uid, gid)
     if env is None:
         env = clean_env()
@@ -416,14 +424,14 @@ def do(command, shell=False, chrootPath=None, cwd=None, timeout=0, raiseExc=True
             os.killpg(child.pid, 9)
 
     if not niceExit:
-        raise commandTimeoutExpired, ("Timeout(%s) expired for command:\n # %s\n%s" % (timeout, command, output))
+        raise commandTimeoutExpired("Timeout(%s) expired for command:\n # %s\n%s" % (timeout, command, output))
 
     logger.debug("Child return code was: %s" % str(child.returncode))
     if raiseExc and child.returncode:
         if returnOutput:
-            raise mockbuild.exception.Error, ("Command failed: \n # %s\n%s" % (command, output), child.returncode)
+            raise mockbuild.exception.Error("Command failed: \n # %s\n%s" % (command, output), child.returncode)
         else:
-            raise mockbuild.exception.Error, ("Command failed. See logs for output.\n # %s" % (command,), child.returncode)
+            raise mockbuild.exception.Error("Command failed. See logs for output.\n # %s" % (command,), child.returncode)
 
     return output
 
@@ -441,7 +449,7 @@ class ChildPreExec(object):
     def __call__(self, *args, **kargs):
         if not self.shell:
             os.setsid()
-        os.umask(002)
+        os.umask(0o02)
         condPersonality(self.personality)
         condEnvironment(self.env)
         condChroot(self.chrootPath)
@@ -495,7 +503,8 @@ def clean_env():
 
 def get_fs_type(path):
     cmd = '/usr/bin/stat -f -L -c %%T %s' % path
-    p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
+    p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE,
+                         universal_newlines=True)
     p.wait()
     return p.stdout.readline().strip()
 
@@ -507,7 +516,7 @@ def find_non_nfs_dir():
     raise mockbuild.exception.Error('Cannot find non-NFS directory in: %s' % dirs)
 
 
-decorate(traceLog())
+@traceLog()
 def setup_default_config_opts(unprivUid, version, pkgpythondir):
     "sets up default configuration."
     config_opts = {}
@@ -662,7 +671,7 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
 
     return config_opts
 
-decorate(traceLog())
+@traceLog()
 def set_config_opts_per_cmdline(config_opts, options, args):
     "takes processed cmdline args and sets config options."
     # do some other options and stuff
@@ -787,28 +796,32 @@ def update_config_from_file(config_opts, config_file, uid_manager):
     if os.fork() == 0:
         try:
             os.close(r_pipe)
-            uidManager.dropPrivsForever()
-            execfile(config_file)
-            writer = os.fdopen(w_pipe, 'w')
+            if not all(uid.getresuid()):
+                uid_manager.dropPrivsForever()
+            with open(config_file) as f:
+                code = compile(f.read(), config_file, 'exec')
+            exec(code)
+            writer = os.fdopen(w_pipe, 'wb')
             pickle.dump(config_opts, writer)
         except:
             import traceback
             etype, evalue, raw_tb = sys.exc_info()
             tb = traceback.extract_tb(raw_tb)
             tb = [entry for entry in tb if entry[0] == config_file]
-            print >> sys.stderr, '\n'.join(traceback.format_list(tb))
-            print >> sys.stderr, '\n'.join(traceback.format_exception_only(etype, evalue))
+            print('\n'.join(traceback.format_list(tb)), file=sys.stderr)
+            print('\n'.join(traceback.format_exception_only(etype, evalue)),
+                  file=sys.stderr)
             sys.exit(1)
         sys.exit(0)
     else:
         os.close(w_pipe)
-        reader = os.fdopen(r_pipe)
+        reader = os.fdopen(r_pipe, 'rb')
         try:
             while True:
                 try:
                     new_config = reader.read()
                     break
-                except OSError, e:
+                except OSError as e:
                     if e.errno != errno.EINTR:
                         raise
             _, ret = os.wait()

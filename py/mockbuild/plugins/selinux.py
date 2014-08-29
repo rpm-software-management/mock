@@ -11,14 +11,14 @@ import stat
 import atexit
 
 # our imports
-from mockbuild.trace_decorator import decorate, traceLog, getLog
+from mockbuild.trace_decorator import traceLog, getLog
 import mockbuild.util
 from mockbuild.mounts import BindMountPoint
 
 requires_api_version = "1.0"
 
 # plugin entry point
-decorate(traceLog())
+@traceLog()
 def init(plugins, conf, buildroot):
     if mockbuild.util.selinuxEnabled():
         getLog().info("selinux enabled")
@@ -34,7 +34,7 @@ class SELinux(object):
        - option '--setopt=tsflags=nocontext' is appended to each 'yum' command
     """
 
-    decorate(traceLog())
+    @traceLog()
     def __init__(self, plugins, conf, buildroot):
         self.buildroot = buildroot
         self.config = buildroot.config
@@ -54,42 +54,43 @@ class SELinux(object):
         else:
             getLog().warning("selinux: 'yum' does not support '--setopt' option")
 
-    decorate(traceLog())
+    @traceLog()
     def _selinuxCreateFauxFilesystems(self):
         (fd, path) = tempfile.mkstemp(prefix="mock-selinux-plugin.")
+        out = os.fdopen(fd, 'w')
 
-        host = open("/proc/filesystems")
         try:
+            host = open("/proc/filesystems")
             for line in host:
                 if not "selinuxfs" in line:
-                    os.write(fd, line)
+                    out.write(line)
         finally:
             host.close()
+            out.close()
 
-        os.close(fd)
         os.chmod(path, stat.S_IRUSR|stat.S_IRGRP|stat.S_IROTH)
 
         return path
 
-    decorate(traceLog())
+    @traceLog()
     def _selinuxAtExit(self):
         if os.path.exists(self.filesystems):
             try:
                 os.unlink(self.filesystems)
-            except OSError, e:
+            except OSError as e:
                 getLog().warning("unable to delete selinux filesystems (%s): %s" % (self.filesystems, e))
                 pass
 
-    decorate(traceLog())
+    @traceLog()
     def _selinuxPreYumHook(self):
         self._originalUtilDo = mockbuild.util.do
         mockbuild.util.do = self._selinuxDoYum
 
-    decorate(traceLog())
+    @traceLog()
     def _selinuxPostYumHook(self):
         mockbuild.util.do = self._originalUtilDo
 
-    decorate(traceLog())
+    @traceLog()
     def _selinuxDoYum(self, command, *args, **kargs):
         option = "--setopt=tsflags=nocontexts"
 
@@ -102,12 +103,15 @@ class SELinux(object):
 
         return self._originalUtilDo(command, *args, **kargs)
 
-    decorate(traceLog())
+    @traceLog()
     def _selinuxYumIsSetoptSupported(self):
-        # ugly hack: discover, whether yum supports --setopt option
-        sys.path.insert(0, '/usr/share/yum-cli')
-        import cli
-        supported = hasattr(cli.YumBaseCli, "_parseSetOpts")
-        sys.path.pop(0)
-
-        return supported
+        try:
+            # ugly hack: discover, whether yum supports --setopt option
+            sys.path.insert(0, '/usr/share/yum-cli')
+            import cli
+            supported = hasattr(cli.YumBaseCli, "_parseSetOpts")
+            sys.path.pop(0)
+            return supported
+        except SyntaxError:
+            # We're on python 3, assuming yum is new enough
+            return True

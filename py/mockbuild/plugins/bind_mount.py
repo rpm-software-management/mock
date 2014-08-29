@@ -6,7 +6,7 @@
 # python library imports
 
 # our imports
-from mockbuild.trace_decorator import decorate, traceLog
+from mockbuild.trace_decorator import traceLog
 
 import mockbuild.util
 
@@ -15,14 +15,14 @@ from mockbuild.mounts import BindMountPoint
 requires_api_version = "1.0"
 
 # plugin entry point
-decorate(traceLog())
+@traceLog()
 def init(plugins, conf, buildroot):
     BindMount(plugins, conf, buildroot)
 
 # classes
 class BindMount(object):
     """bind mount dirs from host into chroot"""
-    decorate(traceLog())
+    @traceLog()
     def __init__(self, plugins, conf, buildroot):
         self.buildroot = buildroot
         self.config = buildroot.config
@@ -34,7 +34,7 @@ class BindMount(object):
         for srcdir, destdir in self.bind_opts['dirs']:
             buildroot.mounts.add(BindMountPoint(srcpath=srcdir, bindpath=buildroot.make_chroot_path(destdir)))
 
-    decorate(traceLog())
+    @traceLog()
     def _bindMountPreInitHook(self):
         create_dirs = self.config['plugin_conf']['bind_mount_opts']['create_dirs']
         for srcdir, destdir in self.bind_opts['dirs']:

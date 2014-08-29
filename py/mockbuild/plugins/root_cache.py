@@ -9,20 +9,20 @@ import os
 import time
 
 # our imports
-from mockbuild.trace_decorator import decorate, traceLog, getLog
+from mockbuild.trace_decorator import traceLog, getLog
 import mockbuild.util
 
 requires_api_version = "1.0"
 
 # plugin entry point
-decorate(traceLog())
+@traceLog()
 def init(plugins, conf, buildroot):
     RootCache(plugins, conf, buildroot)
 
 # classes
 class RootCache(object):
     """caches root environment in a tarball"""
-    decorate(traceLog())
+    @traceLog()
     def __init__(self, plugins, conf, buildroot):
         self.buildroot = buildroot
         self.root_cache_opts = conf
@@ -54,7 +54,7 @@ class RootCache(object):
     # =============
     # 'Private' API
     # =============
-    decorate(traceLog())
+    @traceLog()
     def _rootCacheLock(self, shared=1):
         lockType = fcntl.LOCK_EX
         if shared:
@@ -66,16 +66,16 @@ class RootCache(object):
             fcntl.lockf(self.rootCacheLock.fileno(), lockType)
             self.state.finish("Waiting for rootcache lock")
 
-    decorate(traceLog())
+    @traceLog()
     def _rootCacheUnlock(self):
         fcntl.lockf(self.rootCacheLock.fileno(), fcntl.LOCK_UN)
 
-    decorate(traceLog())
+    @traceLog()
     def _rootCachePreInitHook(self):
         getLog().info("enabled root cache")
         self._unpack_root_cache()
 
-    decorate(traceLog())
+    @traceLog()
     def _unpack_root_cache(self):
         # check cache status
         try:
@@ -125,18 +125,18 @@ class RootCache(object):
                 self.buildroot.chrootWasCached = True
                 self.state.finish("unpacking root cache")
 
-    decorate(traceLog())
+    @traceLog()
     def _rootCachePreShellHook(self):
         if self.config['plugin_conf']['tmpfs_enable']:
             self._unpack_root_cache()
 
-    decorate(traceLog())
+    @traceLog()
     def _rootCachePreYumHook(self):
         if self.config['plugin_conf']['tmpfs_enable']:
             if not os.listdir(self.buildroot.make_chroot_path()) or self.config['cache_alterations']:
                 self._unpack_root_cache()
 
-    decorate(traceLog())
+    @traceLog()
     def _root_cache_handle_mounts(self):
         for m in self.buildroot.mounts.get_mountpoints():
             if m.startswith('/'):
@@ -144,11 +144,11 @@ class RootCache(object):
             else:
                 self.exclude_tar_cmds.append('--exclude=./%s' % m)
 
-    decorate(traceLog())
+    @traceLog()
     def _rootCachePostInitHook(self):
         self._rebuild_root_cache()
 
-    decorate(traceLog())
+    @traceLog()
     def _rebuild_root_cache(self):
         try:
             self._rootCacheLock(shared=0)
@@ -191,7 +191,7 @@ class RootCache(object):
         finally:
             self._rootCacheUnlock()
 
-    decorate(traceLog())
+    @traceLog()
     def _rootCachePostShellHook(self):
         if self.config['plugin_conf']['tmpfs_enable'] and self.config['cache_alterations']:
             self._rebuild_root_cache()

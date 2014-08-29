@@ -7,13 +7,13 @@
 import os
 
 # our imports
-from mockbuild.trace_decorator import decorate, traceLog, getLog
+from mockbuild.trace_decorator import traceLog, getLog
 import mockbuild.util
 
 requires_api_version = "1.0"
 
 # plugin entry point
-decorate(traceLog())
+@traceLog()
 def init(plugins, conf, buildroot):
     system_ram_bytes = os.sysconf(os.sysconf_names['SC_PAGE_SIZE']) * os.sysconf(os.sysconf_names['SC_PHYS_PAGES'])
     system_ram_mb = system_ram_bytes / (1024 * 1024)
@@ -29,7 +29,7 @@ def init(plugins, conf, buildroot):
 # classes
 class Tmpfs(object):
     """Mounts a tmpfs on the chroot dir"""
-    decorate(traceLog())
+    @traceLog()
     def __init__(self, plugins, conf, buildroot):
         self.buildroot = buildroot
         self.main_config = buildroot.config
@@ -49,14 +49,14 @@ class Tmpfs(object):
         plugins.add_hook("initfailed", self._tmpfsUmount)
         getLog().info("tmpfs initialized")
 
-    decorate(traceLog())
+    @traceLog()
     def _tmpfsMount(self):
         getLog().info("mounting tmpfs at %s." % self.buildroot.make_chroot_path())
         mountCmd = ["mount", "-n", "-t", "tmpfs"] + self.optArgs + \
                    ["mock_chroot_tmpfs", self.buildroot.make_chroot_path()]
         mockbuild.util.do(mountCmd, shell=False)
 
-    decorate(traceLog())
+    @traceLog()
     def _tmpfsUmount(self):
         force = False
         getLog().info("unmounting tmpfs.")

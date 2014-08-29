@@ -20,7 +20,7 @@ class Buildroot(object):
         self.uid_manager = uid_manager
         self.state = state
         self.plugins = plugins
-        if config.has_key('unique-ext'):
+        if 'unique-ext' in config:
             config['root'] = "%s-%s" % (config['root'], config['unique-ext'])
         self.basedir = os.path.join(config['basedir'], config['root'])
         self.rootdir = os.path.join(self.basedir, 'root')
@@ -178,7 +178,7 @@ class Buildroot(object):
             update_state = '{0} update'.format(self.pkg_manager.command)
             self.state.start(update_state)
             cmd = self.config['chroot_setup_cmd']
-            if isinstance(cmd, basestring):
+            if isinstance(cmd, util.basestring):
                 cmd = cmd.split()
             self.pkg_manager.execute(*cmd)
             self.state.finish(update_state)
@@ -325,12 +325,12 @@ class Buildroot(object):
             for (dirpath, dirnames, filenames) in os.walk(self.make_chroot_path(self.homedir)):
                 for path in dirnames + filenames:
                     os.chown(os.path.join(dirpath, path), self.chrootuid, -1)
-                    os.chmod(os.path.join(dirpath, path), 0755)
+                    os.chmod(os.path.join(dirpath, path), 0o755)
 
             # rpmmacros default
             macrofile_out = self.make_chroot_path(self.homedir, ".rpmmacros")
             rpmmacros = open(macrofile_out, 'w+')
-            for key, value in self.config['macros'].items():
+            for key, value in list(self.config['macros'].items()):
                 rpmmacros.write("%s %s\n" % (key, value))
             rpmmacros.close()
         finally:
@@ -343,14 +343,14 @@ class Buildroot(object):
             util.mkdirIfAbsent(self.make_chroot_path("dev", "shm"))
             prevMask = os.umask(0000)
             devFiles = [
-                (stat.S_IFCHR | 0666, os.makedev(1, 3), "dev/null"),
-                (stat.S_IFCHR | 0666, os.makedev(1, 7), "dev/full"),
-                (stat.S_IFCHR | 0666, os.makedev(1, 5), "dev/zero"),
-                (stat.S_IFCHR | 0666, os.makedev(1, 8), "dev/random"),
-                (stat.S_IFCHR | 0444, os.makedev(1, 9), "dev/urandom"),
-                (stat.S_IFCHR | 0666, os.makedev(5, 0), "dev/tty"),
-                (stat.S_IFCHR | 0600, os.makedev(5, 1), "dev/console"),
-                (stat.S_IFCHR | 0666, os.makedev(5, 2), "dev/ptmx"),
+                (stat.S_IFCHR | 0o666, os.makedev(1, 3), "dev/null"),
+                (stat.S_IFCHR | 0o666, os.makedev(1, 7), "dev/full"),
+                (stat.S_IFCHR | 0o666, os.makedev(1, 5), "dev/zero"),
+                (stat.S_IFCHR | 0o666, os.makedev(1, 8), "dev/random"),
+                (stat.S_IFCHR | 0o444, os.makedev(1, 9), "dev/urandom"),
+                (stat.S_IFCHR | 0o666, os.makedev(5, 0), "dev/tty"),
+                (stat.S_IFCHR | 0o600, os.makedev(5, 1), "dev/console"),
+                (stat.S_IFCHR | 0o666, os.makedev(5, 2), "dev/ptmx"),
                 ]
             kver = os.uname()[2]
             #getLog().debug("kernel version == %s" % kver)

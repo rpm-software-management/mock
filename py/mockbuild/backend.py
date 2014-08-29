@@ -35,7 +35,7 @@ class Commands(object):
         self.use_host_resolv = config['use_host_resolv']
         self.chroot_file_contents = config['files']
         self.chroot_setup_cmd = config['chroot_setup_cmd']
-        if isinstance(self.chroot_setup_cmd, basestring):
+        if isinstance(self.chroot_setup_cmd, util.basestring):
             # accept strings in addition to other sequence types
             self.chroot_setup_cmd = self.chroot_setup_cmd.split()
         self.more_buildreqs = config['more_buildreqs']
@@ -102,7 +102,7 @@ class Commands(object):
                     pass
                 raise
         finally:
-            print "finishing: %s" % statestr
+            print("finishing: %s" % statestr)
             self.state.finish(statestr)
 
     def make_chroot_path(self, *args):

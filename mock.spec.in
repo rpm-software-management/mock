@@ -23,7 +23,6 @@ Requires: yum >= 2.4
 Requires: tar
 Requires: pigz
 Requires: python-ctypes
-Requires: python-decoratortools
 Requires: usermode
 Requires: yum-utils
 Requires: createrepo_c

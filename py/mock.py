@@ -18,6 +18,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA.
+from __future__ import print_function
 """
     usage:
            mock [options] {--init|--clean|--scrub=[all,chroot,cache,root-cache,c-cache,yum-cache,lvm]}
@@ -34,7 +35,6 @@
 """
 
 # library imports
-import ConfigParser
 import grp
 import logging
 import logging.config
@@ -45,6 +45,11 @@ import sys
 import time
 from optparse import OptionParser
 from textwrap import dedent
+
+try:
+    import configparser
+except ImportError:
+    import ConfigParser as configparser
 
 # all of the variables below are substituted by the build system
 __VERSION__ = "unreleased_version"
@@ -64,7 +69,7 @@ log = logging.getLogger()
 
 # our imports
 import mockbuild.exception
-from mockbuild.trace_decorator import traceLog, decorate
+from mockbuild.trace_decorator import traceLog
 import mockbuild.backend
 import mockbuild.uid
 
@@ -281,11 +286,11 @@ def command_parse():
     # explicitly disallow multiple targets in --target argument
     if options.rpmbuild_arch:
         if options.rpmbuild_arch.find(',') != -1:
-                   raise mockbuild.exception.BadCmdline, "--target option accepts only one arch. Invalid: %s" % options.rpmbuild_arch
+                   raise mockbuild.exception.BadCmdline("--target option accepts only one arch. Invalid: %s" % options.rpmbuild_arch)
 
     if options.mode == 'buildsrpm' and not (options.spec and options.sources):
         if not options.scm:
-            raise mockbuild.exception.BadCmdline, "Must specify both --spec and --sources with --buildsrpm"
+            raise mockbuild.exception.BadCmdline("Must specify both --spec and --sources with --buildsrpm")
     if options.spec:
         options.spec = os.path.expanduser(options.spec)
     if options.sources:
@@ -322,7 +327,7 @@ def load_config(config_path, name, uidManager):
 
     # default /etc/hosts contents
     if (not config_opts['use_host_resolv']
-        and not config_opts['files'].has_key('etc/hosts')):
+        and 'etc/hosts' not in config_opts['files']):
         config_opts['files']['etc/hosts'] = dedent('''\
             127.0.0.1 localhost localhost.localdomain
             ::1       localhost localhost.localdomain localhost6 localhost6.localdomain6
@@ -336,11 +341,11 @@ def setup_logging(log_ini, config_opts, options):
         sys.exit(50)
     try:
         if not os.path.exists(log_ini):
-            raise IOError, "Could not find log config file %s" % log_ini
-        log_cfg = ConfigParser.ConfigParser()
+            raise IOError("Could not find log config file %s" % log_ini)
+        log_cfg = configparser.ConfigParser()
         logging.config.fileConfig(log_ini)
         log_cfg.read(log_ini)
-    except (IOError, OSError, ConfigParser.NoSectionError), exc:
+    except (IOError, OSError, configparser.NoSectionError) as exc:
         log.error("Log config file(%s) not correctly configured: %s" % (log_ini, exc))
         sys.exit(50)
 
@@ -349,7 +354,7 @@ def setup_logging(log_ini, config_opts, options):
         config_opts['build_log_fmt_str'] = log_cfg.get("formatter_%s" % config_opts['build_log_fmt_name'], "format", raw=1)
         config_opts['root_log_fmt_str'] = log_cfg.get("formatter_%s" % config_opts['root_log_fmt_name'], "format", raw=1)
         config_opts['state_log_fmt_str'] = log_cfg.get("formatter_%s" % config_opts['state_log_fmt_name'], "format", raw=1)
-    except ConfigParser.NoSectionError, exc:
+    except configparser.NoSectionError as exc:
         log.error("Log config file (%s) missing required section: %s" % (log_ini, exc))
         sys.exit(50)
 
@@ -391,7 +396,7 @@ def setup_uid_manager(mockgid):
     return uidManager
 
 
-decorate(traceLog())
+@traceLog()
 def check_arch_combination(target_arch, config_opts):
     try:
         legal = config_opts['legal_host_arches']
@@ -433,7 +438,7 @@ def rebuild_generic(items, commands, buildroot, config_opts, cmd, post=None, cle
             commands.clean()
         raise
 
-decorate(traceLog())
+@traceLog()
 def do_rebuild(config_opts, commands, buildroot, srpms):
     "rebuilds a list of srpms using provided chroot"
     if len(srpms) < 1:
@@ -478,7 +483,7 @@ def rootcheck():
     # if we're root due to sudo or consolehelper, we're ok
     # if not raise an exception and bail
     if os.getuid() == 0 and not (os.environ.get("SUDO_UID") or os.environ.get("USERHELPER_UID")):
-        raise RuntimeError, "mock will not run from the root account (needs an unprivileged uid so it can drop privs)"
+        raise RuntimeError("mock will not run from the root account (needs an unprivileged uid so it can drop privs)")
 
 def groupcheck(unprivGid, tgtGid):
     "verify that the user running mock is part of the correct group"
@@ -502,7 +507,7 @@ def unshare_namespace():
                              #| util.CLONE_NEWUTS
     try:
         util.unshare(extended_unshare_flags)
-    except mockbuild.exception.UnshareFailed, e:
+    except mockbuild.exception.UnshareFailed as e:
         log.debug("unshare(%d) failed, falling back to unshare(%d)" \
                   % (extended_unshare_flags, base_unshare_flags))
         try:
@@ -566,7 +571,7 @@ def main():
     check_arch_combination(config_opts['rpmbuild_arch'], config_opts)
 
     # security cleanup (don't need/want this in the chroot)
-    if os.environ.has_key('SSH_AUTH_SOCK'):
+    if 'SSH_AUTH_SOCK' in os.environ:
         del os.environ['SSH_AUTH_SOCK']
 
     # elevate privs
@@ -584,7 +589,7 @@ def main():
     state.start("run")
 
     if options.printrootpath:
-        print buildroot.make_chroot_path('')
+        print(buildroot.make_chroot_path(''))
         sys.exit(0)
 
     if options.list_snapshots:
@@ -593,10 +598,10 @@ def main():
 
     # dump configuration to log
     log.debug("mock final configuration:")
-    for k, v in config_opts.items():
+    for k, v in list(config_opts.items()):
         log.debug("    %s:  %s" % (k, v))
 
-    os.umask(002)
+    os.umask(0o02)
     os.environ["HOME"] = buildroot.homedir
 
     # New namespace starting from here
@@ -640,8 +645,7 @@ def run_command(options, args, config_opts, commands, buildroot, state):
 
     elif options.mode == 'chroot':
         if not os.path.exists(buildroot.make_chroot_path()):
-            raise mockbuild.exception.ChrootNotInitialized, \
-                "chroot %s not initialized!" % buildroot.make_chroot_path()
+            raise mockbuild.exception.ChrootNotInitialized("chroot %s not initialized!" % buildroot.make_chroot_path())
         if len(args) == 0:
             log.critical("You must specify a command to run with --chroot")
             sys.exit(50)
@@ -770,14 +774,14 @@ if __name__ == '__main__':
     except (SystemExit,):
         raise
 
-    except (OSError,), e:
+    except (OSError,) as e:
         if e.errno == 1:
-            print
+            print()
             log.error("%s" % str(e))
-            print
+            print()
             log.error("The most common cause for this error is trying to run /usr/sbin/mock as an unprivileged user.")
             log.error("Check your path to make sure that /usr/bin/ is listed before /usr/sbin, or manually run /usr/bin/mock to see if that fixes this problem.")
-            print
+            print()
         else:
             raise
 
@@ -785,19 +789,19 @@ if __name__ == '__main__':
         exitStatus = 7
         log.error("Exiting on user interrupt, <CTRL>-C")
 
-    except (mockbuild.exception.ResultDirNotAccessible,), exc:
+    except (mockbuild.exception.ResultDirNotAccessible,) as exc:
         exitStatus = exc.resultcode
         log.error(str(exc))
 
-    except (mockbuild.exception.BadCmdline, mockbuild.exception.BuildRootLocked), exc:
+    except (mockbuild.exception.BadCmdline, mockbuild.exception.BuildRootLocked) as exc:
         exitStatus = exc.resultcode
         log.error(str(exc))
 
-    except (mockbuild.exception.Error), exc:
+    except (mockbuild.exception.Error) as exc:
         exitStatus = exc.resultcode
         log.error(str(exc))
 
-    except (Exception,), exc:
+    except (Exception,) as exc:
         exitStatus = 1
         log.exception(exc)
 

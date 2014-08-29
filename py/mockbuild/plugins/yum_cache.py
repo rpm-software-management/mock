@@ -10,7 +10,7 @@ import os
 import glob
 
 # our imports
-from mockbuild.trace_decorator import decorate, traceLog, getLog
+from mockbuild.trace_decorator import traceLog, getLog
 import mockbuild.util
 from mockbuild.mounts import BindMountPoint
 
@@ -18,14 +18,14 @@ from mockbuild.mounts import BindMountPoint
 requires_api_version = "1.0"
 
 # plugin entry point
-decorate(traceLog())
+@traceLog()
 def init(plugins, conf, buildroot):
     YumCache(plugins, conf, buildroot)
 
 # classes
 class YumCache(object):
     """caches root environment in a tarball"""
-    decorate(traceLog())
+    @traceLog()
     def __init__(self, plugins, conf, buildroot):
         self.buildroot = buildroot
         self.config = buildroot.config
@@ -47,7 +47,7 @@ class YumCache(object):
     # by yum, and prior to cleaning it. This prevents simultaneous access from
     # screwing things up. This can possibly happen, eg. when running multiple
     # mock instances with --uniqueext=
-    decorate(traceLog())
+    @traceLog()
     def _yumCachePreYumHook(self):
         try:
             fcntl.lockf(self.yumCacheLock.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
@@ -56,11 +56,11 @@ class YumCache(object):
             fcntl.lockf(self.yumCacheLock.fileno(), fcntl.LOCK_EX)
             self.state.finish("Waiting for yumcache lock")
 
-    decorate(traceLog())
+    @traceLog()
     def _yumCachePostYumHook(self):
         fcntl.lockf(self.yumCacheLock.fileno(), fcntl.LOCK_UN)
 
-    decorate(traceLog())
+    @traceLog()
     def _yumCachePreInitHook(self):
         getLog().info("enabled yum cache")
         mockbuild.util.mkdirIfAbsent(self.buildroot.make_chroot_path('/var/cache/yum'))

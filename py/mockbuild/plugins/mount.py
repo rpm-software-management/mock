@@ -19,21 +19,21 @@ config_opts['plugin_conf']['mount_opts']['dirs'].append(("server.example.com:/ex
 
 
 import mockbuild.util
-from mockbuild.trace_decorator import decorate, traceLog
+from mockbuild.trace_decorator import traceLog
 from mockbuild.mounts import FileSystemMountPoint
 
 requires_api_version = "1.0"
 
 
 # plugin entry point
-decorate(traceLog())
+@traceLog()
 def init(plugins, conf, buildroot):
     Mount(plugins, conf, buildroot)
 
 # classes
 class Mount(object):
     """mount dirs into chroot"""
-    decorate(traceLog())
+    @traceLog()
     def __init__(self, plugins, conf, buildroot):
         self.buildroot = buildroot
         self.config = buildroot.config
@@ -47,7 +47,7 @@ class Mount(object):
                                                     filetype=vfstype,
                                                     device=device,
                                                     options=mount_opts))
-    decorate(traceLog())
+    @traceLog()
     def _mountPreInitHook(self):
         for device, dest_dir, vfstype, mount_opts in self.opts['dirs']:
             mockbuild.util.mkdirIfAbsent(self.builroot.make_chroot_path(dest_dir))

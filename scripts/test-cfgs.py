@@ -37,27 +37,27 @@ class Config(object):
         return self.cfg
 
     def check_urls(self):
-        print self.cfg
+        print(self.cfg)
         total_sites = 0;
         for s in self.stanzas:
-            for k in self.map[s].keys():
+            for k in list(self.map[s].keys()):
                 if k == 'mirrorlist':
                     num = self.check_mirrorlist(self.map[s][k])
                     if num == 0:
-                        print "\t[%s] Error: no mirror sites\t<-------" % s
+                        print("\t[%s] Error: no mirror sites\t<-------" % s)
                     else:
-                        print "\t[%s] Ok (%d sites)" % (s, num)
+                        print("\t[%s] Ok (%d sites)" % (s, num))
                     total_sites += num
                 elif k == 'baseurl':
                     if self.check_baseurl(self.map[s][k]) == 0:
-                        print "\t[%s] Error: no files for baseurl\t<-------" % s
+                        print("\t[%s] Error: no files for baseurl\t<-------" % s)
                     else:
-                        print "\t[%s] baseurl Ok" %s
+                        print("\t[%s] baseurl Ok" %s)
                         total_sites += 1
                 else:
-                    raise RuntimeError, "Unknown URL type in %s: %s" % (s, k)
+                    raise RuntimeError("Unknown URL type in %s: %s" % (s, k))
         if total_sites == 0:
-            print "    %s has no valid URLs" % self.cfg
+            print("    %s has no valid URLs" % self.cfg)
 
     def check_mirrorlist(self, url):
         #print "checking mirrorlist at %s" % url
@@ -66,7 +66,7 @@ class Config(object):
             if len(lines) == 1 and lines[0].startswith('Bad arch'):
                 return 0
             return len(lines)
-        except urllib2.URLError, e:
+        except urllib2.URLError as e:
             pass
         return 0
 
@@ -74,9 +74,9 @@ class Config(object):
         #print "checking baseurl at %s" % url
         try:
             data = urllib2.urlopen(url).readlines()
-        except urllib2.HTTPError, e:
+        except urllib2.HTTPError as e:
             return 0
-        except urllib2.URLError, e:
+        except urllib2.URLError as e:
             return 0
         return len(data)
 

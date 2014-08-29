@@ -4,9 +4,9 @@ import os
 import sys
 
 if os.getuid() != 0:
-    print "must be root to drop caches!"
+    print("must be root to drop caches!")
     sys.exit(-1)
 
-print "******************* dropping caches"
+print("******************* dropping caches")
 open('/proc/sys/vm/drop_caches', 'w').write("3")
 sys.exit(0)

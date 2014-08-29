@@ -13,13 +13,13 @@ import pwd
 import os
 
 # our imports
-from mockbuild.trace_decorator import traceLog, decorate
+from mockbuild.trace_decorator import traceLog
 import mockbuild.util
 
 # class
 class scmWorker(object):
     """Build RPMs from SCM"""
-    decorate(traceLog())
+    @traceLog()
     def __init__(self, log, opts, macros):
         self.log = log
         self.log.debug("Initializing SCM integration...")
@@ -79,10 +79,10 @@ class scmWorker(object):
         # non-interactively
         self.environ['HOME'] = pwd.getpwuid(os.getuid()).pw_dir
         self.environ['CVS_RSH'] = "ssh"
-        if not self.environ.has_key('SSH_AUTH_SOCK'):
+        if 'SSH_AUTH_SOCK' not in self.environ:
             self.environ['SSH_AUTH_SOCK'] = pwd.getpwuid(os.getuid()).pw_dir + "/.ssh/auth_sock"
 
-    decorate(traceLog())
+    @traceLog()
     def get_sources(self):
         self.wrk_dir = tempfile.mkdtemp(".mock-scm." + self.pkg)
         self.src_dir = self.wrk_dir + "/" + self.pkg
@@ -92,7 +92,7 @@ class scmWorker(object):
             mockbuild.util.do(shlex.split(self.postget), shell=False, cwd=self.src_dir, env=self.environ)
         self.log.debug("Fetched sources from SCM")
 
-    decorate(traceLog())
+    @traceLog()
     def adjust_git_timestamps(self):
         dir = os.getcwd()
         self.log.debug("Adjusting timestamps in " + self.src_dir)
@@ -104,7 +104,7 @@ class scmWorker(object):
             subprocess.Popen(['touch', '-d', ts, f], shell=False)
         os.chdir(dir)
 
-    decorate(traceLog())
+    @traceLog()
     def prepare_sources(self):
         # import rpm after setarch
         import rpm
@@ -126,7 +126,7 @@ class scmWorker(object):
         self.spec = sf
 
        # Add passed RPM macros before parsing spec file
-        for macro, expression in self.macros.iteritems():
+        for macro, expression in list(self.macros.items()):
             rpm.addMacro(macro.lstrip('%'), expression)
 
         # Dig out some basic information from the spec file
@@ -181,7 +181,7 @@ class scmWorker(object):
 
         return (self.src_dir, self.spec)
 
-    decorate(traceLog())
+    @traceLog()
     def clean(self):
         self.log.debug("Clean SCM checkout directory")
         mockbuild.util.rmtree(self.wrk_dir)

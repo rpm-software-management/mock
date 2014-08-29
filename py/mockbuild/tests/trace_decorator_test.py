@@ -8,7 +8,10 @@ from mockbuild import trace_decorator
 
 def getLineno(fn=None):
     if fn:
-        return fn.func_code.co_firstlineno
+        if hasattr(fn, 'func_code'):
+            return fn.func_code.co_firstlineno
+        else:
+            return fn.__code__.co_firstlineno
     return inspect.currentframe().f_back.f_lineno
 
 def captureLogging():
@@ -94,7 +97,7 @@ class TraceDecoratorTest(unittest.TestCase):
 
         expectations = [
                 (default_logger, logging.INFO, (filename, callLineno,
-                        "ENTER exampleFunc('aaa', 'default', )"),
+                        "ENTER exampleFunc('aaa')"),
                     {'exc_info': None, 'args': [], 'func': 'test_capture'}),
                 (default_logger, logging.INFO, (filename, getLineno(exampleFunc),
                         "LEAVE exampleFunc --> 42\n"),
@@ -138,7 +141,7 @@ class TraceDecoratorTest(unittest.TestCase):
         msg = captured[0][2][2]
         self.assertEqual("ENTER exampleNested(arg='ggg')", msg)
         msg = captured[1][2][2]
-        self.assertEqual("ENTER exampleFunc('bbb', 'default', arg='ggg')", msg)
+        self.assertEqual("ENTER exampleFunc('bbb', arg='ggg')", msg)
         msg = captured[2][2][2]
         self.assertEqual("LEAVE exampleFunc --> 42\n", msg)
         msg = captured[3][2][2]

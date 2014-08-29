@@ -199,16 +199,16 @@ class LvmPlugin(object):
         with volume_group(self.vg_name) as vg:
             current = self.get_current_snapshot()
             lvs = vg.listLVs()
-            print 'Snapshots for {0}:'.format(self.pool_name)
+            print('Snapshots for {0}:'.format(self.pool_name))
             for lv in lvs:
                 if self._open_lv_is_our(lv):
                     name = lv.getName()
                     if name == current:
-                        print '* ' + name.replace(self.prefix_name(''), '')
+                        print('* ' + name.replace(self.prefix_name(''), ''))
                     elif name == self.lv_name:
                         pass
                     else:
-                        print '  ' + name.replace(self.prefix_name(''), '')
+                        print('  ' + name.replace(self.prefix_name(''), ''))
 
     def hook_remove_snapshot(self, name):
         if name == self.postinit_name:

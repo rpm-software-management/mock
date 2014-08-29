@@ -6,7 +6,7 @@
 # python library imports
 
 # our imports
-from mockbuild.trace_decorator import decorate, traceLog, getLog
+from mockbuild.trace_decorator import traceLog, getLog
 import mockbuild.util
 
 from mockbuild.mounts import BindMountPoint
@@ -14,14 +14,14 @@ from mockbuild.mounts import BindMountPoint
 requires_api_version = "1.0"
 
 # plugin entry point
-decorate(traceLog())
+@traceLog()
 def init(plugins, conf, buildroot):
     CCache(plugins, conf, buildroot)
 
 # classes
 class CCache(object):
     """enables ccache in buildroot/rpmbuild"""
-    decorate(traceLog())
+    @traceLog()
     def __init__(self, plugins, conf, buildroot):
         self.buildroot = buildroot
         self.config = buildroot.config
@@ -39,13 +39,13 @@ class CCache(object):
     # set the max size before we actually use it during a build. ccache itself
     # manages size and settings. we also set a few variables used by ccache to
     # find the shared cache.
-    decorate(traceLog())
+    @traceLog()
     def _ccacheBuildHook(self):
         self.buildroot.doChroot(["ccache", "-M", str(self.ccache_opts['max_cache_size'])], shell=False)
 
     # set up the ccache dir.
     # we also set a few variables used by ccache to find the shared cache.
-    decorate(traceLog())
+    @traceLog()
     def _ccachePreInitHook(self):
         getLog().info("enabled ccache")
         envupd = {"CCACHE_DIR": "/tmp/ccache", "CCACHE_UMASK": "002"}

@@ -13,7 +13,7 @@ class Plugins(object):
         self.plugin_dir = config['plugin_dir']
 
     def init_plugins(self, buildroot):
-        for key in self.plugin_conf.keys():
+        for key in list(self.plugin_conf.keys()):
             if key.endswith('_opts'):
                 self.plugin_conf[key]['basedir'] = buildroot.basedir
                 self.plugin_conf[key]['cache_topdir'] = buildroot.cache_topdir

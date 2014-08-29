@@ -21,6 +21,7 @@
 # rebuild them one at a time
 # adding each to a local repo
 # so they are available as build deps to next pkg being built
+from __future__ import print_function
 
 import sys
 import subprocess
@@ -82,12 +83,12 @@ def parse_args(args):
         opts.cont = True
 
     if not opts.chroot:
-        print "You must provide an argument to -r for the mock chroot"
+        print("You must provide an argument to -r for the mock chroot")
         sys.exit(1)
 
 
     if len(sys.argv) < 3:
-        print "You must specifiy at least 1 package to build"
+        print("You must specifiy at least 1 package to build")
         sys.exit(1)
 
 
@@ -101,7 +102,9 @@ def add_local_repo(infile, destfile, baseurl, repoid=None):
     global config_opts
 
     try:
-        execfile(infile)
+        with open(infile) as f:
+            code = compile(f.read(), infile, 'exec')
+        exec(code)
         if not repoid:
             repoid = baseurl.split('//')[1].replace('/', '_')
             repoid = re.sub(r'[^a-zA-Z0-9_]', '', repoid)
@@ -117,7 +120,7 @@ cost=1
 
         config_opts['yum.conf'] += localyumrepo
         br_dest = open(destfile, 'w')
-        for k, v in config_opts.items():
+        for k, v in list(config_opts.items()):
             br_dest.write("config_opts[%r] = %r\n" % (k, v))
         br_dest.close()
         return True, ''
@@ -169,7 +172,7 @@ def do_build(opts, cfg, pkg):
             else:
                 mockcmd.append(option)
 
-    print 'building %s' % s_pkg
+    print('building %s' % s_pkg)
     mockcmd.append(pkg)
     cmd = subprocess.Popen(mockcmd,
            stdout=subprocess.PIPE,
@@ -190,9 +193,9 @@ def log(lf, msg):
         now = time.time()
         try:
             open(lf, 'a').write(str(now) + ':' + msg + '\n')
-        except (IOError, OSError), e:
-            print 'Could not write to logfile %s - %s' % (lf, str(e))
-    print msg
+        except (IOError, OSError) as e:
+            print('Could not write to logfile %s - %s' % (lf, str(e)))
+    print(msg)
 
 
 config_opts = {}
@@ -211,15 +214,15 @@ def main(args):
     mockcfg = mockconfig_path + '/' + cfg + '.cfg'
 
     if not os.path.exists(mockcfg):
-        print "could not find config: %s" % mockcfg
+        print("could not find config: %s" % mockcfg)
         sys.exit(1)
 
 
     if not opts.tmp_prefix:
         try:
             opts.tmp_prefix = os.getlogin()
-        except OSError, e:
-            print "Could not find login name for tmp dir prefix add --tmp_prefix"
+        except OSError as e:
+            print("Could not find login name for tmp dir prefix add --tmp_prefix")
             sys.exit(1)
     pid = os.getpid()
     opts.uniqueext = '%s-%s' % (opts.tmp_prefix, pid)
@@ -234,7 +237,7 @@ def main(args):
         pre = 'mock-chain-%s-' % opts.uniqueext
         local_tmp_dir = tempfile.mkdtemp(prefix=pre, dir='/var/tmp')
 
-    os.chmod(local_tmp_dir, 0755)
+    os.chmod(local_tmp_dir, 0o755)
 
     if opts.logfile:
         opts.logfile = os.path.join(local_tmp_dir, opts.logfile)
@@ -245,14 +248,14 @@ def main(args):
     opts.local_repo_dir = os.path.normpath(local_tmp_dir + '/results/' + cfg + '/')
 
     if not os.path.exists(opts.local_repo_dir):
-        os.makedirs(opts.local_repo_dir, mode=0755)
+        os.makedirs(opts.local_repo_dir, mode=0o755)
 
     local_baseurl = "file://%s" % opts.local_repo_dir
     log(opts.logfile, "results dir: %s" % opts.local_repo_dir)
     opts.config_path = os.path.normpath(local_tmp_dir + '/configs/' + cfg + '/')
 
     if not os.path.exists(opts.config_path):
-        os.makedirs(opts.config_path, mode=0755)
+        os.makedirs(opts.config_path, mode=0o755)
 
     log(opts.logfile, "config dir: %s" % opts.config_path)
 
@@ -310,7 +313,7 @@ def main(args):
                     ug = grabber.URLGrabber()
                     fn = ug.urlgrab(url)
                     pkg = download_dir + '/' + fn
-                except Exception, e:
+                except Exception as e:
                     log(opts.logfile, 'Error Downloading %s: %s' % (url, str(e)))
                     failed.append(url)
                     os.chdir(cwd)

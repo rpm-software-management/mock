@@ -81,14 +81,14 @@ class BadCmdline(Error):
     def __init__(self, msg):
         Error.__init__(self, msg)
         self.msg = msg
-        self.resultcode = 05
+        self.resultcode = 5
 
 class InvalidArchitecture(Error):
     "invalid host/target architecture specified."
     def __init__(self, msg):
         Error.__init__(self, msg)
         self.msg = msg
-        self.resultcode = 06
+        self.resultcode = 6
 
 class ResultDirNotAccessible(Error):
     """

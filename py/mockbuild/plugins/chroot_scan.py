@@ -11,21 +11,21 @@ import subprocess
 
 # our imports
 
-from mockbuild.trace_decorator import decorate, traceLog, getLog
+from mockbuild.trace_decorator import traceLog, getLog
 
 import mockbuild.util
 
 requires_api_version = "1.0"
 
 # plugin entry point
-decorate(traceLog())
+@traceLog()
 def init(plugins, conf, buildroot):
     ChrootScan(plugins, conf, buildroot)
 
 # classes
 class ChrootScan(object):
     """scan chroot for files of interest, copying to resultdir with relative paths"""
-    decorate(traceLog())
+    @traceLog()
     def __init__(self, plugins, conf, buildroot):
         self.buildroot = buildroot
         self.config = buildroot.config
@@ -36,7 +36,7 @@ class ChrootScan(object):
         plugins.add_hook("postbuild", self._scanChroot)
         getLog().info("chroot_scan: initialized")
 
-    decorate(traceLog())
+    @traceLog()
     def _scanChroot(self):
         regexstr = "|".join(self.regexes)
         regex = re.compile(regexstr)

@@ -11,7 +11,7 @@
 #             installed_pkgs
 
 # our imports
-from mockbuild.trace_decorator import decorate, traceLog
+from mockbuild.trace_decorator import traceLog
 import mockbuild.util
 import tempfile
 import os
@@ -24,14 +24,14 @@ repoquery_install_opts = "--installed -a --qf '%{nevra} %{buildtime} %{size} %{p
 requires_api_version = "1.0"
 
 # plugin entry point
-decorate(traceLog())
+@traceLog()
 def init(plugins, conf, buildroot):
     PackageState(plugins, conf, buildroot)
 
 # classes
 class PackageState(object):
     """dumps out a list of packages available and in the chroot"""
-    decorate(traceLog())
+    @traceLog()
     def __init__(self, plugins, conf, buildroot):
         self.buildroot = buildroot
         self.config = buildroot.config
@@ -42,7 +42,7 @@ class PackageState(object):
         plugins.add_hook("postyum", self._availablePostYumHook)
         plugins.add_hook("prebuild", self._installedPreBuildHook)
 
-    decorate(traceLog())
+    @traceLog()
     def _availablePostYumHook(self):
         if self.online and not self.avail_done:
             self.buildroot.uid_manager.dropPrivsTemp()
@@ -56,7 +56,7 @@ class PackageState(object):
             self.state.finish("Outputting list of available packages")
             self.buildroot.uid_manager.restorePrivs()
 
-    decorate(traceLog())
+    @traceLog()
     def _installedPreBuildHook(self):
         if self.online and not self.inst_done:
             self.state.start("Outputting list of installed packages")
