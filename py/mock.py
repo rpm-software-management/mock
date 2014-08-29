@@ -117,7 +117,7 @@ def command_parse():
     parser.add_option("--installdeps", action="store_const", const="installdeps",
                       dest="mode",
                       help="install build dependencies for a specified SRPM")
-    parser.add_option("--install", action="store_const", const="install",
+    parser.add_option("-i", "--install", action="store_const", const="install",
                       dest="mode",
                       help="install packages using package manager")
     parser.add_option("--update", action="store_const", const="update",
@@ -175,7 +175,7 @@ def command_parse():
                       default=True,
                       help="activate 'offline' mode.")
 
-    parser.add_option("--no-clean", action ="store_false", dest="clean",
+    parser.add_option("-n", "--no-clean", action ="store_false", dest="clean",
                       help="do not clean chroot before building", default=True)
     parser.add_option("--cleanup-after", action ="store_true",
                       dest="cleanup_after", default=None,
@@ -263,11 +263,11 @@ def command_parse():
                       metavar="PLUGIN:KEY=VALUE",
                       help="define an plugin option (may be used more than once)")
 
-    parser.add_option("--print-root-path", help="print path to chroot root",
+    parser.add_option("-p", "--print-root-path", help="print path to chroot root",
                       dest="printrootpath", action="store_true",
                       default=False)
 
-    parser.add_option("--list-snapshots",
+    parser.add_option("-l", "--list-snapshots",
                       help="list LVM snapshots associated with buildroot",
                       dest="list_snapshots", action="store_true",
                       default=False)
