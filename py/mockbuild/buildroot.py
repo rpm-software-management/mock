@@ -21,13 +21,13 @@ class Buildroot(object):
         self.uid_manager = uid_manager
         self.state = state
         self.plugins = plugins
+        self.shared_root_name = config['root']
         if 'unique-ext' in config:
             config['root'] = "%s-%s" % (config['root'], config['unique-ext'])
         self.basedir = os.path.join(config['basedir'], config['root'])
         self.rootdir = os.path.join(self.basedir, 'root')
         self.resultdir = config['resultdir'] % config
         self.homedir = config['chroothome']
-        self.shared_root_name = config['root']
         self.cache_topdir = config['cache_topdir']
         self.cachedir = os.path.join(self.cache_topdir, self.shared_root_name)
         self.builddir = os.path.join(self.homedir, 'build')
