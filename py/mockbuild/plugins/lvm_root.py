@@ -41,6 +41,7 @@ def current_mounts():
 
 class LvmPlugin(object):
     postinit_name = 'postinit'
+    prefix = 'mock'
 
     def __init__(self, plugins, lvm_conf, buildroot):
         if not util.original_ipc_ns or not util.have_setns:
@@ -49,15 +50,17 @@ class LvmPlugin(object):
         self.buildroot = buildroot
         self.lvm_conf = lvm_conf
         self.vg_name = lvm_conf.get('volume_group')
-        self.pool_name = buildroot.shared_root_name
-        self.lv_name = '{0}-current'.format(self.pool_name)
+        self.pool_name = '{0}.{1}'.format(self.prefix, buildroot.shared_root_name)
+        self.ext = self.buildroot.config.get('unique-ext', 'head')
+        self.head_lv = '+{0}.{1}'.format(self.pool_name, self.ext)
         self.fs_type = lvm_conf.get('filesystem', 'ext4')
         self.root_path = os.path.realpath(self.buildroot.make_chroot_path())
         if not self.vg_name:
             raise LvmError("Volume group must be specified")
 
+        snapinfo_name = '.snapinfo-{0}.{1}'.format(self.pool_name, self.ext)
         self.snap_info = os.path.normpath(os.path.join(buildroot.basedir, '..',
-                                     '.snapinfo-' + self.pool_name))
+                                     snapinfo_name))
         self.mount = None
 
         prefix = 'hook_'
@@ -68,13 +71,13 @@ class LvmPlugin(object):
                 plugins.add_hook(hook_name, method)
 
     def prefix_name(self, name):
-        return self.pool_name + '-' + name
+        return self.pool_name + '.' + name
 
     def remove_prefix(self, name):
         return name.replace(self.prefix_name(''), '')
 
     def get_lv_path(self, lv_name=None):
-        name = lv_name or self.lv_name
+        name = lv_name or self.head_lv
         with volume_group(self.vg_name) as vg:
             lv = vg.lvFromName(name)
             return lv.getProperty('lv_path')[0]
@@ -89,7 +92,7 @@ class LvmPlugin(object):
         return False
 
     def lv_exists(self, lv_name=None):
-        name = lv_name or self.lv_name
+        name = lv_name or self.head_lv
         return self._lv_predicate(name, lambda lv: True)
 
     def _open_lv_is_our(self, lv):
@@ -120,36 +123,18 @@ class LvmPlugin(object):
         if os.path.exists(self.snap_info):
             os.remove(self.snap_info)
 
-    def get_snapshot_origin(self, name):
-        with volume_group(self.vg_name) as vg:
-            lv = vg.lvFromName(name)
-            return lv.getOrigin()
-
     def make_snapshot(self, name):
         if self.lv_exists(name):
             raise LvmError("Snapshot {name} already exists"\
                            .format(name=self.remove_prefix(name)))
-        lvcreate = ['lvcreate', '-s', self.vg_name + '/' + self.lv_name, '-n', name]
+        lvcreate = ['lvcreate', '-s', self.vg_name + '/' + self.head_lv, '-n', name]
         lvm_do(lvcreate)
         self.set_current_snapshot(name)
 
-    def rollback(self):
+    def delete_head(self):
         self.umount()
-        snapshot_name = self.get_current_snapshot()
-        if snapshot_name:
-            lvremove = ['lvremove', '-f', self.vg_name + '/' + self.lv_name]
-            lvm_do(lvremove)
-            lvcreate = ['lvcreate', '-s', self.vg_name + '/' + snapshot_name,
-                        '-n', self.lv_name, '--setactivationskip', 'n']
-            lvm_do(lvcreate)
-            self.buildroot.root_log.info("rolled back to {name} snapshot"\
-                                         .format(name=self.remove_prefix(snapshot_name)))
-        else:
-            if self.lv_exists(self.pool_name):
-                # There's no snapshot at all but pool exists, that means init
-                # failed. Let's start over
-                lvm_do(['lvremove', '-f', self.vg_name + '/' + self.pool_name])
-                self.create_base()
+        if self.lv_exists():
+            lvm_do(['lvremove', '-f', self.vg_name + '/' + self.head_lv])
 
     def hook_make_snapshot(self, name):
         lv_name = self.prefix_name(name)
@@ -157,12 +142,12 @@ class LvmPlugin(object):
         self.buildroot.root_log.info("created {name} snapshot".format(name=name))
 
     def hook_postclean(self):
-        self.rollback()
+        self.delete_head()
 
     def hook_rollback_to(self, name):
         name = self.prefix_name(name)
         self.set_current_snapshot(name)
-        self.rollback()
+        self.delete_head()
 
     def create_base(self):
         size = self.lvm_conf.get('size', '2G')
@@ -202,9 +187,24 @@ class LvmPlugin(object):
         if self.mount:
             self.mount.umount()
 
+    def create_head(self, snapshot_name):
+        lvm_do(['lvcreate', '-s', self.vg_name + '/' + snapshot_name,
+                '-n', self.head_lv, '--setactivationskip', 'n'])
+        self.buildroot.root_log.info("rolled back to {name} snapshot"\
+                                     .format(name=self.remove_prefix(snapshot_name)))
+
     def hook_mount_root(self):
-        if not self.lv_exists():
+        snapshot_name = self.get_current_snapshot()
+        if not self.lv_exists(self.pool_name):
             self.create_base()
+        elif not snapshot_name:
+            # There's no snapshot at all but pool exists, that means init
+            # failed. Let's start over
+            lvm_do(['lvremove', '-f', self.vg_name + '/' + self.pool_name])
+            self.create_base()
+        elif not self.lv_exists():
+            self.create_head(snapshot_name)
+
         self.prepare_mount()
         self.mount.mount()
 
@@ -224,30 +224,33 @@ class LvmPlugin(object):
                     .format(name=self.postinit_name))
 
     def hook_scrub(self, what):
+        if what not in ('lvm', 'all'):
+            return
         with volume_group(self.vg_name) as vg:
             try:
-                lv = vg.lvFromName(self.lv_name)
-                for src, _ in current_mounts():
-                    if src == os.path.realpath(lv.getProperty('lv_path')[0]):
-                        util.do(['umount', '-l', src])
+                lvs = vg.listLVs()
+                for lv in lvs:
+                    if self._open_lv_is_our(lv):
+                        for src, _ in current_mounts():
+                            if src == os.path.realpath(lv.getProperty('lv_path')[0]):
+                                util.do(['umount', '-l', src])
             except lvm.LibLVMError:
                 pass
-        if what in ('lvm', 'all'):
-            self.unset_current_snapshot()
-            lvm_do(['lvremove', '-f', self.vg_name + '/' + self.pool_name])
-            self.buildroot.root_log.info("deleted LVM cache thinpool")
+        self.unset_current_snapshot()
+        lvm_do(['lvremove', '-f', self.vg_name + '/' + self.pool_name])
+        self.buildroot.root_log.info("deleted LVM cache thinpool")
 
     def hook_list_snapshots(self):
         with volume_group(self.vg_name) as vg:
             current = self.get_current_snapshot()
             lvs = vg.listLVs()
-            print('Snapshots for {0}:'.format(self.pool_name))
+            print('Snapshots for {0}:'.format(self.buildroot.shared_root_name))
             for lv in lvs:
                 if self._open_lv_is_our(lv):
                     name = lv.getName()
                     if name == current:
                         print('* ' + self.remove_prefix(name))
-                    elif name == self.lv_name:
+                    elif name.startswith('+'):
                         pass
                     else:
                         print('  ' + self.remove_prefix(name))
