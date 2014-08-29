@@ -37,6 +37,13 @@ mock  [options] \fB\-\-rollback-to\fR [\fIsnapshot-name\fR]
 mock  [options] \fB\-\-remove-snapshot\fR [\fIsnapshot-name\fR]
 .LP
 mock  [options] \fB\-\-umount\fR
+.LP
+mock  [options] \fB\-\-pm-cmd\fR [\fIarguments ...\fR]
+.LP
+mock  [options] \fB\-\-yum-cmd\fR [\fIarguments ...\fR]
+.LP
+mock  [options] \fB\-\-dnf-cmd\fR [\fIarguments ...\fR]
+
 
 .SH "DESCRIPTION"
 .LP
@@ -143,6 +150,18 @@ This feature is available only when lvm_root plugin is installed and enabled.
 \fB\-\-umount\fP
 Umount all everything mounted in the buildroot path including the root itself
 that might have been a LVM volume.
+.TP
+\fB\-\-pm-cmd\fP
+Execute following arguments with current package manager with installroot set to
+the buildroot path.
+.TP
+\fB\-\-yum-cmd\fP
+Execute following arguments with yum with installroot set to the buildroot path.
+.TP
+\fB\-\-dnf-cmd\fP
+Execute following arguments with DNF with installroot set to the buildroot path.
+DNF must be installed on the system.
+
 
 
 .SH "OPTIONS"
@@ -226,6 +245,29 @@ Disable the specified plugin.  This option may be used multiple times.
 .TP
 \fB\-\-plugin-option \fR\fIPLUGIN\fR\fB:\fR\fIKEY\fR\fB=\fR\fIVALUE\fP
 Set plugin specific parameter. This option may be used multiple times.
+.TP
+\fB\-\-yum\fR
+Use yum as the current package manager. This is the default.
+.TP
+\fB\-\-dnf\fR
+Use DNF as the current package manager.
+.TP
+\fB\-\-enablerepo=REPO\fR
+Pass \fB\-\-enablerepo\fR option to package manager to enable a repository.
+It can be specified multiple times.
+.TP
+\fB\-\-disablerepo=REPO\fR
+Pass \fB\-\-disablerepo\fR option to package manager to disable a repository.
+It can be specified multiple times.
+.TP
+\fB\-\-short-circuit=\fR\fISTAGE\fR
+Use rpmbuild's short-circuit mechanism to skip already executed stages of build.
+It doesn't produce RPMs, it's useful only for debugging packaging. Implies
+\fI\-\-no-clean\fR. STAGE specifies which stage will be executed as the first.
+Available values: build, install, binary.
+.TP
+\fB\-\-rpmbuild-opts=OPTIONS\fR
+Pass additional options to rpmbuild. To pass more options, put them in quotes.
 .TP
 \fB\-h\fR, \fB\-\-help\fR
 Show usage information and exit.
