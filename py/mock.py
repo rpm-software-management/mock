@@ -432,7 +432,7 @@ def rebuild_generic(items, commands, buildroot, config_opts, cmd, post=None, cle
             log.info("Start(%s)  Config(%s)" % (item, buildroot.shared_root_name))
             if clean:
                 commands.clean()
-            commands.init()
+            commands.init(prebuild=True)
             ret = cmd(item)
             elapsed = time.time() - start
             log.info("Done(%s) Config(%s) %d minutes %d seconds"
