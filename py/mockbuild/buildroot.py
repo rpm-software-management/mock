@@ -42,6 +42,7 @@ class Buildroot(object):
         self.chrootgid = config['chrootgid']
         self.chrootgroup = 'mockbuild'
         self.env = config['environment']
+        self.env['HOME'] = self.homedir
         proxy_env = util.get_proxy_environment(config)
         self.env.update(proxy_env)
         os.environ.update(proxy_env)
