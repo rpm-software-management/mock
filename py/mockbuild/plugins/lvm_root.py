@@ -42,6 +42,39 @@ def current_mounts():
             src, target = [os.path.realpath(x) for x in line.split()[:2]]
             yield src, target
 
+class Lock(object):
+    def __init__(self, path, name):
+        lock_name = '.{0}.lock'.format(name)
+        lock_path = os.path.join(path, lock_name)
+        self.lock_file = open(lock_path, 'a+')
+
+    def lock(self, exclusive, block=False):
+        lock_type = fcntl.LOCK_EX if exclusive else fcntl.LOCK_SH
+        try:
+            fcntl.lockf(self.lock_file.fileno(),
+                        lock_type | (0 if block else fcntl.LOCK_NB))
+        except IOError as e:
+            if e.errno in (errno.EACCES, errno.EAGAIN):
+                raise LvmLocked("LVM is locked")
+            raise
+
+    def cond_lock(self, cond_fn, acquired_fn, wait_fn=None, unsatisfied_fn=None):
+        waiting = False
+        while cond_fn():
+            try:
+                self.lock(exclusive=True)
+            except LvmLocked:
+                if not waiting and wait_fn:
+                    wait_fn()
+                    waiting = True
+                time.sleep(1)
+            else:
+                acquired_fn()
+                return
+        if unsatisfied_fn:
+            unsatisfied_fn()
+
+
 class LvmPlugin(object):
     postinit_name = 'postinit'
     prefix = 'mock'
@@ -63,11 +96,10 @@ class LvmPlugin(object):
             raise LvmError("Volume group must be specified")
 
         snapinfo_name = '.snapinfo-{0}.{1}'.format(self.conf_id, self.ext)
-        basepath = buildroot.mockdir
-        self.snap_info = os.path.normpath(os.path.join(basepath, snapinfo_name))
-        lock_name = '.lvm_lock-{0}'.format(self.conf_id)
-        self.lock_path = os.path.normpath(os.path.join(basepath, lock_name))
-        self.lock_file = open(self.lock_path, 'a+')
+        self.basepath = buildroot.mockdir
+        self.snap_info = os.path.join(self.basepath, snapinfo_name)
+        self.lock = self.create_lock('lvm')
+        self.pool_lock = self.create_lock('lmv-pool')
         self.mount = None
 
         prefix = 'hook_'
@@ -76,6 +108,9 @@ class LvmPlugin(object):
                 method = getattr(self, member)
                 hook_name = member[len(prefix):]
                 plugins.add_hook(hook_name, method)
+
+    def create_lock(self, name):
+        return Lock(self.basepath, '{0}-{1}'.format(name, self.conf_id))
 
     def prefix_name(self, name=''):
         return self.conf_id + '.' + name
@@ -159,14 +194,20 @@ class LvmPlugin(object):
         self.delete_head()
 
     def create_pool(self):
-        size = self.lvm_conf['size']
-        pool_id = self.vg_name + '/' + self.pool_name
-        create_pool = ['lvcreate', '-T', pool_id, '-L', str(size)]
-        if 'poolmetadatasize' in self.lvm_conf:
-            create_pool += ['--poolmetadatasize', self.lvm_conf['poolmetadatasize']]
-        lvm_do(create_pool)
-        self.buildroot.root_log.info("created LVM cache thinpool of size {size}"\
-                                     .format(size=size))
+        def acquired():
+            size = self.lvm_conf['size']
+            pool_id = self.vg_name + '/' + self.pool_name
+            create_pool = ['lvcreate', '-T', pool_id, '-L', str(size)]
+            if 'poolmetadatasize' in self.lvm_conf:
+                create_pool += ['--poolmetadatasize', self.lvm_conf['poolmetadatasize']]
+            lvm_do(create_pool)
+            self.buildroot.root_log.info("created LVM cache thinpool of size {size}"\
+                                         .format(size=size))
+        def cond():
+            return not self.lv_exists(self.pool_name)
+        self.pool_lock.cond_lock(cond, acquired)
+        self.pool_lock.lock(exclusive=False, block=True)
+
     def create_base(self):
         pool_id = self.vg_name + '/' + self.pool_name
         size = self.lvm_conf['size']
@@ -204,45 +245,29 @@ class LvmPlugin(object):
         self.buildroot.root_log.info("rolled back to {name} snapshot"\
                                      .format(name=self.remove_prefix(snapshot_name)))
 
-    def lock(self, exclusive, block=False):
-        lock_type = fcntl.LOCK_EX if exclusive else fcntl.LOCK_SH
-        try:
-            fcntl.lockf(self.lock_file.fileno(),
-                        lock_type | (0 if block else fcntl.LOCK_NB))
-        except IOError as e:
-            if e.errno in (errno.EACCES, errno.EAGAIN):
-                raise LvmLocked("LVM thinpool is locked by another process")
-            raise
-
-    def unlock(self):
-        if self.lock_file:
-            fcntl.lockf(self.lock_file.fileno(), fcntl.LOCK_UN)
-
     def hook_mount_root(self):
-        waiting = False
-        while not self.get_current_snapshot():
-            try:
-                self.lock(exclusive=True)
-            except LvmLocked:
-                if not waiting:
-                    self.buildroot.root_log.info("Waiting for LVM init lock")
-                    waiting = True
-                time.sleep(1)
+        def acquired():
+            # Locked as exclusive so only one mock initializes postinit snapshot
+            if not self.lv_exists(self.pool_name):
+                self.create_pool()
+                self.create_base()
+            elif not self.get_current_snapshot():
+                self.pool_lock.lock(exclusive=False, block=True)
+                if self.lv_exists():
+                    # We've got the exclusive lock but there's no postinit
+                    # This means init failed and we need to start over
+                    lvm_do(['lvremove', '-f', self.vg_name + '/' + self.head_lv])
+                self.create_base()
             else:
-                # Locked as exclusive so only one mock initializes postinit snapshot
-                if not self.lv_exists(self.pool_name):
-                    self.create_pool()
-                    self.create_base()
-                    break
-                elif not self.get_current_snapshot():
-                    if self.lv_exists():
-                        # We've got the exclusive lock but there's no postinit
-                        # This means init failed and we need to start over
-                        lvm_do(['lvremove', '-f', self.vg_name + '/' + self.head_lv])
-                    self.create_base()
-                    break
-        else:
-            self.lock(exclusive=False, block=True)
+                self.lock.lock(exclusive=False, block=True)
+        def unsatisfied():
+            self.lock.lock(exclusive=False, block=True)
+        def cond():
+            return not self.get_current_snapshot()
+        def waiting():
+            self.buildroot.root_log.info("Waiting for LVM init lock")
+        self.lock.cond_lock(cond, acquired, unsatisfied_fn=unsatisfied, wait_fn=waiting)
+        self.pool_lock.lock(exclusive=False, block=True)
 
         if not self.lv_exists():
             self.create_head(self.get_current_snapshot())
@@ -265,10 +290,10 @@ class LvmPlugin(object):
             self.buildroot.root_log.info("created {name} snapshot"\
                     .format(name=self.postinit_name))
         # Relock as shared for following operations, noop if shared already
-        self.lock(exclusive=False)
+        self.lock.lock(exclusive=False)
 
     def hook_scrub(self, what):
-        self.lock(exclusive=True)
+        self.pool_lock.lock(exclusive=True)
         if what not in ('lvm', 'all'):
             return
         with volume_group(self.vg_name) as vg:
