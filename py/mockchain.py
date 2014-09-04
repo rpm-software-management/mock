@@ -182,6 +182,7 @@ def do_build(opts, cfg, pkg):
         open(success_file, 'w').write('done\n')
         ret = 1
     else:
+        sys.stderr.write(err)
         open(fail_file, 'w').write('undone\n')
         ret = 0
 
