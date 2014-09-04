@@ -132,7 +132,8 @@ if [ ! -e %{_sysconfdir}/%{name}/default.cfg ]; then
         ver=$(rpm -q --nosignature --qf "%{VERSION}" --whatprovides redhat-release | cut -d. -f1 | grep -o '[0-9]\+')
     fi
 
-    cfg=%{?fedora:fedora}%{?rhel:epel}-$ver-$(uname -i).cfg
+    mock_arch=$(python -c "import rpmUtils.arch; baseArch = rpmUtils.arch.getBaseArch(); print baseArch")
+    cfg=%{?fedora:fedora}%{?rhel:epel}-$ver-${mock_arch}.cfg
     [ -e %{_sysconfdir}/%{name}/$cfg ] || exit -2
     ln -s -f $cfg %{_sysconfdir}/%{name}/default.cfg
 fi
