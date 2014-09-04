@@ -12,7 +12,6 @@ import fcntl
 import os
 import os.path
 import pickle
-import rpm
 import select
 import shutil
 import signal
@@ -164,6 +163,8 @@ def orphansKill(rootToKill, killsig=signal.SIGTERM):
 
 @traceLog()
 def yieldSrpmHeaders(srpms, plainRpmOk=0):
+    import rpm
+    import rpmUtils.transaction
     ts = rpm.TransactionSet('/')
     flags = (rpm._RPMVSF_NOSIGNATURES|rpm._RPMVSF_NODIGESTS)
     ts.setVSFlags(flags)
@@ -193,6 +194,7 @@ def checkSrpmHeaders(srpms, plainRpmOk=0):
 
 @traceLog()
 def getNEVRA(hdr):
+    import rpm
     name = hdr[rpm.RPMTAG_NAME]
     ver = hdr[rpm.RPMTAG_VERSION]
     rel = hdr[rpm.RPMTAG_RELEASE]
@@ -206,6 +208,7 @@ def getNEVRA(hdr):
 @traceLog()
 def cmpKernelVer(str1, str2):
     'compare two kernel version strings and return -1, 0, 1 for less, equal, greater'
+    import rpm
     return rpm.labelCompare(('', str1, ''), ('', str2, ''))
 
 @traceLog()
