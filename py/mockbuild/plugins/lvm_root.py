@@ -254,6 +254,7 @@ class LvmPlugin(object):
             elif not self.get_current_snapshot():
                 self.pool_lock.lock(exclusive=False, block=True)
                 if self.lv_exists():
+                    self.umount()
                     # We've got the exclusive lock but there's no postinit
                     # This means init failed and we need to start over
                     lvm_do(['lvremove', '-f', self.vg_name + '/' + self.head_lv])
