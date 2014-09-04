@@ -6,6 +6,7 @@ import os
 import pwd
 import shutil
 import stat
+import tempfile
 
 from mockbuild import util
 from mockbuild import mounts
@@ -56,6 +57,7 @@ class Buildroot(object):
         self.chroot_was_initialized = False
         self.preexisting_deps = []
         self.plugins.init_plugins(self)
+        self.tmpdir = None
 
     @traceLog()
     def make_chroot_path(self, *paths):
@@ -418,7 +420,9 @@ class Buildroot(object):
     @traceLog()
     def _setup_nosync(self):
         multilib = ('x86_64', 's390x')
-        tmp_libdir = '/tmp/mock/{0}/$LIB'.format(self.root_name)
+        self.tmpdir = tempfile.mkdtemp()
+        os.chmod(self.tmpdir, 0o777)
+        tmp_libdir = os.path.join(self.tmpdir, '$LIB')
         mock_libdir = self.make_chroot_path(tmp_libdir)
         nosync_unresolved = '/usr/$LIB/nosync/nosync.so'
         def copy_nosync(lib64=False):
@@ -458,6 +462,10 @@ class Buildroot(object):
         """
         if os.path.exists(self.make_chroot_path()):
             try:
+                if self.tmpdir:
+                    for d in self.tmpdir, self.make_chroot_path(self.tmpdir):
+                        if os.path.exists(d):
+                            shutil.rmtree(d)
                 self._lock_buildroot(exclusive=True)
                 util.orphansKill(self.make_chroot_path())
                 self._umount_all()
