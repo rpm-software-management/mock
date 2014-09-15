@@ -164,7 +164,6 @@ def orphansKill(rootToKill, killsig=signal.SIGTERM):
 @traceLog()
 def yieldSrpmHeaders(srpms, plainRpmOk=0):
     import rpm
-    import rpmUtils.transaction
     ts = rpm.TransactionSet('/')
     flags = (rpm._RPMVSF_NOSIGNATURES|rpm._RPMVSF_NODIGESTS)
     ts.setVSFlags(flags)
