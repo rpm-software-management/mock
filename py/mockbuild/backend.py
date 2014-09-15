@@ -117,9 +117,9 @@ class Commands(object):
         return self.buildroot.make_chroot_path(*args)
 
     @traceLog()
-    def init(self, prebuild=False):
+    def init(self, **kwargs):
         try:
-            self.buildroot.initialize(prebuild=prebuild)
+            self.buildroot.initialize(**kwargs)
             if not self.buildroot.chroot_was_initialized:
                 self._show_installed_packages()
         except (KeyboardInterrupt, Exception):

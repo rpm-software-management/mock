@@ -69,7 +69,7 @@ class Buildroot(object):
         return new_path
 
     @traceLog()
-    def initialize(self, prebuild=False):
+    def initialize(self, prebuild=False, do_log=True):
         """
         Initialize the builroot to a point where it's possible to execute
         commands in chroot. If it was already initialized, just lock the shared
@@ -77,12 +77,13 @@ class Buildroot(object):
         """
         try:
             self._lock_buildroot(exclusive=True)
-            self._init(prebuild=prebuild)
+            self._init(prebuild=prebuild, do_log=do_log)
         except BuildRootLocked:
             pass
         finally:
             self._lock_buildroot(exclusive=False)
-        self._resetLogging()
+        if do_log:
+            self._resetLogging()
 
     @traceLog()
     def chroot_is_initialized(self):
@@ -99,7 +100,7 @@ class Buildroot(object):
             self.uid_manager.restorePrivs()
 
     @traceLog()
-    def _init(self, prebuild):
+    def _init(self, prebuild, do_log):
         # If previous run didn't finish properly
         self._umount_residual()
 
@@ -121,7 +122,8 @@ class Buildroot(object):
         self._setup_files()
         self._setup_nosync()
         self.mounts.mountall()
-        self._resetLogging()
+        if do_log:
+            self._resetLogging()
 
         # write out config details
         self.root_log.debug('rootdir = %s' % self.make_chroot_path())
