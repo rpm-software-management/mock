@@ -158,10 +158,10 @@ class Commands(object):
                 # get text buildreqs
                 deps.extend(util.getAddtlReqs(hdr, self.more_buildreqs))
             if deps:
-                self.buildroot.pkg_manager.install(*deps, returnOutput=1)
+                self.buildroot.pkg_manager.install(*deps, check=True)
 
             # install actual build dependencies
-            self.buildroot.pkg_manager.builddep(*srpms)
+            self.buildroot.pkg_manager.builddep(*srpms, check=True)
         finally:
             self.uid_manager.restorePrivs()
 

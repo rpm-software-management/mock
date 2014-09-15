@@ -161,11 +161,14 @@ class Yum(_PackageManager):
             self.execute('repolist')
 
     def install(self, *pkgs, **kwargs):
-        out = self.execute('resolvedep', *pkgs, returnOutput=True,
-                           printOutput=False, pty=False)
-        _check_missing(out)
+        check = kwargs.pop('check', False)
+        if check:
+            out = self.execute('resolvedep', *pkgs, returnOutput=True,
+                               printOutput=False, pty=False)
+            _check_missing(out)
         out = super(Yum, self).install(*pkgs, **kwargs)
-        _check_missing(out)
+        if check:
+            _check_missing(out)
 
     def builddep(self, *pkgs, **kwargs):
         out = super(Yum, self).builddep(*pkgs, **kwargs)
