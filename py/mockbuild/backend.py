@@ -102,8 +102,6 @@ class Commands(object):
                         util.rmtree(os.path.join(self.buildroot.cachedir, 'yum_cache'), selinux=self.buildroot.selinux)
             except IOError as e:
                 getLog().warn("parts of chroot do not exist: %s" % e)
-                if util.hostIsEL5():
-                    pass
                 raise
         finally:
             print("finishing: %s" % statestr)

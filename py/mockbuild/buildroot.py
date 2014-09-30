@@ -158,8 +158,7 @@ class Buildroot(object):
 
     def doChroot(self, command, shell=True, *args, **kargs):
         """execute given command in root"""
-        if not util.hostIsEL5():
-            self._nuke_rpm_db()
+        self._nuke_rpm_db()
         return util.do(command, chrootPath=self.make_chroot_path(),
                                  env=self.env, shell=shell, *args, **kargs)
 
