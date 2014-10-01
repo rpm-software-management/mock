@@ -425,7 +425,8 @@ class Buildroot(object):
     def _setup_files(self):
         #self.root_log.debug('touch required files')
         for item in [self.make_chroot_path('etc', 'fstab'),
-                     self.make_chroot_path('var', 'log', 'yum.log')]:
+                     self.make_chroot_path('var', 'log', 'yum.log'),
+                     self.make_chroot_path('etc', 'os-release')]:
             util.touch(item)
 
     @traceLog()
