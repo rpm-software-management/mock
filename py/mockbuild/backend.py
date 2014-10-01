@@ -404,7 +404,8 @@ class Commands(object):
         mode = '-bb'
         sc = self.config.get('short_circuit')
         if sc:
-            mode = {'install': '-bi',
+            mode = {'prep': '-bp',
+                    'install': '-bi',
                     'build': '-bc',
                     'binary': '-bb'}[sc]
             mode += ' --short-circuit'
