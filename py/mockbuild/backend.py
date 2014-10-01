@@ -200,8 +200,9 @@ class Commands(object):
             # note: moved to do this before the user change below!
             self.buildroot._nuke_rpm_db()
 
-            # drop privs and become mock user
-            self.uid_manager.becomeUser(self.buildroot.chrootuid, self.buildroot.chrootgid)
+            if not util.USE_NSPAWN:
+                # drop privs and become mock user
+                self.uid_manager.becomeUser(self.buildroot.chrootuid, self.buildroot.chrootgid)
             buildsetup = "build setup for %s" % baserpm
             self.state.start(buildsetup)
 
@@ -223,7 +224,6 @@ class Commands(object):
             self.plugins.call_hooks('prebuild')
 
             results = self.rebuild_package(spec_path, timeout, check)
-
             if results:
                 self.copy_build_results(results)
             elif self.config.get('short_circuit'):
@@ -234,8 +234,8 @@ class Commands(object):
             self.state.finish(rpmbuildstate)
 
         finally:
-            self.uid_manager.restorePrivs()
-
+            if not util.USE_NSPAWN:
+                self.uid_manager.restorePrivs()
             # tell caching we are done building
             self.plugins.call_hooks('postbuild')
         self.state.finish(buildstate)
@@ -365,7 +365,7 @@ class Commands(object):
         files = self.buildroot.doChroot([self.config['rpm_command'], "-qpl", srpm_path],
                     shell=False, uid=self.buildroot.chrootuid, gid=self.buildroot.chrootgid,
                     returnOutput=True)
-        specs = [item for item in files.split('\n') if item.endswith('.spec')]
+        specs = [item.rstrip() for item in files.split('\n') if item.rstrip().endswith('.spec')]
         if len(specs) < 1:
             raise PkgError("No specfile found in srpm: "\
                                                + os.path.basename(srpm_path))

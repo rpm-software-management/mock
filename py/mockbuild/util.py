@@ -68,6 +68,9 @@ PLUGIN_LIST = ['tmpfs', 'root_cache', 'yum_cache', 'bind_mount',
                'ccache', 'selinux', 'package_state', 'chroot_scan',
                'lvm_root']
 
+# This is set to False on EL6 in build time
+USE_NSPAWN = True
+
 # this is executed before namespace unsharing to get fd representing previous ns
 try:
     original_ipc_ns = os.open('/proc/self/ns/ipc', os.O_RDONLY)
@@ -406,6 +409,11 @@ def do(command, shell=False, chrootPath=None, cwd=None, timeout=0, raiseExc=True
     try:
         child = None
         logger.debug("Executing command: %s with env %s" % (command, env))
+        if chrootPath and USE_NSPAWN:
+            if isinstance(command, list):
+                command = ['/usr/bin/systemd-nspawn', '-D', chrootPath] + command
+            else: # string
+                command = "/usr/bin/systemd-nspawn -D {0} {1} ".format(chrootPath, command)
         child = subprocess.Popen(
             command,
             shell=shell,
@@ -477,8 +485,9 @@ class ChildPreExec(object):
         os.umask(0o02)
         condPersonality(self.personality)
         condEnvironment(self.env)
-        condChroot(self.chrootPath)
-        condDropPrivs(self.uid, self.gid)
+        if not USE_NSPAWN:
+            condChroot(self.chrootPath)
+            condDropPrivs(self.uid, self.gid)
         condChdir(self.cwd)
         reset_sigpipe()
 
@@ -511,6 +520,8 @@ def doshell(chrootPath=None, environ=None, uid=None, gid=None, cmd=None):
         cmdstr = '/bin/bash -c "%s"' % cmd
     else:
         cmdstr = "/bin/bash -i -l"
+    if USE_NSPAWN:
+        cmdstr = "/usr/bin/systemd-nspawn -D {0} {1}".format(chrootPath, cmdstr)
     preexec = ChildPreExec(personality=None, chrootPath=chrootPath, cwd=None,
                            uid=uid, gid=gid, env=environ, shell=True)
     log.debug("doshell: command: %s" % cmdstr)

@@ -118,7 +118,8 @@ class Buildroot(object):
         self.chroot_was_initialized = self.chroot_is_initialized()
 
         self._setup_dirs()
-        self._setup_devices()
+        if not util.USE_NSPAWN:
+            self._setup_devices()
         self._setup_files()
         self._setup_nosync()
         self.mounts.mountall()
@@ -134,7 +135,8 @@ class Buildroot(object):
             self._setup_resolver_config()
             self._setup_dbus_uuid()
             self._init_aux_files()
-            self._setup_timezone()
+            if not util.USE_NSPAWN:
+                self._setup_timezone()
             self._init_pkg_management()
             self._make_build_user()
             self._setup_build_dirs()
@@ -339,6 +341,13 @@ class Buildroot(object):
 
     @traceLog()
     def _setup_build_dirs(self):
+        if util.USE_NSPAWN:
+            macrofile_out = self.make_chroot_path('/root', ".rpmmacros")
+            rpmmacros = open(macrofile_out, 'w+')
+            for key, value in list(self.config['macros'].items()):
+                rpmmacros.write("%s %s\n" % (key, value))
+            rpmmacros.close()
+
         build_dirs = ['RPMS', 'SPECS', 'SRPMS', 'SOURCES', 'BUILD', 'BUILDROOT',
                       'originals']
         self.uid_manager.dropPrivsTemp()
@@ -353,11 +362,12 @@ class Buildroot(object):
                     os.chmod(os.path.join(dirpath, path), 0o755)
 
             # rpmmacros default
-            macrofile_out = self.make_chroot_path(self.homedir, ".rpmmacros")
-            rpmmacros = open(macrofile_out, 'w+')
-            for key, value in list(self.config['macros'].items()):
-                rpmmacros.write("%s %s\n" % (key, value))
-            rpmmacros.close()
+            if not util.USE_NSPAWN:
+                macrofile_out = self.make_chroot_path(self.homedir, ".rpmmacros")
+                rpmmacros = open(macrofile_out, 'w+')
+                for key, value in list(self.config['macros'].items()):
+                    rpmmacros.write("%s %s\n" % (key, value))
+                rpmmacros.close()
         finally:
             self.uid_manager.restorePrivs()
 

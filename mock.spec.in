@@ -27,6 +27,7 @@ Requires: usermode
 Requires: yum-utils
 Requires: createrepo_c
 Requires: pyliblzma
+Requires: systemd
 Requires(pre): shadow-utils
 Requires(post): coreutils
 BuildRequires: python-devel, autoconf, automake
@@ -65,6 +66,9 @@ of the buildroot.
 
 %prep
 %setup -q
+%if 0%{?rhel} == 6
+sed -i "s|^USE_NSPAWN = True|USE_NSPAWN = False|" py/mockbuild/util.py 
+%endif
 
 %build
 autoreconf -vif
