@@ -752,9 +752,13 @@ def run_command(options, args, config_opts, commands, buildroot, state):
             src = buildroot.make_chroot_path(f)
             log.info("copying %s to %s" % (src, dest))
             if os.path.isdir(src):
-                shutil.copytree(src, dest)
+                shutil.copytree(src, dest, symlinks=True)
             else:
-                shutil.copy(src, dest)
+                if os.path.islink(src):
+                    linkto = os.readlink(src)
+                    os.symlink(linkto, dst)
+                else:
+                    shutil.copy(src, dest)
         buildroot.uid_manager.restorePrivs()
 
     elif options.mode in ('pm-cmd', 'yum-cmd', 'dnf-cmd'):
