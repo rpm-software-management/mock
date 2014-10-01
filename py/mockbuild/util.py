@@ -455,6 +455,10 @@ def do(command, shell=False, chrootPath=None, cwd=None, timeout=0, raiseExc=True
             niceExit=0
             os.killpg(child.pid, 9)
 
+    # only logging from this point, convert command to string
+    if isinstance(command, list):
+           command = ' '.join(command)
+
     if not niceExit:
         raise commandTimeoutExpired("Timeout(%s) expired for command:\n # %s\n%s" % (timeout, command, output))
 
