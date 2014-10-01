@@ -231,13 +231,6 @@ def getAddtlReqs(hdr, conf):
 
     return set(reqlist)
 
-# not traced...
-def chomp(line):
-    if line.endswith("\n"):
-        return line[:-1]
-    else:
-        return line
-
 @traceLog()
 def unshare(flags):
     getLog().debug("Unsharing. Flags: %s" % flags)
