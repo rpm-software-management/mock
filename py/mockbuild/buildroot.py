@@ -341,13 +341,6 @@ class Buildroot(object):
 
     @traceLog()
     def _setup_build_dirs(self):
-        if util.USE_NSPAWN:
-            macrofile_out = self.make_chroot_path('/root', ".rpmmacros")
-            rpmmacros = open(macrofile_out, 'w+')
-            for key, value in list(self.config['macros'].items()):
-                rpmmacros.write("%s %s\n" % (key, value))
-            rpmmacros.close()
-
         build_dirs = ['RPMS', 'SPECS', 'SRPMS', 'SOURCES', 'BUILD', 'BUILDROOT',
                       'originals']
         self.uid_manager.dropPrivsTemp()
@@ -362,12 +355,11 @@ class Buildroot(object):
                     os.chmod(os.path.join(dirpath, path), 0o755)
 
             # rpmmacros default
-            if not util.USE_NSPAWN:
-                macrofile_out = self.make_chroot_path(self.homedir, ".rpmmacros")
-                rpmmacros = open(macrofile_out, 'w+')
-                for key, value in list(self.config['macros'].items()):
-                    rpmmacros.write("%s %s\n" % (key, value))
-                rpmmacros.close()
+            macrofile_out = self.make_chroot_path(self.homedir, ".rpmmacros")
+            rpmmacros = open(macrofile_out, 'w+')
+            for key, value in list(self.config['macros'].items()):
+                rpmmacros.write("%s %s\n" % (key, value))
+            rpmmacros.close()
         finally:
             self.uid_manager.restorePrivs()
 

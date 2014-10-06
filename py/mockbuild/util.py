@@ -387,7 +387,7 @@ def selinuxEnabled():
 #
 @traceLog()
 def do(command, shell=False, chrootPath=None, cwd=None, timeout=0, raiseExc=True,
-       returnOutput=0, uid=None, gid=None, personality=None,
+       returnOutput=0, uid=None, gid=None, user=None, personality=None,
        printOutput=False, env=None, pty=False, *args, **kargs):
 
     logger = kargs.get("logger", getLog())
@@ -403,10 +403,7 @@ def do(command, shell=False, chrootPath=None, cwd=None, timeout=0, raiseExc=True
         child = None
         logger.debug("Executing command: %s with env %s" % (command, env))
         if chrootPath and USE_NSPAWN:
-            if isinstance(command, list):
-                command = ['/usr/bin/systemd-nspawn', '-D', chrootPath] + command
-            else: # string
-                command = "/usr/bin/systemd-nspawn -D {0} {1} ".format(chrootPath, command)
+            command = _prepare_nspawn_command(chrootPath, user, command)
         child = subprocess.Popen(
             command,
             shell=shell,
@@ -502,8 +499,23 @@ def is_in_dir(path, directory):
 
     return os.path.commonprefix([path, directory]) == directory
 
+def _prepare_nspawn_command(chrootPath, user, cmd):
+    cmd_is_list = isinstance(cmd, list)
+    if user:
+        # needs to be /bin because of el5 and el6 targets
+        if cmd_is_list:
+            cmd = ['/bin/su', '-l', user, '-c', '{0}'.format(" ".join(cmd))]
+        else:
+            cmd = ['/bin/su', '-l', user, '-c', '"{0}"'.format(cmd)]
+    elif not cmd_is_list:
+        cmd = [ cmd, ]
+    cmd = ['/usr/bin/systemd-nspawn', '-D', chrootPath] + cmd
+    if cmd_is_list:
+        return cmd
+    else:
+        return " ".join(cmd)
 
-def doshell(chrootPath=None, environ=None, uid=None, gid=None, cmd=None):
+def doshell(chrootPath=None, environ=None, uid=None, gid=None, user=None, cmd=None):
     log = getLog()
     log.debug("doshell: chrootPath:%s, uid:%d, gid:%d" % (chrootPath, uid, gid))
     if environ is None:
@@ -514,11 +526,14 @@ def doshell(chrootPath=None, environ=None, uid=None, gid=None, cmd=None):
         environ['SHELL'] = '/bin/bash'
     log.debug("doshell environment: %s", environ)
     if cmd:
-        cmdstr = '/bin/bash -c "%s"' % cmd
+        if not USE_NSPAWN:
+            cmdstr = '/bin/bash -c "%s"' % cmd
+        else:
+            cmdstr = cmd
     else:
         cmdstr = "/bin/bash -i -l"
     if USE_NSPAWN:
-        cmdstr = "/usr/bin/systemd-nspawn -D {0} {1}".format(chrootPath, cmdstr)
+        cmdstr = _prepare_nspawn_command(chrootPath, user, cmdstr)
     preexec = ChildPreExec(personality=None, chrootPath=chrootPath, cwd=None,
                            uid=uid, gid=gid, env=environ, shell=True)
     log.debug("doshell: command: %s" % cmdstr)
@@ -716,8 +731,8 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
     config_opts['yum_command'] = '/usr/bin/yum'
     config_opts['yum_builddep_command'] = '/usr/bin/yum-builddep'
     config_opts['dnf_command'] = '/usr/bin/dnf'
-    config_opts['rpm_command'] = 'rpm'
-    config_opts['rpmbuild_command'] = 'rpmbuild'
+    config_opts['rpm_command'] = '/bin/rpm'
+    config_opts['rpmbuild_command'] = '/bin/rpmbuild'
 
     return config_opts
 

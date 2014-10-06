@@ -176,6 +176,7 @@ class Commands(object):
             shell=True,
             env=self.buildroot.env,
             uid=self.buildroot.chrootuid,
+            user=self.buildroot.chrootuser,
             gid=self.buildroot.chrootgid,
             )
 
@@ -258,6 +259,7 @@ class Commands(object):
             ret = util.doshell(chrootPath=self.buildroot.make_chroot_path(),
                                          environ=self.buildroot.env,
                                          uid=uid, gid=gid,
+                                         user=self.buildroot.chrootuser,
                                          cmd=cmd)
         finally:
             log.debug("shell: unmounting all filesystems")
@@ -281,7 +283,8 @@ class Commands(object):
         try:
             if options.unpriv:
                 self.buildroot.doChroot(args, shell=shell, printOutput=True,
-                              uid=self.buildroot.chrootuid, gid=self.buildroot.chrootgid, cwd=options.cwd)
+                              uid=self.buildroot.chrootuid, gid=self.buildroot.chrootgid,
+                              user=self.buildroot.chrootuser, cwd=options.cwd)
             else:
                 self.buildroot.doChroot(args, shell=shell, cwd=options.cwd, printOutput=True)
         finally:
@@ -364,6 +367,7 @@ class Commands(object):
     def get_specfile_name(self, srpm_path):
         files = self.buildroot.doChroot([self.config['rpm_command'], "-qpl", srpm_path],
                     shell=False, uid=self.buildroot.chrootuid, gid=self.buildroot.chrootgid,
+                    user=self.buildroot.chrootuser,
                     returnOutput=True)
         specs = [item.rstrip() for item in files.split('\n') if item.rstrip().endswith('.spec')]
         if len(specs) < 1:
@@ -375,16 +379,20 @@ class Commands(object):
     @traceLog()
     def install_srpm(self, srpm_path):
         self.buildroot.doChroot([self.config['rpm_command'], "-Uvh", "--nodeps", srpm_path],
-            shell=False, uid=self.buildroot.chrootuid, gid=self.buildroot.chrootgid)
+            shell=False, uid=self.buildroot.chrootuid, gid=self.buildroot.chrootgid,
+            user=self.buildroot.chrootuser)
 
     @traceLog()
     def rebuild_installed_srpm(self, spec_path, timeout):
-        self.buildroot.doChroot(["bash", "--login", "-c",
-                                 '{command} -bs --target {0} --nodeps {1}'\
-                                 .format(self.rpmbuild_arch, spec_path,
-                                      command=self.config['rpmbuild_command'])],
+        command = ['{command} -bs --target {0} --nodeps {1}'\
+                   .format(self.rpmbuild_arch, spec_path,
+                    command=self.config['rpmbuild_command'])]
+        if not util.USE_NSPAWN:
+            command = ["bash", "--login", "-c"] + command
+        self.buildroot.doChroot(command,
                 shell=False, logger=self.buildroot.build_log, timeout=timeout,
                 uid=self.buildroot.chrootuid, gid=self.buildroot.chrootgid,
+                user=self.buildroot.chrootuser,
                 printOutput=True)
         results = glob.glob("%s/%s/SRPMS/*.src.rpm" % (self.make_chroot_path(),
                                                        self.buildroot.builddir))
@@ -414,9 +422,13 @@ class Commands(object):
                               .format(self.rpmbuild_arch, check_opt, spec_path,
                                       additional_opts, mode=mode,
                                       command=self.config['rpmbuild_command'])
-        self.buildroot.doChroot(["bash", "--login", "-c", rpmbuild_cmd],
+        command = [ rpmbuild_cmd, ]
+        if not util.USE_NSPAWN:
+            command = ["bash", "--login", "-c"] + command
+        self.buildroot.doChroot(command,
             shell=False, logger=self.buildroot.build_log, timeout=timeout,
             uid=self.buildroot.chrootuid, gid=self.buildroot.chrootgid,
+            user=self.buildroot.chrootuser,
             printOutput=True)
         bd_out = self.make_chroot_path(self.buildroot.builddir)
         results = glob.glob(bd_out + '/RPMS/*.rpm')
