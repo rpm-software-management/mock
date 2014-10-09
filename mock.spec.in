@@ -27,7 +27,9 @@ Requires: usermode
 Requires: yum-utils
 Requires: createrepo_c
 Requires: pyliblzma
+%if 0%{?rhel} != 6
 Requires: systemd
+%endif
 Requires(pre): shadow-utils
 Requires(post): coreutils
 BuildRequires: python-devel, autoconf, automake
@@ -174,6 +176,19 @@ fi
 %endif
 
 %changelog
+* Thu Oct  9 2014 Miroslav Suchý <msuchy@redhat.com> - 1.2.0-1
+- update configs for secondary architecture (Dan Horák)
+- caching of buildroots using LVM (Michael Simacek)
+- add support for DNF (Michael Simacek)
+- initial porting to python3 (Michael Simacek)
+- new config option nosync (Michael Simacek)
+- add CentOS extra repository [BZ# 1108402]
+- correctly create default.cfg on arm [BZ# 1033786]
+- postpone loading of rpm after chroot is set [BZ# 1111147]
+- use systemd-nspawn instead of chroot [RHBZ# 1132762]
+- in --copyout do not fail on symlinks [BZ# 971474]
+- allow to short circuit to prep phase [BZ# 966985]
+
 * Fri Jul 18 2014 Clark Williams <williams@redhat.com> - 1.1.41-1
 - fix python 2.7 feature so we can run on rhel6
 
