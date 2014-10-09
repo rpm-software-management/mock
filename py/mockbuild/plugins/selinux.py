@@ -20,7 +20,7 @@ requires_api_version = "1.1"
 # plugin entry point
 @traceLog()
 def init(plugins, conf, buildroot):
-    if mockbuild.util.selinuxEnabled():
+    if mockbuild.util.selinuxEnabled() and not mockbuild.util.USE_NSPAWN:
         getLog().info("selinux enabled")
         SELinux(plugins, conf, buildroot)
     else:
