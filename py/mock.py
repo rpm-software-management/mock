@@ -240,6 +240,9 @@ def command_parse():
                       help="Pass enablerepo option to yum/dnf")
     parser.add_option("--disablerepo", action="append", default=[],
                       help="Pass disablerepo option to yum/dnf")
+    parser.add_option("--old-chroot", action="store_true", dest="old_chroot",
+                      default=False,
+                      help="use old chroot instead of systemd-nspawn.")
 
     # verbosity
     parser.add_option("-v", "--verbose", action="store_const", const=2,
@@ -309,6 +312,8 @@ def command_parse():
         options.spec = os.path.expanduser(options.spec)
     if options.sources:
         options.sources = os.path.expanduser(options.sources)
+    if options.old_chroot:
+        utils.USE_NSPAWN = True
 
     return (options, args)
 
