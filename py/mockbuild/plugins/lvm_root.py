@@ -25,11 +25,13 @@ def restored_ipc_ns():
 @contextmanager
 def volume_group(name, mode='r'):
     with restored_ipc_ns():
+        vg = None
         try:
             vg = lvm.vgOpen(name, mode)
             yield vg
         finally:
-            vg.close()
+            if vg is not None:
+                vg.close()
 
 def lvm_do(*args, **kwargs):
     with restored_ipc_ns():
