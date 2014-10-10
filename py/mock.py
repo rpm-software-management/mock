@@ -243,6 +243,9 @@ def command_parse():
     parser.add_option("--old-chroot", action="store_true", dest="old_chroot",
                       default=False,
                       help="use old chroot instead of systemd-nspawn.")
+    parser.add_option("--new-chroot", action="store_true", dest="new_chroot",
+                      default=False,
+                      help="use new chroot (systemd-nspawn).")
 
     # verbosity
     parser.add_option("-v", "--verbose", action="store_const", const=2,
@@ -313,6 +316,8 @@ def command_parse():
     if options.sources:
         options.sources = os.path.expanduser(options.sources)
     if options.old_chroot:
+        util.USE_NSPAWN = False
+    if options.new_chroot:
         util.USE_NSPAWN = True
 
     return (options, args)

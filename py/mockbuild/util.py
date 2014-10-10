@@ -69,7 +69,7 @@ PLUGIN_LIST = ['tmpfs', 'root_cache', 'yum_cache', 'bind_mount',
                'lvm_root']
 
 # This is set to False on EL6 in build time
-USE_NSPAWN = True
+USE_NSPAWN = False
 
 # this is executed before namespace unsharing to get fd representing previous ns
 try:
