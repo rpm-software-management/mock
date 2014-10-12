@@ -12,6 +12,7 @@ runcmd "$MOCKCMD --offline --chroot -- gcc -Wall -o /tmp/daemontest /tmp/daemont
 echo -e '#!/bin/sh\n/tmp/daemontest\nsleep 60\n' >> $CHROOT/tmp/try
 # the following should launch about three processes in the chroot: bash, sleep, daemontest
 $MOCKCMD --offline --chroot -- bash /tmp/try &
+sleep 10
 mockpid=$!
 sleep 1
 # now we 'prematurely' kill mock. This should leave the three orphans above
