@@ -218,7 +218,7 @@ class Commands(object):
             self.installSrpmDeps(rebuilt_srpm)
             self.state.finish(buildsetup)
 
-            rpmbuildstate = "rpmbuild -bb %s" % baserpm
+            rpmbuildstate = "rpmbuild %s" % baserpm
             self.state.start(rpmbuildstate)
 
             # tell caching we are building
