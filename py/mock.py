@@ -230,7 +230,7 @@ def command_parse():
                       help="Specifies sources (either a single file or a directory of files)"
                       "to use to build an SRPM (used only with --buildsrpm)")
     parser.add_option("--short-circuit", action="store", type='choice',
-                      choices=['install', 'build', 'binary'],
+                      choices=['prep', 'install', 'build', 'binary'],
                       help="Pass short-circuit option to rpmbuild to skip already "
                       "complete stages. Warning: produced packages are unusable. "
                       "Implies --no-clean. Valid options: build, install, binary")
