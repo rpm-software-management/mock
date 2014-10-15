@@ -7,6 +7,20 @@
 
 %{!?python_sitelib: %define python_sitelib %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib()")}
 
+%if 0%{?fedora} > 21
+%global use_python3 1
+%global use_python2 0
+%else
+%global use_python3 0
+%global use_python2 1
+%endif
+
+%if %{use_python3}
+%global python_sitelib %{python3_sitelib}
+%else
+%global python_sitelib %{python_sitelib}
+%endif
+
 # mock group id allocate for Fedora
 %global mockgid  135
 
@@ -18,11 +32,9 @@ License: GPLv2+
 Source: https://git.fedorahosted.org/cgit/mock.git/snapshot/%{name}-%{version}.tar.xz
 URL: http://fedoraproject.org/wiki/Projects/Mock
 BuildArch: noarch
-Requires: python >= 2.6
 Requires: yum >= 2.4
 Requires: tar
 Requires: pigz
-Requires: python-ctypes
 Requires: usermode
 Requires: yum-utils
 Requires: createrepo_c
@@ -32,10 +44,19 @@ Requires: systemd
 %endif
 Requires(pre): shadow-utils
 Requires(post): coreutils
-BuildRequires: python-devel, autoconf, automake
+BuildRequires: autoconf, automake
 %if 0%{?fedora} || 0%{?rhel} > 6
 BuildRequires: bash-completion
 %endif
+%if %{use_python3}
+Requires: python3
+BuildRequires: python3-devel
+%else
+Requires: python-ctypes
+Requires: python >= 2.6
+BuildRequires: python-devel
+%endif
+
 
 %description
 Mock takes an SRPM and builds it in a chroot.
@@ -51,7 +72,7 @@ Requires: tar
 %description scm
 Mock SCM integration module.
 
-%if 0%{?rhel} != 6
+%if 0%{?rhel} != 6 && %{use_python2}
 # lvm plugin requires lvm2-python-libs, kernel >= 3.0 and glibc >= 2.14, which
 # are not available on el6
 %package lvm
@@ -70,6 +91,11 @@ of the buildroot.
 %setup -q
 %if 0%{?rhel} == 6
 sed -i "s|^USE_NSPAWN = True|USE_NSPAWN = False|" py/mockbuild/util.py 
+%endif
+%if %{use_python3}
+for file in py/mock.py py/mockchain.py scripts/test-cfgs.py tests/dropcache.py; do
+  sed -i 1"s|#!/usr/bin/python |#!/usr/bin/python3 |" $file
+done
 %endif
 
 %build
@@ -170,7 +196,7 @@ fi
 %files scm
 %{python_sitelib}/mockbuild/scm.py*
 
-%if 0%{?rhel} != 6
+%if 0%{?rhel} != 6 && %{use_python2}
 %files lvm
 %{python_sitelib}/mockbuild/plugins/lvm_root.*
 %endif
