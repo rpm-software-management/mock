@@ -750,6 +750,7 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
 @traceLog()
 def set_config_opts_per_cmdline(config_opts, options, args):
     "takes processed cmdline args and sets config options."
+    config_opts['verbose'] = options.verbose
     # do some other options and stuff
     if options.arch:
         config_opts['target_arch'] = options.arch

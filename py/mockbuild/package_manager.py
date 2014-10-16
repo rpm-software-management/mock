@@ -61,7 +61,10 @@ class _PackageManager(object):
         invocation = self.build_invocation(*args)
         self.buildroot.root_log.debug(invocation)
         kwargs['printOutput'] = kwargs.get('printOutput', True)
-        kwargs['pty'] = kwargs.get('pty', True)
+        if self.config['verbose'] == 0:
+            kwargs.pop('printOutput', None)
+        else:
+            kwargs['pty'] = kwargs.get('pty', True)
         self.buildroot._nuke_rpm_db()
         out = util.do(invocation, env=env, **kwargs)
         self.plugins.call_hooks("postyum")

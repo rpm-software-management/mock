@@ -393,7 +393,7 @@ class Commands(object):
                 shell=False, logger=self.buildroot.build_log, timeout=timeout,
                 uid=self.buildroot.chrootuid, gid=self.buildroot.chrootgid,
                 user=self.buildroot.chrootuser,
-                printOutput=True)
+                printOutput=self.config['verbose'])
         results = glob.glob("%s/%s/SRPMS/*.src.rpm" % (self.make_chroot_path(),
                                                        self.buildroot.builddir))
         if len(results) != 1:
@@ -429,7 +429,7 @@ class Commands(object):
             shell=False, logger=self.buildroot.build_log, timeout=timeout,
             uid=self.buildroot.chrootuid, gid=self.buildroot.chrootgid,
             user=self.buildroot.chrootuser,
-            printOutput=True)
+            printOutput=self.config['verbose'])
         bd_out = self.make_chroot_path(self.buildroot.builddir)
         results = glob.glob(bd_out + '/RPMS/*.rpm')
         results += glob.glob(bd_out + '/SRPMS/*.rpm')
