@@ -21,6 +21,7 @@ import time
 import errno
 import grp
 import locale
+import logging
 from glob import glob
 from ast import literal_eval
 
@@ -307,58 +308,67 @@ def logOutput(fds, logger, returnOutput=1, start=0, timeout=0, printOutput=False
         if not fd.closed:
             fcntl.fcntl(fd, fcntl.F_SETFL, flags| os.O_NONBLOCK)
 
-    tail = ""
-    while not done:
-        if (time.time() - start) > timeout and timeout != 0:
-            done = 1
-            break
-
-        i_rdy, o_rdy, e_rdy = select.select(fds, [], [], 1)
-
-        if not i_rdy and not o_rdy and not e_rdy:
-            if child and child.poll() is not None:
-                logger.info("Child pid '%s' is dead" % child.pid)
-                done = True
-                if chrootPath:
-                    logger.info("Child dead, killing orphans")
-                    orphansKill(chrootPath)
-                continue
-
-        for s in i_rdy:
-            # slurp as much input as is ready
-            raw = s.read()
-            if not raw:
+    mockbuild_logger = logging.getLogger('mockbuild')
+    stored_propagate = mockbuild_logger.propagate
+    if printOutput:
+        # prevent output being printed twice when log propagates to stdout
+        mockbuild_logger.propagate = 0
+    try:
+        tail = ""
+        while not done:
+            if (time.time() - start) > timeout and timeout != 0:
                 done = 1
                 break
-            if printOutput:
-                print(raw, end='')
-            input = raw.decode(encoding, 'replace')
-            lines = input.split("\n")
-            if tail:
-                lines[0] = tail + lines[0]
-            # we may not have all of the last line
-            tail = lines.pop()
-            if not lines:
-                continue
-            if pty:
-                lines = [process_input(line) for line in lines]
-            processed_input = '\n'.join(lines) + '\n'
-            if logger is not None:
-                for line in lines:
-                    if line != '':
-                        logger.debug(line)
-                for h in logger.handlers:
-                    h.flush()
-            if returnOutput:
-                output += processed_input
 
-    if tail:
-        if pty:
-            tail = process_input(tail) + '\n'
-        if logger is not None:
-            logger.debug(tail)
-        if returnOutput:
-            output += tail
+            i_rdy, o_rdy, e_rdy = select.select(fds, [], [], 1)
+
+            if not i_rdy and not o_rdy and not e_rdy:
+                if child and child.poll() is not None:
+                    logger.info("Child pid '%s' is dead" % child.pid)
+                    done = True
+                    if chrootPath:
+                        logger.info("Child dead, killing orphans")
+                        orphansKill(chrootPath)
+                    continue
+
+            for s in i_rdy:
+                # slurp as much input as is ready
+                raw = s.read()
+                if not raw:
+                    done = 1
+                    break
+                if printOutput:
+                    print(raw, end='')
+                input = raw.decode(encoding, 'replace')
+                lines = input.split("\n")
+                if tail:
+                    lines[0] = tail + lines[0]
+                # we may not have all of the last line
+                tail = lines.pop()
+                if not lines:
+                    continue
+                if pty:
+                    lines = [process_input(line) for line in lines]
+                processed_input = '\n'.join(lines) + '\n'
+                if logger is not None:
+                    for line in lines:
+                        if line != '':
+                            logger.debug(line)
+                    for h in logger.handlers:
+                        h.flush()
+                if returnOutput:
+                    output += processed_input
+
+        if tail:
+            if pty:
+                tail = process_input(tail) + '\n'
+            if logger is not None:
+                logger.debug(tail)
+            if returnOutput:
+                output += tail
+    finally:
+        mockbuild_logger.propagate = stored_propagate
+
     return output
 
 @traceLog()
