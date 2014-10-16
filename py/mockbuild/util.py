@@ -29,6 +29,8 @@ import mockbuild.exception
 from mockbuild.trace_decorator import traceLog, getLog
 import mockbuild.uid as uid
 
+encoding = locale.getpreferredencoding(False)
+
 try:
     basestring = basestring
 except NameError:
@@ -324,12 +326,13 @@ def logOutput(fds, logger, returnOutput=1, start=0, timeout=0, printOutput=False
 
         for s in i_rdy:
             # slurp as much input as is ready
-            input = s.read().decode(locale.getpreferredencoding(False), 'replace')
-            if input == "":
+            raw = s.read()
+            if not raw:
                 done = 1
                 break
             if printOutput:
-                print(input, end='')
+                print(raw, end='')
+            input = raw.decode(encoding, 'replace')
             lines = input.split("\n")
             if tail:
                 lines[0] = tail + lines[0]
@@ -356,8 +359,6 @@ def logOutput(fds, logger, returnOutput=1, start=0, timeout=0, printOutput=False
             logger.debug(tail)
         if returnOutput:
             output += tail
-        if printOutput:
-            print(tail, end='')
     return output
 
 @traceLog()
