@@ -649,7 +649,7 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
                 'extension': '.gz'},
             'bind_mount_enable': True,
             'bind_mount_opts': {
-            	'dirs': [
+                'dirs': [
                 # specify like this:
                 # ('/host/path', '/bind/mount/path/in/chroot/' ),
                 # ('/another/host/path', '/another/bind/mount/path/in/chroot/'),
