@@ -52,6 +52,7 @@ BuildRequires: bash-completion
 Requires: python3
 Requires: python3-six
 Requires: python3-requests
+Requires: rpm-python3
 BuildRequires: python3-devel
 %else
 Requires: python-ctypes
