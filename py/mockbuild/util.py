@@ -313,6 +313,7 @@ def logOutput(fds, logger, returnOutput=1, start=0, timeout=0, printOutput=False
     if printOutput:
         # prevent output being printed twice when log propagates to stdout
         mockbuild_logger.propagate = 0
+        sys.stdout.flush()
     try:
         tail = ""
         while not done:
@@ -338,7 +339,11 @@ def logOutput(fds, logger, returnOutput=1, start=0, timeout=0, printOutput=False
                     done = 1
                     break
                 if printOutput:
-                    print(raw, end='')
+                    if hasattr(sys.stdout, 'buffer'):
+                        # python3 would print binary strings ugly
+                        sys.stdout.buffer.write(raw)
+                    else:
+                        print(raw, end='')
                 input = raw.decode(encoding, 'replace')
                 lines = input.split("\n")
                 if tail:
