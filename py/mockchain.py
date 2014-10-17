@@ -22,14 +22,15 @@
 # adding each to a local repo
 # so they are available as build deps to next pkg being built
 from __future__ import print_function
+from six.moves import urllib_parse
 
 import sys
 import subprocess
 import os
 import optparse
+import requests
 import tempfile
 import shutil
-from urlgrabber import grabber
 import time
 import re
 
@@ -307,20 +308,21 @@ def main(args):
 
             elif pkg.startswith('http://') or pkg.startswith('https://') or pkg.startswith('ftp://'):
                 url = pkg
-                cwd = os.getcwd()
-                os.chdir(download_dir)
                 try:
                     log(opts.logfile, 'Fetching %s' % url)
-                    ug = grabber.URLGrabber()
-                    fn = ug.urlgrab(url)
-                    pkg = download_dir + '/' + fn
+                    r = requests.get(url)
+                    if r.status_code == requests.codes.ok:
+                        fn = urllib_parse.urlsplit(r.url).path.rsplit('/', 1)[1]
+                        pkg = download_dir + '/' + fn
+                        fd = open(pkg, 'wb')
+                        for chunk in r.iter_content(4096):
+                            fd.write(chunk)
+                        fd.close()
                 except Exception as e:
                     log(opts.logfile, 'Error Downloading %s: %s' % (url, str(e)))
                     failed.append(url)
-                    os.chdir(cwd)
                     continue
                 else:
-                    os.chdir(cwd)
                     downloaded_pkgs[pkg] = url
             log(opts.logfile, "Start build: %s" % pkg)
             ret, cmd, out, err = do_build(opts, cfg, pkg)

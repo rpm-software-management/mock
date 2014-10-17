@@ -50,9 +50,13 @@ BuildRequires: bash-completion
 %endif
 %if %{use_python3}
 Requires: python3
+Requires: python3-six
+Requires: python3-requests
 BuildRequires: python3-devel
 %else
 Requires: python-ctypes
+Requires: python-six
+Requires: python-requests
 Requires: python >= 2.6
 BuildRequires: python-devel
 %endif
