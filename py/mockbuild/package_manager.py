@@ -44,10 +44,8 @@ class _PackageManager(object):
             invocation += ['--releasever', releasever]
         if not self.config['online']:
             invocation.append('-C')
-        for repo in self.config['enablerepo']:
-            invocation += ['--enablerepo', repo]
-        for repo in self.config['disablerepo']:
-            invocation += ['--disablerepo', repo]
+        if self.config['enable_disable_repos']:
+            invocation += self.config['enable_disable_repos']
         invocation += common_opts
         invocation += args
         return invocation

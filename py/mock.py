@@ -84,6 +84,15 @@ def scrub_callback(option, opt, value, parser):
     parser.values.scrub.append(value)
     parser.values.mode = "clean"
 
+def repo_callback(optobj, opt, value, parser):
+    '''Callback for the enablerepo and disablerepo option.
+
+    Combines the values given for these options while preserving order
+    from command line.
+    '''
+    dest = eval('parser.values.%s' % optobj.dest)
+    dest.extend((opt, value))
+
 def command_parse():
     """return options and args from parsing the command line"""
     plugins = util.PLUGIN_LIST
@@ -236,10 +245,12 @@ def command_parse():
                       "Implies --no-clean. Valid options: build, install, binary")
     parser.add_option("--rpmbuild-opts", action="store",
                       help="Pass additional options to rpmbuild")
-    parser.add_option("--enablerepo", action="append", default=[],
-                      help="Pass enablerepo option to yum/dnf")
-    parser.add_option("--disablerepo", action="append", default=[],
-                      help="Pass disablerepo option to yum/dnf")
+    parser.add_option("--enablerepo", action="callback", type="string", dest="enable_disable_repos", default=[],
+                      help="Pass enablerepo option to yum/dnf", metavar='[repo]',
+                      callback=repo_callback)
+    parser.add_option("--disablerepo", action="callback", type="string", dest="enable_disable_repos", default=[],
+                      help="Pass disablerepo option to yum/dnf", metavar='[repo]',
+                      callback=repo_callback)
     parser.add_option("--old-chroot", action="store_true", dest="old_chroot",
                       default=False,
                       help="use old chroot instead of systemd-nspawn.")
@@ -319,6 +330,8 @@ def command_parse():
         util.USE_NSPAWN = False
     if options.new_chroot:
         util.USE_NSPAWN = True
+
+    #print(options.enable_disable_repos)
 
     return (options, args)
 

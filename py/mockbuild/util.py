@@ -862,8 +862,7 @@ def set_config_opts_per_cmdline(config_opts, options, args):
     if options.rpmbuild_opts:
         config_opts['rpmbuild_opts'] = options.rpmbuild_opts
 
-    config_opts['enablerepo'] = options.enablerepo
-    config_opts['disablerepo'] = options.disablerepo
+    config_opts['enable_disable_repos'] = options.enable_disable_repos
 
     if options.scm:
         try:
