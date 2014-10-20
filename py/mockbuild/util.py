@@ -537,7 +537,7 @@ def doshell(chrootPath=None, environ=None, uid=None, gid=None, user=None, cmd=No
     if environ is None:
         environ = clean_env()
     if not 'PROMPT_COMMAND' in environ:
-        environ['PROMPT_COMMAND'] = 'echo -n "<mock-chroot>"'
+        environ['PROMPT_COMMAND'] = 'printf "\033]0;<mock-chroot>\007<mock-chroot>"'
     if not 'SHELL' in environ:
         environ['SHELL'] = '/bin/bash'
     log.debug("doshell environment: %s", environ)
@@ -687,7 +687,7 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
         'HOME': '/builddir',
         'HOSTNAME': 'mock',
         'PATH': '/usr/bin:/bin:/usr/sbin:/sbin',
-        'PROMPT_COMMAND': 'echo -n "<mock-chroot>"',
+        'PROMPT_COMMAND': 'printf "\033]0;<mock-chroot>\007<mock-chroot>"',
         'LANG': os.environ.setdefault('LANG', 'en_US.UTF-8'),
         }
 
