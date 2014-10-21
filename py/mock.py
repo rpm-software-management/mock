@@ -177,7 +177,8 @@ def command_parse():
 
     # options
     parser.add_option("-r", "--root", action="store", type="string", dest="chroot",
-                      help="chroot name/config file name default: %default",
+                      help="chroot config file name or path. Taken as a path if it ends "
+                           "in .cfg, otherwise looked up in the configdir. default: %default",
                       default='default')
 
     parser.add_option("--offline", action="store_false", dest="online",
@@ -345,8 +346,14 @@ def load_config(config_path, name, uidManager):
     config_opts['chroot_name'] = name
 
     # Read in the config files: default, and then user specified
+    if name.endswith('.cfg'):
+        # If the .cfg is explicitly specified we take the root arg to
+        # specify a path, rather than looking it up in the configdir.
+        chroot_cfg_path = name
+    else:
+        chroot_cfg_path = '%s/%s.cfg' % (config_path, name)
     for cfg in (os.path.join(config_path, 'site-defaults.cfg'),
-                '%s/%s.cfg' % (config_path, name)):
+                chroot_cfg_path):
         if os.path.exists(cfg):
             config_opts['config_paths'].append(cfg)
             util.update_config_from_file(config_opts, cfg, uidManager)
@@ -354,6 +361,8 @@ def load_config(config_path, name, uidManager):
             log.error("Could not find required config file: %s" % cfg)
             if name == "default":
                 log.error("  Did you forget to specify the chroot to use with '-r'?")
+            if "/" in cfg:
+                log.error("  If you're trying to specify a path, include the .cfg extension, e.g. -r ./target.cfg")
             sys.exit(1)
 
     # Read user specific config file
