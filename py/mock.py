@@ -332,8 +332,6 @@ def command_parse():
     if options.new_chroot:
         util.USE_NSPAWN = True
 
-    #print(options.enable_disable_repos)
-
     return (options, args)
 
 @traceLog()
