@@ -69,7 +69,7 @@ personality_defs = {
 
 PLUGIN_LIST = ['tmpfs', 'root_cache', 'yum_cache', 'bind_mount',
                'ccache', 'selinux', 'package_state', 'chroot_scan',
-               'lvm_root']
+               'lvm_root', 'compress_logs']
 
 # This is set to False on EL6 in build time
 USE_NSPAWN = False
