@@ -145,15 +145,16 @@ exit 0
 # fix cache permissions from old installs
 chmod 2775 %{_localstatedir}/cache/%{name}
 
-if [ -e /etc/fedora-release ]
-then
-    if grep -Fq Rawhide /etc/fedora-release; then
+if [ -e /etc/os-release ]; then
+    # fedora and rhel7
+    if grep -Fq Rawhide /etc/os-release; then
         ver=rawhide
     else
-        ver=$(rpm -q --nosignature --qf "%{VERSION}" --whatprovides fedora-release)
+        ver=$(source /etc/os-release && echo $VERSION_ID | cut -d. -f1 | grep -o '[0-9]\+')
     fi
 else
-    ver=$(rpm -q --nosignature --qf "%{VERSION}" --whatprovides redhat-release | cut -d. -f1 | grep -o '[0-9]\+')
+    # rhel6 or something obsure, use buildtime version
+    ver=%{?rhel}%{?fedora}
 fi
 mock_arch=$(python -c "import rpmUtils.arch; baseArch = rpmUtils.arch.getBaseArch(); print baseArch")
 cfg=%{?fedora:fedora}%{?rhel:epel}-$ver-${mock_arch}.cfg
