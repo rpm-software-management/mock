@@ -443,20 +443,18 @@ class Buildroot(object):
 
         if self.config['nosync']:
             target_arch = self.config['target_arch']
-            copied_lib64 = False
             copied_lib = copy_nosync()
-            force = self.config['nosync_force']
-            if target_arch in multilib:
-                copied_lib64 = copy_nosync(lib64=True)
-                if not force and copied_lib != copied_lib64:
-                    self.root_log.warn("For multilib systems, both architectures "
-                                       "of nosync library need to be installed")
-                    return
+            copied_lib64 = copy_nosync(lib64=True)
             if not copied_lib and not copied_lib64:
                 self.root_log.warn("nosync is enabled but the library wasn't "
                                    "found on the system")
-            else:
-                self.env['LD_PRELOAD'] = os.path.join(tmp_libdir, 'nosync.so')
+                return
+            if (target_arch in multilib and not self.config['nosync_force']
+                    and copied_lib != copied_lib64):
+                self.root_log.warn("For multilib systems, both architectures "
+                                   "of nosync library need to be installed")
+                return
+            self.env['LD_PRELOAD'] = os.path.join(tmp_libdir, 'nosync.so')
 
 
     @traceLog()
