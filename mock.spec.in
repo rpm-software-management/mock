@@ -98,6 +98,7 @@ of the buildroot.
 sed -i "s|^USE_NSPAWN = True|USE_NSPAWN = False|" py/mockbuild/util.py 
 %endif
 %if %{use_python3}
+sed -i 's/AM_PATH_PYTHON/AM_PATH_PYTHON([3])/' configure.ac
 for file in py/mock.py py/mockchain.py; do
   sed -i 1"s|#!/usr/bin/python |#!/usr/bin/python3 |" $file
 done
