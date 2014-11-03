@@ -196,7 +196,7 @@ class Buildroot(object):
 
     @traceLog()
     def _init_pkg_management(self):
-        update_state = '{0} update'.format(self.pkg_manager.command)
+        update_state = '{0} install'.format(self.pkg_manager.name)
         self.state.start(update_state)
         cmd = self.config['chroot_setup_cmd']
         if isinstance(cmd, util.basestring):
