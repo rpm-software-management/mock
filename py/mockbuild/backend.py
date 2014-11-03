@@ -10,7 +10,7 @@ import os
 import shutil
 
 from mockbuild import util
-from mockbuild.exception import PkgError, BuildError
+from mockbuild.exception import PkgError
 from mockbuild.trace_decorator import getLog, traceLog
 
 class Commands(object):
@@ -393,7 +393,7 @@ class Commands(object):
                 shell=False, logger=self.buildroot.build_log, timeout=timeout,
                 uid=self.buildroot.chrootuid, gid=self.buildroot.chrootgid,
                 user=self.buildroot.chrootuser,
-                printOutput=self.config['verbose'])
+                printOutput=self.config['print_main_output'])
         results = glob.glob("%s/%s/SRPMS/*.src.rpm" % (self.make_chroot_path(),
                                                        self.buildroot.builddir))
         if len(results) != 1:
@@ -422,14 +422,14 @@ class Commands(object):
                               .format(self.rpmbuild_arch, check_opt, spec_path,
                                       additional_opts, mode=mode,
                                       command=self.config['rpmbuild_command'])
-        command = [ rpmbuild_cmd, ]
+        command = [rpmbuild_cmd]
         if not util.USE_NSPAWN:
             command = ["bash", "--login", "-c"] + command
         self.buildroot.doChroot(command,
             shell=False, logger=self.buildroot.build_log, timeout=timeout,
             uid=self.buildroot.chrootuid, gid=self.buildroot.chrootgid,
             user=self.buildroot.chrootuser,
-            printOutput=self.config['verbose'])
+            printOutput=self.config['print_main_output'])
         bd_out = self.make_chroot_path(self.buildroot.builddir)
         results = glob.glob(bd_out + '/RPMS/*.rpm')
         results += glob.glob(bd_out + '/SRPMS/*.rpm')

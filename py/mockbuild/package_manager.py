@@ -59,7 +59,7 @@ class _PackageManager(object):
         invocation = self.build_invocation(*args)
         self.buildroot.root_log.debug(invocation)
         kwargs['printOutput'] = kwargs.get('printOutput', True)
-        if self.config['verbose'] == 0:
+        if not self.config['print_main_output']:
             kwargs.pop('printOutput', None)
         else:
             kwargs['pty'] = kwargs.get('pty', True)
