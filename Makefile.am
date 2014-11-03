@@ -26,7 +26,10 @@ bin_PROGRAMS=
 CLEANFILES += $(EXTRA_PROGRAMS)
 
 mocketcdir = $(sysconfdir)/mock
-mocketc_DATA = $(wildcard $(top_srcdir)/etc/mock/*.cfg) $(top_srcdir)/etc/mock/logging.ini
+mocketc_DATA = $(wildcard $(top_srcdir)/etc/mock/epel*.cfg) \
+	       $(wildcard $(top_srcdir)/etc/mock/fedora*.cfg) \
+	       $(top_srcdir)/etc/mock/site-defaults.cfg \
+	       $(top_srcdir)/etc/mock/logging.ini
 
 mockgpgdir = $(sysconfdir)/pki/mock
 mockgpg_DATA = $(wildcard $(top_srcdir)/etc/pki/RPM-GPG-KEY-*)
