@@ -109,10 +109,13 @@ class RootCache(object):
                     or self.config['plugin_conf']['tmpfs_enable']):
                 self.state.start("unpacking root cache")
                 self._rootCacheLock()
-                #
-                # deal with NFS homedir and root_squash
-                #
-                if mockbuild.util.get_fs_type(os.getcwd()).startswith('nfs'):
+                # deal with NFS homedir and root_squash and deleted $CWD
+                cwd = None
+                try:
+                    cwd = os.getcwd()
+                except OSError:
+                    pass
+                if (cwd is None) or mockbuild.util.get_fs_type(cwd).startswith('nfs'):
                     os.chdir(mockbuild.util.find_non_nfs_dir())
                 mockbuild.util.mkdirIfAbsent(self.buildroot.make_chroot_path())
                 mockbuild.util.do(
