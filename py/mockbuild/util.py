@@ -923,3 +923,16 @@ def update_config_from_file(config_opts, config_file, uid_manager):
                 config_opts.update(pickle.loads(new_config))
         finally:
             reader.close()
+
+@traceLog()
+def pretty_getcwd():
+    try:
+        return os.getcwd()
+    except OSError:
+        if ORIGINAL_CWD is not None:
+            return ORIGINAL_CWD
+        else:
+            return find_non_nfs_dir()
+
+ORIGINAL_CWD = None
+ORIGINAL_CWD = pretty_getcwd()

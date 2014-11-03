@@ -94,7 +94,7 @@ class scmWorker(object):
 
     @traceLog()
     def adjust_git_timestamps(self):
-        dir = os.getcwd()
+        dir = mockbuild.util.pretty_getcwd()
         self.log.debug("Adjusting timestamps in " + self.src_dir)
         os.chdir(self.src_dir)
         proc = subprocess.Popen(['git', 'ls-files', '-z'], shell=False, stdout=subprocess.PIPE)
