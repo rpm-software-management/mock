@@ -791,6 +791,13 @@ def set_config_opts_per_cmdline(config_opts, options, args):
                 "Bad option for '--define' (%s).  Use --define 'macro expr'"
                 % macro)
 
+    if options.macrofile:
+        config_opts['macrofile'] = os.path.expanduser(options.macrofile)
+        if not os.path.isfile(config_opts['macrofile']):
+            raise mockbuild.exception.BadCmdline(
+                "Input rpm macros file does not exist: %s"
+                % options.macrofile)
+
     if options.resultdir:
         config_opts['resultdir'] = os.path.expanduser(options.resultdir)
     if options.uniqueext:

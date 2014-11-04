@@ -357,6 +357,13 @@ class Buildroot(object):
             # rpmmacros default
             macrofile_out = self.make_chroot_path(self.homedir, ".rpmmacros")
             rpmmacros = open(macrofile_out, 'w+')
+
+            # user specific from rpm macro file defenitions first
+            if 'macrofile' in self.config:
+                macro_conf = open(self.config['macrofile'], 'r')
+                rpmmacros.write("%s\n\n" % macro_conf.read())
+                macro_conf.close()
+
             for key, value in list(self.config['macros'].items()):
                 rpmmacros.write("%s %s\n" % (key, value))
             rpmmacros.close()

@@ -208,6 +208,8 @@ def command_parse():
     parser.add_option("-D", "--define", action="append", dest="rpmmacros",
                       default=[], type="string", metavar="'MACRO EXPR'",
                       help="define an rpm macro (may be used more than once)")
+    parser.add_option("--macro-file", action="store", type="string", dest="macrofile",
+                      default=[], help="Use pre-defined rpm macro file")
     parser.add_option("--with", action="append", dest="rpmwith",
                       default=[], type="string", metavar="option",
                       help="enable configure option for build (may be used more than once)")
