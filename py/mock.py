@@ -357,6 +357,7 @@ def load_config(config_path, name, uidManager):
         if os.path.exists(cfg):
             config_opts['config_paths'].append(cfg)
             util.update_config_from_file(config_opts, cfg, uidManager)
+            check_macro_definition(config_opts)
         else:
             log.error("Could not find required config file: %s" % cfg)
             if name == "default":
@@ -455,6 +456,17 @@ def check_arch_combination(target_arch, config_opts):
     if host_arch not in legal:
         raise mockbuild.exception.InvalidArchitecture(
             "Cannot build target {0} on arch {1}, because it is not listed in legal_host_arches {2}".format(target_arch, host_arch, legal))
+
+@traceLog()
+def check_macro_definition(config_opts):
+    for k, v in config_opts['macros'].items():
+        if not k or not v or len(k.split()) != 1:
+            raise mockbuild.exception.BadCmdline(
+                "Bad macros 'config_opts['macros']['%s'] = ['%s']'" % (k,v) )
+        if not k.startswith('%'):
+            del config_opts['macros'][k]
+            k = '%{0}'.format(k)
+            config_opts['macros'].update({k: v})
 
 @traceLog()
 def rebuild_generic(items, commands, buildroot, config_opts, cmd, post=None, clean=True):
