@@ -782,6 +782,7 @@ def set_config_opts_per_cmdline(config_opts, options, args):
 
     for macro in options.rpmmacros:
         try:
+            macro = macro.strip()
             k, v = macro.split(" ", 1)
             if not k.startswith('%'):
                 k = '%%%s' % k
