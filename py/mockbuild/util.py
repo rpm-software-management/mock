@@ -748,7 +748,7 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
     config_opts['yum_builddep_command'] = '/usr/bin/yum-builddep'
     config_opts['dnf_command'] = '/usr/bin/dnf'
     config_opts['rpm_command'] = '/bin/rpm'
-    config_opts['rpmbuild_command'] = '/bin/rpmbuild'
+    config_opts['rpmbuild_command'] = '/usr/bin/rpmbuild'
 
     return config_opts
 
