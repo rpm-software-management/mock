@@ -383,7 +383,7 @@ def logOutput(fds, logger, returnOutput=1, start=0, timeout=0, printOutput=False
 def selinuxEnabled():
     """Check if SELinux is enabled (enforcing or permissive)."""
     for mount in open("/proc/mounts").readlines():
-        (fstype, mountpoint, garbage) = mount.split(None, 2)
+        (fstype, mountpoint, _) = mount.split(None, 2)
         if fstype == "selinuxfs":
             selinux_mountpoint = mountpoint
             break
@@ -836,7 +836,7 @@ def set_config_opts_per_cmdline(config_opts, options, args):
         try:
             v = literal_eval(v)
         except:
-          pass
+            pass
         config_opts['plugin_conf'][p + "_opts"].update({k: v})
 
 
