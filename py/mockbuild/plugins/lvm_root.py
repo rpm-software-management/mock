@@ -296,9 +296,9 @@ class LvmPlugin(object):
         self.lock.lock(exclusive=False)
 
     def hook_scrub(self, what):
-        self.pool_lock.lock(exclusive=True)
         if what not in ('lvm', 'all'):
             return
+        self.pool_lock.lock(exclusive=True)
         with volume_group(self.vg_name, mode='w+') as vg:
             lvs = vg.listLVs()
             for lv in lvs:
@@ -315,9 +315,13 @@ class LvmPlugin(object):
             remaining = [lv for lv in vg.listLVs() if lv.getAttr()[0] == 'V' and
                          lv.getProperty('pool_lv')[0] == self.pool_name]
             if not remaining:
-                pool = vg.lvFromName(self.pool_name)
-                pool.remove()
-                self.buildroot.root_log.info("deleted LVM cache thinpool")
+                try:
+                    pool = vg.lvFromName(self.pool_name)
+                except lvm.LibLVMError:
+                    pass
+                else:
+                    pool.remove()
+                    self.buildroot.root_log.info("deleted LVM cache thinpool")
         self.unset_current_snapshot()
 
     def hook_list_snapshots(self):
