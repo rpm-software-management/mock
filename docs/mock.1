@@ -22,6 +22,8 @@ mock  [options] \fB\-\-remove\fR PACKAGE
 .LP
 mock  [options] \fB\-\-orphanskill\fR
 .LP
+mock  [options] \fB\-p\fR, \fB\-\-print-root-path\fR
+.LP
 mock  [options] \fB\-\-copyin\fR \fIpath [\fIpath...\fR] \fIdestination\fR
 .LP
 mock  [options] \fB\-\-copyout\fR \fIpath [\fIpath...\fR] \fIdestination\fR
@@ -108,6 +110,9 @@ Do a yum update inside the buildroot. Buildroot must already be initialized -- n
 .TP
 \fB\-\-remove\fP 
 Do a yum remove PACKAGE inside the buildroot. Buildroot must already be initialized -- no 'clean' is performed
+.TP
+\fB-p\fR, \fB\-\-print-root-path\fP
+Prints a path to the currently used buildroot directory.
 .TP
 \fB\-\-orphanskill\fP
 No-op mode that simply checks that no stray processes are running in the chroot. Kills any processes that it finds using specified root.
