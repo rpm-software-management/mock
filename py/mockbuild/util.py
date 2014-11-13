@@ -880,7 +880,7 @@ def set_config_opts_per_cmdline(config_opts, options, args):
     if options.scm:
         try:
             from mockbuild import scm
-        except Exception as e:
+        except ImportError as e:
             raise mockbuild.exception.BadCmdline(
                 "Mock SCM module not installed: %s" % e)
 
