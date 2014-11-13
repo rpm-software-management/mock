@@ -177,6 +177,9 @@ def command_parse():
     parser.add_option("--umount", action="store_const", const="umount",
                       dest="mode", help="Umount the buildroot if it's "
                       "mounted from separate device (LVM)")
+    parser.add_option("--mount", action="store_const", const="mount",
+                      dest="mode", help="Mount the buildroot if it's "
+                      "mounted from separate device (LVM)")
 
     # options
     parser.add_option("-r", "--root", action="store", type="string", dest="chroot",
@@ -835,6 +838,8 @@ def run_command(options, args, config_opts, commands, buildroot, state):
         buildroot.plugins.call_hooks('remove_snapshot', args[0], required=True)
     elif options.mode == 'umount':
         buildroot.plugins.call_hooks('umount_root')
+    elif options.mode == 'mount':
+        buildroot.plugins.call_hooks('mount_root')
 
     buildroot._nuke_rpm_db()
     state.finish("run")

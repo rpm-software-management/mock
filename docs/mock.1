@@ -152,9 +152,13 @@ Remove given snapshot freeing the space it occupied. This action cannot be
 undone.
 This feature is available only when lvm_root plugin is installed and enabled.
 .TP
+\fB\-\-mount\fP
+Mount all everything mounted in the buildroot path including the root itself
+that might have been a LVM volume or TMPFS.
+.TP
 \fB\-\-umount\fP
 Umount all everything mounted in the buildroot path including the root itself
-that might have been a LVM volume.
+that might have been a LVM volume or TMPFS.
 .TP
 \fB\-\-pm-cmd\fP
 Execute following arguments with current package manager with installroot set to
