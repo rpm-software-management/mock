@@ -12,6 +12,7 @@ import fcntl
 import os
 import os.path
 import pickle
+import re
 import select
 import shutil
 import signal
@@ -316,6 +317,7 @@ def logOutput(fds, logger, returnOutput=1, start=0, timeout=0, printOutput=False
         sys.stdout.flush()
     try:
         tail = ""
+        ansi_escape = re.compile(r'\x1b\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]\x0f?')
         while not done:
             if (time.time() - start) > timeout and timeout != 0:
                 done = 1
@@ -358,6 +360,7 @@ def logOutput(fds, logger, returnOutput=1, start=0, timeout=0, printOutput=False
                 if logger is not None:
                     for line in lines:
                         if line != '':
+                            line = ansi_escape.sub('', line)
                             logger.debug(line)
                     for h in logger.handlers:
                         h.flush()
