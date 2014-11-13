@@ -259,7 +259,7 @@ class Commands(object):
             ret = util.doshell(chrootPath=self.buildroot.make_chroot_path(),
                                          environ=self.buildroot.env,
                                          uid=uid, gid=gid,
-                                         user=self.buildroot.chrootuser,
+                                         user=None,
                                          cmd=cmd)
         finally:
             log.debug("shell: unmounting all filesystems")
