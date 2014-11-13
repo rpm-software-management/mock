@@ -94,22 +94,22 @@ If no command is specified, rebuild is assumed. Rebuilds the specified SRPM(s). 
 Builds the specified SRPM either from a spec file and source file/directory or from SCM. The buildroot is cleaned first, unless --no-clean is specified.
 .TP
 \fB\-\-shell\fP
-Run the specified command interactively within the chroot (which must already be initialized -- no 'clean' is performed). If no command specified, /bin/sh is run.
+Run the specified command interactively within the chroot (no 'clean' is performed). If no command specified, /bin/sh is run.
 .TP
 \fB\-\-chroot\fP 
-Run the specified command non-interactively within the chroot (which must already be initialized -- no 'clean' is performed). Command output will be sent to the log files.
+Run the specified command non-interactively within the chroot (no 'clean' is performed). Command output will be sent to the log files.
 .TP
 \fB\-\-installdeps\fP 
-Find out deps for SRPM or RPM, and do a yum install to put them in the buildroot. Buildroot must already be initialized -- no 'clean' is performed
+Find out deps for SRPM or RPM, and do a yum install to put them in the buildroot. No 'clean' is performed
 .TP
 \fB-i\fR, \fB\-\-install\fP
-Do a yum install PACKAGE inside the buildroot. Buildroot must already be initialized -- no 'clean' is performed
+Do a yum install PACKAGE inside the buildroot. No 'clean' is performed
 .TP
 \fB\-\-update\fP 
-Do a yum update inside the buildroot. Buildroot must already be initialized -- no 'clean' is performed
+Do a yum update inside the buildroot. No 'clean' is performed
 .TP
 \fB\-\-remove\fP 
-Do a yum remove PACKAGE inside the buildroot. Buildroot must already be initialized -- no 'clean' is performed
+Do a yum remove PACKAGE inside the buildroot. No 'clean' is performed
 .TP
 \fB-p\fR, \fB\-\-print-root-path\fP
 Prints a path to the currently used buildroot directory.
