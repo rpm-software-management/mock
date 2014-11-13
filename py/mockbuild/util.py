@@ -346,8 +346,8 @@ def logOutput(fds, logger, returnOutput=1, start=0, timeout=0, printOutput=False
                         sys.stdout.buffer.write(raw)
                     else:
                         print(raw, end='')
-                input = raw.decode(encoding, 'replace')
-                lines = input.split("\n")
+                txt_input = raw.decode(encoding, 'replace')
+                lines = txt_input.split("\n")
                 if tail:
                     lines[0] = tail + lines[0]
                 # we may not have all of the last line
