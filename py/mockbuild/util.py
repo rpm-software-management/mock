@@ -242,7 +242,7 @@ def unshare(flags):
         res = _libc.unshare(flags)
         if res:
             raise mockbuild.exception.UnshareFailed(os.strerror(ctypes.get_errno()))
-    except AttributeError as e:
+    except AttributeError:
         pass
 
 @traceLog()
