@@ -43,6 +43,8 @@ import os.path
 import pwd
 import sys
 import time
+import shutil
+
 from optparse import OptionParser
 from textwrap import dedent
 
@@ -772,7 +774,6 @@ def run_command(options, args, config_opts, commands, buildroot, state):
             log.critical("multiple source files and %s is not a directory!" % dest)
             sys.exit(50)
         args = args[:-1]
-        import shutil
         for src in args:
             log.info("copying %s to %s" % (src, dest))
             if os.path.isdir(src):
@@ -783,27 +784,28 @@ def run_command(options, args, config_opts, commands, buildroot, state):
     elif options.mode == 'copyout':
         commands.init()
         buildroot.uid_manager.dropPrivsTemp()
-        if len(args) < 2:
-            log.critical("Must have source and destinations for copyout")
-            sys.exit(50)
-        dest = args[-1]
-        if len(args) > 2 and not os.path.isdir(dest):
-            log.critical("multiple source files and %s is not a directory!" % dest)
-            sys.exit(50)
-        args = args[:-1]
-        import shutil
-        for f in args:
-            src = buildroot.make_chroot_path(f)
-            log.info("copying %s to %s" % (src, dest))
-            if os.path.isdir(src):
-                shutil.copytree(src, dest, symlinks=True)
-            else:
-                if os.path.islink(src):
-                    linkto = os.readlink(src)
-                    os.symlink(linkto, dst)
+        try:
+            if len(args) < 2:
+                log.critical("Must have source and destinations for copyout")
+                sys.exit(50)
+            dest = args[-1]
+            if len(args) > 2 and not os.path.isdir(dest):
+                log.critical("multiple source files and %s is not a directory!" % dest)
+                sys.exit(50)
+            args = args[:-1]
+            for f in args:
+                src = buildroot.make_chroot_path(f)
+                log.info("copying %s to %s" % (src, dest))
+                if os.path.isdir(src):
+                    shutil.copytree(src, dest, symlinks=True)
                 else:
-                    shutil.copy(src, dest)
-        buildroot.uid_manager.restorePrivs()
+                    if os.path.islink(src):
+                        linkto = os.readlink(src)
+                        os.symlink(linkto, dst)
+                    else:
+                        shutil.copy(src, dest)
+        finally:
+            buildroot.uid_manager.restorePrivs()
 
     elif options.mode in ('pm-cmd', 'yum-cmd', 'dnf-cmd'):
         log.info('Running {0} {1}'.format(buildroot.pkg_manager.command,
