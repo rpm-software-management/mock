@@ -801,7 +801,7 @@ def run_command(options, args, config_opts, commands, buildroot, state):
                 else:
                     if os.path.islink(src):
                         linkto = os.readlink(src)
-                        os.symlink(linkto, dst)
+                        os.symlink(linkto, dest)
                     else:
                         shutil.copy(src, dest)
         finally:
