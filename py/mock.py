@@ -36,6 +36,7 @@ from __future__ import print_function
 
 # library imports
 import grp
+import glob
 import logging
 import logging.config
 import os
@@ -789,12 +790,17 @@ def run_command(options, args, config_opts, commands, buildroot, state):
                 log.critical("Must have source and destinations for copyout")
                 sys.exit(50)
             dest = args[-1]
-            if len(args) > 2 and not os.path.isdir(dest):
+            sources = []
+            for arg in args[:-1]:
+                matches = glob.glob(buildroot.make_chroot_path(arg.replace('~', buildroot.homedir)))
+                if not matches:
+                    log.critical("%s not found" % arg)
+                    sys.exit(50)
+                sources += matches
+            if len(sources) > 1 and not os.path.isdir(dest):
                 log.critical("multiple source files and %s is not a directory!" % dest)
                 sys.exit(50)
-            args = args[:-1]
-            for f in args:
-                src = buildroot.make_chroot_path(f)
+            for src in sources:
                 log.info("copying %s to %s" % (src, dest))
                 if os.path.isdir(src):
                     shutil.copytree(src, dest, symlinks=True)
