@@ -165,7 +165,7 @@ def orphansKill(rootToKill, killsig=signal.SIGTERM):
                 pid = int(fn, 10)
                 os.kill(pid, killsig)
                 os.waitpid(pid, 0)
-        except OSError as e:
+        except OSError:
             pass
 
 @traceLog()
