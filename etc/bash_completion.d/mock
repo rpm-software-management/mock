@@ -36,7 +36,7 @@ _mock()
         --uniqueext|--rpmbuild_timeout|--sources|--cwd|--scm-option|--snapshot|\
         -l|--list-snapshots|--rollback-to|--remove-snapshot|--umount|--yum|\
         --dnf|--pm-cmd|--yum-cmd|--dnf-cmd|--enablerepo|--disablerepo|\
-        --rpmbuild-opts)
+        --rpmbuild-opts|--new-chroot|--old-chroot|--print-root-path|--trace)
             return 0
             ;;
         -r|--root)
@@ -105,7 +105,7 @@ _mock()
             --print-root-path --scm-enable --scm-option --yum --dnf --pm-cmd
             --yum-cmd --dnf-cmd --enablerepo --disablerepo --short-circuit
             --rpmbuild-opts --snapshot --list-snapshots --remove-snapshot
-            --rollback-to --umount" -- "$cur" ) )
+            --rollback-to --umount --old-chroot --new-chroot" -- "$cur" ) )
         return 0
     fi
 
