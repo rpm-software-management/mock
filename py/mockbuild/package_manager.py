@@ -38,7 +38,7 @@ class _PackageManager(object):
         else:
             invocation = [self.command]
             common_opts = self.config[self.name + '_common_opts']
-        invocation += ['--installroot', self.buildroot.make_chroot_path()]
+        invocation += ['--installroot', self.buildroot.make_chroot_path('')]
         releasever = self.config['releasever']
         if releasever:
             invocation += ['--releasever', releasever]
