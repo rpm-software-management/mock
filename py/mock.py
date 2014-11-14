@@ -343,53 +343,6 @@ def command_parse():
     return (options, args)
 
 @traceLog()
-def load_config(config_path, name, uidManager):
-    config_opts = util.setup_default_config_opts(uidManager.unprivUid,
-            __VERSION__, PKGPYTHONDIR)
-
-    # array to save config paths
-    config_opts['config_paths'] = []
-    config_opts['chroot_name'] = name
-
-    # Read in the config files: default, and then user specified
-    if name.endswith('.cfg'):
-        # If the .cfg is explicitly specified we take the root arg to
-        # specify a path, rather than looking it up in the configdir.
-        chroot_cfg_path = name
-    else:
-        chroot_cfg_path = '%s/%s.cfg' % (config_path, name)
-    for cfg in (os.path.join(config_path, 'site-defaults.cfg'),
-                chroot_cfg_path):
-        if os.path.exists(cfg):
-            config_opts['config_paths'].append(cfg)
-            util.update_config_from_file(config_opts, cfg, uidManager)
-            check_macro_definition(config_opts)
-        else:
-            log.error("Could not find required config file: %s" % cfg)
-            if name == "default":
-                log.error("  Did you forget to specify the chroot to use with '-r'?")
-            if "/" in cfg:
-                log.error("  If you're trying to specify a path, include the .cfg extension, e.g. -r ./target.cfg")
-            sys.exit(1)
-
-    # Read user specific config file
-    cfg = os.path.join(os.path.expanduser('~' + pwd.getpwuid(os.getuid())[0]),
-            '.mock/user.cfg')
-    if os.path.exists(cfg):
-        config_opts['config_paths'].append(cfg)
-        util.update_config_from_file(config_opts, cfg, uidManager)
-
-    # default /etc/hosts contents
-    if (not config_opts['use_host_resolv']
-        and 'etc/hosts' not in config_opts['files']):
-        config_opts['files']['etc/hosts'] = dedent('''\
-            127.0.0.1 localhost localhost.localdomain
-            ::1       localhost localhost.localdomain localhost6 localhost6.localdomain6
-            ''')
-
-    return config_opts
-
-@traceLog()
 def setup_logging(log_ini, config_opts, options):
     if not os.path.exists(log_ini):
         log.error("Could not find required logging config file: %s" % log_ini)
@@ -462,17 +415,6 @@ def check_arch_combination(target_arch, config_opts):
     if host_arch not in legal:
         raise mockbuild.exception.InvalidArchitecture(
             "Cannot build target {0} on arch {1}, because it is not listed in legal_host_arches {2}".format(target_arch, host_arch, legal))
-
-@traceLog()
-def check_macro_definition(config_opts):
-    for k, v in config_opts['macros'].items():
-        if not k or not v or len(k.split()) != 1:
-            raise mockbuild.exception.BadCmdline(
-                "Bad macros 'config_opts['macros']['%s'] = ['%s']'" % (k,v) )
-        if not k.startswith('%'):
-            del config_opts['macros'][k]
-            k = '%{0}'.format(k)
-            config_opts['macros'].update({k: v})
 
 @traceLog()
 def rebuild_generic(items, commands, buildroot, config_opts, cmd, post=None, clean=True):
@@ -621,7 +563,7 @@ def main():
     if options.configdir:
         config_path = options.configdir
 
-    config_opts = load_config(config_path, options.chroot, uidManager)
+    config_opts = util.load_config(config_path, options.chroot, uidManager, __VERSION__, PKGPYTHONDIR)
 
     # cmdline options override config options
     util.set_config_opts_per_cmdline(config_opts, options, args)

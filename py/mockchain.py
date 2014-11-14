@@ -203,22 +203,13 @@ def log(lf, msg):
 config_opts = {}
 
 def main(args):
-
-    global config_opts
-
-    config_opts = mockbuild.util.setup_default_config_opts(os.getuid(), __VERSION__, PKGPYTHONDIR)
-
     opts, args = parse_args(args)
-
     # take mock config + list of pkgs
     cfg = opts.chroot
     pkgs = args[1:]
-    mockcfg = mockconfig_path + '/' + cfg + '.cfg'
 
-    if not os.path.exists(mockcfg):
-        print("could not find config: %s" % mockcfg)
-        sys.exit(1)
-
+    global config_opts
+    config_opts = mockbuild.util.load_config(mockconfig_path, cfg, None, __VERSION__, PKGPYTHONDIR)
 
     if not opts.tmp_prefix:
         try:
@@ -247,24 +238,24 @@ def main(args):
             os.unlink(opts.logfile)
 
     log(opts.logfile, "starting logfile: %s" % opts.logfile)
-    opts.local_repo_dir = os.path.normpath(local_tmp_dir + '/results/' + cfg + '/')
+    opts.local_repo_dir = os.path.normpath(local_tmp_dir + '/results/' + config_opts['chroot_name'] + '/')
 
     if not os.path.exists(opts.local_repo_dir):
         os.makedirs(opts.local_repo_dir, mode=0o755)
 
     local_baseurl = "file://%s" % opts.local_repo_dir
     log(opts.logfile, "results dir: %s" % opts.local_repo_dir)
-    opts.config_path = os.path.normpath(local_tmp_dir + '/configs/' + cfg + '/')
+    opts.config_path = os.path.normpath(local_tmp_dir + '/configs/' + config_opts['chroot_name'] + '/')
 
     if not os.path.exists(opts.config_path):
         os.makedirs(opts.config_path, mode=0o755)
 
     log(opts.logfile, "config dir: %s" % opts.config_path)
 
-    my_mock_config = opts.config_path + '/' + os.path.basename(mockcfg)
+    my_mock_config = opts.config_path + '/' + config_opts['chroot_name']
 
     # modify with localrepo
-    res, msg = add_local_repo(mockcfg, my_mock_config, local_baseurl, 'local_build_repo')
+    res, msg = add_local_repo(config_opts['config_file'], my_mock_config, local_baseurl, 'local_build_repo')
     if not res:
         log(opts.logfile, "Error: Could not write out local config: %s" % msg)
         sys.exit(1)
@@ -325,7 +316,7 @@ def main(args):
                 else:
                     downloaded_pkgs[pkg] = url
             log(opts.logfile, "Start build: %s" % pkg)
-            ret, cmd, out, err = do_build(opts, cfg, pkg)
+            ret, cmd, out, err = do_build(opts, config_opts['chroot_name'], pkg)
             log(opts.logfile, "End build: %s" % pkg)
             if ret == 0:
                 failed.append(pkg)

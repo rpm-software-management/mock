@@ -12,6 +12,7 @@ import fcntl
 import os
 import os.path
 import pickle
+import pwd
 import re
 import select
 import shutil
@@ -901,7 +902,7 @@ def update_config_from_file(config_opts, config_file, uid_manager):
     if os.fork() == 0:
         try:
             os.close(r_pipe)
-            if not all(uid.getresuid()):
+            if uid_manager and not all(uid.getresuid()):
                 uid_manager.dropPrivsForever()
             with open(config_file) as f:
                 code = compile(f.read(), config_file, 'exec')
@@ -936,6 +937,69 @@ def update_config_from_file(config_opts, config_file, uid_manager):
                 config_opts.update(pickle.loads(new_config))
         finally:
             reader.close()
+
+@traceLog()
+def load_config(config_path, name, uidManager, version, PKGPYTHONDIR):
+    log = logging.getLogger()
+    if uidManager:
+        gid = uidManager.unprivUid
+    else:
+        gid = os.getuid()
+    config_opts = setup_default_config_opts(gid,
+            version, PKGPYTHONDIR)
+
+    # array to save config paths
+    config_opts['config_paths'] = []
+    config_opts['chroot_name'] = name
+
+    # Read in the config files: default, and then user specified
+    if name.endswith('.cfg'):
+        # If the .cfg is explicitly specified we take the root arg to
+        # specify a path, rather than looking it up in the configdir.
+        chroot_cfg_path = name
+        config_opts['chroot_name'] = os.path.splitext(os.path.basename(cfg))[0]
+    else:
+        chroot_cfg_path = '%s/%s.cfg' % (config_path, name)
+    config_opts['config_file'] = chroot_cfg_path
+    for cfg in (os.path.join(config_path, 'site-defaults.cfg'),
+                chroot_cfg_path):
+        if os.path.exists(cfg):
+            config_opts['config_paths'].append(cfg)
+            update_config_from_file(config_opts, cfg, uidManager)
+            check_macro_definition(config_opts)
+        else:
+            log.error("Could not find required config file: %s" % cfg)
+            if name == "default":
+                log.error("  Did you forget to specify the chroot to use with '-r'?")
+            if "/" in cfg:
+                log.error("  If you're trying to specify a path, include the .cfg extension, e.g. -r ./target.cfg")
+            sys.exit(1)
+    # Read user specific config file
+    cfg = os.path.join(os.path.expanduser('~' + pwd.getpwuid(os.getuid())[0]),
+            '.mock/user.cfg')
+    if os.path.exists(cfg):
+        config_opts['config_paths'].append(cfg)
+        update_config_from_file(config_opts, cfg, uidManager)
+
+    # default /etc/hosts contents
+    if (not config_opts['use_host_resolv']
+        and 'etc/hosts' not in config_opts['files']):
+        config_opts['files']['etc/hosts'] = dedent('''\
+            127.0.0.1 localhost localhost.localdomain
+            ::1       localhost localhost.localdomain localhost6 localhost6.localdomain6
+            ''')
+    return config_opts
+
+@traceLog()
+def check_macro_definition(config_opts):
+    for k, v in config_opts['macros'].items():
+        if not k or not v or len(k.split()) != 1:
+            raise mockbuild.exception.BadCmdline(
+                "Bad macros 'config_opts['macros']['%s'] = ['%s']'" % (k,v) )
+        if not k.startswith('%'):
+            del config_opts['macros'][k]
+            k = '%{0}'.format(k)
+            config_opts['macros'].update({k: v})
 
 @traceLog()
 def pretty_getcwd():
