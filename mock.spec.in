@@ -208,6 +208,49 @@ fi
 %endif
 
 %changelog
+* Sat Nov 15 2014 Miroslav Suchý <msuchy@redhat.com> - 1.2.1-1
+- allow mockchain to accept path as config
+- end yum's installroot path with a slash [RHBZ#1160428]
+- add --mount option [RHBZ#1162637]
+- add some missing bash completation strings
+- run --shell as root with --new-chroot
+- Don't fail scrub when there's no pool [RHBZ#1162631]
+- Globbing and tilde expansion
+- move restoring priviledges to finally [RHBZ#1162720]
+- Remove "Buildroot must be already initialized" note
+- Add missing --print-root-path to manpage
+- Do not print ANSI escape characters into log [RHBZ#1163037]
+- in site-defaults.cfg initialize dictionary of plugins [RHBZ#1162595]
+- Disable empty names and values in config_opts[macros] [RHBZ#1160765]
+- Disable single macros in -D cmd option [RHBZ#1160765]
+- rpmbuild is in /usr/bin [RHBZ#1161112]
+- man page for --macro-file [RHBZ#1160326]
+- Added option [--macro-file] to support external rpm macros file [RHBZ#1160326]
+- Don't output installation/build output when redirected
+- Better log message for intial buildroot installation
+- Be more specific when installing configs
+- Install into correct sitelib when using Python 3
+- Fix nosync on aarch64
+- wrap all remaining getcwd() [RHBZ#1159300]
+- do not use rpm in %post scriptlet [RHBZ#1131279]
+- Fix unclear legal host output [RHBZ#1159794]
+- allow running from directory, which is deleted [RHBZ#1159300]
+- create compress_logs plugin [RHBZ#1100923]
+- when default.cfg exists create default.cfg.rpmnew [RHBZ#1085308]
+- accept paths to target definition files [RHBZ#1126117]
+- set title bar in xterm [RHBZ#1126235]
+- pass --enablerepo/--disablerepo to yum in the same order as provided to mock [RHBZ#1154604]
+- Fix incorrect printing of binary strings on py3
+- Add missing Requires rpm-python3
+- Don't print Yum and build output when quiet
+- Prevent output being printed twice with --verbose (rhbz#1152971)
+- Fix printing non-ascii characters with output redirected (rhbz#1152952)
+- replace urlgrabber by python-requests
+- use python3 for Fedora22+
+- Don't print we're doing rpmbuild -bb, when it may not be true
+- 'prep' choice missing in short-circuit option parser
+- Don't execute prebuild in short-circuit mode
+
 * Thu Oct  9 2014 Miroslav Suchý <msuchy@redhat.com> - 1.2.0-1
 - update configs for secondary architecture (Dan Horák)
 - caching of buildroots using LVM (Michael Simacek)
