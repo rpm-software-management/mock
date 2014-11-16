@@ -252,7 +252,7 @@ def main(args):
 
     log(opts.logfile, "config dir: %s" % opts.config_path)
 
-    my_mock_config = opts.config_path + '/' + config_opts['chroot_name']
+    my_mock_config = os.path.join(opts.config_path, "{0}.cfg".format(config_opts['chroot_name']))
 
     # modify with localrepo
     res, msg = add_local_repo(config_opts['config_file'], my_mock_config, local_baseurl, 'local_build_repo')

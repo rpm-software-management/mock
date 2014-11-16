@@ -957,7 +957,7 @@ def load_config(config_path, name, uidManager, version, PKGPYTHONDIR):
         # If the .cfg is explicitly specified we take the root arg to
         # specify a path, rather than looking it up in the configdir.
         chroot_cfg_path = name
-        config_opts['chroot_name'] = os.path.splitext(os.path.basename(cfg))[0]
+        config_opts['chroot_name'] = os.path.splitext(os.path.basename(name))[0]
     else:
         chroot_cfg_path = '%s/%s.cfg' % (config_path, name)
     config_opts['config_file'] = chroot_cfg_path
