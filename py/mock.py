@@ -246,6 +246,8 @@ def command_parse():
     parser.add_option("--sources", action="store",
                       help="Specifies sources (either a single file or a directory of files)"
                       "to use to build an SRPM (used only with --buildsrpm)")
+    parser.add_option("--symlink-dereference", action="store_false", dest="symlink_dereference",
+                      default=True, help="Follow symlinks in sources (used only with --buildsrpm)")
     parser.add_option("--short-circuit", action="store", type='choice',
                       choices=['prep', 'install', 'build', 'binary'],
                       help="Pass short-circuit option to rpmbuild to skip already "
@@ -484,7 +486,8 @@ def do_buildsrpm(config_opts, commands, buildroot, options, args):
 
     def cmd(spec):
         commands.buildsrpm(spec=spec, sources=options.sources,
-                           timeout=config_opts['rpmbuild_timeout'])
+                           timeout=config_opts['rpmbuild_timeout'],
+                           follow_links=options.symlink_dereference)
     return rebuild_generic([options.spec], commands, buildroot, config_opts,
                            cmd=cmd, post=None, clean=clean)
 

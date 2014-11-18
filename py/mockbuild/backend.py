@@ -297,7 +297,7 @@ class Commands(object):
     #       -> except hooks. :)
     #
     @traceLog()
-    def buildsrpm(self, spec, sources, timeout):
+    def buildsrpm(self, spec, sources, timeout, follow_links):
         """build an srpm, capture log"""
 
         # tell caching we are building
@@ -315,7 +315,9 @@ class Commands(object):
 
             if os.path.isdir(sources):
                 util.rmtree(self.buildroot.make_chroot_path(self.buildroot.builddir, "SOURCES"))
-                shutil.copytree(sources, self.buildroot.make_chroot_path(self.buildroot.builddir, "SOURCES"), symlinks=True)
+                shutil.copytree(sources,
+                                self.buildroot.make_chroot_path(self.buildroot.builddir, "SOURCES"),
+                                symlinks=follow_links)
             else:
                 shutil.copy(sources, self.buildroot.make_chroot_path(self.buildroot.builddir, "SOURCES"))
 
