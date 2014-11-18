@@ -26,6 +26,7 @@ import locale
 import logging
 from glob import glob
 from ast import literal_eval
+from textwrap import dedent
 
 # our imports
 import mockbuild.exception

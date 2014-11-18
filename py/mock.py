@@ -47,7 +47,6 @@ import time
 import shutil
 
 from optparse import OptionParser
-from textwrap import dedent
 
 try:
     import configparser
