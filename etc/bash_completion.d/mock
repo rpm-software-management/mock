@@ -36,7 +36,7 @@ _mock()
         --uniqueext|--rpmbuild_timeout|--sources|--cwd|--scm-option|--snapshot|\
         -l|--list-snapshots|--rollback-to|--remove-snapshot|--umount|--yum|\
         --dnf|--pm-cmd|--yum-cmd|--dnf-cmd|--enablerepo|--disablerepo|\
-        --rpmbuild-opts|--new-chroot|--old-chroot|--print-root-path|--trace\
+        --rpmbuild-opts|--new-chroot|--old-chroot|--print-root-path|--trace|\
         --mount|--nocheck)
             return 0
             ;;
