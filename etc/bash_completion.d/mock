@@ -37,7 +37,7 @@ _mock()
         -l|--list-snapshots|--rollback-to|--remove-snapshot|--umount|--yum|\
         --dnf|--pm-cmd|--yum-cmd|--dnf-cmd|--enablerepo|--disablerepo|\
         --rpmbuild-opts|--new-chroot|--old-chroot|--print-root-path|--trace\
-        --mount)
+        --mount|--nocheck)
             return 0
             ;;
         -r|--root)
@@ -102,7 +102,7 @@ _mock()
             --no-clean --cleanup-after --no-cleanup-after --arch --target
             --define --with --without --resultdir --uniqueext --configdir
             --rpmbuild_timeout --unpriv --cwd --spec --sources --verbose
-            --quiet --trace --enable-plugin --disable-plugin
+            --quiet --trace --enable-plugin --disable-plugin --nocheck
             --print-root-path --scm-enable --scm-option --yum --dnf --pm-cmd
             --yum-cmd --dnf-cmd --enablerepo --disablerepo --short-circuit
             --rpmbuild-opts --snapshot --list-snapshots --remove-snapshot

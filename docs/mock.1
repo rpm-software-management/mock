@@ -93,6 +93,12 @@ If no command is specified, rebuild is assumed. Rebuilds the specified SRPM(s). 
 \fB\-\-buildsrpm\fP
 Builds the specified SRPM either from a spec file and source file/directory or from SCM. The buildroot is cleaned first, unless --no-clean is specified.
 .TP
+\fB\-\-sources\fR\fISOURCES\fP
+Specifies sources (either a single file or a directory of files) to use to build an SRPM (used only with --buildsrpm).
+.TP
+\fB\-\-spec\fR\fISPEC\fP
+Specifies spec file to use to build an SRPM (used only with --buildsrpm).
+.TP
 \fB\-\-shell\fP
 Run the specified command interactively within the chroot (no 'clean' is performed). If no command specified, /bin/sh is run.
 .TP
@@ -226,7 +232,7 @@ use old chroot instead of systemd-nspawn.
 .TP
 \fB\-\-new-chroot\fR
 use new chroot (systemd-nspawn) - this is experimental and will break existing scripts.
-.T
+.TP
 \fB\-\-resultdir=\fR\fIRESULTDIR\fP
 Change directory where resulting files (RPMs and build logs) are written. Resultdir can contain python-string substitutions for any variable in the chroot config. For example:
 
@@ -293,6 +299,12 @@ Show usage information and exit.
 .TP
 \fB\-\-version\fR
 Show version number and exit.
+.TP
+\fB\-\-scm\-option=OPTIONS\fR
+define an SCM option (may be used more than once).
+.TP
+\fB\-\-nocheck\fR
+Pass --nocheck to rpmbuild to skip 'make check' tests.
 
 
 .SH "FILES"
