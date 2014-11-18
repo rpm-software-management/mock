@@ -208,6 +208,9 @@ fi
 %endif
 
 %changelog
+* Tue Nov 18 2014 Miroslav Suchý <msuchy@redhat.com> - 1.2.2-1
+- add missing import [RHBZ#1165061]
+
 * Sat Nov 15 2014 Miroslav Suchý <msuchy@redhat.com> - 1.2.1-1
 - allow mockchain to accept path as config
 - end yum's installroot path with a slash [RHBZ#1160428]
