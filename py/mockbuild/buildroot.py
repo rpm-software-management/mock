@@ -212,6 +212,10 @@ class Buildroot(object):
         dets = {'uid': str(self.chrootuid), 'gid': str(self.chrootgid), 'user': self.chrootuser, 'group': self.chrootgroup, 'home': self.homedir}
 
         # ok for these two to fail
+        if self.config['clean']:
+            self.doChroot(['/usr/sbin/userdel', '-r', '-f', dets['user']], shell=False, raiseExc=False)
+        else:
+            self.doChroot(['/usr/sbin/userdel', '-f', dets['user']], shell=False, raiseExc=False)
         self.doChroot(['/usr/sbin/userdel', '-r', '-f', dets['user']], shell=False, raiseExc=False)
         self.doChroot(['/usr/sbin/groupdel', dets['group']], shell=False, raiseExc=False)
 
@@ -340,6 +344,14 @@ class Buildroot(object):
             util.mkdirIfAbsent(self.make_chroot_path(item))
 
     @traceLog()
+    def chown_home_dir(self):
+        """ set ownership of homedir and subdirectories to mockbuild user """
+        for (dirpath, dirnames, filenames) in os.walk(self.make_chroot_path(self.homedir)):
+            for path in dirnames + filenames:
+                os.lchown(os.path.join(dirpath, path), self.chrootuid, self.chrootgid)
+                os.chmod(os.path.join(dirpath, path), 0o755)
+
+    @traceLog()
     def _setup_build_dirs(self):
         build_dirs = ['RPMS', 'SPECS', 'SRPMS', 'SOURCES', 'BUILD', 'BUILDROOT',
                       'originals']
@@ -347,13 +359,8 @@ class Buildroot(object):
         try:
             for item in build_dirs:
                 util.mkdirIfAbsent(self.make_chroot_path(self.builddir, item))
-
-            # change ownership so we can write to build home dir
-            for (dirpath, dirnames, filenames) in os.walk(self.make_chroot_path(self.homedir)):
-                for path in dirnames + filenames:
-                    os.chown(os.path.join(dirpath, path), self.chrootuid, -1)
-                    os.chmod(os.path.join(dirpath, path), 0o755)
-
+            if self.config['clean']:
+                self.chown_home_dir()
             # rpmmacros default
             macrofile_out = self.make_chroot_path(self.homedir, ".rpmmacros")
             rpmmacros = open(macrofile_out, 'w+')

@@ -710,7 +710,6 @@ def run_command(options, args, config_opts, commands, buildroot, state):
 
     elif options.mode == 'copyin':
         commands.init()
-        #uidManager.dropPrivsForever()
         if len(args) < 2:
             log.critical("Must have source and destinations for copyin")
             sys.exit(50)
@@ -725,6 +724,7 @@ def run_command(options, args, config_opts, commands, buildroot, state):
                 shutil.copytree(src, dest)
             else:
                 shutil.copy(src, dest)
+        buildroot.chown_home_dir()
 
     elif options.mode == 'copyout':
         commands.init()
