@@ -32,8 +32,8 @@ _mock()
     declare -F _split_longopt &>/dev/null && _split_longopt && split=true
 
     case "$prev" in
-        -h|--help|--copyin|--copyout|--arch|-D|--define|--with|--without|\
-        --uniqueext|--rpmbuild_timeout|--sources|--cwd|--scm-option|--snapshot|\
+        -h|--help|--copyout|--arch|-D|--define|--with|--without|\
+        --uniqueext|--rpmbuild_timeout|--cwd|--scm-option|--snapshot|\
         -l|--list-snapshots|--rollback-to|--remove-snapshot|--umount|--yum|\
         --dnf|--pm-cmd|--yum-cmd|--dnf-cmd|--enablerepo|--disablerepo|\
         --rpmbuild-opts|--new-chroot|--old-chroot|--print-root-path|--trace|\
@@ -44,7 +44,7 @@ _mock()
             _mock_root $cfgdir
             return 0
             ;;
-        --configdir|--resultdir)
+        --configdir|--resultdir|--copyin|--sources)
             local IFS=$'\n'
             COMPREPLY=( $( compgen -d -- "$cur" ) )
             return 0
