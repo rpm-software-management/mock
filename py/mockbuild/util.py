@@ -585,7 +585,7 @@ def get_fs_type(path):
     return p.stdout.readline().strip()
 
 def find_non_nfs_dir():
-    dirs = ('/tmp', '/usr/tmp', '/')
+    dirs = ('/dev/shm', '/run', '/tmp', '/usr/tmp', '/')
     for d in dirs:
         if not get_fs_type(d).startswith('nfs'):
             return d
