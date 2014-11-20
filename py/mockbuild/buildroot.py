@@ -145,7 +145,8 @@ class Buildroot(object):
             # and there's no garbage left by previous build
             self._make_build_user()
             self._setup_build_dirs()
-            if self.config['online'] and self.config['update_before_build']:
+            if (self.config['online'] and self.config['update_before_build']
+                    and self.config['clean']):
                 update_state = "{0} update".format(self.pkg_manager.name)
                 self.state.start(update_state)
                 self.pkg_manager.update()
