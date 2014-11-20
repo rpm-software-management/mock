@@ -317,7 +317,7 @@ class Commands(object):
                 util.rmtree(self.buildroot.make_chroot_path(self.buildroot.builddir, "SOURCES"))
                 shutil.copytree(sources,
                                 self.buildroot.make_chroot_path(self.buildroot.builddir, "SOURCES"),
-                                symlinks=follow_links)
+                                symlinks=(not follow_links))
             else:
                 shutil.copy(sources, self.buildroot.make_chroot_path(self.buildroot.builddir, "SOURCES"))
 

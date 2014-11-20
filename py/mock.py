@@ -246,8 +246,8 @@ def command_parse():
     parser.add_option("--sources", action="store",
                       help="Specifies sources (either a single file or a directory of files)"
                       "to use to build an SRPM (used only with --buildsrpm)")
-    parser.add_option("--symlink-dereference", action="store_false", dest="symlink_dereference",
-                      default=True, help="Follow symlinks in sources (used only with --buildsrpm)")
+    parser.add_option("--symlink-dereference", action="store_true", dest="symlink_dereference",
+                      default=False, help="Follow symlinks in sources (used only with --buildsrpm)")
     parser.add_option("--short-circuit", action="store", type='choice',
                       choices=['prep', 'install', 'build', 'binary'],
                       help="Pass short-circuit option to rpmbuild to skip already "
