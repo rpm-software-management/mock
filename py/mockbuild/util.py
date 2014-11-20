@@ -994,7 +994,7 @@ def load_config(config_path, name, uidManager, version, PKGPYTHONDIR):
 @traceLog()
 def check_macro_definition(config_opts):
     for k, v in config_opts['macros'].items():
-        if not k or not v or len(k.split()) != 1:
+        if not k or (not v and (v is not None)) or len(k.split()) != 1:
             raise mockbuild.exception.BadCmdline(
                 "Bad macros 'config_opts['macros']['%s'] = ['%s']'" % (k,v) )
         if not k.startswith('%'):
