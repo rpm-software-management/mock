@@ -57,11 +57,13 @@ class Tmpfs(object):
             mountCmd = ["mount", "-n", "-t", "tmpfs"] + self.optArgs + \
                        ["mock_chroot_tmpfs", self.buildroot.make_chroot_path()]
             mockbuild.util.do(mountCmd, shell=False)
+        else:
+            getLog().info("reusing tmpfs at %s." % self.buildroot.make_chroot_path())
         self.mounted = True
 
     @traceLog()
     def _tmpfsPostUmount(self):
-        if self.conf["keep_mounted"]:
+        if "keep_mounted" in self.conf and self.conf["keep_mounted"]:
             self.mounted = False
         else:
             self._tmpfsUmount()
