@@ -674,7 +674,8 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
             'tmpfs_opts': {
                 'required_ram_mb': 900,
                 'max_fs_size': None,
-                'mode': '0755'},
+                'mode': '0755',
+                'keep_mounted' : False},
             'selinux_enable': True,
             'selinux_opts': {},
             'package_state_enable' : False,
