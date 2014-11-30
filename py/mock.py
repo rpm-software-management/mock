@@ -267,6 +267,8 @@ def command_parse():
     parser.add_option("--new-chroot", action="store_true", dest="new_chroot",
                       default=False,
                       help="use new chroot (systemd-nspawn).")
+    parser.add_option("--postinstall", action="store_true", dest="post_install",
+                      default=False, help="Try to install built packages in the same buildroot right after build")
 
     # verbosity
     parser.add_option("-v", "--verbose", action="store_const", const=2,
@@ -463,7 +465,15 @@ def do_rebuild(config_opts, commands, buildroot, srpms):
         commands.build(srpm, timeout=config_opts['rpmbuild_timeout'],
                        check=config_opts['check'])
 
-    def createrepo_on_rpms():
+    def post_build():
+        if config_opts['post_install']:
+            if buildroot.chroot_was_initialized:
+                commands.install_build_results(commands.build_results)
+            else:
+                commands.init()
+                commands.install_build_results(commands.build_results)
+                commands.clean()
+
         if config_opts["createrepo_on_rpms"]:
             log.info("Running createrepo on binary rpms in resultdir")
             buildroot.uid_manager.dropPrivsTemp()
@@ -473,7 +483,7 @@ def do_rebuild(config_opts, commands, buildroot, srpms):
             buildroot.uid_manager.restorePrivs()
 
     rebuild_generic(srpms, commands, buildroot, config_opts, cmd=build,
-                    post=createrepo_on_rpms, clean=clean)
+                    post=post_build, clean=clean)
 
 @traceLog()
 def do_buildsrpm(config_opts, commands, buildroot, options, args):

@@ -26,6 +26,8 @@ class Commands(object):
         self.rpmbuild_arch = config['rpmbuild_arch']
         self.clean_the_chroot = config['clean']
 
+        self.build_results = []
+
         # config options
         self.configs = config['config_paths']
         self.config_name = config['chroot_name']
@@ -226,7 +228,7 @@ class Commands(object):
 
             results = self.rebuild_package(spec_path, timeout, check)
             if results:
-                self.copy_build_results(results)
+                self.build_results.extend(self.copy_build_results(results))
             elif self.config.get('short_circuit'):
                 self.buildroot.root_log.info("Short circuit builds don't produce RPMs")
             else:
@@ -240,7 +242,6 @@ class Commands(object):
             # tell caching we are done building
             self.plugins.call_hooks('postbuild')
         self.state.finish(buildstate)
-
 
     @traceLog()
     def shell(self, options, cmd=None):
@@ -440,5 +441,23 @@ class Commands(object):
     @traceLog()
     def copy_build_results(self, results):
         self.buildroot.root_log.debug("Copying packages to result dir")
+        ret = []
         for item in results:
             shutil.copy2(item, self.buildroot.resultdir)
+            ret.append(os.path.join(self.buildroot.resultdir, os.path.split(item)[1]))
+        return ret
+
+    @traceLog()
+    def install_build_results(self, results):
+        self.buildroot.root_log.info("Installing built packages")
+        try:
+            self.uid_manager.becomeUser(0, 0)
+
+            pkgs = [pkg for pkg in results if not pkg.endswith("src.rpm")]
+            try:
+                self.install(*pkgs)
+            except:
+                 self.buildroot.root_log.warn("Failed install built packages")
+                 pass
+        finally:
+            self.uid_manager.restorePrivs()
