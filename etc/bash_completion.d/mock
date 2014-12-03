@@ -77,7 +77,7 @@ _mock()
             ;;
         -i|--install|install)
             local IFS=$'\n'
-            COMPREPLY=( $( compgen -f -o plusdirs -X '!*.rpm' -X '*src.rpm' \
+            COMPREPLY=( $( compgen -f -o plusdirs -G '*(src)?.rpm' \
                 -- "$cur" ) )
             [[ $cur != */* && $cur != [.~]* ]] && \
                 declare -F _yum_list &>/dev/null && _yum_list all "$cur"
