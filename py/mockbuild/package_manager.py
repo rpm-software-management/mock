@@ -31,9 +31,10 @@ class _PackageManager(object):
 
     @traceLog()
     def build_invocation(self, *args):
+        invocation = []
         if args[0] == 'builddep':
             args = args[1:]
-            invocation = self.builddep_command
+            invocation += self.builddep_command
             common_opts = self.config[self.name + '_builddep_opts']
         else:
             invocation = [self.command]
