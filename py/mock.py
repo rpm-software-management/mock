@@ -722,8 +722,18 @@ def run_command(options, args, config_opts, commands, buildroot, state):
             sys.exit(50)
         args = args[:-1]
         for src in args:
+            if not os.path.lexists(src):
+                log.critical("No such file or directory: {0}".format(src))
+                sys.exit(50)
             log.info("copying %s to %s" % (src, dest))
             if os.path.isdir(src):
+                if os.path.exists(dest):
+                    path_suffix = os.path.split(src)[1]
+                    dest = os.path.join(dest, path_suffix)
+                    if os.path.exists(dest):
+                        log.critical("Destination %{0} already exist!".format(dest))
+                        sys.exit(50)
+                print(src); print(dest)
                 shutil.copytree(src, dest)
             else:
                 shutil.copy(src, dest)
