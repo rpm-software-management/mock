@@ -208,6 +208,24 @@ fi
 %endif
 
 %changelog
+* Thu Dec  4 2014 Miroslav Suchý <msuchy@redhat.com> - 1.2.3-1
+- fixed incorrect command construction in PackageManager:build_invocation [RHBZ#1170230]
+- completion: correctly expand --install [RHBZ#1168220]
+- copyin: when source is directory, then handle corner cases [RHBZ#1169051]
+- increase default for tmpfs to 768
+- check if key exist [RHBZ#476837]
+- Added tmpfs new option 'keep_mounted' [RHBZ#476837]
+- add 2 common tmpfs dirs to find_non_nfs_dir()
+- Added new option --symlink-dereference used with --buildsrpm [BZ# 1165242]
+- accept None as macro value in config [RHBZ#1165778]
+- Don't do yum update when --no-clean specified [RHBZ#1165716]
+- do not delete /buildir when --no-clean was set [RHBZ#483486]
+- bash completation for --copyin and --sources
+- bash_completion.d/mock: fix syntax error
+- Correct check for --source cmd option, single file can be used [RHBZ#1165213]
+- update BUGS part of man page
+- add missing options to man page
+
 * Tue Nov 18 2014 Miroslav Suchý <msuchy@redhat.com> - 1.2.2-1
 - add missing import [RHBZ#1165061]
 
