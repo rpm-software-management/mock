@@ -24,7 +24,7 @@ def init(plugins, conf, buildroot):
 
 # classes
 class YumCache(object):
-    """caches root environment in a tarball"""
+    """ mount /var/cache/yum of your machine to chroot """
     @traceLog()
     def __init__(self, plugins, conf, buildroot):
         self.buildroot = buildroot
