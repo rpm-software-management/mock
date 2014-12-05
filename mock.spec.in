@@ -253,7 +253,7 @@ fi
 - Install into correct sitelib when using Python 3
 - Fix nosync on aarch64
 - wrap all remaining getcwd() [RHBZ#1159300]
-- do not use rpm in %post scriptlet [RHBZ#1131279]
+- do not use rpm in %%post scriptlet [RHBZ#1131279]
 - Fix unclear legal host output [RHBZ#1159794]
 - allow running from directory, which is deleted [RHBZ#1159300]
 - create compress_logs plugin [RHBZ#1100923]
@@ -319,10 +319,10 @@ from Miroslav Suchý <msuchy@redhat.com>
   - set LC_MESSAGE to C before executing command [BZ# 519258]
   - use ctypes.get_errno() instead of ctypes.c_int.in_dll(_libc, "errno")
   - revert 7ec6a1e9d202ab56fb31c914dbf7516c045e56ab (python 2.4 workarounds)
-  - buildroot and %clean is not needed for el6 and fedoras
+  - buildroot and %%clean is not needed for el6 and fedoras
   - description should always end with dot
   - remove shebang from mockbuild/mounts.py
-  - %defattr is not needed since rpm 4.4
+  - %%defattr is not needed since rpm 4.4
   - remove el5 conditional
   - use createrepo_c which is much faster
   - whitespace fixes
