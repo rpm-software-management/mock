@@ -88,10 +88,10 @@ Completely remove the specified chroot or cache dir or all of the chroot and cac
 Initialize a chroot (clean, install chroot packages, etc.)
 .TP
 \fB\-\-rebuild\fP
-If no command is specified, rebuild is assumed. Rebuilds the specified SRPM(s). The buildroot is cleaned first, unless --no-clean is specified.
+If no command is specified, rebuild is assumed. Rebuilds the specified SRPM(s). The chroot is cleaned first, unless --no-clean is specified.
 .TP
 \fB\-\-buildsrpm\fP
-Builds the specified SRPM either from a spec file and source file/directory or from SCM. The buildroot is cleaned first, unless --no-clean is specified.
+Builds the specified SRPM either from a spec file and source file/directory or from SCM. The chroot is cleaned first, unless --no-clean is specified.
 .TP
 \fB\-\-sources\fR\fISOURCES\fP
 Specifies sources (either a single file or a directory of files) to use to build an SRPM (used only with --buildsrpm).
@@ -106,19 +106,19 @@ Run the specified command interactively within the chroot (no 'clean' is perform
 Run the specified command non-interactively within the chroot (no 'clean' is performed). Command output will be sent to the log files.
 .TP
 \fB\-\-installdeps\fP 
-Find out deps for SRPM or RPM, and do a yum install to put them in the buildroot. No 'clean' is performed
+Find out deps for SRPM or RPM, and do a yum install to put them in the chroot. No 'clean' is performed
 .TP
 \fB-i\fR, \fB\-\-install\fP
-Do a yum install PACKAGE inside the buildroot. No 'clean' is performed
+Do a yum install PACKAGE inside the chroot. No 'clean' is performed
 .TP
 \fB\-\-update\fP 
-Do a yum update inside the buildroot. No 'clean' is performed
+Do a yum update inside the chroot. No 'clean' is performed
 .TP
 \fB\-\-remove\fP 
-Do a yum remove PACKAGE inside the buildroot. No 'clean' is performed
+Do a yum remove PACKAGE inside the chroot. No 'clean' is performed
 .TP
 \fB-p\fR, \fB\-\-print-root-path\fP
-Prints a path to the currently used buildroot directory.
+Prints a path to the currently used chroot directory.
 .TP
 \fB\-\-orphanskill\fP
 No-op mode that simply checks that no stray processes are running in the chroot. Kills any processes that it finds using specified root.
@@ -138,17 +138,17 @@ package and branch can be defined with \fB\-\-scm-option\fP arguments,
 see site-defaults.cfg for more information.
 .TP
 \fB\-\-snapshot\fP
-Make a snapshot of the current state of the buildroot. That snapshot will be set
+Make a snapshot of the current state of the chroot. That snapshot will be set
 as the current base to which \fV\-\-clean\fP and implicit clean happening during
 rebuild command will return.
 This feature is available only when lvm_root plugin is installed and enabled.
 .TP
 \fB-l\fR, \fB\-\-list-snapshots\fP
-List all existing snapshots of the buildroot belonging to current configuration.
+List all existing snapshots of the chroot belonging to current configuration.
 Current base snapshot is marked with an asterisk (\fB*\fR)
 .TP
 \fB\-\-rollback-to\fP
-Return buildroot to the state in specified snapshot and set it as the current
+Return chroot to the state in specified snapshot and set it as the current
 base to which clean actions will return. It won't delete nor modify the snapshot
 that was set as base previously.
 This feature is available only when lvm_root plugin is installed and enabled.
@@ -159,22 +159,22 @@ undone.
 This feature is available only when lvm_root plugin is installed and enabled.
 .TP
 \fB\-\-mount\fP
-Mount all everything mounted in the buildroot path including the root itself
+Mount all everything mounted in the chroot path including the root itself
 that might have been a LVM volume or TMPFS.
 .TP
 \fB\-\-umount\fP
-Umount all everything mounted in the buildroot path including the root itself
+Umount all everything mounted in the chroot path including the root itself
 that might have been a LVM volume or TMPFS.
 .TP
 \fB\-\-pm-cmd\fP
 Execute following arguments with current package manager with installroot set to
-the buildroot path.
+the chroot path.
 .TP
 \fB\-\-yum-cmd\fP
-Execute following arguments with yum with installroot set to the buildroot path.
+Execute following arguments with yum with installroot set to the chroot path.
 .TP
 \fB\-\-dnf-cmd\fP
-Execute following arguments with DNF with installroot set to the buildroot path.
+Execute following arguments with DNF with installroot set to the chroot path.
 DNF must be installed on the system.
 
 
@@ -239,7 +239,7 @@ Change directory where resulting files (RPMs and build logs) are written. Result
 \fB\-\-resultdir=./my/"%(dist)s"/"%(target_arch)s"/\fR
 .TP
 \fB\-\-uniqueext=\fR\fItext\fP
-Arbitrary, unique extension to append to buildroot directory name
+Arbitrary, unique extension to append to chroot directory name
 .TP
 \fB\-\-configdir=\fR\fICONFIGDIR\fP
 Change directory where config files are found
