@@ -33,7 +33,7 @@ import mockbuild.exception
 from mockbuild.trace_decorator import traceLog, getLog
 import mockbuild.uid as uid
 
-encoding = locale.getpreferredencoding(False)
+encoding = locale.getpreferredencoding()
 
 try:
     basestring = basestring
