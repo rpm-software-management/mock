@@ -435,12 +435,10 @@ def do(command, shell=False, chrootPath=None, cwd=None, timeout=0, raiseExc=True
             stderr=subprocess.PIPE,
             preexec_fn=preexec,
             )
-
         # use select() to poll for output so we dont block
         output = logOutput([reader if pty else child.stdout, child.stderr],
                            logger, returnOutput, start, timeout, pty=pty,
                            printOutput=printOutput, child=child, chrootPath=chrootPath)
-
     except:
         # kill children if they arent done
         if child is not None and child.returncode is None:

@@ -2,6 +2,7 @@ import os
 import lvm
 import fcntl
 import errno
+import re
 import time
 
 from contextlib import contextmanager
@@ -35,7 +36,8 @@ def volume_group(name, mode='r'):
 
 def lvm_do(*args, **kwargs):
     with restored_ipc_ns():
-        util.do(*args, **kwargs)
+        output = util.do(*args, **kwargs)
+    return output
 
 def current_mounts():
     with open("/proc/mounts") as proc_mounts:
@@ -103,6 +105,18 @@ class LvmPlugin(object):
         self.lock = self.create_lock('lvm')
         self.pool_lock = self.create_lock('lmv-pool')
         self.mount = None
+
+        size_data = self.allocated_pool_data()
+        size_metadata = self.allocated_pool_metadata()
+        self.buildroot.root_log.info("LVM plugin enabled. Allocated pool data: {0}%. Allocated metadata: {1}%.".format(size_data, size_metadata))
+        if (('check_size' not in self.lvm_conf) or (('check_size' in self.lvm_conf) and (self.lvm_conf['check_size']))) and \
+            ((size_metadata and size_metadata > 90) or (size_data and size_data > 90)):
+            raise LvmError("Thin pool {0}/{1} is over 90%. Please enlarge it.".format(self.vg_name, self.pool_name))
+        else:
+            if  size_metadata and size_metadata > 75:
+                self.buildroot.root_log.warning("LVM Thin pool metadata are nearly filled up ({0}%). You may experience weird errors. Consider growing up your thin pool.".format(size_data))
+            if size_data and size_data > 75:
+                self.buildroot.root_log.warning("LVM Thin pool is nearly filled up ({0}%). You may experience weird errors. Consider growing up your thin pool.".format(size_data))
 
         prefix = 'hook_'
         for member in dir(self):
@@ -217,6 +231,26 @@ class LvmPlugin(object):
         mkfs = self.lvm_conf.get('mkfs_command', 'mkfs.' + self.fs_type)
         mkfs_args = self.lvm_conf.get('mkfs_args', [])
         util.do([mkfs, self.get_lv_path()] + mkfs_args)
+
+    def allocated_pool_data(self):
+        """ Returns percent of allocated space in thin pool """
+        pool_id = self.vg_name + '/' + self.pool_name
+        output = lvm_do(['lvdisplay', pool_id], returnOutput=True)
+        compiled_re = re.compile(r'.*Allocated pool data\s*([0-9.]*)%$.*', re.DOTALL | re.MULTILINE)
+        r_match = compiled_re.match(output)
+        if r_match:
+                return float(r_match.group(1))
+        return None
+
+    def allocated_pool_metadata(self):
+        """ Returns percent of allocated metadata in thin pool """
+        pool_id = self.vg_name + '/' + self.pool_name
+        output = lvm_do(['lvdisplay', pool_id], returnOutput=True)
+        compiled_re = re.compile(r'.*Allocated metadata\s*([0-9.]*)%$.*', re.DOTALL | re.MULTILINE)
+        r_match = compiled_re.match(output)
+        if r_match:
+                return float(r_match.group(1))
+        return None
 
     def force_umount_root(self):
         self.buildroot.root_log.warning("Forcibly unmounting root volume")
