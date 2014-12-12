@@ -210,7 +210,13 @@ class Buildroot(object):
         if not os.path.exists(self.make_chroot_path('usr/sbin/useradd')):
             raise RootError("Could not find useradd in chroot, maybe the install failed?")
 
-        dets = {'uid': str(self.chrootuid), 'gid': str(self.chrootgid), 'user': self.chrootuser, 'group': self.chrootgroup, 'home': self.homedir}
+        dets = {'uid': str(self.chrootuid), 'gid': str(self.chrootgid),
+                'user': self.chrootuser, 'group': self.chrootgroup, 'home': self.homedir}
+
+        excluded = [self.make_chroot_path(self.homedir, path)
+                    for path in self.config['exclude_from_homedir_cleanup']]
+        util.rmtree(self.make_chroot_path(self.homedir),
+                    selinux=self.selinux, exclude=excluded)
 
         # ok for these two to fail
         if self.config['clean']:
