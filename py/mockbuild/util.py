@@ -25,6 +25,7 @@ import errno
 import grp
 import locale
 import logging
+import uuid
 from glob import glob
 from ast import literal_eval
 from textwrap import dedent
@@ -555,7 +556,7 @@ def _prepare_nspawn_command(chrootPath, user, cmd):
             cmd = ['/bin/su', '-l', user, '-c', '"{0}"'.format(cmd)]
     elif not cmd_is_list:
         cmd = [ cmd, ]
-    cmd = ['/usr/bin/systemd-nspawn', '-D', chrootPath] + cmd
+    cmd = ['/usr/bin/systemd-nspawn', '-M' , uuid.uuid4().hex, '-D', chrootPath] + cmd
     if cmd_is_list:
         return cmd
     else:
