@@ -106,18 +106,6 @@ class LvmPlugin(object):
         self.pool_lock = self.create_lock('lmv-pool')
         self.mount = None
 
-        size_data = self.allocated_pool_data()
-        size_metadata = self.allocated_pool_metadata()
-        self.buildroot.root_log.info("LVM plugin enabled. Allocated pool data: {0}%. Allocated metadata: {1}%.".format(size_data, size_metadata))
-        if (('check_size' not in self.lvm_conf) or (('check_size' in self.lvm_conf) and (self.lvm_conf['check_size']))) and \
-            ((size_metadata and size_metadata > 90) or (size_data and size_data > 90)):
-            raise LvmError("Thin pool {0}/{1} is over 90%. Please enlarge it.".format(self.vg_name, self.pool_name))
-        else:
-            if  size_metadata and size_metadata > 75:
-                self.buildroot.root_log.warning("LVM Thin pool metadata are nearly filled up ({0}%). You may experience weird errors. Consider growing up your thin pool.".format(size_data))
-            if size_data and size_data > 75:
-                self.buildroot.root_log.warning("LVM Thin pool is nearly filled up ({0}%). You may experience weird errors. Consider growing up your thin pool.".format(size_data))
-
         prefix = 'hook_'
         for member in dir(self):
             if member.startswith(prefix):
@@ -281,6 +269,19 @@ class LvmPlugin(object):
         self.buildroot.root_log.info("rolled back to {name} snapshot"\
                                      .format(name=self.remove_prefix(snapshot_name)))
 
+    def check_pool_size(self):
+        size_data = self.allocated_pool_data()
+        size_metadata = self.allocated_pool_metadata()
+        self.buildroot.root_log.info("LVM plugin enabled. Allocated pool data: {0}%. Allocated metadata: {1}%.".format(size_data, size_metadata))
+        if (('check_size' not in self.lvm_conf) or (('check_size' in self.lvm_conf) and (self.lvm_conf['check_size']))) and \
+            ((size_metadata and size_metadata > 90) or (size_data and size_data > 90)):
+            raise LvmError("Thin pool {0}/{1} is over 90%. Please enlarge it.".format(self.vg_name, self.pool_name))
+        else:
+            if  size_metadata and size_metadata > 75:
+                self.buildroot.root_log.warning("LVM Thin pool metadata are nearly filled up ({0}%). You may experience weird errors. Consider growing up your thin pool.".format(size_data))
+            if size_data and size_data > 75:
+                self.buildroot.root_log.warning("LVM Thin pool is nearly filled up ({0}%). You may experience weird errors. Consider growing up your thin pool.".format(size_data))
+
     def hook_mount_root(self):
         def acquired():
             # Locked as exclusive so only one mock initializes postinit snapshot
@@ -310,6 +311,7 @@ class LvmPlugin(object):
             self.create_head(self.get_current_snapshot())
 
         self.prepare_mount()
+        self.check_pool_size()
         self.mount.mount()
 
     def hook_umount_root(self):
