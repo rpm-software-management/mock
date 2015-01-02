@@ -36,7 +36,7 @@ def volume_group(name, mode='r'):
 
 def lvm_do(*args, **kwargs):
     with restored_ipc_ns():
-        output = util.do(*args, **kwargs)
+        output = util.do(*args, returnOutput=True, **kwargs)
     return output
 
 def current_mounts():
@@ -86,7 +86,7 @@ class LvmPlugin(object):
     def __init__(self, plugins, lvm_conf, buildroot):
         if not util.original_ipc_ns or not util.have_setns:
             raise LvmError("Cannot initialize setns support, which is "
-                               "needed by LVM plugin")
+                           "needed by LVM plugin")
         self.buildroot = buildroot
         self.lvm_conf = lvm_conf
         self.vg_name = lvm_conf.get('volume_group')
@@ -235,21 +235,21 @@ class LvmPlugin(object):
     def allocated_pool_data(self):
         """ Returns percent of allocated space in thin pool """
         pool_id = self.vg_name + '/' + self.pool_name
-        output = lvm_do(['lvdisplay', pool_id], returnOutput=True)
+        output = lvm_do(['lvdisplay', pool_id])
         compiled_re = re.compile(r'.*Allocated pool data\s*([0-9.]*)%$.*', re.DOTALL | re.MULTILINE)
         r_match = compiled_re.match(output)
         if r_match:
-                return float(r_match.group(1))
+            return float(r_match.group(1))
         return None
 
     def allocated_pool_metadata(self):
         """ Returns percent of allocated metadata in thin pool """
         pool_id = self.vg_name + '/' + self.pool_name
-        output = lvm_do(['lvdisplay', pool_id], returnOutput=True)
+        output = lvm_do(['lvdisplay', pool_id])
         compiled_re = re.compile(r'.*Allocated metadata\s*([0-9.]*)%$.*', re.DOTALL | re.MULTILINE)
         r_match = compiled_re.match(output)
         if r_match:
-                return float(r_match.group(1))
+            return float(r_match.group(1))
         return None
 
     def force_umount_root(self):
@@ -343,8 +343,7 @@ class LvmPlugin(object):
                                 util.do(['umount', '-l', src])
                     except lvm.LibLVMError:
                         pass
-                    self.buildroot.root_log.info(
-                            "removing {0} volume".format(lv.getName()))
+                    self.buildroot.root_log.info("removing {0} volume".format(lv.getName()))
                     lv.remove()
             remaining = [lv for lv in vg.listLVs() if lv.getAttr()[0] == 'V' and
                          lv.getProperty('pool_lv')[0] == self.pool_name]
