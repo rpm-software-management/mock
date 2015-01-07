@@ -648,7 +648,9 @@ def run_command(options, args, config_opts, commands, buildroot, state):
     # Fetch and prepare sources from SCM
     if config_opts['scm']:
         scmWorker = mockbuild.scm.scmWorker(log, config_opts['scm_opts'], config_opts['macros'])
+        buildroot.uid_manager.dropPrivsTemp()
         scmWorker.get_sources()
+        buildroot.uid_manager.restorePrivs()
         (options.sources, options.spec) = scmWorker.prepare_sources()
 
     if options.mode == 'init':
