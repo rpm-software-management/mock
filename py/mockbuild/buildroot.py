@@ -355,8 +355,11 @@ class Buildroot(object):
         """ set ownership of homedir and subdirectories to mockbuild user """
         for (dirpath, dirnames, filenames) in os.walk(self.make_chroot_path(self.homedir)):
             for path in dirnames + filenames:
-                os.lchown(os.path.join(dirpath, path), self.chrootuid, self.chrootgid)
-                os.chmod(os.path.join(dirpath, path), 0o755)
+                filepath = os.path.join(dirpath, path)
+                # ignore broken symlinks
+                if os.path.exists(filepath):
+                    os.lchown(filepath, self.chrootuid, self.chrootgid)
+                    os.chmod(filepath, 0o755)
 
     @traceLog()
     def _setup_build_dirs(self):
