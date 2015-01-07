@@ -22,8 +22,10 @@
 # adding each to a local repo
 # so they are available as build deps to next pkg being built
 from __future__ import print_function
-from six.moves import urllib_parse
-
+try:
+    from six.moves.urllib_parse import urlsplit
+except ImportError:
+    from urlparse import urlsplit
 import sys
 import subprocess
 import os
@@ -303,7 +305,7 @@ def main(args):
                     log(opts.logfile, 'Fetching %s' % url)
                     r = requests.get(url)
                     if r.status_code == requests.codes.ok:
-                        fn = urllib_parse.urlsplit(r.url).path.rsplit('/', 1)[1]
+                        fn = urlsplit(r.url).path.rsplit('/', 1)[1]
                         pkg = download_dir + '/' + fn
                         fd = open(pkg, 'wb')
                         for chunk in r.iter_content(4096):
