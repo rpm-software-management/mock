@@ -647,7 +647,8 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
     config_opts['cleanup_on_success'] = True
     config_opts['cleanup_on_failure'] = True
 
-    config_opts['exclude_from_homedir_cleanup'] = ['build/SOURCES']
+    config_opts['exclude_from_homedir_cleanup'] = ['build/SOURCES', '.bash_history',
+                                                   '.bashrc']
 
     config_opts['createrepo_on_rpms'] = False
     config_opts['createrepo_command'] = '/usr/bin/createrepo_c -d -q -x *.src.rpm' # default command
