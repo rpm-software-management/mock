@@ -97,6 +97,20 @@ def parse_args(args):
 
     return opts, args
 
+REPOS_ID = []
+def generate_repo_id(baseurl):
+    """ generate repository id for yum.conf out of baseurl """
+    repoid = "/".join(baseurl.split('//')[1:]).replace('/', '_')
+    repoid = re.sub(r'[^a-zA-Z0-9_]', '', repoid)
+    suffix = ''
+    i = 1
+    while repoid + suffix in REPOS_ID:
+        suffix = str(i)
+        i += 1
+    repoid = repoid + suffix
+    REPOS_ID.append(repoid)
+    return repoid
+
 def add_local_repo(infile, destfile, baseurl, repoid=None):
     """take a mock chroot config and add a repo to it's yum.conf
        infile = mock chroot config file
@@ -109,8 +123,9 @@ def add_local_repo(infile, destfile, baseurl, repoid=None):
             code = compile(f.read(), infile, 'exec')
         exec(code)
         if not repoid:
-            repoid = baseurl.split('//')[1].replace('/', '_')
-            repoid = re.sub(r'[^a-zA-Z0-9_]', '', repoid)
+            repoid = generate_repo_id(baseurl)
+        else:
+            REPOS_ID.append(repoid)
         localyumrepo = """
 [%s]
 name=%s
