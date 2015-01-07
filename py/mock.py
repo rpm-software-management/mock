@@ -673,8 +673,6 @@ def run_command(options, args, config_opts, commands, buildroot, state):
         sys.exit(commands.shell(options, cmd))
 
     elif options.mode == 'chroot':
-        if not os.path.exists(buildroot.make_chroot_path()):
-            raise mockbuild.exception.ChrootNotInitialized("chroot %s not initialized!" % buildroot.make_chroot_path())
         if len(args) == 0:
             log.critical("You must specify a command to run with --chroot")
             sys.exit(50)
