@@ -666,7 +666,7 @@ def run_command(options, args, config_opts, commands, buildroot, state):
 
     elif options.mode == 'shell':
         if len(args):
-            cmd = ' '.join(args)
+            cmd = args
         else:
             cmd = None
         commands.init(do_log=False)

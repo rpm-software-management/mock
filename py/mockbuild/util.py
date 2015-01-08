@@ -446,6 +446,9 @@ def do(command, shell=False, chrootPath=None, cwd=None, timeout=0, raiseExc=True
         env = clean_env()
     try:
         child = None
+        if shell and isinstance(command, list):
+            command = ['/bin/sh', '-c'] + command
+            shell = False
         if chrootPath and USE_NSPAWN:
             command = _prepare_nspawn_command(chrootPath, user, command)
         logger.debug("Executing command: {0} with env {1} and shell {2}".format(command, env, shell))
@@ -566,21 +569,20 @@ def doshell(chrootPath=None, environ=None, uid=None, gid=None, user=None, cmd=No
     if not 'PROMPT_COMMAND' in environ:
         environ['PROMPT_COMMAND'] = 'printf "\033]0;<mock-chroot>\007<mock-chroot>"'
     if not 'SHELL' in environ:
-        environ['SHELL'] = '/bin/bash'
+        environ['SHELL'] = '/bin/sh'
     log.debug("doshell environment: %s", environ)
     if cmd:
-        if not USE_NSPAWN:
-            cmdstr = '/bin/bash -c "%s"' % cmd
-        else:
-            cmdstr = cmd
+        if not isinstance(cmd, list):
+            cmd = [cmd]
+        cmd = ['/bin/sh', '-c'] + cmd
     else:
-        cmdstr = "/bin/bash -i -l"
+        cmd = ["/bin/sh", "-i", "-l"]
     if USE_NSPAWN:
-        cmdstr = _prepare_nspawn_command(chrootPath, user, cmdstr)
+        cmd = _prepare_nspawn_command(chrootPath, user, cmd)
     preexec = ChildPreExec(personality=None, chrootPath=chrootPath, cwd=None,
                            uid=uid, gid=gid, env=environ, shell=True)
-    log.debug("doshell: command: %s" % cmdstr)
-    return subprocess.call(cmdstr, preexec_fn=preexec, env=environ, shell=True)
+    log.debug("doshell: command: %s" % cmd)
+    return subprocess.call(cmd, preexec_fn=preexec, env=environ, shell=False)
 
 
 
@@ -591,7 +593,7 @@ def run(cmd, isShell=True):
 
 def clean_env():
     env = {'TERM' : 'vt100',
-           'SHELL' : '/bin/bash',
+           'SHELL' : '/bin/sh',
            'HOME' : '/builddir',
            'HOSTNAME' : 'mock',
            'PATH' : '/usr/bin:/bin:/usr/sbin:/sbin',

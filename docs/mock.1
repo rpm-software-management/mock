@@ -6,7 +6,7 @@ mock \- build SRPMs in a chroot
 .LP
 mock  [options] \fB\-\-rebuild\fR \fISRPM [\fISRPM...\fR]
 .LP
-mock  [options] \fB\-\-buildsrpm\fR {--spec \fIspec\fR --sources \fIsrc\fR --symlink-dereference | --scm-enable}
+mock  [options] \fB\-\-buildsrpm\fR {\-\-spec \fIspec\fR \-\-sources \fIsrc\fR \-\-symlink\-dereference | \-\-scm\-enable}
 .LP
 mock  [options] \fB\-\-chroot\fR \fI<cmd>\fR
 .LP
@@ -22,29 +22,29 @@ mock  [options] \fB\-\-remove\fR PACKAGE
 .LP
 mock  [options] \fB\-\-orphanskill\fR
 .LP
-mock  [options] \fB\-p\fR, \fB\-\-print-root-path\fR
+mock  [options] \fB\-p\fR, \fB\-\-print\-root\-path\fR
 .LP
 mock  [options] \fB\-\-copyin\fR \fIpath [\fIpath...\fR] \fIdestination\fR
 .LP
 mock  [options] \fB\-\-copyout\fR \fIpath [\fIpath...\fR] \fIdestination\fR
 .LP
-mock  [options] \fB\-\-scm-enable\fR [\fI--scm-option key=value ...\fR]
+mock  [options] \fB\-\-scm\-enable\fR [\fI\-\-scm\-option key=value ...\fR]
 .LP
-mock  [options] \fB-l\fR, \fB\-\-list-snapshots\fR
+mock  [options] \fB\-l\fR, \fB\-\-list\-snapshots\fR
 .LP
-mock  [options] \fB\-\-snapshot\fR [\fIsnapshot-name\fR]
+mock  [options] \fB\-\-snapshot\fR [\fIsnapshot\-name\fR]
 .LP
-mock  [options] \fB\-\-rollback-to\fR [\fIsnapshot-name\fR]
+mock  [options] \fB\-\-rollback\-to\fR [\fIsnapshot\-name\fR]
 .LP
-mock  [options] \fB\-\-remove-snapshot\fR [\fIsnapshot-name\fR]
+mock  [options] \fB\-\-remove\-snapshot\fR [\fIsnapshot\-name\fR]
 .LP
 mock  [options] \fB\-\-umount\fR
 .LP
-mock  [options] \fB\-\-pm-cmd\fR [\fIarguments ...\fR]
+mock  [options] \fB\-\-pm\-cmd\fR [\fIarguments ...\fR]
 .LP
-mock  [options] \fB\-\-yum-cmd\fR [\fIarguments ...\fR]
+mock  [options] \fB\-\-yum\-cmd\fR [\fIarguments ...\fR]
 .LP
-mock  [options] \fB\-\-dnf-cmd\fR [\fIarguments ...\fR]
+mock  [options] \fB\-\-dnf\-cmd\fR [\fIarguments ...\fR]
 
 
 .SH "DESCRIPTION"
@@ -58,12 +58,12 @@ The content of a chroot is specified by the configuration specified with the
 \fB\-r\fR option. The default configuration file is /etc/mock/default.cfg,
 which is usually a symlink to one of the installed configurations.
 .LP
-There is a site-wide configuration file, /etc/mock/site-defaults.cfg, which can
-be used to specify site-wide options. The shipped version of this file has no
+There is a site\-wide configuration file, /etc/mock/site\-defaults.cfg, which can
+be used to specify site\-wide options. The shipped version of this file has no
 active options, but does have a list of all of the configuration options,
 examples of how to set them, and their default values.
 .LP
-For backwards compatibility, old-style commands, ("rebuild", "init", "clean",
+For backwards compatibility, old\-style commands, ("rebuild", "init", "clean",
 etc.) without leading '\-\-' are still accepted, but are deprecated. See
 COMMANDS section, below, for detailed listing of all commands.
 .LP
@@ -71,7 +71,7 @@ To use mock, a user should become a member of the \fBmock\fR group by
 adding their username to the \fBmock\fR line in /etc/group. This can
 be done with the following command:
 .P
-        \fBsudo /usr/sbin/usermod -a -G mock $USER\fR
+        \fBsudo /usr/sbin/usermod \-a \-G mock $USER\fR
 
 Note that mock is not intended to be run directly as root.
 
@@ -82,33 +82,33 @@ Note that mock is not intended to be run directly as root.
 Purge the chroot tree.
 .TP
 \fB\-\-scrub\fR=\fITYPE\fP
-Completely remove the specified chroot or cache dir or all of the chroot and cache.  \fITYPE\fR is one of all, chroot, cache, root-cache, c-cache, or yum-cache.
+Completely remove the specified chroot or cache dir or all of the chroot and cache.  \fITYPE\fR is one of all, chroot, cache, root\-cache, c\-cache, or yum\-cache.
 .TP
 \fB\-\-init\fP
 Initialize a chroot (clean, install chroot packages, etc.)
 .TP
 \fB\-\-rebuild\fP
-If no command is specified, rebuild is assumed. Rebuilds the specified SRPM(s). The chroot is cleaned first, unless --no-clean is specified.
+If no command is specified, rebuild is assumed. Rebuilds the specified SRPM(s). The chroot is cleaned first, unless \-\-no\-clean is specified.
 .TP
 \fB\-\-buildsrpm\fP
-Builds the specified SRPM either from a spec file and source file/directory or from SCM. The chroot is cleaned first, unless --no-clean is specified.
+Builds the specified SRPM either from a spec file and source file/directory or from SCM. The chroot is cleaned first, unless \-\-no\-clean is specified.
 .TP
 \fB\-\-sources\fR=\fISOURCES\fP
-Specifies sources (either a single file or a directory of files) to use to build an SRPM (used only with --buildsrpm).
+Specifies sources (either a single file or a directory of files) to use to build an SRPM (used only with \-\-buildsrpm).
 .TP
 \fB\-\-spec\fR=\fISPEC\fP
-Specifies spec file to use to build an SRPM (used only with --buildsrpm).
+Specifies spec file to use to build an SRPM (used only with \-\-buildsrpm).
 .TP
-\fB\-\-shell\fP
-Run the specified command interactively within the chroot (no 'clean' is performed). If no command specified, /bin/sh is run.
+\fB\-\-shell\fP [\fICOMMAND [\fIARGS...]\fR]
+Run the specified command interactively within the chroot (no 'clean' is performed). If no command specified, /bin/sh is run. Note that COMMAND is shell expanded using shell in chroot.
 .TP
-\fB\-\-chroot\fP 
-Run the specified command non-interactively within the chroot (no 'clean' is performed). Command output will be sent to the log files.
+\fB\-\-chroot\fP \fICOMMAND [\fIARGS...\fR]
+Run the specified command non\-interactively within the chroot (no 'clean' is performed). Command output will be sent to the log files. Note that COMMAND is shell expanded only if there are no ARGS. Otherwise there is no shell expansion.
 .TP
 \fB\-\-installdeps\fP 
 Find out deps for SRPM or RPM, and do a yum install to put them in the chroot. No 'clean' is performed
 .TP
-\fB-i\fR, \fB\-\-install\fP
+\fB\-i\fR, \fB\-\-install\fP
 Do a yum install PACKAGE inside the chroot. No 'clean' is performed
 .TP
 \fB\-\-update\fP 
@@ -117,11 +117,11 @@ Do a yum update inside the chroot. No 'clean' is performed
 \fB\-\-remove\fP 
 Do a yum remove PACKAGE inside the chroot. No 'clean' is performed
 .TP
-\fB-p\fR, \fB\-\-print-root-path\fP
+\fB\-p\fR, \fB\-\-print\-root\-path\fP
 Prints a path to the currently used chroot directory.
 .TP
 \fB\-\-orphanskill\fP
-No-op mode that simply checks that no stray processes are running in the chroot. Kills any processes that it finds using specified root.
+No\-op mode that simply checks that no stray processes are running in the chroot. Kills any processes that it finds using specified root.
 .TP
 \fB\-\-copyin\fP
 Copies the source paths (files or directory trees) into the chroot at
@@ -131,11 +131,11 @@ the specified destination path.
 Copies the source paths (files or directory trees) from the chroot to
 the specified destination path. 
 .TP
-\fB\-\-scm-enable\fP
+\fB\-\-scm\-enable\fP
 Enable building from an SCM (CVS/Git/SVN). The SCM repository must be
-configured in site-defaults.cfg before SCM checkouts are possible. SCM
-package and branch can be defined with \fB\-\-scm-option\fP arguments,
-see site-defaults.cfg for more information.
+configured in site\-defaults.cfg before SCM checkouts are possible. SCM
+package and branch can be defined with \fB\-\-scm\-option\fP arguments,
+see site\-defaults.cfg for more information.
 .TP
 \fB\-\-snapshot\fP
 Make a snapshot of the current state of the chroot. That snapshot will be set
@@ -143,17 +143,17 @@ as the current base to which \fV\-\-clean\fP and implicit clean happening during
 rebuild command will return.
 This feature is available only when lvm_root plugin is installed and enabled.
 .TP
-\fB-l\fR, \fB\-\-list-snapshots\fP
+\fB\-l\fR, \fB\-\-list\-snapshots\fP
 List all existing snapshots of the chroot belonging to current configuration.
 Current base snapshot is marked with an asterisk (\fB*\fR)
 .TP
-\fB\-\-rollback-to\fP
+\fB\-\-rollback\-to\fP
 Return chroot to the state in specified snapshot and set it as the current
 base to which clean actions will return. It won't delete nor modify the snapshot
 that was set as base previously.
 This feature is available only when lvm_root plugin is installed and enabled.
 .TP
-\fB\-\-remove-snapshot\fP
+\fB\-\-remove\-snapshot\fP
 Remove given snapshot freeing the space it occupied. This action cannot be
 undone.
 This feature is available only when lvm_root plugin is installed and enabled.
@@ -166,14 +166,14 @@ that might have been a LVM volume or TMPFS.
 Umount all everything mounted in the chroot path including the root itself
 that might have been a LVM volume or TMPFS.
 .TP
-\fB\-\-pm-cmd\fP
+\fB\-\-pm\-cmd\fP
 Execute following arguments with current package manager with installroot set to
 the chroot path.
 .TP
-\fB\-\-yum-cmd\fP
+\fB\-\-yum\-cmd\fP
 Execute following arguments with yum with installroot set to the chroot path.
 .TP
-\fB\-\-dnf-cmd\fP
+\fB\-\-dnf\-cmd\fP
 Execute following arguments with DNF with installroot set to the chroot path.
 DNF must be installed on the system.
 
@@ -191,7 +191,7 @@ config linked to by /etc/mock/default.cfg.
 \fB\-\-offline\fR
 Run in 'offline' mode where we tell 'yum' to run completely from local cache. Also disables cache expiry for the mock yum cache.
 .TP
-\fB-n\fR, \fB\-\-no\-clean\fR
+\fB\-n\fR, \fB\-\-no\-clean\fR
 Do not clean chroot before building package.
 .TP
 \fB\-\-cleanup\-after\fR
@@ -201,10 +201,10 @@ Clean chroot after building. Use with \-\-resultdir. Only active for '\-\-rebuil
 Don't clean chroot after building. If automatic cleanup is enabled, use this to disable.
 .TP
 \fB\-\-cache\-alterations\fR
-Rebuild the root cache after making alterations to the chroot (i.e. --install). Only useful when using tmpfs plugin.
+Rebuild the root cache after making alterations to the chroot (i.e. \-\-install). Only useful when using tmpfs plugin.
 .TP
 \fB\-\-target\fR=\fIARCH\fP
-This argument is passed to rpmbuild to specify the target arch to build. It defaults to whatever is specified for --arch, or whatever is specified in the config file as config_opts['target_arch'].
+This argument is passed to rpmbuild to specify the target arch to build. It defaults to whatever is specified for \-\-arch, or whatever is specified in the config file as config_opts['target_arch'].
 .TP
 \fB\-\-arch\fR=\fIARCH\fP
 Calls the linux personality() syscall to tell the kernel to emulate a secondary architecture. For example, building i386 packages on an x86_64 buildhost.
@@ -215,7 +215,7 @@ Specify macro definitions used for the build.  This option may be used multiple 
 \fB\-\-define "with_extra_cheese 1" \-\-define="packager Monkey"\fR
 .TP
 \fB\-\-macro\-file\fR=\fIFILE\fR
-Use pre-defined rpm macro file. Macros passed to '\-\-define' override macros of the same name from FILE.
+Use pre\-defined rpm macro file. Macros passed to '\-\-define' override macros of the same name from FILE.
 .TP
 \fB\-\-with\fR=\fIOPTION\fP
 Enable configure OPTION for build.  This option may be used multiple times.  For example:
@@ -227,14 +227,14 @@ Disable configure OPTION for build.  This option may be used multiple times.  Fo
 
 \fB\-\-without=anchovies\fR
 .TP
-\fB\-\-old-chroot\fR
-use old chroot instead of systemd-nspawn.
+\fB\-\-old\-chroot\fR
+use old chroot instead of systemd\-nspawn.
 .TP
-\fB\-\-new-chroot\fR
-use new chroot (systemd-nspawn) - this is experimental and will break existing scripts.
+\fB\-\-new\-chroot\fR
+use new chroot (systemd\-nspawn) \- this is experimental and will break existing scripts.
 .TP
 \fB\-\-resultdir\fR=\fIRESULTDIR\fP
-Change directory where resulting files (RPMs and build logs) are written. Resultdir can contain python-string substitutions for any variable in the chroot config. For example:
+Change directory where resulting files (RPMs and build logs) are written. Resultdir can contain python\-string substitutions for any variable in the chroot config. For example:
 
 \fB\-\-resultdir=./my/"%(dist)s"/"%(target_arch)s"/\fR
 .TP
@@ -248,10 +248,10 @@ Change directory where config files are found
 Fail build if rpmbuild takes longer than 'timeout' seconds
 .TP
 \fB\-\-unpriv\fR
-Drop privileges before running command when using --chroot
+Drop privileges before running command when using \-\-chroot
 .TP
 \fB\-\-cwd\fR=\fIDIR\fP
-Change to the specified directory (relative to the chroot) before running command when using --chroot
+Change to the specified directory (relative to the chroot) before running command when using \-\-chroot
 .TP
 \fB\-q\fR, \fB\-\-quiet\fR
 Be quiet.
@@ -268,7 +268,7 @@ Enable the specified plugin.  This option may be used multiple times.
 \fB\-\-disable\-plugin\fR=\fIPLUGIN\fP
 Disable the specified plugin.  This option may be used multiple times.
 .TP
-\fB\-\-plugin-option \fR\fIPLUGIN\fR\fB:\fR\fIKEY\fR\fB=\fR\fIVALUE\fP
+\fB\-\-plugin\-option \fR\fIPLUGIN\fR\fB:\fR\fIKEY\fR\fB=\fR\fIVALUE\fP
 Set plugin specific parameter. This option may be used multiple times.
 .TP
 \fB\-\-yum\fR
@@ -285,13 +285,13 @@ It can be specified multiple times.
 Pass \fB\-\-disablerepo\fR option to package manager to disable a repository.
 It can be specified multiple times.
 .TP
-\fB\-\-short-circuit\fR=\fISTAGE\fR
-Use rpmbuild's short-circuit mechanism to skip already executed stages of build.
+\fB\-\-short\-circuit\fR=\fISTAGE\fR
+Use rpmbuild's short\-circuit mechanism to skip already executed stages of build.
 It doesn't produce RPMs, it's useful only for debugging packaging. Implies
-\fI\-\-no-clean\fR. STAGE specifies which stage will be executed as the first.
+\fI\-\-no\-clean\fR. STAGE specifies which stage will be executed as the first.
 Available values: prep, build, install, binary.
 .TP
-\fB\-\-rpmbuild-opts\fR=\fIOPTIONS\fR
+\fB\-\-rpmbuild\-opts\fR=\fIOPTIONS\fR
 Pass additional options to rpmbuild. To pass more options, put them in quotes.
 .TP
 \fB\-h\fR, \fB\-\-help\fR
@@ -304,10 +304,10 @@ Show version number and exit.
 define an SCM option (may be used more than once).
 .TP
 \fB\-\-nocheck\fR
-Pass --nocheck to rpmbuild to skip 'make check' tests.
+Pass \-\-nocheck to rpmbuild to skip 'make check' tests.
 .TP
-\fB\-\-symlink-dereference\fR
-Follow symlinks in sources (used only with --buildsrpm).
+\fB\-\-symlink\-dereference\fR
+Follow symlinks in sources (used only with \-\-buildsrpm).
 .TP
 \fB\-\-postinstall\fR
 Try to install built packages in the same buildroot right after build.
@@ -322,7 +322,7 @@ Try to install built packages in the same buildroot right after build.
 To rebuild test.src.rpm using the Fedora 14 configuration for x86_64
 .LP
 .RS 5
-\fBmock -r fedora-14-x86_64 --rebuild /path/to/test.src.rpm
+\fBmock \-r fedora\-14\-x86_64 \-\-rebuild /path/to/test.src.rpm
 .RE
 .LP
 Note that the available configurations are found in the /etc/mock
@@ -332,13 +332,13 @@ filename without the trailing .cfg extension.
 To place the output RPMs and logs in a specified location.
 .LP
 .RS 5
-\fBmock \-r fedora\-14\-i386 --resultdir=./my-results /path/to/your.src.rpm\fR
+\fBmock \-r fedora\-14\-i386 \-\-resultdir=./my\-results /path/to/your.src.rpm\fR
 .RE
 .LP
-To build a package from the default SCM repository configured in site-defaults.cfg use the following arguments.
+To build a package from the default SCM repository configured in site\-defaults.cfg use the following arguments.
 .LP
 .RS 5
-\fBmock \-r fedora\-14\-i386 --scm-enable --scm-option package=pkg\fR
+\fBmock \-r fedora\-14\-i386 \-\-scm\-enable \-\-scm\-option package=pkg\fR
 .RE
 .SH "BUGS"
 .LP
@@ -352,7 +352,7 @@ Select the \fBBugs\fR tab. If there is a bug similar to the one you are seeing, 
 information to the comments. If not, press \fBOpen A New Bug\fR and fill in the form.
 .SH "AUTHORS"
 .LP
-Michael Brown <mebrown@michaels-house.net>
+Michael Brown <mebrown@michaels\-house.net>
 .LP
 Clark Williams <williams@redhat.com>
 .LP

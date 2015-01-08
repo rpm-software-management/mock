@@ -275,7 +275,7 @@ class Commands(object):
         log = getLog()
         shell = False
         if len(args) == 1:
-            args = args[0]
+            args = [args[0]]
             shell = True
         log.info("Running in chroot: %s" % args)
         self.plugins.call_hooks("prechroot")
