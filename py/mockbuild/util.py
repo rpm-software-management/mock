@@ -446,9 +446,9 @@ def do(command, shell=False, chrootPath=None, cwd=None, timeout=0, raiseExc=True
         env = clean_env()
     try:
         child = None
-        logger.debug("Executing command: %s with env %s" % (command, env))
         if chrootPath and USE_NSPAWN:
             command = _prepare_nspawn_command(chrootPath, user, command)
+        logger.debug("Executing command: {0} with env {1} and shell {2}".format(command, env, shell))
         child = subprocess.Popen(
             command,
             shell=shell,
