@@ -27,7 +27,8 @@ class FileSystemMountPoint(MountPoint):
             raise RuntimeError("no path specified for mountpoint")
         if not filetype:
             raise RuntimeError("no filetype specified for mountpoint")
-        if filetype == 'pts' or filetype == 'proc' or filetype == 'sys':
+        if filetype == 'pts' or filetype == 'proc' or filetype == 'sys' or \
+            filetype == 'sysfs' or filetype == 'tmpfs' or filetype == 'devpts':
             device = filetype
         if not device:
             raise RuntimeError("no device file specified for mountpoint")
