@@ -99,6 +99,14 @@ class _PackageManager(object):
     def initialize_config(self):
         raise NotImplementedError()
 
+    def replace_in_config(self, config_content):
+        """ expand resultdir in the yum.conf segment of the mock
+        configuration file.
+        """
+        return config_content.replace("%(resultdir)s",\
+                self.config['resultdir'] % self.config)
+
+
 def check_yum_config(config, log):
     if '\nreposdir' not in config:
         log.warn(dedent("""\
@@ -132,6 +140,7 @@ class Yum(_PackageManager):
                            dedent("""\
                            plugins=1
                            pluginconfpath={0}""".format(pluginconf_dir)))
+        config_content = self.replace_in_config(config_content)
 
         check_yum_config(config_content, self.buildroot.root_log)
 
@@ -205,6 +214,8 @@ class Dnf(_PackageManager):
             config_content = self.config['dnf.conf']
         else:
             config_content = self.config['yum.conf']
+        config_content = self.replace_in_config(config_content)
+
         check_yum_config(config_content, self.buildroot.root_log)
         util.mkdirIfAbsent(self.buildroot.make_chroot_path('etc', 'dnf'))
         dnfconf_path = self.buildroot.make_chroot_path('etc', 'dnf', 'dnf.conf')
