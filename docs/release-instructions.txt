@@ -69,7 +69,7 @@ In the upstream git tree:
   10) verify that tests/runtests.sh uses a supported config file
       (e.g. released fedora minus one). If not, edit and commit
   11) run 'make check' and fix any reported failures until it passes
-      $ sh autogen.sh && ./configure && make rpm && make chekc
+      $ sh autogen.sh && ./configure && make rpm && make check
   12) check in any changes required to fix test failures (still don't
       commit configure.ac and mock.spec.in)
   13) remove ChangeLog and AUTHORS
