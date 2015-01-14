@@ -182,40 +182,124 @@ Execute following arguments with yum with installroot set to the chroot path.
 .SH "OPTIONS"
 .LP
 .TP
-\fB\-r\fR \fICHROOT\fP, \fB\-\-root\fR=\fICHROOT\fP
-Uses specified chroot configuration as defined in
-/etc/mock/<\fICHROOT\fP>.cfg. Optionally if CHROOT ends in '.cfg', it is
-interpreted as full path to config file. If none specified, uses the chroot
-config linked to by /etc/mock/default.cfg.
-.TP
-\fB\-\-offline\fR
-Run in 'offline' mode where we tell 'yum' to run completely from local cache. Also disables cache expiry for the mock yum cache.
-.TP
-\fB\-n\fR, \fB\-\-no\-clean\fR
-Do not clean chroot before building package.
-.TP
-\fB\-\-cleanup\-after\fR
-Clean chroot after building. Use with \-\-resultdir. Only active for '\-\-rebuild'.
-.TP
-\fB\-\-no\-cleanup\-after\fR
-Don't clean chroot after building. If automatic cleanup is enabled, use this to disable.
+\fB\-\-arch\fR=\fIARCH\fP
+Calls the linux personality() syscall to tell the kernel to emulate a secondary architecture. For example, building i386 packages on an x86_64 buildhost.
 .TP
 \fB\-\-cache\-alterations\fR
 Rebuild the root cache after making alterations to the chroot (i.e. \-\-install). Only useful when using tmpfs plugin.
 .TP
-\fB\-\-target\fR=\fIARCH\fP
-This argument is passed to rpmbuild to specify the target arch to build. It defaults to whatever is specified for \-\-arch, or whatever is specified in the config file as config_opts['target_arch'].
+\fB\-\-cleanup\-after\fR
+Clean chroot after building. Use with \-\-resultdir. Only active for '\-\-rebuild'.
 .TP
-\fB\-\-arch\fR=\fIARCH\fP
-Calls the linux personality() syscall to tell the kernel to emulate a secondary architecture. For example, building i386 packages on an x86_64 buildhost.
+\fB\-\-configdir\fR=\fICONFIGDIR\fP
+Change directory where config files are found
+.TP
+\fB\-\-cwd\fR=\fIDIR\fP
+Change to the specified directory (relative to the chroot) before running command when using \-\-chroot
 .TP
 \fB\-D \fR"\fIMACRO EXPR\fP", \fB\-\-define\fR="\fIMACRO EXPR\fP"
 Specify macro definitions used for the build.  This option may be used multiple times, just as the rpmbuild \-\-define option can be.  For example:
 
 \fB\-\-define "with_extra_cheese 1" \-\-define="packager Monkey"\fR
 .TP
+\fB\-\-disable\-plugin\fR=\fIPLUGIN\fP
+Disable the specified plugin.  This option may be used multiple times.
+.TP
+\fB\-\-disablerepo\fR=\fIREPO\fR
+Pass \fB\-\-disablerepo\fR option to package manager to disable a repository.
+It can be specified multiple times.
+.TP
+\fB\-\-dnf\fR
+Use DNF as the current package manager.
+.TP
+\fB\-\-enable\-plugin\fR=\fIPLUGIN\fP
+Enable the specified plugin.  This option may be used multiple times.
+.TP
+\fB\-\-enablerepo\fR=\fIREPO\fR
+Pass \fB\-\-enablerepo\fR option to package manager to enable a repository.
+It can be specified multiple times.
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+Show usage information and exit.
+.TP
 \fB\-\-macro\-file\fR=\fIFILE\fR
 Use pre\-defined rpm macro file. Macros passed to '\-\-define' override macros of the same name from FILE.
+.TP
+\fB\-\-new\-chroot\fR
+use new chroot (systemd\-nspawn) \- this is experimental and will break existing scripts.
+.TP
+\fB\-n\fR, \fB\-\-no\-clean\fR
+Do not clean chroot before building package.
+.TP
+\fB\-\-nocheck\fR
+Pass \-\-nocheck to rpmbuild to skip 'make check' tests.
+.TP
+\fB\-\-no\-cleanup\-after\fR
+Don't clean chroot after building. If automatic cleanup is enabled, use this to disable.
+.TP
+\fB\-\-offline\fR
+Run in 'offline' mode where we tell 'yum' to run completely from local cache. Also disables cache expiry for the mock yum cache.
+.TP
+\fB\-\-old\-chroot\fR
+use old chroot instead of systemd\-nspawn.
+.TP
+\fB\-\-plugin\-option \fR\fIPLUGIN\fR\fB:\fR\fIKEY\fR\fB=\fR\fIVALUE\fP
+Set plugin specific parameter. This option may be used multiple times.
+.TP
+\fB\-\-postinstall\fR
+Try to install built packages in the same buildroot right after build.
+.TP
+\fB\-q\fR, \fB\-\-quiet\fR
+Be quiet.
+.TP
+\fB\-r\fR \fICHROOT\fP, \fB\-\-root\fR=\fICHROOT\fP
+Uses specified chroot configuration as defined in
+/etc/mock/<\fICHROOT\fP>.cfg. Optionally if CHROOT ends in '.cfg', it is
+interpreted as full path to config file. If none specified, uses the chroot
+config linked to by /etc/mock/default.cfg.
+.TP
+\fB\-\-resultdir\fR=\fIRESULTDIR\fP
+Change directory where resulting files (RPMs and build logs) are written. Resultdir can contain python\-string substitutions for any variable in the chroot config. For example:
+
+\fB\-\-resultdir=./my/"%(dist)s"/"%(target_arch)s"/\fR
+
+This option enables automatic cleanup, this can be changed in config file (by cleanup_on_success, cleanup_on_failure configuration options) or overridden by \-\-no\-cleanup\-after/\-\-cleanup\-after arguments.
+.TP
+\fB\-\-rpmbuild\-opts\fR=\fIOPTIONS\fR
+Pass additional options to rpmbuild. To pass more options, put them in quotes.
+.TP
+\fB\-\-rpmbuild_timeout\fR=\fISECONDS\fP
+Fail build if rpmbuild takes longer than 'timeout' seconds
+.TP
+\fB\-\-scm\-option\fR=\fIOPTIONS\fR
+define an SCM option (may be used more than once).
+.TP
+\fB\-\-short\-circuit\fR=\fISTAGE\fR
+Use rpmbuild's short\-circuit mechanism to skip already executed stages of build.
+It doesn't produce RPMs, it's useful only for debugging packaging. Implies
+\fI\-\-no\-clean\fR. STAGE specifies which stage will be executed as the first.
+Available values: prep, build, install, binary.
+.TP
+\fB\-\-symlink\-dereference\fR
+Follow symlinks in sources (used only with \-\-buildsrpm).
+.TP
+\fB\-\-target\fR=\fIARCH\fP
+This argument is passed to rpmbuild to specify the target arch to build. It defaults to whatever is specified for \-\-arch, or whatever is specified in the config file as config_opts['target_arch'].
+.TP
+\fB\-\-trace\fR
+Enables verbose tracing of function enter/exit with function arguments and return codes. Useful for debugging mock itself.
+.TP
+\fB\-\-uniqueext\fR=\fItext\fP
+Arbitrary, unique extension to append to chroot directory name
+.TP
+\fB\-\-unpriv\fR
+Drop privileges before running command when using \-\-chroot
+.TP
+\fB\-v\fR, \fB\-\-verbose\fR
+Output verbose progress information.
+.TP
+\fB\-\-version\fR
+Show version number and exit.
 .TP
 \fB\-\-with\fR=\fIOPTION\fP
 Enable configure OPTION for build.  This option may be used multiple times.  For example:
@@ -227,92 +311,8 @@ Disable configure OPTION for build.  This option may be used multiple times.  Fo
 
 \fB\-\-without=anchovies\fR
 .TP
-\fB\-\-old\-chroot\fR
-use old chroot instead of systemd\-nspawn.
-.TP
-\fB\-\-new\-chroot\fR
-use new chroot (systemd\-nspawn) \- this is experimental and will break existing scripts.
-.TP
-\fB\-\-resultdir\fR=\fIRESULTDIR\fP
-Change directory where resulting files (RPMs and build logs) are written. Resultdir can contain python\-string substitutions for any variable in the chroot config. For example:
-
-\fB\-\-resultdir=./my/"%(dist)s"/"%(target_arch)s"/\fR
-
-This option enables automatic cleanup, this can be changed in config file (by cleanup_on_success, cleanup_on_failure configuration options) or overridden by \-\-no\-cleanup\-after/\-\-cleanup\-after arguments.
-.TP
-\fB\-\-uniqueext\fR=\fItext\fP
-Arbitrary, unique extension to append to chroot directory name
-.TP
-\fB\-\-configdir\fR=\fICONFIGDIR\fP
-Change directory where config files are found
-.TP
-\fB\-\-rpmbuild_timeout\fR=\fISECONDS\fP
-Fail build if rpmbuild takes longer than 'timeout' seconds
-.TP
-\fB\-\-unpriv\fR
-Drop privileges before running command when using \-\-chroot
-.TP
-\fB\-\-cwd\fR=\fIDIR\fP
-Change to the specified directory (relative to the chroot) before running command when using \-\-chroot
-.TP
-\fB\-q\fR, \fB\-\-quiet\fR
-Be quiet.
-.TP
-\fB\-v\fR, \fB\-\-verbose\fR
-Output verbose progress information.
-.TP
-\fB\-\-trace\fR
-Enables verbose tracing of function enter/exit with function arguments and return codes. Useful for debugging mock itself.
-.TP
-\fB\-\-enable\-plugin\fR=\fIPLUGIN\fP
-Enable the specified plugin.  This option may be used multiple times.
-.TP
-\fB\-\-disable\-plugin\fR=\fIPLUGIN\fP
-Disable the specified plugin.  This option may be used multiple times.
-.TP
-\fB\-\-plugin\-option \fR\fIPLUGIN\fR\fB:\fR\fIKEY\fR\fB=\fR\fIVALUE\fP
-Set plugin specific parameter. This option may be used multiple times.
-.TP
 \fB\-\-yum\fR
 Use yum as the current package manager. This is the default.
-.TP
-\fB\-\-dnf\fR
-Use DNF as the current package manager.
-.TP
-\fB\-\-enablerepo\fR=\fIREPO\fR
-Pass \fB\-\-enablerepo\fR option to package manager to enable a repository.
-It can be specified multiple times.
-.TP
-\fB\-\-disablerepo\fR=\fIREPO\fR
-Pass \fB\-\-disablerepo\fR option to package manager to disable a repository.
-It can be specified multiple times.
-.TP
-\fB\-\-short\-circuit\fR=\fISTAGE\fR
-Use rpmbuild's short\-circuit mechanism to skip already executed stages of build.
-It doesn't produce RPMs, it's useful only for debugging packaging. Implies
-\fI\-\-no\-clean\fR. STAGE specifies which stage will be executed as the first.
-Available values: prep, build, install, binary.
-.TP
-\fB\-\-rpmbuild\-opts\fR=\fIOPTIONS\fR
-Pass additional options to rpmbuild. To pass more options, put them in quotes.
-.TP
-\fB\-h\fR, \fB\-\-help\fR
-Show usage information and exit.
-.TP
-\fB\-\-version\fR
-Show version number and exit.
-.TP
-\fB\-\-scm\-option\fR=\fIOPTIONS\fR
-define an SCM option (may be used more than once).
-.TP
-\fB\-\-nocheck\fR
-Pass \-\-nocheck to rpmbuild to skip 'make check' tests.
-.TP
-\fB\-\-symlink\-dereference\fR
-Follow symlinks in sources (used only with \-\-buildsrpm).
-.TP
-\fB\-\-postinstall\fR
-Try to install built packages in the same buildroot right after build.
 
 .SH "FILES"
 .LP
