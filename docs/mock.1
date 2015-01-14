@@ -237,6 +237,8 @@ use new chroot (systemd\-nspawn) \- this is experimental and will break existing
 Change directory where resulting files (RPMs and build logs) are written. Resultdir can contain python\-string substitutions for any variable in the chroot config. For example:
 
 \fB\-\-resultdir=./my/"%(dist)s"/"%(target_arch)s"/\fR
+
+This option enables automatic cleanup, this can be changed in config file (by cleanup_on_success, cleanup_on_failure configuration options) or overridden by \-\-no\-cleanup\-after/\-\-cleanup\-after arguments.
 .TP
 \fB\-\-uniqueext\fR=\fItext\fP
 Arbitrary, unique extension to append to chroot directory name
