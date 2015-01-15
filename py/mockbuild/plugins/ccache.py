@@ -27,7 +27,9 @@ class CCache(object):
         self.config = buildroot.config
         self.state = buildroot.state
         self.ccache_opts = conf
-        self.ccachePath = self.ccache_opts['dir'] % self.ccache_opts
+        tmpdict = self.ccache_opts.copy()
+        tmpdict.update({'chrootuid': self.buildroot.chrootuid})
+        self.ccachePath = self.ccache_opts['dir'] % tmpdict
         buildroot.preexisting_deps.append("ccache")
         plugins.add_hook("prebuild", self._ccacheBuildHook)
         plugins.add_hook("preinit", self._ccachePreInitHook)
@@ -55,4 +57,4 @@ class CCache(object):
 
         mockbuild.util.mkdirIfAbsent(self.buildroot.make_chroot_path('/tmp/ccache'))
         mockbuild.util.mkdirIfAbsent(self.ccachePath)
-        self.buildroot.uid_manager.changeOwner(self.ccachePath)
+        self.buildroot.uid_manager.changeOwner(self.ccachePath, recursive=True)
