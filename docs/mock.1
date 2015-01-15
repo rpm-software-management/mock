@@ -342,6 +342,15 @@ To build a package from the default SCM repository configured in site\-defaults.
 .RS 5
 \fBmock \-r fedora\-14\-i386 \-\-scm\-enable \-\-scm\-option package=pkg\fR
 .RE
+.LP
+To build execute command inside of chroot.
+.LP
+.RS 5
+\fBmock \-r fedora\-21\-x86_64 \-\-chroot \-\- rpm --eval %dist\fR
+.LP
+\fBmock \-r fedora\-21\-x86_64 \-\-chroot 'rpm --eval %dist'\fR
+.RE
+
 .SH "BUGS"
 .LP
 To report bugs in mock, go to:
