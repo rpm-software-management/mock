@@ -210,6 +210,37 @@ fi
 %endif
 
 %changelog
+* Fri Jan 16 2015 Miroslav Suchý <msuchy@redhat.com> - 1.2.4-1
+- each user have its own ccache cache [RHBZ#1168116]
+- man: write example for --chroot option
+- sort options in man page
+- sort command in man page
+- add Fedora 22 GPG keys
+- improve --resultdir part of man page [RHBZ#1181554]
+- allow the subsitution of resultdir into the yum.conf block [RHBZ#1125376]
+- do no print duplicities in bash completion
+- Fixed systemd-nspawn machine name collision [RHBZ#1174286]
+- do shell expansion on  --new-chroot --chroot [RHBZ#1174317]
+- log executing command after nspawn expansion
+- make sure that mockchain generate unique repoid for all repos [RHBZ#1179806]
+- workaround old python-six in EL7
+- Remove checking for chroot existence in --chroot
+- Exclude .bash_history and .bashrc from builddir cleanup
+- Ignore broken symlinks in chown_home_dir
+- create SCM files as non-privileg user [RHBZ#1178576]
+- With --no-clean, delete /builddir except build/SOURCES [RHBZ#1173126]
+- Man page formatting improvements
+- Move the pool size check to later time when pool already exists
+- Always use returnOutput in lvm plugin to get possible error output
+- put correct version in man page
+- Fix unicode characters in logs on Python 2 [RHBZ#1171707]
+- Added new option 'postinstall' [RHBZ#1168911]
+- Use keepcache=1 in yum.conf [RHBZ#1169126]
+- Warn user when LVM thin pool is filled up [RHBZ#1167761]
+- add missing max_metadata_age_days do site-defaults.cfg
+- add age_check to site-default.cfg
+- compress also logs created by package_state plugin
+
 * Thu Dec  4 2014 Miroslav Suchý <msuchy@redhat.com> - 1.2.3-1
 - fixed incorrect command construction in PackageManager:build_invocation [RHBZ#1170230]
 - completion: correctly expand --install [RHBZ#1168220]
