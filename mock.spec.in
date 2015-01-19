@@ -148,7 +148,7 @@ exit 0
 # fix cache permissions from old installs
 chmod 2775 %{_localstatedir}/cache/%{name}
 
-if [ -e /etc/os-release ]; then
+if [ -s /etc/os-release ]; then
     # fedora and rhel7
     if grep -Fq Rawhide /etc/os-release; then
         ver=rawhide
