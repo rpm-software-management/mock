@@ -3,7 +3,6 @@
 # Written by Marko Myllynen
 # Copyright (C) 2010 Marko Myllynen <myllynen@redhat.com>
 
-# python library imports
 import subprocess
 import tempfile
 import shutil
@@ -12,9 +11,8 @@ import sys
 import pwd
 import os
 
-# our imports
-from mockbuild.trace_decorator import traceLog
-import mockbuild.util
+from .trace_decorator import traceLog
+from . import util
 
 # class
 class scmWorker(object):
@@ -87,14 +85,14 @@ class scmWorker(object):
         self.wrk_dir = tempfile.mkdtemp(".mock-scm." + self.pkg)
         self.src_dir = self.wrk_dir + "/" + self.pkg
         self.log.debug("SCM checkout directory: " + self.wrk_dir)
-        mockbuild.util.do(shlex.split(self.get), shell=False, cwd=self.wrk_dir, env=self.environ)
+        util.do(shlex.split(self.get), shell=False, cwd=self.wrk_dir, env=self.environ)
         if self.postget:
-            mockbuild.util.do(shlex.split(self.postget), shell=False, cwd=self.src_dir, env=self.environ)
+            util.do(shlex.split(self.postget), shell=False, cwd=self.src_dir, env=self.environ)
         self.log.debug("Fetched sources from SCM")
 
     @traceLog()
     def adjust_git_timestamps(self):
-        dir = mockbuild.util.pretty_getcwd()
+        dir = util.pretty_getcwd()
         self.log.debug("Adjusting timestamps in " + self.src_dir)
         os.chdir(self.src_dir)
         proc = subprocess.Popen(['git', 'ls-files', '-z'], shell=False, stdout=subprocess.PIPE)
@@ -165,7 +163,7 @@ class scmWorker(object):
             os.chdir(self.wrk_dir)
             os.rename(self.name, tardir)
             cmd = "tar czf " + tarball + " " + taropts + " " + tardir
-            mockbuild.util.do(shlex.split(cmd), shell=False, cwd=self.wrk_dir, env=self.environ)
+            util.do(shlex.split(cmd), shell=False, cwd=self.wrk_dir, env=self.environ)
             os.rename(tarball, tardir + "/" + tarball)
             os.rename(tardir, self.name)
             os.chdir(dir)
@@ -184,4 +182,4 @@ class scmWorker(object):
     @traceLog()
     def clean(self):
         self.log.debug("Clean SCM checkout directory")
-        mockbuild.util.rmtree(self.wrk_dir)
+        util.rmtree(self.wrk_dir)

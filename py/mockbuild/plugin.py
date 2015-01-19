@@ -1,7 +1,7 @@
 import imp
 
-from mockbuild.exception import Error
-from mockbuild.trace_decorator import traceLog
+from .exception import Error
+from .trace_decorator import traceLog
 
 current_api_version = '1.1'
 

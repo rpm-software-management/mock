@@ -3,9 +3,9 @@ import shutil
 
 from textwrap import dedent
 
-from mockbuild import util
-from mockbuild.exception import BuildError
-from mockbuild.trace_decorator import traceLog
+from . import util
+from .exception import BuildError
+from .trace_decorator import traceLog
 
 def PackageManager(config_opts, chroot, plugins):
     pm = config_opts.get('package_manager', 'yum')

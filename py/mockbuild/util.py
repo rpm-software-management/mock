@@ -6,7 +6,6 @@
 # Copyright (C) 2007 Michael E Brown <mebrown@michaels-house.net>
 from __future__ import print_function
 
-# python library imports
 import ctypes
 import fcntl
 import os
@@ -30,10 +29,9 @@ from glob import glob
 from ast import literal_eval
 from textwrap import dedent
 
-# our imports
-import mockbuild.exception
-from mockbuild.trace_decorator import traceLog, getLog
-import mockbuild.uid as uid
+from . import exception
+from .trace_decorator import traceLog, getLog
+from . import uid
 
 encoding = locale.getpreferredencoding()
 
@@ -86,9 +84,9 @@ except OSError:
     original_ipc_ns = None
 
 # classes
-class commandTimeoutExpired(mockbuild.exception.Error):
+class commandTimeoutExpired(exception.Error):
     def __init__(self, msg):
-        mockbuild.exception.Error.__init__(self, msg)
+        exception.Error.__init__(self, msg)
         self.msg = msg
         self.resultcode = 10
 
@@ -114,7 +112,7 @@ def mkdirIfAbsent(*args):
             except OSError as e:
                 if e.errno != errno.EEXIST:
                     getLog().exception("Could not create dir %s. Error: %s" % (dirName, e))
-                    raise mockbuild.exception.Error("Could not create dir %s. Error: %s" % (dirName, e))
+                    raise exception.Error("Could not create dir %s. Error: %s" % (dirName, e))
 
 @traceLog()
 def touch(fileName):
@@ -205,18 +203,18 @@ def yieldSrpmHeaders(srpms, plainRpmOk=0):
         try:
             fd = os.open(srpm, os.O_RDONLY)
         except OSError as e:
-            raise mockbuild.exception.Error("Cannot find/open srpm: %s. Error: %s"
+            raise exception.Error("Cannot find/open srpm: %s. Error: %s"
                                             % (srpm, e))
         try:
             hdr = ts.hdrFromFdno(fd)
         except rpm.error as e:
-            raise mockbuild.exception.Error(
+            raise exception.Error(
                     "Cannot find/open srpm: %s. Error: %s" % (srpm, ''.join(e)))
         finally:
             os.close(fd)
 
         if not plainRpmOk and hdr[rpm.RPMTAG_SOURCEPACKAGE] != 1:
-            raise mockbuild.exception.Error("File is not an srpm: %s." % srpm)
+            raise exception.Error("File is not an srpm: %s." % srpm)
 
         yield hdr
 
@@ -268,7 +266,7 @@ def unshare(flags):
     try:
         res = _libc.unshare(flags)
         if res:
-            raise mockbuild.exception.UnshareFailed(os.strerror(ctypes.get_errno()))
+            raise exception.UnshareFailed(os.strerror(ctypes.get_errno()))
     except AttributeError:
         pass
 
@@ -278,7 +276,7 @@ def setns(fd, flags):
         getLog().debug("Setting namespace to fd %d. Flags: %s" % (fd, flags))
         res = _libc.setns(fd, flags)
         if res:
-            raise mockbuild.exception.SetnsFailed(os.strerror(ctypes.get_errno()))
+            raise exception.SetnsFailed(os.strerror(ctypes.get_errno()))
 
 # these are called in child process, so no logging
 def condChroot(chrootPath):
@@ -502,9 +500,9 @@ def do(command, shell=False, chrootPath=None, cwd=None, timeout=0, raiseExc=True
     logger.debug("Child return code was: %s" % str(child.returncode))
     if raiseExc and child.returncode:
         if returnOutput:
-            raise mockbuild.exception.Error("Command failed: \n # %s\n%s" % (command, output), child.returncode)
+            raise exception.Error("Command failed: \n # %s\n%s" % (command, output), child.returncode)
         else:
-            raise mockbuild.exception.Error("Command failed. See logs for output.\n # %s" % (command,), child.returncode)
+            raise exception.Error("Command failed. See logs for output.\n # %s" % (command,), child.returncode)
 
     return output
 
@@ -614,7 +612,7 @@ def find_non_nfs_dir():
     for d in dirs:
         if not get_fs_type(d).startswith('nfs'):
             return d
-    raise mockbuild.exception.Error('Cannot find non-NFS directory in: %s' % dirs)
+    raise exception.Error('Cannot find non-NFS directory in: %s' % dirs)
 
 
 @traceLog()
@@ -826,14 +824,14 @@ def set_config_opts_per_cmdline(config_opts, options, args):
                 k = '%%%s' % k
             config_opts['macros'].update({k: v})
         except:
-            raise mockbuild.exception.BadCmdline(
+            raise exception.BadCmdline(
                 "Bad option for '--define' (%s).  Use --define 'macro expr'"
                 % macro)
 
     if options.macrofile:
         config_opts['macrofile'] = os.path.expanduser(options.macrofile)
         if not os.path.isfile(config_opts['macrofile']):
-            raise mockbuild.exception.BadCmdline(
+            raise exception.BadCmdline(
                 "Input rpm macros file does not exist: %s"
                 % options.macrofile)
 
@@ -846,13 +844,13 @@ def set_config_opts_per_cmdline(config_opts, options, args):
 
     for i in options.disabled_plugins:
         if i not in config_opts['plugins']:
-            raise mockbuild.exception.BadCmdline(
+            raise exception.BadCmdline(
                 "Bad option for '--disable-plugin=%s'. Expecting one of: %s"
                 % (i, config_opts['plugins']))
         config_opts['plugin_conf']['%s_enable' % i] = False
     for i in options.enabled_plugins:
         if i not in config_opts['plugins']:
-            raise mockbuild.exception.BadCmdline(
+            raise exception.BadCmdline(
                 "Bad option for '--enable-plugin=%s'. Expecting one of: %s"
                 % (i, config_opts['plugins']))
         config_opts['plugin_conf']['%s_enable' % i] = True
@@ -861,11 +859,11 @@ def set_config_opts_per_cmdline(config_opts, options, args):
             p, kv = option.split(":", 1)
             k, v  = kv.split("=", 1)
         except:
-            raise mockbuild.exception.BadCmdline(
+            raise exception.BadCmdline(
                 "Bad option for '--plugin-option' (%s).  Use --plugin-option 'plugin:key=value'"
                 % option)
         if p not in config_opts['plugins']:
-            raise mockbuild.exception.BadCmdline(
+            raise exception.BadCmdline(
                 "Bad option for '--plugin-option' (%s).  No such plugin: %s"
                 % (option, p))
         try:
@@ -876,7 +874,7 @@ def set_config_opts_per_cmdline(config_opts, options, args):
 
 
     if options.mode in ("rebuild",) and len(args) > 1 and not options.resultdir:
-        raise mockbuild.exception.BadCmdline(
+        raise exception.BadCmdline(
             "Must specify --resultdir when building multiple RPMS.")
 
     if options.cleanup_after == False:
@@ -888,7 +886,7 @@ def set_config_opts_per_cmdline(config_opts, options, args):
         config_opts['cleanup_on_failure'] = True
     # can't cleanup unless resultdir is separate from the root dir
     rootdir = os.path.join(config_opts['basedir'], config_opts['root'])
-    if mockbuild.util.is_in_dir(config_opts['resultdir'] % config_opts, rootdir):
+    if is_in_dir(config_opts['resultdir'] % config_opts, rootdir):
         config_opts['cleanup_on_success'] = False
         config_opts['cleanup_on_failure'] = False
 
@@ -914,9 +912,9 @@ def set_config_opts_per_cmdline(config_opts, options, args):
 
     if options.scm:
         try:
-            from mockbuild import scm
+            from . import scm
         except ImportError as e:
-            raise mockbuild.exception.BadCmdline(
+            raise exception.BadCmdline(
                 "Mock SCM module not installed: %s" % e)
 
         config_opts['scm'] = options.scm
@@ -925,7 +923,7 @@ def set_config_opts_per_cmdline(config_opts, options, args):
                 k, v = option.split("=", 1)
                 config_opts['scm_opts'].update({k: v})
             except:
-                raise mockbuild.exception.BadCmdline(
+                raise exception.BadCmdline(
                 "Bad option for '--scm-option' (%s).  Use --scm-option 'key=value'"
                 % option)
 
@@ -966,7 +964,7 @@ def update_config_from_file(config_opts, config_file, uid_manager):
                         raise
             _, ret = os.wait()
             if ret != 0:
-                raise mockbuild.exception.ConfigError('Error in configuration')
+                raise exception.ConfigError('Error in configuration')
             if new_config:
                 config_opts.update(pickle.loads(new_config))
         finally:
@@ -1028,7 +1026,7 @@ def load_config(config_path, name, uidManager, version, PKGPYTHONDIR):
 def check_macro_definition(config_opts):
     for k, v in config_opts['macros'].items():
         if not k or (not v and (v is not None)) or len(k.split()) != 1:
-            raise mockbuild.exception.BadCmdline(
+            raise exception.BadCmdline(
                 "Bad macros 'config_opts['macros']['%s'] = ['%s']'" % (k,v) )
         if not k.startswith('%'):
             del config_opts['macros'][k]

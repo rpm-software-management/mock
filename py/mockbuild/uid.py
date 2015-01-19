@@ -3,12 +3,10 @@
 # Written by Michael Brown
 # Copyright (C) 2007 Michael E Brown <mebrown@michaels-house.net>
 
-# python library imports
 import os
 import ctypes
 
-# our imports
-from mockbuild.trace_decorator import traceLog
+from .trace_decorator import traceLog
 
 _libc = ctypes.CDLL(None, use_errno=True)
 

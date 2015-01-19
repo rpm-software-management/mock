@@ -6,11 +6,6 @@
 # Copyright (C) 2007 Michael E Brown <mebrown@michaels-house.net>
 """define most of the exceptions used."""
 
-# python library imports
-#from exceptions import Exception
-
-# our imports
-
 # classes
 class Error(Exception):
     "base class for our errors."

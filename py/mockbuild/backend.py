@@ -9,9 +9,9 @@ import glob
 import os
 import shutil
 
-from mockbuild import util
-from mockbuild.exception import PkgError
-from mockbuild.trace_decorator import getLog, traceLog
+from . import util
+from .exception import PkgError
+from .trace_decorator import getLog, traceLog
 
 class Commands(object):
     """Executes mock commands in the buildroot"""

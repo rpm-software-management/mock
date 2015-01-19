@@ -1,5 +1,5 @@
-from mockbuild.trace_decorator import getLog
-from mockbuild.exception import StateError
+from .trace_decorator import getLog
+from .exception import StateError
 
 class State(object):
     def __init__(self):

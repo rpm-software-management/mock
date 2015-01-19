@@ -8,12 +8,12 @@ import shutil
 import stat
 import tempfile
 
-from mockbuild import util
-from mockbuild import mounts
-from mockbuild.exception import BuildRootLocked, RootError, \
+from . import util
+from . import mounts
+from .exception import BuildRootLocked, RootError, \
                                 ResultDirNotAccessible, Error
-from mockbuild.package_manager import PackageManager
-from mockbuild.trace_decorator import getLog, traceLog
+from .package_manager import PackageManager
+from .trace_decorator import getLog, traceLog
 
 class Buildroot(object):
     @traceLog()
