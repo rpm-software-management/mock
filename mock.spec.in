@@ -95,7 +95,7 @@ of the buildroot.
 %prep
 %setup -q
 %if 0%{?rhel} == 6
-sed -i "s|^USE_NSPAWN = True|USE_NSPAWN = False|" py/mockbuild/util.py 
+sed -i "s|^USE_NSPAWN = True|USE_NSPAWN = False|" py/mockbuild/util.py
 %endif
 %if %{use_python3}
 sed -i 's/AM_PATH_PYTHON/AM_PATH_PYTHON([3])/' configure.ac
@@ -210,6 +210,13 @@ fi
 %endif
 
 %changelog
+* Fri Jan 23 2015 Clark Williams <williams@redhat.com> - 1.2.5-1
+- mounts: do not mount /dev/shm or /dev/pts if internal setup false
+- actually package compress_logs plugin
+- use relative imports
+- touch /etc/os-release after install @buildsys-build [RHBZ#1183454]
+- parse /etc/os-release only if it exists and size is non-zero [RHBZ#1183454]
+
 * Fri Jan 16 2015 Miroslav Suchý <msuchy@redhat.com> - 1.2.4-1
 - each user have its own ccache cache [RHBZ#1168116]
 - man: write example for --chroot option
