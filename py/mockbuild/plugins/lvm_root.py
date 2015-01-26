@@ -36,7 +36,9 @@ def volume_group(name, mode='r'):
 
 def lvm_do(*args, **kwargs):
     with restored_ipc_ns():
-        output = util.do(*args, returnOutput=True, **kwargs)
+        env = os.environ
+        env['LC_ALL'] = 'C'
+        output = util.do(*args, returnOutput=True, env=env, **kwargs)
     return output
 
 def current_mounts():
