@@ -14,11 +14,11 @@ mock  [options] {\fB\-\-init\fR|\fBclean\fR|\fBshell\fR}
 .LP
 mock  [options] \fB\-\-installdeps\fR {SRPM|RPM}
 .LP
-mock  [options] \fB\-i\fR, \fB\-\-install\fR PACKAGE
+mock  [options] \fB\-i\fR, \fB\-\-install\fR PACKAGE [\fIPACKAGE...\fR]
 .LP
-mock  [options] \fB\-\-update\fR
+mock  [options] \fB\-\-update\fR [\fIPACKAGE...\fR]
 .LP
-mock  [options] \fB\-\-remove\fR PACKAGE
+mock  [options] \fB\-\-remove\fR PACKAGE [\fIPACKAGE...\fR]
 .LP
 mock  [options] \fB\-\-orphanskill\fR
 .LP
@@ -161,8 +161,8 @@ Specifies sources (either a single file or a directory of files) to use to build
 \fB\-\-spec\fR=\fISPEC\fP
 Specifies spec file to use to build an SRPM (used only with \-\-buildsrpm).
 .TP
-\fB\-\-update\fP
-Do a yum update inside the chroot. No 'clean' is performed
+\fB\-\-update\fP [\fIPACKAGE...]\fR
+Do a package update inside the chroot. The package list is optional, if omitted, all packages will be updated. No 'clean' is performed
 .TP
 \fB\-\-snapshot\fP
 Make a snapshot of the current state of the chroot. That snapshot will be set
