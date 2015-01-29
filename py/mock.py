@@ -698,7 +698,7 @@ def run_command(options, args, config_opts, commands, buildroot, state):
 
     elif options.mode == 'update':
         commands.init()
-        commands.update()
+        buildroot.pkg_manager.execute('update', *args)
 
     elif options.mode == 'remove':
         if len(args) == 0:

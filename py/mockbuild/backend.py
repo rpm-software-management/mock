@@ -135,11 +135,6 @@ class Commands(object):
         self.buildroot.root_log.info(output)
 
     @traceLog()
-    def update(self):
-        """Use package manager to update the chroot"""
-        self.buildroot.pkg_manager.update()
-
-    @traceLog()
     def remove(self, *rpms):
         """Call package manager to remove the input rpms from the chroot"""
         self.buildroot.root_log.info("removing package(s): %s" % " ".join(rpms))
