@@ -60,7 +60,7 @@ class FileSystemMountPoint(MountPoint):
         cmd = ['/bin/umount', '-n', '-l', self.path]
         try:
             util.do(cmd)
-        except mockbuild.exception.Error as e:
+        except exception.Error as e:
             return False
         self.mounted = False
         return True
@@ -89,7 +89,7 @@ class BindMountPoint(MountPoint):
             cmd = ['/bin/umount', '-n', self.bindpath ]
             try:
                 util.do(cmd)
-            except mockbuild.exception.Error as e:
+            except exception.Error as e:
                 return False
         self.mounted = False
         return True
