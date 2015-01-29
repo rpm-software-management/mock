@@ -58,6 +58,7 @@ class Buildroot(object):
         self.preexisting_deps = []
         self.plugins.init_plugins(self)
         self.tmpdir = None
+        self.nosync_path = None
 
     @traceLog()
     def make_chroot_path(self, *paths):
@@ -160,11 +161,14 @@ class Buildroot(object):
         self.plugins.call_hooks('postinit')
         self.state.finish("chroot init")
 
-    def doChroot(self, command, shell=True, *args, **kargs):
+    def doChroot(self, command, shell=True, nosync=False, *args, **kargs):
         """execute given command in root"""
         self._nuke_rpm_db()
+        env = dict(self.env)
+        if nosync and self.nosync_path:
+            env['LD_PRELOAD'] = self.nosync_path
         return util.do(command, chrootPath=self.make_chroot_path(),
-                                 env=self.env, shell=shell, *args, **kargs)
+                       env=env, shell=shell, *args, **kargs)
 
     @traceLog()
     def _copy_config(self, filename):
@@ -225,14 +229,19 @@ class Buildroot(object):
 
         # ok for these two to fail
         if self.config['clean']:
-            self.doChroot(['/usr/sbin/userdel', '-r', '-f', dets['user']], shell=False, raiseExc=False)
+            self.doChroot(['/usr/sbin/userdel', '-r', '-f', dets['user']],
+                          shell=False, raiseExc=False, nosync=True)
         else:
-            self.doChroot(['/usr/sbin/userdel', '-f', dets['user']], shell=False, raiseExc=False)
-        self.doChroot(['/usr/sbin/userdel', '-r', '-f', dets['user']], shell=False, raiseExc=False)
-        self.doChroot(['/usr/sbin/groupdel', dets['group']], shell=False, raiseExc=False)
+            self.doChroot(['/usr/sbin/userdel', '-f', dets['user']],
+                          shell=False, raiseExc=False, nosync=True)
+        self.doChroot(['/usr/sbin/userdel', '-r', '-f', dets['user']],
+                      shell=False, raiseExc=False, nosync=True)
+        self.doChroot(['/usr/sbin/groupdel', dets['group']],
+                      shell=False, raiseExc=False, nosync=True)
 
-        self.doChroot(['/usr/sbin/groupadd', '-g', dets['gid'], dets['group']], shell=False)
-        self.doChroot(self.config['useradd'] % dets, shell=True)
+        self.doChroot(['/usr/sbin/groupadd', '-g', dets['gid'], dets['group']],
+                      shell=False, nosync=True)
+        self.doChroot(self.config['useradd'] % dets, shell=True, nosync=True)
         self._enable_chrootuser_account()
 
     @traceLog()
@@ -487,7 +496,7 @@ class Buildroot(object):
                 self.root_log.warn("For multilib systems, both architectures "
                                    "of nosync library need to be installed")
                 return
-            self.env['LD_PRELOAD'] = os.path.join(tmp_libdir, 'nosync.so')
+            self.nosync_path = os.path.join(tmp_libdir, 'nosync.so')
 
 
     @traceLog()

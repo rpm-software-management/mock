@@ -58,6 +58,8 @@ class _PackageManager(object):
         env = self.config['environment'].copy()
         env.update(util.get_proxy_environment(self.config))
         env['LC_MESSAGES'] = 'C'
+        if self.buildroot.nosync_path:
+            env['LD_PRELOAD'] = self.buildroot.nosync_path
         invocation = self.build_invocation(*args)
         self.buildroot.root_log.debug(invocation)
         kwargs['printOutput'] = kwargs.get('printOutput', True)
