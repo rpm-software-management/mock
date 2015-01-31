@@ -346,13 +346,23 @@ def command_parse():
     return (options, args)
 
 @traceLog()
-def setup_logging(log_ini, config_opts, options):
-    if not os.path.exists(log_ini):
-        log.error("Could not find required logging config file: %s" % log_ini)
-        sys.exit(50)
+def setup_logging(config_path, config_opts, options):
+    log_ini = os.path.join(config_path, config_opts["log_config_file"])
+
     try:
         if not os.path.exists(log_ini):
-            raise IOError("Could not find log config file %s" % log_ini)
+            if os.path.normpath('/etc/mock') != os.path.normpath(config_path):
+                log.warning("Could not find required logging config file: %s. Using default..." % log_ini)
+                log_ini = os.path.join("/etc/mock", config_opts["log_config_file"])
+                if not os.path.exists(log_ini):
+                    raise IOError("Could not find log config file %s" % log_ini)
+            else:
+                raise IOError("Could not find log config file %s" % log_ini)
+    except IOError as exc:
+        log.error(exc)
+        sys.exit(50)
+
+    try:
         log_cfg = configparser.ConfigParser()
         logging.config.fileConfig(log_ini)
         log_cfg.read(log_ini)
@@ -590,8 +600,7 @@ def main():
     groupcheck(uidManager.unprivGid, config_opts['chrootgid'])
 
     # configure logging
-    log_ini = os.path.join(config_path, config_opts["log_config_file"])
-    setup_logging(log_ini, config_opts, options)
+    setup_logging(config_path, config_opts, options)
 
     # verify that we're not trying to build an arch that we can't
     check_arch_combination(config_opts['rpmbuild_arch'], config_opts)
