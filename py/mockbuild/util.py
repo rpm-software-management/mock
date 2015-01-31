@@ -971,6 +971,20 @@ def update_config_from_file(config_opts, config_file, uid_manager):
             reader.close()
 
 @traceLog()
+def do_update_config(log, config_opts, cfg, uidManager, skipError=True):
+    if os.path.exists(cfg):
+            config_opts['config_paths'].append(cfg)
+            update_config_from_file(config_opts, cfg, uidManager)
+            check_macro_definition(config_opts)
+    elif skipError == False:
+            log.error("Could not find required config file: %s" % cfg)
+            if name == "default":
+                log.error("  Did you forget to specify the chroot to use with '-r'?")
+            if "/" in cfg:
+                log.error("  If you're trying to specify a path, include the .cfg extension, e.g. -r ./target.cfg")
+            sys.exit(1)
+
+@traceLog()
 def load_config(config_path, name, uidManager, version, PKGPYTHONDIR):
     log = logging.getLogger()
     if uidManager:
@@ -993,25 +1007,16 @@ def load_config(config_path, name, uidManager, version, PKGPYTHONDIR):
     else:
         chroot_cfg_path = '%s/%s.cfg' % (config_path, name)
     config_opts['config_file'] = chroot_cfg_path
-    for cfg in (os.path.join(config_path, 'site-defaults.cfg'),
-                chroot_cfg_path):
-        if os.path.exists(cfg):
-            config_opts['config_paths'].append(cfg)
-            update_config_from_file(config_opts, cfg, uidManager)
-            check_macro_definition(config_opts)
-        else:
-            log.error("Could not find required config file: %s" % cfg)
-            if name == "default":
-                log.error("  Did you forget to specify the chroot to use with '-r'?")
-            if "/" in cfg:
-                log.error("  If you're trying to specify a path, include the .cfg extension, e.g. -r ./target.cfg")
-            sys.exit(1)
+
+    cfg = os.path.join(config_path, 'site-defaults.cfg')
+    do_update_config(log, config_opts, cfg, uidManager)
+
+    do_update_config(log, config_opts, chroot_cfg_path, uidManager, skipError=False)
+
     # Read user specific config file
     cfg = os.path.join(os.path.expanduser('~' + pwd.getpwuid(os.getuid())[0]),
             '.mock/user.cfg')
-    if os.path.exists(cfg):
-        config_opts['config_paths'].append(cfg)
-        update_config_from_file(config_opts, cfg, uidManager)
+    do_update_config(log, config_opts, cfg, uidManager)
 
     # default /etc/hosts contents
     if (not config_opts['use_host_resolv']
