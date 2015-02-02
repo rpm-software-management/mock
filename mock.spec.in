@@ -210,6 +210,16 @@ fi
 %endif
 
 %changelog
+* Mon Feb  2 2015 Clark Williams <williams@redhat.com> - 1.2.6-1
+- fix broken build issue
+- From Mikhail Campos Guadamuz <Mikhail_Campos-Guadamuz@epam.com>:
+  - use default logging.ini if non-default does not exist [RHBZ#1187727]
+- From Michael Simacek <msimacek@redhat.com>:
+  - Update manpage regarding multiple arguments
+  - Take package arguments in update [RHBZ#1187136]
+- From Miroslav Suchý <msuchy@redhat.com>:
+  - reset LC before calling lvm commands [RHBZ#1185912]
+
 * Fri Jan 23 2015 Clark Williams <williams@redhat.com> - 1.2.5-1
 - mounts: do not mount /dev/shm or /dev/pts if internal setup false
 - actually package compress_logs plugin
