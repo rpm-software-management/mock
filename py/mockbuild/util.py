@@ -117,8 +117,7 @@ def mkdirIfAbsent(*args):
 @traceLog()
 def touch(fileName):
     getLog().debug("touching file: %s" % fileName)
-    fo = open(fileName, 'w')
-    fo.close()
+    open(fileName, 'a').close()
 
 @traceLog()
 def rmtree(path, selinux=False, exclude=()):
