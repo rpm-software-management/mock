@@ -505,9 +505,9 @@ def do_buildsrpm(config_opts, commands, buildroot, options, args):
     clean = config_opts['clean']
 
     def cmd(spec):
-        commands.buildsrpm(spec=spec, sources=options.sources,
-                           timeout=config_opts['rpmbuild_timeout'],
-                           follow_links=options.symlink_dereference)
+        return commands.buildsrpm(spec=spec, sources=options.sources,
+                                  timeout=config_opts['rpmbuild_timeout'],
+                                  follow_links=options.symlink_dereference)
     return rebuild_generic([options.spec], commands, buildroot, config_opts,
                            cmd=cmd, post=None, clean=clean)
 
