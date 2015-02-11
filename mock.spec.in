@@ -61,7 +61,10 @@ Requires: python-requests
 Requires: python >= 2.6
 BuildRequires: python-devel
 %endif
-
+%if 0%{?fedora} > 21
+Recommends: dnf
+Recommends: dnf-plugins-core
+%endif
 
 %description
 Mock takes an SRPM and builds it in a chroot.
