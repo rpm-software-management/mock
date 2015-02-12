@@ -406,7 +406,7 @@ class Commands(object):
         # created by rpm that created it (outside of chroot)
         check_opt = ''
         if not check:
-            check_opt = '--nocheck'
+            check_opt = "--define '__spec_check_template exit 0; ' "
 
         mode = '-bb'
         sc = self.config.get('short_circuit')
