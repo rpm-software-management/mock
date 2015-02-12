@@ -110,7 +110,7 @@ class _PackageManager(object):
     def _check_command(self):
         """ Check if main command exists """
         if not os.path.exists(self.command):
-            raise("""Command {0} is not available. Either install package containing this command
+            raise Exception("""Command {0} is not available. Either install package containing this command
 or run mock with --yum or --dnf to overwrite config value. However this may
 lead to different dependency solving!""".format(self.command))
 
