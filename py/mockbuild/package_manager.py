@@ -1,4 +1,5 @@
 import glob
+import os.path
 import shutil
 
 from textwrap import dedent
@@ -106,6 +107,13 @@ class _PackageManager(object):
         return config_content.replace("%(resultdir)s",\
                 self.config['resultdir'] % self.config)
 
+    def _check_command(self):
+        """ Check if main command exists """
+        if not os.path.exists(self.command):
+            raise("""Command {0} is not available. Either install package containing this command
+or run mock with --yum or --dnf to overwrite config value. However this may
+lead to different dependency solving!""".format(self.command))
+
 
 def check_yum_config(config, log):
     if '\nreposdir' not in config:
@@ -122,6 +130,7 @@ class Yum(_PackageManager):
         super(Yum, self).__init__(config, buildroot, plugins)
         self.command = config['yum_command']
         self.builddep_command = [config['yum_builddep_command']]
+        self._check_command()
 
     @traceLog()
     def _write_plugin_conf(self, name):
@@ -199,6 +208,7 @@ class Dnf(_PackageManager):
         super(Dnf, self).__init__(config, buildroot, plugins)
         self.command = config['dnf_command']
         self.builddep_command = [self.command, 'builddep']
+        self._check_command()
 
     @traceLog()
     def build_invocation(self, *args):
