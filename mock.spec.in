@@ -213,6 +213,11 @@ fi
 %endif
 
 %changelog
+* Fri Feb 13 2015 Miroslav Suchý <msuchy@redhat.com> - 1.2.7-1
+- add Fedora 22 configs
+- rawhide configs use DNF
+- touch should not truncate file [RHBZ#1188770]
+
 * Mon Feb  2 2015 Clark Williams <williams@redhat.com> - 1.2.6-1
 - fix broken build issue
 - From Mikhail Campos Guadamuz <Mikhail_Campos-Guadamuz@epam.com>:
