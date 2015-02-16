@@ -256,10 +256,10 @@ class Buildroot(object):
             return
         self.logging_initialized = True
 
-        util.mkdirIfAbsent(self.resultdir)
 
         try:
             self.uid_manager.dropPrivsTemp()
+            util.mkdirIfAbsent(self.resultdir)
 
             # attach logs to log files.
             # This happens in addition to anything that
