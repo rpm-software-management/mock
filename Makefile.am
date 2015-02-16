@@ -58,6 +58,7 @@ plugins_PYTHON = \
     py/mockbuild/plugins/yum_cache.py \
     py/mockbuild/plugins/selinux.py   \
     py/mockbuild/plugins/mount.py \
+    py/mockbuild/plugins/chroot_scan.py \
     py/mockbuild/plugins/lvm_root.py
 
 mockbuilddir = $(pythondir)/mockbuild
