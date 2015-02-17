@@ -75,6 +75,10 @@ class RootCache(object):
         getLog().info("enabled root cache")
         self._unpack_root_cache()
 
+    def _haveVolatileRoot(self):
+        return self.config['plugin_conf']['tmpfs_enable'] \
+                and not self.config['plugin_conf']['tmpfs_opts']['keep_mounted']
+
     @traceLog()
     def _unpack_root_cache(self):
         # check cache status
@@ -105,8 +109,7 @@ class RootCache(object):
 
         # optimization: don't unpack root cache if chroot was not cleaned (unless we are using tmpfs)
         if os.path.exists(self.rootCacheFile):
-            if (not self.buildroot.chroot_was_initialized
-                    or self.config['plugin_conf']['tmpfs_enable']):
+            if (not self.buildroot.chroot_was_initialized or self._haveVolatileRoot()):
                 self.state.start("unpacking root cache")
                 self._rootCacheLock()
                 # deal with NFS homedir and root_squash
@@ -126,12 +129,12 @@ class RootCache(object):
 
     @traceLog()
     def _rootCachePreShellHook(self):
-        if self.config['plugin_conf']['tmpfs_enable']:
+        if self._haveVolatileRoot():
             self._unpack_root_cache()
 
     @traceLog()
     def _rootCachePreYumHook(self):
-        if self.config['plugin_conf']['tmpfs_enable']:
+        if self._haveVolatileRoot():
             if not os.listdir(self.buildroot.make_chroot_path()) or self.config['cache_alterations']:
                 self._unpack_root_cache()
 
@@ -197,6 +200,6 @@ class RootCache(object):
 
     @traceLog()
     def _rootCachePostShellHook(self):
-        if self.config['plugin_conf']['tmpfs_enable'] and self.config['cache_alterations']:
+        if self._haveVolatileRoot() and self.config['cache_alterations']:
             self._rebuild_root_cache()
 
