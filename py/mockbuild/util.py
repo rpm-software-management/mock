@@ -970,7 +970,7 @@ def update_config_from_file(config_opts, config_file, uid_manager):
             reader.close()
 
 @traceLog()
-def do_update_config(log, config_opts, cfg, uidManager, skipError=True):
+def do_update_config(log, config_opts, cfg, uidManager, name, skipError=True):
     if os.path.exists(cfg):
             config_opts['config_paths'].append(cfg)
             update_config_from_file(config_opts, cfg, uidManager)
@@ -1008,14 +1008,14 @@ def load_config(config_path, name, uidManager, version, PKGPYTHONDIR):
     config_opts['config_file'] = chroot_cfg_path
 
     cfg = os.path.join(config_path, 'site-defaults.cfg')
-    do_update_config(log, config_opts, cfg, uidManager)
+    do_update_config(log, config_opts, cfg, uidManager, name)
 
-    do_update_config(log, config_opts, chroot_cfg_path, uidManager, skipError=False)
+    do_update_config(log, config_opts, chroot_cfg_path, uidManager, name, skipError=False)
 
     # Read user specific config file
     cfg = os.path.join(os.path.expanduser('~' + pwd.getpwuid(os.getuid())[0]),
             '.mock/user.cfg')
-    do_update_config(log, config_opts, cfg, uidManager)
+    do_update_config(log, config_opts, cfg, uidManager, name)
 
     # default /etc/hosts contents
     if (not config_opts['use_host_resolv']
