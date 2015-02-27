@@ -184,6 +184,7 @@ def command_parse():
     parser.add_option("-r", "--root", action="store", type="string", dest="chroot",
                       help="chroot config file name or path. Taken as a path if it ends "
                            "in .cfg, otherwise looked up in the configdir. default: %default",
+                      metavar="CONFIG",
                       default='default')
 
     parser.add_option("--offline", action="store_false", dest="online",

@@ -61,6 +61,7 @@ def createrepo(path):
 def parse_args(args):
     parser = optparse.OptionParser('\nmockchain -r mockcfg pkg1 [pkg2] [pkg3]')
     parser.add_option('-r', '--root', default=None, dest='chroot',
+            metavar="CONFIG",
             help="chroot config name/base to use in the mock build")
     parser.add_option('-l', '--localrepo', default=None,
             help="local path for the local repo, defaults to making its own")
