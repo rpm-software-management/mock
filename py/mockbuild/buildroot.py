@@ -172,7 +172,11 @@ class Buildroot(object):
         conf_file = os.path.join(etcdir, filename)
         if os.path.exists(conf_file):
             os.remove(conf_file)
-        shutil.copy2(os.path.join('/etc', filename), etcdir)
+        orig_conf_file = os.path.join('/etc', filename)
+        if os.path.exists(orig_conf_file):
+            shutil.copy2(orig_conf_file, etcdir)
+        else:
+            self.root_log.warn("File {0} not present. It is not copied into the chroot.".format(orig_conf_file))
 
     @traceLog()
     def _setup_resolver_config(self):
