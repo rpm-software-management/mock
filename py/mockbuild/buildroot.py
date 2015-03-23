@@ -119,13 +119,13 @@ class Buildroot(object):
         self.chroot_was_initialized = self.chroot_is_initialized()
 
         self._setup_dirs()
+        if do_log:
+            self._resetLogging()
         if not util.USE_NSPAWN:
             self._setup_devices()
         self._setup_files()
         self._setup_nosync()
         self.mounts.mountall()
-        if do_log:
-            self._resetLogging()
 
         # write out config details
         self.root_log.debug('rootdir = %s' % self.make_chroot_path())
@@ -419,7 +419,7 @@ class Buildroot(object):
                 (stat.S_IFCHR | 0o666, os.makedev(5, 2), "dev/ptmx"),
                 ]
             kver = os.uname()[2]
-            #getLog().debug("kernel version == %s" % kver)
+            self.root_log.debug("kernel version == {0}".format(kver))
             for i in devFiles:
                 # create node
                 os.mknod(self.make_chroot_path(i[2]), i[0], i[1])
