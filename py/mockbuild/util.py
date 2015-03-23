@@ -883,6 +883,8 @@ def set_config_opts_per_cmdline(config_opts, options, args):
     if options.cleanup_after == True:
         config_opts['cleanup_on_success'] = True
         config_opts['cleanup_on_failure'] = True
+
+    check_config(config_opts)
     # can't cleanup unless resultdir is separate from the root dir
     rootdir = os.path.join(config_opts['basedir'], config_opts['root'])
     if is_in_dir(config_opts['resultdir'] % config_opts, rootdir):
@@ -925,6 +927,10 @@ def set_config_opts_per_cmdline(config_opts, options, args):
                 raise exception.BadCmdline(
                 "Bad option for '--scm-option' (%s).  Use --scm-option 'key=value'"
                 % option)
+
+def check_config(config_opts):
+    if 'root' not in config_opts:
+        raise exception.ConfigError("Error in configuration - option config_opts['root'] must be present in your config.")
 
 @traceLog()
 def update_config_from_file(config_opts, config_file, uid_manager):
