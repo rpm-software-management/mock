@@ -436,7 +436,7 @@ class Buildroot(object):
 
             if os.path.isfile(self.make_chroot_path('etc', 'mtab')):
                 os.remove(self.make_chroot_path('etc', 'mtab'))
-                os.symlink("/proc/self/mounts", self.make_chroot_path('etc', 'mtab'))
+            os.symlink("/proc/self/mounts", self.make_chroot_path('etc', 'mtab'))
 
             os.chown(self.make_chroot_path('dev/tty'), pwd.getpwnam('root')[2], grp.getgrnam('tty')[2])
             os.chown(self.make_chroot_path('dev/ptmx'), pwd.getpwnam('root')[2], grp.getgrnam('tty')[2])
