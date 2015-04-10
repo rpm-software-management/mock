@@ -170,9 +170,10 @@ class RootCache(object):
                 self.state.start("creating cache")
                 try:
                     mockbuild.util.do(
-                        ["tar", "--one-file-system"] + self.compressArgs + ["-cf", self.rootCacheFile,
-                                                       "-C", self.buildroot.make_chroot_path()] +
-                        self.exclude_tar_cmds + ["."],
+                        ["tar", "--one-file-system", "--exclude-caches", "--exclude-caches-under"] +
+                            self.compressArgs + ["-cf", self.rootCacheFile,
+                            "-C", self.buildroot.make_chroot_path()] +
+                            self.exclude_tar_cmds + ["."],
                         shell=False
                         )
                 except:
