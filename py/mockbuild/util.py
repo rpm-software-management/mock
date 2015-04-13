@@ -673,7 +673,8 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
             'yum_cache_opts': {
                 'max_age_days': 30,
                 'max_metadata_age_days': 30,
-                'dir': "%(cache_topdir)s/%(root)s/yum_cache/",
+                'dir': "%(cache_topdir)s/%(root)s/%(package_manager)s_cache/",
+                'target_dir': "/var/cache/%(package_manager)s/",
                 'online': True,},
             'root_cache_enable': True,
             'root_cache_opts': {
@@ -681,7 +682,7 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
                 'max_age_days': 15,
                 'dir': "%(cache_topdir)s/%(root)s/root_cache/",
                 'compress_program': 'pigz',
-                'exclude_dirs': ["./proc", "./sys", "./dev", "./tmp/ccache", "./var/cache/yum" ],
+                'exclude_dirs': ["./proc", "./sys", "./dev", "./tmp/ccache", "./var/cache/yum", "./var/cache/dnf"],
                 'extension': '.gz'},
             'bind_mount_enable': True,
             'bind_mount_opts': {
@@ -774,6 +775,8 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
     # security config
     config_opts['no_root_shells'] = False
     config_opts['extra_chroot_dirs'] = []
+
+    config_opts['package_manager'] = 'yum'
 
     # configurable commands executables
     config_opts['yum_command'] = '/usr/bin/yum'

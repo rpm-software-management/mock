@@ -102,6 +102,7 @@ class Commands(object):
                     elif scrub == 'yum-cache':
                         self.buildroot.root_log.info("scrubbing yum-cache for %s" % self.config_name)
                         util.rmtree(os.path.join(self.buildroot.cachedir, 'yum_cache'), selinux=self.buildroot.selinux)
+                        util.rmtree(os.path.join(self.buildroot.cachedir, 'dnf_cache'), selinux=self.buildroot.selinux)
             except IOError as e:
                 getLog().warn("parts of chroot do not exist: %s" % e)
                 raise
