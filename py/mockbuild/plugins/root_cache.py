@@ -137,9 +137,13 @@ class RootCache(object):
 
     @traceLog()
     def _root_cache_handle_mounts(self):
+        br_path = self.buildroot.make_chroot_path()
         for m in self.buildroot.mounts.get_mountpoints():
             if m.startswith('/'):
-                self.exclude_tar_cmds.append('--exclude=.%s' % m)
+                if m.startswith(br_path):
+                    self.exclude_tar_cmds.append('--exclude=.%s' % m[len(br_path):])
+                else:
+                    self.exclude_tar_cmds.append('--exclude=.%s' % m)
             else:
                 self.exclude_tar_cmds.append('--exclude=./%s' % m)
 
