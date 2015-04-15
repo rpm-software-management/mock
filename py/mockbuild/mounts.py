@@ -126,9 +126,5 @@ class Mounts(object):
             m.umount()
 
     @traceLog()
-    def get_mounted(self):
-        return [ m.mountpath for m in self.mounts if m.ismounted() ]
-
-    @traceLog()
     def get_mountpoints(self):
         return [ m.mountpath for m in self.mounts ]
