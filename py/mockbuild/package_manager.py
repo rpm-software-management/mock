@@ -5,7 +5,7 @@ import shutil
 from textwrap import dedent
 
 from . import util
-from .exception import BuildError
+from .exception import BuildError, Error
 from .trace_decorator import traceLog
 
 def PackageManager(config_opts, chroot, plugins):
@@ -86,7 +86,7 @@ class _PackageManager(object):
 
     @traceLog()
     def builddep(self, *args, **kwargs):
-        return self.execute('builddep', *args)
+        return self.execute('builddep', returnOutput=1, *args)
 
     @traceLog()
     def copy_gpg_keys(self):
@@ -233,3 +233,12 @@ class Dnf(_PackageManager):
         dnfconf_path = self.buildroot.make_chroot_path('etc', 'dnf', 'dnf.conf')
         with open(dnfconf_path, 'w+') as dnfconf_file:
             dnfconf_file.write(config_content)
+
+    def builddep(self, *pkgs, **kwargs):
+        try:
+            out = super(Dnf, self).builddep(*pkgs, **kwargs)
+        except Error as e:
+            for i, line in enumerate(e.msg.split('\n')):
+                if 'no such command: builddep' in line.lower():
+                    raise BuildError("builddep command missing.\nPlease install package dnf-plugins-core.")
+            raise
