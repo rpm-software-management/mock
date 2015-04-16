@@ -1055,3 +1055,30 @@ def pretty_getcwd():
 
 ORIGINAL_CWD = None
 ORIGINAL_CWD = pretty_getcwd()
+
+@traceLog()
+def find_btrfs_in_chroot(mockdir, chroot_path):
+    """
+    Find a btrfs subvolume inside the chroot.
+
+    Example btrfs output:
+    ID 258 gen 32689 top level 5 path root
+    ID 493 gen 32682 top level 258 path var/lib/mock/fedora-rawhide-x86_64/root/var/lib/machines
+
+    The subvolume's path will always be the 9th field of the output and
+    will not contain a leading '/'. The output will also contain additional
+    newline at the end, which should not be parsed.
+    """
+
+    try:
+       for l in do(["btrfs", "subv", "list", mockdir], returnOutput=1)[:-1].splitlines():
+           subv = l.split()[8]
+           if subv.startswith(chroot_path[1:]):
+               return subv
+    except OSError as e:
+       # btrfs utility does not exist, nothing we can do about it
+       if e.errno == errno.ENOENT:
+            return None
+       raise e
+
+    return None

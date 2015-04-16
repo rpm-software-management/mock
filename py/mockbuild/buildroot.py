@@ -525,11 +525,15 @@ class Buildroot(object):
         Deletes the buildroot contents.
         """
         if os.path.exists(self.basedir):
+            p = self.make_chroot_path()
             self._lock_buildroot(exclusive=True)
-            util.orphansKill(self.make_chroot_path())
+            util.orphansKill(p)
             self._umount_all()
             self.plugins.call_hooks('umount_root')
             self._unlock_buildroot()
+            subv = util.find_btrfs_in_chroot(self.mockdir, p)
+            if subv:
+                util.do(["btrfs", "subv", "delete", "/" + subv])
             util.rmtree(self.basedir, selinux=self.selinux)
         self.chroot_was_initialized = False
         self.plugins.call_hooks('postclean')
