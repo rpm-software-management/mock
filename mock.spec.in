@@ -70,7 +70,7 @@ Recommends: dnf
 Recommends: dnf-plugins-core
 Recommends: btrfs-progs
 %endif
-%if 0%{?fedora} == 21 || %if 0%{?fedora} == 20
+%if 0%{?fedora} == 21 || 0%{?fedora} == 20
 Requires: dnf
 Requires: dnf-plugins-core
 Requires: btrfs-progs
