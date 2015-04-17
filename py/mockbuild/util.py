@@ -72,7 +72,7 @@ personality_defs = {
 
 PLUGIN_LIST = ['tmpfs', 'root_cache', 'yum_cache', 'bind_mount',
                'ccache', 'selinux', 'package_state', 'chroot_scan',
-               'lvm_root', 'compress_logs']
+               'lvm_root', 'compress_logs', 'sign']
 
 # This is set to False on EL6 in build time
 USE_NSPAWN = False
@@ -712,6 +712,11 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
                 "\\bcore(\\.\\d+)?$",
                 "\\.log$",
                 ]},
+            'sign_enable': False,
+            'sign_opts': {
+                'cmd' : 'rpm',
+                'opts' : '--addsign %(rpms)s',
+                },
             }
 
     config_opts['environment'] = {

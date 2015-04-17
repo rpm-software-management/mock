@@ -24,6 +24,7 @@ class Plugins(object):
                 self.plugin_conf[key]['cache_topdir'] = buildroot.cache_topdir
                 self.plugin_conf[key]['cachedir'] = buildroot.cachedir
                 self.plugin_conf[key]['root'] = buildroot.shared_root_name
+                self.plugin_conf[key]['resultdir'] = buildroot.resultdir
 
         self.state.start("init plugins")
         # Import plugins  (simplified copy of what yum does). Can add yum
