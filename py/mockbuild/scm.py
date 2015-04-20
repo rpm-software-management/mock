@@ -71,14 +71,7 @@ class scmWorker(object):
 
         self.log.debug("SCM checkout command: " + self.get)
         self.log.debug("SCM checkout post command: " + str(self.postget))
-        self.environ = os.environ.copy()
-        # Set HOME properly while checking out from SCM since tools like
-        # Subversion might have there settings needed to carry out checkout
-        # non-interactively
-        self.environ['HOME'] = pwd.getpwuid(os.getuid()).pw_dir
-        self.environ['CVS_RSH'] = "ssh"
-        if 'SSH_AUTH_SOCK' not in self.environ:
-            self.environ['SSH_AUTH_SOCK'] = pwd.getpwuid(os.getuid()).pw_dir + "/.ssh/auth_sock"
+        self.environ = dict(os.environ)
 
     @traceLog()
     def get_sources(self):

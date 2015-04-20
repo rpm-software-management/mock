@@ -15,8 +15,10 @@ class UidManager(object):
     @traceLog()
     def __init__(self, unprivUid=-1, unprivGid=-1):
         self.privStack = []
+        self.privEnviron = []
         self.unprivUid = unprivUid
         self.unprivGid = unprivGid
+        self.unprivEnviron = dict(os.environ)
 
     @traceLog()
     def becomeUser(self, uid, gid=-1):
@@ -29,6 +31,8 @@ class UidManager(object):
         # save current ruid, euid, rgid, egid
         self._push()
         self._becomeUser(self.unprivUid, self.unprivGid)
+        os.environ.clear()
+        os.environ.update(self.unprivEnviron)
 
     @traceLog()
     def restorePrivs(self):
@@ -37,6 +41,8 @@ class UidManager(object):
 
         # then set saved
         privs = self.privStack.pop()
+        os.environ.clear()
+        os.environ.update(self.privEnviron.pop())
         os.setregid(privs['rgid'], privs['egid'])
         setresuid(privs['ruid'], privs['euid'])
 
@@ -55,6 +61,7 @@ class UidManager(object):
             "rgid": os.getgid(),
             "egid": os.getegid(),
             })
+        self.privEnviron.append(os.environ)
 
     @traceLog()
     def _elevatePrivs(self):
