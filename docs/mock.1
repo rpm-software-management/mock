@@ -96,8 +96,8 @@ the specified destination path.
 Run the specified command non\-interactively within the chroot (no 'clean' is performed). Command output will be sent to the log files. Note that COMMAND is shell expanded only if there are no ARGS. Otherwise there is no shell expansion.
 .TP
 \fB\-\-dnf\-cmd\fP
-Execute following arguments with DNF with installroot set to the chroot path.
-DNF must be installed on the system.
+Force mock to use DNF to install packages in chroot path. DNF (and dnf-plugins-core) must be installed on the system.
+Actually it will use binary which is specified in 'dnf_command' option in site-defaults.cfg config, which by default is /usr/bin/dnf.
 .TP
 \fB\-\-init\fP
 Initialize a chroot (clean, install chroot packages, etc.)
@@ -175,8 +175,9 @@ Umount all everything mounted in the chroot path including the root itself
 that might have been a LVM volume or TMPFS.
 .TP
 \fB\-\-yum\-cmd\fP
-Execute following arguments with yum with installroot set to the chroot path.
-
+Force mock to use YUM to install packages in chroot path. Yum must be installed on the system.
+Actually it will use binary which is specified in 'yum_command' option in site-defaults.cfg config, which by default is /usr/bin/yum.
+Note that in config files for Fedora 22\+ this value is overwriten in chroot config to default to /usr/bin/yum-deprecated.
 
 
 .SH "OPTIONS"
