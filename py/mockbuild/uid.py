@@ -3,8 +3,9 @@
 # Written by Michael Brown
 # Copyright (C) 2007 Michael E Brown <mebrown@michaels-house.net>
 
-import os
 import ctypes
+import os
+import pwd
 
 from .trace_decorator import traceLog
 
@@ -19,6 +20,7 @@ class UidManager(object):
         self.unprivUid = unprivUid
         self.unprivGid = unprivGid
         self.unprivEnviron = dict(os.environ)
+        self.unprivEnviron['HOME'] = pwd.getpwuid(unprivUid).pw_dir
 
     @traceLog()
     def becomeUser(self, uid, gid=-1):
