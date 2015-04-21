@@ -370,6 +370,7 @@ def logOutput(fds, logger, returnOutput=1, start=0, timeout=0, printOutput=False
                         sys.stdout.buffer.write(raw)
                     else:
                         print(raw, end='')
+                    sys.stdout.flush()
                 txt_input = raw.decode(encoding, 'replace')
                 lines = txt_input.split("\n")
                 if tail:
