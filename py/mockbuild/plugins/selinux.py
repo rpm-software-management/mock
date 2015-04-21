@@ -36,6 +36,8 @@ class SELinux(object):
 
     @traceLog()
     def __init__(self, plugins, conf, buildroot):
+        self._originalUtilDo = mockbuild.util.do
+
         self.buildroot = buildroot
         self.config = buildroot.config
         self.state = buildroot.state
@@ -82,7 +84,6 @@ class SELinux(object):
 
     @traceLog()
     def _selinuxPreYumHook(self):
-        self._originalUtilDo = mockbuild.util.do
         mockbuild.util.do = self._selinuxDoYum
 
     @traceLog()
