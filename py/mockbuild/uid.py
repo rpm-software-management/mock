@@ -63,7 +63,7 @@ class UidManager(object):
             "rgid": os.getgid(),
             "egid": os.getegid(),
             })
-        self.privEnviron.append(os.environ)
+        self.privEnviron.append(dict(os.environ))
 
     @traceLog()
     def _elevatePrivs(self):
