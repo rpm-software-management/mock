@@ -752,7 +752,6 @@ def run_command(options, args, config_opts, commands, buildroot, state):
                     if os.path.exists(dest):
                         log.critical("Destination %{0} already exist!".format(dest))
                         sys.exit(50)
-                print(src); print(dest)
                 shutil.copytree(src, dest)
             else:
                 shutil.copy(src, dest)
