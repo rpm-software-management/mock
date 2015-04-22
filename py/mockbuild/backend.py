@@ -406,7 +406,9 @@ class Commands(object):
         # created by rpm that created it (outside of chroot)
         check_opt = ''
         if not check:
-            check_opt = "--define '__spec_check_template exit 0; ' "
+            # this is because EL5/6 does not know --nocheck
+            # when EL5/6 targets are not supported, replace it with --nocheck
+            check_opt = "--define '__spec_check_template exit 0; '"
 
         mode = '-bb'
         sc = self.config.get('short_circuit')
