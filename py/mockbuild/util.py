@@ -708,10 +708,11 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
             'package_state_enable' : False,
             'package_state_opts' : {},
             'chroot_scan_enable': False,
-            'chroot_scan_opts': { 'regexes' : [
-                "\\bcore(\\.\\d+)?$",
-                "\\.log$",
-                ]},
+            'chroot_scan_opts': {
+                'regexes' : [
+                    "\\bcore(\\.\\d+)?$", "\\.log$",
+                ],
+                'only_failed': True},
             'sign_enable': False,
             'sign_opts': {
                 'cmd' : 'rpmsign',

@@ -4,6 +4,8 @@ from .exception import StateError
 class State(object):
     def __init__(self):
         self._state = []
+        # can be "unknown", "success" or "fail"
+        self.result = "unknown"
         self.state_log = getLog("mockbuild.Root.state")
 
     def state(self):

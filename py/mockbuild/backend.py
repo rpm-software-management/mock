@@ -229,12 +229,15 @@ class Commands(object):
                 self.buildroot.root_log.info("Short circuit builds don't produce RPMs")
             else:
                 raise PkgError('No build results found')
+            self.state.result = 'success'
 
             self.state.finish(rpmbuildstate)
 
         finally:
             if not util.USE_NSPAWN:
                 self.uid_manager.restorePrivs()
+            if self.state.result != 'success':
+                self.state.result = 'fail'
             # tell caching we are done building
             self.plugins.call_hooks('postbuild')
         self.state.finish(buildstate)

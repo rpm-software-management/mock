@@ -36,8 +36,17 @@ class ChrootScan(object):
         plugins.add_hook("postbuild", self._scanChroot)
         getLog().info("chroot_scan: initialized")
 
+    def _only_failed(self):
+        """ Returns boolean value if option 'only_failed' is set. """
+        return str(self.scan_opts['only_failed']) == 'True'
+
     @traceLog()
     def _scanChroot(self):
+        is_failed = self.state.result != "success"
+        if (self._only_failed() and is_failed) or not self._only_failed():
+            self.__scanChroot()
+
+    def __scanChroot(self):
         regexstr = "|".join(self.regexes)
         regex = re.compile(regexstr)
         chroot = self.buildroot.make_chroot_path()
