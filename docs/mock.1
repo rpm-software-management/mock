@@ -97,7 +97,8 @@ Run the specified command non\-interactively within the chroot (no 'clean' is pe
 .TP
 \fB\-\-dnf\-cmd\fP
 Execute following arguments with DNF with installroot set to the chroot path. DNF must be installed on the system.
-It will use the binary which is specified in 'dnf_command' option in site-defaults.cfg config, which by default is /usr/bin/dnf. 
+It will use the binary which is specified in 'dnf_command' option in site-defaults.cfg config, which by default is /usr/bin/dnf.
+This option will enforce \-\-dnf.
 .TP
 \fB\-\-init\fP
 Initialize a chroot (clean, install chroot packages, etc.)
@@ -178,6 +179,7 @@ that might have been a LVM volume or TMPFS.
 Execute following arguments with YUM with installroot set to the chroot path. Yum must be installed on the system.
 It will use the binary which is specified in 'yum_command' option in site-defaults.cfg config, which by default is /usr/bin/yum.
 Note that in config files for Fedora 22\+ this value is overwriten in chroot config to default to /usr/bin/yum-deprecated.
+This option will enforce \-\-yum.
 .TP
 Note: While you can specify more commands on command line, only one can be executed. The last command will win.
 
