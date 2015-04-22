@@ -96,8 +96,8 @@ the specified destination path.
 Run the specified command non\-interactively within the chroot (no 'clean' is performed). Command output will be sent to the log files. Note that COMMAND is shell expanded only if there are no ARGS. Otherwise there is no shell expansion.
 .TP
 \fB\-\-dnf\-cmd\fP
-Force mock to use DNF to install packages in chroot path. DNF (and dnf-plugins-core) must be installed on the system.
-Actually it will use binary which is specified in 'dnf_command' option in site-defaults.cfg config, which by default is /usr/bin/dnf.
+Execute following arguments with DNF with installroot set to the chroot path. DNF must be installed on the system.
+It will use the binary which is specified in 'dnf_command' option in site-defaults.cfg config, which by default is /usr/bin/dnf. 
 .TP
 \fB\-\-init\fP
 Initialize a chroot (clean, install chroot packages, etc.)
@@ -175,9 +175,11 @@ Umount all everything mounted in the chroot path including the root itself
 that might have been a LVM volume or TMPFS.
 .TP
 \fB\-\-yum\-cmd\fP
-Force mock to use YUM to install packages in chroot path. Yum must be installed on the system.
-Actually it will use binary which is specified in 'yum_command' option in site-defaults.cfg config, which by default is /usr/bin/yum.
+Execute following arguments with YUM with installroot set to the chroot path. Yum must be installed on the system.
+It will use the binary which is specified in 'yum_command' option in site-defaults.cfg config, which by default is /usr/bin/yum.
 Note that in config files for Fedora 22\+ this value is overwriten in chroot config to default to /usr/bin/yum-deprecated.
+.TP
+Note: While you can specify more commands on command line, only one can be executed. The last command will win.
 
 
 .SH "OPTIONS"
@@ -211,7 +213,7 @@ Pass \fB\-\-disablerepo\fR option to package manager to disable a repository.
 It can be specified multiple times.
 .TP
 \fB\-\-dnf\fR
-Use DNF as the current package manager.
+Use DNF as the current package manager. You should have DNF (and dnf-plugins-core) installed on your system.
 .TP
 \fB\-\-enable\-plugin\fR=\fIPLUGIN\fP
 Enable the specified plugin.  This option may be used multiple times.
@@ -350,6 +352,24 @@ To build execute command inside of chroot.
 \fBmock \-r fedora\-21\-x86_64 \-\-chroot \-\- rpm --eval %dist\fR
 .LP
 \fBmock \-r fedora\-21\-x86_64 \-\-chroot 'rpm --eval %dist'\fR
+.RE
+.LP
+To build rawhide package using yum:
+.LP
+.RS 5
+\fBmock \-r fedora\-rawhide\-x86_64 \-\-yum \-\-rebuild your.src.rpm\fR
+.RE
+.LP
+Query rpm database inside chroot using Yum:
+.LP
+.RS 5
+\fBmock \-r fedora\-rawhide\-x86_64 \-\-yum-cmd whatprovides foo\fR
+.RE
+.LP
+List package manager history using package manager which is configured in chroot config (can be either DNF or YUM):
+.LP
+.RS 5
+\fBmock \-r fedora\-rawhide\-x86_64 \-\-pm-cmd history list\fR
 .RE
 
 .SH "BUGS"
