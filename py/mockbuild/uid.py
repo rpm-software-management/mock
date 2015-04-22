@@ -88,9 +88,20 @@ class UidManager(object):
         if recursive:
             for root, dirs, files in os.walk(path):
                 for d in dirs:
-                    os.chown(os.path.join(root, d), uid, gid)
+                    self._tolerant_chown(os.path.join(root, d), uid, gid)
                 for f in files:
-                    os.chown(os.path.join(root, f), uid, gid)
+                    self._tolerant_chown(os.path.join(root, f), uid, gid)
+
+    @staticmethod
+    def _tolerant_chown(path, uid, gid):
+        """ chown() which does not raise error if file does not exist. """
+        try:
+            os.chown(path, uid, gid)
+        except OSError as e:
+            if e.errno == 2: # No such file or directory
+                pass
+            else:
+                raise
 
 def getresuid():
     ruid = ctypes.c_long()
