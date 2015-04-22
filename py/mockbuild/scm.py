@@ -150,7 +150,7 @@ class scmWorker(object):
             taropts = ""
 
             # Always exclude vcs data from tarball unless told not to
-            if not self.exclude_vcs:
+            if str(self.exclude_vcs).lower() == "true":
                 proc = subprocess.Popen(['tar', '--help'], shell=False, stdout=subprocess.PIPE)
                 if "--exclude-vcs" in proc.communicate()[0]:
                     taropts = "--exclude-vcs"
