@@ -31,7 +31,6 @@ class ChrootScan(object):
         self.config = buildroot.config
         self.state = buildroot.state
         self.scan_opts = conf
-        self.regexes = self.config['plugin_conf']['chroot_scan_opts']['regexes']
         self.resultdir = os.path.join(buildroot.resultdir, "chroot_scan")
         plugins.add_hook("postbuild", self._scanChroot)
         getLog().info("chroot_scan: initialized")
@@ -47,7 +46,7 @@ class ChrootScan(object):
             self.__scanChroot()
 
     def __scanChroot(self):
-        regexstr = "|".join(self.regexes)
+        regexstr = "|".join(self.scan_opts['regexes'])
         regex = re.compile(regexstr)
         chroot = self.buildroot.make_chroot_path()
         mockbuild.util.mkdirIfAbsent(self.resultdir)
