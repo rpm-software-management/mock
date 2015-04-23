@@ -59,7 +59,7 @@ plugins_PYTHON = \
     py/mockbuild/plugins/selinux.py   \
     py/mockbuild/plugins/mount.py \
     py/mockbuild/plugins/chroot_scan.py \
-    py/mockbuild/plugins/lvm_root.py
+    py/mockbuild/plugins/lvm_root.py \
     py/mockbuild/plugins/sign.py
 
 mockbuilddir = $(pythondir)/mockbuild
