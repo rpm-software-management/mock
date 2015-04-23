@@ -686,7 +686,7 @@ def run_command(options, args, config_opts, commands, buildroot, state):
         if len(args) == 0:
             log.critical("You must specify a command to run with --chroot")
             sys.exit(50)
-        commands.init(do_log=False)
+        commands.init(do_log=True)
         commands.chroot(args, options)
 
     elif options.mode == 'installdeps':
