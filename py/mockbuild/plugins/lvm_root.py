@@ -1,27 +1,15 @@
 import os
-import lvm
 import fcntl
 import errno
 import re
 import time
 
-from contextlib import contextmanager
 from textwrap import dedent
 
 from mockbuild import util, mounts
 from mockbuild.exception import LvmError, LvmLocked
 
 requires_api_version = "1.1"
-
-@contextmanager
-def volume_group(name, mode='r'):
-    vg = None
-    try:
-        vg = lvm.vgOpen(name, mode)
-        yield vg
-    finally:
-        if vg is not None:
-            vg.close()
 
 def lvm_do(*args, **kwargs):
     env = os.environ.copy()
@@ -109,32 +97,43 @@ class LvmPlugin(object):
     def remove_prefix(self, name):
         return name.replace(self.prefix_name(''), '')
 
+    def query_lvs(self, *options):
+        out = lvm_do(['lvs', '--noheadings', '--options', ','.join(options),
+                      '--separator', '###', self.vg_name])
+        return [line.strip().split('###') for line in out.split('\n') if line.strip()]
+
+    def query_lv(self, lv_name, *options):
+        query = [entry[1:] for entry in self.query_lvs('lv_name', *options)
+                 if entry[0] == lv_name]
+        if query:
+            return query[0]
+
     def get_lv_path(self, lv_name=None):
         name = lv_name or self.head_lv
-        with volume_group(self.vg_name) as vg:
-            lv = vg.lvFromName(name)
-            return lv.getProperty('lv_path')[0]
-
-    def _lv_predicate(self, name, predicate):
-        with volume_group(self.vg_name) as vg:
-            try:
-                lv = vg.lvFromName(name)
-                return predicate(lv)
-            except lvm.LibLVMError:
-                pass
-        return False
+        entry = self.query_lv(name, 'lv_path')
+        if entry:
+            return entry[0]
 
     def lv_exists(self, lv_name=None):
         name = lv_name or self.head_lv
-        return self._lv_predicate(name, lambda lv: True)
+        return bool(self.query_lv(name, 'lv_name'))
 
-    def _open_lv_is_our(self, lv):
-        return (lv.getAttr()[0] == 'V' and
-                lv.getProperty('pool_lv')[0] == self.pool_name and
-                lv.getName().replace('+', '').startswith(self.prefix_name()))
+    def _lv_entry_is_our(self, entry):
+        if not entry:
+            return False
+        name, attrs, pool_lv = entry
+        return (attrs[0] == 'V' and
+                pool_lv == self.pool_name and
+                name.replace('+', '').startswith(self.prefix_name()))
 
     def lv_is_our(self, name):
-        return self._lv_predicate(name, self._open_lv_is_our)
+        entry = self.query_lv(name, 'lv_name', 'lv_attr', 'pool_lv')
+        return self._lv_entry_is_our(entry)
+
+    def list_our_lvs(self, *options):
+        lvs = self.query_lvs('lv_name', 'lv_attr', 'pool_lv', *options)
+        return [[entry[0]] + entry[3:] for entry in lvs
+                if self._lv_entry_is_our(entry[:3])]
 
     def get_current_snapshot(self):
         if os.path.exists(self.snap_info):
@@ -233,16 +232,14 @@ class LvmPlugin(object):
 
     def prepare_mount(self):
         mount_options = self.lvm_conf.get('mount_options')
-        try:
-            lv_path = self.get_lv_path()
+        lv_path = self.get_lv_path()
+        if lv_path:
             for src, target in current_mounts():
                 if target == self.root_path:
                     if src != os.path.realpath(lv_path):
                         self.force_umount_root()
             self.mount = mounts.FileSystemMountPoint(self.root_path, self.fs_type,
                                                      lv_path, options=mount_options)
-        except lvm.LibLVMError:
-            pass
 
     def umount(self):
         if not self.mount:
@@ -319,47 +316,32 @@ class LvmPlugin(object):
         self.lock.lock(exclusive=False)
 
     def hook_scrub(self, what):
-        if what not in ('lvm', 'all'):
+        if what not in ('lvm', 'all') or not self.lv_exists(self.pool_name):
             return
         self.pool_lock.lock(exclusive=True)
-        with volume_group(self.vg_name, mode='w+') as vg:
-            lvs = vg.listLVs()
-            for lv in lvs:
-                if self._open_lv_is_our(lv):
-                    try:
-                        for src, _ in current_mounts():
-                            if src == os.path.realpath(lv.getProperty('lv_path')[0]):
-                                util.do(['umount', '-l', src])
-                    except lvm.LibLVMError:
-                        pass
-                    self.buildroot.root_log.info("removing {0} volume".format(lv.getName()))
-                    lv.remove()
-            remaining = [lv for lv in vg.listLVs() if lv.getAttr()[0] == 'V' and
-                         lv.getProperty('pool_lv')[0] == self.pool_name]
-            if not remaining:
-                try:
-                    pool = vg.lvFromName(self.pool_name)
-                except lvm.LibLVMError:
-                    pass
-                else:
-                    pool.remove()
-                    self.buildroot.root_log.info("deleted LVM cache thinpool")
+        lvs = self.list_our_lvs('lv_path')
+        for name, lv_path in lvs:
+            for src, _ in current_mounts():
+                if src == os.path.realpath(lv_path):
+                    util.do(['umount', '-l', src])
+            self.buildroot.root_log.info("removing {0} volume".format(name))
+            lvm_do(['lvremove', '-f', self.vg_name + '/' + name])
+        remaining = [name for name, attr, pool_lv in self.query_lvs('lv_name', 'lv_attr', 'pool_lv')
+                     if pool_lv == self.pool_name and attr[0] == 'V']
+        if not remaining:
+            lvm_do(['lvremove', '-f', self.vg_name + '/' + self.pool_name])
+            self.buildroot.root_log.info("deleted LVM cache thinpool")
         self.unset_current_snapshot()
 
     def hook_list_snapshots(self):
-        with volume_group(self.vg_name) as vg:
-            current = self.get_current_snapshot()
-            lvs = vg.listLVs()
-            print('Snapshots for {0}:'.format(self.buildroot.shared_root_name))
-            for lv in lvs:
-                if self._open_lv_is_our(lv):
-                    name = lv.getName()
-                    if name == current:
-                        print('* ' + self.remove_prefix(name))
-                    elif name.startswith('+'):
-                        pass
-                    else:
-                        print('  ' + self.remove_prefix(name))
+        current = self.get_current_snapshot()
+        lvs = self.list_our_lvs()
+        print('Snapshots for {0}:'.format(self.buildroot.shared_root_name))
+        for [name] in lvs:
+            if name == current:
+                print('* ' + self.remove_prefix(name))
+            elif not name.startswith('+'):
+                print('  ' + self.remove_prefix(name))
 
     def hook_remove_snapshot(self, name):
         if name == self.postinit_name:
