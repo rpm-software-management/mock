@@ -14,31 +14,19 @@ from mockbuild.exception import LvmError, LvmLocked
 requires_api_version = "1.1"
 
 @contextmanager
-def restored_ipc_ns():
-    mock_ns = os.open('/proc/self/ns/ipc', os.O_RDONLY)
-    util.restore_ipc_ns()
-    try:
-        yield
-    finally:
-        util.setns(mock_ns, util.CLONE_NEWIPC)
-        os.close(mock_ns)
-
-@contextmanager
 def volume_group(name, mode='r'):
-    with restored_ipc_ns():
-        vg = None
-        try:
-            vg = lvm.vgOpen(name, mode)
-            yield vg
-        finally:
-            if vg is not None:
-                vg.close()
+    vg = None
+    try:
+        vg = lvm.vgOpen(name, mode)
+        yield vg
+    finally:
+        if vg is not None:
+            vg.close()
 
 def lvm_do(*args, **kwargs):
-    with restored_ipc_ns():
-        env = os.environ.copy()
-        env['LC_ALL'] = 'C'
-        output = util.do(*args, returnOutput=True, env=env, **kwargs)
+    env = os.environ.copy()
+    env['LC_ALL'] = 'C'
+    output = util.do(*args, returnOutput=True, env=env, **kwargs)
     return output
 
 def current_mounts():
@@ -86,9 +74,6 @@ class LvmPlugin(object):
     prefix = 'mock'
 
     def __init__(self, plugins, lvm_conf, buildroot):
-        if not util.original_ipc_ns or not util.have_setns:
-            raise LvmError("Cannot initialize setns support, which is "
-                           "needed by LVM plugin")
         self.buildroot = buildroot
         self.lvm_conf = lvm_conf
         self.vg_name = lvm_conf.get('volume_group')

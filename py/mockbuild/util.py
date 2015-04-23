@@ -45,12 +45,6 @@ _libc.personality.argtypes = [ctypes.c_ulong]
 _libc.personality.restype = ctypes.c_int
 _libc.unshare.argtypes = [ctypes.c_int,]
 _libc.unshare.restype = ctypes.c_int
-try:
-    _libc.setns.argtypes = [ctypes.c_int, ctypes.c_int]
-    _libc.setns.restype = ctypes.c_int
-    have_setns = True
-except AttributeError:
-    have_setns = False
 
 # See linux/include/sched.h
 CLONE_NEWNS = 0x00020000
@@ -76,12 +70,6 @@ PLUGIN_LIST = ['tmpfs', 'root_cache', 'yum_cache', 'bind_mount',
 
 # This is set to False on EL6 in build time
 USE_NSPAWN = False
-
-# this is executed before namespace unsharing to get fd representing previous ns
-try:
-    original_ipc_ns = os.open('/proc/self/ns/ipc', os.O_RDONLY)
-except OSError:
-    original_ipc_ns = None
 
 # classes
 class commandTimeoutExpired(exception.Error):
@@ -269,14 +257,6 @@ def unshare(flags):
     except AttributeError:
         pass
 
-@traceLog()
-def setns(fd, flags):
-    if have_setns:
-        getLog().debug("Setting namespace to fd %d. Flags: %s" % (fd, flags))
-        res = _libc.setns(fd, flags)
-        if res:
-            raise exception.SetnsFailed(os.strerror(ctypes.get_errno()))
-
 # these are called in child process, so no logging
 def condChroot(chrootPath):
     if chrootPath is not None:
@@ -311,6 +291,15 @@ def condEnvironment(env=None):
     os.environ.clear()
     for k in list(env.keys()):
         os.putenv(k, env[k])
+
+def condUnshareIPC(unshare_ipc=True):
+    if unshare_ipc:
+        try:
+            unshare(CLONE_NEWIPC)
+        except exception.UnshareFailed:
+            # IPC and UTS ns are supported since the same kernel version. If this
+            # fails, there had to be a warning already
+            pass
 
 def process_input(line):
     out = []
@@ -440,7 +429,7 @@ def do(command, shell=False, chrootPath=None, cwd=None, timeout=0, raiseExc=True
     if pty:
         master_pty, slave_pty = os.openpty()
         reader = os.fdopen(master_pty, 'rb')
-    preexec = ChildPreExec(personality, chrootPath, cwd, uid, gid)
+    preexec = ChildPreExec(personality, chrootPath, cwd, uid, gid, unshare_ipc=bool(chrootPath))
     if env is None:
         env = clean_env()
     try:
@@ -508,7 +497,7 @@ def do(command, shell=False, chrootPath=None, cwd=None, timeout=0, raiseExc=True
 
 class ChildPreExec(object):
     def __init__(self, personality, chrootPath, cwd, uid, gid, env=None,
-                 shell=False):
+                 shell=False, unshare_ipc=False):
         self.personality = personality
         self.chrootPath = chrootPath
         self.cwd = cwd
@@ -516,6 +505,7 @@ class ChildPreExec(object):
         self.gid = gid
         self.env = env
         self.shell = shell
+        self.unshare_ipc = unshare_ipc
         getLog().debug("child environment: %s" % env)
 
     def __call__(self, *args, **kargs):
@@ -528,10 +518,8 @@ class ChildPreExec(object):
             condChroot(self.chrootPath)
             condDropPrivs(self.uid, self.gid)
         condChdir(self.cwd)
+        condUnshareIPC(self.unshare_ipc)
         reset_sigpipe()
-
-def restore_ipc_ns():
-    setns(original_ipc_ns, CLONE_NEWIPC)
 
 def reset_sigpipe():
     signal.signal(signal.SIGPIPE, signal.SIG_DFL)
@@ -560,7 +548,8 @@ def _prepare_nspawn_command(chrootPath, user, cmd):
     else:
         return " ".join(cmd)
 
-def doshell(chrootPath=None, environ=None, uid=None, gid=None, user=None, cmd=None):
+def doshell(chrootPath=None, environ=None, uid=None, gid=None, user=None, cmd=None,
+            unshare_ipc=True):
     log = getLog()
     log.debug("doshell: chrootPath:%s, uid:%d, gid:%d" % (chrootPath, uid, gid))
     if environ is None:
@@ -579,7 +568,8 @@ def doshell(chrootPath=None, environ=None, uid=None, gid=None, user=None, cmd=No
     if USE_NSPAWN:
         cmd = _prepare_nspawn_command(chrootPath, user, cmd)
     preexec = ChildPreExec(personality=None, chrootPath=chrootPath, cwd=None,
-                           uid=uid, gid=gid, env=environ, shell=True)
+                           uid=uid, gid=gid, env=environ, shell=True,
+                           unshare_ipc=unshare_ipc)
     log.debug("doshell: command: %s" % cmd)
     return subprocess.call(cmd, preexec_fn=preexec, env=environ, shell=False)
 
