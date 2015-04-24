@@ -28,7 +28,7 @@ class Buildroot(object):
         self.root_name = config['root']
         self.mockdir = config['basedir']
         self.basedir = os.path.join(config['basedir'], config['root'])
-        if config['rootdir']:
+        if 'rootdir' in config:
             self.rootdir = config['rootdir']
         else:
             self.rootdir = os.path.join(self.basedir, 'root')

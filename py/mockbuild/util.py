@@ -845,6 +845,8 @@ def set_config_opts_per_cmdline(config_opts, options, args):
 
     if options.resultdir:
         config_opts['resultdir'] = os.path.expanduser(options.resultdir)
+    if options.rootdir:
+        config_opts['rootdir'] = os.path.expanduser(options.rootdir)
     if options.uniqueext:
         config_opts['unique-ext'] = options.uniqueext
     if options.rpmbuild_timeout is not None:
