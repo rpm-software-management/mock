@@ -224,6 +224,8 @@ def command_parse():
                       help="disable configure option for build (may be used more than once)")
     parser.add_option("--resultdir", action="store", type="string",
                       default=None, help="path for resulting files to be put")
+    parser.add_option("--rootdir", action="store", type="string",
+                      default=None, help="Path for where the chroot should be built")
     parser.add_option("--uniqueext", action="store", type="string",
                       default=None,
                       help="Arbitrary, unique extension to append to buildroot"

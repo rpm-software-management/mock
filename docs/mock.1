@@ -270,6 +270,9 @@ Change directory where resulting files (RPMs and build logs) are written. Result
 
 This option enables automatic cleanup, this can be changed in config file (by cleanup_on_success, cleanup_on_failure configuration options) or overridden by \-\-no\-cleanup\-after/\-\-cleanup\-after arguments.
 .TP
+\fB\-\-rootdir\fR=\fIROOTDIR\fP
+Path for where the chroot should be built. By default it is created in /var/lib/mock/<\fICONFIG\fP>/root/.
+.TP
 \fB\-\-rpmbuild\-opts\fR=\fIOPTIONS\fR
 Pass additional options to rpmbuild. To pass more options, put them in quotes.
 .TP

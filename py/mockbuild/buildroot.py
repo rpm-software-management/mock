@@ -28,7 +28,10 @@ class Buildroot(object):
         self.root_name = config['root']
         self.mockdir = config['basedir']
         self.basedir = os.path.join(config['basedir'], config['root'])
-        self.rootdir = os.path.join(self.basedir, 'root')
+        if config['rootdir']:
+            self.rootdir = config['rootdir']
+        else:
+            self.rootdir = os.path.join(self.basedir, 'root')
         self.resultdir = config['resultdir'] % config
         self.homedir = config['chroothome']
         self.cache_topdir = config['cache_topdir']
