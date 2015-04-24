@@ -731,7 +731,7 @@ def run_command(options, args, config_opts, commands, buildroot, state):
         do_buildsrpm(config_opts, commands, buildroot, options, args)
 
     elif options.mode == 'orphanskill':
-        pass
+        util.orphansKill(buildroot.make_chroot_path())
 
     elif options.mode == 'copyin':
         commands.init()
@@ -819,6 +819,7 @@ def run_command(options, args, config_opts, commands, buildroot, state):
     buildroot._nuke_rpm_db()
     state.finish("run")
     state.alldone()
+    buildroot.finalize()
 
 if __name__ == '__main__':
     # fix for python 2.4 logging module bug:
