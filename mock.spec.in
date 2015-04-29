@@ -229,6 +229,44 @@ fi
 %endif
 
 %changelog
+* Wed Apr 29 2015 Miroslav Suchý <msuchy@redhat.com> - 1.2.8-1
+- LVM plugin is removed on F22+ due RHBZ 1136366
+- allow the chroot's location to be configurable [RHBZ#452730]
+- send output of --chroot to log [RHBZ#1214178]
+- chroot_scan: implement "only_failed" option [RHBZ#1190763]
+- add comment why this previous commit was done [RHBZ#1192128]
+- use rpm macros instead of cmd option for --nocheck [RHBZ#1192128]
+- plugin options can be string if specified on command line [RHBZ#1193487]
+- root_cache: do not assume volatile root with tmpfs [RHBZ#1193487]
+- use CONFIG instead of CHROOT in help/man for --root option [RHBZ#1197131]
+- more clarification on --dnf-cmd/--yum-cmd [RHBZ#1211621]
+- scm correct the logic of exclude_vcs [RHBZ#1204240]
+- ignore missing files in ccache [RHBZ#1210569]
+- install buildsys-macros in el5 chroot [RHBZ#1213482]
+- remove forgotten print statement [RHBZ#1202845]
+- add a plugin that calls command (from the host) on the produced rpms.
+- save/restore os.environ when dropping/restoring Privs [RHBZ#1204395]
+- mock-scm pull tarball name from specfile instead of hardcoding [RHBZ#1204935]
+- clarify "--yum-cmd" / "--dnf-cmd" options [RHBZ#1211621]
+- return the SRPM name from do_buildsrpm (required for SCM builds) [1190450]
+- binding DNF cache directory with yum_cache [RHBZ#1176560]
+- suggest user to install dnf-plugins-core [RHBZ#1196248]
+- ignore btrfs errors on non-btrfs systems [RHBZ#1205564]
+- on F21- use hard deps instead of soft [RHBZ#1198769]
+- delete btrfs subvolumes on exit [RHBZ#1205564]
+- on python3 convert err from bytes to str [RHBZ#1211199]
+- on F22+ use yum-deprecated instead of yum [RHBZ#1211978]
+- if mountpoint is inside chroot, remove chroot part [RHBZ#1208299]
+- chmod directory only if we really created it [RHBZ#1209532]
+- port epel-5 configs to Python 3 [RHBZ#1204662]
+- use nosync only for package management and chroot init [RHBZ#1184964]
+- missing config file should not be fatal [RHBZ#1195749]
+- pass variable "name" [RHBZ#1194171]
+- correct chroot_scan configuration sample in site-defaults
+- install missing chroot_scan plugin
+- avoid creating resultdir as root
+
+
 * Fri Feb 13 2015 Miroslav Suchý <msuchy@redhat.com> - 1.2.7-1
 - add Fedora 22 configs
 - rawhide configs use DNF
@@ -501,99 +539,3 @@ from Jerry James <loganjerry@gmail.com>
   - mounts plugin: removed redundant '-t' specified for vfstype [BZ# 910857]
 - from Justin Lewis Salmon <jsalmon@cern.ch>:
   - root cache plugin: add the --cache-alternations option [BZ# 905363]
-
-* Thu Mar 28 2013 Clark Williams <williams@redhat.com> - 1.1.30-1
-- beef up the logic to remove RPM lock files inside the chroot
-- add backup-before-clean configuration options [BZ# 799639]
-- added fedora-19 config files [BZ# 922268]
-- package_state plugin: don't run repoquery when offline [BZ# 927496]
-
-* Fri Feb 22 2013 Clark Williams <williams@redhat.com> - 1.1.29-1
-- move CLONE_NEWUTS to extended unshare options [BZ# 890695]
-- make epel-5-* config files safe to eval [BZ# 903686]
-- remove CLONE_NEWPID (for now) from unshare(2) call [BZ# 894623]
-- initialize package_state_opts so that package_state plugin will work
-- change default tests environment to be -i386
-- From Tim Woods <timw.fedora@gmail.com>
-  - Fix mockchain repo id calculation [BZ# 880849]
-- From Tzafrir Cohen <tzafrir.cohen@xorcom.com>
-  - Fix most bashism in test scripts
-- From Seth Vidal <skvidal@fedoraproject.org>:
-  - mockchain: allow for a non-username tmpdir prefix
-  - mockchain: comma is a protected character make it _ instead
-
-* Mon Sep 24 2012 Clark Williams <williams@redhat.com> - 1.1.28-1
-- add updates-testing stanza to fedora-1x-*.cfg [BZ# 610826]
-- modify scrub to handle non-existant chroots [BZ# 860368]
-
-* Fri Sep  7 2012 Clark Williams <williams@redhat.com> - 1.1.27-1
-- fixed configs test report to indicate configuration failure total
-- remove dead code, unused array 'legal_arches'
-- add an 'age_check' parameter to root_cache
-- deal with NFS home directories and root_cache issues [BZ# 649192]
-- from Mike Miller <mtmiller@ieee.org>:
-  - Fix mock kernel version comparison [BZ# 847473]
-- from Mathieu Bridon <bochecha@fedoraproject.org>:
-  - fix various start/finish state problems [BZ# 835633]
-- from Colin Walters <walters@redhat.com>:
-  - add CLONE_NEWPID and CLONE_NEWIPC to unshare call [BZ# 851340]
-
-* Fri Aug 10 2012 Dennis Gilmore <dennis@ausil.us> - 1.1.26-2
-- add f18 configs
-- add rawhide s390 config
-
-* Mon Aug  6 2012 Clark Williams <williams@redhat.com> - 1.1.26-1
-- move the fedora-17-ppc* configs into the configs directory
-
-* Tue Jul 31 2012 Clark Williams <williams@redhat.com> - 1.1.25-1
-- From Karsten Hopp <karsten@redhat.com>:
-  - added ppc and ppc64 configs for fedora 17
-
-* Fri Jul 27 2012 Clark Williams <williams@redhat.com> - 1.1.24-1
-- Fixed error when calling os.getlogin() [BZ# 843434]
-- removed fedora-15 config files
-- from Matt McCutchen <matt@mattmccutchen.net>:
-  - allowed common options to be added to yum commands [BZ# 734576]
-- from Ville Skyttä <ville.skytta@iki.fi>:
-  - added mockchain completion
-- from Seth Vidal <skvidal@fedoraproject.org>:
-  - added package_state_plugin
-
-* Thu Jun  7 2012 Clark Williams <williams@redhat.com> - 1.1.23-1
-  - modified startup code to only set mock group [BZ# 809676]
-  - add CLONE_NEWUTS to unshare(2) call [BZ# 818445]
-  - from Seth Vidal <skvidal at fedoraproject.org>:
-    - add mockchain to mock [BZ# 812477]
-  - from Marko Myllynen <myllynen@redhat.com>:
-    - fix write_tar check in scm.py [BZ# 828677]
-  - from Masatake YAMATO <yamato@redhat.com>:
-    - added option to set a plugin parameter value [BZ# 754321]
-
-* Thu Mar 29 2012 Clark Williams <williams@redhat.com> - 1.1.22-1
-- fix SCM problem with SSH_AUTH_SOCK [BZ# 803217]
-- From Chris St Pierre <chris.a.st.pierre@gmail.com>:
-  - allow chroot group to be configure option
-
-* Wed Feb  8 2012 Clark Williams <williams@redhat.com> - 1.1.21-1
-- from Dennis Gilmore <dennis@ausil.us>
-  - add Fedora 17 mock configs
-  - have configs reflect the dropping of dist- for koji repos
-  - add configs for arm hardware floating point
-
-* Mon Jan 30 2012 Clark Williams <williams@redhat.com> - 1.1.20-1
-- changed createrepo invocation to not be done inside the chroot [BZ# 783926]
-- changed [local] repo definitions in f16+ configs [BZ# 753735]
-- from Ville Skyttä <ville.skytta@iki.fi>
-  - Allow setting https, ftp, and no proxy in addition to http.
-
-* Mon Jan  2 2012 Clark Williams <williams@redhat.com> - 1.1.19-2
-- fix missing files from Makefile.am
-
-* Mon Jan  2 2012 Clark Williams <williams@redhat.com> - 1.1.19-1
-- fix dangling symlink when using SCM [BZ# 758781]
-- remove setting TMPDIR in chroot environment [BZ# 769728]
-- add code to allow global proxy in chroot [BZ# 766199]
-- explicitly set unprivileged umask in --shell [BZ# 747119]
-- add bind-mount config to create sourcedirs [BZ# 706174]
-- move mount management into classes
-- update environment management code
