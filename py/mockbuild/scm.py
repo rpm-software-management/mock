@@ -71,16 +71,15 @@ class scmWorker(object):
 
         self.log.debug("SCM checkout command: " + self.get)
         self.log.debug("SCM checkout post command: " + str(self.postget))
-        self.environ = dict(os.environ)
 
     @traceLog()
     def get_sources(self):
         self.wrk_dir = tempfile.mkdtemp(".mock-scm." + self.pkg)
         self.src_dir = self.wrk_dir + "/" + self.pkg
         self.log.debug("SCM checkout directory: " + self.wrk_dir)
-        util.do(shlex.split(self.get), shell=False, cwd=self.wrk_dir, env=self.environ)
+        util.do(shlex.split(self.get), shell=False, cwd=self.wrk_dir, env=os.environ)
         if self.postget:
-            util.do(shlex.split(self.postget), shell=False, cwd=self.src_dir, env=self.environ)
+            util.do(shlex.split(self.postget), shell=False, cwd=self.src_dir, env=os.environ)
         self.log.debug("Fetched sources from SCM")
 
     @traceLog()
@@ -160,7 +159,7 @@ class scmWorker(object):
             os.chdir(self.wrk_dir)
             os.rename(self.name, tardir)
             cmd = "tar caf " + tarball + " " + taropts + " " + tardir
-            util.do(shlex.split(cmd), shell=False, cwd=self.wrk_dir, env=self.environ)
+            util.do(shlex.split(cmd), shell=False, cwd=self.wrk_dir, env=os.environ)
             os.rename(tarball, tardir + "/" + tarball)
             os.rename(tardir, self.name)
             os.chdir(dir)
