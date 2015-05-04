@@ -192,9 +192,6 @@ class Yum(_PackageManager):
         if check:
             _check_missing(out)
 
-    def builddep(self, *pkgs, **kwargs):
-        out = super(Yum, self).builddep(*pkgs, **kwargs)
-        _check_missing(out)
 
 def _check_missing(output):
     for i, line in enumerate(output.split('\n')):
