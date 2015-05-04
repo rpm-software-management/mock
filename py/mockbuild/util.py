@@ -66,7 +66,7 @@ personality_defs = {
 
 PLUGIN_LIST = ['tmpfs', 'root_cache', 'yum_cache', 'bind_mount',
                'ccache', 'selinux', 'package_state', 'chroot_scan',
-               'lvm_root', 'compress_logs', 'sign']
+               'lvm_root', 'compress_logs', 'sign', 'pm_request']
 
 # This is set to False on EL6 in build time
 USE_NSPAWN = False
@@ -698,6 +698,8 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
             'selinux_opts': {},
             'package_state_enable' : False,
             'package_state_opts' : {},
+            'pm_request_enable': False,
+            'pm_request_opts': {},
             'chroot_scan_enable': False,
             'chroot_scan_opts': {
                 'regexes' : [
