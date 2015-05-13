@@ -221,6 +221,15 @@ fi
 %{python_sitelib}/mockbuild/plugins/lvm_root.*
 
 %changelog
+* Wed May 13 2015 Miroslav Suchý <msuchy@redhat.com> - 1.2.9-1
+- scm: do not keep copy of environ, this is now handled by uidmanager [RHBZ#1204395]
+- Add pm_request plugin
+- Drop lvm2-python-libs requires and enable lvm subpackage on el6
+- Use lvs instead of lvm python bindings
+- Unshare IPC ns only for chroot processes
+- Add missing flush in logOutput
+- Avoid infinite recursion in selinux plugin
+
 * Wed Apr 29 2015 Miroslav Suchý <msuchy@redhat.com> - 1.2.8-1
 - LVM plugin is removed on F22+ due RHBZ 1136366
 - allow the chroot's location to be configurable [RHBZ#452730]
