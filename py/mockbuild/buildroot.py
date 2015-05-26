@@ -437,9 +437,10 @@ class Buildroot(object):
             os.symlink("/proc/self/fd/1", self.make_chroot_path("dev/stdout"))
             os.symlink("/proc/self/fd/2", self.make_chroot_path("dev/stderr"))
 
-            if os.path.isfile(self.make_chroot_path('etc', 'mtab')):
+            if os.path.isfile(self.make_chroot_path('etc', 'mtab')) or \
+               os.path.islink(self.make_chroot_path('etc', 'mtab')):
                 os.remove(self.make_chroot_path('etc', 'mtab'))
-            os.symlink("/proc/self/mounts", self.make_chroot_path('etc', 'mtab'))
+            os.symlink("../proc/self/mounts", self.make_chroot_path('etc', 'mtab'))
 
             os.chown(self.make_chroot_path('dev/tty'), pwd.getpwnam('root')[2], grp.getgrnam('tty')[2])
             os.chown(self.make_chroot_path('dev/ptmx'), pwd.getpwnam('root')[2], grp.getgrnam('tty')[2])
