@@ -223,6 +223,13 @@ fi
 %{python_sitelib}/mockbuild/plugins/lvm_root.*
 
 %changelog
+* Tue Jun  2 2015 Miroslav Suchý <msuchy@redhat.com> - 1.2.10-1
+- do not require pyliblzma if using python3 [RHBZ#1227209]
+- add warning to site-defaults.cfg that assumeyes=1 is important [RHBZ#1225004]
+- sync comments in site-defaults.cfg with code [RHBZ#1224961]
+- check for dangling link of /etc/mtab [RHBZ#1224732]
+- Fix --install filename completion
+
 * Wed May 13 2015 Miroslav Suchý <msuchy@redhat.com> - 1.2.9-1
 - scm: do not keep copy of environ, this is now handled by uidmanager [RHBZ#1204395]
 - Add pm_request plugin
