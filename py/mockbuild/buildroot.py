@@ -146,6 +146,9 @@ class Buildroot(object):
             self._make_build_user()
             self._setup_build_dirs()
         elif prebuild:
+            if 'age_check' in self.config['plugin_conf']['root_cache_opts'] and \
+                not self.config['plugin_conf']['root_cache_opts']['age_check']:
+                self._init_pkg_management()
             # Recreates build user to ensure the uid/gid are up to date with config
             # and there's no garbage left by previous build
             self._make_build_user()
