@@ -77,7 +77,7 @@ Requires: dnf
 Requires: dnf-plugins-core
 Requires: btrfs-progs
 %endif
-%if 0%{?rhel} >= 0
+%if 0%{?rhel} >= 7
 Requires: btrfs-progs
 %endif
 
