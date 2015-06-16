@@ -324,6 +324,10 @@ def main(args):
                     r = requests.get(url)
                     if r.status_code == requests.codes.ok:
                         fn = urlsplit(r.url).path.rsplit('/', 1)[1]
+                        if 'content-disposition' in r.headers:
+                            header_cd = r.headers['content-disposition'].split('filename=')
+                            if len(header_cd) > 1:
+                                fn = header_cd[1]
                         pkg = download_dir + '/' + fn
                         fd = open(pkg, 'wb')
                         for chunk in r.iter_content(4096):
