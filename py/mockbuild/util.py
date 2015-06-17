@@ -68,7 +68,6 @@ PLUGIN_LIST = ['tmpfs', 'root_cache', 'yum_cache', 'bind_mount',
                'ccache', 'selinux', 'package_state', 'chroot_scan',
                'lvm_root', 'compress_logs', 'sign', 'pm_request']
 
-# This is set to False on EL6 in build time
 USE_NSPAWN = False
 
 # classes
@@ -629,6 +628,7 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
     config_opts['root_log_fmt_name']  = "detailed"
     config_opts['state_log_fmt_name'] = "state"
     config_opts['online'] = True
+    config_opts['use_nspawn'] = False
 
     config_opts['internal_dev_setup'] = True
     config_opts['internal_setarch'] = True
@@ -875,6 +875,12 @@ def set_config_opts_per_cmdline(config_opts, options, args):
             pass
         config_opts['plugin_conf'][p + "_opts"].update({k: v})
 
+    global USE_NSPAWN
+    USE_NSPAWN = config_opts['use_nspawn']
+    if options.old_chroot:
+        USE_NSPAWN = False
+    if options.new_chroot:
+        USE_NSPAWN = True
 
     if options.mode in ("rebuild",) and len(args) > 1 and not options.resultdir:
         raise exception.BadCmdline(

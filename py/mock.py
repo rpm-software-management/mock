@@ -341,10 +341,6 @@ def command_parse():
         options.spec = os.path.expanduser(options.spec)
     if options.sources:
         options.sources = os.path.expanduser(options.sources)
-    if options.old_chroot:
-        util.USE_NSPAWN = False
-    if options.new_chroot:
-        util.USE_NSPAWN = True
 
     return (options, args)
 
