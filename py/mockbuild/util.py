@@ -25,6 +25,8 @@ import grp
 import locale
 import logging
 import uuid
+import termios
+import struct
 from glob import glob
 from ast import literal_eval
 from textwrap import dedent
@@ -411,6 +413,15 @@ def selinuxEnabled():
         pass
     return False
 
+def resize_pty(pty):
+    try:
+        winsize = struct.pack('HHHH', 0, 0, 0, 0)
+        winsize = fcntl.ioctl(sys.stdout.fileno(), termios.TIOCGWINSZ, winsize)
+        fcntl.ioctl(pty, termios.TIOCSWINSZ, winsize)
+    except IOError:
+        # Nice to have, but not necessary
+        pass
+
 # logger =
 # output = [1|0]
 # chrootPath
@@ -428,6 +439,7 @@ def do(command, shell=False, chrootPath=None, cwd=None, timeout=0, raiseExc=True
     start = time.time()
     if pty:
         master_pty, slave_pty = os.openpty()
+        resize_pty(slave_pty)
         reader = os.fdopen(master_pty, 'rb')
     preexec = ChildPreExec(personality, chrootPath, cwd, uid, gid, unshare_ipc=bool(chrootPath))
     if env is None:
