@@ -705,6 +705,10 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
             'package_state_opts' : {},
             'pm_request_enable': False,
             'pm_request_opts': {},
+            'lvm_root_enable': False,
+            'lvm_root_opts': {
+                'pool_name': 'mockbuild',
+            },
             'chroot_scan_enable': False,
             'chroot_scan_opts': {
                 'regexes' : [
