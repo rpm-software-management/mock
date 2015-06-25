@@ -107,7 +107,6 @@ class Commands(object):
                 getLog().warn("parts of chroot do not exist: %s" % e)
                 raise
         finally:
-            print("finishing: %s" % statestr)
             self.state.finish(statestr)
 
     @traceLog()
