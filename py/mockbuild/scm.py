@@ -3,13 +3,14 @@
 # Written by Marko Myllynen
 # Copyright (C) 2010 Marko Myllynen <myllynen@redhat.com>
 
-import subprocess
-import tempfile
-import shutil
-import shlex
-import sys
-import pwd
 import os
+import pwd
+import shlex
+import shutil
+import six
+import subprocess
+import sys
+import tempfile
 
 from .trace_decorator import traceLog
 from . import util
@@ -151,7 +152,10 @@ class scmWorker(object):
             # Always exclude vcs data from tarball unless told not to
             if str(self.exclude_vcs).lower() == "true":
                 proc = subprocess.Popen(['tar', '--help'], shell=False, stdout=subprocess.PIPE)
-                if "--exclude-vcs" in proc.communicate()[0]:
+                proc_result = proc.communicate()[0]
+                if six.PY3:
+                    proc_result = proc_result.decode()
+                if "--exclude-vcs" in proc_result:
                     taropts = "--exclude-vcs"
 
             self.log.debug("Writing " + self.src_dir + "/" + tarball + "...")
