@@ -1,10 +1,3 @@
-# next four lines substituted by autoconf
-%global major @RELEASE_MAJOR@
-%global minor @RELEASE_MINOR@
-%global sub @RELEASE_SUBLEVEL@
-%global extralevel @RELEASE_RPM_EXTRALEVEL@
-%global release_version %{major}.%{minor}.%{sub}%{extralevel}
-
 %{!?python_sitelib: %global python_sitelib %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib()")}
 
 %if 0%{?fedora} > 21
@@ -26,10 +19,10 @@
 
 Summary: Builds packages inside chroots
 Name: mock
-Version: %{release_version}
+Version: 1.2.17
 Release: 1%{?dist}
 License: GPLv2+
-Source: https://fedorahosted.org/releases/m/o/mock/%{name}-%{version}.tar.xz
+Source: https://fedorahosted.org/releases/m/o/mock/%{name}-%{version}.tar.gz
 URL: https://fedoraproject.org/wiki/Mock
 BuildArch: noarch
 %if 0%{?fedora} > 21
@@ -86,7 +79,7 @@ Recommends: btrfs-progs
 %if 0%{?rhel} >= 7
 Requires: btrfs-progs
 %endif
-
+BuildRequires: perl
 
 %description
 Mock takes an SRPM and builds it in a chroot.
@@ -117,51 +110,77 @@ of the buildroot.
 sed -i "s|^USE_NSPAWN = True|USE_NSPAWN = False|" py/mockbuild/util.py
 %endif
 %if %{use_python3}
-sed -i 's/AM_PATH_PYTHON/AM_PATH_PYTHON([3])/' configure.ac
 for file in py/mock.py py/mockchain.py; do
   sed -i 1"s|#!/usr/bin/python |#!/usr/bin/python3 |" $file
 done
 %endif
 
 %build
-autoreconf -vif
-%configure
-make
+for i in py/mock.py py/mockchain.py; do
+    perl -p -i -e 's|^__VERSION__\s*=.*|__VERSION__="%{version}"|' $i
+    perl -p -i -e 's|^SYSCONFDIR\s*=.*|SYSCONFDIR="%{_sysconfdir}"|' $i
+    perl -p -i -e 's|^PYTHONDIR\s*=.*|PYTHONDIR="%{python_sitelib}"|' $i
+    perl -p -i -e 's|^PKGPYTHONDIR\s*=.*|PKGPYTHONDIR="%{python_sitelib}/mockbuild"|' $i
+done
+for i in docs/mockchain.1 docs/mock.1; do
+    perl -p -i -e 's|@VERSION@|%{version}"|' $i
+done
 
 %install
-rm -rf $RPM_BUILD_ROOT
-make DESTDIR=$RPM_BUILD_ROOT install
-mkdir -p $RPM_BUILD_ROOT/var/lib/mock
-mkdir -p $RPM_BUILD_ROOT/var/cache/mock
-ln -s consolehelper $RPM_BUILD_ROOT/usr/bin/mock
+install -d %{buildroot}%{_bindir}
+install py/mockchain.py %{buildroot}%{_bindir}/mockchain
+install py/mock.py %{buildroot}%{_sbindir}/mock
 
+install -d %{buildroot}%{_sysconfdir}/pam.d
+cp -a etc/pam/* %{buildroot}%{_sysconfdir}/pam.d/
+
+install -d %{buildroot}%{_sysconfdir}/mock
+cp -a etc/mock/* %{buildroot}%{_sysconfdir}/mock/
+
+install -d %{buildroot}%{_datadir}/bash-completion/completions/
+cp -a etc/bash_completion.d/* %{buildroot}%{_datadir}/bash-completion/completions/
+ln -s mock %{buildroot}%{_datadir}/bash-completion/completions/mockchain
+
+install -d %{buildroot}%{_sysconfdir}/pki/mock
+cp -a etc/pki/* %{buildroot}%{_sysconfdir}/pki/mock/
+
+install -d %{buildroot}%{python_sitelib}/
+cp -a py/mockbuild %{buildroot}%{python_sitelib}/
+
+install -d %{buildroot}%{_mandir}/man1
+cp -a docs/mockchain.1 docs/mock.1 %{buildroot}%{_mandir}/man1/
+
+install -d %{buildroot}/var/lib/mock
+install -d %{buildroot}/var/cache/mock
+ln -s consolehelper %{buildroot}/usr/bin/mock
+
+# generate files section with config - there is many of them
 echo "%defattr(0644, root, mock)" > %{name}.cfgs
-find $RPM_BUILD_ROOT%{_sysconfdir}/mock -name "*.cfg" \
-    | sed -e "s|^$RPM_BUILD_ROOT|%%config(noreplace) |" >> %{name}.cfgs
-
+find %{buildroot}%{_sysconfdir}/mock -name "*.cfg" \
+    | sed -e "s|^%{buildroot}|%%config(noreplace) |" >> %{name}.cfgs
 # just for %%ghosting purposes
-ln -s fedora-rawhide-x86_64.cfg $RPM_BUILD_ROOT%{_sysconfdir}/mock/default.cfg
-
-if [ -d $RPM_BUILD_ROOT%{_datadir}/bash-completion ]; then
+ln -s fedora-rawhide-x86_64.cfg %{buildroot}%{_sysconfdir}/mock/default.cfg
+# bash-completion
+if [ -d %{buildroot}%{_datadir}/bash-completion ]; then
     echo %{_datadir}/bash-completion/completions/mock >> %{name}.cfgs
     echo %{_datadir}/bash-completion/completions/mockchain >> %{name}.cfgs
-elif [ -d $RPM_BUILD_ROOT%{_sysconfdir}/bash_completion.d ]; then
+elif [ -d %{buildroot}%{_sysconfdir}/bash_completion.d ]; then
     echo %{_sysconfdir}/bash_completion.d/mock >> %{name}.cfgs
 fi
 
 %if 0%{?rhel} == 6
     # can be removed when yum-utils >= 1.1.31 lands in el6
-    echo "config_opts['plugin_conf']['package_state_enable'] = False" >> $RPM_BUILD_ROOT%{_sysconfdir}/mock/site-defaults.cfg
-    echo "config_opts['use_nspawn'] = False" >> $RPM_BUILD_ROOT%{_sysconfdir}/mock/site-defaults.cfg
+    echo "config_opts['plugin_conf']['package_state_enable'] = False" >> %{buildroot}%{_sysconfdir}/mock/site-defaults.cfg
+    echo "config_opts['use_nspawn'] = False" >> %{buildroot}%{_sysconfdir}/mock/site-defaults.cfg
 %endif
-%pre
 
+
+%pre
 # check for existence of mock group, create it if not found
 getent group mock > /dev/null || groupadd -f -g %mockgid -r mock
 exit 0
 
 %post
-
 # fix cache permissions from old installs
 chmod 2775 %{_localstatedir}/cache/%{name}
 
@@ -200,6 +219,7 @@ fi
 %{python_sitelib}/*
 %exclude %{python_sitelib}/mockbuild/scm.*
 %exclude %{python_sitelib}/mockbuild/plugins/lvm_root.*
+%exclude %{python_sitelib}/mockbuild/tests
 
 # config files
 %dir  %{_sysconfdir}/%{name}
@@ -215,7 +235,6 @@ fi
 # docs
 %{_mandir}/man1/mock.1*
 %{_mandir}/man1/mockchain.1*
-%doc ChangeLog
 
 # cache & build dirs
 %defattr(0775, root, mock, 02775)
@@ -236,7 +255,7 @@ fi
 - require generic system-release rather than fedora-release [RHBZ#1367746]
 
 * Wed Aug 17 2016 Miroslav Suchý <msuchy@redhat.com> - 1.2.20-1
-- use epel GPG keys for epel 
+- use epel GPG keys for epel
 
 * Wed Aug 10 2016 Miroslav Suchý <msuchy@redhat.com> - 1.2.19-1
 - disable tmpfs plugin for init-clean test

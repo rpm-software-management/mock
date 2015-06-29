@@ -27,71 +27,27 @@ confusing the package repository with the upstream (source) repository
 
 Release checklist overview:
 
-   1) upstream git tree: 
-      - update remote
-      - merge into work
-      - checkin
-      - tag
-      - merge work into master
-      - push
-      - upload tarballs
-   2) koji git tree: 
-      - checkin new source tarball in master
-      - checkin and push new specfile
-      - tag and build
-      - for each release: 
-      	- merge master
-	- push
-	- build
-   3) bodhi: schedule release
-
-=====================================================================
-For a mock 1.1+ release
-
-In the upstream git tree:
-
-   0) change to the local master
-      $ git checkout master
-   1) fetch git remotes and fast-forward your local master
-      $ git remote update
-      $ git merge origin/master
-   2) create a branch from master (e.g. 'prerelease') and switch to it
-      $ git checkout -b work master
-   3) merge any remote updates for specific fixes
-      $ git merge origin/devel
-   4) merge any local branch work and reolve any conflicts
-      $ git merge frooble-changes
-   5) update configure.ac with new version info (don't commit yet)
-   6) update the %changelog section of mock.spec.in (still don't commit)
-   7) run 'autogen.sh' to update autoconf files
-   8) run 'configure' to generate Makefile and mock.spec
-   9) run 'make rpm' to generate binary RPM and propagate version
-      changes (Note this also generates a tar file for use later).
-  10) verify that tests/testenvironment uses a supported config file
-      (e.g. released fedora minus one). If not, edit and commit
-  11) run 'make check' and fix any reported failures until it passes
-      $ sh autogen.sh && ./configure && make rpm && make check
-  12) check in any changes required to fix test failures (still don't
-      commit configure.ac and mock.spec.in)
-  13) remove ChangeLog and AUTHORS
-  14) run 'make dist' to generate ChangeLog and AUTHORS files and
-      regenerate tar file
-  15) commit configure.ac and mock.spec.in with a version bump
-      message: 
-     $ git commit -m 'version bump' configure.ac
-  16) tag the git tree:
-     $ git tag -u <your key> mock-<version>
-  17) checkout master and merge your work directory:
-      $ git checkout master
-      $ git merge work
-  18) push to main git repo (only from master branch):
-     $ git push origin master
-     $ git push origin tag mock-<version>
-  19) copy tarball to fedorahosted:
-     $ scp mock-<version>.tar.xz fedorahosted.org:/srv/web/releases/m/o/mock/
-  20) merge changes back to devel branch
-     $ git checkout devel
-     $ git merge origin/master
+0) change to the local master
+   $ git checkout master
+1) fetch git remotes and fast-forward your local master
+   $ git pull --rebase master
+2) merge any remote updates for specific fixes
+   $ git merge origin/devel
+3) install snapshot version
+   $ tito build --rpm -i
+4) run 'make check' and fix any reported failures until it passes
+   $ make check
+5) tag the git tree:
+   $ tito tag
+6) push to main git repo (only from master branch):
+   $ git push
+   $ git push --tags
+7) copy tarball to fedorahosted:
+   $ tito build --tgz
+   $ scp mock-<version>.tar.gz fedorahosted.org:/srv/web/releases/m/o/mock/
+8) merge changes back to devel branch
+   $ git checkout devel
+   $ git merge origin/master
 
 
 In the fedora git (koji) tree
