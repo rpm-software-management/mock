@@ -158,14 +158,14 @@ class scmWorker(object):
                     taropts = "--exclude-vcs"
 
             self.log.debug("Writing " + self.src_dir + "/" + tarball + "...")
-            dir = os.getcwd()
+            cwd_dir = os.getcwd()
             os.chdir(self.wrk_dir)
             os.rename(self.name, tardir)
             cmd = "tar caf " + tarball + " " + taropts + " " + tardir
             util.do(shlex.split(cmd), shell=False, cwd=self.wrk_dir, env=os.environ)
             os.rename(tarball, tardir + "/" + tarball)
             os.rename(tardir, self.name)
-            os.chdir(dir)
+            os.chdir(cwd_dir)
 
         # Get possible external sources from an external sources directory
         for f in self.sources:
