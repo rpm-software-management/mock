@@ -4,7 +4,6 @@
 # Copyright (C) 2010 Marko Myllynen <myllynen@redhat.com>
 
 import os
-import pwd
 import shlex
 import shutil
 import six
