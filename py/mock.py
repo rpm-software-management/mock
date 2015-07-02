@@ -655,6 +655,11 @@ def run_command(options, args, config_opts, commands, buildroot, state):
     #TODO separate this
     # Fetch and prepare sources from SCM
     if config_opts['scm']:
+        try:
+            import mockbuild.scm
+        except ImportError as e:
+            raise mockbuild.exception.BadCmdline(
+                "Mock SCM module not installed: %s" % e)
         scmWorker = mockbuild.scm.scmWorker(log, config_opts['scm_opts'], config_opts['macros'])
         buildroot.uid_manager.dropPrivsTemp()
         scmWorker.get_sources()
