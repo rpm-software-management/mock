@@ -191,13 +191,13 @@ def command_parse():
                       default=True,
                       help="activate 'offline' mode.")
 
-    parser.add_option("-n", "--no-clean", action ="store_false", dest="clean",
+    parser.add_option("-n", "--no-clean", action="store_false", dest="clean",
                       help="do not clean chroot before building", default=True)
-    parser.add_option("--cleanup-after", action ="store_true",
+    parser.add_option("--cleanup-after", action="store_true",
                       dest="cleanup_after", default=None,
                       help="Clean chroot after building. Use with --resultdir."
                            " Only active for 'rebuild'.")
-    parser.add_option("--no-cleanup-after", action ="store_false",
+    parser.add_option("--no-cleanup-after", action="store_false",
                       dest="cleanup_after", default=None,
                       help="Dont clean chroot after building. If automatic"
                            " cleanup is enabled, use this to disable.", )
@@ -205,11 +205,11 @@ def command_parse():
                       dest="cache_alterations", default=False,
                       help="Rebuild the root cache after making alterations to the chroot"
                            " (i.e. --install). Only useful when using tmpfs plugin.")
-    parser.add_option("--nocheck", action ="store_false", dest="check",
+    parser.add_option("--nocheck", action="store_false", dest="check",
                       default=True, help="pass --nocheck to rpmbuild to skip 'make check' tests")
-    parser.add_option("--arch", action ="store", dest="arch",
+    parser.add_option("--arch", action="store", dest="arch",
                       default=None, help="Sets kernel personality().")
-    parser.add_option("--target", action ="store", dest="rpmbuild_arch",
+    parser.add_option("--target", action="store", dest="rpmbuild_arch",
                       default=None, help="passed to rpmbuild as --target")
     parser.add_option("-D", "--define", action="append", dest="rpmmacros",
                       default=[], type="string", metavar="'MACRO EXPR'",
