@@ -75,7 +75,7 @@ class Buildroot(object):
     @traceLog()
     def initialize(self, prebuild=False, do_log=True):
         """
-        Initialize the builroot to a point where it's possible to execute
+        Initialize the buildroot to a point where it's possible to execute
         commands in chroot. If it was already initialized, just lock the shared
         lock.
         """
