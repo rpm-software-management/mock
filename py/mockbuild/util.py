@@ -703,7 +703,7 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
             'chroot_scan_enable': False,
             'chroot_scan_opts': {
                 'regexes' : [
-                    "\\bcore(\\.\\d+)?$", "\\.log$",
+                    "^[^k]?core(\\.\\d+)?$", "\\.log$",
                 ],
                 'only_failed': True},
             'sign_enable': False,
