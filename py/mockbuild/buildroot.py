@@ -229,7 +229,8 @@ class Buildroot(object):
                 'user': self.chrootuser, 'group': self.chrootgroup, 'home': self.homedir}
 
         excluded = [self.make_chroot_path(self.homedir, path)
-                    for path in self.config['exclude_from_homedir_cleanup']]
+                    for path in self.config['exclude_from_homedir_cleanup']] + \
+                    self.mounts.get_mountpoints()
         util.rmtree(self.make_chroot_path(self.homedir),
                     selinux=self.selinux, exclude=excluded)
 
