@@ -5,7 +5,7 @@ import shutil
 from textwrap import dedent
 
 from . import util
-from .exception import BuildError, Error
+from .exception import BuildError, Error, YumError
 from .trace_decorator import traceLog
 
 def PackageManager(config_opts, chroot, plugins):
@@ -68,7 +68,10 @@ class _PackageManager(object):
         else:
             kwargs['pty'] = kwargs.get('pty', True)
         self.buildroot._nuke_rpm_db()
-        out = util.do(invocation, env=env, **kwargs)
+        try:
+            out = util.do(invocation, env=env, **kwargs)
+        except Error, e:
+            raise YumError, str(e)
         self.plugins.call_hooks("postyum")
         return out
 
