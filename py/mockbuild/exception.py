@@ -37,7 +37,6 @@ class Error(Exception):
 # 80 = unshare of namespace failed
 # 85 = setting namespace failed
 # 90 = attempted to use an uninitialized chroot
-# 100 = attempt to run a root shell and root shells disallowed
 
 class BuildError(Error):
     "rpmbuild failed."
@@ -137,14 +136,6 @@ class ChrootNotInitialized(Error):
         Error.__init__(self, msg)
         self.msg = msg
         self.resultcode = 90
-
-class NoRootShells(Error):
-    "attempt to run an interactive root shell on secured system"
-    
-    def __init__(self, msg):
-        Error.__init__(self, msg)
-        self.msg = msg
-        self.resultcode = 100
 
 class StateError(Error):
     "unbalanced call to state functions"
