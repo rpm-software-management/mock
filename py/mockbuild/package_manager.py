@@ -70,8 +70,8 @@ class _PackageManager(object):
         self.buildroot._nuke_rpm_db()
         try:
             out = util.do(invocation, env=env, **kwargs)
-        except Error, e:
-            raise YumError, str(e)
+        except Error as e:
+            raise YumError(str(e))
         self.plugins.call_hooks("postyum")
         return out
 
