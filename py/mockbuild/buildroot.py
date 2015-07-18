@@ -105,8 +105,6 @@ class Buildroot(object):
 
     @traceLog()
     def _init(self, prebuild, do_log):
-        # If previous run didn't finish properly
-        self._umount_residual()
 
         self.state.start("chroot init")
         util.mkdirIfAbsent(self.basedir)
@@ -520,7 +518,7 @@ class Buildroot(object):
                             shutil.rmtree(d)
                 self._lock_buildroot(exclusive=True)
                 util.orphansKill(self.make_chroot_path())
-                self._umount_all()
+                self.mounts.umountall()
                 self.plugins.call_hooks('postumount')
             except BuildRootLocked:
                 pass
@@ -536,7 +534,7 @@ class Buildroot(object):
             p = self.make_chroot_path()
             self._lock_buildroot(exclusive=True)
             util.orphansKill(p)
-            self._umount_all()
+            self.mounts.umountall()
             self.plugins.call_hooks('umount_root')
             self._unlock_buildroot()
             subv = util.find_btrfs_in_chroot(self.mockdir, p)
@@ -545,50 +543,3 @@ class Buildroot(object):
             util.rmtree(self.basedir, selinux=self.selinux)
         self.chroot_was_initialized = False
         self.plugins.call_hooks('postclean')
-
-    @traceLog()
-    def _umount_all(self):
-        """umount all mounted chroot fs."""
-
-        # first try removing all expected mountpoints.
-        self.mounts.umountall()
-
-        # then remove anything that might be left around.
-        self._umount_residual()
-
-    @traceLog()
-    def _mount_is_ours(self, mountpoint):
-        mountpoint = os.path.realpath(mountpoint)
-        our_dir = os.path.realpath(self.make_chroot_path())
-        assert our_dir
-        if mountpoint.startswith(our_dir + '/'):
-            return True
-        return False
-
-
-    @traceLog()
-    def _umount_residual(self):
-        def force_umount(mountpoint):
-            cmd = "umount -n -l %s" % mountpoint
-            self.root_log.warning("Forcibly unmounting '%s' from chroot." % mountpoint)
-            util.do(cmd, raiseExc=0, shell=True, env=self.env)
-
-        def get_our_mounts():
-            mountpoints = open("/proc/mounts").read().strip().split("\n")
-            our_mounts = []
-            # umount in reverse mount order to prevent nested mount issues that
-            # may prevent clean unmount.
-            for mountline in reversed(mountpoints):
-                mountpoint = mountline.split()[1]
-                if self._mount_is_ours(mountpoint):
-                    our_mounts.append(mountpoint)
-            return our_mounts
-
-        prev_mounts = []
-        while True:
-            current_mounts = get_our_mounts()
-            if current_mounts == prev_mounts:
-                return
-            for mount in current_mounts:
-                force_umount(mount)
-            prev_mounts = current_mounts
