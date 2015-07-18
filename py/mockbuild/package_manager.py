@@ -1,3 +1,4 @@
+import sys
 import glob
 import os.path
 import shutil
@@ -23,6 +24,7 @@ class _PackageManager(object):
     name = None
     command = None
     builddep_command = None
+    resolvedep_command = None
 
     @traceLog()
     def __init__(self, config, buildroot, plugins):
@@ -33,10 +35,18 @@ class _PackageManager(object):
     @traceLog()
     def build_invocation(self, *args):
         invocation = []
+        common_opts = []
         if args[0] == 'builddep':
             args = args[1:]
             invocation += self.builddep_command
             common_opts = self.config[self.name + '_builddep_opts']
+        elif args[0] == 'resolvedep':
+            if self.resolvedep_command:
+                args = args[1:]
+                invocation = self.resolvedep_command
+            else:
+                invocation = [self.command]
+                common_opts = self.config[self.name + '_common_opts']
         else:
             invocation = [self.command]
             common_opts = self.config[self.name + '_common_opts']
@@ -70,8 +80,9 @@ class _PackageManager(object):
         self.buildroot._nuke_rpm_db()
         try:
             out = util.do(invocation, env=env, **kwargs)
-        except Error, e:
-            raise YumError, str(e)
+        except Error:
+            raise YumError(str(sys.exc_info()[1]))
+
         self.plugins.call_hooks("postyum")
         return out
 
@@ -136,6 +147,8 @@ class Yum(_PackageManager):
         self.command = config['yum_command']
         self.builddep_command = [config['yum_builddep_command']]
         self._check_command()
+        if os.path.exists('/usr/bin/yum-deprecated'):
+            self.resolvedep_command = ['repoquery', '--resolve', '--requires' ]
 
     @traceLog()
     def _write_plugin_conf(self, name):
@@ -211,6 +224,7 @@ class Dnf(_PackageManager):
         self.command = config['dnf_command']
         self.builddep_command = [self.command, 'builddep']
         self._check_command()
+        self.resolvedep_command = ['repoquery', '--resolve', '--requires' ]
 
     @traceLog()
     def build_invocation(self, *args):
