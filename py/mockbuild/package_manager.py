@@ -36,11 +36,12 @@ class _PackageManager(object):
     def build_invocation(self, *args):
         invocation = []
         common_opts = []
-        if args[0] == 'builddep':
+        cmd = args[0]
+        if cmd == 'builddep':
             args = args[1:]
             invocation += self.builddep_command
             common_opts = self.config[self.name + '_builddep_opts']
-        elif args[0] == 'resolvedep':
+        elif cmd == 'resolvedep':
             if self.resolvedep_command:
                 args = args[1:]
                 invocation = self.resolvedep_command
@@ -51,6 +52,8 @@ class _PackageManager(object):
             invocation = [self.command]
             common_opts = self.config[self.name + '_common_opts']
         invocation += ['--installroot', self.buildroot.make_chroot_path('')]
+        if cmd == 'upgrade' or cmd == 'update':
+            invocation += ['-y']
         releasever = self.config['releasever']
         if releasever:
             invocation += ['--releasever', releasever]
