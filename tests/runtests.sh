@@ -31,18 +31,21 @@ trap '$MOCKCMD --clean; exit 1' INT HUP QUIT TERM
 #
 # pre-populate yum cache for the rest of the commands below
 #
-header "pre-populating the cache (DNF)"
-runcmd "$MOCKCMD --init --dnf"
-header "clean up"
-runcmd "$MOCKCMD --offline --clean"
 
-header "pre-populating the cache (YUM)"
-runcmd "$MOCKCMD --init"
-header "installing dependencies for $MOCKSRPM"
-runcmd "$MOCKCMD --installdeps $MOCKSRPM"
-if [ ! -e $CHROOT/usr/include/python* ]; then
-    echo "installdeps test FAILED. could not find /usr/include/python*"
-    exit 1
+if [ -e /usr/bin/dnf ]; then
+    header "pre-populating the cache (DNF)"
+    runcmd "$MOCKCMD --init --dnf"
+    header "clean up"
+    runcmd "$MOCKCMD --offline --clean"
+else
+    header "pre-populating the cache (YUM)"
+    runcmd "$MOCKCMD --init"
+    header "installing dependencies for $MOCKSRPM"
+    runcmd "$MOCKCMD --installdeps $MOCKSRPM"
+    if [ ! -e $CHROOT/usr/include/python* ]; then
+	echo "installdeps test FAILED. could not find /usr/include/python*"
+	exit 1
+    fi
 fi
 
 header "running regression tests"
