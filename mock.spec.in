@@ -33,7 +33,7 @@ Source: https://git.fedorahosted.org/cgit/mock.git/snapshot/%{name}-%{version}.t
 URL: http://fedoraproject.org/wiki/Projects/Mock
 BuildArch: noarch
 %if 0%{?fedora} > 21
-Requires: yum >= yum-3.4.3
+Requires: yum >= 3.4.3-505
 %else
 Requires: yum >= 2.4
 %endif
