@@ -33,7 +33,7 @@ Source: https://git.fedorahosted.org/cgit/mock.git/snapshot/%{name}-%{version}.t
 URL: http://fedoraproject.org/wiki/Projects/Mock
 BuildArch: noarch
 %if 0%{?fedora} > 21
-Requires: yum >= yum-3.4.3
+Requires: yum >= 3.4.3-505
 %else
 Requires: yum >= 2.4
 %endif
@@ -227,6 +227,15 @@ fi
 * Tue Jul 14 2015 clark Williams <williams@redhat.com> - 1.2.12-1
 - from Dennis Gilmore <dennis@ausil.us>:
   - setup support so loopback devices can work [RHBZ#1245401]
+- from Miroslav Suchý <msuchy@redhat.com>:
+  - clarify path [RHBZ#1228751]
+  - document target_arch and legal_host_arches in site-defaults.cfg [RHBZ#1228751]
+  - document "yum.conf" in site-defaults.cfg [RHBZ#1228751]
+  - correctly specify requires of yum [RHBZ#1244475]
+  - bump up releasever in rawhide targets
+  - remove EOLed gpg keys
+  - add f23 configs
+  - removing EOLed f19 and f20 configs
 
 * Tue Jul 14 2015 clark Williams <williams@redhat.com> - 1.2.11-1
 - dropped code that does stray mount cleanup of chroot [RHBZ#1208092]
