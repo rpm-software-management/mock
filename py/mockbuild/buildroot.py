@@ -422,6 +422,12 @@ class Buildroot(object):
                 (stat.S_IFCHR | 0o666, os.makedev(5, 0), "dev/tty"),
                 (stat.S_IFCHR | 0o600, os.makedev(5, 1), "dev/console"),
                 (stat.S_IFCHR | 0o666, os.makedev(5, 2), "dev/ptmx"),
+                (stat.S_IFCHR | 0o666, os.makedev(10, 237), "dev/loop-control"),
+                (stat.S_IFBLK | 0o666, os.makedev(7, 0), "dev/loop0"),
+                (stat.S_IFBLK | 0o666, os.makedev(7, 1), "dev/loop1"),
+                (stat.S_IFBLK | 0o666, os.makedev(7, 2), "dev/loop2"),
+                (stat.S_IFBLK | 0o666, os.makedev(7, 3), "dev/loop3"),
+                (stat.S_IFBLK | 0o666, os.makedev(7, 4), "dev/loop4"),
                 ]
             kver = os.uname()[2]
             self.root_log.debug("kernel version == {0}".format(kver))
