@@ -224,6 +224,19 @@ fi
 %{python_sitelib}/mockbuild/plugins/lvm_root.*
 
 %changelog
+* Tue Jul 14 2015 clark Williams <williams@redhat.com> - 1.2.12-1
+- from Dennis Gilmore <dennis@ausil.us>:
+  - setup support so loopback devices can work [RHBZ#1245401]
+- from Miroslav Suchý <msuchy@redhat.com>:
+  - clarify path [RHBZ#1228751]
+  - document target_arch and legal_host_arches in site-defaults.cfg [RHBZ#1228751]
+  - document "yum.conf" in site-defaults.cfg [RHBZ#1228751]
+  - correctly specify requires of yum [RHBZ#1244475]
+  - bump up releasever in rawhide targets
+  - remove EOLed gpg keys
+  - add f23 configs
+  - removing EOLed f19 and f20 configs
+
 * Tue Jul 14 2015 clark Williams <williams@redhat.com> - 1.2.11-1
 - dropped code that does stray mount cleanup of chroot [RHBZ#1208092]
 - modified package_manager resolvedep cmd to use repoquery when dnf is installed
