@@ -420,7 +420,8 @@ def selinuxEnabled():
 @traceLog()
 def do(command, shell=False, chrootPath=None, cwd=None, timeout=0, raiseExc=True,
        returnOutput=0, uid=None, gid=None, user=None, personality=None,
-       printOutput=False, env=None, pty=False, *args, **kargs):
+       printOutput=False, env=None, pty=False, private_network=False,
+       *args, **kargs):
 
     logger = kargs.get("logger", getLog())
     output = ""
@@ -437,7 +438,7 @@ def do(command, shell=False, chrootPath=None, cwd=None, timeout=0, raiseExc=True
             command = ['/bin/sh', '-c'] + command
             shell = False
         if chrootPath and USE_NSPAWN:
-            command = _prepare_nspawn_command(chrootPath, user, command)
+            command = _prepare_nspawn_command(chrootPath, user, command, private_network=private_network)
         logger.debug("Executing command: {0} with env {1} and shell {2}".format(command, env, shell))
         child = subprocess.Popen(
             command,
@@ -531,7 +532,7 @@ def is_in_dir(path, directory):
 
     return os.path.commonprefix([path, directory]) == directory
 
-def _prepare_nspawn_command(chrootPath, user, cmd):
+def _prepare_nspawn_command(chrootPath, user, cmd, private_network=False):
     cmd_is_list = isinstance(cmd, list)
     if user:
         # needs to be /bin because of el5 and el6 targets
@@ -541,7 +542,10 @@ def _prepare_nspawn_command(chrootPath, user, cmd):
             cmd = ['/bin/su', '-l', user, '-c', '"{0}"'.format(cmd)]
     elif not cmd_is_list:
         cmd = [ cmd, ]
-    cmd = ['/usr/bin/systemd-nspawn', '-M' , uuid.uuid4().hex, '-D', chrootPath] + cmd
+    nspawn_argv = ['/usr/bin/systemd-nspawn', '-M' , uuid.uuid4().hex, '-D', chrootPath]
+    if private_network:
+        nspawn_argv.append('--private-network')
+    cmd = nspawn_argv + cmd
     if cmd_is_list:
         return cmd
     else:
@@ -629,6 +633,7 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
     config_opts['state_log_fmt_name'] = "state"
     config_opts['online'] = True
     config_opts['use_nspawn'] = False
+    config_opts['rpmbuild_networking'] = False
 
     config_opts['internal_dev_setup'] = True
     config_opts['internal_setarch'] = True
