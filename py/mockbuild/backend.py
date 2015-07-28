@@ -193,14 +193,14 @@ class Commands(object):
 
         buildstate = "build phase for %s" % baserpm
         self.state.start(buildstate)
+        # remove rpm db files to prevent version mismatch problems
+        # note: moved to do this before the user change below!
+        self.buildroot._nuke_rpm_db()
+        dropped_privs = False
         try:
-            # remove rpm db files to prevent version mismatch problems
-            # note: moved to do this before the user change below!
-            self.buildroot._nuke_rpm_db()
-
             if not util.USE_NSPAWN:
-                # drop privs and become mock user
                 self.uid_manager.becomeUser(self.buildroot.chrootuid, self.buildroot.chrootgid)
+                dropped_privs = True
             buildsetup = "build setup for %s" % baserpm
             self.state.start(buildsetup)
 
@@ -222,6 +222,12 @@ class Commands(object):
             self.plugins.call_hooks('prebuild')
 
             results = self.rebuild_package(spec_path, timeout, check)
+            # In the nspawn case, we retained root until here, but we
+            # need to ensure our output files are owned by the caller's uid.
+            # So drop them now.
+            if not dropped_privs:
+                self.uid_manager.becomeUser(self.buildroot.chrootuid, self.buildroot.chrootgid)
+                dropped_privs = True
             if results:
                 self.build_results.extend(self.copy_build_results(results))
             elif self.config.get('short_circuit'):
@@ -233,7 +239,7 @@ class Commands(object):
             self.state.finish(rpmbuildstate)
 
         finally:
-            if not util.USE_NSPAWN:
+            if dropped_privs:
                 self.uid_manager.restorePrivs()
             if self.state.result != 'success':
                 self.state.result = 'fail'
