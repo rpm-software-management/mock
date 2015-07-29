@@ -4,7 +4,8 @@ A note on mock versions:
 
   There are now two main branches to be aware of:
   	- mock-1.0 (pre-F13 and EPEL5)
-	- mock-1.1+ (F-13+ and EPEL6+)
+	- master (for releasing F-13+ and EPEL6+)
+    - devel (for development of future versions)
   In the upstream git tree, mock-1.0 is tracked on the branch origin/mock-1.0,
   while mock-1.1+ is in the master branch. Please be careful when
   updating the various distro to use the correct branch and version
@@ -57,7 +58,7 @@ In the upstream git tree:
    2) create a branch from master (e.g. 'prerelease') and switch to it
       $ git checkout -b work master
    3) merge any remote updates for specific fixes
-      $ git merge jkeating/updates-for-clark
+      $ git merge origin/devel
    4) merge any local branch work and reolve any conflicts
       $ git merge frooble-changes
    5) update configure.ac with new version info (don't commit yet)
@@ -88,6 +89,9 @@ In the upstream git tree:
      $ git push origin tag mock-<version>
   19) copy tarball to fedorahosted:
      $ scp mock-<version>.tar.gz fedorahosted.org:mock
+  20) merge changes back to devel branch
+     $ git checkout devel
+     $ git merge origin/master
 
 
 In the fedora git (koji) tree
