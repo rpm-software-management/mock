@@ -750,13 +750,14 @@ def run_command(options, args, config_opts, commands, buildroot, state):
                 sys.exit(50)
             log.info("copying %s to %s" % (src, dest))
             if os.path.isdir(src):
-                if os.path.exists(dest):
+                dest2 = dest
+                if os.path.exists(dest2):
                     path_suffix = os.path.split(src)[1]
-                    dest = os.path.join(dest, path_suffix)
-                    if os.path.exists(dest):
-                        log.critical("Destination %{0} already exist!".format(dest))
+                    dest2 = os.path.join(dest2, path_suffix)
+                    if os.path.exists(dest2):
+                        log.critical("Destination %{0} already exist!".format(dest2))
                         sys.exit(50)
-                shutil.copytree(src, dest)
+                shutil.copytree(src, dest2)
             else:
                 shutil.copy(src, dest)
         buildroot.chown_home_dir()
