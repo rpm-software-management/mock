@@ -72,7 +72,7 @@ _mock()
             ;;
         --scrub)
             COMPREPLY=( $( compgen -W "all chroot cache root-cache c-cache
-                yum-cache lvm" -- "$cur" ) )
+                yum-cache dnf-cache lvm" -- "$cur" ) )
             return 0
             ;;
         -i|--install|install)

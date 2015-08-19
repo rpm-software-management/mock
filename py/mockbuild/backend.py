@@ -99,8 +99,8 @@ class Commands(object):
                     elif scrub == 'root-cache':
                         self.buildroot.root_log.info("scrubbing root-cache for %s" % self.config_name)
                         util.rmtree(os.path.join(self.buildroot.cachedir, 'root_cache'), selinux=self.buildroot.selinux)
-                    elif scrub == 'yum-cache':
-                        self.buildroot.root_log.info("scrubbing yum-cache for %s" % self.config_name)
+                    elif scrub == 'yum-cache' or scrub == 'dnf-cache':
+                        self.buildroot.root_log.info("scrubbing yum-cache and dnf-cache for %s" % self.config_name)
                         util.rmtree(os.path.join(self.buildroot.cachedir, 'yum_cache'), selinux=self.buildroot.selinux)
                         util.rmtree(os.path.join(self.buildroot.cachedir, 'dnf_cache'), selinux=self.buildroot.selinux)
             except IOError as e:

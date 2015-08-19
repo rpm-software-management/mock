@@ -21,7 +21,7 @@
 from __future__ import print_function
 """
     usage:
-           mock [options] {--init|--clean|--scrub=[all,chroot,cache,root-cache,c-cache,yum-cache,lvm]}
+           mock [options] {--init|--clean|--scrub=[all,chroot,cache,root-cache,c-cache,yum-cache,dnf-cache,lvm]}
            mock [options] [--rebuild] /path/to/srpm(s)
            mock [options] --buildsrpm {--spec /path/to/spec --sources /path/to/src|--scm-enable [--scm-option key=value]}
            mock [options] {--shell|--chroot} <cmd>
@@ -117,8 +117,8 @@ def command_parse():
     parser.add_option("--clean", action="store_const", const="clean",
                       dest="mode",
                       help="completely remove the specified chroot")
-    scrub_choices = ('chroot', 'cache', 'root-cache', 'c-cache', 'yum-cache', 'lvm', 'all')
-    scrub_metavar = "[all|chroot|cache|root-cache|c-cache|yum-cache]"
+    scrub_choices = ('chroot', 'cache', 'root-cache', 'c-cache', 'yum-cache', 'dnf-cache', 'lvm', 'all')
+    scrub_metavar = "[all|chroot|cache|root-cache|c-cache|yum-cache|dnf-cache]"
     parser.add_option("--scrub", action="callback", type="choice", default=[],
                       choices=scrub_choices, metavar=scrub_metavar,
                       callback=scrub_callback,
