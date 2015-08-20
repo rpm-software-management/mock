@@ -17,8 +17,7 @@ import tempfile
 import os
 
 #repoquery used
-repoquery_avail_opts = "-a --qf '%{nevra} %{buildtime} %{size} %{pkgid} %{repoid}'"
-repoquery_install_opts = "--installed -a --qf '%{nevra} %{buildtime} %{size} %{pkgid} %{yumdb_info.from_repo}'"
+repoquery_avail_opts = "--qf '%{name}-%{epoch}:%{version}-%{release}.%{arch} %{buildtime} %{size} %{pkgid} %{repoid}' '*'"
 
 # set up logging, module options
 requires_api_version = "1.1"
@@ -49,8 +48,13 @@ class PackageState(object):
             self.state.start("Outputting list of available packages")
             out_file = self.buildroot.resultdir + '/available_pkgs'
             chrootpath = self.buildroot.make_chroot_path()
-            cmd = "/usr/bin/repoquery --installroot=%s -c %s/etc/yum.conf %s > %s" % (
-                           chrootpath, chrootpath, repoquery_avail_opts, out_file)
+            if self.config['package_manager'] == 'dnf':
+                cmd = "/usr/bin/repoquery --installroot={0} -c {0}/etc/yum.conf {1} > {2}".format(
+                                           chrootpath, repoquery_avail_opts, out_file)
+            else:
+                cmd = "/usr/bin/dnf --installroot={0} repoquery -c {0}/etc/dnf.conf {1} > {2}".format(
+                            chrootpath, repoquery_avail_opts, out_file)
+            #print(cmd)
             mockbuild.util.do(cmd, shell=True, env=self.buildroot.env)
             self.avail_done = True
             self.state.finish("Outputting list of available packages")
@@ -66,8 +70,8 @@ class PackageState(object):
             fo.flush()
             fo.close()
             out_file = self.buildroot.resultdir + '/installed_pkgs'
-            cmd = "/usr/bin/repoquery --installroot=%s -c %s %s > %s" % (
-                self.buildroot.make_chroot_path(), fn, repoquery_install_opts, out_file)
+            cmd = "rpm -qa --root '%s' --qf '%%{nevra} %%{buildtime} %%{size} %%{pkgid} installed\\n' > %s" % (
+                self.buildroot.make_chroot_path(), out_file)
             self.buildroot.uid_manager.restorePrivs()
             mockbuild.util.do(cmd, shell=True, env=self.buildroot.env)
             self.buildroot.uid_manager.dropPrivsTemp()
