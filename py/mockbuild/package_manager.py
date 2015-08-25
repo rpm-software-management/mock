@@ -165,7 +165,7 @@ class Yum(_PackageManager):
         self.builddep_command = [config['yum_builddep_command']]
         self._check_command()
         if os.path.exists('/usr/bin/yum-deprecated'):
-            self.resolvedep_command = ['repoquery', '--resolve', '--requires' ]
+            self.resolvedep_command = ['repoquery', '--resolve', '--requires']
 
     @traceLog()
     def _write_plugin_conf(self, name):
@@ -241,7 +241,7 @@ class Dnf(_PackageManager):
         self.command = config['dnf_command']
         self.builddep_command = [self.command, 'builddep']
         self._check_command()
-        self.resolvedep_command = ['repoquery', '--resolve', '--requires' ]
+        self.resolvedep_command = ['repoquery', '--resolve', '--requires']
 
     @traceLog()
     def build_invocation(self, *args):
