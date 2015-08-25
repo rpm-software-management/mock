@@ -2,7 +2,9 @@ import sys
 import glob
 import os.path
 import shutil
+import platform
 
+from six.moves import input
 from textwrap import dedent
 
 from . import util
@@ -14,6 +16,20 @@ def PackageManager(config_opts, chroot, plugins):
     if pm == 'yum':
         return Yum(config_opts, chroot, plugins)
     elif pm == 'dnf':
+        (distribution, version) = platform.dist()[0:2]
+        if distribution in ['redhat', 'centos']:
+            version = float(version)
+            if version < 8:
+                if  'dnf_warning' in config_opts and config_opts['dnf_warning']:
+                    print """WARNING! WARNING! WARNING!
+You are building package for distribution which use DNF. However your system
+does not support DNF. You can continue with YUM, which will likely succeed,
+but the result may be little different.
+You can suppress this warning when you put
+  config_opts['dnf_warning'] = False
+in Mock config."""
+                    input("Press Enter to continue.")
+                return Yum(config_opts, chroot, plugins)
         return Dnf(config_opts, chroot, plugins)
     else:
         #TODO specific exception type
