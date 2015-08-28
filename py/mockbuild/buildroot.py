@@ -409,7 +409,7 @@ class Buildroot(object):
     @traceLog()
     def _setup_devices(self):
         if self.config['internal_dev_setup']:
-            util.rmtree(self.make_chroot_path("dev"), selinux=self.selinux)
+            util.rmtree(self.make_chroot_path("dev"), selinux=self.selinux, exclude=self.mounts.get_mountpoints())
             util.mkdirIfAbsent(self.make_chroot_path("dev", "pts"))
             util.mkdirIfAbsent(self.make_chroot_path("dev", "shm"))
             prevMask = os.umask(0000)
