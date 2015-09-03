@@ -800,6 +800,9 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
 
     # configurable commands executables
     config_opts['yum_command'] = '/usr/bin/yum'
+    if os.path.isfile('/usr/bin/yum-deprecated'):
+        config_opts['yum_command'] = '/usr/bin/yum-deprecated'
+
     config_opts['yum_builddep_command'] = '/usr/bin/yum-builddep'
     config_opts['dnf_command'] = '/usr/bin/dnf'
     config_opts['rpm_command'] = '/bin/rpm'
