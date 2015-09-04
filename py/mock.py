@@ -659,7 +659,7 @@ def run_command(options, args, config_opts, commands, buildroot, state):
             import mockbuild.scm
         except ImportError as e:
             raise mockbuild.exception.BadCmdline(
-                "Mock SCM module not installed: %s" % e)
+                "Mock SCM module not installed: %s. You should install package mock-scm." % e)
         scmWorker = mockbuild.scm.scmWorker(log, config_opts['scm_opts'], config_opts['macros'])
         buildroot.uid_manager.dropPrivsTemp()
         scmWorker.get_sources()
