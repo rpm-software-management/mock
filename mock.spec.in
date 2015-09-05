@@ -372,7 +372,7 @@ fi
 - run --shell as root with --new-chroot
 - Don't fail scrub when there's no pool [RHBZ#1162631]
 - Globbing and tilde expansion
-- move restoring priviledges to finally [RHBZ#1162720]
+- move restoring privileges to finally [RHBZ#1162720]
 - Remove "Buildroot must be already initialized" note
 - Add missing --print-root-path to manpage
 - Do not print ANSI escape characters into log [RHBZ#1163037]
@@ -383,7 +383,7 @@ fi
 - man page for --macro-file [RHBZ#1160326]
 - Added option [--macro-file] to support external rpm macros file [RHBZ#1160326]
 - Don't output installation/build output when redirected
-- Better log message for intial buildroot installation
+- Better log message for initial buildroot installation
 - Be more specific when installing configs
 - Install into correct sitelib when using Python 3
 - Fix nosync on aarch64
@@ -435,7 +435,7 @@ fi
   - do not list pki files twice
   - deploy etc/pki to buildroot
 - from Michael Simacek <msimacek@redhat.com>:
-  - mock: do not allow config scripts to regain root priviledges
+  - mock: do not allow config scripts to regain root privileges
 - from Igor Gnatenko <i.gnatenko.brain@gmail.com>:
   - Add F21 configs
   - Change releasever to 22 for rawhide
