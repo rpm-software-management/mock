@@ -105,7 +105,7 @@ install-exec-hook:
 install-data-hook:
 	perl -p -i -e 's|(=\s*)/etc/mock\b|$$1$(mocketcdir)|' \
 		$(DESTDIR)$(bashcompdir)/mock
-	[ ! "@HAVE_BASHCOMP2@" ] || ln -s mock $(DESTDIR)$(bashcompdir)/mockchain
+	[ ! "@HAVE_BASHCOMP2@" ] || ln -sf mock $(DESTDIR)$(bashcompdir)/mockchain
 
 TOPDIR := $(shell cd $(top_builddir);pwd)
 BUILDDIR = $(TOPDIR)/_rpmbuild
