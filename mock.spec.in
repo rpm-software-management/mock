@@ -30,7 +30,7 @@ Version: %{release_version}
 Release: 1%{?dist}
 License: GPLv2+
 Source: https://git.fedorahosted.org/cgit/mock.git/snapshot/%{name}-%{version}.tar.xz
-URL: http://fedoraproject.org/wiki/Projects/Mock
+URL: https://fedoraproject.org/wiki/Mock
 BuildArch: noarch
 %if 0%{?fedora} > 21
 Requires: yum >= 3.4.3-505
