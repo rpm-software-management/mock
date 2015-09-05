@@ -121,8 +121,6 @@ done
 autoreconf -vif
 %configure
 make
-sed -i '1,$s/@VERSION@/%{version}/' docs/mock.1
-sed -i '1,$s/@VERSION@/%{version}/' docs/mockchain.1
 
 %install
 rm -rf $RPM_BUILD_ROOT

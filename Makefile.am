@@ -103,6 +103,10 @@ install-exec-hook:
 	mv $(DESTDIR)/$(sbindir)/mockchain.py $(DESTDIR)/$(bindir)/mockchain
 
 install-data-hook:
+	perl -p -i -e 's|[@]VERSION@|$(RELEASE_VERSION)|' \
+		$(DESTDIR)$(mandir)/man1/mock.1
+	perl -p -i -e 's|[@]VERSION@|$(RELEASE_VERSION)|' \
+		$(DESTDIR)$(mandir)/man1/mockchain.1
 	perl -p -i -e 's|(=\s*)/etc/mock\b|$$1$(mocketcdir)|' \
 		$(DESTDIR)$(bashcompdir)/mock
 	[ ! "@HAVE_BASHCOMP2@" ] || ln -sf mock $(DESTDIR)$(bashcompdir)/mockchain
