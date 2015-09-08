@@ -136,4 +136,3 @@ def setresgid(rgid=-1, egid=-1, sgid=-1):
     res = _libc.setresgid(rgid, egid, sgid)
     if res:
         raise OSError(ctypes.get_errno(), os.strerror(ctypes.get_errno()))
-
