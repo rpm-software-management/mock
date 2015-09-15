@@ -554,7 +554,7 @@ def _prepare_nspawn_command(chrootPath, user, cmd, private_network=False):
             cmd = ['/bin/su', '-l', user, '-c', '"{0}"'.format(cmd)]
     elif not cmd_is_list:
         cmd = [ cmd, ]
-    nspawn_argv = ['/usr/bin/systemd-nspawn', '-M' , uuid.uuid4().hex, '-D', chrootPath]
+    nspawn_argv = ['/usr/bin/systemd-nspawn', '-q', '-M' , uuid.uuid4().hex, '-D', chrootPath]
     if private_network:
         nspawn_argv.append('--private-network')
     cmd = nspawn_argv + cmd
