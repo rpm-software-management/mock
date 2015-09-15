@@ -72,9 +72,6 @@ PLUGIN_LIST = ['tmpfs', 'root_cache', 'yum_cache', 'bind_mount',
 
 USE_NSPAWN = False
 
-# Unique machine name when systemd-nspawn used
-M_UUID = uuid.uuid4().hex
-
 # classes
 class commandTimeoutExpired(exception.Error):
     def __init__(self, msg):
@@ -173,7 +170,7 @@ def rmtree(path, selinux=False, exclude=()):
 def orphansKill(rootToKill, killsig=signal.SIGTERM):
     """kill off anything that is still chrooted."""
     getLog().debug("kill orphans")
-    if USE_NSPAWN == False:
+    if USE_NSPAWN is False:
         for fn in [ d for d in os.listdir("/proc") if d.isdigit() ]:
             try:
                 root = os.readlink("/proc/%s/root" % fn)
@@ -185,10 +182,14 @@ def orphansKill(rootToKill, killsig=signal.SIGTERM):
             except OSError:
                 pass
     else:
-        ret = os.system("machinectl show %s > /dev/null 2>&1" % M_UUID)
-        if ret == 0:
-            getLog().warning("Machine %s still running. Killing..." % M_UUID)
-            os.system("machinectl terminate %s" % M_UUID)
+        ret = subprocess.check_output(["/usr/bin/machinectl", "list", "--no-legend", "--no-pager"])
+        for name in ret.split("\n"):
+            if len(name) > 0:
+                M_UUID = name.split()[0]
+                ret = os.system("/usr/bin/machinectl show %s > /dev/null 2>&1" % M_UUID)
+                if ret == 0:
+                    getLog().warning("Machine %s still running. Killing..." % M_UUID)
+                    os.system("/usr/bin/machinectl terminate %s" % M_UUID)
 
 @traceLog()
 def yieldSrpmHeaders(srpms, plainRpmOk=0):
@@ -563,7 +564,7 @@ def _prepare_nspawn_command(chrootPath, user, cmd, private_network=False):
             cmd = ['/bin/su', '-l', user, '-c', '"{0}"'.format(cmd)]
     elif not cmd_is_list:
         cmd = [ cmd, ]
-    nspawn_argv = ['/usr/bin/systemd-nspawn', '-q', '-M' , M_UUID, '-D', chrootPath]
+    nspawn_argv = ['/usr/bin/systemd-nspawn', '-q', '-M' , uuid.uuid4().hex, '-D', chrootPath]
     if private_network:
         nspawn_argv.append('--private-network')
     cmd = nspawn_argv + cmd
