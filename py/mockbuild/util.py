@@ -182,12 +182,16 @@ def orphansKill(rootToKill, killsig=signal.SIGTERM):
             except OSError:
                 pass
     else:
-        ret = subprocess.check_output(["/usr/bin/machinectl", "list", "--no-legend", "--no-pager"])
-        for name in ret.split("\n"):
+        vm_list = subprocess.check_output(["/usr/bin/machinectl", "list", "--no-legend", "--no-pager"])
+        for name in vm_list.split("\n"):
             if len(name) > 0:
                 M_UUID = name.split()[0]
-                ret = os.system("/usr/bin/machinectl show %s > /dev/null 2>&1" % M_UUID)
-                if ret == 0:
+                try:
+                    vm_root = subprocess.check_output(["/usr/bin/machinectl", "show", "-pRootDirectory", M_UUID])
+                except subprocess.CalledProcessError:
+                    continue
+                vm_root = '='.join(vm_root.rstrip().split('=')[1:])
+                if vm_root == rootToKill:
                     getLog().warning("Machine %s still running. Killing..." % M_UUID)
                     os.system("/usr/bin/machinectl terminate %s" % M_UUID)
 
