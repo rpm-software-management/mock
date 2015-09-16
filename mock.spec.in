@@ -27,7 +27,7 @@
 Summary: Builds packages inside chroots
 Name: mock
 Version: %{release_version}
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2+
 Source: https://git.fedorahosted.org/cgit/mock.git/snapshot/%{name}-%{version}.tar.xz
 URL: https://fedoraproject.org/wiki/Mock
@@ -219,6 +219,27 @@ fi
 %{python_sitelib}/mockbuild/plugins/lvm_root.*
 
 %changelog
+* Wed Sep 16 2015 Miroslav Suchý <msuchy@redhat.com> - 1.2.13-1
+- Use 'machinectl terminate' inside orphanskill() when systemd-nspawn used [RHBZ#1171737]
+- use quite systemd-nspawn in quite mode [RHBZ#1262889]
+- when calling systemd-nspawn become root first [RHBZ#1241827]
+- revert F23 configs back to yum
+- Give user hint what to do if he miss scm plugin.
+- when cleaning up /dev/ do not fail on mountpoins
+- warn (but not fail) on RHELs when you try to use DNF
+- migrate package_state to use dnf when package_manager is set to dnf
+- redownload metadata if they changed on server [RHBZ#1230508]
+- provide --scrub=dnf-cache as alias for yum-cache [RHBZ#1241296]
+- copy files to correct location [RHBZ#1252088]
+- do not install weak deps in chroot [RHBZ#1254634]
+- Try to set PTY window size [RHBZ#1155199]
+- Set default LVM pool name [RHBZ#1163008]
+- better parsing of content-disposition header [RHBZ#1248344]
+- backend: Ensure output files are owned by unpriv user with nspawn
+- Add "rpmbuild_networking" key (False by default) for nspawn backend
+- fdfd464 Update Fedora Wiki URLs
+- use yum-deprecated as the yum_command if it exists
+
 * Tue Jul 14 2015 clark Williams <williams@redhat.com> - 1.2.12-1
 - from Dennis Gilmore <dennis@ausil.us>:
   - setup support so loopback devices can work [RHBZ#1245401]
