@@ -27,7 +27,7 @@
 Summary: Builds packages inside chroots
 Name: mock
 Version: %{release_version}
-Release: 2%{?dist}
+Release: 1%{?dist}
 License: GPLv2+
 Source: https://git.fedorahosted.org/cgit/mock.git/snapshot/%{name}-%{version}.tar.xz
 URL: https://fedoraproject.org/wiki/Mock
