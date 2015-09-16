@@ -14,6 +14,7 @@ from .exception import BuildRootLocked, RootError, \
                                 ResultDirNotAccessible, Error
 from .package_manager import PackageManager
 from .trace_decorator import getLog, traceLog
+from . import uid
 
 class Buildroot(object):
     @traceLog()
@@ -171,8 +172,19 @@ class Buildroot(object):
         env = dict(self.env)
         if nosync and self.nosync_path:
             env['LD_PRELOAD'] = self.nosync_path
-        return util.do(command, chrootPath=self.make_chroot_path(),
+        if util.USE_NSPAWN:
+            if 'uid' not in kargs:
+                kargs['uid'] = uid.getresuid()[1]
+            if 'gid' not in kargs:
+                kargs['gid'] = uid.getresgid()[1]
+            if 'user' not in kargs:
+                kargs['gid'] = pwd.getpwuid(kargs['uid'])[0]
+            self.uid_manager.becomeUser(0, 0)
+        result = util.do(command, chrootPath=self.make_chroot_path(),
                        env=env, shell=shell, *args, **kargs)
+        if util.USE_NSPAWN:
+            self.uid_manager.restorePrivs()
+        return result
 
     @traceLog()
     def _copy_config(self, filename):
@@ -409,7 +421,7 @@ class Buildroot(object):
     @traceLog()
     def _setup_devices(self):
         if self.config['internal_dev_setup']:
-            util.rmtree(self.make_chroot_path("dev"), selinux=self.selinux)
+            util.rmtree(self.make_chroot_path("dev"), selinux=self.selinux, exclude=self.mounts.get_mountpoints())
             util.mkdirIfAbsent(self.make_chroot_path("dev", "pts"))
             util.mkdirIfAbsent(self.make_chroot_path("dev", "shm"))
             prevMask = os.umask(0000)
@@ -467,6 +479,8 @@ class Buildroot(object):
     def _setup_files(self):
         #self.root_log.debug('touch required files')
         for item in [self.make_chroot_path('etc', 'fstab'),
+                     self.make_chroot_path('etc', 'yum.conf'),
+                     self.make_chroot_path('etc', 'dnf.conf'),
                      self.make_chroot_path('var', 'log', 'yum.log')]:
             util.touch(item)
 

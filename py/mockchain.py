@@ -26,15 +26,16 @@ try:
     from six.moves.urllib_parse import urlsplit
 except ImportError:
     from urlparse import urlsplit
-import sys
-import subprocess
-import os
+import cgi
 import optparse
-import requests
-import tempfile
-import shutil
-import time
+import os
 import re
+import requests
+import shutil
+import subprocess
+import sys
+import tempfile
+import time
 
 import mockbuild.util
 
@@ -133,7 +134,7 @@ name=%s
 baseurl=%s
 enabled=1
 skip_if_unavailable=1
-metadata_expire=30
+metadata_expire=0
 cost=1
 """ % (repoid, baseurl, baseurl)
 
@@ -325,9 +326,9 @@ def main(args):
                     if r.status_code == requests.codes.ok:
                         fn = urlsplit(r.url).path.rsplit('/', 1)[1]
                         if 'content-disposition' in r.headers:
-                            header_cd = r.headers['content-disposition'].split('filename=')
-                            if len(header_cd) > 1:
-                                fn = header_cd[1]
+                            _, params = cgi.parse_header(r.headers['content-disposition'])
+                            if 'filename' in params and params['filename']:
+                                fn = params['filename']
                         pkg = download_dir + '/' + fn
                         fd = open(pkg, 'wb')
                         for chunk in r.iter_content(4096):

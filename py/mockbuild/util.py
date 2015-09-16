@@ -25,6 +25,8 @@ import grp
 import locale
 import logging
 import uuid
+import termios
+import struct
 from glob import glob
 from ast import literal_eval
 from textwrap import dedent
@@ -168,16 +170,30 @@ def rmtree(path, selinux=False, exclude=()):
 def orphansKill(rootToKill, killsig=signal.SIGTERM):
     """kill off anything that is still chrooted."""
     getLog().debug("kill orphans")
-    for fn in [ d for d in os.listdir("/proc") if d.isdigit() ]:
-        try:
-            root = os.readlink("/proc/%s/root" % fn)
-            if os.path.realpath(root) == os.path.realpath(rootToKill):
-                getLog().warning("Process ID %s still running in chroot. Killing..." % fn)
-                pid = int(fn, 10)
-                os.kill(pid, killsig)
-                os.waitpid(pid, 0)
-        except OSError:
-            pass
+    if USE_NSPAWN is False:
+        for fn in [ d for d in os.listdir("/proc") if d.isdigit() ]:
+            try:
+                root = os.readlink("/proc/%s/root" % fn)
+                if os.path.realpath(root) == os.path.realpath(rootToKill):
+                    getLog().warning("Process ID %s still running in chroot. Killing..." % fn)
+                    pid = int(fn, 10)
+                    os.kill(pid, killsig)
+                    os.waitpid(pid, 0)
+            except OSError:
+                pass
+    else:
+        vm_list = subprocess.check_output(["/usr/bin/machinectl", "list", "--no-legend", "--no-pager"])
+        for name in vm_list.split("\n"):
+            if len(name) > 0:
+                M_UUID = name.split()[0]
+                try:
+                    vm_root = subprocess.check_output(["/usr/bin/machinectl", "show", "-pRootDirectory", M_UUID])
+                except subprocess.CalledProcessError:
+                    continue
+                vm_root = '='.join(vm_root.rstrip().split('=')[1:])
+                if vm_root == rootToKill:
+                    getLog().warning("Machine %s still running. Killing..." % M_UUID)
+                    os.system("/usr/bin/machinectl terminate %s" % M_UUID)
 
 @traceLog()
 def yieldSrpmHeaders(srpms, plainRpmOk=0):
@@ -411,6 +427,15 @@ def selinuxEnabled():
         pass
     return False
 
+def resize_pty(pty):
+    try:
+        winsize = struct.pack('HHHH', 0, 0, 0, 0)
+        winsize = fcntl.ioctl(sys.stdout.fileno(), termios.TIOCGWINSZ, winsize)
+        fcntl.ioctl(pty, termios.TIOCSWINSZ, winsize)
+    except IOError:
+        # Nice to have, but not necessary
+        pass
+
 # logger =
 # output = [1|0]
 # chrootPath
@@ -420,13 +445,15 @@ def selinuxEnabled():
 @traceLog()
 def do(command, shell=False, chrootPath=None, cwd=None, timeout=0, raiseExc=True,
        returnOutput=0, uid=None, gid=None, user=None, personality=None,
-       printOutput=False, env=None, pty=False, *args, **kargs):
+       printOutput=False, env=None, pty=False, private_network=False,
+       *args, **kargs):
 
     logger = kargs.get("logger", getLog())
     output = ""
     start = time.time()
     if pty:
         master_pty, slave_pty = os.openpty()
+        resize_pty(slave_pty)
         reader = os.fdopen(master_pty, 'rb')
     preexec = ChildPreExec(personality, chrootPath, cwd, uid, gid, unshare_ipc=bool(chrootPath))
     if env is None:
@@ -437,7 +464,7 @@ def do(command, shell=False, chrootPath=None, cwd=None, timeout=0, raiseExc=True
             command = ['/bin/sh', '-c'] + command
             shell = False
         if chrootPath and USE_NSPAWN:
-            command = _prepare_nspawn_command(chrootPath, user, command)
+            command = _prepare_nspawn_command(chrootPath, user, command, private_network=private_network)
         logger.debug("Executing command: {0} with env {1} and shell {2}".format(command, env, shell))
         child = subprocess.Popen(
             command,
@@ -531,7 +558,7 @@ def is_in_dir(path, directory):
 
     return os.path.commonprefix([path, directory]) == directory
 
-def _prepare_nspawn_command(chrootPath, user, cmd):
+def _prepare_nspawn_command(chrootPath, user, cmd, private_network=False):
     cmd_is_list = isinstance(cmd, list)
     if user:
         # needs to be /bin because of el5 and el6 targets
@@ -541,7 +568,10 @@ def _prepare_nspawn_command(chrootPath, user, cmd):
             cmd = ['/bin/su', '-l', user, '-c', '"{0}"'.format(cmd)]
     elif not cmd_is_list:
         cmd = [ cmd, ]
-    cmd = ['/usr/bin/systemd-nspawn', '-M' , uuid.uuid4().hex, '-D', chrootPath] + cmd
+    nspawn_argv = ['/usr/bin/systemd-nspawn', '-q', '-M' , uuid.uuid4().hex, '-D', chrootPath]
+    if private_network:
+        nspawn_argv.append('--private-network')
+    cmd = nspawn_argv + cmd
     if cmd_is_list:
         return cmd
     else:
@@ -629,6 +659,7 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
     config_opts['state_log_fmt_name'] = "state"
     config_opts['online'] = True
     config_opts['use_nspawn'] = False
+    config_opts['rpmbuild_networking'] = False
 
     config_opts['internal_dev_setup'] = True
     config_opts['internal_setarch'] = True
@@ -700,6 +731,10 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
             'package_state_opts' : {},
             'pm_request_enable': False,
             'pm_request_opts': {},
+            'lvm_root_enable': False,
+            'lvm_root_opts': {
+                'pool_name': 'mockbuild',
+            },
             'chroot_scan_enable': False,
             'chroot_scan_opts': {
                 'regexes' : [

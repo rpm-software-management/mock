@@ -21,7 +21,7 @@
 from __future__ import print_function
 """
     usage:
-           mock [options] {--init|--clean|--scrub=[all,chroot,cache,root-cache,c-cache,yum-cache,lvm]}
+           mock [options] {--init|--clean|--scrub=[all,chroot,cache,root-cache,c-cache,yum-cache,dnf-cache,lvm]}
            mock [options] [--rebuild] /path/to/srpm(s)
            mock [options] --buildsrpm {--spec /path/to/spec --sources /path/to/src|--scm-enable [--scm-option key=value]}
            mock [options] {--shell|--chroot} <cmd>
@@ -117,8 +117,8 @@ def command_parse():
     parser.add_option("--clean", action="store_const", const="clean",
                       dest="mode",
                       help="completely remove the specified chroot")
-    scrub_choices = ('chroot', 'cache', 'root-cache', 'c-cache', 'yum-cache', 'lvm', 'all')
-    scrub_metavar = "[all|chroot|cache|root-cache|c-cache|yum-cache]"
+    scrub_choices = ('chroot', 'cache', 'root-cache', 'c-cache', 'yum-cache', 'dnf-cache', 'lvm', 'all')
+    scrub_metavar = "[all|chroot|cache|root-cache|c-cache|yum-cache|dnf-cache]"
     parser.add_option("--scrub", action="callback", type="choice", default=[],
                       choices=scrub_choices, metavar=scrub_metavar,
                       callback=scrub_callback,
@@ -659,7 +659,7 @@ def run_command(options, args, config_opts, commands, buildroot, state):
             import mockbuild.scm
         except ImportError as e:
             raise mockbuild.exception.BadCmdline(
-                "Mock SCM module not installed: %s" % e)
+                "Mock SCM module not installed: %s. You should install package mock-scm." % e)
         scmWorker = mockbuild.scm.scmWorker(log, config_opts['scm_opts'], config_opts['macros'])
         buildroot.uid_manager.dropPrivsTemp()
         scmWorker.get_sources()
@@ -750,13 +750,14 @@ def run_command(options, args, config_opts, commands, buildroot, state):
                 sys.exit(50)
             log.info("copying %s to %s" % (src, dest))
             if os.path.isdir(src):
-                if os.path.exists(dest):
+                dest2 = dest
+                if os.path.exists(dest2):
                     path_suffix = os.path.split(src)[1]
-                    dest = os.path.join(dest, path_suffix)
-                    if os.path.exists(dest):
-                        log.critical("Destination %{0} already exist!".format(dest))
+                    dest2 = os.path.join(dest2, path_suffix)
+                    if os.path.exists(dest2):
+                        log.critical("Destination %{0} already exist!".format(dest2))
                         sys.exit(50)
-                shutil.copytree(src, dest)
+                shutil.copytree(src, dest2)
             else:
                 shutil.copy(src, dest)
         buildroot.chown_home_dir()
