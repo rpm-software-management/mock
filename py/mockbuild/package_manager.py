@@ -165,7 +165,8 @@ class Yum(_PackageManager):
         self.builddep_command = [config['yum_builddep_command']]
         self._check_command()
         if os.path.exists('/usr/bin/yum-deprecated'):
-            self.resolvedep_command = ['repoquery', '--resolve', '--requires']
+            self.resolvedep_command = ['repoquery', '--resolve', '--requires',
+                '--config', self.buildroot.make_chroot_path('etc', 'yum', 'yum.conf')]
 
     @traceLog()
     def _write_plugin_conf(self, name):
