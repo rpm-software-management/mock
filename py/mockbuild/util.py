@@ -184,7 +184,7 @@ def orphansKill(rootToKill, killsig=signal.SIGTERM):
     else:
         # RHEL7 does not know --no-legend, so we must filter the legend out
         vm_list = subprocess.check_output(["/usr/bin/machinectl", "list", "--no-pager"])
-        vm_list = vm_list[1:]
+        vm_list = '\n'.join(vm_list.split('\n')[1:-2])
         for name in vm_list.split("\n"):
             if len(name) > 0:
                 M_UUID = name.split()[0]
