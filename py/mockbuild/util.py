@@ -184,12 +184,16 @@ def orphansKill(rootToKill, killsig=signal.SIGTERM):
     else:
         # RHEL7 does not know --no-legend, so we must filter the legend out
         vm_list = subprocess.check_output(["/usr/bin/machinectl", "list", "--no-pager"])
+        if (isinstance(vm_list, bytes)):
+            vm_list = vm_list.decode("utf-8")
         vm_list = '\n'.join(vm_list.split('\n')[1:-2])
         for name in vm_list.split("\n"):
             if len(name) > 0:
                 M_UUID = name.split()[0]
                 try:
                     vm_root = subprocess.check_output(["/usr/bin/machinectl", "show", "-pRootDirectory", M_UUID])
+                    if (isinstance(vm_root, bytes)):
+                        vm_root = vm_root.decode("utf-8")
                 except subprocess.CalledProcessError:
                     continue
                 vm_root = '='.join(vm_root.rstrip().split('=')[1:])
