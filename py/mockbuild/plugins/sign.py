@@ -35,7 +35,7 @@ class Sign(object):
         rpms = glob.glob('%s/*.rpm' % self.buildroot.resultdir)
         if rpms:
             getLog().info("Signing %s", ', '.join(rpms))
-            opts = self.conf['opts'] % {'rpms': ' '.join(rpms)}
+            opts = self.conf['opts'] % {'rpms': ' '.join(rpms), 'resultdir': self.buildroot.resultdir}
             cmd = "{0} {1}".format(self.conf['cmd'], opts)
             getLog().info("Executing %s", cmd)
             self.buildroot.uid_manager.dropPrivsTemp()
