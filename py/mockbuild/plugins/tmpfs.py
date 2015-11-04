@@ -38,7 +38,7 @@ class Tmpfs(object):
         self.maxSize = self.conf['max_fs_size']
         self.mode = self.conf['mode']
         self.optArgs = ['-o', 'mode=%s' % self.mode]
-        self.optArgs = ['-o', 'nr_inodes=0']
+        self.optArgs += ['-o', 'nr_inodes=0']
         if self.maxSize:
             self.optArgs += ['-o', 'size=' + self.maxSize]
         plugins.add_hook("mount_root", self._tmpfsMount)
