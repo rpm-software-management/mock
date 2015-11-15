@@ -17,7 +17,7 @@ def PackageManager(config_opts, chroot, plugins):
     elif pm == 'dnf':
         (distribution, version) = platform.dist()[0:2]
         if distribution in ['redhat', 'centos']:
-            version = float(version)
+            version = int(version.split('.')[0])
             if version < 8:
                 if  'dnf_warning' in config_opts and config_opts['dnf_warning']:
                     print("""WARNING! WARNING! WARNING!
