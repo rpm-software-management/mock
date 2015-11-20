@@ -113,8 +113,10 @@ class RootCache(object):
                 self.state.start("unpacking root cache")
                 self._rootCacheLock()
                 # deal with NFS homedir and root_squash
+                prev_cwd = None
                 cwd = mockbuild.util.pretty_getcwd()
                 if mockbuild.util.get_fs_type(cwd).startswith('nfs'):
+                    prev_cwd = os.getcwd()
                     os.chdir(mockbuild.util.find_non_nfs_dir())
                 mockbuild.util.mkdirIfAbsent(self.buildroot.make_chroot_path())
                 mockbuild.util.do(
@@ -126,6 +128,8 @@ class RootCache(object):
                 self._rootCacheUnlock()
                 self.buildroot.chrootWasCached = True
                 self.state.finish("unpacking root cache")
+                if prev_cwd:
+                    os.chdir(prev_cwd)
 
     @traceLog()
     def _rootCachePreShellHook(self):
