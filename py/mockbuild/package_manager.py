@@ -271,7 +271,7 @@ class Dnf(_PackageManager):
 
     def builddep(self, *pkgs, **kwargs):
         try:
-            out = super(Dnf, self).builddep(*pkgs, **kwargs)
+            super(Dnf, self).builddep(*pkgs, **kwargs)
         except Error as e:
             for i, line in enumerate(e.msg.split('\n')):
                 if 'no such command: builddep' in line.lower():

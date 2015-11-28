@@ -14,7 +14,6 @@ import pickle
 import pwd
 import re
 import select
-import shutil
 import signal
 import subprocess
 import sys

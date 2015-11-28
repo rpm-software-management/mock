@@ -71,7 +71,7 @@ class Config(object):
             if len(lines) == 1 and lines[0].startswith(b'Bad arch'):
                 return 0
             return len(lines)
-        except urllib.error.URLError as e:
+        except urllib.error.URLError:
             pass
         return 0
 
@@ -79,9 +79,9 @@ class Config(object):
         # print("checking baseurl at %s" % url)
         try:
             data = urllib.request.urlopen(url).readlines()
-        except urllib.error.HTTPError as e:
+        except urllib.error.HTTPError:
             return 0
-        except urllib.error.URLError as e:
+        except urllib.error.URLError:
             return 0
         return len(data)
 
