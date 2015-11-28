@@ -82,9 +82,11 @@ from mockbuild.plugin import Plugins
 from mockbuild.buildroot import Buildroot
 from mockbuild.exception import BadCmdline
 
+
 def scrub_callback(option, opt, value, parser):
     parser.values.scrub.append(value)
     parser.values.mode = "clean"
+
 
 def repo_callback(optobj, opt, value, parser):
     '''Callback for the enablerepo and disablerepo option.
@@ -94,6 +96,7 @@ def repo_callback(optobj, opt, value, parser):
     '''
     dest = eval('parser.values.%s' % optobj.dest)
     dest.extend((opt, value))
+
 
 def command_parse():
     """return options and args from parsing the command line"""
@@ -285,7 +288,7 @@ def command_parse():
     parser.add_option("--enable-plugin", action="append",
                       dest="enabled_plugins", type="string", default=[],
                       help="Enable plugin. Currently-available plugins: %s"
-                        % repr(plugins))
+                      % repr(plugins))
     parser.add_option("--disable-plugin", action="append",
                       dest="disabled_plugins", type="string", default=[],
                       help="Disable plugin. Currently-available plugins: %s"
@@ -322,8 +325,8 @@ def command_parse():
 
     if options.mode == '__default__':
         # handle old-style commands
-        if len(args) and args[0] in ('chroot', 'shell',
-                'rebuild', 'install', 'installdeps', 'remove', 'init', 'clean'):
+        if len(args) and args[0] in ('chroot', 'shell', 'rebuild', 'install',
+                                     'installdeps', 'remove', 'init', 'clean'):
             options.mode = args[0]
             args = args[1:]
         else:
@@ -332,7 +335,7 @@ def command_parse():
     # explicitly disallow multiple targets in --target argument
     if options.rpmbuild_arch:
         if options.rpmbuild_arch.find(',') != -1:
-                   raise mockbuild.exception.BadCmdline("--target option accepts only one arch. Invalid: %s" % options.rpmbuild_arch)
+            raise mockbuild.exception.BadCmdline("--target option accepts only one arch. Invalid: %s" % options.rpmbuild_arch)
 
     if options.mode == 'buildsrpm' and not (options.spec and options.sources):
         if not options.scm:
@@ -343,6 +346,7 @@ def command_parse():
         options.sources = os.path.expanduser(options.sources)
 
     return (options, args)
+
 
 @traceLog()
 def setup_logging(config_path, config_opts, options):
@@ -396,6 +400,7 @@ def setup_logging(config_path, config_opts, options):
     if options.trace:
         logging.getLogger("trace").propagate = 1
 
+
 @traceLog()
 def setup_uid_manager(mockgid):
     unprivUid = os.getuid()
@@ -428,6 +433,7 @@ def check_arch_combination(target_arch, config_opts):
         raise mockbuild.exception.InvalidArchitecture(
             "Cannot build target {0} on arch {1}, because it is not listed in legal_host_arches {2}".format(target_arch, host_arch, legal))
 
+
 @traceLog()
 def rebuild_generic(items, commands, buildroot, config_opts, cmd, post=None, clean=True):
     start = time.time()
@@ -440,7 +446,7 @@ def rebuild_generic(items, commands, buildroot, config_opts, cmd, post=None, cle
             ret = cmd(item)
             elapsed = time.time() - start
             log.info("Done(%s) Config(%s) %d minutes %d seconds"
-                % (item, config_opts['chroot_name'], elapsed // 60, elapsed % 60))
+                     % (item, config_opts['chroot_name'], elapsed // 60, elapsed % 60))
             log.info("Results and/or logs in: %s" % buildroot.resultdir)
 
         if config_opts["cleanup_on_success"]:
@@ -453,12 +459,13 @@ def rebuild_generic(items, commands, buildroot, config_opts, cmd, post=None, cle
     except (Exception, KeyboardInterrupt):
         elapsed = time.time() - start
         log.error("Exception(%s) Config(%s) %d minutes %d seconds"
-            % (item, buildroot.shared_root_name, elapsed // 60, elapsed % 60))
+                  % (item, buildroot.shared_root_name, elapsed // 60, elapsed % 60))
         log.info("Results and/or logs in: %s" % buildroot.resultdir)
         if config_opts["cleanup_on_failure"]:
             log.info("Cleaning up build root ('cleanup_on_failure=True')")
             commands.clean()
         raise
+
 
 @traceLog()
 def do_rebuild(config_opts, commands, buildroot, srpms):
@@ -494,6 +501,7 @@ def do_rebuild(config_opts, commands, buildroot, srpms):
     rebuild_generic(srpms, commands, buildroot, config_opts, cmd=build,
                     post=post_build, clean=clean)
 
+
 @traceLog()
 def do_buildsrpm(config_opts, commands, buildroot, options, args):
     # verify the input command line arguments actually exist
@@ -510,6 +518,7 @@ def do_buildsrpm(config_opts, commands, buildroot, options, args):
     return rebuild_generic([options.spec], commands, buildroot, config_opts,
                            cmd=cmd, post=None, clean=clean)
 
+
 @traceLog()
 def rootcheck():
     "verify mock was started correctly (either by sudo or consolehelper)"
@@ -517,6 +526,7 @@ def rootcheck():
     # if not raise an exception and bail
     if os.getuid() == 0 and not (os.environ.get("SUDO_UID") or os.environ.get("USERHELPER_UID")):
         raise RuntimeError("mock will not run from the root account (needs an unprivileged uid so it can drop privs)")
+
 
 @traceLog()
 def groupcheck(unprivGid, tgtGid):
@@ -535,6 +545,7 @@ def groupcheck(unprivGid, tgtGid):
         raise RuntimeError("Must be member of '%s' group to run mock! (%s)" %
                            (name, ", ".join(members)))
 
+
 @traceLog()
 def unshare_namespace():
     base_unshare_flags = util.CLONE_NEWNS
@@ -543,13 +554,14 @@ def unshare_namespace():
     try:
         util.unshare(extended_unshare_flags)
     except mockbuild.exception.UnshareFailed as e:
-        log.debug("unshare(%d) failed, falling back to unshare(%d)" \
+        log.debug("unshare(%d) failed, falling back to unshare(%d)"
                   % (extended_unshare_flags, base_unshare_flags))
         try:
             util.unshare(base_unshare_flags)
         except mockbuild.exception.UnshareFailed as e:
             log.error("Namespace unshare failed.")
             sys.exit(e.resultcode)
+
 
 @traceLog()
 def main():
@@ -614,7 +626,7 @@ def main():
     # do whatever we're here to do
     py_version = '{0}.{1}.{2}'.format(*sys.version_info[:3])
     log.info("mock.py version %s starting (python version = %s)..." %
-                (__VERSION__, py_version))
+             (__VERSION__, py_version))
     state = State()
     plugins = Plugins(config_opts, state)
     buildroot = Buildroot(config_opts, uidManager, state, plugins)
@@ -650,9 +662,10 @@ def main():
     finally:
         buildroot.finalize()
 
+
 @traceLog()
 def run_command(options, args, config_opts, commands, buildroot, state):
-    #TODO separate this
+    # TODO separate this
     # Fetch and prepare sources from SCM
     if config_opts['scm']:
         try:

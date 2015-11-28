@@ -10,6 +10,7 @@ from . import util
 from .exception import BuildError, Error, YumError
 from .trace_decorator import traceLog
 
+
 def PackageManager(config_opts, chroot, plugins):
     pm = config_opts.get('package_manager', 'yum')
     if pm == 'yum':
@@ -19,7 +20,7 @@ def PackageManager(config_opts, chroot, plugins):
         if distribution in ['redhat', 'centos']:
             version = int(version.split('.')[0])
             if version < 8:
-                if  'dnf_warning' in config_opts and config_opts['dnf_warning']:
+                if 'dnf_warning' in config_opts and config_opts['dnf_warning']:
                     print("""WARNING! WARNING! WARNING!
 You are building package for distribution which use DNF. However your system
 does not support DNF. You can continue with YUM, which will likely succeed,
@@ -31,7 +32,7 @@ in Mock config.""")
                 return Yum(config_opts, chroot, plugins)
         return Dnf(config_opts, chroot, plugins)
     else:
-        #TODO specific exception type
+        # TODO specific exception type
         raise Exception('Unrecognized package manager')
 
 
@@ -137,8 +138,8 @@ class _PackageManager(object):
         """ expand resultdir in the yum.conf segment of the mock
         configuration file.
         """
-        return config_content.replace("%(resultdir)s",\
-                self.config['resultdir'] % self.config)
+        return config_content.replace(
+            "%(resultdir)s", self.config['resultdir'] % self.config)
 
     def _check_command(self):
         """ Check if main command exists """
@@ -156,6 +157,7 @@ def check_yum_config(config, log):
                 reposdir=/dev/null to your yum.conf in mock config.
                 """))
 
+
 class Yum(_PackageManager):
     name = 'yum'
 
@@ -165,7 +167,8 @@ class Yum(_PackageManager):
         self.builddep_command = [config['yum_builddep_command']]
         self._check_command()
         if os.path.exists('/usr/bin/yum-deprecated'):
-            self.resolvedep_command = ['repoquery', '--resolve', '--requires',
+            self.resolvedep_command = [
+                'repoquery', '--resolve', '--requires',
                 '--config', self.buildroot.make_chroot_path('etc', 'yum', 'yum.conf')]
 
     @traceLog()
@@ -180,9 +183,8 @@ class Yum(_PackageManager):
         # use yum plugin conf from chroot as needed
         pluginconf_dir = self.buildroot.make_chroot_path('etc', 'yum', 'pluginconf.d')
         util.mkdirIfAbsent(pluginconf_dir)
-        config_content = self.config['yum.conf']\
-                          .replace("plugins=1",
-                           dedent("""\
+        config_content = self.config['yum.conf'].replace(
+            "plugins=1", dedent("""\
                            plugins=1
                            pluginconfpath={0}""".format(pluginconf_dir)))
         config_content = self.replace_in_config(config_content)
@@ -213,7 +215,7 @@ class Yum(_PackageManager):
             for consumer_file in glob.glob("/etc/pki/consumer/*.pem"):
                 shutil.copy(consumer_file, consumer_dir)
             shutil.copy('/etc/rhsm/rhsm.conf',
-                    self.buildroot.make_chroot_path('etc', 'rhsm'))
+                        self.buildroot.make_chroot_path('etc', 'rhsm'))
             self.execute('repolist')
 
     def install(self, *pkgs, **kwargs):
@@ -234,6 +236,7 @@ def _check_missing(output):
             if msg in line.lower():
                 raise BuildError('\n'.join(output.split('\n')[i:]))
 
+
 class Dnf(_PackageManager):
     name = 'dnf'
 
@@ -246,9 +249,9 @@ class Dnf(_PackageManager):
 
     @traceLog()
     def build_invocation(self, *args):
-        if not 'dnf_builddep_opts' in self.config:
+        if 'dnf_builddep_opts' not in self.config:
             self.config['dnf_builddep_opts'] = self.config['yum_builddep_opts']
-        if not 'dnf_common_opts' in self.config:
+        if 'dnf_common_opts' not in self.config:
             self.config['dnf_common_opts'] = self.config['yum_common_opts'] + ['--setopt=deltarpm=false']
         return super(Dnf, self).build_invocation(*args)
 

@@ -12,6 +12,7 @@ import mockbuild.util
 
 requires_api_version = "1.1"
 
+
 # plugin entry point
 @traceLog()
 def init(plugins, conf, buildroot):
@@ -20,13 +21,14 @@ def init(plugins, conf, buildroot):
     if system_ram_mb > conf['required_ram_mb']:
         Tmpfs(plugins, conf, buildroot)
     else:
-        getLog().warning("Tmpfs plugin disabled. "
+        getLog().warning(
+            "Tmpfs plugin disabled. "
             "System does not have the required amount of RAM to enable the tmpfs plugin. "
             "System has %sMB RAM, but the config specifies the minimum required is %sMB RAM. "
             %
             (system_ram_mb, conf['required_ram_mb']))
 
-# classes
+
 class Tmpfs(object):
     """Mounts a tmpfs on the chroot dir"""
     @traceLog()

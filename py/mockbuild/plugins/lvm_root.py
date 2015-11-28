@@ -11,11 +11,13 @@ from mockbuild.exception import LvmError, LvmLocked
 
 requires_api_version = "1.1"
 
+
 def lvm_do(*args, **kwargs):
     env = os.environ.copy()
     env['LC_ALL'] = 'C'
     output = util.do(*args, returnOutput=True, env=env, **kwargs)
     return output
+
 
 def current_mounts():
     with open("/proc/mounts") as proc_mounts:
@@ -23,6 +25,7 @@ def current_mounts():
         for line in mount_lines:
             src, target = [os.path.realpath(x) for x in line.split()[:2]]
             yield src, target
+
 
 class Lock(object):
     def __init__(self, path, name):
@@ -159,8 +162,8 @@ class LvmPlugin(object):
 
     def make_snapshot(self, name):
         if self.lv_exists(name):
-            raise LvmError("Snapshot {name} already exists"\
-                           .format(name=self.remove_prefix(name)))
+            raise LvmError(
+                "Snapshot {name} already exists".format(name=self.remove_prefix(name)))
         lvcreate = ['lvcreate', '-s', self.vg_name + '/' + self.head_lv, '-n', name]
         lvm_do(lvcreate)
         self.set_current_snapshot(name)
@@ -191,10 +194,12 @@ class LvmPlugin(object):
             if 'poolmetadatasize' in self.lvm_conf:
                 create_pool += ['--poolmetadatasize', self.lvm_conf['poolmetadatasize']]
             lvm_do(create_pool)
-            self.buildroot.root_log.info("created LVM cache thinpool of size {size}"\
-                                         .format(size=size))
+            self.buildroot.root_log.info(
+                "created LVM cache thinpool of size {size}".format(size=size))
+
         def cond():
             return not self.lv_exists(self.pool_name)
+
         self.pool_lock.cond_lock(cond, acquired)
         self.pool_lock.lock(exclusive=False, block=True)
 
@@ -250,18 +255,19 @@ class LvmPlugin(object):
     def create_head(self, snapshot_name):
         lvm_do(['lvcreate', '-s', self.vg_name + '/' + snapshot_name,
                 '-n', self.head_lv, '--setactivationskip', 'n'])
-        self.buildroot.root_log.info("rolled back to {name} snapshot"\
-                                     .format(name=self.remove_prefix(snapshot_name)))
+        self.buildroot.root_log.info(
+            "rolled back to {name} snapshot".format(
+                name=self.remove_prefix(snapshot_name)))
 
     def check_pool_size(self):
         size_data = self.allocated_pool_data()
         size_metadata = self.allocated_pool_metadata()
         self.buildroot.root_log.info("LVM plugin enabled. Allocated pool data: {0}%. Allocated metadata: {1}%.".format(size_data, size_metadata))
         if (('check_size' not in self.lvm_conf) or (('check_size' in self.lvm_conf) and (self.lvm_conf['check_size']))) and \
-            ((size_metadata and size_metadata > 90) or (size_data and size_data > 90)):
+           ((size_metadata and size_metadata > 90) or (size_data and size_data > 90)):
             raise LvmError("Thin pool {0}/{1} is over 90%. Please enlarge it.".format(self.vg_name, self.pool_name))
         else:
-            if  size_metadata and size_metadata > 75:
+            if size_metadata and size_metadata > 75:
                 self.buildroot.root_log.warning("LVM Thin pool metadata are nearly filled up ({0}%). You may experience weird errors. Consider growing up your thin pool.".format(size_data))
             if size_data and size_data > 75:
                 self.buildroot.root_log.warning("LVM Thin pool is nearly filled up ({0}%). You may experience weird errors. Consider growing up your thin pool.".format(size_data))
@@ -282,12 +288,16 @@ class LvmPlugin(object):
                 self.create_base()
             else:
                 self.lock.lock(exclusive=False, block=True)
+
         def unsatisfied():
             self.lock.lock(exclusive=False, block=True)
+
         def cond():
             return not self.get_current_snapshot()
+
         def waiting():
             self.buildroot.root_log.info("Waiting for LVM init lock")
+
         self.lock.cond_lock(cond, acquired, unsatisfied_fn=unsatisfied, wait_fn=waiting)
         self.pool_lock.lock(exclusive=False, block=True)
 
@@ -310,8 +320,8 @@ class LvmPlugin(object):
             snapshot_name = self.prefix_name(self.postinit_name)
             self.make_snapshot(snapshot_name)
             self.set_current_snapshot(snapshot_name)
-            self.buildroot.root_log.info("created {name} snapshot"\
-                    .format(name=self.postinit_name))
+            self.buildroot.root_log.info(
+                "created {name} snapshot".format(name=self.postinit_name))
         # Relock as shared for following operations, noop if shared already
         self.lock.lock(exclusive=False)
 
@@ -356,6 +366,7 @@ class LvmPlugin(object):
             self.set_current_snapshot(self.prefix_name(self.postinit_name))
         lvm_do(['lvremove', '-f', self.vg_name + '/' + lv_name])
         self.buildroot.root_log.info("deleted {name} snapshot".format(name=name))
+
 
 def init(plugins, lvm_conf, buildroot):
     LvmPlugin(plugins, lvm_conf, buildroot)

@@ -16,18 +16,19 @@ import mockbuild.util
 import tempfile
 import os
 
-#repoquery used
+# repoquery used
 repoquery_avail_opts = "--qf '%{name}-%{epoch}:%{version}-%{release}.%{arch} %{buildtime} %{size} %{pkgid} %{repoid}' '*'"
 
 # set up logging, module options
 requires_api_version = "1.1"
+
 
 # plugin entry point
 @traceLog()
 def init(plugins, conf, buildroot):
     PackageState(plugins, conf, buildroot)
 
-# classes
+
 class PackageState(object):
     """dumps out a list of packages available and in the chroot"""
     @traceLog()
@@ -50,11 +51,11 @@ class PackageState(object):
             chrootpath = self.buildroot.make_chroot_path()
             if self.config['package_manager'] == 'dnf':
                 cmd = "/usr/bin/repoquery --installroot={0} -c {0}/etc/yum.conf {1} > {2}".format(
-                                           chrootpath, repoquery_avail_opts, out_file)
+                    chrootpath, repoquery_avail_opts, out_file)
             else:
                 cmd = "/usr/bin/dnf --installroot={0} repoquery -c {0}/etc/dnf.conf {1} > {2}".format(
-                            chrootpath, repoquery_avail_opts, out_file)
-            #print(cmd)
+                    chrootpath, repoquery_avail_opts, out_file)
+            # print(cmd)
             mockbuild.util.do(cmd, shell=True, env=self.buildroot.env)
             self.avail_done = True
             self.state.finish("Outputting list of available packages")

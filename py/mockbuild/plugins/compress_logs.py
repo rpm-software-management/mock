@@ -8,6 +8,7 @@ from mockbuild import util
 
 requires_api_version = "1.1"
 
+
 class CompressLogsPlugin(object):
     """Compress logs in resultdir."""
     @traceLog()

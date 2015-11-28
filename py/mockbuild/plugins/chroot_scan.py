@@ -17,12 +17,13 @@ import mockbuild.util
 
 requires_api_version = "1.1"
 
+
 # plugin entry point
 @traceLog()
 def init(plugins, conf, buildroot):
     ChrootScan(plugins, conf, buildroot)
 
-# classes
+
 class ChrootScan(object):
     """scan chroot for files of interest, copying to resultdir with relative paths"""
     @traceLog()

@@ -17,12 +17,13 @@ from mockbuild.mounts import BindMountPoint
 # set up logging, module options
 requires_api_version = "1.1"
 
+
 # plugin entry point
 @traceLog()
 def init(plugins, conf, buildroot):
     YumCache(plugins, conf, buildroot)
 
-# classes
+
 class YumCache(object):
     """ mount /var/cache/yum or /var/cache/dnf of your machine to chroot """
 
