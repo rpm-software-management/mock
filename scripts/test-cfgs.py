@@ -29,12 +29,10 @@ class Config(object):
                 self.stanzas.append(current_key)
                 self.map[current_key] = {}
                 continue
-            if 'http://' in l:
+            if 'http://' in l or 'https://' in l:
                 if current_key == 'main' or current_key == 'local':
                     continue
-                i = l.index('=')
-                key = l[0:i]
-                url = l[i + 1:]
+                key, url = l.split('=', 1)
                 self.map[current_key][key.strip()] = url.strip()
                 continue
 
