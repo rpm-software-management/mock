@@ -57,6 +57,8 @@ class Config(object):
                     else:
                         print("\t[%s] baseurl Ok" % s)
                         total_sites += 1
+                elif k == 'metalink':
+                    print("\t[%s] Warning: metalink check not implemented yet" % s)
                 else:
                     raise RuntimeError("Unknown URL type in %s: %s" % (s, k))
         if total_sites == 0:
