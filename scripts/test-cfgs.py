@@ -6,7 +6,8 @@
 import os
 import os.path
 import glob
-import urllib2
+
+from six.moves import urllib
 
 
 class Config(object):
@@ -66,21 +67,21 @@ class Config(object):
     def check_mirrorlist(self, url):
         # print("checking mirrorlist at %s" % url)
         try:
-            lines = [l for l in urllib2.urlopen(url).readlines() if not l.startswith('#') and len(l.strip()) != 0]
-            if len(lines) == 1 and lines[0].startswith('Bad arch'):
+            lines = [l for l in urllib.request.urlopen(url).readlines() if not l.startswith(b'#') and len(l.strip()) != 0]
+            if len(lines) == 1 and lines[0].startswith(b'Bad arch'):
                 return 0
             return len(lines)
-        except urllib2.URLError as e:
+        except urllib.error.URLError as e:
             pass
         return 0
 
     def check_baseurl(self, url):
         # print("checking baseurl at %s" % url)
         try:
-            data = urllib2.urlopen(url).readlines()
-        except urllib2.HTTPError as e:
+            data = urllib.request.urlopen(url).readlines()
+        except urllib.error.HTTPError as e:
             return 0
-        except urllib2.URLError as e:
+        except urllib.error.URLError as e:
             return 0
         return len(data)
 
