@@ -6,7 +6,9 @@
 import os
 import os.path
 import glob
-import urllib2
+
+from six.moves import urllib
+
 
 class Config(object):
     def __init__(self, file):
@@ -17,19 +19,20 @@ class Config(object):
         current_key = ''
         for l in open(self.path):
             l = l.strip()
-            if l.startswith('#'): continue
+            if l.startswith('#'):
+                continue
             if l.startswith('['):
                 key = l[1:l.rindex(']')]
                 current_key = key
-                if key == 'main' or key == 'local': continue
+                if key == 'main' or key == 'local':
+                    continue
                 self.stanzas.append(current_key)
                 self.map[current_key] = {}
                 continue
-            if 'http://' in l:
-                if current_key == 'main' or current_key == 'local': continue
-                i = l.index('=')
-                key = l[0:i]
-                url = l[i+1:]
+            if 'http://' in l or 'https://' in l:
+                if current_key == 'main' or current_key == 'local':
+                    continue
+                key, url = l.split('=', 1)
                 self.map[current_key][key.strip()] = url.strip()
                 continue
 
@@ -38,7 +41,7 @@ class Config(object):
 
     def check_urls(self):
         print(self.cfg)
-        total_sites = 0;
+        total_sites = 0
         for s in self.stanzas:
             for k in list(self.map[s].keys()):
                 if k == 'mirrorlist':
@@ -52,31 +55,33 @@ class Config(object):
                     if self.check_baseurl(self.map[s][k]) == 0:
                         print("\t[%s] Error: no files for baseurl\t<-------" % s)
                     else:
-                        print("\t[%s] baseurl Ok" %s)
+                        print("\t[%s] baseurl Ok" % s)
                         total_sites += 1
+                elif k == 'metalink':
+                    print("\t[%s] Warning: metalink check not implemented yet" % s)
                 else:
                     raise RuntimeError("Unknown URL type in %s: %s" % (s, k))
         if total_sites == 0:
             print("    %s has no valid URLs" % self.cfg)
 
     def check_mirrorlist(self, url):
-        #print "checking mirrorlist at %s" % url
+        # print("checking mirrorlist at %s" % url)
         try:
-            lines = [ l for l in urllib2.urlopen(url).readlines() if not l.startswith('#') and len(l.strip()) != 0 ]
-            if len(lines) == 1 and lines[0].startswith('Bad arch'):
+            lines = [l for l in urllib.request.urlopen(url).readlines() if not l.startswith(b'#') and len(l.strip()) != 0]
+            if len(lines) == 1 and lines[0].startswith(b'Bad arch'):
                 return 0
             return len(lines)
-        except urllib2.URLError as e:
+        except urllib.error.URLError:
             pass
         return 0
 
     def check_baseurl(self, url):
-        #print "checking baseurl at %s" % url
+        # print("checking baseurl at %s" % url)
         try:
-            data = urllib2.urlopen(url).readlines()
-        except urllib2.HTTPError as e:
+            data = urllib.request.urlopen(url).readlines()
+        except urllib.error.HTTPError:
             return 0
-        except urllib2.URLError as e:
+        except urllib.error.URLError:
             return 0
         return len(data)
 
@@ -84,6 +89,6 @@ if __name__ == '__main__':
     configs = glob.glob('etc/mock/*.cfg')
     configs.sort()
     for c in configs:
-        if os.path.basename(c).startswith('site-defaults'): continue
+        if os.path.basename(c).startswith('site-defaults'):
+            continue
         Config(c).check_urls()
-

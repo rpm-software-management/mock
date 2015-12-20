@@ -17,6 +17,7 @@ from mockbuild.mounts import BindMountPoint
 
 requires_api_version = "1.1"
 
+
 # plugin entry point
 @traceLog()
 def init(plugins, conf, buildroot):
@@ -26,7 +27,7 @@ def init(plugins, conf, buildroot):
     else:
         getLog().info("selinux disabled")
 
-# classes
+
 class SELinux(object):
     """On SELinux enabled box, this plugin will pretend, that SELinux is disabled in build environment.
 
@@ -64,13 +65,13 @@ class SELinux(object):
         try:
             host = open("/proc/filesystems")
             for line in host:
-                if not "selinuxfs" in line:
+                if "selinuxfs" not in line:
                     out.write(line)
         finally:
             host.close()
             out.close()
 
-        os.chmod(path, stat.S_IRUSR|stat.S_IRGRP|stat.S_IROTH)
+        os.chmod(path, stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH)
 
         return path
 

@@ -30,7 +30,7 @@ requires_api_version = "1.1"
 def init(plugins, conf, buildroot):
     Mount(plugins, conf, buildroot)
 
-# classes
+
 class Mount(object):
     """mount dirs into chroot"""
     @traceLog()
@@ -41,10 +41,12 @@ class Mount(object):
         self.opts = conf
         plugins.add_hook("preinit", self._mountPreInitHook)
         for device, dest_dir, vfstype, mount_opts in self.opts['dirs']:
-            buildroot.mounts.add(FileSystemMountPoint(buildroot.make_chroot_path(dest_dir),
-                                                    filetype=vfstype,
-                                                    device=device,
-                                                    options=mount_opts))
+            buildroot.mounts.add(
+                FileSystemMountPoint(buildroot.make_chroot_path(dest_dir),
+                                     filetype=vfstype,
+                                     device=device,
+                                     options=mount_opts))
+
     @traceLog()
     def _mountPreInitHook(self):
         for device, dest_dir, vfstype, mount_opts in self.opts['dirs']:

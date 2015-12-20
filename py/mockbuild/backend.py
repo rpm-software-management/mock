@@ -13,6 +13,7 @@ from . import util
 from .exception import PkgError
 from .trace_decorator import getLog, traceLog
 
+
 class Commands(object):
     """Executes mock commands in the buildroot"""
     @traceLog()
@@ -81,7 +82,7 @@ class Commands(object):
             try:
                 self.plugins.call_hooks('clean')
                 for scrub in scrub_opts:
-                    #FIXME hooks for all plugins
+                    # FIXME hooks for all plugins
                     self.plugins.call_hooks('scrub', scrub)
                     if scrub == 'all':
                         self.buildroot.root_log.info("scrubbing everything for %s" % self.config_name)
@@ -160,7 +161,6 @@ class Commands(object):
         finally:
             self.uid_manager.restorePrivs()
 
-
     @traceLog()
     def _show_installed_packages(self):
         '''report the installed packages in the chroot to the root log'''
@@ -175,7 +175,7 @@ class Commands(object):
             uid=self.buildroot.chrootuid,
             user=self.buildroot.chrootuser,
             gid=self.buildroot.chrootgid,
-            )
+        )
 
     #
     # UNPRIVILEGED:
@@ -262,10 +262,8 @@ class Commands(object):
         try:
             self.state.start("shell")
             ret = util.doshell(chrootPath=self.buildroot.make_chroot_path(),
-                                         environ=self.buildroot.env,
-                                         uid=uid, gid=gid,
-                                         user=None,
-                                         cmd=cmd)
+                               environ=self.buildroot.env, uid=uid, gid=gid,
+                               user=None, cmd=cmd)
         finally:
             log.debug("shell: unmounting all filesystems")
             self.state.finish("shell")
@@ -287,9 +285,10 @@ class Commands(object):
         self.state.start(chrootstate)
         try:
             if options.unpriv:
-                self.buildroot.doChroot(args, shell=shell, printOutput=True,
-                              uid=self.buildroot.chrootuid, gid=self.buildroot.chrootgid,
-                              user=self.buildroot.chrootuser, cwd=options.cwd)
+                self.buildroot.doChroot(
+                    args, shell=shell, printOutput=True,
+                    uid=self.buildroot.chrootuid, gid=self.buildroot.chrootgid,
+                    user=self.buildroot.chrootuser, cwd=options.cwd)
             else:
                 self.buildroot.doChroot(args, shell=shell, cwd=options.cwd, printOutput=True)
         finally:
@@ -350,7 +349,6 @@ class Commands(object):
             self.plugins.call_hooks('postbuild')
             self.state.finish("buildsrpm")
 
-
     @traceLog()
     def _show_path_user(self, path):
         cmd = ['/sbin/fuser', '-a', '-v', path]
@@ -372,37 +370,38 @@ class Commands(object):
 
     @traceLog()
     def get_specfile_name(self, srpm_path):
-        files = self.buildroot.doChroot([self.config['rpm_command'], "-qpl", srpm_path],
-                    shell=False, uid=self.buildroot.chrootuid, gid=self.buildroot.chrootgid,
-                    user=self.buildroot.chrootuser,
-                    returnOutput=True)
+        files = self.buildroot.doChroot(
+            [self.config['rpm_command'], "-qpl", srpm_path],
+            shell=False, uid=self.buildroot.chrootuid,
+            gid=self.buildroot.chrootgid, user=self.buildroot.chrootuser,
+            returnOutput=True)
         specs = [item.rstrip() for item in files.split('\n') if item.rstrip().endswith('.spec')]
         if len(specs) < 1:
-            raise PkgError("No specfile found in srpm: "\
-                                               + os.path.basename(srpm_path))
+            raise PkgError(
+                "No specfile found in srpm: " + os.path.basename(srpm_path))
         return specs[0]
-
 
     @traceLog()
     def install_srpm(self, srpm_path):
-        self.buildroot.doChroot([self.config['rpm_command'], "-Uvh", "--nodeps", srpm_path],
+        self.buildroot.doChroot(
+            [self.config['rpm_command'], "-Uvh", "--nodeps", srpm_path],
             shell=False, uid=self.buildroot.chrootuid, gid=self.buildroot.chrootgid,
             user=self.buildroot.chrootuser)
 
     @traceLog()
     def rebuild_installed_srpm(self, spec_path, timeout):
-        command = ['{command} -bs --target {0} --nodeps {1}'\
-                   .format(self.rpmbuild_arch, spec_path,
-                    command=self.config['rpmbuild_command'])]
+        command = ['{command} -bs --target {0} --nodeps {1}'.format(
+            self.rpmbuild_arch, spec_path,
+            command=self.config['rpmbuild_command'])]
         if not util.USE_NSPAWN:
             command = ["bash", "--login", "-c"] + command
-        self.buildroot.doChroot(command,
-                shell=False, logger=self.buildroot.build_log, timeout=timeout,
-                uid=self.buildroot.chrootuid, gid=self.buildroot.chrootgid,
-                user=self.buildroot.chrootuser,
-                printOutput=self.config['print_main_output'])
+        self.buildroot.doChroot(
+            command, shell=False, logger=self.buildroot.build_log,
+            timeout=timeout, uid=self.buildroot.chrootuid,
+            gid=self.buildroot.chrootgid, user=self.buildroot.chrootuser,
+            printOutput=self.config['print_main_output'])
         results = glob.glob("%s/%s/SRPMS/*src.rpm" % (self.make_chroot_path(),
-                                                       self.buildroot.builddir))
+                                                      self.buildroot.builddir))
         if len(results) != 1:
             raise PkgError("Expected to find single rebuilt srpm, found %d."
                            % len(results))
@@ -428,13 +427,14 @@ class Commands(object):
             mode += ' --short-circuit'
         additional_opts = self.config.get('rpmbuild_opts', '')
         rpmbuild_cmd = '{command} {mode} --target {0} --nodeps {1} {2} {3}'\
-                              .format(self.rpmbuild_arch, check_opt, spec_path,
-                                      additional_opts, mode=mode,
-                                      command=self.config['rpmbuild_command'])
+                       .format(self.rpmbuild_arch, check_opt, spec_path,
+                               additional_opts, mode=mode,
+                               command=self.config['rpmbuild_command'])
         command = [rpmbuild_cmd]
         if not util.USE_NSPAWN:
             command = ["bash", "--login", "-c"] + command
-        self.buildroot.doChroot(command,
+        self.buildroot.doChroot(
+            command,
             shell=False, logger=self.buildroot.build_log, timeout=timeout,
             uid=self.buildroot.chrootuid, gid=self.buildroot.chrootgid,
             user=self.buildroot.chrootuser,
@@ -464,7 +464,7 @@ class Commands(object):
             try:
                 self.install(*pkgs)
             except:
-                 self.buildroot.root_log.warn("Failed install built packages")
-                 pass
+                self.buildroot.root_log.warn("Failed install built packages")
+                pass
         finally:
             self.uid_manager.restorePrivs()

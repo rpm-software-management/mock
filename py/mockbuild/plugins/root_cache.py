@@ -14,12 +14,13 @@ import mockbuild.util
 
 requires_api_version = "1.1"
 
+
 # plugin entry point
 @traceLog()
 def init(plugins, conf, buildroot):
     RootCache(plugins, conf, buildroot)
 
-# classes
+
 class RootCache(object):
     """caches root environment in a tarball"""
     @traceLog()
@@ -77,7 +78,7 @@ class RootCache(object):
 
     def _haveVolatileRoot(self):
         return self.config['plugin_conf']['tmpfs_enable'] \
-                and not (str(self.config['plugin_conf']['tmpfs_opts']['keep_mounted'] == 'True'))
+            and not (str(self.config['plugin_conf']['tmpfs_opts']['keep_mounted'] == 'True'))
 
     @traceLog()
     def _unpack_root_cache(self):
@@ -122,7 +123,7 @@ class RootCache(object):
                 mockbuild.util.do(
                     ["tar"] + self.compressArgs + ["-xf", self.rootCacheFile, "-C", self.buildroot.make_chroot_path()],
                     shell=False, printOutput=True
-                    )
+                )
                 for item in self.exclude_dirs:
                     mockbuild.util.mkdirIfAbsent(self.buildroot.make_chroot_path(item))
                 self._rootCacheUnlock()
@@ -182,11 +183,12 @@ class RootCache(object):
                 try:
                     mockbuild.util.do(
                         ["tar", "--one-file-system", "--exclude-caches", "--exclude-caches-under"] +
-                            self.compressArgs + ["-cf", self.rootCacheFile,
-                            "-C", self.buildroot.make_chroot_path()] +
-                            self.exclude_tar_cmds + ["."],
+                        self.compressArgs +
+                        ["-cf", self.rootCacheFile,
+                         "-C", self.buildroot.make_chroot_path()] +
+                        self.exclude_tar_cmds + ["."],
                         shell=False
-                        )
+                    )
                 except:
                     if os.path.exists(self.rootCacheFile):
                         os.remove(self.rootCacheFile)
@@ -206,4 +208,3 @@ class RootCache(object):
     def _rootCachePostShellHook(self):
         if self._haveVolatileRoot() and self.config['cache_alterations']:
             self._rebuild_root_cache()
-

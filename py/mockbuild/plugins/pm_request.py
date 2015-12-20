@@ -32,9 +32,11 @@ MAX_CONNECTIONS = 10
 def init(plugins, conf, buildroot):
     PMRequestPlugin(plugins, conf, buildroot)
 
+
 class OutputFilter(object):
     def filter(self, record):
         return record.levelno == logging.DEBUG
+
 
 class PMRequestPlugin(object):
     """
@@ -77,6 +79,7 @@ class PMRequestPlugin(object):
             pass
         finally:
             sock.close()
+
 
 class PMRequestListener(object):
     """ Daemon process that responds to requests """

@@ -5,12 +5,12 @@
 
 # python library imports
 from mockbuild.trace_decorator import traceLog, getLog
-from mockbuild.util import do, doshell, run
 import glob
 import os
 import subprocess
 
 requires_api_version = "1.1"
+
 
 # plugin entry point
 @traceLog()

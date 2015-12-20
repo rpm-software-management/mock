@@ -49,39 +49,48 @@ MOCKCONFDIR = os.path.join(SYSCONFDIR, "mock")
 
 mockconfig_path = '/etc/mock'
 
+
 def createrepo(path):
     if os.path.exists(path + '/repodata/repomd.xml'):
         comm = ['/usr/bin/createrepo_c', '--update', path]
     else:
         comm = ['/usr/bin/createrepo_c', path]
-    cmd = subprocess.Popen(comm,
-             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    cmd = subprocess.Popen(
+        comm, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err = cmd.communicate()
     return out, err
 
+
 def parse_args(args):
     parser = optparse.OptionParser('\nmockchain -r mockcfg pkg1 [pkg2] [pkg3]')
-    parser.add_option('-r', '--root', default=None, dest='chroot',
-            metavar="CONFIG",
-            help="chroot config name/base to use in the mock build")
-    parser.add_option('-l', '--localrepo', default=None,
-            help="local path for the local repo, defaults to making its own")
-    parser.add_option('-c', '--continue', default=False, action='store_true',
-            dest='cont',
-            help="if a pkg fails to build, continue to the next one")
-    parser.add_option('-a', '--addrepo', default=[], action='append',
-            dest='repos',
-            help="add these repo baseurls to the chroot's yum config")
-    parser.add_option('--recurse', default=False, action='store_true',
-            help="if more than one pkg and it fails to build, try to build the rest and come back to it")
-    parser.add_option('--log', default=None, dest='logfile',
-            help="log to the file named by this option, defaults to not logging")
-    parser.add_option('--tmp_prefix', default=None, dest='tmp_prefix',
-            help="tmp dir prefix - will default to username-pid if not specified")
-    parser.add_option('-m', '--mock-option', default=[], action='append',
-            dest='mock_option',
-            help="option to pass directly to mock")
-
+    parser.add_option(
+        '-r', '--root', default=None, dest='chroot',
+        metavar="CONFIG",
+        help="chroot config name/base to use in the mock build")
+    parser.add_option(
+        '-l', '--localrepo', default=None,
+        help="local path for the local repo, defaults to making its own")
+    parser.add_option(
+        '-c', '--continue', default=False, action='store_true',
+        dest='cont',
+        help="if a pkg fails to build, continue to the next one")
+    parser.add_option(
+        '-a', '--addrepo', default=[], action='append',
+        dest='repos',
+        help="add these repo baseurls to the chroot's yum config")
+    parser.add_option(
+        '--recurse', default=False, action='store_true',
+        help="if more than one pkg and it fails to build, try to build the rest and come back to it")
+    parser.add_option(
+        '--log', default=None, dest='logfile',
+        help="log to the file named by this option, defaults to not logging")
+    parser.add_option(
+        '--tmp_prefix', default=None, dest='tmp_prefix',
+        help="tmp dir prefix - will default to username-pid if not specified")
+    parser.add_option(
+        '-m', '--mock-option', default=[], action='append',
+        dest='mock_option',
+        help="option to pass directly to mock")
 
     opts, args = parser.parse_args(args)
     if opts.recurse:
@@ -91,15 +100,16 @@ def parse_args(args):
         print("You must provide an argument to -r for the mock chroot")
         sys.exit(1)
 
-
     if len(sys.argv) < 3:
         print("You must specifiy at least 1 package to build")
         sys.exit(1)
 
-
     return opts, args
 
+
 REPOS_ID = []
+
+
 def generate_repo_id(baseurl):
     """ generate repository id for yum.conf out of baseurl """
     repoid = "/".join(baseurl.split('//')[1:]).replace('/', '_')
@@ -112,6 +122,7 @@ def generate_repo_id(baseurl):
     repoid = repoid + suffix
     REPOS_ID.append(repoid)
     return repoid
+
 
 def add_local_repo(infile, destfile, baseurl, repoid=None):
     """take a mock chroot config and add a repo to it's yum.conf
@@ -148,6 +159,7 @@ cost=1
         return False, "Could not write mock config to %s" % destfile
 
     return True, ''
+
 
 def do_build(opts, cfg, pkg):
 
@@ -194,9 +206,8 @@ def do_build(opts, cfg, pkg):
 
     print('building %s' % s_pkg)
     mockcmd.append(pkg)
-    cmd = subprocess.Popen(mockcmd,
-           stdout=subprocess.PIPE,
-           stderr=subprocess.PIPE)
+    cmd = subprocess.Popen(
+        mockcmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err = cmd.communicate()
     if cmd.returncode == 0:
         open(success_file, 'w').write('done\n')
@@ -223,6 +234,7 @@ def log(lf, msg):
 
 config_opts = {}
 
+
 def main(args):
     opts, args = parse_args(args)
     # take mock config + list of pkgs
@@ -240,7 +252,6 @@ def main(args):
             sys.exit(1)
     pid = os.getpid()
     opts.uniqueext = '%s-%s' % (opts.tmp_prefix, pid)
-
 
     # create a tempdir for our local info
     if opts.localrepo:
@@ -287,12 +298,10 @@ def main(args):
             log(opts.logfile, "Error: Could not add: %s to yum config in mock chroot: %s" % (baseurl, msg))
             sys.exit(1)
 
-
     # these files needed from the mock.config dir to make mock run
     for fn in ['site-defaults.cfg', 'logging.ini']:
         pth = mockconfig_path + '/' + fn
         shutil.copyfile(pth, opts.config_path + '/' + fn)
-
 
     # createrepo on it
     out, err = createrepo(opts.local_repo_dir)
@@ -300,7 +309,6 @@ def main(args):
         log(opts.logfile, "Error making local repo: %s" % opts.local_repo_dir)
         log(opts.logfile, "Err: %s" % err)
         sys.exit(1)
-
 
     download_dir = tempfile.mkdtemp()
     downloaded_pkgs = {}

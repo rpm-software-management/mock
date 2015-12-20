@@ -11,7 +11,7 @@ from .trace_decorator import traceLog
 
 _libc = ctypes.CDLL(None, use_errno=True)
 
-# class
+
 class UidManager(object):
     @traceLog()
     def __init__(self, unprivUid=-1, unprivGid=-1):
@@ -56,13 +56,13 @@ class UidManager(object):
 
     @traceLog()
     def _push(self):
-         # save current ruid, euid, rgid, egid
+        # save current ruid, euid, rgid, egid
         self.privStack.append({
             "ruid": os.getuid(),
             "euid": os.geteuid(),
             "rgid": os.getgid(),
             "egid": os.getegid(),
-            })
+        })
         self.privEnviron.append(dict(os.environ))
 
     @traceLog()
@@ -98,10 +98,11 @@ class UidManager(object):
         try:
             os.chown(path, uid, gid)
         except OSError as e:
-            if e.errno == 2: # No such file or directory
+            if e.errno == 2:  # No such file or directory
                 pass
             else:
                 raise
+
 
 def getresuid():
     ruid = ctypes.c_long()
@@ -112,6 +113,7 @@ def getresuid():
         raise OSError(ctypes.get_errno(), os.strerror(ctypes.get_errno()))
     return (ruid.value, euid.value, suid.value)
 
+
 def setresuid(ruid=-1, euid=-1, suid=-1):
     ruid = ctypes.c_long(ruid)
     euid = ctypes.c_long(euid)
@@ -119,6 +121,7 @@ def setresuid(ruid=-1, euid=-1, suid=-1):
     res = _libc.setresuid(ruid, euid, suid)
     if res:
         raise OSError(ctypes.get_errno(), os.strerror(ctypes.get_errno()))
+
 
 def getresgid():
     rgid = ctypes.c_long()
@@ -128,6 +131,7 @@ def getresgid():
     if res:
         raise OSError(ctypes.get_errno(), os.strerror(ctypes.get_errno()))
     return (rgid.value, egid.value, sgid.value)
+
 
 def setresgid(rgid=-1, egid=-1, sgid=-1):
     rgid = ctypes.c_long(rgid)

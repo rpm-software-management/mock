@@ -13,12 +13,13 @@ from mockbuild.mounts import BindMountPoint
 
 requires_api_version = "1.1"
 
+
 # plugin entry point
 @traceLog()
 def init(plugins, conf, buildroot):
     CCache(plugins, conf, buildroot)
 
-# classes
+
 class CCache(object):
     """enables ccache in buildroot/rpmbuild"""
     @traceLog()

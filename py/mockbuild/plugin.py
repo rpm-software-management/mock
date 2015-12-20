@@ -5,6 +5,7 @@ from .trace_decorator import traceLog
 
 current_api_version = '1.1'
 
+
 class Plugins(object):
     @traceLog()
     def __init__(self, config, state):
@@ -35,8 +36,7 @@ class Plugins(object):
                     fp, pathname, description = imp.find_module(plugin, [self.plugin_dir])
                 except ImportError:
                     buildroot.root_log.warn(
-                            "{0} plugin is enabled in configuration but is not installed"\
-                            .format(plugin))
+                        "{0} plugin is enabled in configuration but is not installed".format(plugin))
                     continue
                 try:
                     module = imp.load_module(plugin, fp, pathname, description)
@@ -60,8 +60,8 @@ class Plugins(object):
             del kwargs['required']
         hooks = self._hooks.get(stage, [])
         if required and not hooks:
-            raise Error("Feature {0} is not provided by any of enabled plugins"\
-                        .format(stage))
+            raise Error(
+                "Feature {0} is not provided by any of enabled plugins".format(stage))
         for hook in hooks:
             hook(*args, **kwargs)
 

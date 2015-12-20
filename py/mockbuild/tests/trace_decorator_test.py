@@ -6,6 +6,7 @@ from functools import wraps
 
 from mockbuild import trace_decorator
 
+
 def getLineno(fn=None):
     if fn:
         if hasattr(fn, 'func_code'):
@@ -13,6 +14,7 @@ def getLineno(fn=None):
         else:
             return fn.__code__.co_firstlineno
     return inspect.currentframe().f_back.f_lineno
+
 
 def captureLogging():
     def decorator(fn):
@@ -25,6 +27,7 @@ def captureLogging():
                 trace_decorator.logging.getLogger = getLoggerMock
 
                 captured = []
+
                 def doLogMock(logger, level, *args, **kwargs):
                     captured.append((logger, level, args, kwargs))
                 trace_decorator.doLog = doLogMock
@@ -43,21 +46,27 @@ if filename.endswith('.pyc'):
 
 default_logger = 'trace.{0}'.format(__name__)
 
+
 def exampleFunc(arg1, arg2="default", *args, **kwargs):
     return 42
+
 
 class MyException(Exception):
     pass
 
+
 def exampleRaising(arg1, arg2="default", *args, **kwargs):
     raise MyException('test exception')
+
 
 def exampleGenerator():
     yield 1
     yield 2
 
+
 def exampleNested(**kwargs):
     return trace_decorator.traceLog()(exampleFunc)('bbb', **kwargs)
+
 
 class TraceDecoratorTest(unittest.TestCase):
     @captureLogging()
@@ -96,13 +105,13 @@ class TraceDecoratorTest(unittest.TestCase):
         callLineno = getLineno() - 1
 
         expectations = [
-                (default_logger, logging.INFO, (filename, callLineno,
-                        "ENTER exampleFunc('aaa')"),
-                    {'exc_info': None, 'args': [], 'func': 'test_capture'}),
-                (default_logger, logging.INFO, (filename, getLineno(exampleFunc),
-                        "LEAVE exampleFunc --> 42\n"),
-                    {'exc_info': None, 'args': [], 'func': 'exampleFunc'})
-                ]
+            (default_logger, logging.INFO, (filename, callLineno,
+                                            "ENTER exampleFunc('aaa')"),
+             {'exc_info': None, 'args': [], 'func': 'test_capture'}),
+            (default_logger, logging.INFO, (filename, getLineno(exampleFunc),
+                                            "LEAVE exampleFunc --> 42\n"),
+             {'exc_info': None, 'args': [], 'func': 'exampleFunc'})
+        ]
 
         self.assertEqual(expectations, captured)
 

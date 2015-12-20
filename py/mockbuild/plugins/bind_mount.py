@@ -14,12 +14,13 @@ from mockbuild.mounts import BindMountPoint
 
 requires_api_version = "1.1"
 
+
 # plugin entry point
 @traceLog()
 def init(plugins, conf, buildroot):
     BindMount(plugins, conf, buildroot)
 
-# classes
+
 class BindMount(object):
     """bind mount dirs from host into chroot"""
     @traceLog()

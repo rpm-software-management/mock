@@ -14,7 +14,6 @@ import pickle
 import pwd
 import re
 import select
-import shutil
 import signal
 import subprocess
 import sys
@@ -45,7 +44,7 @@ except NameError:
 _libc = ctypes.cdll.LoadLibrary(None)
 _libc.personality.argtypes = [ctypes.c_ulong]
 _libc.personality.restype = ctypes.c_int
-_libc.unshare.argtypes = [ctypes.c_int,]
+_libc.unshare.argtypes = [ctypes.c_int]
 _libc.unshare.restype = ctypes.c_int
 
 # See linux/include/sched.h
@@ -56,14 +55,14 @@ CLONE_NEWNET = 0x40000000
 CLONE_NEWIPC = 0x08000000
 
 # taken from sys/personality.h
-PER_LINUX32=0x0008
-PER_LINUX=0x0000
+PER_LINUX32 = 0x0008
+PER_LINUX = 0x0000
 personality_defs = {
     'x86_64': PER_LINUX, 'ppc64': PER_LINUX, 'sparc64': PER_LINUX,
     'i386': PER_LINUX32, 'i586': PER_LINUX32, 'i686': PER_LINUX32,
     'ppc': PER_LINUX32, 'sparc': PER_LINUX32, 'sparcv9': PER_LINUX32,
-    'ia64' : PER_LINUX, 'alpha' : PER_LINUX,
-    's390' : PER_LINUX32, 's390x' : PER_LINUX,
+    'ia64': PER_LINUX, 'alpha': PER_LINUX,
+    's390': PER_LINUX32, 's390x': PER_LINUX,
 }
 
 PLUGIN_LIST = ['tmpfs', 'root_cache', 'yum_cache', 'bind_mount',
@@ -72,14 +71,14 @@ PLUGIN_LIST = ['tmpfs', 'root_cache', 'yum_cache', 'bind_mount',
 
 USE_NSPAWN = False
 
-# classes
+
 class commandTimeoutExpired(exception.Error):
     def __init__(self, msg):
         exception.Error.__init__(self, msg)
         self.msg = msg
         self.resultcode = 10
 
-# functions
+
 @traceLog()
 def get_proxy_environment(config):
     env = {}
@@ -89,6 +88,7 @@ def get_proxy_environment(config):
         if value:
             env[key] = value
     return env
+
 
 @traceLog()
 def mkdirIfAbsent(*args):
@@ -103,10 +103,12 @@ def mkdirIfAbsent(*args):
                     getLog().exception("Could not create dir %s. Error: %s" % (dirName, e))
                     raise exception.Error("Could not create dir %s. Error: %s" % (dirName, e))
 
+
 @traceLog()
 def touch(fileName):
     getLog().debug("touching file: %s" % fileName)
     open(fileName, 'a').close()
+
 
 @traceLog()
 def rmtree(path, selinux=False, exclude=()):
@@ -146,9 +148,9 @@ def rmtree(path, selinux=False, exclude=()):
         except OSError as e:
             if failed_to_handle:
                 raise
-            if e.errno == errno.ENOENT: # no such file or directory
+            if e.errno == errno.ENOENT:  # no such file or directory
                 pass
-            elif exclude and e.errno == errno.ENOTEMPTY: # there's something excluded left
+            elif exclude and e.errno == errno.ENOTEMPTY:  # there's something excluded left
                 pass
             elif selinux and (e.errno == errno.EPERM or e.errno == errno.EACCES):
                 try_again = True
@@ -166,12 +168,13 @@ def rmtree(path, selinux=False, exclude=()):
             else:
                 raise
 
+
 @traceLog()
 def orphansKill(rootToKill, killsig=signal.SIGTERM):
     """kill off anything that is still chrooted."""
     getLog().debug("kill orphans")
     if USE_NSPAWN is False:
-        for fn in [ d for d in os.listdir("/proc") if d.isdigit() ]:
+        for fn in [d for d in os.listdir("/proc") if d.isdigit()]:
             try:
                 root = os.readlink("/proc/%s/root" % fn)
                 if os.path.realpath(root) == os.path.realpath(rootToKill):
@@ -201,23 +204,24 @@ def orphansKill(rootToKill, killsig=signal.SIGTERM):
                     getLog().warning("Machine %s still running. Killing..." % M_UUID)
                     os.system("/usr/bin/machinectl terminate %s" % M_UUID)
 
+
 @traceLog()
 def yieldSrpmHeaders(srpms, plainRpmOk=0):
     import rpm
     ts = rpm.TransactionSet('/')
-    flags = (rpm._RPMVSF_NOSIGNATURES|rpm._RPMVSF_NODIGESTS)
+    flags = (rpm._RPMVSF_NOSIGNATURES | rpm._RPMVSF_NODIGESTS)
     ts.setVSFlags(flags)
     for srpm in srpms:
         try:
             fd = os.open(srpm, os.O_RDONLY)
         except OSError as e:
             raise exception.Error("Cannot find/open srpm: %s. Error: %s"
-                                            % (srpm, e))
+                                  % (srpm, e))
         try:
             hdr = ts.hdrFromFdno(fd)
         except rpm.error as e:
             raise exception.Error(
-                    "Cannot find/open srpm: %s. Error: %s" % (srpm, ''.join(e)))
+                "Cannot find/open srpm: %s. Error: %s" % (srpm, ''.join(e)))
         finally:
             os.close(fd)
 
@@ -226,10 +230,12 @@ def yieldSrpmHeaders(srpms, plainRpmOk=0):
 
         yield hdr
 
+
 @traceLog()
 def checkSrpmHeaders(srpms, plainRpmOk=0):
     for dummy in yieldSrpmHeaders(srpms, plainRpmOk):
         pass
+
 
 @traceLog()
 def getNEVRA(hdr):
@@ -244,11 +250,13 @@ def getNEVRA(hdr):
     ret = (name, epoch, ver, rel, arch)
     return tuple(x.decode() if i != 1 else x for i, x in enumerate(ret))
 
+
 @traceLog()
 def cmpKernelVer(str1, str2):
     'compare two kernel version strings and return -1, 0, 1 for less, equal, greater'
     import rpm
     return rpm.labelCompare(('', str1, ''), ('', str2, ''))
+
 
 @traceLog()
 def getAddtlReqs(hdr, conf):
@@ -257,7 +265,7 @@ def getAddtlReqs(hdr, conf):
     reqlist = []
     for this_srpm in ['-'.join([name, ver, rel]),
                       '-'.join([name, ver]),
-                      '-'.join([name]),]:
+                      '-'.join([name])]:
         if this_srpm in conf:
             more_reqs = conf[this_srpm]
             if isinstance(type(more_reqs), basestring):
@@ -267,6 +275,7 @@ def getAddtlReqs(hdr, conf):
             break
 
     return set(reqlist)
+
 
 @traceLog()
 def unshare(flags):
@@ -278,24 +287,28 @@ def unshare(flags):
     except AttributeError:
         pass
 
+
 # these are called in child process, so no logging
 def condChroot(chrootPath):
     if chrootPath is not None:
-        saved = { "ruid": os.getuid(), "euid": os.geteuid(), }
-        uid.setresuid(0,0,0)
+        saved = {"ruid": os.getuid(), "euid": os.geteuid()}
+        uid.setresuid(0, 0, 0)
         os.chdir(chrootPath)
         os.chroot(chrootPath)
         uid.setresuid(saved['ruid'], saved['euid'])
 
+
 def condChdir(cwd):
     if cwd is not None:
         os.chdir(cwd)
+
 
 def condDropPrivs(uid, gid):
     if gid is not None:
         os.setregid(gid, gid)
     if uid is not None:
         os.setreuid(uid, uid)
+
 
 def condPersonality(per=None):
     if per is None or per in ('noarch',):
@@ -306,12 +319,14 @@ def condPersonality(per=None):
     if res == -1:
         raise OSError(ctypes.get_errno(), os.strerror(ctypes.get_errno()))
 
+
 def condEnvironment(env=None):
     if not env:
         return
     os.environ.clear()
     for k in list(env.keys()):
         os.putenv(k, env[k])
+
 
 def condUnshareIPC(unshare_ipc=True):
     if unshare_ipc:
@@ -321,6 +336,7 @@ def condUnshareIPC(unshare_ipc=True):
             # IPC and UTS ns are supported since the same kernel version. If this
             # fails, there had to be a warning already
             pass
+
 
 def process_input(line):
     out = []
@@ -333,6 +349,7 @@ def process_input(line):
             out.append(char)
     return ''.join(out)
 
+
 def logOutput(fds, logger, returnOutput=1, start=0, timeout=0, printOutput=False, child=None, chrootPath=None, pty=False):
     output = ""
     done = 0
@@ -341,7 +358,7 @@ def logOutput(fds, logger, returnOutput=1, start=0, timeout=0, printOutput=False
     for fd in fds:
         flags = fcntl.fcntl(fd, fcntl.F_GETFL)
         if not fd.closed:
-            fcntl.fcntl(fd, fcntl.F_SETFL, flags| os.O_NONBLOCK)
+            fcntl.fcntl(fd, fcntl.F_SETFL, flags | os.O_NONBLOCK)
 
     mockbuild_logger = logging.getLogger('mockbuild')
     stored_propagate = mockbuild_logger.propagate
@@ -414,6 +431,7 @@ def logOutput(fds, logger, returnOutput=1, start=0, timeout=0, printOutput=False
 
     return output
 
+
 @traceLog()
 def selinuxEnabled():
     """Check if SELinux is enabled (enforcing or permissive)."""
@@ -433,6 +451,7 @@ def selinuxEnabled():
         pass
     return False
 
+
 def resize_pty(pty):
     try:
         winsize = struct.pack('HHHH', 0, 0, 0, 0)
@@ -441,6 +460,7 @@ def resize_pty(pty):
     except IOError:
         # Nice to have, but not necessary
         pass
+
 
 # logger =
 # output = [1|0]
@@ -481,7 +501,7 @@ def do(command, shell=False, chrootPath=None, cwd=None, timeout=0, raiseExc=True
             stdout=slave_pty if pty else subprocess.PIPE,
             stderr=subprocess.PIPE,
             preexec_fn=preexec,
-            )
+        )
         # use select() to poll for output so we dont block
         output = logOutput([reader if pty else child.stdout, child.stderr],
                            logger, returnOutput, start, timeout, pty=pty,
@@ -502,13 +522,13 @@ def do(command, shell=False, chrootPath=None, cwd=None, timeout=0, raiseExc=True
             reader.close()
 
     # wait until child is done, kill it if it passes timeout
-    niceExit=1
+    niceExit = 1
     while child.poll() is None:
-        if (time.time() - start)>timeout and timeout!=0:
-            niceExit=0
+        if (time.time() - start) > timeout and timeout != 0:
+            niceExit = 0
             os.killpg(child.pid, 15)
-        if (time.time() - start)>(timeout+1) and timeout!=0:
-            niceExit=0
+        if (time.time() - start) > (timeout + 1) and timeout != 0:
+            niceExit = 0
             os.killpg(child.pid, 9)
 
     # only logging from this point, convert command to string
@@ -526,6 +546,7 @@ def do(command, shell=False, chrootPath=None, cwd=None, timeout=0, raiseExc=True
             raise exception.Error("Command failed. See logs for output.\n # %s" % (command,), child.returncode)
 
     return output
+
 
 class ChildPreExec(object):
     def __init__(self, personality, chrootPath, cwd, uid, gid, env=None,
@@ -553,8 +574,10 @@ class ChildPreExec(object):
         condUnshareIPC(self.unshare_ipc)
         reset_sigpipe()
 
+
 def reset_sigpipe():
     signal.signal(signal.SIGPIPE, signal.SIG_DFL)
+
 
 def is_in_dir(path, directory):
     """Tests whether `path` is inside `directory`."""
@@ -563,6 +586,7 @@ def is_in_dir(path, directory):
     directory = os.path.realpath(directory)
 
     return os.path.commonprefix([path, directory]) == directory
+
 
 def _prepare_nspawn_command(chrootPath, user, cmd, private_network=False):
     cmd_is_list = isinstance(cmd, list)
@@ -573,8 +597,8 @@ def _prepare_nspawn_command(chrootPath, user, cmd, private_network=False):
         else:
             cmd = ['/bin/su', '-l', user, '-c', '"{0}"'.format(cmd)]
     elif not cmd_is_list:
-        cmd = [ cmd, ]
-    nspawn_argv = ['/usr/bin/systemd-nspawn', '-q', '-M' , uuid.uuid4().hex, '-D', chrootPath]
+        cmd = [cmd]
+    nspawn_argv = ['/usr/bin/systemd-nspawn', '-q', '-M', uuid.uuid4().hex, '-D', chrootPath]
     if private_network:
         nspawn_argv.append('--private-network')
     cmd = nspawn_argv + cmd
@@ -583,15 +607,16 @@ def _prepare_nspawn_command(chrootPath, user, cmd, private_network=False):
     else:
         return " ".join(cmd)
 
+
 def doshell(chrootPath=None, environ=None, uid=None, gid=None, user=None, cmd=None,
             unshare_ipc=True):
     log = getLog()
     log.debug("doshell: chrootPath:%s, uid:%d, gid:%d" % (chrootPath, uid, gid))
     if environ is None:
         environ = clean_env()
-    if not 'PROMPT_COMMAND' in environ:
+    if 'PROMPT_COMMAND' not in environ:
         environ['PROMPT_COMMAND'] = 'printf "\033]0;<mock-chroot>\007<mock-chroot>"'
-    if not 'SHELL' in environ:
+    if 'SHELL' not in environ:
         environ['SHELL'] = '/bin/sh'
     log.debug("doshell environment: %s", environ)
     if cmd:
@@ -609,21 +634,22 @@ def doshell(chrootPath=None, environ=None, uid=None, gid=None, user=None, cmd=No
     return subprocess.call(cmd, preexec_fn=preexec, env=environ, shell=False)
 
 
-
 def run(cmd, isShell=True):
     log = getLog()
     log.debug("run: cmd = %s\n" % cmd)
     return subprocess.call(cmd, shell=isShell)
 
+
 def clean_env():
-    env = {'TERM' : 'vt100',
-           'SHELL' : '/bin/sh',
-           'HOME' : '/builddir',
-           'HOSTNAME' : 'mock',
-           'PATH' : '/usr/bin:/bin:/usr/sbin:/sbin',
+    env = {'TERM': 'vt100',
+           'SHELL': '/bin/sh',
+           'HOME': '/builddir',
+           'HOSTNAME': 'mock',
+           'PATH': '/usr/bin:/bin:/usr/sbin:/sbin',
            }
     env['LANG'] = os.environ.setdefault('LANG', 'en_US.UTF-8')
     return env
+
 
 def get_fs_type(path):
     cmd = '/usr/bin/stat -f -L -c %%T %s' % path
@@ -631,6 +657,7 @@ def get_fs_type(path):
                          universal_newlines=True)
     p.wait()
     return p.stdout.readline().strip()
+
 
 def find_non_nfs_dir():
     dirs = ('/dev/shm', '/run', '/tmp', '/usr/tmp', '/')
@@ -645,7 +672,7 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
     "sets up default configuration."
     config_opts = {}
     config_opts['version'] = version
-    config_opts['basedir'] = '/var/lib/mock' # root name is automatically added to this
+    config_opts['basedir'] = '/var/lib/mock'  # root name is automatically added to this
     config_opts['resultdir'] = '%(basedir)s/%(root)s/result'
     config_opts['cache_topdir'] = '/var/cache/mock'
     config_opts['clean'] = True
@@ -661,7 +688,7 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
         #  'mock' group doesn't exist, must set in config file
         pass
     config_opts['build_log_fmt_name'] = "unadorned"
-    config_opts['root_log_fmt_name']  = "detailed"
+    config_opts['root_log_fmt_name'] = "detailed"
     config_opts['state_log_fmt_name'] = "state"
     config_opts['online'] = True
     config_opts['use_nspawn'] = False
@@ -679,7 +706,7 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
                                                    '.bashrc']
 
     config_opts['createrepo_on_rpms'] = False
-    config_opts['createrepo_command'] = '/usr/bin/createrepo_c -d -q -x *.src.rpm' # default command
+    config_opts['createrepo_command'] = '/usr/bin/createrepo_c -d -q -x *.src.rpm'  # default command
 
     config_opts['backup_on_clean'] = False
     config_opts['backup_base_dir'] = os.path.join(config_opts['basedir'], "backup")
@@ -692,67 +719,67 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
     config_opts['plugins'] = PLUGIN_LIST
     config_opts['plugin_dir'] = os.path.join(pkgpythondir, "plugins")
     config_opts['plugin_conf'] = {
-            'ccache_enable': True,
-            'ccache_opts': {
-                'max_cache_size': "4G",
-                'compress': None,
-                'dir': "%(cache_topdir)s/%(root)s/ccache/u%(chrootuid)s/"},
-            'yum_cache_enable': True,
-            'yum_cache_opts': {
-                'max_age_days': 30,
-                'max_metadata_age_days': 30,
-                'dir': "%(cache_topdir)s/%(root)s/%(package_manager)s_cache/",
-                'target_dir': "/var/cache/%(package_manager)s/",
-                'online': True,},
-            'root_cache_enable': True,
-            'root_cache_opts': {
-                'age_check' : True,
-                'max_age_days': 15,
-                'dir': "%(cache_topdir)s/%(root)s/root_cache/",
-                'compress_program': 'pigz',
-                'exclude_dirs': ["./proc", "./sys", "./dev", "./tmp/ccache", "./var/cache/yum", "./var/cache/dnf"],
-                'extension': '.gz'},
-            'bind_mount_enable': True,
-            'bind_mount_opts': {
-                'dirs': [
+        'ccache_enable': True,
+        'ccache_opts': {
+            'max_cache_size': "4G",
+            'compress': None,
+            'dir': "%(cache_topdir)s/%(root)s/ccache/u%(chrootuid)s/"},
+        'yum_cache_enable': True,
+        'yum_cache_opts': {
+            'max_age_days': 30,
+            'max_metadata_age_days': 30,
+            'dir': "%(cache_topdir)s/%(root)s/%(package_manager)s_cache/",
+            'target_dir': "/var/cache/%(package_manager)s/",
+            'online': True},
+        'root_cache_enable': True,
+        'root_cache_opts': {
+            'age_check': True,
+            'max_age_days': 15,
+            'dir': "%(cache_topdir)s/%(root)s/root_cache/",
+            'compress_program': 'pigz',
+            'exclude_dirs': ["./proc", "./sys", "./dev", "./tmp/ccache", "./var/cache/yum", "./var/cache/dnf"],
+            'extension': '.gz'},
+        'bind_mount_enable': True,
+        'bind_mount_opts': {
+            'dirs': [
                 # specify like this:
                 # ('/host/path', '/bind/mount/path/in/chroot/' ),
                 # ('/another/host/path', '/another/bind/mount/path/in/chroot/'),
-                ],
-                'create_dirs': False,},
-            'mount_enable': True,
-            'mount_opts': {'dirs': [
-                # specify like this:
-                # ("/dev/device", "/mount/path/in/chroot/", "vfstype", "mount_options"),
-                ]},
-            'tmpfs_enable': False,
-            'tmpfs_opts': {
-                'required_ram_mb': 900,
-                'max_fs_size': None,
-                'mode': '0755',
-                'keep_mounted' : False},
-            'selinux_enable': True,
-            'selinux_opts': {},
-            'package_state_enable' : False,
-            'package_state_opts' : {},
-            'pm_request_enable': False,
-            'pm_request_opts': {},
-            'lvm_root_enable': False,
-            'lvm_root_opts': {
-                'pool_name': 'mockbuild',
-            },
-            'chroot_scan_enable': False,
-            'chroot_scan_opts': {
-                'regexes' : [
-                    "^[^k]?core(\\.\\d+)?$", "\\.log$",
-                ],
-                'only_failed': True},
-            'sign_enable': False,
-            'sign_opts': {
-                'cmd' : 'rpmsign',
-                'opts' : '--addsign %(rpms)s',
-                },
-            }
+            ],
+            'create_dirs': False},
+        'mount_enable': True,
+        'mount_opts': {'dirs': [
+            # specify like this:
+            # ("/dev/device", "/mount/path/in/chroot/", "vfstype", "mount_options"),
+        ]},
+        'tmpfs_enable': False,
+        'tmpfs_opts': {
+            'required_ram_mb': 900,
+            'max_fs_size': None,
+            'mode': '0755',
+            'keep_mounted': False},
+        'selinux_enable': True,
+        'selinux_opts': {},
+        'package_state_enable': False,
+        'package_state_opts': {},
+        'pm_request_enable': False,
+        'pm_request_opts': {},
+        'lvm_root_enable': False,
+        'lvm_root_opts': {
+            'pool_name': 'mockbuild',
+        },
+        'chroot_scan_enable': False,
+        'chroot_scan_opts': {
+            'regexes': [
+                "^[^k]?core(\\.\\d+)?$", "\\.log$",
+            ],
+            'only_failed': True},
+        'sign_enable': False,
+        'sign_opts': {
+            'cmd': 'rpmsign',
+            'opts': '--addsign %(rpms)s',
+        },
+    }
 
     config_opts['environment'] = {
         'TERM': 'vt100',
@@ -762,7 +789,7 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
         'PATH': '/usr/bin:/bin:/usr/sbin:/sbin',
         'PROMPT_COMMAND': 'printf "\033]0;<mock-chroot>\007<mock-chroot>"',
         'LANG': os.environ.setdefault('LANG', 'en_US.UTF-8'),
-        }
+    }
 
     runtime_plugins = [runtime_plugin
                        for (runtime_plugin, _)
@@ -778,16 +805,16 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
     # SCM defaults
     config_opts['scm'] = False
     config_opts['scm_opts'] = {
-            'method': 'git',
-            'cvs_get': 'cvs -d /srv/cvs co SCM_BRN SCM_PKG',
-            'git_get': 'git clone SCM_BRN git://localhost/SCM_PKG.git SCM_PKG',
-            'svn_get': 'svn co file:///srv/svn/SCM_PKG/SCM_BRN SCM_PKG',
-            'spec': 'SCM_PKG.spec',
-            'ext_src_dir': '/dev/null',
-            'write_tar': False,
-            'git_timestamps': False,
-            'exclude_vcs': True,
-            }
+        'method': 'git',
+        'cvs_get': 'cvs -d /srv/cvs co SCM_BRN SCM_PKG',
+        'git_get': 'git clone SCM_BRN git://localhost/SCM_PKG.git SCM_PKG',
+        'svn_get': 'svn co file:///srv/svn/SCM_PKG/SCM_BRN SCM_PKG',
+        'spec': 'SCM_PKG.spec',
+        'ext_src_dir': '/dev/null',
+        'write_tar': False,
+        'git_timestamps': False,
+        'exclude_vcs': True,
+    }
 
     # dependent on guest OS
     config_opts['useradd'] = \
@@ -796,7 +823,7 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
     config_opts['chroot_setup_cmd'] = ('groupinstall', 'buildsys-build')
     config_opts['target_arch'] = 'i386'
     config_opts['releasever'] = None
-    config_opts['rpmbuild_arch'] = None # <-- None means set automatically from target_arch
+    config_opts['rpmbuild_arch'] = None  # <-- None means set automatically from target_arch
     config_opts['yum.conf'] = ''
     config_opts['yum_builddep_opts'] = ''
     config_opts['yum_common_opts'] = []
@@ -811,7 +838,7 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
     config_opts['macros'] = {
         '%_topdir': '%s/build' % config_opts['chroothome'],
         '%_rpmfilename': '%%{NAME}-%%{VERSION}-%%{RELEASE}.%%{ARCH}.rpm',
-        }
+    }
     # security config
     config_opts['no_root_shells'] = False
     config_opts['extra_chroot_dirs'] = []
@@ -829,6 +856,7 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
     config_opts['rpmbuild_command'] = '/usr/bin/rpmbuild'
 
     return config_opts
+
 
 @traceLog()
 def set_config_opts_per_cmdline(config_opts, options, args):
@@ -904,7 +932,7 @@ def set_config_opts_per_cmdline(config_opts, options, args):
     for option in options.plugin_opts:
         try:
             p, kv = option.split(":", 1)
-            k, v  = kv.split("=", 1)
+            k, v = kv.split("=", 1)
         except:
             raise exception.BadCmdline(
                 "Bad option for '--plugin-option' (%s).  Use --plugin-option 'plugin:key=value'"
@@ -930,11 +958,11 @@ def set_config_opts_per_cmdline(config_opts, options, args):
         raise exception.BadCmdline(
             "Must specify --resultdir when building multiple RPMS.")
 
-    if options.cleanup_after == False:
+    if options.cleanup_after is False:
         config_opts['cleanup_on_success'] = False
         config_opts['cleanup_on_failure'] = False
 
-    if options.cleanup_after == True:
+    if options.cleanup_after is True:
         config_opts['cleanup_on_success'] = True
         config_opts['cleanup_on_failure'] = True
 
@@ -979,12 +1007,14 @@ def set_config_opts_per_cmdline(config_opts, options, args):
                 config_opts['scm_opts'].update({k: v})
             except:
                 raise exception.BadCmdline(
-                "Bad option for '--scm-option' (%s).  Use --scm-option 'key=value'"
-                % option)
+                    "Bad option for '--scm-option' (%s).  Use --scm-option 'key=value'"
+                    % option)
+
 
 def check_config(config_opts):
     if 'root' not in config_opts:
         raise exception.ConfigError("Error in configuration - option config_opts['root'] must be present in your config.")
+
 
 @traceLog()
 def update_config_from_file(config_opts, config_file, uid_manager):
@@ -1029,6 +1059,7 @@ def update_config_from_file(config_opts, config_file, uid_manager):
         finally:
             reader.close()
 
+
 @traceLog()
 def do_update_config(log, config_opts, cfg, uidManager, name, skipError=True):
     if os.path.exists(cfg):
@@ -1043,6 +1074,7 @@ def do_update_config(log, config_opts, cfg, uidManager, name, skipError=True):
                 log.error("  If you're trying to specify a path, include the .cfg extension, e.g. -r ./target.cfg")
             sys.exit(1)
 
+
 @traceLog()
 def load_config(config_path, name, uidManager, version, PKGPYTHONDIR):
     log = logging.getLogger()
@@ -1050,8 +1082,7 @@ def load_config(config_path, name, uidManager, version, PKGPYTHONDIR):
         gid = uidManager.unprivUid
     else:
         gid = os.getuid()
-    config_opts = setup_default_config_opts(gid,
-            version, PKGPYTHONDIR)
+    config_opts = setup_default_config_opts(gid, version, PKGPYTHONDIR)
 
     # array to save config paths
     config_opts['config_paths'] = []
@@ -1073,29 +1104,30 @@ def load_config(config_path, name, uidManager, version, PKGPYTHONDIR):
     do_update_config(log, config_opts, chroot_cfg_path, uidManager, name, skipError=False)
 
     # Read user specific config file
-    cfg = os.path.join(os.path.expanduser('~' + pwd.getpwuid(os.getuid())[0]),
-            '.mock/user.cfg')
+    cfg = os.path.join(os.path.expanduser(
+        '~' + pwd.getpwuid(os.getuid())[0]), '.mock/user.cfg')
     do_update_config(log, config_opts, cfg, uidManager, name)
 
     # default /etc/hosts contents
-    if (not config_opts['use_host_resolv']
-        and 'etc/hosts' not in config_opts['files']):
+    if not config_opts['use_host_resolv'] and 'etc/hosts' not in config_opts['files']:
         config_opts['files']['etc/hosts'] = dedent('''\
             127.0.0.1 localhost localhost.localdomain
             ::1       localhost localhost.localdomain localhost6 localhost6.localdomain6
             ''')
     return config_opts
 
+
 @traceLog()
 def check_macro_definition(config_opts):
     for k, v in config_opts['macros'].items():
         if not k or (not v and (v is not None)) or len(k.split()) != 1:
             raise exception.BadCmdline(
-                "Bad macros 'config_opts['macros']['%s'] = ['%s']'" % (k,v) )
+                "Bad macros 'config_opts['macros']['%s'] = ['%s']'" % (k, v))
         if not k.startswith('%'):
             del config_opts['macros'][k]
             k = '%{0}'.format(k)
             config_opts['macros'].update({k: v})
+
 
 @traceLog()
 def pretty_getcwd():
@@ -1109,6 +1141,7 @@ def pretty_getcwd():
 
 ORIGINAL_CWD = None
 ORIGINAL_CWD = pretty_getcwd()
+
 
 @traceLog()
 def find_btrfs_in_chroot(mockdir, chroot_path):
@@ -1125,17 +1158,17 @@ def find_btrfs_in_chroot(mockdir, chroot_path):
     """
 
     try:
-       output = do(["btrfs", "subv", "list", mockdir], returnOutput=1)
+        output = do(["btrfs", "subv", "list", mockdir], returnOutput=1)
     except OSError as e:
-       # btrfs utility does not exist, nothing we can do about it
-       if e.errno == errno.ENOENT:
-           return None
-       raise e
+        # btrfs utility does not exist, nothing we can do about it
+        if e.errno == errno.ENOENT:
+            return None
+        raise e
     except Exception as e:
-       # it is not btrfs volume
-       return None
+        # it is not btrfs volume
+        return None
 
     for l in output[:-1].splitlines():
-       subv = l.split()[8]
-       if subv.startswith(chroot_path[1:]):
-           return subv
+        subv = l.split()[8]
+        if subv.startswith(chroot_path[1:]):
+            return subv

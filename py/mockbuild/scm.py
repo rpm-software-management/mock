@@ -14,7 +14,7 @@ import tempfile
 from .trace_decorator import traceLog
 from . import util
 
-# class
+
 class scmWorker(object):
     """Build RPMs from SCM"""
     @traceLog()
@@ -115,7 +115,7 @@ class scmWorker(object):
             sys.exit(5)
         self.spec = sf
 
-       # Add passed RPM macros before parsing spec file
+        # Add passed RPM macros before parsing spec file
         for macro, expression in list(self.macros.items()):
             rpm.addMacro(macro.lstrip('%'), expression)
 
@@ -144,7 +144,7 @@ class scmWorker(object):
         # Generate a tarball from the checked out sources if needed
         if str(self.write_tar).lower() == "true":
             tardir = self.name + "-" + self.version
-            if tarball == None:
+            if tarball is None:
                 tarball = tardir + ".tar.gz"
             taropts = ""
 
@@ -170,7 +170,7 @@ class scmWorker(object):
         # Get possible external sources from an external sources directory
         for f in self.sources:
             if not os.path.exists(self.src_dir + "/" + f) and \
-                   os.path.exists(self.ext_src_dir + "/" + f):
+               os.path.exists(self.ext_src_dir + "/" + f):
                 self.log.debug("Copying " + self.ext_src_dir + "/" + f + " to " + self.src_dir + "/" + f)
                 shutil.copy2(self.ext_src_dir + "/" + f, self.src_dir + "/" + f)
 

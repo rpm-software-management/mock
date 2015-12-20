@@ -11,10 +11,11 @@ import tempfile
 from . import util
 from . import mounts
 from .exception import BuildRootLocked, RootError, \
-                                ResultDirNotAccessible, Error
+    ResultDirNotAccessible, Error
 from .package_manager import PackageManager
 from .trace_decorator import getLog, traceLog
 from . import uid
+
 
 class Buildroot(object):
     @traceLog()
@@ -146,7 +147,7 @@ class Buildroot(object):
             self._setup_build_dirs()
         elif prebuild:
             if 'age_check' in self.config['plugin_conf']['root_cache_opts'] and \
-                not self.config['plugin_conf']['root_cache_opts']['age_check']:
+               not self.config['plugin_conf']['root_cache_opts']['age_check']:
                 self._init_pkg_management()
             # Recreates build user to ensure the uid/gid are up to date with config
             # and there's no garbage left by previous build
@@ -181,7 +182,7 @@ class Buildroot(object):
                 kargs['gid'] = pwd.getpwuid(kargs['uid'])[0]
             self.uid_manager.becomeUser(0, 0)
         result = util.do(command, chrootPath=self.make_chroot_path(),
-                       env=env, shell=shell, *args, **kargs)
+                         env=env, shell=shell, *args, **kargs)
         if util.USE_NSPAWN:
             self.uid_manager.restorePrivs()
         return result
@@ -240,7 +241,7 @@ class Buildroot(object):
 
         excluded = [self.make_chroot_path(self.homedir, path)
                     for path in self.config['exclude_from_homedir_cleanup']] + \
-                    self.mounts.get_mountpoints()
+            self.mounts.get_mountpoints()
         util.rmtree(self.make_chroot_path(self.homedir),
                     selinux=self.selinux, exclude=excluded)
 
@@ -276,7 +277,7 @@ class Buildroot(object):
         if disabled:
             f = open(passwd, "w")
             for l in newlines:
-                f.write(l+'\n')
+                f.write(l + '\n')
             f.close()
 
     @traceLog()
@@ -285,7 +286,6 @@ class Buildroot(object):
         if self.logging_initialized:
             return
         self.logging_initialized = True
-
 
         try:
             self.uid_manager.dropPrivsTemp()
@@ -364,19 +364,19 @@ class Buildroot(object):
     def _setup_dirs(self):
         self.root_log.debug('create skeleton dirs')
         dirs = ['var/lib/rpm',
-                     'var/lib/yum',
-                     'var/lib/dbus',
-                     'var/log',
-                     'var/cache/yum',
-                     'etc/rpm',
-                     'tmp',
-                     'tmp/ccache',
-                     'var/tmp',
-                     #dnf?
-                     'etc/yum.repos.d',
-                     'etc/yum',
-                     'proc',
-                     'sys']
+                'var/lib/yum',
+                'var/lib/dbus',
+                'var/log',
+                'var/cache/yum',
+                'etc/rpm',
+                'tmp',
+                'tmp/ccache',
+                'var/tmp',
+                # dnf?
+                'etc/yum.repos.d',
+                'etc/yum',
+                'proc',
+                'sys']
         dirs += self.config['extra_chroot_dirs']
         for item in dirs:
             util.mkdirIfAbsent(self.make_chroot_path(item))
@@ -440,7 +440,7 @@ class Buildroot(object):
                 (stat.S_IFBLK | 0o666, os.makedev(7, 2), "dev/loop2"),
                 (stat.S_IFBLK | 0o666, os.makedev(7, 3), "dev/loop3"),
                 (stat.S_IFBLK | 0o666, os.makedev(7, 4), "dev/loop4"),
-                ]
+            ]
             kver = os.uname()[2]
             self.root_log.debug("kernel version == {0}".format(kver))
             for i in devFiles:
@@ -451,7 +451,7 @@ class Buildroot(object):
                 if self.selinux:
                     util.do(
                         ["chcon", "--reference=/" + i[2], self.make_chroot_path(i[2])],
-                         raiseExc=0, shell=False, env=self.env)
+                        raiseExc=0, shell=False, env=self.env)
 
             os.symlink("/proc/self/fd/0", self.make_chroot_path("dev/stdin"))
             os.symlink("/proc/self/fd/1", self.make_chroot_path("dev/stdout"))
@@ -477,7 +477,7 @@ class Buildroot(object):
 
     @traceLog()
     def _setup_files(self):
-        #self.root_log.debug('touch required files')
+        # self.root_log.debug('touch required files')
         for item in [self.make_chroot_path('etc', 'fstab'),
                      self.make_chroot_path('etc', 'yum.conf'),
                      self.make_chroot_path('etc', 'dnf.conf'),
@@ -497,6 +497,7 @@ class Buildroot(object):
         tmp_libdir = os.path.join(self.tmpdir, '$LIB')
         mock_libdir = self.make_chroot_path(tmp_libdir)
         nosync_unresolved = '/usr/$LIB/nosync/nosync.so'
+
         def copy_nosync(lib64=False):
             def resolve(path):
                 return path.replace('$LIB', 'lib64' if lib64 else 'lib')
@@ -523,7 +524,6 @@ class Buildroot(object):
                                    "of nosync library need to be installed")
                 return
             self.nosync_path = os.path.join(tmp_libdir, 'nosync.so')
-
 
     @traceLog()
     def finalize(self):

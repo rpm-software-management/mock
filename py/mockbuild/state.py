@@ -1,6 +1,7 @@
 from .trace_decorator import getLog
 from .exception import StateError
 
+
 class State(object):
     def __init__(self):
         self._state = []
@@ -14,7 +15,7 @@ class State(object):
         return self._state[-1]
 
     def start(self, state):
-        if state == None:
+        if state is None:
             raise StateError("start called with None State")
         self._state.append(state)
         self.state_log.info("Start: %s" % state)

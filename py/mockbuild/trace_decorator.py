@@ -15,6 +15,7 @@ try:
 except NameError:
     basestring = str
 
+
 # defaults to module verbose log
 # does a late binding on log. Forwards all attributes to logger.
 # works around problem where reconfiguring the logging module means loggers
@@ -31,6 +32,7 @@ class getLog(object):
         logger = logging.getLogger(self.name)
         return getattr(logger, name)
 
+
 # emulates logic in logging module to ensure we only log
 # messages that logger is enabled to produce.
 def doLog(logger, level, *args, **kargs):
@@ -42,6 +44,7 @@ def doLog(logger, level, *args, **kargs):
         except TypeError:
             del(kargs["func"])
             logger.handle(logger.makeRecord(logger.name, level, *args, **kargs))
+
 
 def traceLog(log=None):
     def decorator(func):
@@ -97,18 +100,20 @@ def traceLog(log=None):
         return trace
     return decorator
 
+
 # helper function so we can use back-compat format but not be ugly
 def decorateAllFunctions(module, logger=None):
     methods = [method for method in dir(module)
-            if isinstance(getattr(module, method), types.FunctionType)
-            ]
+               if isinstance(getattr(module, method), types.FunctionType)]
     for i in methods:
         setattr(module, i, traceLog(logger)(getattr(module, i)))
 
+
 # unit tests...
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.WARNING,
-                    format='%(name)s %(levelname)s %(filename)s, %(funcName)s, Line: %(lineno)d:  %(message)s',)
+    logging.basicConfig(
+        level=logging.WARNING,
+        format='%(name)s %(levelname)s %(filename)s, %(funcName)s, Line: %(lineno)d:  %(message)s',)
     log = getLog("foobar.bubble")
     root = getLog(name="")
     log.setLevel(logging.WARNING)
