@@ -1107,6 +1107,9 @@ def load_config(config_path, name, uidManager, version, PKGPYTHONDIR):
     cfg = os.path.join(os.path.expanduser(
         '~' + pwd.getpwuid(os.getuid())[0]), '.mock/user.cfg')
     do_update_config(log, config_opts, cfg, uidManager, name)
+    cfg = os.path.join(os.path.expanduser('~' + pwd.getpwuid(os.getuid())[0]),
+            '.config/mock.cfg')
+    do_update_config(log, config_opts, cfg, uidManager, name)
 
     # default /etc/hosts contents
     if not config_opts['use_host_resolv'] and 'etc/hosts' not in config_opts['files']:
