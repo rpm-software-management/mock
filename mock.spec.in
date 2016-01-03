@@ -1,11 +1,11 @@
 # next four lines substituted by autoconf
-%define major @RELEASE_MAJOR@
-%define minor @RELEASE_MINOR@
-%define sub @RELEASE_SUBLEVEL@
-%define extralevel @RELEASE_RPM_EXTRALEVEL@
-%define release_version %{major}.%{minor}.%{sub}%{extralevel}
+%global major @RELEASE_MAJOR@
+%global minor @RELEASE_MINOR@
+%global sub @RELEASE_SUBLEVEL@
+%global extralevel @RELEASE_RPM_EXTRALEVEL@
+%global release_version %{major}.%{minor}.%{sub}%{extralevel}
 
-%{!?python_sitelib: %define python_sitelib %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib()")}
+%{!?python_sitelib: %global python_sitelib %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib()")}
 
 %if 0%{?fedora} > 21
 %global use_python3 1
