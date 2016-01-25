@@ -292,7 +292,7 @@ def command_parse():
     parser.add_option("--disable-plugin", action="append",
                       dest="disabled_plugins", type="string", default=[],
                       help="Disable plugin. Currently-available plugins: %s"
-                           % repr(plugins))
+                      % repr(plugins))
     parser.add_option("--plugin-option", action="append", dest="plugin_opts",
                       default=[], type="string",
                       metavar="PLUGIN:KEY=VALUE",
