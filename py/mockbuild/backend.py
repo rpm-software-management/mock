@@ -383,10 +383,9 @@ class Commands(object):
 
     @traceLog()
     def install_srpm(self, srpm_path):
-        self.buildroot.doChroot(
-            [self.config['rpm_command'], "-Uvh", "--nodeps", srpm_path],
-            shell=False, uid=self.buildroot.chrootuid, gid=self.buildroot.chrootgid,
-            user=self.buildroot.chrootuser)
+        self.buildroot.doChroot([self.config['rpm_command'], "-Uvh", "--nodeps", srpm_path],
+                                shell=False, uid=self.buildroot.chrootuid, gid=self.buildroot.chrootgid,
+                                user=self.buildroot.chrootuser)
 
     @traceLog()
     def rebuild_installed_srpm(self, spec_path, timeout):
