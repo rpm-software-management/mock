@@ -1,5 +1,7 @@
 #!/usr/bin/python -tt
+# -*- coding: utf-8 -*-
 # vim:expandtab:autoindent:tabstop=4:shiftwidth=4:filetype=python:textwidth=0:
+
 # Originally written by Seth Vidal
 # Sections taken from Mach by Thomas Vander Stichele
 # Major reorganization and adaptation by Michael Brown

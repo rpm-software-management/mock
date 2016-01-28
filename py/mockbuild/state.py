@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+# vim: noai:ts=4:sw=4:expandtab
+
 from .trace_decorator import getLog
 from .exception import StateError
 

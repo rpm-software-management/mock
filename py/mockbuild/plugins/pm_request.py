@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # vim:expandtab:autoindent:tabstop=4:shiftwidth=4:filetype=python
 # License: GPL2 or later see COPYING
 # Written by Michael Simacek

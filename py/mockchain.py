@@ -1,4 +1,7 @@
 #!/usr/bin/python -tt
+# -*- coding: utf-8 -*-
+# vim: noai:ts=4:sw=4:expandtab
+
 # by skvidal@fedoraproject.org
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
