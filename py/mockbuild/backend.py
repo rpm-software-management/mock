@@ -465,6 +465,5 @@ class Commands(object):
                 self.install(*pkgs)
             except:
                 self.buildroot.root_log.warn("Failed install built packages")
-                pass
         finally:
             self.uid_manager.restorePrivs()
