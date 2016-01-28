@@ -370,11 +370,10 @@ class Commands(object):
 
     @traceLog()
     def get_specfile_name(self, srpm_path):
-        files = self.buildroot.doChroot(
-            [self.config['rpm_command'], "-qpl", srpm_path],
-            shell=False, uid=self.buildroot.chrootuid,
-            gid=self.buildroot.chrootgid, user=self.buildroot.chrootuser,
-            returnOutput=True)
+        files = self.buildroot.doChroot([self.config['rpm_command'], "-qpl", srpm_path],
+                                        shell=False, uid=self.buildroot.chrootuid, gid=self.buildroot.chrootgid,
+                                        user=self.buildroot.chrootuser,
+                                        returnOutput=True)
         specs = [item.rstrip() for item in files.split('\n') if item.rstrip().endswith('.spec')]
         if len(specs) < 1:
             raise PkgError(
