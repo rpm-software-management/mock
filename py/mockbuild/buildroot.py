@@ -449,9 +449,8 @@ class Buildroot(object):
                 # set context. (only necessary if host running selinux enabled.)
                 # fails gracefully if chcon not installed.
                 if self.selinux:
-                    util.do(
-                        ["chcon", "--reference=/" + i[2], self.make_chroot_path(i[2])],
-			raiseExc=0, shell=False, env=self.env)
+                    util.do(["chcon", "--reference=/" + i[2], self.make_chroot_path(i[2])],
+                            raiseExc=0, shell=False, env=self.env)
 
             os.symlink("/proc/self/fd/0", self.make_chroot_path("dev/stdin"))
             os.symlink("/proc/self/fd/1", self.make_chroot_path("dev/stdout"))
