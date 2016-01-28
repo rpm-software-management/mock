@@ -433,13 +433,12 @@ class Commands(object):
         command = [rpmbuild_cmd]
         if not util.USE_NSPAWN:
             command = ["bash", "--login", "-c"] + command
-        self.buildroot.doChroot(
-            command,
-            shell=False, logger=self.buildroot.build_log, timeout=timeout,
-            uid=self.buildroot.chrootuid, gid=self.buildroot.chrootgid,
-            user=self.buildroot.chrootuser,
-            private_network=not self.config['rpmbuild_networking'],
-            printOutput=self.config['print_main_output'])
+        self.buildroot.doChroot(command,
+                                shell=False, logger=self.buildroot.build_log, timeout=timeout,
+                                uid=self.buildroot.chrootuid, gid=self.buildroot.chrootgid,
+                                user=self.buildroot.chrootuser,
+                                private_network=not self.config['rpmbuild_networking'],
+                                printOutput=self.config['print_main_output'])
         bd_out = self.make_chroot_path(self.buildroot.builddir)
         results = glob.glob(bd_out + '/RPMS/*.rpm')
         results += glob.glob(bd_out + '/SRPMS/*.rpm')
