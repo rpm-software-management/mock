@@ -285,10 +285,9 @@ class Commands(object):
         self.state.start(chrootstate)
         try:
             if options.unpriv:
-                self.buildroot.doChroot(
-                    args, shell=shell, printOutput=True,
-                    uid=self.buildroot.chrootuid, gid=self.buildroot.chrootgid,
-                    user=self.buildroot.chrootuser, cwd=options.cwd)
+                self.buildroot.doChroot(args, shell=shell, printOutput=True,
+                                        uid=self.buildroot.chrootuid, gid=self.buildroot.chrootgid,
+                                        user=self.buildroot.chrootuser, cwd=options.cwd)
             else:
                 self.buildroot.doChroot(args, shell=shell, cwd=options.cwd, printOutput=True)
         finally:
