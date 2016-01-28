@@ -120,7 +120,9 @@ class Mounts(object):
                 opts = 'gid=%d,mode=0620,ptmxmode=0666' % grp.getgrnam('tty').gr_gid
                 if util.cmpKernelVer(os.uname()[2], '2.6.29') >= 0:
                     opts += ',newinstance'
-                    self.mounts.append(FileSystemMountPoint(filetype='devpts', device='mock_chroot_devpts', path=rootObj.make_chroot_path('/dev/pts'), options=opts))
+                    self.mounts.append(FileSystemMountPoint(filetype='devpts',
+                                                            device='mock_chroot_devpts',
+                                                            path=rootObj.make_chroot_path('/dev/pts'), options=opts))
 
     @traceLog()
     def add(self, mount):
