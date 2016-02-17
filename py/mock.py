@@ -662,7 +662,9 @@ def main():
     try:
         run_command(options, args, config_opts, commands, buildroot, state)
     finally:
+        uidManager.restorePrivs()
         buildroot.finalize()
+        uidManager.dropPrivsTemp()
 
 
 @traceLog()
@@ -836,7 +838,6 @@ def run_command(options, args, config_opts, commands, buildroot, state):
     buildroot._nuke_rpm_db()
     state.finish("run")
     state.alldone()
-    buildroot.finalize()
 
 if __name__ == '__main__':
     # fix for python 2.4 logging module bug:
