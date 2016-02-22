@@ -219,6 +219,15 @@ fi
 %{python_sitelib}/mockbuild/plugins/lvm_root.*
 
 %changelog
+* Mon Feb 22 2016 Miroslav Suchý <msuchy@redhat.com> - 1.2.15-1
+- ccache plugin disabled by default
+- F21 configs removed
+- F24 configs added
+- typo fixed [RHBZ#1285630]
+- read user config from ~/.config/mock.cfg too
+- disable "local" dnf plugin [RHBZ#1264215]
+- when removing buildroot, do that as root [RHBZ#1294979]
+
 * Fri Nov 20 2015 Miroslav Suchý <msuchy@redhat.com> - 1.2.14-1
 - after unpacking chroot, change back to $CWD [RHBZ#1281369]
 - Fix package manager version handling for CentOS
