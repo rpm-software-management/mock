@@ -720,7 +720,7 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
     config_opts['plugins'] = PLUGIN_LIST
     config_opts['plugin_dir'] = os.path.join(pkgpythondir, "plugins")
     config_opts['plugin_conf'] = {
-        'ccache_enable': True,
+        'ccache_enable': False,
         'ccache_opts': {
             'max_cache_size': "4G",
             'compress': None,
