@@ -255,8 +255,6 @@ class Buildroot(object):
         else:
             self.doChroot(['/usr/sbin/userdel', '-f', dets['user']],
                           shell=False, raiseExc=False, nosync=True)
-        self.doChroot(['/usr/sbin/userdel', '-r', '-f', dets['user']],
-                      shell=False, raiseExc=False, nosync=True)
         self.doChroot(['/usr/sbin/groupdel', dets['group']],
                       shell=False, raiseExc=False, nosync=True)
 
