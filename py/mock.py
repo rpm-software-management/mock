@@ -46,6 +46,7 @@ import os.path
 import pwd
 import sys
 import time
+import shlex
 import shutil
 
 from optparse import OptionParser
@@ -495,7 +496,7 @@ def do_rebuild(config_opts, commands, buildroot, srpms):
         if config_opts["createrepo_on_rpms"]:
             log.info("Running createrepo on binary rpms in resultdir")
             buildroot.uid_manager.dropPrivsTemp()
-            cmd = config_opts["createrepo_command"].split()
+            cmd = shlex.split(config_opts["createrepo_command"])
             cmd.append(buildroot.resultdir)
             util.do(cmd)
             buildroot.uid_manager.restorePrivs()

@@ -594,9 +594,9 @@ def _prepare_nspawn_command(chrootPath, user, cmd, private_network=False):
     if user:
         # needs to be /bin because of el5 and el6 targets
         if cmd_is_list:
-            cmd = ['/bin/su', '-l', user, '-c', '{0}'.format(" ".join(cmd))]
+            cmd = ['-u', user] + cmd
         else:
-            cmd = ['/bin/su', '-l', user, '-c', '"{0}"'.format(cmd)]
+            raise exception.Error('Internal Error: command must be list or shell=True.')
     elif not cmd_is_list:
         cmd = [cmd]
     nspawn_argv = ['/usr/bin/systemd-nspawn', '-q', '-M', uuid.uuid4().hex, '-D', chrootPath]

@@ -388,9 +388,7 @@ class Commands(object):
 
     @traceLog()
     def rebuild_installed_srpm(self, spec_path, timeout):
-        command = ['{command} -bs --target {0} --nodeps {1}'\
-                   .format(self.rpmbuild_arch, spec_path,
-                           command=self.config['rpmbuild_command'])]
+        command = [self.config['rpmbuild_command'], '-bs', '--target', self.rpmbuild_arch, '--nodeps', spec_path]
         if not util.USE_NSPAWN:
             command = ["bash", "--login", "-c"] + command
         self.buildroot.doChroot(command,
@@ -409,26 +407,26 @@ class Commands(object):
     def rebuild_package(self, spec_path, timeout, check):
         # --nodeps because rpm in the root may not be able to read rpmdb
         # created by rpm that created it (outside of chroot)
-        check_opt = ''
+        check_opt = []
         if not check:
             # this is because EL5/6 does not know --nocheck
             # when EL5/6 targets are not supported, replace it with --nocheck
-            check_opt = "--define '__spec_check_template exit 0; '"
+            check_opt += ["--define",  "__spec_check_template exit 0; "]
 
-        mode = '-bb'
+        mode = ['-bb']
         sc = self.config.get('short_circuit')
         if sc:
-            mode = {'prep': '-bp',
-                    'install': '-bi',
-                    'build': '-bc',
-                    'binary': '-bb'}[sc]
-            mode += ' --short-circuit'
-        additional_opts = self.config.get('rpmbuild_opts', '')
-        rpmbuild_cmd = '{command} {mode} --target {0} --nodeps {1} {2} {3}'\
-                       .format(self.rpmbuild_arch, check_opt, spec_path,
-                               additional_opts, mode=mode,
-                               command=self.config['rpmbuild_command'])
-        command = [rpmbuild_cmd]
+            mode[0] = {'prep': '-bp',
+                       'install': '-bi',
+                       'build': '-bc',
+                       'binary': '-bb'}[sc]
+            mode += [' --short-circuit']
+        additional_opts = [self.config.get('rpmbuild_opts', '')]
+        if additional_opts == ['']:
+            additional_opts = []
+        command = [self.config['rpmbuild_command']] + mode + \
+                  ['--target', self.rpmbuild_arch, '--nodeps'] + \
+                  check_opt + [spec_path] + additional_opts
         if not util.USE_NSPAWN:
             command = ["bash", "--login", "-c"] + command
         self.buildroot.doChroot(command,
