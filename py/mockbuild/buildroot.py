@@ -7,6 +7,7 @@ import grp
 import logging
 import os
 import pwd
+import shlex
 import shutil
 import stat
 import tempfile
@@ -170,7 +171,7 @@ class Buildroot(object):
         self.plugins.call_hooks('postinit')
         self.state.finish("chroot init")
 
-    def doChroot(self, command, shell=True, nosync=False, *args, **kargs):
+    def doChroot(self, command, shell=False, nosync=False, *args, **kargs):
         """execute given command in root"""
         self._nuke_rpm_db()
         env = dict(self.env)
@@ -260,7 +261,7 @@ class Buildroot(object):
 
         self.doChroot(['/usr/sbin/groupadd', '-g', dets['gid'], dets['group']],
                       shell=False, nosync=True)
-        self.doChroot(self.config['useradd'] % dets, shell=True, nosync=True)
+        self.doChroot(shlex.split(self.config['useradd'] % dets), shell=False, nosync=True)
         self._enable_chrootuser_account()
 
     @traceLog()

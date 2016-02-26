@@ -491,7 +491,7 @@ def do(command, shell=False, chrootPath=None, cwd=None, timeout=0, raiseExc=True
             command = ['/bin/sh', '-c'] + command
             shell = False
         if chrootPath and USE_NSPAWN:
-            command = _prepare_nspawn_command(chrootPath, user, command, private_network=private_network)
+            command = _prepare_nspawn_command(chrootPath, user, command, private_network=private_network, env=env)
         logger.debug("Executing command: {0} with env {1} and shell {2}".format(command, env, shell))
         child = subprocess.Popen(
             command,
@@ -589,7 +589,7 @@ def is_in_dir(path, directory):
     return os.path.commonprefix([path, directory]) == directory
 
 
-def _prepare_nspawn_command(chrootPath, user, cmd, private_network=False):
+def _prepare_nspawn_command(chrootPath, user, cmd, private_network=False, env=None):
     cmd_is_list = isinstance(cmd, list)
     if user:
         # needs to be /bin because of el5 and el6 targets
@@ -602,6 +602,11 @@ def _prepare_nspawn_command(chrootPath, user, cmd, private_network=False):
     nspawn_argv = ['/usr/bin/systemd-nspawn', '-q', '-M', uuid.uuid4().hex, '-D', chrootPath]
     if private_network:
         nspawn_argv.append('--private-network')
+    if env:
+        # BZ 1312384 workaround
+        env['PROMPT_COMMAND'] = 'printf "<mock-chroot>"'
+        for k, v in env.items():
+            nspawn_argv.append('--setenv={0}={1}'.format(k, v))
     cmd = nspawn_argv + cmd
     if cmd_is_list:
         return cmd
@@ -627,7 +632,7 @@ def doshell(chrootPath=None, environ=None, uid=None, gid=None, user=None, cmd=No
     else:
         cmd = ["/bin/sh", "-i", "-l"]
     if USE_NSPAWN:
-        cmd = _prepare_nspawn_command(chrootPath, user, cmd)
+        cmd = _prepare_nspawn_command(chrootPath, user, cmd, env=environ)
     preexec = ChildPreExec(personality=None, chrootPath=chrootPath, cwd=None,
                            uid=uid, gid=gid, env=environ, shell=True,
                            unshare_ipc=unshare_ipc)
