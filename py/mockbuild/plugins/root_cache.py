@@ -96,7 +96,7 @@ class RootCache(object):
                     # make sure no config file is newer than the cache file
                     for cfg in self.config['config_paths']:
                         if os.stat(cfg).st_mtime > statinfo.st_mtime:
-                            getLog().info("%s newer than root cache; cache will be rebuilt" % cfg)
+                            getLog().info("%s newer than root cache; cache will be rebuilt", cfg)
                             os.unlink(self.rootCacheFile)
                             break
             else:

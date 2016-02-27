@@ -25,9 +25,8 @@ def init(plugins, conf, buildroot):
         getLog().warning(
             "Tmpfs plugin disabled. "
             "System does not have the required amount of RAM to enable the tmpfs plugin. "
-            "System has %sMB RAM, but the config specifies the minimum required is %sMB RAM. "
-            %
-            (system_ram_mb, conf['required_ram_mb']))
+            "System has %sMB RAM, but the config specifies the minimum required is %sMB RAM. ",
+            system_ram_mb, conf['required_ram_mb'])
 
 
 class Tmpfs(object):
@@ -55,14 +54,14 @@ class Tmpfs(object):
 
     @traceLog()
     def _tmpfsMount(self):
-        getLog().info("mounting tmpfs at %s." % self.buildroot.make_chroot_path())
+        getLog().info("mounting tmpfs at %s.", self.buildroot.make_chroot_path())
 
         if not self.mounted:
             mountCmd = ["mount", "-n", "-t", "tmpfs"] + self.optArgs + \
                        ["mock_chroot_tmpfs", self.buildroot.make_chroot_path()]
             mockbuild.util.do(mountCmd, shell=False)
         else:
-            getLog().info("reusing tmpfs at %s." % self.buildroot.make_chroot_path())
+            getLog().info("reusing tmpfs at %s.", self.buildroot.make_chroot_path())
         self.mounted = True
 
     @traceLog()
@@ -84,7 +83,7 @@ class Tmpfs(object):
         try:
             mockbuild.util.do(umountCmd, shell=False)
         except:
-            getLog().warning("tmpfs-plugin: exception while umounting tmpfs! (cwd: %s)" % mockbuild.util.pretty_getcwd())
+            getLog().warning("tmpfs-plugin: exception while umounting tmpfs! (cwd: %s)", mockbuild.util.pretty_getcwd())
             force = True
 
         if force:
@@ -93,5 +92,5 @@ class Tmpfs(object):
             try:
                 mockbuild.util.do(umountCmd, shell=False)
             except:
-                getLog().warning("tmpfs-plugin: exception while force umounting tmpfs! (cwd: %s)" % mockbuild.util.pretty_getcwd())
+                getLog().warning("tmpfs-plugin: exception while force umounting tmpfs! (cwd: %s)", mockbuild.util.pretty_getcwd())
         self.mounted = False

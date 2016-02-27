@@ -135,8 +135,8 @@ class Buildroot(object):
         self.mounts.mountall()
 
         # write out config details
-        self.root_log.debug('rootdir = %s' % self.make_chroot_path())
-        self.root_log.debug('resultdir = %s' % self.resultdir)
+        self.root_log.debug('rootdir = %s', self.make_chroot_path())
+        self.root_log.debug('resultdir = %s', self.resultdir)
 
         self.pkg_manager.initialize()
         if not self.chroot_was_initialized:
@@ -201,7 +201,7 @@ class Buildroot(object):
         if os.path.exists(orig_conf_file):
             shutil.copy2(orig_conf_file, etcdir)
         else:
-            self.root_log.warn("File {0} not present. It is not copied into the chroot.".format(orig_conf_file))
+            self.root_log.warn("File %s not present. It is not copied into the chroot.", orig_conf_file)
 
     @traceLog()
     def _setup_resolver_config(self):
@@ -306,7 +306,7 @@ class Buildroot(object):
                 fh.setFormatter(formatter)
                 fh.setLevel(logging.NOTSET)
                 log.addHandler(fh)
-                log.info("Mock Version: %s" % self.config['version'])
+                log.info("Mock Version: %s", self.config['version'])
         finally:
             self.uid_manager.restorePrivs()
 
@@ -327,16 +327,16 @@ class Buildroot(object):
         dbfiles = glob.glob(self.make_chroot_path('var/lib/rpm/__db*'))
         if not dbfiles:
             return
-        self.root_log.debug("removing %d rpm db files" % len(dbfiles))
+        self.root_log.debug("removing %d rpm db files", len(dbfiles))
         # become root
         self.uid_manager.becomeUser(0, 0)
         try:
             for tmp in dbfiles:
-                self.root_log.debug("_nuke_rpm_db: removing %s" % tmp)
+                self.root_log.debug("_nuke_rpm_db: removing %s", tmp)
                 try:
                     os.unlink(tmp)
                 except OSError as e:
-                    getLog().error("%s" % e)
+                    getLog().error("%s", e)
                     raise
         finally:
             self.uid_manager.restorePrivs()
@@ -444,7 +444,7 @@ class Buildroot(object):
                 (stat.S_IFBLK | 0o666, os.makedev(7, 4), "dev/loop4"),
             ]
             kver = os.uname()[2]
-            self.root_log.debug("kernel version == {0}".format(kver))
+            self.root_log.debug("kernel version == %s", kver)
             for i in devFiles:
                 # create node
                 os.mknod(self.make_chroot_path(i[2]), i[0], i[1])

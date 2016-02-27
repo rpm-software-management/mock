@@ -94,20 +94,20 @@ def get_proxy_environment(config):
 @traceLog()
 def mkdirIfAbsent(*args):
     for dirName in args:
-        getLog().debug("ensuring that dir exists: %s" % dirName)
+        getLog().debug("ensuring that dir exists: %s", dirName)
         if not os.path.exists(dirName):
             try:
-                getLog().debug("creating dir: %s" % dirName)
+                getLog().debug("creating dir: %s", dirName)
                 os.makedirs(dirName)
             except OSError as e:
                 if e.errno != errno.EEXIST:
-                    getLog().exception("Could not create dir %s. Error: %s" % (dirName, e))
+                    getLog().exception("Could not create dir %s. Error: %s", dirName, e)
                     raise exception.Error("Could not create dir %s. Error: %s" % (dirName, e))
 
 
 @traceLog()
 def touch(fileName):
-    getLog().debug("touching file: %s" % fileName)
+    getLog().debug("touching file: %s", fileName)
     open(fileName, 'a').close()
 
 
@@ -179,7 +179,7 @@ def orphansKill(rootToKill, killsig=signal.SIGTERM):
             try:
                 root = os.readlink("/proc/%s/root" % fn)
                 if os.path.realpath(root) == os.path.realpath(rootToKill):
-                    getLog().warning("Process ID %s still running in chroot. Killing..." % fn)
+                    getLog().warning("Process ID %s still running in chroot. Killing...", fn)
                     pid = int(fn, 10)
                     os.kill(pid, killsig)
                     os.waitpid(pid, 0)
@@ -202,7 +202,7 @@ def orphansKill(rootToKill, killsig=signal.SIGTERM):
                     continue
                 vm_root = '='.join(vm_root.rstrip().split('=')[1:])
                 if vm_root == rootToKill:
-                    getLog().warning("Machine %s still running. Killing..." % M_UUID)
+                    getLog().warning("Machine %s still running. Killing...", M_UUID)
                     os.system("/usr/bin/machinectl terminate %s" % M_UUID)
 
 
@@ -280,7 +280,7 @@ def getAddtlReqs(hdr, conf):
 
 @traceLog()
 def unshare(flags):
-    getLog().debug("Unsharing. Flags: %s" % flags)
+    getLog().debug("Unsharing. Flags: %s", flags)
     try:
         res = _libc.unshare(flags)
         if res:
@@ -379,7 +379,7 @@ def logOutput(fds, logger, returnOutput=1, start=0, timeout=0, printOutput=False
 
             if not i_rdy and not o_rdy and not e_rdy:
                 if child and child.poll() is not None:
-                    logger.info("Child pid '%s' is dead" % child.pid)
+                    logger.info("Child pid '%s' is dead", child.pid)
                     done = True
                     if chrootPath:
                         logger.info("Child dead, killing orphans")
@@ -492,7 +492,7 @@ def do(command, shell=False, chrootPath=None, cwd=None, timeout=0, raiseExc=True
             shell = False
         if chrootPath and USE_NSPAWN:
             command = _prepare_nspawn_command(chrootPath, user, command, private_network=private_network, env=env)
-        logger.debug("Executing command: {0} with env {1} and shell {2}".format(command, env, shell))
+        logger.debug("Executing command: %s with env %s and shell %s", command, env, shell)
         child = subprocess.Popen(
             command,
             shell=shell,
@@ -539,7 +539,7 @@ def do(command, shell=False, chrootPath=None, cwd=None, timeout=0, raiseExc=True
     if not niceExit:
         raise commandTimeoutExpired("Timeout(%s) expired for command:\n # %s\n%s" % (timeout, command, output))
 
-    logger.debug("Child return code was: %s" % str(child.returncode))
+    logger.debug("Child return code was: %s", child.returncode)
     if raiseExc and child.returncode:
         if returnOutput:
             raise exception.Error("Command failed: \n # %s\n%s" % (command, output), child.returncode)
@@ -560,7 +560,7 @@ class ChildPreExec(object):
         self.env = env
         self.shell = shell
         self.unshare_ipc = unshare_ipc
-        getLog().debug("child environment: %s" % env)
+        getLog().debug("child environment: %s", env)
 
     def __call__(self, *args, **kargs):
         if not self.shell:
@@ -617,7 +617,7 @@ def _prepare_nspawn_command(chrootPath, user, cmd, private_network=False, env=No
 def doshell(chrootPath=None, environ=None, uid=None, gid=None, user=None, cmd=None,
             unshare_ipc=True):
     log = getLog()
-    log.debug("doshell: chrootPath:%s, uid:%d, gid:%d" % (chrootPath, uid, gid))
+    log.debug("doshell: chrootPath:%s, uid:%d, gid:%d", chrootPath, uid, gid)
     if environ is None:
         environ = clean_env()
     if 'PROMPT_COMMAND' not in environ:
@@ -636,13 +636,13 @@ def doshell(chrootPath=None, environ=None, uid=None, gid=None, user=None, cmd=No
     preexec = ChildPreExec(personality=None, chrootPath=chrootPath, cwd=None,
                            uid=uid, gid=gid, env=environ, shell=True,
                            unshare_ipc=unshare_ipc)
-    log.debug("doshell: command: %s" % cmd)
+    log.debug("doshell: command: %s", cmd)
     return subprocess.call(cmd, preexec_fn=preexec, env=environ, shell=False)
 
 
 def run(cmd, isShell=True):
     log = getLog()
-    log.debug("run: cmd = %s\n" % cmd)
+    log.debug("run: cmd = %s\n", cmd)
     return subprocess.call(cmd, shell=isShell)
 
 
@@ -1073,7 +1073,7 @@ def do_update_config(log, config_opts, cfg, uidManager, name, skipError=True):
             update_config_from_file(config_opts, cfg, uidManager)
             check_macro_definition(config_opts)
     elif not skipError:
-            log.error("Could not find required config file: %s" % cfg)
+            log.error("Could not find required config file: %s", cfg)
             if name == "default":
                 log.error("  Did you forget to specify the chroot to use with '-r'?")
             if "/" in cfg:

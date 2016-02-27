@@ -69,7 +69,7 @@ def traceLog(log=None):
             if isinstance(l2, basestring):
                 l2 = logging.getLogger(l2)
 
-            message = "ENTER %s(" % func_name
+            message = "ENTER %s("
             message = message + ', '.join([repr(arg) for arg in args])
             if args and kw:
                 message += ', '
@@ -79,7 +79,7 @@ def traceLog(log=None):
 
             frame = inspect.getouterframes(inspect.currentframe())[1][0]
             doLog(l2, logging.INFO, os.path.normcase(frame.f_code.co_filename),
-                  frame.f_lineno, message, args=[], exc_info=None,
+                  frame.f_lineno, message, args=[func_name], exc_info=None,
                   func=frame.f_code.co_name)
             try:
                 result = "Bad exception raised: Exception was not a derived "\
@@ -89,12 +89,12 @@ def traceLog(log=None):
                 except (KeyboardInterrupt, Exception) as e:
                     result = "EXCEPTION RAISED"
                     doLog(l2, logging.INFO, filename, lineno,
-                          "EXCEPTION: %s\n" % e, args=[],
+                          "EXCEPTION: %s\n", args=[e],
                           exc_info=sys.exc_info(), func=func_name)
                     raise
             finally:
                 doLog(l2, logging.INFO, filename, lineno,
-                      "LEAVE %s --> %s\n" % (func_name, result), args=[],
+                      "LEAVE %s --> %s\n", args=[func_name, result],
                       exc_info=None, func=func_name)
 
             return result
@@ -145,7 +145,7 @@ if __name__ == "__main__":
         yield 2
 
     for i in testGen():
-        log.debug("got: %s" % i)
+        log.debug("got: %s", i)
 
     @traceLog()
     def anotherFunc(*args):

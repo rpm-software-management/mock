@@ -54,7 +54,7 @@ class ChrootScan(object):
         mockbuild.util.mkdirIfAbsent(self.resultdir)
         count = 0
         logger = getLog()
-        logger.debug("chroot_scan: Starting scan of %s" % chroot)
+        logger.debug("chroot_scan: Starting scan of %s", chroot)
         copied = []
         for root, _, files in os.walk(chroot):
             for f in files:
@@ -64,7 +64,7 @@ class ChrootScan(object):
                     subprocess.call("cp --parents %s %s" % (srcpath, self.resultdir), shell=True)
                     count += 1
                     copied.append(srcpath)
-        logger.debug("chroot_scan: finished with %d files found" % count)
+        logger.debug("chroot_scan: finished with %d files found", count)
         if count:
-            logger.info("chroot_scan: %d files copied to %s" % (count, self.resultdir))
-            logger.info("%s" % "\n".join(copied))
+            logger.info("chroot_scan: %d files copied to %s", count, self.resultdir)
+            logger.info("\n".join(copied))

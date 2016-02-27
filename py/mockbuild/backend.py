@@ -62,7 +62,7 @@ class Commands(object):
         rpms = glob.glob(os.path.join(srcdir, "*rpm"))
         if len(rpms) == 0:
             return
-        self.state.state_log.info("backup_results: saving with cp %s %s" % (" ".join(rpms), dstdir))
+        self.state.state_log.info("backup_results: saving with cp %s %s", " ".join(rpms), dstdir)
         util.run(cmd="cp %s %s" % (" ".join(rpms), dstdir))
 
     @traceLog()
@@ -86,27 +86,27 @@ class Commands(object):
                     # FIXME hooks for all plugins
                     self.plugins.call_hooks('scrub', scrub)
                     if scrub == 'all':
-                        self.buildroot.root_log.info("scrubbing everything for %s" % self.config_name)
+                        self.buildroot.root_log.info("scrubbing everything for %s", self.config_name)
                         self.buildroot.delete()
                         util.rmtree(self.buildroot.cachedir, selinux=self.buildroot.selinux)
                     elif scrub == 'chroot':
-                        self.buildroot.root_log.info("scrubbing chroot for %s" % self.config_name)
+                        self.buildroot.root_log.info("scrubbing chroot for %s", self.config_name)
                         self.buildroot.delete()
                     elif scrub == 'cache':
-                        self.buildroot.root_log.info("scrubbing cache for %s" % self.config_name)
+                        self.buildroot.root_log.info("scrubbing cache for %s", self.config_name)
                         util.rmtree(self.buildroot.cachedir, selinux=self.buildroot.selinux)
                     elif scrub == 'c-cache':
-                        self.buildroot.root_log.info("scrubbing c-cache for %s" % self.config_name)
+                        self.buildroot.root_log.info("scrubbing c-cache for %s", self.config_name)
                         util.rmtree(os.path.join(self.buildroot.cachedir, 'ccache'), selinux=self.buildroot.selinux)
                     elif scrub == 'root-cache':
-                        self.buildroot.root_log.info("scrubbing root-cache for %s" % self.config_name)
+                        self.buildroot.root_log.info("scrubbing root-cache for %s", self.config_name)
                         util.rmtree(os.path.join(self.buildroot.cachedir, 'root_cache'), selinux=self.buildroot.selinux)
                     elif scrub == 'yum-cache' or scrub == 'dnf-cache':
-                        self.buildroot.root_log.info("scrubbing yum-cache and dnf-cache for %s" % self.config_name)
+                        self.buildroot.root_log.info("scrubbing yum-cache and dnf-cache for %s", self.config_name)
                         util.rmtree(os.path.join(self.buildroot.cachedir, 'yum_cache'), selinux=self.buildroot.selinux)
                         util.rmtree(os.path.join(self.buildroot.cachedir, 'dnf_cache'), selinux=self.buildroot.selinux)
             except IOError as e:
-                getLog().warn("parts of chroot do not exist: %s" % e)
+                getLog().warn("parts of chroot do not exist: %s", e)
                 raise
         finally:
             self.state.finish(statestr)
@@ -132,14 +132,14 @@ class Commands(object):
     def install(self, *rpms):
         """Call package manager to install the input rpms into the chroot"""
         # pass build reqs (as strings) to installer
-        self.buildroot.root_log.info("installing package(s): %s" % " ".join(rpms))
+        self.buildroot.root_log.info("installing package(s): %s", " ".join(rpms))
         output = self.buildroot.pkg_manager.install(*rpms, returnOutput=1)
         self.buildroot.root_log.info(output)
 
     @traceLog()
     def remove(self, *rpms):
         """Call package manager to remove the input rpms from the chroot"""
-        self.buildroot.root_log.info("removing package(s): %s" % " ".join(rpms))
+        self.buildroot.root_log.info("removing package(s): %s", " ".join(rpms))
         output = self.buildroot.pkg_manager.remove(*rpms, returnOutput=1)
         self.buildroot.root_log.info(output)
 
@@ -280,7 +280,7 @@ class Commands(object):
         if len(args) == 1:
             args = [args[0]]
             shell = True
-        log.info("Running in chroot: %s" % args)
+        log.info("Running in chroot: %s", args)
         self.plugins.call_hooks("prechroot")
         chrootstate = "chroot %s" % args
         self.state.start(chrootstate)
@@ -352,7 +352,7 @@ class Commands(object):
     @traceLog()
     def _show_path_user(self, path):
         cmd = ['/sbin/fuser', '-a', '-v', path]
-        self.buildroot.root_log.debug("using 'fuser' to find users of %s" % path)
+        self.buildroot.root_log.debug("using 'fuser' to find users of %s", path)
         out = util.do(cmd, returnOutput=1, raiseExc=False, env=self.buildroot.env)
         self.buildroot.root_log.debug(out)
         return out

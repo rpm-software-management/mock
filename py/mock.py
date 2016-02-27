@@ -358,7 +358,7 @@ def setup_logging(config_path, config_opts, options):
     try:
         if not os.path.exists(log_ini):
             if os.path.normpath('/etc/mock') != os.path.normpath(config_path):
-                log.warning("Could not find required logging config file: %s. Using default..." % log_ini)
+                log.warning("Could not find required logging config file: %s. Using default...", log_ini)
                 log_ini = os.path.join("/etc/mock", config_opts["log_config_file"])
                 if not os.path.exists(log_ini):
                     raise IOError("Could not find log config file %s" % log_ini)
@@ -373,7 +373,7 @@ def setup_logging(config_path, config_opts, options):
         logging.config.fileConfig(log_ini)
         log_cfg.read(log_ini)
     except (IOError, OSError, configparser.NoSectionError) as exc:
-        log.error("Log config file(%s) not correctly configured: %s" % (log_ini, exc))
+        log.error("Log config file(%s) not correctly configured: %s", log_ini, exc)
         sys.exit(50)
 
     try:
@@ -382,7 +382,7 @@ def setup_logging(config_path, config_opts, options):
         config_opts['root_log_fmt_str'] = log_cfg.get("formatter_%s" % config_opts['root_log_fmt_name'], "format", raw=1)
         config_opts['state_log_fmt_str'] = log_cfg.get("formatter_%s" % config_opts['state_log_fmt_name'], "format", raw=1)
     except configparser.NoSectionError as exc:
-        log.error("Log config file (%s) missing required section: %s" % (log_ini, exc))
+        log.error("Log config file (%s) missing required section: %s", log_ini, exc)
         sys.exit(50)
 
     # set logging verbosity
@@ -442,15 +442,15 @@ def rebuild_generic(items, commands, buildroot, config_opts, cmd, post=None, cle
     start = time.time()
     try:
         for item in items:
-            log.info("Start(%s)  Config(%s)" % (item, buildroot.shared_root_name))
+            log.info("Start(%s)  Config(%s)", item, buildroot.shared_root_name)
             if clean:
                 commands.clean()
             commands.init(prebuild=not config_opts.get('short_circuit'))
             ret = cmd(item)
             elapsed = time.time() - start
-            log.info("Done(%s) Config(%s) %d minutes %d seconds"
-                     % (item, config_opts['chroot_name'], elapsed // 60, elapsed % 60))
-            log.info("Results and/or logs in: %s" % buildroot.resultdir)
+            log.info("Done(%s) Config(%s) %d minutes %d seconds",
+                     item, config_opts['chroot_name'], elapsed // 60, elapsed % 60)
+            log.info("Results and/or logs in: %s", buildroot.resultdir)
 
         if config_opts["cleanup_on_success"]:
             log.info("Cleaning up build root ('cleanup_on_success=True')")
@@ -461,9 +461,9 @@ def rebuild_generic(items, commands, buildroot, config_opts, cmd, post=None, cle
 
     except (Exception, KeyboardInterrupt):
         elapsed = time.time() - start
-        log.error("Exception(%s) Config(%s) %d minutes %d seconds"
-                  % (item, buildroot.shared_root_name, elapsed // 60, elapsed % 60))
-        log.info("Results and/or logs in: %s" % buildroot.resultdir)
+        log.error("Exception(%s) Config(%s) %d minutes %d seconds",
+                  item, buildroot.shared_root_name, elapsed // 60, elapsed % 60)
+        log.info("Results and/or logs in: %s", buildroot.resultdir)
         if config_opts["cleanup_on_failure"]:
             log.info("Cleaning up build root ('cleanup_on_failure=True')")
             commands.clean()
@@ -557,8 +557,8 @@ def unshare_namespace():
     try:
         util.unshare(extended_unshare_flags)
     except mockbuild.exception.UnshareFailed as e:
-        log.debug("unshare(%d) failed, falling back to unshare(%d)"
-                  % (extended_unshare_flags, base_unshare_flags))
+        log.debug("unshare(%d) failed, falling back to unshare(%d)",
+                  extended_unshare_flags, base_unshare_flags)
         try:
             util.unshare(base_unshare_flags)
         except mockbuild.exception.UnshareFailed as e:
@@ -628,8 +628,8 @@ def main():
 
     # do whatever we're here to do
     py_version = '{0}.{1}.{2}'.format(*sys.version_info[:3])
-    log.info("mock.py version %s starting (python version = %s)..." %
-             (__VERSION__, py_version))
+    log.info("mock.py version %s starting (python version = %s)...",
+             __VERSION__, py_version)
     state = State()
     plugins = Plugins(config_opts, state)
     buildroot = Buildroot(config_opts, uidManager, state, plugins)
@@ -648,7 +648,7 @@ def main():
     # dump configuration to log
     log.debug("mock final configuration:")
     for k, v in list(config_opts.items()):
-        log.debug("    %s:  %s" % (k, v))
+        log.debug("    %s:  %s", k, v)
 
     os.umask(0o02)
     os.environ["HOME"] = buildroot.homedir
@@ -759,21 +759,21 @@ def run_command(options, args, config_opts, commands, buildroot, state):
             sys.exit(50)
         dest = buildroot.make_chroot_path(args[-1])
         if len(args) > 2 and not os.path.isdir(dest):
-            log.critical("multiple source files and %s is not a directory!" % dest)
+            log.critical("multiple source files and %s is not a directory!", dest)
             sys.exit(50)
         args = args[:-1]
         for src in args:
             if not os.path.lexists(src):
-                log.critical("No such file or directory: {0}".format(src))
+                log.critical("No such file or directory: %s", src)
                 sys.exit(50)
-            log.info("copying %s to %s" % (src, dest))
+            log.info("copying %s to %s", src, dest)
             if os.path.isdir(src):
                 dest2 = dest
                 if os.path.exists(dest2):
                     path_suffix = os.path.split(src)[1]
                     dest2 = os.path.join(dest2, path_suffix)
                     if os.path.exists(dest2):
-                        log.critical("Destination %{0} already exist!".format(dest2))
+                        log.critical("Destination %s already exists!", dest2)
                         sys.exit(50)
                 shutil.copytree(src, dest2)
             else:
@@ -792,14 +792,14 @@ def run_command(options, args, config_opts, commands, buildroot, state):
             for arg in args[:-1]:
                 matches = glob.glob(buildroot.make_chroot_path(arg.replace('~', buildroot.homedir)))
                 if not matches:
-                    log.critical("%s not found" % arg)
+                    log.critical("%s not found", arg)
                     sys.exit(50)
                 sources += matches
             if len(sources) > 1 and not os.path.isdir(dest):
-                log.critical("multiple source files and %s is not a directory!" % dest)
+                log.critical("multiple source files and %s is not a directory!", dest)
                 sys.exit(50)
             for src in sources:
-                log.info("copying %s to %s" % (src, dest))
+                log.info("copying %s to %s", src, dest)
                 if os.path.isdir(src):
                     shutil.copytree(src, dest, symlinks=True)
                 else:
@@ -812,8 +812,7 @@ def run_command(options, args, config_opts, commands, buildroot, state):
             buildroot.uid_manager.restorePrivs()
 
     elif options.mode in ('pm-cmd', 'yum-cmd', 'dnf-cmd'):
-        log.info('Running {0} {1}'.format(buildroot.pkg_manager.command,
-                                          ' '.join(args)))
+        log.info('Running %s %s', buildroot.pkg_manager.command, ' '.join(args))
         commands.init()
         buildroot.pkg_manager.execute(*args)
     elif options.mode == 'snapshot':
@@ -855,7 +854,7 @@ if __name__ == '__main__':
     except (OSError,) as e:
         if e.errno == 1:
             print()
-            log.error("%s" % str(e))
+            log.error("%s", e)
             print()
             log.error("The most common cause for this error is trying to run /usr/sbin/mock as an unprivileged user.")
             log.error("Check your path to make sure that /usr/bin/ is listed before /usr/sbin, or manually run /usr/bin/mock to see if that fixes this problem.")

@@ -33,7 +33,7 @@ class scmWorker(object):
         elif self.method == "git":
             self.get = opts['git_get']
         else:
-            self.log.error("Unsupported SCM method: " + self.method)
+            self.log.error("Unsupported SCM method: %s", self.method)
             sys.exit(5)
 
         self.branch = None
@@ -48,7 +48,7 @@ class scmWorker(object):
             elif self.method == "svn":
                 self.get = self.get.replace("SCM_BRN", self.branch)
             else:
-                self.log.error("Unsupported SCM method: " + self.method)
+                self.log.error("Unsupported SCM method: %s", self.method)
                 sys.exit(5)
         elif self.method == "svn":
             self.get = self.get.replace("SCM_BRN", "trunk")
@@ -70,14 +70,14 @@ class scmWorker(object):
 
         self.git_timestamps = opts['git_timestamps']
 
-        self.log.debug("SCM checkout command: " + self.get)
-        self.log.debug("SCM checkout post command: " + str(self.postget))
+        self.log.debug("SCM checkout command: %s", self.get)
+        self.log.debug("SCM checkout post command: %s", self.postget)
 
     @traceLog()
     def get_sources(self):
         self.wrk_dir = tempfile.mkdtemp(".mock-scm." + self.pkg)
         self.src_dir = self.wrk_dir + "/" + self.pkg
-        self.log.debug("SCM checkout directory: " + self.wrk_dir)
+        self.log.debug("SCM checkout directory: %s", self.wrk_dir)
         util.do(shlex.split(self.get), shell=False, cwd=self.wrk_dir, env=os.environ)
         if self.postget:
             util.do(shlex.split(self.postget), shell=False, cwd=self.src_dir, env=os.environ)
@@ -86,7 +86,7 @@ class scmWorker(object):
     @traceLog()
     def adjust_git_timestamps(self):
         cwd_dir = util.pretty_getcwd()
-        self.log.debug("Adjusting timestamps in " + self.src_dir)
+        self.log.debug("Adjusting timestamps in %s", self.src_dir)
         os.chdir(self.src_dir)
         proc = subprocess.Popen(['git', 'ls-files', '-z'], shell=False, stdout=subprocess.PIPE)
         for f in proc.communicate()[0].split('\0')[:-1]:
@@ -111,7 +111,7 @@ class scmWorker(object):
         if not os.path.exists(sf):
             sf = self.src_dir + "/" + self.spec.lower()
         if not os.path.exists(sf):
-            self.log.error("Can't find spec file %s" % self.src_dir + "/" + self.spec)
+            self.log.error("Can't find spec file %s/%s", self.src_dir, self.spec)
             self.clean()
             sys.exit(5)
         self.spec = sf
@@ -136,7 +136,7 @@ class scmWorker(object):
             self.sources.append(filename.split("/")[-1])
             if num == 0 and flags == 1:
                 tarball = filename.split("/")[-1]
-        self.log.debug("Sources: %s" % self.sources)
+        self.log.debug("Sources: %s", self.sources)
 
         # Adjust timestamps for Git checkouts
         if self.method == "git" and self.git_timestamps:
@@ -158,7 +158,7 @@ class scmWorker(object):
                 if "--exclude-vcs" in proc_result:
                     taropts = "--exclude-vcs"
 
-            self.log.debug("Writing " + self.src_dir + "/" + tarball + "...")
+            self.log.debug("Writing %s/%s...", self.src_dir, tarball)
             cwd_dir = os.getcwd()
             os.chdir(self.wrk_dir)
             os.rename(self.name, tardir)
@@ -172,7 +172,7 @@ class scmWorker(object):
         for f in self.sources:
             if not os.path.exists(self.src_dir + "/" + f) and \
                os.path.exists(self.ext_src_dir + "/" + f):
-                self.log.debug("Copying " + self.ext_src_dir + "/" + f + " to " + self.src_dir + "/" + f)
+                self.log.debug("Copying %s/%s to %s/%s", self.ext_src_dir, f, self.src_dir, f)
                 shutil.copy2(self.ext_src_dir + "/" + f, self.src_dir + "/" + f)
 
         self.log.debug("Prepared sources for building src.rpm")

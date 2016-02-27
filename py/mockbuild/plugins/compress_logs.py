@@ -29,7 +29,7 @@ class CompressLogsPlugin(object):
             f_path = os.path.join(self.buildroot.resultdir, f_name)
             if os.path.exists(f_path):
                 command = "{0} {1}".format(self.command, f_path)
-                logger.debug("Running {0}".format(command))
+                logger.debug("Running %s", command)
                 util.do(command, shell=True)
 
 
