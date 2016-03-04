@@ -663,9 +663,9 @@ def main():
     try:
         run_command(options, args, config_opts, commands, buildroot, state)
     finally:
-        uidManager.restorePrivs()
+        buildroot.uid_manager.becomeUser(0, 0)
         buildroot.finalize()
-        uidManager.dropPrivsTemp()
+        buildroot.uid_manager.restorePrivs()
 
 
 @traceLog()
