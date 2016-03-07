@@ -388,9 +388,13 @@ class Commands(object):
 
     @traceLog()
     def rebuild_installed_srpm(self, spec_path, timeout):
-        command = [self.config['rpmbuild_command'], '-bs', '--target', self.rpmbuild_arch, '--nodeps', spec_path]
         if not util.USE_NSPAWN:
+            command = ['{command} -bs --target {0} --nodeps {1}'\
+                       .format(self.rpmbuild_arch, spec_path,
+                               command=self.config['rpmbuild_command'])]
             command = ["bash", "--login", "-c"] + command
+        else:
+            command = [self.config['rpmbuild_command'], '-bs', '--target', self.rpmbuild_arch, '--nodeps', spec_path]
         self.buildroot.doChroot(command,
                                 shell=False, logger=self.buildroot.build_log, timeout=timeout,
                                 uid=self.buildroot.chrootuid, gid=self.buildroot.chrootgid,
