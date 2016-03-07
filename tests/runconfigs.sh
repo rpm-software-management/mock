@@ -36,7 +36,7 @@ for i in $configs; do
     fi
     sudo python ${TESTDIR}/dropcache.py
     header "testing config $name.cfg *without* tmpfs plugin"
-    runcmd "$MOCKCMD                       --rebuild $MOCKSRPM"
+    runcmd "$MOCKCMD --disable-plugin=tmpfs --rebuild $MOCKSRPM"
     if [ $? != 0 ]; then
 	echo "FAILED!"
 	fails=$(($fails+1))
