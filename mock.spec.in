@@ -45,8 +45,11 @@ Requires: createrepo_c
 %if 0%{?use_python2}
 Requires: pyliblzma
 %endif
-%if 0%{?rhel} != 6
+%if 0%{?rhel} != 6 && 0%{?fedora} > 0 && 0%{?fedora} < 24
 Requires: systemd
+%endif
+%if 0%{?rhel} != 6 && 0%{?fedora} > 23
+Requires: systemd-container
 %endif
 Requires(pre): shadow-utils
 Requires(post): coreutils
