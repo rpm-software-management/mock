@@ -70,15 +70,10 @@ Requires: python-requests
 Requires: python >= 2.6
 BuildRequires: python-devel
 %endif
-%if 0%{?fedora} > 21
+%if 0%{?fedora}
 Recommends: dnf
 Recommends: dnf-plugins-core
 Recommends: btrfs-progs
-%endif
-%if 0%{?fedora} == 21 || 0%{?fedora} == 20
-Requires: dnf
-Requires: dnf-plugins-core
-Requires: btrfs-progs
 %endif
 %if 0%{?rhel} >= 7
 Requires: btrfs-progs
