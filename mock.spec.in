@@ -217,6 +217,15 @@ fi
 %{python_sitelib}/mockbuild/plugins/lvm_root.*
 
 %changelog
+* Tue Mar  8 2016 Miroslav Suchý <msuchy@redhat.com> - 1.2.16-1
+- remove old %if statements
+- systemd-nspawn is now in systemd-container package
+- become root user correct way [RHBZ#1312820][RHBZ#1311796]
+- remove the sparc config
+- Let logging format messages on demand
+- tell nspawn which variables it should set [RHBZ#1311796]
+- do not call /bin/su and rather utilize --user of systemd-nspawn [RHBZ#1301953]
+
 * Mon Feb 22 2016 Miroslav Suchý <msuchy@redhat.com> - 1.2.15-1
 - ccache plugin disabled by default
 - F21 configs removed
