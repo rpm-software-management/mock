@@ -240,7 +240,7 @@ fi
 - Fix package manager version handling for CentOS
 - use --setopt=deltarpm=false as default value for dnf_common_opts [RHBZ#1281355]
 - add arguments, do not over ride previous ones
-- Add %(resultdir) placeholder for sign plugin. [RHBZ#1272123]
+- Add %%(resultdir) placeholder for sign plugin. [RHBZ#1272123]
 - decode shell output when running under Python3 [RHBZ#1267161]
 - create tmpfs with unlimited inodes [RHBZ#1266453]
 - typo [RHBZ#1241827]
