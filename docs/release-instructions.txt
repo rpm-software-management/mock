@@ -67,7 +67,7 @@ In the upstream git tree:
    8) run 'configure' to generate Makefile and mock.spec
    9) run 'make rpm' to generate binary RPM and propagate version
       changes (Note this also generates a tar file for use later).
-  10) verify that tests/runtests.sh uses a supported config file
+  10) verify that tests/testenvironment uses a supported config file
       (e.g. released fedora minus one). If not, edit and commit
   11) run 'make check' and fix any reported failures until it passes
       $ sh autogen.sh && ./configure && make rpm && make check
