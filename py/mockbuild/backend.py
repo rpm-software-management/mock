@@ -432,7 +432,7 @@ class Commands(object):
                   ['--target', self.rpmbuild_arch, '--nodeps'] + \
                   check_opt + [spec_path] + additional_opts
         if not util.USE_NSPAWN:
-            command = ["bash", "--login", "-c"] + command
+            command = ["bash", "--login", "-c"] + [' '.join(command)]
         self.buildroot.doChroot(command,
                                 shell=False, logger=self.buildroot.build_log, timeout=timeout,
                                 uid=self.buildroot.chrootuid, gid=self.buildroot.chrootgid,
