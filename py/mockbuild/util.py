@@ -33,7 +33,7 @@ from textwrap import dedent
 
 from . import exception
 from .trace_decorator import traceLog, getLog
-from . import uid
+from .uid import setresuid, setresgid, getresuid, getresgid
 
 encoding = locale.getpreferredencoding()
 
@@ -293,10 +293,10 @@ def unshare(flags):
 def condChroot(chrootPath):
     if chrootPath is not None:
         saved = {"ruid": os.getuid(), "euid": os.geteuid()}
-        uid.setresuid(0, 0, 0)
+        setresuid(0, 0, 0)
         os.chdir(chrootPath)
         os.chroot(chrootPath)
-        uid.setresuid(saved['ruid'], saved['euid'])
+        setresuid(saved['ruid'], saved['euid'])
 
 
 def condChdir(cwd):
@@ -550,12 +550,12 @@ def do(command, shell=False, chrootPath=None, cwd=None, timeout=0, raiseExc=True
 
 
 class ChildPreExec(object):
-    def __init__(self, personality, chrootPath, cwd, uid, gid, env=None,
+    def __init__(self, personality, chrootPath, cwd, uid_var, gid, env=None,
                  shell=False, unshare_ipc=False):
         self.personality = personality
         self.chrootPath = chrootPath
         self.cwd = cwd
-        self.uid = uid
+        self.uid = uid_var
         self.gid = gid
         self.env = env
         self.shell = shell
@@ -1029,7 +1029,7 @@ def update_config_from_file(config_opts, config_file, uid_manager):
     if os.fork() == 0:
         try:
             os.close(r_pipe)
-            if uid_manager and not all(uid.getresuid()):
+            if uid_manager and not all(getresuid()):
                 uid_manager.dropPrivsForever()
             with open(config_file) as f:
                 code = compile(f.read(), config_file, 'exec')
