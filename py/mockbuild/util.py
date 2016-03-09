@@ -550,12 +550,12 @@ def do(command, shell=False, chrootPath=None, cwd=None, timeout=0, raiseExc=True
 
 
 class ChildPreExec(object):
-    def __init__(self, personality, chrootPath, cwd, uid_var, gid, env=None,
+    def __init__(self, personality, chrootPath, cwd, uid, gid, env=None,
                  shell=False, unshare_ipc=False):
         self.personality = personality
         self.chrootPath = chrootPath
         self.cwd = cwd
-        self.uid = uid_var
+        self.uid = uid
         self.gid = gid
         self.env = env
         self.shell = shell
