@@ -399,12 +399,13 @@ class Commands(object):
                                 shell=False, logger=self.buildroot.build_log, timeout=timeout,
                                 uid=self.buildroot.chrootuid, gid=self.buildroot.chrootgid,
                                 user=self.buildroot.chrootuser,
-                                printOutput=self.config['print_main_output'])
+                                printOutput=self.config['print_main_output']
+                                )
         results = glob.glob("%s/%s/SRPMS/*src.rpm" % (self.make_chroot_path(),
                                                       self.buildroot.builddir))
         if len(results) != 1:
-            raise PkgError("Expected to find single rebuilt srpm, found %d."
-                           % len(results))
+            raise PkgError("Expected to find single rebuilt srpm, found %d in %s"
+                           % (len(results), "%s/%s/SRPMS/*src.rpm" % (self.make_chroot_path(), self.buildroot.builddir)))
         return results[0]
 
     @traceLog()
