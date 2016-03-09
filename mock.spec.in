@@ -48,7 +48,7 @@ Requires: pyliblzma
 %if 0%{?rhel} != 6 && 0%{?fedora} > 0 && 0%{?fedora} < 24
 Requires: systemd
 %endif
-%if 0%{?rhel} != 6 && 0%{?fedora} > 23
+%if 0%{?fedora} > 23
 Requires: systemd-container
 %endif
 Requires(pre): shadow-utils
