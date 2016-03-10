@@ -1167,7 +1167,7 @@ def find_btrfs_in_chroot(mockdir, chroot_path):
     """
 
     try:
-        output = do(["btrfs", "subv", "list", mockdir], returnOutput=1)
+        output = do(["btrfs", "subv", "list", mockdir], returnOutput=1, printOutput=False)
     except OSError as e:
         # btrfs utility does not exist, nothing we can do about it
         if e.errno == errno.ENOENT:
@@ -1175,6 +1175,8 @@ def find_btrfs_in_chroot(mockdir, chroot_path):
         raise e
     except Exception as e:
         # it is not btrfs volume
+        log = getLog()
+        log.debug("Please ignore the error above above about btrfs.")
         return None
 
     for l in output[:-1].splitlines():
