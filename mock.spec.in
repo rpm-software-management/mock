@@ -217,6 +217,9 @@ fi
 %{python_sitelib}/mockbuild/plugins/lvm_root.*
 
 %changelog
+* Fri Mar 11 2016 Miroslav Suchý <msuchy@redhat.com> - 1.2.17-1
+- call rpmbuild correctly
+
 * Tue Mar  8 2016 Miroslav Suchý <msuchy@redhat.com> - 1.2.16-1
 - remove old %if statements
 - systemd-nspawn is now in systemd-container package
