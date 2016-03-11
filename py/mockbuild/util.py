@@ -64,6 +64,10 @@ personality_defs = {
     'ppc': PER_LINUX32, 'sparc': PER_LINUX32, 'sparcv9': PER_LINUX32,
     'ia64': PER_LINUX, 'alpha': PER_LINUX,
     's390': PER_LINUX32, 's390x': PER_LINUX,
+    'mips': PER_LINUX32, 'mipsel': PER_LINUX32,
+    'mipsr6': PER_LINUX32, 'mipsr6el': PER_LINUX32,
+    'mips64': PER_LINUX, 'mips64el': PER_LINUX,
+    'mips64r6': PER_LINUX, 'mips64r6el': PER_LINUX,
 }
 
 PLUGIN_LIST = ['tmpfs', 'root_cache', 'yum_cache', 'bind_mount',
