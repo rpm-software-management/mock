@@ -57,7 +57,7 @@ class Commands(object):
         srcdir = os.path.join(self.buildroot.basedir, "result")
         if not os.path.exists(srcdir):
             return
-        dstdir = os.path.join(self.backup_base_dir, self.config_name)
+        dstdir = os.path.join(self.backup_base_dir, self.config['root'])
         util.mkdirIfAbsent(dstdir)
         rpms = glob.glob(os.path.join(srcdir, "*rpm"))
         if len(rpms) == 0:
