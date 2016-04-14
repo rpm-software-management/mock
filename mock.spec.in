@@ -68,6 +68,7 @@ Requires: python-ctypes
 Requires: python-six
 Requires: python-requests
 Requires: python >= 2.6
+Requires: rpm-python
 BuildRequires: python-devel
 %endif
 %if 0%{?fedora}
