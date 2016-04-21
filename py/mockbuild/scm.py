@@ -37,14 +37,16 @@ class scmWorker(object):
             sys.exit(5)
 
         self.branch = None
-        self.postget = None
+        self.postget = []
         if 'branch' in opts:
             self.branch = opts['branch']
         if self.branch:
             if self.method == "cvs":
                 self.get = self.get.replace("SCM_BRN", "-r " + self.branch)
             elif self.method == "git":
-                self.postget = "git checkout " + self.branch
+                self.postget = ["git checkout " + self.branch]
+                if "--recursive" in self.get or "--recurse-submodules" in self.get:
+                    self.postget.append("git submodule update --init --recursive")
             elif self.method == "svn":
                 self.get = self.get.replace("SCM_BRN", self.branch)
             else:
@@ -71,7 +73,8 @@ class scmWorker(object):
         self.git_timestamps = opts['git_timestamps']
 
         self.log.debug("SCM checkout command: %s", self.get)
-        self.log.debug("SCM checkout post command: %s", self.postget)
+        for command in self.postget:
+            self.log.debug("SCM checkout post command: %s", command)
 
     @traceLog()
     def get_sources(self):
@@ -79,8 +82,8 @@ class scmWorker(object):
         self.src_dir = self.wrk_dir + "/" + self.pkg
         self.log.debug("SCM checkout directory: %s", self.wrk_dir)
         util.do(shlex.split(self.get), shell=False, cwd=self.wrk_dir, env=os.environ)
-        if self.postget:
-            util.do(shlex.split(self.postget), shell=False, cwd=self.src_dir, env=os.environ)
+        for command in self.postget:
+            util.do(shlex.split(command), shell=False, cwd=self.src_dir, env=os.environ)
         self.log.debug("Fetched sources from SCM")
 
     @traceLog()
