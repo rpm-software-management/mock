@@ -24,6 +24,7 @@ class scmWorker(object):
         self.log.debug("Initializing SCM integration...")
 
         self.name = self.version = None
+        self.sources = []
         self.macros = macros
 
         self.method = opts['method']
