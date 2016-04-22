@@ -93,7 +93,9 @@ class scmWorker(object):
         os.chdir(self.src_dir)
         proc = subprocess.Popen(['git', 'ls-files', '-z'], shell=False, stdout=subprocess.PIPE)
         for f in proc.communicate()[0].split('\0')[:-1]:
-            rev = subprocess.Popen(['git', 'rev-list', 'HEAD', f], shell=False, stdout=subprocess.PIPE).stdout.readlines()[0].rstrip('\n')
+            rev = subprocess.Popen(['git', 'rev-list', 'HEAD', f], shell=False,
+                                   stdout=subprocess.PIPE
+                                  ).stdout.readlines()[0].rstrip('\n')
             ts = subprocess.Popen(['git', 'show', '--pretty=format:%ai', '--abbrev-commit', rev, f], shell=False, stdout=subprocess.PIPE).stdout.readlines()[0].rstrip('\n')
             subprocess.Popen(['touch', '-d', ts, f], shell=False)
         os.chdir(cwd_dir)
