@@ -23,6 +23,7 @@ class scmWorker(object):
         self.log = log
         self.log.debug("Initializing SCM integration...")
 
+        self.name = self.version = None
         self.macros = macros
 
         self.method = opts['method']
@@ -130,7 +131,6 @@ class scmWorker(object):
 
         # Dig out some basic information from the spec file
         self.sources = []
-        self.name = self.version = None
         ts = rpm.ts()
         rpm_spec = ts.parseSpec(self.spec)
         self.name = rpm.expandMacro("%{name}")
