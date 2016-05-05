@@ -139,8 +139,8 @@ class Buildroot(object):
         self.root_log.debug('resultdir = %s', self.resultdir)
 
         self.pkg_manager.initialize()
+        self._setup_resolver_config()
         if not self.chroot_was_initialized:
-            self._setup_resolver_config()
             self._setup_dbus_uuid()
             self._init_aux_files()
             if not util.USE_NSPAWN:
