@@ -349,14 +349,6 @@ class Commands(object):
             self.plugins.call_hooks('postbuild')
             self.state.finish("buildsrpm")
 
-    @traceLog()
-    def _show_path_user(self, path):
-        cmd = ['/sbin/fuser', '-a', '-v', path]
-        self.buildroot.root_log.debug("using 'fuser' to find users of %s", path)
-        out = util.do(cmd, returnOutput=1, raiseExc=False, env=self.buildroot.env)
-        self.buildroot.root_log.debug(out)
-        return out
-
     #
     # UNPRIVILEGED:
     #   Everything in this function runs as the build user
