@@ -365,7 +365,7 @@ class Commands(object):
     def copy_srpm_into_chroot(self, srpm_path):
         srpmFilename = os.path.basename(srpm_path)
         dest = self.buildroot.make_chroot_path(self.buildroot.builddir, 'originals')
-        shutil.copy2(srpm_path, dest)
+        shutil.copyfile(srpm_path, os.path.join(dest, srpmFilename))
         return os.path.join(self.buildroot.builddir, 'originals', srpmFilename)
 
     @traceLog()
