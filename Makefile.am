@@ -29,6 +29,7 @@ mocketcdir = $(sysconfdir)/mock
 mocketc_DATA = $(wildcard $(top_srcdir)/etc/mock/epel*.cfg) \
 	       $(wildcard $(top_srcdir)/etc/mock/fedora*.cfg) \
 	       $(wildcard $(top_srcdir)/etc/mock/mageia*.cfg) \
+	       $(wildcard $(top_srcdir)/etc/mock/custom*.cfg) \
 	       $(top_srcdir)/etc/mock/site-defaults.cfg \
 	       $(top_srcdir)/etc/mock/logging.ini
 
