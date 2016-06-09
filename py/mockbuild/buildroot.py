@@ -214,10 +214,13 @@ class Buildroot(object):
         try:
             import uuid
             machine_uuid = uuid.uuid4().hex
-            dbus_uuid_path = self.make_chroot_path('var', 'lib', 'dbus', 'machine-id')
+            dbus_uuid_path = self.make_chroot_path('etc', 'machine-id')
+            symlink_path = self.make_chroot_path('var', 'lib', 'dbus', 'machine-id')
             with open(dbus_uuid_path, 'w') as uuid_file:
                 uuid_file.write(machine_uuid)
                 uuid_file.write('\n')
+            if not os.path.exists(symlink_path):
+                os.symlink("../../../etc/machine-id", symlink_path)
         except ImportError:
             pass
 
