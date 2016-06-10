@@ -222,6 +222,21 @@ fi
 %{python_sitelib}/mockbuild/plugins/lvm_root.*
 
 %changelog
+* Fri Jun 10 2016 Miroslav Suchý <msuchy@redhat.com> - 1.2.18-1
+- add custom config
+- add Mageia configs
+- copy just content of SRPM not the attributes [RHBZ#1301985]
+- do not fail when we cannot link default.cfg [RHBZ#1305367]
+- Build always fails when using --nocheck [RHBZ#1327594]
+- Escape the escape sequences in PROMPT_COMMAND, improve prompt
+- requires rpm-python
+- Use root name instead config name for backups dir
+- Unconditionally setup resolver config
+- keep machine-id in /etc/machine-id [RHBZ#1344305]
+- use DNF for F24
+- Add MIPS personalities
+- scm plugin: fix handling of submodules
+
 * Fri Mar 11 2016 Miroslav Suchý <msuchy@redhat.com> - 1.2.17-1
 - call rpmbuild correctly
 
