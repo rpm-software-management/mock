@@ -88,7 +88,7 @@ In the upstream git tree:
      $ git push origin master
      $ git push origin tag mock-<version>
   19) copy tarball to fedorahosted:
-     $ scp mock-<version>.tar.gz fedorahosted.org:mock
+     $ scp mock-<version>.tar.xz fedorahosted.org:/srv/web/releases/m/o/mock/
   20) merge changes back to devel branch
      $ git checkout devel
      $ git merge origin/master
