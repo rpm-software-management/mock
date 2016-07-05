@@ -237,6 +237,13 @@ class Buildroot(object):
             if isinstance(cmd, util.basestring):
                 cmd = cmd.split()
             self.pkg_manager.execute(*cmd)
+
+        if 'chroot_additional_packages' in self.config:
+            cmd = 'install ' + self.config['chroot_additional_packages']
+            if isinstance(cmd, util.basestring):
+                cmd = cmd.split()
+            self.pkg_manager.execute(*cmd)
+
         self.state.finish(update_state)
 
     @traceLog()
