@@ -38,7 +38,7 @@ class Plugins(object):
                 try:
                     fp, pathname, description = imp.find_module(plugin, [self.plugin_dir])
                 except ImportError:
-                    buildroot.root_log.warn(
+                    buildroot.root_log.warning(
                         "{0} plugin is enabled in configuration but is not installed".format(plugin))
                     continue
                 try:

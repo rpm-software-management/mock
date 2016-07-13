@@ -123,7 +123,6 @@ if __name__ == "__main__":
     log.debug(" --> debug")
     log.error(" --> error")
     log.warning(" --> warning")
-    log.warn(" --> warn")
 
     @traceLog(log)
     def testFunc(arg1, arg2="default", *args, **kargs):

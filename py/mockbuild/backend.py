@@ -106,7 +106,7 @@ class Commands(object):
                         util.rmtree(os.path.join(self.buildroot.cachedir, 'yum_cache'), selinux=self.buildroot.selinux)
                         util.rmtree(os.path.join(self.buildroot.cachedir, 'dnf_cache'), selinux=self.buildroot.selinux)
             except IOError as e:
-                getLog().warn("parts of chroot do not exist: %s", e)
+                getLog().warning("parts of chroot do not exist: %s", e)
                 raise
         finally:
             self.state.finish(statestr)
@@ -456,6 +456,6 @@ class Commands(object):
             try:
                 self.install(*pkgs)
             except:
-                self.buildroot.root_log.warn("Failed install built packages")
+                self.buildroot.root_log.warning("Failed install built packages")
         finally:
             self.uid_manager.restorePrivs()

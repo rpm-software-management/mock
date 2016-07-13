@@ -154,7 +154,7 @@ lead to different dependency solving!""".format(self.command))
 
 def check_yum_config(config, log):
     if '\nreposdir' not in config:
-        log.warn(dedent("""\
+        log.warning(dedent("""\
                 reposdir option is not set in yum config. That means Yum/DNF
                 will use system-wide repos. To suppress that behavior, put
                 reposdir=/dev/null to your yum.conf in mock config.

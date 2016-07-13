@@ -201,7 +201,7 @@ class Buildroot(object):
         if os.path.exists(orig_conf_file):
             shutil.copy2(orig_conf_file, etcdir)
         else:
-            self.root_log.warn("File %s not present. It is not copied into the chroot.", orig_conf_file)
+            self.root_log.warning("File %s not present. It is not copied into the chroot.", orig_conf_file)
 
     @traceLog()
     def _setup_resolver_config(self):
@@ -528,13 +528,13 @@ class Buildroot(object):
             copied_lib = copy_nosync()
             copied_lib64 = copy_nosync(lib64=True)
             if not copied_lib and not copied_lib64:
-                self.root_log.warn("nosync is enabled but the library wasn't "
-                                   "found on the system")
+                self.root_log.warning("nosync is enabled but the library "
+                                      "wasn't found on the system")
                 return
             if (target_arch in multilib and not self.config['nosync_force']
                     and copied_lib != copied_lib64):
-                self.root_log.warn("For multilib systems, both architectures "
-                                   "of nosync library need to be installed")
+                self.root_log.warning("For multilib systems, both architectures"
+                                      " of nosync library need to be installed")
                 return
             self.nosync_path = os.path.join(tmp_libdir, 'nosync.so')
 

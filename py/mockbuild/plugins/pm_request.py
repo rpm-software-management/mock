@@ -72,7 +72,7 @@ class PMRequestPlugin(object):
             sock.sendall(b'!LOG_EXECUTED\n')
             executed_commands = sock.makefile().read()
             if executed_commands:
-                self.buildroot.root_log.warn(
+                self.buildroot.root_log.warning(
                     "The pm_request plugin executed following commands:\n"
                     + executed_commands
                     + "\nThe build may not be reproducible.\n")
