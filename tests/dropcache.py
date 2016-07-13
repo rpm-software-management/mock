@@ -8,5 +8,6 @@ if os.getuid() != 0:
     sys.exit(-1)
 
 print("******************* dropping caches")
-open('/proc/sys/vm/drop_caches', 'w').write("3")
+with open('/proc/sys/vm/drop_caches', 'w') as f:
+    f.write("3")
 sys.exit(0)

@@ -19,8 +19,9 @@ class MountPoint(object):
 
     @traceLog()
     def ismounted(self):
-        if self.mountpath in [x.split()[1] for x in open('/proc/mounts')]:
-            return True
+        with open('/proc/mounts') as f:
+            if self.mountpath in [x.split()[1] for x in f]:
+                return True
         return False
 
 

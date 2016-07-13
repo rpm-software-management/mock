@@ -17,24 +17,25 @@ class Config(object):
         self.stanzas = []
         self.map = {}
         current_key = ''
-        for l in open(self.path):
-            l = l.strip()
-            if l.startswith('#'):
-                continue
-            if l.startswith('['):
-                key = l[1:l.rindex(']')]
-                current_key = key
-                if key == 'main' or key == 'local':
+        with open(self.path) as f:
+            for l in f:
+                l = l.strip()
+                if l.startswith('#'):
                     continue
-                self.stanzas.append(current_key)
-                self.map[current_key] = {}
-                continue
-            if 'http://' in l or 'https://' in l:
-                if current_key == 'main' or current_key == 'local':
+                if l.startswith('['):
+                    key = l[1:l.rindex(']')]
+                    current_key = key
+                    if key == 'main' or key == 'local':
+                        continue
+                    self.stanzas.append(current_key)
+                    self.map[current_key] = {}
                     continue
-                key, url = l.split('=', 1)
-                self.map[current_key][key.strip()] = url.strip()
-                continue
+                if 'http://' in l or 'https://' in l:
+                    if current_key == 'main' or current_key == 'local':
+                        continue
+                    key, url = l.split('=', 1)
+                    self.map[current_key][key.strip()] = url.strip()
+                    continue
 
     def __str__(self):
         return self.cfg

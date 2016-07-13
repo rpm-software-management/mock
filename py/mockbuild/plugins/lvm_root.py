@@ -25,9 +25,9 @@ def lvm_do(*args, **kwargs):
 def current_mounts():
     with open("/proc/mounts") as proc_mounts:
         mount_lines = proc_mounts.read().strip().split('\n')
-        for line in mount_lines:
-            src, target = [os.path.realpath(x) for x in line.split()[:2]]
-            yield src, target
+    for line in mount_lines:
+        src, target = [os.path.realpath(x) for x in line.split()[:2]]
+        yield src, target
 
 
 class Lock(object):

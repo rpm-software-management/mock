@@ -61,16 +61,11 @@ class SELinux(object):
     @traceLog()
     def _selinuxCreateFauxFilesystems(self):
         (fd, path) = tempfile.mkstemp(prefix="mock-selinux-plugin.")
-        out = os.fdopen(fd, 'w')
-
-        try:
-            host = open("/proc/filesystems")
-            for line in host:
-                if "selinuxfs" not in line:
-                    out.write(line)
-        finally:
-            host.close()
-            out.close()
+        with os.fdopen(fd, 'w') as out:
+            with open("/proc/filesystems") as host:
+                for line in host:
+                    if "selinuxfs" not in line:
+                        out.write(line)
 
         os.chmod(path, stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH)
 

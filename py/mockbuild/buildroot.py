@@ -279,7 +279,8 @@ class Buildroot(object):
     @traceLog()
     def _enable_chrootuser_account(self):
         passwd = self.make_chroot_path('/etc/passwd')
-        lines = open(passwd).readlines()
+        with open(passwd) as f:
+            lines = f.readlines()
         disabled = False
         newlines = []
         for l in lines:
@@ -289,10 +290,9 @@ class Buildroot(object):
                 parts[1] = parts[1][2:]
             newlines.append(':'.join(parts))
         if disabled:
-            f = open(passwd, "w")
-            for l in newlines:
-                f.write(l + '\n')
-            f.close()
+            with open(passwd, "w") as f:
+                for l in newlines:
+                    f.write(l + '\n')
 
     @traceLog()
     def _resetLogging(self):
@@ -418,17 +418,15 @@ class Buildroot(object):
                 self.chown_home_dir()
             # rpmmacros default
             macrofile_out = self.make_chroot_path(self.homedir, ".rpmmacros")
-            rpmmacros = open(macrofile_out, 'w+')
+            with open(macrofile_out, 'w+') as rpmmacros:
 
-            # user specific from rpm macro file defenitions first
-            if 'macrofile' in self.config:
-                macro_conf = open(self.config['macrofile'], 'r')
-                rpmmacros.write("%s\n\n" % macro_conf.read())
-                macro_conf.close()
+                # user specific from rpm macro file definitions first
+                if 'macrofile' in self.config:
+                    with open(self.config['macrofile'], 'r') as macro_conf:
+                        rpmmacros.write("%s\n\n" % macro_conf.read())
 
-            for key, value in list(self.config['macros'].items()):
-                rpmmacros.write("%s %s\n" % (key, value))
-            rpmmacros.close()
+                for key, value in list(self.config['macros'].items()):
+                    rpmmacros.write("%s %s\n" % (key, value))
         finally:
             self.uid_manager.restorePrivs()
 

@@ -440,18 +440,20 @@ def logOutput(fds, logger, returnOutput=1, start=0, timeout=0, printOutput=False
 @traceLog()
 def selinuxEnabled():
     """Check if SELinux is enabled (enforcing or permissive)."""
-    for mount in open("/proc/mounts").readlines():
-        (fstype, mountpoint, _) = mount.split(None, 2)
-        if fstype == "selinuxfs":
-            selinux_mountpoint = mountpoint
-            break
-    else:
-        selinux_mountpoint = "/selinux"
+    with open("/proc/mounts") as f:
+        for mount in f.readlines():
+            (fstype, mountpoint, _) = mount.split(None, 2)
+            if fstype == "selinuxfs":
+                selinux_mountpoint = mountpoint
+                break
+        else:
+            selinux_mountpoint = "/selinux"
 
     try:
         enforce_filename = os.path.join(selinux_mountpoint, "enforce")
-        if open(enforce_filename).read().strip() in ("1", "0"):
-            return True
+        with open(enforce_filename) as f:
+            if f.read().strip() in ("1", "0"):
+                return True
     except:
         pass
     return False

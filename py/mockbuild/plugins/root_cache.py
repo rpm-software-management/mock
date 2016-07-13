@@ -170,9 +170,8 @@ class RootCache(object):
             # truncate the sparse files in /var/log
             for logfile in ('/var/log/lastlog', '/var/log/faillog'):
                 try:
-                    f = open(self.buildroot.make_chroot_path(logfile), "w")
-                    f.truncate(0)
-                    f.close()
+                    with open(self.buildroot.make_chroot_path(logfile), "w") as f:
+                        f.truncate(0)
                 except (IOError, OSError):
                     pass
 
@@ -196,9 +195,8 @@ class RootCache(object):
                     raise
                 # now create the cache log file
                 try:
-                    l = open(os.path.join(self.rootSharedCachePath, "cache.log"), "w")
-                    l.write(self.buildroot.yum_init_install_output)
-                    l.close()
+                    with open(os.path.join(self.rootSharedCachePath, "cache.log"), "w") as l:
+                        l.write(self.buildroot.yum_init_install_output)
                 except:
                     pass
                 self.state.finish("creating cache")

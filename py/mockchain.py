@@ -153,10 +153,9 @@ cost=1
 """ % (repoid, baseurl, baseurl)
 
         config_opts['yum.conf'] += localyumrepo
-        br_dest = open(destfile, 'w')
-        for k, v in list(config_opts.items()):
-            br_dest.write("config_opts[%r] = %r\n" % (k, v))
-        br_dest.close()
+        with open(destfile, 'w') as br_dest:
+            for k, v in list(config_opts.items()):
+                br_dest.write("config_opts[%r] = %r\n" % (k, v))
         return True, ''
     except (IOError, OSError):
         return False, "Could not write mock config to %s" % destfile
@@ -213,13 +212,15 @@ def do_build(opts, cfg, pkg):
         mockcmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out, err = cmd.communicate()
     if cmd.returncode == 0:
-        open(success_file, 'w').write('done\n')
+        with open(success_file, 'w') as f:
+            f.write('done\n')
         ret = 1
     else:
         if (isinstance(err, bytes)):
             err = err.decode("utf-8")
         sys.stderr.write(err)
-        open(fail_file, 'w').write('undone\n')
+        with open(fail_file, 'w') as f:
+            f.write('undone\n')
         ret = 0
 
     return ret, cmd, out, err
@@ -229,7 +230,8 @@ def log(lf, msg):
     if lf:
         now = time.time()
         try:
-            open(lf, 'a').write(str(now) + ':' + msg + '\n')
+            with open(lf, 'a') as f:
+                f.write(str(now) + ':' + msg + '\n')
         except (IOError, OSError) as e:
             print('Could not write to logfile %s - %s' % (lf, str(e)))
     print(msg)
@@ -341,10 +343,9 @@ def main(args):
                             if 'filename' in params and params['filename']:
                                 fn = params['filename']
                         pkg = download_dir + '/' + fn
-                        fd = open(pkg, 'wb')
-                        for chunk in r.iter_content(4096):
-                            fd.write(chunk)
-                        fd.close()
+                        with open(pkg, 'wb') as fd:
+                            for chunk in r.iter_content(4096):
+                                fd.write(chunk)
                 except Exception as e:
                     log(opts.logfile, 'Error Downloading %s: %s' % (url, str(e)))
                     failed.append(url)
