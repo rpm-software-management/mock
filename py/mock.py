@@ -205,7 +205,7 @@ def command_parse():
                            " Only active for 'rebuild'.")
     parser.add_option("--no-cleanup-after", action="store_false",
                       dest="cleanup_after", default=None,
-                      help="Dont clean chroot after building. If automatic"
+                      help="Don't clean chroot after building. If automatic"
                            " cleanup is enabled, use this to disable.", )
     parser.add_option("--cache-alterations", action="store_true",
                       dest="cache_alterations", default=False,

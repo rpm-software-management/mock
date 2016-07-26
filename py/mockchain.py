@@ -104,7 +104,7 @@ def parse_args(args):
         sys.exit(1)
 
     if len(sys.argv) < 3:
-        print("You must specifiy at least 1 package to build")
+        print("You must specify at least 1 package to build")
         sys.exit(1)
 
     return opts, args
