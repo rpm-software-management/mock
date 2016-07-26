@@ -491,6 +491,7 @@ def do(command, shell=False, chrootPath=None, cwd=None, timeout=0, raiseExc=True
     preexec = ChildPreExec(personality, chrootPath, cwd, uid, gid, unshare_ipc=bool(chrootPath))
     if env is None:
         env = clean_env()
+    stdout = None
     try:
         child = None
         if shell and isinstance(command, list):
@@ -499,20 +500,26 @@ def do(command, shell=False, chrootPath=None, cwd=None, timeout=0, raiseExc=True
         if chrootPath and USE_NSPAWN:
             command = _prepare_nspawn_command(chrootPath, user, command, private_network=private_network, env=env)
         logger.debug("Executing command: %s with env %s and shell %s", command, env, shell)
-        child = subprocess.Popen(
-            command,
-            shell=shell,
-            env=env,
-            bufsize=0, close_fds=True,
-            stdin=open(os.devnull, "r"),
-            stdout=slave_pty if pty else subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            preexec_fn=preexec,
-        )
-        # use select() to poll for output so we dont block
-        output = logOutput([reader if pty else child.stdout, child.stderr],
-                           logger, returnOutput, start, timeout, pty=pty,
-                           printOutput=printOutput, child=child, chrootPath=chrootPath)
+        with open(os.devnull, "r") as stdin:
+            child = subprocess.Popen(
+                command,
+                shell=shell,
+                env=env,
+                bufsize=0, close_fds=True,
+                stdin=stdin,
+                stdout=slave_pty if pty else subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                preexec_fn=preexec,
+            )
+            if not pty:
+                stdout = child.stdout
+            with child.stderr:
+                # use select() to poll for output so we dont block
+                output = logOutput(
+                    [reader if pty else child.stdout, child.stderr],
+                    logger, returnOutput, start, timeout, pty=pty,
+                    printOutput=printOutput, child=child,
+                    chrootPath=chrootPath)
     except:
         # kill children if they arent done
         if child is not None and child.returncode is None:
@@ -527,6 +534,8 @@ def do(command, shell=False, chrootPath=None, cwd=None, timeout=0, raiseExc=True
         if pty:
             os.close(slave_pty)
             reader.close()
+        if stdout:
+            stdout.close()
 
     # wait until child is done, kill it if it passes timeout
     niceExit = 1
@@ -671,7 +680,8 @@ def get_fs_type(path):
     p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE,
                          universal_newlines=True)
     p.wait()
-    return p.stdout.readline().strip()
+    with p.stdout as f:
+        return f.readline().strip()
 
 
 def find_non_nfs_dir():
