@@ -39,6 +39,5 @@ class Sign(object):
             opts = self.conf['opts'] % {'rpms': ' '.join(rpms), 'resultdir': self.buildroot.resultdir}
             cmd = "{0} {1}".format(self.conf['cmd'], opts)
             getLog().info("Executing %s", cmd)
-            self.buildroot.uid_manager.dropPrivsTemp()
-            subprocess.call(cmd, shell=True, env=os.environ)
-            self.buildroot.uid_manager.restorePrivs()
+            with self.buildroot.uid_manager:
+                subprocess.call(cmd, shell=True, env=os.environ)

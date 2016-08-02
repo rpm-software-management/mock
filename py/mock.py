@@ -495,11 +495,10 @@ def do_rebuild(config_opts, commands, buildroot, srpms):
 
         if config_opts["createrepo_on_rpms"]:
             log.info("Running createrepo on binary rpms in resultdir")
-            buildroot.uid_manager.dropPrivsTemp()
-            cmd = shlex.split(config_opts["createrepo_command"])
-            cmd.append(buildroot.resultdir)
-            util.do(cmd)
-            buildroot.uid_manager.restorePrivs()
+            with buildroot.uid_manager:
+                cmd = shlex.split(config_opts["createrepo_command"])
+                cmd.append(buildroot.resultdir)
+                util.do(cmd)
 
     rebuild_generic(srpms, commands, buildroot, config_opts, cmd=build,
                     post=post_build, clean=clean)
@@ -679,9 +678,8 @@ def run_command(options, args, config_opts, commands, buildroot, state):
             raise mockbuild.exception.BadCmdline(
                 "Mock SCM module not installed: %s. You should install package mock-scm." % e)
         scmWorker = mockbuild.scm.scmWorker(log, config_opts['scm_opts'], config_opts['macros'])
-        buildroot.uid_manager.dropPrivsTemp()
-        scmWorker.get_sources()
-        buildroot.uid_manager.restorePrivs()
+        with buildroot.uid_manager:
+            scmWorker.get_sources()
         (options.sources, options.spec) = scmWorker.prepare_sources()
 
     if options.mode == 'init':
@@ -782,8 +780,7 @@ def run_command(options, args, config_opts, commands, buildroot, state):
 
     elif options.mode == 'copyout':
         commands.init()
-        buildroot.uid_manager.dropPrivsTemp()
-        try:
+        with buildroot.uid_manager:
             if len(args) < 2:
                 log.critical("Must have source and destinations for copyout")
                 sys.exit(50)
@@ -808,8 +805,6 @@ def run_command(options, args, config_opts, commands, buildroot, state):
                         os.symlink(linkto, dest)
                     else:
                         shutil.copy(src, dest)
-        finally:
-            buildroot.uid_manager.restorePrivs()
 
     elif options.mode in ('pm-cmd', 'yum-cmd', 'dnf-cmd'):
         log.info('Running %s %s', buildroot.pkg_manager.command, ' '.join(args))

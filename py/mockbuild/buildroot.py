@@ -101,13 +101,11 @@ class Buildroot(object):
 
     @traceLog()
     def _setup_result_dir(self):
-        self.uid_manager.dropPrivsTemp()
-        try:
-            util.mkdirIfAbsent(self.resultdir)
-        except Error:
-            raise ResultDirNotAccessible(ResultDirNotAccessible.__doc__ % self.resultdir)
-        finally:
-            self.uid_manager.restorePrivs()
+        with self.uid_manager:
+            try:
+                util.mkdirIfAbsent(self.resultdir)
+            except Error:
+                raise ResultDirNotAccessible(ResultDirNotAccessible.__doc__ % self.resultdir)
 
     @traceLog()
     def _init(self, prebuild, do_log):
@@ -301,8 +299,7 @@ class Buildroot(object):
             return
         self.logging_initialized = True
 
-        try:
-            self.uid_manager.dropPrivsTemp()
+        with self.uid_manager:
             util.mkdirIfAbsent(self.resultdir)
 
             # attach logs to log files.
@@ -319,8 +316,6 @@ class Buildroot(object):
                 fh.setLevel(logging.NOTSET)
                 log.addHandler(fh)
                 log.info("Mock Version: %s", self.config['version'])
-        finally:
-            self.uid_manager.restorePrivs()
 
     @traceLog()
     def _init_aux_files(self):
@@ -410,8 +405,7 @@ class Buildroot(object):
     def _setup_build_dirs(self):
         build_dirs = ['RPMS', 'SPECS', 'SRPMS', 'SOURCES', 'BUILD', 'BUILDROOT',
                       'originals']
-        self.uid_manager.dropPrivsTemp()
-        try:
+        with self.uid_manager:
             for item in build_dirs:
                 util.mkdirIfAbsent(self.make_chroot_path(self.builddir, item))
             if self.config['clean']:
@@ -427,8 +421,6 @@ class Buildroot(object):
 
                 for key, value in list(self.config['macros'].items()):
                     rpmmacros.write("%s %s\n" % (key, value))
-        finally:
-            self.uid_manager.restorePrivs()
 
     @traceLog()
     def _setup_devices(self):

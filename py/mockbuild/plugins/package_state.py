@@ -46,21 +46,19 @@ class PackageState(object):
     @traceLog()
     def _availablePostYumHook(self):
         if self.online and not self.avail_done:
-            self.buildroot.uid_manager.dropPrivsTemp()
-            self.state.start("Outputting list of available packages")
-            out_file = self.buildroot.resultdir + '/available_pkgs'
-            chrootpath = self.buildroot.make_chroot_path()
-            if self.config['package_manager'] == 'dnf':
-                cmd = "/usr/bin/repoquery --installroot={0} -c {0}/etc/yum.conf {1} > {2}".format(
-                    chrootpath, repoquery_avail_opts, out_file)
-            else:
-                cmd = "/usr/bin/dnf --installroot={0} repoquery -c {0}/etc/dnf.conf {1} > {2}".format(
-                    chrootpath, repoquery_avail_opts, out_file)
-            # print(cmd)
-            mockbuild.util.do(cmd, shell=True, env=self.buildroot.env)
-            self.avail_done = True
-            self.state.finish("Outputting list of available packages")
-            self.buildroot.uid_manager.restorePrivs()
+            with self.buildroot.uid_manager:
+                self.state.start("Outputting list of available packages")
+                out_file = self.buildroot.resultdir + '/available_pkgs'
+                chrootpath = self.buildroot.make_chroot_path()
+                if self.config['package_manager'] == 'dnf':
+                    cmd = "/usr/bin/repoquery --installroot={0} -c {0}/etc/yum.conf {1} > {2}".format(
+                        chrootpath, repoquery_avail_opts, out_file)
+                else:
+                    cmd = "/usr/bin/dnf --installroot={0} repoquery -c {0}/etc/dnf.conf {1} > {2}".format(
+                        chrootpath, repoquery_avail_opts, out_file)
+                mockbuild.util.do(cmd, shell=True, env=self.buildroot.env)
+                self.avail_done = True
+                self.state.finish("Outputting list of available packages")
 
     @traceLog()
     def _installedPreBuildHook(self):
@@ -74,9 +72,8 @@ class PackageState(object):
             out_file = self.buildroot.resultdir + '/installed_pkgs'
             cmd = "rpm -qa --root '%s' --qf '%%{nevra} %%{buildtime} %%{size} %%{pkgid} installed\\n' > %s" % (
                 self.buildroot.make_chroot_path(), out_file)
-            self.buildroot.uid_manager.restorePrivs()
-            mockbuild.util.do(cmd, shell=True, env=self.buildroot.env)
-            self.buildroot.uid_manager.dropPrivsTemp()
+            with self.buildroot.uid_manager:
+                mockbuild.util.do(cmd, shell=True, env=self.buildroot.env)
             self.inst_done = True
             os.unlink(fn)
             self.state.finish("Outputting list of installed packages")

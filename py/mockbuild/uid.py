@@ -24,6 +24,15 @@ class UidManager(object):
         self.unprivEnviron['HOME'] = pwd.getpwuid(unprivUid).pw_dir
 
     @traceLog()
+    def __enter__(self):
+        self.dropPrivsTemp()
+        return self
+
+    @traceLog()
+    def __exit__(self, exc_type, exc_val, exc_tb):
+       self.restorePrivs()
+
+    @traceLog()
     def becomeUser(self, uid, gid=-1):
         # save current ruid, euid, rgid, egid
         self._push()
