@@ -33,7 +33,7 @@ from textwrap import dedent
 
 from . import exception
 from .trace_decorator import traceLog, getLog
-from .uid import setresuid, setresgid, getresuid
+from .uid import setresuid, getresuid
 
 encoding = locale.getpreferredencoding()
 
