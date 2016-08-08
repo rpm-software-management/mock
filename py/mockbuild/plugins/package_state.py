@@ -64,16 +64,10 @@ class PackageState(object):
     def _installedPreBuildHook(self):
         if self.online and not self.inst_done:
             self.state.start("Outputting list of installed packages")
-            fd, fn = tempfile.mkstemp()
-            fo = os.fdopen(fd, 'w')
-            fo.write('[main]\ninstallroot=%s' % self.buildroot.make_chroot_path())
-            fo.flush()
-            fo.close()
             out_file = self.buildroot.resultdir + '/installed_pkgs'
             cmd = "rpm -qa --root '%s' --qf '%%{nevra} %%{buildtime} %%{size} %%{pkgid} installed\\n' > %s" % (
                 self.buildroot.make_chroot_path(), out_file)
             with self.buildroot.uid_manager:
                 mockbuild.util.do(cmd, shell=True, env=self.buildroot.env)
             self.inst_done = True
-            os.unlink(fn)
             self.state.finish("Outputting list of installed packages")
