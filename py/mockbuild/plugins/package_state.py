@@ -49,10 +49,10 @@ class PackageState(object):
                 out_file = self.buildroot.resultdir + '/available_pkgs'
                 chrootpath = self.buildroot.make_chroot_path()
                 if self.config['package_manager'] == 'dnf':
-                    cmd = "/usr/bin/repoquery --installroot={0} -c {0}/etc/yum.conf {1} > {2}".format(
+                    cmd = "/usr/bin/dnf --installroot={0} repoquery -c {0}/etc/dnf.conf {1} > {2}".format(
                         chrootpath, repoquery_avail_opts, out_file)
                 else:
-                    cmd = "/usr/bin/dnf --installroot={0} repoquery -c {0}/etc/dnf.conf {1} > {2}".format(
+                    cmd = "/usr/bin/repoquery --installroot={0} -c {0}/etc/yum.conf {1} > {2}".format(
                         chrootpath, repoquery_avail_opts, out_file)
                 mockbuild.util.do(cmd, shell=True, env=self.buildroot.env)
                 self.avail_done = True
