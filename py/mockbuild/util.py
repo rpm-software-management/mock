@@ -607,9 +607,9 @@ def is_in_dir(path, directory):
 def _prepare_nspawn_command(chrootPath, user, cmd, private_network=False, env=None):
     cmd_is_list = isinstance(cmd, list)
     if user:
-        # needs to be /bin because of el5 and el6 targets
+        # user can be either id or name
         if cmd_is_list:
-            cmd = ['-u', user] + cmd
+            cmd = ['-u', str(user)] + cmd
         else:
             raise exception.Error('Internal Error: command must be list or shell=True.')
     elif not cmd_is_list:
@@ -630,7 +630,7 @@ def _prepare_nspawn_command(chrootPath, user, cmd, private_network=False, env=No
         return " ".join(cmd)
 
 
-def doshell(chrootPath=None, environ=None, uid=None, gid=None, user=None, cmd=None,
+def doshell(chrootPath=None, environ=None, uid=None, gid=None, cmd=None,
             unshare_ipc=True):
     log = getLog()
     log.debug("doshell: chrootPath:%s, uid:%d, gid:%d", chrootPath, uid, gid)
@@ -650,7 +650,8 @@ def doshell(chrootPath=None, environ=None, uid=None, gid=None, user=None, cmd=No
     else:
         cmd = ["/bin/sh", "-i", "-l"]
     if USE_NSPAWN:
-        cmd = _prepare_nspawn_command(chrootPath, user, cmd, env=environ)
+        # nspawn cannot set gid
+        cmd = _prepare_nspawn_command(chrootPath, uid, cmd, env=environ)
     preexec = ChildPreExec(personality=None, chrootPath=chrootPath, cwd=None,
                            uid=uid, gid=gid, env=environ, shell=True,
                            unshare_ipc=unshare_ipc)
