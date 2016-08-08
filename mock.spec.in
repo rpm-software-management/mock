@@ -54,6 +54,12 @@ Requires: systemd-container
 %endif
 Requires(pre): shadow-utils
 Requires(post): coreutils
+%if 0%{?fedora} > 0
+Requires(post): fedora-release
+%endif
+%if 0%{?rhel} > 6
+Requires(post): /etc/os-release
+%endif
 BuildRequires: autoconf, automake
 %if 0%{?fedora} || 0%{?rhel} > 6
 BuildRequires: bash-completion
