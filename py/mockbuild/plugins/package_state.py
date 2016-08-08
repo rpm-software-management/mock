@@ -15,7 +15,6 @@
 from mockbuild.trace_decorator import traceLog
 import mockbuild.util
 import tempfile
-import os
 
 # repoquery used
 repoquery_avail_opts = "--qf '%{name}-%{epoch}:%{version}-%{release}.%{arch} %{buildtime} %{size} %{pkgid} %{repoid}' '*'"
