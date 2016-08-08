@@ -786,7 +786,10 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
         'selinux_enable': True,
         'selinux_opts': {},
         'package_state_enable': False,
-        'package_state_opts': {},
+        'package_state_opts': {
+            'available_pkgs': False,
+            'installed_pkgs': True,
+        },
         'pm_request_enable': False,
         'pm_request_opts': {},
         'lvm_root_enable': False,

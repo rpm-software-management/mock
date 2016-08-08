@@ -33,22 +33,24 @@ class PackageState(object):
     @traceLog()
     def __init__(self, plugins, conf, buildroot):
         self.buildroot = buildroot
-        self.config = buildroot.config
         self.state = buildroot.state
+        self.conf = conf
+        self.available_pkgs_enabled = self.conf['available_pkgs']
+        self.installed_pkgs_enabled = self.conf['installed_pkgs']
         self.avail_done = False
         self.inst_done = False
-        self.online = self.config['online']
+        self.online = self.buildroot.config['online']
         plugins.add_hook("postyum", self._availablePostYumHook)
         plugins.add_hook("prebuild", self._installedPreBuildHook)
 
     @traceLog()
     def _availablePostYumHook(self):
-        if self.online and not self.avail_done:
+        if self.online and not self.avail_done and self.available_pkgs_enabled:
             with self.buildroot.uid_manager:
                 self.state.start("Outputting list of available packages")
                 out_file = self.buildroot.resultdir + '/available_pkgs'
                 chrootpath = self.buildroot.make_chroot_path()
-                if self.config['package_manager'] == 'dnf':
+                if self.buildroot.config['package_manager'] == 'dnf':
                     cmd = "/usr/bin/dnf --installroot={0} repoquery -c {0}/etc/dnf.conf {1} > {2}".format(
                         chrootpath, repoquery_avail_opts, out_file)
                 else:
@@ -60,7 +62,7 @@ class PackageState(object):
 
     @traceLog()
     def _installedPreBuildHook(self):
-        if not self.inst_done:
+        if not self.inst_done and self.installed_pkgs_enabled:
             self.state.start("Outputting list of installed packages")
             out_file = self.buildroot.resultdir + '/installed_pkgs'
             cmd = "rpm -qa --root '%s' --qf '%%{nevra} %%{buildtime} %%{size} %%{pkgid} installed\\n' > %s" % (
