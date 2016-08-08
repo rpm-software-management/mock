@@ -62,7 +62,7 @@ class PackageState(object):
 
     @traceLog()
     def _installedPreBuildHook(self):
-        if self.online and not self.inst_done:
+        if not self.inst_done:
             self.state.start("Outputting list of installed packages")
             out_file = self.buildroot.resultdir + '/installed_pkgs'
             cmd = "rpm -qa --root '%s' --qf '%%{nevra} %%{buildtime} %%{size} %%{pkgid} installed\\n' > %s" % (
