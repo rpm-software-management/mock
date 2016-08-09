@@ -498,7 +498,7 @@ def do(command, shell=False, chrootPath=None, cwd=None, timeout=0, raiseExc=True
             command = ['/bin/sh', '-c'] + command
             shell = False
         if chrootPath and USE_NSPAWN:
-            command = _prepare_nspawn_command(chrootPath, user, command, private_network=private_network, env=env)
+            command = _prepare_nspawn_command(chrootPath, user, command, private_network=private_network, env=env, cwd=cwd)
         logger.debug("Executing command: %s with env %s and shell %s", command, env, shell)
         with open(os.devnull, "r") as stdin:
             child = subprocess.Popen(
@@ -604,7 +604,7 @@ def is_in_dir(path, directory):
     return os.path.commonprefix([path, directory]) == directory
 
 
-def _prepare_nspawn_command(chrootPath, user, cmd, private_network=False, env=None):
+def _prepare_nspawn_command(chrootPath, user, cmd, private_network=False, env=None, cwd=None):
     cmd_is_list = isinstance(cmd, list)
     if user:
         # user can be either id or name
@@ -617,6 +617,8 @@ def _prepare_nspawn_command(chrootPath, user, cmd, private_network=False, env=No
     nspawn_argv = ['/usr/bin/systemd-nspawn', '-q', '-M', uuid.uuid4().hex, '-D', chrootPath]
     if private_network:
         nspawn_argv.append('--private-network')
+    if cwd:
+        nspawn_argv.append('--chdir={0}'.format(cwd))
     if env:
         # BZ 1312384 workaround
         env['PROMPT_COMMAND'] = 'printf "\\033]0;<mock-chroot>\\007"'
