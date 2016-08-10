@@ -27,7 +27,7 @@
 Summary: Builds packages inside chroots
 Name: mock
 Version: %{release_version}
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2+
 Source: https://git.fedorahosted.org/cgit/mock.git/snapshot/%{name}-%{version}.tar.xz
 URL: https://fedoraproject.org/wiki/Mock
@@ -229,6 +229,24 @@ fi
 %{python_sitelib}/mockbuild/plugins/lvm_root.*
 
 %changelog
+* Wed Aug 10 2016 Miroslav Suchý <msuchy@redhat.com> - 1.2.19-1
+- (HEAD -> devel, origin/devel) disable tmpfs plugin for init-clean test
+- pass cwd option to systemd-nspawn [RHBZ#1264508]
+- pass unpriv id to doshell() [RHBZ#1298220]
+- enable package_state plugin by default and create installed_pkgs file [RHBZ#1277187]
+- installed_pkgs can be created even in offline mode
+- Use context manager for drop/restore calls of uid manager [RHBZ#1362478]
+- require /etc/os-release during post section [RHBZ#1358397]
+- use mageia gpg keys from distribution-gpg-keys package
+- use fedora gpg keys from distribution-gpg-keys package
+- use epel gpg keys from distribution-gpg-keys package
+- add F25 configs
+- 'include' statement has been added [RHBZ#1272381]
+- Handle file open/close more with "with", close more eagerly
+- Use logging.warning instead of deprecated warn
+- add chroot_additional_packages to custom chroots
+- chroot_additional_packages: new option
+
 * Fri Jun 10 2016 Miroslav Suchý <msuchy@redhat.com> - 1.2.18-1
 - add custom config
 - add Mageia configs
@@ -314,128 +332,3 @@ fi
 * Tue Jul 14 2015 clark Williams <williams@redhat.com> - 1.2.11-1
 - dropped code that does stray mount cleanup of chroot [RHBZ#1208092]
 - modified package_manager resolvedep cmd to use repoquery when dnf is installed
-
-* Tue Jun  2 2015 Miroslav Suchý <msuchy@redhat.com> - 1.2.10-1
-- do not require pyliblzma if using python3 [RHBZ#1227209]
-- add warning to site-defaults.cfg that assumeyes=1 is important [RHBZ#1225004]
-- sync comments in site-defaults.cfg with code [RHBZ#1224961]
-- check for dangling link of /etc/mtab [RHBZ#1224732]
-- Fix --install filename completion
-
-* Wed May 13 2015 Miroslav Suchý <msuchy@redhat.com> - 1.2.9-1
-- scm: do not keep copy of environ, this is now handled by uidmanager [RHBZ#1204395]
-- Add pm_request plugin
-- Drop lvm2-python-libs requires and enable lvm subpackage on el6
-- Use lvs instead of lvm python bindings
-- Unshare IPC ns only for chroot processes
-- Add missing flush in logOutput
-- Avoid infinite recursion in selinux plugin
-
-* Wed Apr 29 2015 Miroslav Suchý <msuchy@redhat.com> - 1.2.8-1
-- LVM plugin is removed on F22+ due RHBZ 1136366
-- allow the chroot's location to be configurable [RHBZ#452730]
-- send output of --chroot to log [RHBZ#1214178]
-- chroot_scan: implement "only_failed" option [RHBZ#1190763]
-- add comment why this previous commit was done [RHBZ#1192128]
-- use rpm macros instead of cmd option for --nocheck [RHBZ#1192128]
-- plugin options can be string if specified on command line [RHBZ#1193487]
-- root_cache: do not assume volatile root with tmpfs [RHBZ#1193487]
-- use CONFIG instead of CHROOT in help/man for --root option [RHBZ#1197131]
-- more clarification on --dnf-cmd/--yum-cmd [RHBZ#1211621]
-- scm correct the logic of exclude_vcs [RHBZ#1204240]
-- ignore missing files in ccache [RHBZ#1210569]
-- install buildsys-macros in el5 chroot [RHBZ#1213482]
-- remove forgotten print statement [RHBZ#1202845]
-- add a plugin that calls command (from the host) on the produced rpms.
-- save/restore os.environ when dropping/restoring Privs [RHBZ#1204395]
-- mock-scm pull tarball name from specfile instead of hardcoding [RHBZ#1204935]
-- clarify "--yum-cmd" / "--dnf-cmd" options [RHBZ#1211621]
-- return the SRPM name from do_buildsrpm (required for SCM builds) [1190450]
-- binding DNF cache directory with yum_cache [RHBZ#1176560]
-- suggest user to install dnf-plugins-core [RHBZ#1196248]
-- ignore btrfs errors on non-btrfs systems [RHBZ#1205564]
-- on F21- use hard deps instead of soft [RHBZ#1198769]
-- delete btrfs subvolumes on exit [RHBZ#1205564]
-- on python3 convert err from bytes to str [RHBZ#1211199]
-- on F22+ use yum-deprecated instead of yum [RHBZ#1211978]
-- if mountpoint is inside chroot, remove chroot part [RHBZ#1208299]
-- chmod directory only if we really created it [RHBZ#1209532]
-- port epel-5 configs to Python 3 [RHBZ#1204662]
-- use nosync only for package management and chroot init [RHBZ#1184964]
-- missing config file should not be fatal [RHBZ#1195749]
-- pass variable "name" [RHBZ#1194171]
-- correct chroot_scan configuration sample in site-defaults
-- install missing chroot_scan plugin
-- avoid creating resultdir as root
-
-
-* Fri Feb 13 2015 Miroslav Suchý <msuchy@redhat.com> - 1.2.7-1
-- add Fedora 22 configs
-- rawhide configs use DNF
-- touch should not truncate file [RHBZ#1188770]
-
-* Mon Feb  2 2015 Clark Williams <williams@redhat.com> - 1.2.6-1
-- fix broken build issue
-- From Mikhail Campos Guadamuz <Mikhail_Campos-Guadamuz@epam.com>:
-  - use default logging.ini if non-default does not exist [RHBZ#1187727]
-- From Michael Simacek <msimacek@redhat.com>:
-  - Update manpage regarding multiple arguments
-  - Take package arguments in update [RHBZ#1187136]
-- From Miroslav Suchý <msuchy@redhat.com>:
-  - reset LC before calling lvm commands [RHBZ#1185912]
-
-* Fri Jan 23 2015 Clark Williams <williams@redhat.com> - 1.2.5-1
-- mounts: do not mount /dev/shm or /dev/pts if internal setup false
-- actually package compress_logs plugin
-- use relative imports
-- touch /etc/os-release after install @buildsys-build [RHBZ#1183454]
-- parse /etc/os-release only if it exists and size is non-zero [RHBZ#1183454]
-
-* Fri Jan 16 2015 Miroslav Suchý <msuchy@redhat.com> - 1.2.4-1
-- each user have its own ccache cache [RHBZ#1168116]
-- man: write example for --chroot option
-- sort options in man page
-- sort command in man page
-- add Fedora 22 GPG keys
-- improve --resultdir part of man page [RHBZ#1181554]
-- allow the subsitution of resultdir into the yum.conf block [RHBZ#1125376]
-- do no print duplicities in bash completion
-- Fixed systemd-nspawn machine name collision [RHBZ#1174286]
-- do shell expansion on  --new-chroot --chroot [RHBZ#1174317]
-- log executing command after nspawn expansion
-- make sure that mockchain generate unique repoid for all repos [RHBZ#1179806]
-- workaround old python-six in EL7
-- Remove checking for chroot existence in --chroot
-- Exclude .bash_history and .bashrc from builddir cleanup
-- Ignore broken symlinks in chown_home_dir
-- create SCM files as non-privileg user [RHBZ#1178576]
-- With --no-clean, delete /builddir except build/SOURCES [RHBZ#1173126]
-- Man page formatting improvements
-- Move the pool size check to later time when pool already exists
-- Always use returnOutput in lvm plugin to get possible error output
-- put correct version in man page
-- Fix unicode characters in logs on Python 2 [RHBZ#1171707]
-- Added new option 'postinstall' [RHBZ#1168911]
-- Use keepcache=1 in yum.conf [RHBZ#1169126]
-- Warn user when LVM thin pool is filled up [RHBZ#1167761]
-- add missing max_metadata_age_days do site-defaults.cfg
-- add age_check to site-default.cfg
-- compress also logs created by package_state plugin
-
-* Thu Dec  4 2014 Miroslav Suchý <msuchy@redhat.com> - 1.2.3-1
-- fixed incorrect command construction in PackageManager:build_invocation [RHBZ#1170230]
-- completion: correctly expand --install [RHBZ#1168220]
-- copyin: when source is directory, then handle corner cases [RHBZ#1169051]
-- increase default for tmpfs to 768
-- check if key exist [RHBZ#476837]
-- Added tmpfs new option 'keep_mounted' [RHBZ#476837]
-- add 2 common tmpfs dirs to find_non_nfs_dir()
-- Added new option --symlink-dereference used with --buildsrpm [BZ# 1165242]
-- accept None as macro value in config [RHBZ#1165778]
-- Don't do yum update when --no-clean specified [RHBZ#1165716]
-- do not delete /buildir when --no-clean was set [RHBZ#483486]
-- bash completation for --copyin and --sources
-- bash_completion.d/mock: fix syntax error
-- Correct check for --source cmd option, single file can be used [RHBZ#1165213]
-- update BUGS part of man page
-- add missing options to man page
