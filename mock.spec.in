@@ -229,8 +229,11 @@ fi
 %{python_sitelib}/mockbuild/plugins/lvm_root.*
 
 %changelog
+* Wed Aug 17 2016 Miroslav Suchý <msuchy@redhat.com> - 1.2.20-1
+- use epel GPG keys for epel 
+
 * Wed Aug 10 2016 Miroslav Suchý <msuchy@redhat.com> - 1.2.19-1
-- (HEAD -> devel, origin/devel) disable tmpfs plugin for init-clean test
+- disable tmpfs plugin for init-clean test
 - pass cwd option to systemd-nspawn [RHBZ#1264508]
 - pass unpriv id to doshell() [RHBZ#1298220]
 - enable package_state plugin by default and create installed_pkgs file [RHBZ#1277187]
