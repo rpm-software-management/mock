@@ -55,7 +55,7 @@ Requires: systemd-container
 Requires(pre): shadow-utils
 Requires(post): coreutils
 %if 0%{?fedora} > 0
-Requires(post): fedora-release
+Requires(post): system-release
 %endif
 %if 0%{?rhel} > 6
 Requires(post): /etc/os-release
