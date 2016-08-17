@@ -29,7 +29,7 @@ Name: mock
 Version: %{release_version}
 Release: 1%{?dist}
 License: GPLv2+
-Source: https://git.fedorahosted.org/cgit/mock.git/snapshot/%{name}-%{version}.tar.xz
+Source: https://fedorahosted.org/releases/m/o/mock/%{name}-%{version}.tar.xz
 URL: https://fedoraproject.org/wiki/Mock
 BuildArch: noarch
 %if 0%{?fedora} > 21
