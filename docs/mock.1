@@ -74,6 +74,10 @@ be done with the following command:
         \fBsudo /usr/sbin/usermod \-a \-G mock $USER\fR
 
 Note that mock is not intended to be run directly as root.
+.LP
+Warning:
+Mock is running some parts of code under root privileges. There are known ways how to get root access once user is in mock group (and once he is able to run mock). This is possible when user abuse the mock configuration options. Please do not add anyone who is not trustworthy to the mock group!
+
 
 .SH "COMMANDS"
 .LP
