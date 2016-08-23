@@ -128,7 +128,7 @@ class TraceDecoratorTest(unittest.TestCase):
         self.assertEqual(3, len(captured))
         msg, kw = captured[1][2][2], captured[1][3]
         self.assertTrue(kw['exc_info'])
-        self.assertEquals("EXCEPTION: test exception\n", msg)
+        self.assertEqual("EXCEPTION: test exception\n", msg)
         msg = captured[2][2][2]
         self.assertEqual("LEAVE exampleRaising --> EXCEPTION RAISED\n", msg)
 
