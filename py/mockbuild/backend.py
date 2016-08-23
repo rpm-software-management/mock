@@ -381,9 +381,9 @@ class Commands(object):
     @traceLog()
     def rebuild_installed_srpm(self, spec_path, timeout):
         if not util.USE_NSPAWN:
-            command = ['{command} -bs --target {0} --nodeps {1}'\
-                       .format(self.rpmbuild_arch, spec_path,
-                               command=self.config['rpmbuild_command'])]
+            command = ['{command} -bs --target {0} --nodeps {1}'.format(
+                self.rpmbuild_arch, spec_path,
+                command=self.config['rpmbuild_command'])]
             command = ["bash", "--login", "-c"] + command
         else:
             command = [self.config['rpmbuild_command'], '-bs', '--target', self.rpmbuild_arch, '--nodeps', spec_path]
@@ -408,7 +408,7 @@ class Commands(object):
         if not check:
             # this is because EL5/6 does not know --nocheck
             # when EL5/6 targets are not supported, replace it with --nocheck
-            check_opt += ["--define",  "'__spec_check_template exit 0; '"]
+            check_opt += ["--define", "'__spec_check_template exit 0; '"]
 
         mode = ['-bb']
         sc = self.config.get('short_circuit')

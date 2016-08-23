@@ -1047,6 +1047,7 @@ def check_config(config_opts):
     if 'root' not in config_opts:
         raise exception.ConfigError("Error in configuration - option config_opts['root'] must be present in your config.")
 
+
 @traceLog()
 def include(config_file, config_opts, is_statement=False):
     if os.path.exists(config_file):
@@ -1063,6 +1064,7 @@ def include(config_file, config_opts, is_statement=False):
         exec(code)
     else:
         raise exception.ConfigError("Could not find included config file: %s" % config_file)
+
 
 @traceLog()
 def update_config_from_file(config_opts, config_file, uid_manager):
@@ -1153,8 +1155,8 @@ def load_config(config_path, name, uidManager, version, PKGPYTHONDIR):
     cfg = os.path.join(os.path.expanduser(
         '~' + pwd.getpwuid(os.getuid())[0]), '.mock/user.cfg')
     do_update_config(log, config_opts, cfg, uidManager, name)
-    cfg = os.path.join(os.path.expanduser('~' + pwd.getpwuid(os.getuid())[0]),
-            '.config/mock.cfg')
+    cfg = os.path.join(os.path.expanduser(
+        '~' + pwd.getpwuid(os.getuid())[0]), '.config/mock.cfg')
     do_update_config(log, config_opts, cfg, uidManager, name)
 
     # default /etc/hosts contents

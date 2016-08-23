@@ -30,7 +30,7 @@ class UidManager(object):
 
     @traceLog()
     def __exit__(self, exc_type, exc_val, exc_tb):
-       self.restorePrivs()
+        self.restorePrivs()
 
     @traceLog()
     def becomeUser(self, uid, gid=-1):
