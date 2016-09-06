@@ -179,7 +179,7 @@ class RootCache(object):
             if not self.buildroot.chroot_was_initialized or self.config['cache_alterations']:
                 mockbuild.util.do(["sync"], shell=False)
                 self._root_cache_handle_mounts()
-                self.state.start("creating cache")
+                self.state.start("creating root cache")
                 try:
                     mockbuild.util.do(
                         ["tar", "--one-file-system", "--exclude-caches", "--exclude-caches-under"] +
@@ -199,7 +199,7 @@ class RootCache(object):
                         l.write(self.buildroot.yum_init_install_output)
                 except:
                     pass
-                self.state.finish("creating cache")
+                self.state.finish("creating root cache")
         finally:
             self._rootCacheUnlock()
 
