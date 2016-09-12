@@ -22,7 +22,7 @@ if [ $res -ne 50 ]; then
 fi
 
 
-runcmd "$MOCKCMD --offline --copyin ${TESTDIR}/test-C-1.1-0.src.rpm /"
+runcmd "$MOCKCMD --offline --disable-plugin=tmpfs --copyin ${TESTDIR}/test-C-1.1-0.src.rpm /"
 res=$?
 if [ $res -ne 0 ]; then
    echo "mock returned fail when should have succeeded!"
@@ -33,7 +33,7 @@ if [ ! -e $CHROOT/test-C-1.1-0.src.rpm ]; then
     exit 1
 fi
 
-runcmd "$MOCKCMD --offline --copyin ${TESTDIR}/test-B-1.1-0.src.rpm /test-B-1.1-0.src.rpm"
+runcmd "$MOCKCMD --offline --disable-plugin=tmpfs --copyin ${TESTDIR}/test-B-1.1-0.src.rpm /test-B-1.1-0.src.rpm"
 res=$?
 if [ $res -ne 0 ]; then
    echo "mock returned fail when should have succeeded!"
@@ -46,7 +46,7 @@ fi
 
 TMPDIR=$(mktemp -d)
 echo foo > ${TMPDIR}/bar
-runcmd "$MOCKCMD --offline --copyin ${TMPDIR} /foobar"
+runcmd "$MOCKCMD --offline --disable-plugin=tmpfs --copyin ${TMPDIR} /foobar"
 res=$?
 if [ $res -ne 0 ]; then
    echo "mock returned fail when should have succeeded!"
@@ -59,7 +59,7 @@ fi
 
 mkdir -p ${TMPDIR}/TMPDIR
 echo foo > ${TMPDIR}/TMPDIR/bar
-runcmd "$MOCKCMD --offline --copyin ${TMPDIR}/TMPDIR /"
+runcmd "$MOCKCMD --offline --disable-plugin=tmpfs --copyin ${TMPDIR}/TMPDIR /"
 res=$?
 if [ $res -ne 0 ]; then
    echo "mock returned fail when should have succeeded!"
