@@ -680,7 +680,7 @@ def run_command(options, args, config_opts, commands, buildroot, state):
         scmWorker = mockbuild.scm.scmWorker(log, config_opts['scm_opts'], config_opts['macros'])
         with buildroot.uid_manager:
             scmWorker.get_sources()
-        (options.sources, options.spec) = scmWorker.prepare_sources()
+            (options.sources, options.spec) = scmWorker.prepare_sources()
 
     if options.mode == 'init':
         if config_opts['clean']:
