@@ -229,6 +229,12 @@ fi
 %{python_sitelib}/mockbuild/plugins/lvm_root.*
 
 %changelog
+* Tue Sep 13 2016 Miroslav Suchý <msuchy@redhat.com> - 1.2.21-1
+- CVE-2016-6299 - fixed root rights escalation in mock-scm
+- root_cache: Mention _root_ cache being created in state updates
+- Rename mageia pubkey to RPM-GPG-KEY-Mageia
+- require generic system-release rather than fedora-release [RHBZ#1367746]
+
 * Wed Aug 17 2016 Miroslav Suchý <msuchy@redhat.com> - 1.2.20-1
 - use epel GPG keys for epel 
 
