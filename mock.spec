@@ -19,7 +19,7 @@
 
 Summary: Builds packages inside chroots
 Name: mock
-Version: 1.2.17
+Version: 1.3.0
 Release: 1%{?dist}
 License: GPLv2+
 Source: https://fedorahosted.org/releases/m/o/mock/%{name}-%{version}.tar.gz
