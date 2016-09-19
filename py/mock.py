@@ -367,7 +367,8 @@ def setup_logging(config_path, config_opts, options):
     try:
         if not os.path.exists(log_ini):
             if os.path.normpath('/etc/mock') != os.path.normpath(config_path):
-                log.warning("Could not find required logging config file: %s. Using default...", log_ini)
+                log.warning("Could not find required logging config file: %s. Using default...",
+                            log_ini)
                 log_ini = os.path.join("/etc/mock", config_opts["log_config_file"])
                 if not os.path.exists(log_ini):
                     raise IOError("Could not find log config file %s" % log_ini)
