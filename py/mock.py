@@ -254,7 +254,8 @@ def command_parse():
                            " before running command when using --chroot")
 
     parser.add_option("--spec", action="store",
-                      help="Specifies spec file to use to build an SRPM (used only with --buildsrpm)")
+                      help="Specifies spec file to use to build an SRPM"
+                           "(used only with --buildsrpm)")
     parser.add_option("--sources", action="store",
                       help="Specifies sources (either a single file or a directory of files)"
                       "to use to build an SRPM (used only with --buildsrpm)")
