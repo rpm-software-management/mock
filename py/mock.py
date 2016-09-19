@@ -283,7 +283,8 @@ def command_parse():
                       default=False,
                       help="use new chroot (systemd-nspawn).")
     parser.add_option("--postinstall", action="store_true", dest="post_install",
-                      default=False, help="Try to install built packages in the same buildroot right after build")
+                      default=False, help="Try to install built packages in "
+                                          "the same buildroot right after build")
 
     # verbosity
     parser.add_option("-v", "--verbose", action="store_const", const=2,
