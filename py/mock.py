@@ -25,7 +25,8 @@ from __future__ import print_function
 usage:
        mock [options] {--init|--clean|--scrub=[all,chroot,cache,root-cache,c-cache,yum-cache,dnf-cache,lvm]}
        mock [options] [--rebuild] /path/to/srpm(s)
-       mock [options] --buildsrpm {--spec /path/to/spec --sources /path/to/src|--scm-enable [--scm-option key=value]}
+       mock [options] --buildsrpm {--spec /path/to/spec --sources /path/to/src|
+       --scm-enable [--scm-option key=value]}
        mock [options] {--shell|--chroot} <cmd>
        mock [options] --installdeps {SRPM|RPM}
        mock [options] --install PACKAGE
