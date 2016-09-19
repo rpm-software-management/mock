@@ -112,7 +112,8 @@ def command_parse():
                       help="rebuild the specified SRPM(s)")
     parser.add_option("--buildsrpm", action="store_const", const="buildsrpm",
                       dest="mode",
-                      help="Build a SRPM from spec (--spec ...) and sources (--sources ...) or from SCM")
+                      help="Build a SRPM from spec (--spec ...) and sources"
+                           "(--sources ...) or from SCM")
     parser.add_option("--shell", action="store_const",
                       const="shell", dest="mode",
                       help="run the specified command interactively within the chroot."
