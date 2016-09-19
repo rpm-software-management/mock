@@ -350,7 +350,8 @@ def command_parse():
 
     if options.mode == 'buildsrpm' and not (options.spec and options.sources):
         if not options.scm:
-            raise mockbuild.exception.BadCmdline("Must specify both --spec and --sources with --buildsrpm")
+            raise mockbuild.exception.BadCmdline("Must specify both --spec and "
+                                                 "--sources with --buildsrpm")
     if options.spec:
         options.spec = os.path.expanduser(options.spec)
     if options.sources:
