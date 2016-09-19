@@ -272,7 +272,8 @@ def command_parse():
                       dest="enable_disable_repos", default=[],
                       help="Pass enablerepo option to yum/dnf", metavar='[repo]',
                       callback=repo_callback)
-    parser.add_option("--disablerepo", action="callback", type="string", dest="enable_disable_repos", default=[],
+    parser.add_option("--disablerepo", action="callback", type="string",
+                      dest="enable_disable_repos", default=[],
                       help="Pass disablerepo option to yum/dnf", metavar='[repo]',
                       callback=repo_callback)
     parser.add_option("--old-chroot", action="store_true", dest="old_chroot",
