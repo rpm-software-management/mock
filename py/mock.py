@@ -268,7 +268,8 @@ def command_parse():
                       "Implies --no-clean. Valid options: build, install, binary")
     parser.add_option("--rpmbuild-opts", action="store",
                       help="Pass additional options to rpmbuild")
-    parser.add_option("--enablerepo", action="callback", type="string", dest="enable_disable_repos", default=[],
+    parser.add_option("--enablerepo", action="callback", type="string",
+                      dest="enable_disable_repos", default=[],
                       help="Pass enablerepo option to yum/dnf", metavar='[repo]',
                       callback=repo_callback)
     parser.add_option("--disablerepo", action="callback", type="string", dest="enable_disable_repos", default=[],
