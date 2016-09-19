@@ -345,7 +345,8 @@ def command_parse():
     # explicitly disallow multiple targets in --target argument
     if options.rpmbuild_arch:
         if options.rpmbuild_arch.find(',') != -1:
-            raise mockbuild.exception.BadCmdline("--target option accepts only one arch. Invalid: %s" % options.rpmbuild_arch)
+            raise mockbuild.exception.BadCmdline("--target option accepts only "
+                                                 "one arch. Invalid: %s" % options.rpmbuild_arch)
 
     if options.mode == 'buildsrpm' and not (options.spec and options.sources):
         if not options.scm:
@@ -386,6 +387,8 @@ def setup_logging(config_path, config_opts, options):
     try:
         # set up logging format strings
         config_opts['build_log_fmt_str'] = log_cfg.get("formatter_%s" % config_opts['build_log_fmt_name'], "format", raw=1)
+        config_opts['build_log_fmt_str'] = log_cfg.get("formatter_%s" %
+                                                       config_opts['build_log_fmt_name'], "format", raw=1)
         config_opts['root_log_fmt_str'] = log_cfg.get("formatter_%s" % config_opts['root_log_fmt_name'], "format", raw=1)
         config_opts['state_log_fmt_str'] = log_cfg.get("formatter_%s" % config_opts['state_log_fmt_name'], "format", raw=1)
     except configparser.NoSectionError as exc:
