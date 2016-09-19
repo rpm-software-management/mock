@@ -130,7 +130,8 @@ def command_parse():
     parser.add_option("--scrub", action="callback", type="choice", default=[],
                       choices=scrub_choices, metavar=scrub_metavar,
                       callback=scrub_callback,
-                      help="completely remove the specified chroot or cache dir or all of the chroot and cache")
+                      help="completely remove the specified chroot "
+                           "or cache dir or all of the chroot and cache")
     parser.add_option("--init", action="store_const", const="init", dest="mode",
                       help="initialize the chroot, do not build anything")
     parser.add_option("--installdeps", action="store_const", const="installdeps",
