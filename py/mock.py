@@ -447,7 +447,8 @@ def check_arch_combination(target_arch, config_opts):
     host_arch = os.uname()[-1]
     if host_arch not in legal:
         raise mockbuild.exception.InvalidArchitecture(
-            "Cannot build target {0} on arch {1}, because it is not listed in legal_host_arches {2}".format(target_arch, host_arch, legal))
+            "Cannot build target {0} on arch {1}, because it is not listed in legal_host_arches {2}"
+            .format(target_arch, host_arch, legal))
 
 
 @traceLog()
