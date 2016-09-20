@@ -388,11 +388,12 @@ def setup_logging(config_path, config_opts, options):
 
     try:
         # set up logging format strings
-        config_opts['build_log_fmt_str'] = log_cfg.get("formatter_%s" % config_opts['build_log_fmt_name'], "format", raw=1)
-        config_opts['build_log_fmt_str'] = log_cfg.get("formatter_%s" %
-                                                       config_opts['build_log_fmt_name'], "format", raw=1)
-        config_opts['root_log_fmt_str'] = log_cfg.get("formatter_%s" % config_opts['root_log_fmt_name'], "format", raw=1)
-        config_opts['state_log_fmt_str'] = log_cfg.get("formatter_%s" % config_opts['state_log_fmt_name'], "format", raw=1)
+        config_opts['build_log_fmt_str'] = log_cfg.get("formatter_%s" % config_opts['build_log_fmt_name'],
+                                                       "format", raw=1)
+        config_opts['root_log_fmt_str'] = log_cfg.get("formatter_%s" % config_opts['root_log_fmt_name'],
+                                                      "format", raw=1)
+        config_opts['state_log_fmt_str'] = log_cfg.get("formatter_%s" % config_opts['state_log_fmt_name'],
+                                                       "format", raw=1)
     except configparser.NoSectionError as exc:
         log.error("Log config file (%s) missing required section: %s", log_ini, exc)
         sys.exit(50)
