@@ -1114,16 +1114,16 @@ def update_config_from_file(config_opts, config_file, uid_manager):
 @traceLog()
 def do_update_config(log, config_opts, cfg, uidManager, name, skipError=True):
     if os.path.exists(cfg):
-            config_opts['config_paths'].append(cfg)
-            update_config_from_file(config_opts, cfg, uidManager)
-            check_macro_definition(config_opts)
+        config_opts['config_paths'].append(cfg)
+        update_config_from_file(config_opts, cfg, uidManager)
+        check_macro_definition(config_opts)
     elif not skipError:
-            log.error("Could not find required config file: %s", cfg)
-            if name == "default":
-                log.error("  Did you forget to specify the chroot to use with '-r'?")
-            if "/" in cfg:
-                log.error("  If you're trying to specify a path, include the .cfg extension, e.g. -r ./target.cfg")
-            sys.exit(1)
+        log.error("Could not find required config file: %s", cfg)
+        if name == "default":
+            log.error("  Did you forget to specify the chroot to use with '-r'?")
+        if "/" in cfg:
+            log.error("  If you're trying to specify a path, include the .cfg extension, e.g. -r ./target.cfg")
+        sys.exit(1)
 
 
 @traceLog()
