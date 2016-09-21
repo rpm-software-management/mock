@@ -255,8 +255,8 @@ class Dnf(_PackageManager):
         if 'dnf_builddep_opts' not in self.config:
             self.config['dnf_builddep_opts'] = self.config['yum_builddep_opts']
         if 'dnf_common_opts' not in self.config:
-            self.config['dnf_common_opts'] = \
-                self.config['yum_common_opts'] + ['--disableplugin=local', '--setopt=deltarpm=false']
+            self.config['dnf_common_opts'] = self.config['yum_common_opts'] + ['--disableplugin=local',
+                                                                               '--setopt=deltarpm=false']
         return super(Dnf, self).build_invocation(*args)
 
     @traceLog()
