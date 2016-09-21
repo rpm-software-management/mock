@@ -499,8 +499,8 @@ def do(command, shell=False, chrootPath=None, cwd=None, timeout=0, raiseExc=True
             command = ['/bin/sh', '-c'] + command
             shell = False
         if chrootPath and USE_NSPAWN:
-            command = _prepare_nspawn_command(
-                chrootPath, user, command, private_network=private_network, env=env, cwd=cwd)
+            command = _prepare_nspawn_command(chrootPath, user, command,
+                                              private_network=private_network, env=env, cwd=cwd)
         logger.debug("Executing command: %s with env %s and shell %s", command, env, shell)
         with open(os.devnull, "r") as stdin:
             child = subprocess.Popen(
