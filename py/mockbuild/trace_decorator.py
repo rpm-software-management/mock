@@ -143,8 +143,8 @@ if __name__ == "__main__":
         yield 1
         yield 2
 
-    for i in testGen():
-        log.debug("got: %s", i)
+    for j in testGen():
+        log.debug("got: %s", j)
 
     @traceLog()
     def anotherFunc(*args):
