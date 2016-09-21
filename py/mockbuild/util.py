@@ -675,7 +675,7 @@ def clean_env():
            'HOME': '/builddir',
            'HOSTNAME': 'mock',
            'PATH': '/usr/bin:/bin:/usr/sbin:/sbin',
-           }
+          }
     env['LANG'] = os.environ.setdefault('LANG', 'en_US.UTF-8')
     return env
 
