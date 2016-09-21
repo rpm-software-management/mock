@@ -392,7 +392,7 @@ class Commands(object):
                                 uid=self.buildroot.chrootuid, gid=self.buildroot.chrootgid,
                                 user=self.buildroot.chrootuser,
                                 printOutput=self.config['print_main_output']
-                                )
+                               )
         results = glob.glob("%s/%s/SRPMS/*src.rpm" % (self.make_chroot_path(),
                                                       self.buildroot.builddir))
         if len(results) != 1:
