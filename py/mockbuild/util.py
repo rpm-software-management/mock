@@ -1047,8 +1047,8 @@ def set_config_opts_per_cmdline(config_opts, options, args):
 
 def check_config(config_opts):
     if 'root' not in config_opts:
-        raise exception.ConfigError(
-            "Error in configuration - option config_opts['root'] must be present in your config.")
+        raise exception.ConfigError("Error in configuration "
+                                    "- option config_opts['root'] must be present in your config.")
 
 
 @traceLog()
