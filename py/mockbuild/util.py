@@ -355,8 +355,8 @@ def process_input(line):
     return ''.join(out)
 
 
-def logOutput(fds, logger, returnOutput=1, start=0, timeout=0, printOutput=False, child=None, chrootPath=None,
-              pty=False):
+def logOutput(fds, logger, returnOutput=1, start=0, timeout=0, printOutput=False,
+              child=None, chrootPath=None, pty=False):
     output = ""
     done = 0
 
