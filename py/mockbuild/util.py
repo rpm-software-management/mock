@@ -355,7 +355,8 @@ def process_input(line):
     return ''.join(out)
 
 
-def logOutput(fds, logger, returnOutput=1, start=0, timeout=0, printOutput=False, child=None, chrootPath=None, pty=False):
+def logOutput(fds, logger, returnOutput=1, start=0, timeout=0, printOutput=False, child=None, chrootPath=None,
+              pty=False):
     output = ""
     done = 0
 
@@ -498,7 +499,8 @@ def do(command, shell=False, chrootPath=None, cwd=None, timeout=0, raiseExc=True
             command = ['/bin/sh', '-c'] + command
             shell = False
         if chrootPath and USE_NSPAWN:
-            command = _prepare_nspawn_command(chrootPath, user, command, private_network=private_network, env=env, cwd=cwd)
+            command = _prepare_nspawn_command(
+                chrootPath, user, command, private_network=private_network, env=env, cwd=cwd)
         logger.debug("Executing command: %s with env %s and shell %s", command, env, shell)
         with open(os.devnull, "r") as stdin:
             child = subprocess.Popen(
@@ -1045,7 +1047,8 @@ def set_config_opts_per_cmdline(config_opts, options, args):
 
 def check_config(config_opts):
     if 'root' not in config_opts:
-        raise exception.ConfigError("Error in configuration - option config_opts['root'] must be present in your config.")
+        raise exception.ConfigError(
+            "Error in configuration - option config_opts['root'] must be present in your config.")
 
 
 @traceLog()

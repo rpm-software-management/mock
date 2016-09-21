@@ -16,7 +16,8 @@ from mockbuild.trace_decorator import traceLog
 import mockbuild.util
 
 # repoquery used
-repoquery_avail_opts = "--qf '%{name}-%{epoch}:%{version}-%{release}.%{arch} %{buildtime} %{size} %{pkgid} %{repoid}' '*'"
+repoquery_avail_opts = \
+    "--qf '%{name}-%{epoch}:%{version}-%{release}.%{arch} %{buildtime} %{size} %{pkgid} %{repoid}' '*'"
 
 # set up logging, module options
 requires_api_version = "1.1"

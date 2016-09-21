@@ -92,5 +92,6 @@ class Tmpfs(object):
             try:
                 mockbuild.util.do(umountCmd, shell=False)
             except:
-                getLog().warning("tmpfs-plugin: exception while force umounting tmpfs! (cwd: %s)", mockbuild.util.pretty_getcwd())
+                getLog().warning(
+                    "tmpfs-plugin: exception while force umounting tmpfs! (cwd: %s)", mockbuild.util.pretty_getcwd())
         self.mounted = False

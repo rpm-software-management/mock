@@ -397,7 +397,8 @@ class Commands(object):
                                                       self.buildroot.builddir))
         if len(results) != 1:
             raise PkgError("Expected to find single rebuilt srpm, found %d in %s"
-                           % (len(results), "%s/%s/SRPMS/*src.rpm" % (self.make_chroot_path(), self.buildroot.builddir)))
+                           % (len(results), "%s/%s/SRPMS/*src.rpm" % (
+                               self.make_chroot_path(), self.buildroot.builddir)))
         return results[0]
 
     @traceLog()

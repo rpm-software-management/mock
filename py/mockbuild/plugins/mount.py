@@ -12,10 +12,12 @@ config_opts['plugin_conf']['mount_enable'] = False
 
 
 # To configure the mount plugin, for each mount point use following option:
-config_opts['plugin_conf']['mount_opts']['dirs'].append(("/dev/device", "/mount/path/in/chroot/", "vfstype", "mount_options"))
+config_opts['plugin_conf']['mount_opts']['dirs'].append(
+    ("/dev/device", "/mount/path/in/chroot/", "vfstype", "mount_options"))
 
 # A real life example:
-config_opts['plugin_conf']['mount_opts']['dirs'].append(("server.example.com:/exports/data", "/mnt/data", "nfs", "rw,hard,intr,nosuid,nodev,noatime,tcp"))
+config_opts['plugin_conf']['mount_opts']['dirs'].append(
+    ("server.example.com:/exports/data", "/mnt/data", "nfs", "rw,hard,intr,nosuid,nodev,noatime,tcp"))
 """
 
 

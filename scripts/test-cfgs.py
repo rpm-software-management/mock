@@ -68,7 +68,8 @@ class Config(object):
     def check_mirrorlist(self, url):
         # print("checking mirrorlist at %s" % url)
         try:
-            lines = [l for l in urllib.request.urlopen(url).readlines() if not l.startswith(b'#') and len(l.strip()) != 0]
+            lines = [l for l in urllib.request.urlopen(url).readlines()
+                     if not l.startswith(b'#') and len(l.strip()) != 0]
             if len(lines) == 1 and lines[0].startswith(b'Bad arch'):
                 return 0
             return len(lines)

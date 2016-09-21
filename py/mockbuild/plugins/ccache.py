@@ -35,7 +35,8 @@ class CCache(object):
         buildroot.preexisting_deps.append("ccache")
         plugins.add_hook("prebuild", self._ccacheBuildHook)
         plugins.add_hook("preinit", self._ccachePreInitHook)
-        buildroot.mounts.add(BindMountPoint(srcpath=self.ccachePath, bindpath=buildroot.make_chroot_path("/tmp/ccache")))
+        buildroot.mounts.add(
+            BindMountPoint(srcpath=self.ccachePath, bindpath=buildroot.make_chroot_path("/tmp/ccache")))
 
     # =============
     # 'Private' API
