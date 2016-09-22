@@ -38,6 +38,7 @@ from .uid import setresuid, getresuid
 encoding = locale.getpreferredencoding()
 
 try:
+    # pylint: disable=used-before-assignment
     basestring = basestring
 except NameError:
     basestring = str
