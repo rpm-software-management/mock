@@ -1129,13 +1129,13 @@ def do_update_config(log, config_opts, cfg, uidManager, name, skipError=True):
 
 
 @traceLog()
-def load_config(config_path, name, uidManager, version, PKGPYTHONDIR):
+def load_config(config_path, name, uidManager, version, pkg_python_dir):
     log = logging.getLogger()
     if uidManager:
         gid = uidManager.unprivUid
     else:
         gid = os.getuid()
-    config_opts = setup_default_config_opts(gid, version, PKGPYTHONDIR)
+    config_opts = setup_default_config_opts(gid, version, pkg_python_dir)
 
     # array to save config paths
     config_opts['config_paths'] = []
