@@ -478,6 +478,7 @@ def resize_pty(pty):
 # The "Not-as-complicated" version
 #
 @traceLog()
+# pylint: disable=unused-argument
 def do(command, shell=False, chrootPath=None, cwd=None, timeout=0, raiseExc=True,
        returnOutput=0, uid=None, gid=None, user=None, personality=None,
        printOutput=False, env=None, pty=False, private_network=False,
