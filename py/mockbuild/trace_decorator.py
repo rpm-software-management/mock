@@ -22,6 +22,7 @@ except NameError:
 # works around problem where reconfiguring the logging module means loggers
 # configured before reconfig dont output.
 class getLog(object):
+    # pylint: disable=unused-argument
     def __init__(self, name=None, prefix="", *args, **kargs):
         if name is None:
             frame = inspect.getouterframes(inspect.currentframe())[1][0]
@@ -125,6 +126,7 @@ if __name__ == "__main__":
     log.warning(" --> warning")
 
     @traceLog(log)
+    # pylint: disable=unused-argument
     def testFunc(arg1, arg2="default", *args, **kargs):
         return 42
 
