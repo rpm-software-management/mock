@@ -267,6 +267,7 @@ def cmpKernelVer(str1, str2):
 @traceLog()
 def getAddtlReqs(hdr, conf):
     # Add the 'more_buildreqs' for this SRPM (if defined in config file)
+    # pylint: disable=unused-variable
     (name, epoch, ver, rel, arch) = getNEVRA(hdr)
     reqlist = []
     for this_srpm in ['-'.join([name, ver, rel]),
