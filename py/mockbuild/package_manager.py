@@ -108,17 +108,21 @@ class _PackageManager(object):
         return out
 
     @traceLog()
+    # pylint: disable=unused-argument
     def install(self, *args, **kwargs):
         return self.execute('install', *args)
 
+    # pylint: disable=unused-argument
     @traceLog()
     def remove(self, *args, **kwargs):
         return self.execute('remove', *args)
 
+    # pylint: disable=unused-argument
     @traceLog()
     def update(self, *args, **kwargs):
         return self.execute('update', *args)
 
+    # pylint: disable=unused-argument
     @traceLog()
     def builddep(self, *args, **kwargs):
         return self.execute('builddep', returnOutput=1, *args)
