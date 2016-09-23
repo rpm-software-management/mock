@@ -198,17 +198,17 @@ def orphansKill(rootToKill, killsig=signal.SIGTERM):
         vm_list = '\n'.join(vm_list.split('\n')[1:-2])
         for name in vm_list.split("\n"):
             if len(name) > 0:
-                M_UUID = name.split()[0]
+                m_uuid = name.split()[0]
                 try:
-                    vm_root = subprocess.check_output(["/usr/bin/machinectl", "show", "-pRootDirectory", M_UUID])
+                    vm_root = subprocess.check_output(["/usr/bin/machinectl", "show", "-pRootDirectory", m_uuid])
                     if (isinstance(vm_root, bytes)):
                         vm_root = vm_root.decode("utf-8")
                 except subprocess.CalledProcessError:
                     continue
                 vm_root = '='.join(vm_root.rstrip().split('=')[1:])
                 if vm_root == rootToKill:
-                    getLog().warning("Machine %s still running. Killing...", M_UUID)
-                    os.system("/usr/bin/machinectl terminate %s" % M_UUID)
+                    getLog().warning("Machine %s still running. Killing...", m_uuid)
+                    os.system("/usr/bin/machinectl terminate %s" % m_uuid)
 
 
 @traceLog()
