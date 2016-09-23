@@ -14,7 +14,7 @@ from .exception import BuildError, Error, YumError
 from .trace_decorator import traceLog
 
 
-def PackageManager(config_opts, chroot, plugins):
+def package_manager(config_opts, chroot, plugins):
     pm = config_opts.get('package_manager', 'yum')
     if pm == 'yum':
         return Yum(config_opts, chroot, plugins)

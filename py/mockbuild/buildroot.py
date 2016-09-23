@@ -16,7 +16,7 @@ from . import util
 from . import mounts
 from .exception import BuildRootLocked, RootError, \
     ResultDirNotAccessible, Error
-from .package_manager import PackageManager
+from .package_manager import package_manager
 from .trace_decorator import getLog, traceLog
 from . import uid
 
@@ -57,7 +57,7 @@ class Buildroot(object):
         self.env.update(proxy_env)
         os.environ.update(proxy_env)
 
-        self.pkg_manager = PackageManager(config, self, plugins)
+        self.pkg_manager = package_manager(config, self, plugins)
         self.mounts = mounts.Mounts(self)
 
         self.root_log = getLog("mockbuild")
