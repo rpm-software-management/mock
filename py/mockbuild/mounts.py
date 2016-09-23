@@ -59,6 +59,7 @@ class FileSystemMountPoint(MountPoint):
         return True
 
     @traceLog()
+    # pylint: disable=unused-argument
     def umount(self, force=False, nowarn=False):
         if not self.mounted:
             return
@@ -135,6 +136,7 @@ class Mounts(object):
             m.mount()
 
     @traceLog()
+    # pylint: disable=unused-argument
     def umountall(self, force=False, nowarn=False):
         for m in reversed(self.mounts):
             m.umount()
