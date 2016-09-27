@@ -128,14 +128,19 @@ done
 
 %install
 install -d %{buildroot}%{_bindir}
+install -d %{buildroot}%{_libexecdir}/mock
 install py/mockchain.py %{buildroot}%{_bindir}/mockchain
-install py/mock.py %{buildroot}%{_sbindir}/mock
+install py/mock.py %{buildroot}%{_libexecdir}/mock/mock
+ln -s consolehelper %{buildroot}%{_bindir}/mock
 
 install -d %{buildroot}%{_sysconfdir}/pam.d
 cp -a etc/pam/* %{buildroot}%{_sysconfdir}/pam.d/
 
 install -d %{buildroot}%{_sysconfdir}/mock
 cp -a etc/mock/* %{buildroot}%{_sysconfdir}/mock/
+
+install -d %{buildroot}%{_sysconfdir}/security/console.apps/
+cp -a etc/consolehelper/mock %{buildroot}%{_sysconfdir}/security/console.apps/%{name}
 
 install -d %{buildroot}%{_datadir}/bash-completion/completions/
 cp -a etc/bash_completion.d/* %{buildroot}%{_datadir}/bash-completion/completions/
@@ -152,7 +157,6 @@ cp -a docs/mockchain.1 docs/mock.1 %{buildroot}%{_mandir}/man1/
 
 install -d %{buildroot}/var/lib/mock
 install -d %{buildroot}/var/cache/mock
-ln -s consolehelper %{buildroot}/usr/bin/mock
 
 # generate files section with config - there is many of them
 echo "%defattr(0644, root, mock)" > %{name}.cfgs
@@ -213,7 +217,7 @@ fi
 # executables
 %{_bindir}/mock
 %{_bindir}/mockchain
-%attr(0755, root, root) %{_sbindir}/mock
+%{_libexecdir}/mock
 
 # python stuff
 %{python_sitelib}/*
