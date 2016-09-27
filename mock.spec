@@ -19,7 +19,7 @@
 
 Summary: Builds packages inside chroots
 Name: mock
-Version: 1.3.0
+Version: 1.3.1
 Release: 1%{?dist}
 License: GPLv2+
 Source: https://fedorahosted.org/releases/m/o/mock/%{name}-%{version}.tar.gz
@@ -252,6 +252,13 @@ fi
 %{python_sitelib}/mockbuild/plugins/lvm_root.*
 
 %changelog
+* Tue Sep 27 2016 Miroslav Suchý <msuchy@redhat.com> 1.3.1-1
+- remove F21 GPG keys
+- remove F22 configs
+- update upstream URL
+- move /usr/sbin/mock to /usr/libexec/mock/mock [RHBZ#1246810]
+- Initialized to use tito.
+- add pylint config
 * Tue Sep 13 2016 Miroslav Suchý <msuchy@redhat.com> - 1.2.21-1
 - CVE-2016-6299 - fixed root rights escalation in mock-scm
 - root_cache: Mention _root_ cache being created in state updates
