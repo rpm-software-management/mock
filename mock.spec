@@ -23,7 +23,7 @@ Version: 1.3.0
 Release: 1%{?dist}
 License: GPLv2+
 Source: https://fedorahosted.org/releases/m/o/mock/%{name}-%{version}.tar.gz
-URL: https://fedoraproject.org/wiki/Mock
+URL: https://github.com/rpm-software-management/mock/
 BuildArch: noarch
 %if 0%{?fedora} > 21
 Requires: yum >= 3.4.3-505
