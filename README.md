@@ -30,6 +30,10 @@ Do you have patch, idea or just question. You can write to [buildsys mailing lis
     git clone https://github.com/rpm-software-management/mock.git
     tito build --rpm
 
+## Nightly
+
+Package from latest commit in devel branch can be obtained from https://copr.fedorainfracloud.org/coprs/g/mock/mock/
+
 ## License
 
 GPLv2+
