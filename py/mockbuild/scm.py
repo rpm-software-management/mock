@@ -138,11 +138,7 @@ class scmWorker(object):
         self.name = rpm.expandMacro("%{name}")
         self.version = rpm.expandMacro("%{version}")
         tarball = None
-        try:
-            sources_list = rpm_spec.sources()
-        except:
-            sources_list = rpm_spec.sources
-        for (filename, num, flags) in sources_list:
+        for (filename, num, flags) in rpm_spec.sources:
             self.sources.append(filename.split("/")[-1])
             if num == 0 and flags == 1:
                 tarball = filename.split("/")[-1]
