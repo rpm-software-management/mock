@@ -7,8 +7,14 @@
 # Copyright (C) 2007 Michael E Brown <mebrown@michaels-house.net>
 from __future__ import print_function
 
+from ast import literal_eval
 import ctypes
+import errno
 import fcntl
+from glob import glob
+import grp
+import locale
+import logging
 import os
 import os.path
 import pickle
@@ -16,24 +22,18 @@ import pwd
 import re
 import select
 import signal
+import stat
+import struct
 import subprocess
 import sys
-import stat
-import time
-import errno
-import grp
-import locale
-import logging
-import uuid
 import termios
-import struct
-from glob import glob
-from ast import literal_eval
 from textwrap import dedent
+import time
+import uuid
 
 from . import exception
-from .trace_decorator import traceLog, getLog
-from .uid import setresuid, getresuid
+from .trace_decorator import getLog, traceLog
+from .uid import getresuid, setresuid
 
 encoding = locale.getpreferredencoding()
 

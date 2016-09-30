@@ -3,11 +3,11 @@
 
 import glob
 import os.path
-import shutil
 import platform
+import shutil
+from textwrap import dedent
 
 from six.moves import input
-from textwrap import dedent
 
 from . import util
 from .exception import BuildError, Error, YumError

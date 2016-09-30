@@ -20,10 +20,9 @@ config_opts['plugin_conf']['mount_opts']['dirs'].append(
     ("server.example.com:/exports/data", "/mnt/data", "nfs", "rw,hard,intr,nosuid,nodev,noatime,tcp"))
 """
 
-
-import mockbuild.util
-from mockbuild.trace_decorator import traceLog
 from mockbuild.mounts import FileSystemMountPoint
+from mockbuild.trace_decorator import traceLog
+import mockbuild.util
 
 requires_api_version = "1.1"
 

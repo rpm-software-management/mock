@@ -3,9 +3,9 @@
 # Script to check validity of mock config URLs
 #
 
+import glob
 import os
 import os.path
-import glob
 
 from six.moves import urllib
 

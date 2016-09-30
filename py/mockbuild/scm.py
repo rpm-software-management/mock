@@ -7,13 +7,14 @@
 import os
 import shlex
 import shutil
-import six
 import subprocess
 import sys
 import tempfile
 
-from .trace_decorator import traceLog
+import six
+
 from . import util
+from .trace_decorator import traceLog
 
 
 class scmWorker(object):

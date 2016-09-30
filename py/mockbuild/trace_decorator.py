@@ -4,12 +4,12 @@
 # Written by Michael Brown
 # Copyright (C) 2007 Michael E Brown <mebrown@michaels-house.net>
 
+import functools
+import inspect
 import logging
 import os
 import sys
 import types
-import inspect
-import functools
 
 try:
     basestring

@@ -30,13 +30,13 @@ import cgi
 import optparse
 import os
 import re
-import requests
 import shutil
 import subprocess
 import sys
 import tempfile
 import time
 
+import requests
 from six.moves.urllib_parse import urlsplit
 
 import mockbuild.util

@@ -7,11 +7,9 @@
 # python library imports
 
 # our imports
-from mockbuild.trace_decorator import traceLog
-
-import mockbuild.util
-
 from mockbuild.mounts import BindMountPoint
+from mockbuild.trace_decorator import traceLog
+import mockbuild.util
 
 requires_api_version = "1.1"
 

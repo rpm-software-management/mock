@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 # vim: noai:ts=4:sw=4:expandtab
 
+import grp
 import os
 import os.path
-import grp
 
-from . import util
 from . import exception
+from . import util
 from .trace_decorator import traceLog
 
 

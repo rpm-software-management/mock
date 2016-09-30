@@ -10,7 +10,7 @@ import os
 import time
 
 # our imports
-from mockbuild.trace_decorator import traceLog, getLog
+from mockbuild.trace_decorator import getLog, traceLog
 import mockbuild.util
 
 requires_api_version = "1.1"

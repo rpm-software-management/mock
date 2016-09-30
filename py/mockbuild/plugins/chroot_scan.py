@@ -5,15 +5,13 @@
 # Copyright (C) 2013 Clark Williams <clark.williams@gmail.com>
 
 # python library imports
-import re
 import os
 import os.path
+import re
 import subprocess
 
 # our imports
-
-from mockbuild.trace_decorator import traceLog, getLog
-
+from mockbuild.trace_decorator import getLog, traceLog
 import mockbuild.util
 
 requires_api_version = "1.1"

@@ -13,13 +13,12 @@ import stat
 import tempfile
 import uuid
 
-from . import util
 from . import mounts
-from .exception import BuildRootLocked, RootError, \
-    ResultDirNotAccessible, Error
+from . import uid
+from . import util
+from .exception import BuildRootLocked, Error, ResultDirNotAccessible, RootError
 from .package_manager import package_manager
 from .trace_decorator import getLog, traceLog
-from . import uid
 
 
 class Buildroot(object):

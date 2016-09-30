@@ -4,8 +4,8 @@
 
 import os.path
 
-from mockbuild.trace_decorator import traceLog, getLog
 from mockbuild import util
+from mockbuild.trace_decorator import getLog, traceLog
 
 requires_api_version = "1.1"
 

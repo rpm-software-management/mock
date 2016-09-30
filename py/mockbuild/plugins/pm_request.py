@@ -4,12 +4,12 @@
 # Written by Michael Simacek
 # Copyright (C) 2015 Red Hat, Inc.
 
-import os
-import sys
+import logging
 import multiprocessing
+import os
 import shlex
 import socket
-import logging
+import sys
 
 from six.moves import cStringIO as StringIO
 

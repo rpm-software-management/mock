@@ -39,19 +39,18 @@ usage:
 """
 
 # library imports
-import grp
 import glob
+import grp
 import logging
 import logging.config
+from optparse import OptionParser
 import os
 import os.path
 import pwd
-import sys
-import time
 import shlex
 import shutil
-
-from optparse import OptionParser
+import sys
+import time
 
 from six.moves import configparser
 
@@ -73,17 +72,16 @@ logging.basicConfig(format=FORMAT, level=logging.WARNING)
 log = logging.getLogger()
 
 # our imports
-import mockbuild.exception
-from mockbuild.trace_decorator import traceLog
-import mockbuild.backend
-import mockbuild.uid
-
 from mockbuild import util
+import mockbuild.backend
 from mockbuild.backend import Commands
-from mockbuild.state import State
-from mockbuild.plugin import Plugins
 from mockbuild.buildroot import Buildroot
+import mockbuild.exception
 from mockbuild.exception import BadCmdline
+from mockbuild.plugin import Plugins
+from mockbuild.state import State
+from mockbuild.trace_decorator import traceLog
+import mockbuild.uid
 
 
 def scrub_callback(option, opt, value, parser):

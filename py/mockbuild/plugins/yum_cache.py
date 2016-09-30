@@ -6,14 +6,14 @@
 
 # python library imports
 import fcntl
-import time
-import os
 import glob
+import os
+import time
 
 # our imports
-from mockbuild.trace_decorator import traceLog, getLog
-import mockbuild.util
 from mockbuild.mounts import BindMountPoint
+from mockbuild.trace_decorator import getLog, traceLog
+import mockbuild.util
 
 # set up logging, module options
 requires_api_version = "1.1"

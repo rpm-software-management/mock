@@ -5,10 +5,11 @@
 # Copyright (C) 2014 Facebook
 
 # python library imports
-from mockbuild.trace_decorator import traceLog, getLog
 import glob
 import os
 import subprocess
+
+from mockbuild.trace_decorator import getLog, traceLog
 
 requires_api_version = "1.1"
 

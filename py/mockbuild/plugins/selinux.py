@@ -5,16 +5,16 @@
 # Copyright (C) 2010 Jan Vcelak <jvcelak@redhat.com>
 
 # python library imports
+import atexit
 import os
+import stat
 import sys
 import tempfile
-import stat
-import atexit
 
 # our imports
-from mockbuild.trace_decorator import traceLog, getLog
-import mockbuild.util
 from mockbuild.mounts import BindMountPoint
+from mockbuild.trace_decorator import getLog, traceLog
+import mockbuild.util
 
 requires_api_version = "1.1"
 
