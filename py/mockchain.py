@@ -25,10 +25,7 @@
 # adding each to a local repo
 # so they are available as build deps to next pkg being built
 from __future__ import print_function
-try:
-    from six.moves.urllib_parse import urlsplit
-except ImportError:
-    from urlparse import urlsplit
+
 import cgi
 import optparse
 import os
@@ -39,6 +36,8 @@ import subprocess
 import sys
 import tempfile
 import time
+
+from six.moves.urllib_parse import urlsplit
 
 import mockbuild.util
 

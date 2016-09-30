@@ -59,7 +59,7 @@ BuildRequires: bash-completion
 %endif
 %if %{use_python3}
 Requires: python3
-Requires: python3-six
+Requires: python3-six >= 1.4.0
 Requires: python3-requests
 Requires: rpm-python3
 BuildRequires: python3-devel
@@ -67,7 +67,7 @@ BuildRequires: python3-devel
 BuildRequires: python3-pylint
 %else
 Requires: python-ctypes
-Requires: python-six
+Requires: python-six >= 1.4.0
 Requires: python-requests
 Requires: python >= 2.6
 Requires: rpm-python
