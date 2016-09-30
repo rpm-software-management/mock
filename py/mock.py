@@ -565,8 +565,20 @@ def groupcheck(unprivGid, tgtGid):
                            (name, ", ".join(members)))
 
 
+def running_in_docker():
+    """ Returns True if we are running inside of Docker container """
+    # Docker container has different cgroup than PID 1 of host.
+    # And have "docker" in that tree.
+    with open('/proc/self/cgroup') as f:
+        for line in f:
+            items = line.split(':')
+            if 'docker' in items[2]:
+                return True
+    return False
+
+
 @traceLog()
-def unshare_namespace():
+def unshare_namespace(config_opts):
     base_unshare_flags = util.CLONE_NEWNS
     # IPC ns is unshared later
     extended_unshare_flags = base_unshare_flags | util.CLONE_NEWUTS
@@ -579,7 +591,13 @@ def unshare_namespace():
             util.unshare(base_unshare_flags)
         except mockbuild.exception.UnshareFailed as e:
             log.error("Namespace unshare failed.")
-            sys.exit(e.resultcode)
+            if running_in_docker() and not ('docker_unshare_warning' in config_opts and
+                                            config_opts['docker_unshare_warning']):
+                log.error("It seems we are running inside of Docker. Let skip unsharing.")
+                log.error("You should *not* run anything but Mock in this container. You have been warned!")
+                time.sleep(5)
+            else:
+                sys.exit(e.resultcode)
 
 
 @traceLog()
@@ -670,7 +688,7 @@ def main():
     os.environ["HOME"] = buildroot.homedir
 
     # New namespace starting from here
-    unshare_namespace()
+    unshare_namespace(config_opts)
 
     # set personality (ie. setarch)
     if config_opts['internal_setarch']:
