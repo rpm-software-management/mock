@@ -63,6 +63,8 @@ Requires: python3-six
 Requires: python3-requests
 Requires: rpm-python3
 BuildRequires: python3-devel
+#check
+BuildRequires: python3-pylint
 %else
 Requires: python-ctypes
 Requires: python-six
@@ -210,6 +212,10 @@ else
     echo "         unable to update %{_sysconfdir}/%{name}/default.cfg"
 fi
 :
+
+%check
+# ignore the errors for now, just print them and hopefully somebody will fix it one day
+python3-pylint py/mockbuild/ py/*.py || :
 
 %files -f %{name}.cfgs
 %defattr(-, root, root)
