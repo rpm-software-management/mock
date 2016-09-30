@@ -53,10 +53,8 @@ import shutil
 
 from optparse import OptionParser
 
-try:
-    import configparser
-except ImportError:
-    import ConfigParser as configparser
+from six.moves import configparser
+
 
 # all of the variables below are substituted by the build system
 __VERSION__ = "unreleased_version"

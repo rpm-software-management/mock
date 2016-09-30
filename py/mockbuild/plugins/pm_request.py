@@ -11,12 +11,7 @@ import shlex
 import socket
 import logging
 
-try:
-    # Python 3
-    from io import StringIO
-except ImportError:
-    # Python 2
-    from cStringIO import StringIO
+from six.moves import cStringIO as StringIO
 
 from mockbuild import util
 from mockbuild.exception import Error
