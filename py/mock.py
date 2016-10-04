@@ -72,6 +72,7 @@ logging.basicConfig(format=FORMAT, level=logging.WARNING)
 log = logging.getLogger()
 
 # our imports
+# pylint: disable=wrong-import-position
 from mockbuild import util
 import mockbuild.backend
 from mockbuild.backend import Commands
