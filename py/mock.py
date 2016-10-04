@@ -843,7 +843,7 @@ def run_command(options, args, config_opts, commands, buildroot, state):
     elif options.mode == 'mount':
         buildroot.plugins.call_hooks('mount_root')
 
-    buildroot._nuke_rpm_db()
+    buildroot.nuke_rpm_db()
     state.finish("run")
     state.alldone()
 

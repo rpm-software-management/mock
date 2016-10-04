@@ -166,7 +166,7 @@ class Commands(object):
     def _show_installed_packages(self):
         '''report the installed packages in the chroot to the root log'''
         self.buildroot.root_log.info("Installed packages:")
-        self.buildroot._nuke_rpm_db()
+        self.buildroot.nuke_rpm_db()
         util.do(
             "%s --root %s -qa" % (self.config['rpm_command'],
                                   self.buildroot.make_chroot_path()),
@@ -196,7 +196,7 @@ class Commands(object):
         self.state.start(buildstate)
         # remove rpm db files to prevent version mismatch problems
         # note: moved to do this before the user change below!
-        self.buildroot._nuke_rpm_db()
+        self.buildroot.nuke_rpm_db()
         dropped_privs = False
         try:
             if not util.USE_NSPAWN:

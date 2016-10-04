@@ -171,7 +171,7 @@ class Buildroot(object):
 
     def doChroot(self, command, shell=False, nosync=False, *args, **kargs):
         """execute given command in root"""
-        self._nuke_rpm_db()
+        self.nuke_rpm_db()
         env = dict(self.env)
         if nosync and self.nosync_path:
             env['LD_PRELOAD'] = self.nosync_path
@@ -324,7 +324,7 @@ class Buildroot(object):
                     fo.write(chroot_file_contents[key])
 
     @traceLog()
-    def _nuke_rpm_db(self):
+    def nuke_rpm_db(self):
         """remove rpm DB lock files from the chroot"""
 
         dbfiles = glob.glob(self.make_chroot_path('var/lib/rpm/__db*'))
@@ -335,7 +335,7 @@ class Buildroot(object):
         self.uid_manager.becomeUser(0, 0)
         try:
             for tmp in dbfiles:
-                self.root_log.debug("_nuke_rpm_db: removing %s", tmp)
+                self.root_log.debug("nuke_rpm_db: removing %s", tmp)
                 try:
                     os.unlink(tmp)
                 except OSError as e:

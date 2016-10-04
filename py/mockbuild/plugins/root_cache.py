@@ -165,7 +165,7 @@ class RootCache(object):
         try:
             self._rootCacheLock(shared=0)
             # nuke any rpmdb tmp files
-            self.buildroot._nuke_rpm_db()
+            self.buildroot.nuke_rpm_db()
 
             # truncate the sparse files in /var/log
             for logfile in ('/var/log/lastlog', '/var/log/faillog'):

@@ -99,7 +99,7 @@ class _PackageManager(object):
             kwargs.pop('printOutput', None)
         else:
             kwargs['pty'] = kwargs.get('pty', True)
-        self.buildroot._nuke_rpm_db()
+        self.buildroot.nuke_rpm_db()
         try:
             out = util.do(invocation, env=env, **kwargs)
         except Error as e:
