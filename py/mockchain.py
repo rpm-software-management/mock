@@ -338,6 +338,7 @@ def main(args):
                 try:
                     log(opts.logfile, 'Fetching %s' % url)
                     r = requests.get(url)
+                    # pylint: disable=no-member
                     if r.status_code == requests.codes.ok:
                         fn = urlsplit(r.url).path.rsplit('/', 1)[1]
                         if 'content-disposition' in r.headers:
