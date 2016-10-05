@@ -76,8 +76,7 @@ class UidManager(object):
         self.privEnviron.append(dict(os.environ))
 
     @traceLog()
-    @classmethod
-    def _elevatePrivs(cls):
+    def _elevatePrivs(self):
         setresuid(0, 0, 0)
         os.setregid(0, 0)
 
