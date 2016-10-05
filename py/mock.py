@@ -90,6 +90,7 @@ def scrub_callback(option, opt, value, parser):
     parser.values.mode = "clean"
 
 
+# pylint: disable=unused-argument
 def repo_callback(optobj, opt, value, parser):
     '''Callback for the enablerepo and disablerepo option.
 
