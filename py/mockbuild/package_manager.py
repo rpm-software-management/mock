@@ -281,6 +281,7 @@ class Dnf(_PackageManager):
         try:
             super(Dnf, self).builddep(*pkgs, **kwargs)
         except Error as e:
+            # pylint: disable=unused-variable
             for i, line in enumerate(e.msg.split('\n')):
                 if 'no such command: builddep' in line.lower():
                     raise BuildError("builddep command missing.\nPlease install package dnf-plugins-core.")
