@@ -852,6 +852,11 @@ def run_command(options, args, config_opts, commands, buildroot, state):
     state.alldone()
 
 if __name__ == '__main__':
+    # TODO: this was documented as "fix for python 2.4 logging module bug:"
+    # TODO: ...but it is apparently still needed; without it there are various
+    # TODO:    exceptions from trace_decorator like:
+    # TODO:    TypeError: not enough arguments for format string
+    logging.raiseExceptions = 0
 
     exitStatus = 0
 
