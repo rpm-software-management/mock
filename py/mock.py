@@ -43,6 +43,7 @@ import glob
 import grp
 import logging
 import logging.config
+# pylint: disable=deprecated-module
 from optparse import OptionParser
 import os
 import os.path

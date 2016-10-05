@@ -27,6 +27,7 @@
 from __future__ import print_function
 
 import cgi
+# pylint: disable=deprecated-module
 import optparse
 import os
 import re
