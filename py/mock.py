@@ -85,6 +85,7 @@ from mockbuild.trace_decorator import traceLog
 import mockbuild.uid
 
 
+# pylint: disable=unused-argument
 def scrub_callback(option, opt, value, parser):
     parser.values.scrub.append(value)
     parser.values.mode = "clean"
