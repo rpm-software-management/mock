@@ -38,6 +38,7 @@ import tempfile
 import time
 
 import requests
+# pylint: disable=import-error
 from six.moves.urllib_parse import urlsplit
 
 import mockbuild.util
