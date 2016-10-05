@@ -369,7 +369,7 @@ def main(args):
                 log(opts.logfile, "Success building %s" % os.path.basename(pkg))
                 built_pkgs.append(pkg)
                 # createrepo with the new pkgs
-                out, err = createrepo(opts.local_repo_dir)
+                err = createrepo(opts.local_repo_dir)[1]
                 if err.strip():
                     log(opts.logfile, "Error making local repo: %s" % opts.local_repo_dir)
                     log(opts.logfile, "Err: %s" % err)
