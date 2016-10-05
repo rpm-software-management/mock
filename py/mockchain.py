@@ -138,6 +138,7 @@ def add_local_repo(infile, destfile, baseurl, repoid=None):
     try:
         with open(infile) as f:
             code = compile(f.read(), infile, 'exec')
+        # pylint: disable=exec-used
         exec(code)
         if not repoid:
             repoid = generate_repo_id(baseurl)
