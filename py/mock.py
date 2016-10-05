@@ -517,6 +517,7 @@ def do_rebuild(config_opts, commands, buildroot, srpms):
                     post=post_build, clean=clean)
 
 
+# pylint: disable=unused-argument
 @traceLog()
 def do_buildsrpm(config_opts, commands, buildroot, options, args):
     # verify the input command line arguments actually exist
