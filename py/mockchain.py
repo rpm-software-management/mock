@@ -311,7 +311,7 @@ def main(args):
         shutil.copyfile(pth, opts.config_path + '/' + fn)
 
     # createrepo on it
-    out, err = createrepo(opts.local_repo_dir)
+    err = createrepo(opts.local_repo_dir)[1]
     if err.strip():
         log(opts.logfile, "Error making local repo: %s" % opts.local_repo_dir)
         log(opts.logfile, "Err: %s" % err)
