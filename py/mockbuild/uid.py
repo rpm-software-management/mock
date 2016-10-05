@@ -36,13 +36,13 @@ class UidManager(object):
     def becomeUser(self, uid, gid=-1):
         # save current ruid, euid, rgid, egid
         self._push()
-        self._becomeUser(uid, gid)
+        self.become_user_without_push(uid, gid)
 
     @traceLog()
     def dropPrivsTemp(self):
         # save current ruid, euid, rgid, egid
         self._push()
-        self._becomeUser(self.unprivUid, self.unprivGid)
+        self.become_user_without_push(self.unprivUid, self.unprivGid)
         os.environ.clear()
         os.environ.update(self.unprivEnviron)
 
@@ -81,7 +81,7 @@ class UidManager(object):
         os.setregid(0, 0)
 
     @traceLog()
-    def _becomeUser(self, uid, gid=None):
+    def become_user_without_push(self, uid, gid=None):
         self._elevatePrivs()
         if gid is not None:
             os.setregid(gid, gid)

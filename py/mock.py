@@ -636,7 +636,7 @@ def main():
         del os.environ['SSH_AUTH_SOCK']
 
     # elevate privs
-    uidManager._becomeUser(0, 0)
+    uidManager.become_user_without_push(0, 0)
 
     # do whatever we're here to do
     py_version = '{0}.{1}.{2}'.format(*sys.version_info[:3])
