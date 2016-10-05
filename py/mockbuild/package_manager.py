@@ -7,6 +7,7 @@ import platform
 import shutil
 from textwrap import dedent
 
+# pylint: disable=redefined-builtin
 from six.moves import input
 
 from . import util
