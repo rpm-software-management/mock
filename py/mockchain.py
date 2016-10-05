@@ -356,7 +356,7 @@ def main(args):
                 else:
                     downloaded_pkgs[pkg] = url
             log(opts.logfile, "Start build: %s" % pkg)
-            ret, cmd, out, err = do_build(opts, config_opts['chroot_name'], pkg)
+            ret = do_build(opts, config_opts['chroot_name'], pkg)[0]
             log(opts.logfile, "End build: %s" % pkg)
             if ret == 0:
                 failed.append(pkg)
