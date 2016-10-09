@@ -161,6 +161,7 @@ class scmWorker(object):
                 proc = subprocess.Popen(['tar', '--help'], shell=False, stdout=subprocess.PIPE)
                 proc_result = proc.communicate()[0]
                 if six.PY3:
+                    # pylint: disable=redefined-variable-type
                     proc_result = proc_result.decode()
                 if "--exclude-vcs" in proc_result:
                     taropts = "--exclude-vcs"
