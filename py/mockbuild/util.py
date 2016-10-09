@@ -402,6 +402,7 @@ def logOutput(fds, logger, returnOutput=1, start=0, timeout=0, printOutput=False
                 if printOutput:
                     if hasattr(sys.stdout, 'buffer'):
                         # python3 would print binary strings ugly
+                        # pylint: disable=no-member
                         sys.stdout.buffer.write(raw)
                     else:
                         print(raw, end='')
