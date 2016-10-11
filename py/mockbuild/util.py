@@ -47,6 +47,8 @@ _libc.personality.argtypes = [ctypes.c_ulong]
 _libc.personality.restype = ctypes.c_int
 _libc.unshare.argtypes = [ctypes.c_int]
 _libc.unshare.restype = ctypes.c_int
+_libc.sethostname.argtypes = [ctypes.c_char_p, ctypes.c_int]
+_libc.sethostname.restype = ctypes.c_int
 
 # See linux/include/sched.h
 CLONE_NEWNS = 0x00020000
@@ -291,6 +293,13 @@ def unshare(flags):
             raise exception.UnshareFailed(os.strerror(ctypes.get_errno()))
     except AttributeError:
         pass
+
+
+def sethostname(hostname):
+    getLog().info("Setting hostname: %s", hostname)
+    hostname = hostname.encode('utf-8')
+    if _libc.sethostname(hostname, len(hostname)) != 0:
+        raise OSError('Failed to sethostname %s' % hostname)
 
 
 # these are called in child process, so no logging
@@ -871,6 +880,8 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
         '%_topdir': '%s/build' % config_opts['chroothome'],
         '%_rpmfilename': '%%{NAME}-%%{VERSION}-%%{RELEASE}.%%{ARCH}.rpm',
     }
+    config_opts['hostname'] = None
+
     # security config
     config_opts['no_root_shells'] = False
     config_opts['extra_chroot_dirs'] = []
