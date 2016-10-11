@@ -690,6 +690,9 @@ def main():
     # New namespace starting from here
     unshare_namespace(config_opts)
 
+    if config_opts['hostname']:
+        util.sethostname(config_opts['hostname'])
+
     # set personality (ie. setarch)
     if config_opts['internal_setarch']:
         util.condPersonality(config_opts['target_arch'])
