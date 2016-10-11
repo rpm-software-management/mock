@@ -613,7 +613,8 @@ class ChildPreExec(object):
         condEnvironment(self.env)
         if not USE_NSPAWN:
             condChroot(self.chrootPath)
-            condDropPrivs(self.uid, self.gid)
+            if self.uid != 0:
+                condDropPrivs(self.uid, self.gid)
         condChdir(self.cwd)
         condUnshareIPC(self.unshare_ipc)
         reset_sigpipe()
@@ -919,6 +920,7 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
     # security config
     config_opts['no_root_shells'] = False
     config_opts['extra_chroot_dirs'] = []
+    config_opts['build_as_root'] = False
 
     config_opts['package_manager'] = 'yum'
 
