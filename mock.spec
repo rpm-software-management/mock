@@ -229,7 +229,6 @@ python3-pylint py/mockbuild/ py/*.py || :
 %{python_sitelib}/*
 %exclude %{python_sitelib}/mockbuild/scm.*
 %exclude %{python_sitelib}/mockbuild/plugins/lvm_root.*
-%exclude %{python_sitelib}/mockbuild/tests
 
 # config files
 %dir  %{_sysconfdir}/%{name}
