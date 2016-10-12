@@ -22,6 +22,7 @@ import pwd
 import re
 import select
 import signal
+import socket
 import stat
 import struct
 import subprocess
@@ -727,6 +728,7 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
     config_opts['online'] = True
     config_opts['use_nspawn'] = False
     config_opts['rpmbuild_networking'] = False
+    config_opts['use_container_host_hostname'] = True
 
     config_opts['internal_dev_setup'] = True
     config_opts['internal_setarch'] = True
@@ -1172,6 +1174,8 @@ def load_config(config_path, name, uidManager, version, pkg_python_dir):
             127.0.0.1 localhost localhost.localdomain
             ::1       localhost localhost.localdomain localhost6 localhost6.localdomain6
             ''')
+    if config_opts['use_container_host_hostname'] and '%_buildhost' not in config_opts['macros']:
+        config_opts['macros']['%_buildhost'] = socket.getfqdn()
     return config_opts
 
 
