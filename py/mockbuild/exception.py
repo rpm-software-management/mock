@@ -39,7 +39,7 @@ class Error(Exception):
 # 65 = LVM thinpool locked
 # 70 = result dir could not be created
 # 80 = unshare of namespace failed
-
+# 110 = unbalanced call to state functions
 
 class BuildError(Error):
     "rpmbuild failed."
