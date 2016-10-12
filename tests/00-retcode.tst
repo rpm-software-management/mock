@@ -29,3 +29,11 @@ if [ $res -ne 30 ]; then
     echo "mock pass exit code $res instead of 30 where there is problem in root.log"
     exit 1
 fi
+
+header "testing error code when resultdir cannot be created"
+runcmd "$MOCKCMD --offline --resultdir=/proc/doesnotwork --rebuild ${TESTDIR}/test-C-1.1-0.src.rpm"
+res=$?
+if [ $res -ne 70 ]; then
+    echo "mock pass exit code $res instead of 70 when resultdir cannot be created"
+    exit 1
+fi
