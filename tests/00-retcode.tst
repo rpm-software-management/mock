@@ -14,10 +14,18 @@ if [ $res -ne 5 ]; then
     exit 1
 fi
 
+header "testing exit code on unsupported command line"
+runcmd "$MOCKCMD --offline --scm-enable --scm-option method=unsupported"
+res=$?
+if [ $res -ne 5 ]; then
+    echo "mock pass exit code $res instead of 5 where there is problem with command line options"
+    exit 1
+fi
+
 header "testing that error in root.log is passed back correctly"
 runcmd "$MOCKCMD --offline --rebuild ${TESTDIR}/test-E-1.1-0.src.rpm"
 res=$?
 if [ $res -ne 30 ]; then
-    echo "'mock pass exit code $res instead of 30 where there is problem in root.log"
+    echo "mock pass exit code $res instead of 30 where there is problem in root.log"
     exit 1
 fi
