@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 # vim: noai:ts=4:sw=4:expandtab
 
+import distro
 import glob
 import os.path
-import platform
 import shutil
 from textwrap import dedent
 
@@ -20,7 +20,7 @@ def package_manager(config_opts, chroot, plugins):
     if pm == 'yum':
         return Yum(config_opts, chroot, plugins)
     elif pm == 'dnf':
-        (distribution, version) = platform.dist()[0:2]
+        (distribution, version) = distro.linux_distribution(full_distribution_name=False)[0:2]
         if distribution in ['redhat', 'centos']:
             version = int(version.split('.')[0])
             if version < 8:
