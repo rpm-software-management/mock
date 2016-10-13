@@ -23,7 +23,7 @@ Mock currently has one active branch plus master.
 
 ## Communication
 
-Do you have patch, idea or just question. You can write to [buildsys mailing list](https://lists.fedoraproject.org/admin/lists/buildsys%40lists.fedoraproject.org/) or try [#fedora-buildsys](http://webchat.freenode.net/?channels=fedora-builsys) on [Freenode](https://freenode.net/). We prefer the emails thou.
+Do you have a patch, an idea, or just a question? You can write to [buildsys mailing list](https://lists.fedoraproject.org/admin/lists/buildsys%40lists.fedoraproject.org/) or try [#fedora-buildsys](http://webchat.freenode.net/?channels=fedora-builsys) on [Freenode](https://freenode.net/). We prefer email though.
 
 ## Getting and compiling mock
 
