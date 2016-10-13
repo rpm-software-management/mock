@@ -675,12 +675,13 @@ def run(cmd, isShell=True):
 
 
 def clean_env():
-    env = {'TERM': 'vt100',
-           'SHELL': '/bin/sh',
-           'HOME': '/builddir',
-           'HOSTNAME': 'mock',
-           'PATH': '/usr/bin:/bin:/usr/sbin:/sbin',
-          }
+    env = {
+        'TERM': 'vt100',
+        'SHELL': '/bin/sh',
+        'HOME': '/builddir',
+        'HOSTNAME': 'mock',
+        'PATH': '/usr/bin:/bin:/usr/sbin:/sbin',
+    }
     env['LANG'] = os.environ.setdefault('LANG', 'en_US.UTF-8')
     return env
 

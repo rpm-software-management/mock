@@ -912,7 +912,7 @@ if __name__ == '__main__':
         exitStatus = exc.resultcode
         log.error(str(exc))
 
-    except (Exception,) as exc: # pylint: disable=broad-except
+    except (Exception,) as exc:  # pylint: disable=broad-except
         exitStatus = 1
         log.exception(exc)
 

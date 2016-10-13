@@ -108,13 +108,14 @@ class Mounts(object):
         self.rootObj = rootObj
         self.mounts = []
         if not util.USE_NSPAWN:
-            self.mounts = [FileSystemMountPoint(filetype='proc',
-                                                device='mock_chroot_proc',
-                                                path=rootObj.make_chroot_path('/proc')),
-                           FileSystemMountPoint(filetype='sysfs',
-                                                device='mock_chroot_sys',
-                                                path=rootObj.make_chroot_path('/sys')),
-                          ]
+            self.mounts = [
+                FileSystemMountPoint(filetype='proc',
+                                     device='mock_chroot_proc',
+                                     path=rootObj.make_chroot_path('/proc')),
+                FileSystemMountPoint(filetype='sysfs',
+                                     device='mock_chroot_sys',
+                                     path=rootObj.make_chroot_path('/sys')),
+            ]
             if rootObj.config['internal_dev_setup']:
                 self.mounts.append(FileSystemMountPoint(filetype='tmpfs',
                                                         device='mock_chroot_shmfs',

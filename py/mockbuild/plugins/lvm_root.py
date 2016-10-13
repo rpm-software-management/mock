@@ -266,7 +266,7 @@ class LvmPlugin(object):
         size_metadata = self.allocated_pool_metadata()
         self.buildroot.root_log.info(
             "LVM plugin enabled. Allocated pool data: {0}%. Allocated metadata: {1}%.".format(size_data, size_metadata))
-        if (('check_size' not in self.lvm_conf) or (('check_size' in self.lvm_conf) and (self.lvm_conf['check_size']))) and \
+        if ('check_size' not in self.lvm_conf or ('check_size' in self.lvm_conf and self.lvm_conf['check_size'])) and \
            ((size_metadata and size_metadata > 90) or (size_data and size_data > 90)):
             raise LvmError("Thin pool {0}/{1} is over 90%. Please enlarge it.".format(self.vg_name, self.pool_name))
         else:
