@@ -83,7 +83,7 @@ In the fedora git (koji) tree
 Once the builds finish (successfully) you should push the just built
 packages to their respective testing repositories. This can be done
 either with the Bodhi WebUI at
-https://admin.fedoraproject.org/updates/ or if there are no other
+https://bodhi.fedoraproject.org/ or if there are no other
 package dependencies, using the 'fedpkg update' command. 
 Note that you do not need to do this for the master (rawhide) branch
 since it automatically gets pushed to testing.  
