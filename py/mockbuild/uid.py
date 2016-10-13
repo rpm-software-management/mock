@@ -76,6 +76,7 @@ class UidManager(object):
         self.privEnviron.append(dict(os.environ))
 
     @traceLog()
+    # pylint: disable=no-self-use
     def _elevatePrivs(self):
         setresuid(0, 0, 0)
         os.setregid(0, 0)
