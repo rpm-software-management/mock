@@ -1,6 +1,6 @@
 TESTDIR=$(cd $(dirname $0); pwd; cd ..)
 TOPDIR=$(dirname $TESTDIR)
-MOCKSRPM=$(ls -t1 ${TOPDIR}/mock-*.src.rpm | head -1)
+MOCKSRPM=$( (cd $TOPDIR; tito build --srpm |grep Wrote | grep src.rpm | awk '{ print $2}' ))
 
 #VERBOSE=
 VERBOSE=--verbose
