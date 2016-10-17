@@ -40,12 +40,12 @@ if [ -e /usr/bin/dnf ]; then
 else
     header "pre-populating the cache (YUM)"
     runcmd "$MOCKCMD --init"
-    header "installing dependencies for $MOCKSRPM"
-    runcmd "$MOCKCMD --installdeps $MOCKSRPM"
-    if [ ! -e $CHROOT/usr/include/python* ]; then
-	echo "installdeps test FAILED. could not find /usr/include/python*"
-	exit 1
-    fi
+fi
+header "installing dependencies for $MOCKSRPM"
+runcmd "$MOCKCMD --installdeps $MOCKSRPM"
+if [ ! -e $CHROOT/usr/include/python* ]; then
+echo "installdeps test FAILED. could not find /usr/include/python*"
+exit 1
 fi
 
 header "running regression tests"
