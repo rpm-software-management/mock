@@ -19,7 +19,7 @@
 
 Summary: Builds packages inside chroots
 Name: mock
-Version: 1.3.1
+Version: 1.3.2
 Release: 1%{?dist}
 License: GPLv2+
 Source: https://fedorahosted.org/releases/m/o/mock/%{name}-%{version}.tar.gz
@@ -257,6 +257,18 @@ python3-pylint py/mockbuild/ py/*.py || :
 %{python_sitelib}/mockbuild/plugins/lvm_root.*
 
 %changelog
+* Mon Oct 17 2016 Miroslav Suchý 1.3.2-1
+- flake8 fixes
+- correctly escape --nocheck [GH#2] (msuchy@redhat.com)
+- change hostname in container [RHBZ#1302040] (msuchy@redhat.com)
+- example how to change hostname in container [RHBZ#1302040]
+  (msuchy@redhat.com)
+- skip unshare() if running inside of Docker [RHBZ#1336750] (msuchy@redhat.com)
+- Bring back logging.raiseExceptions = 0 (ville.skytta@iki.fi)
+- Purge no longer needed Python < 2.5 workarounds (ville.skytta@iki.fi)
+- Purge no longer needed six < 1.4.0 workaround (ville.skytta@iki.fi)
+- run pylint during %%check phase (msuchy@redhat.com)
+
 * Tue Sep 27 2016 Miroslav Suchý <msuchy@redhat.com> 1.3.1-1
 - remove F21 GPG keys
 - remove F22 configs
