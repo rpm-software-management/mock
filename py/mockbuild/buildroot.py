@@ -130,7 +130,7 @@ class Buildroot(object):
             self._setup_devices()
         self._setup_files()
         self._setup_nosync()
-        self.mounts.mountall()
+        self.mounts.mountall_managed()
 
         # write out config details
         self.root_log.debug('rootdir = %s', self.make_chroot_path())
@@ -167,6 +167,9 @@ class Buildroot(object):
 
         # done with init
         self.plugins.call_hooks('postinit')
+
+        self.mounts.mountall_user()
+
         self.state.finish("chroot init")
 
     def doChroot(self, command, shell=False, nosync=False, *args, **kargs):

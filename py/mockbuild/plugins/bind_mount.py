@@ -28,12 +28,17 @@ class BindMount(object):
         self.config = buildroot.config
         self.state = buildroot.state
         self.bind_opts = conf
-        plugins.add_hook("preinit", self._bindMountPreInitHook)
+        plugins.add_hook("postinit", self._bindMountCreateDirs)
         for srcdir, destdir in self.bind_opts['dirs']:
-            buildroot.mounts.add(BindMountPoint(srcpath=srcdir, bindpath=buildroot.make_chroot_path(destdir)))
+            buildroot.mounts.add_user_mount(
+                BindMountPoint(
+                    srcpath=srcdir,
+                    bindpath=buildroot.make_chroot_path(destdir)
+                )
+            )
 
     @traceLog()
-    def _bindMountPreInitHook(self):
+    def _bindMountCreateDirs(self):
         create_dirs = self.config['plugin_conf']['bind_mount_opts']['create_dirs']
         for srcdir, destdir in self.bind_opts['dirs']:
             if create_dirs:
