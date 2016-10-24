@@ -41,15 +41,15 @@ class Mount(object):
         self.config = buildroot.config
         self.state = buildroot.state
         self.opts = conf
-        plugins.add_hook("preinit", self._mountPreInitHook)
+        plugins.add_hook("postinit", self._mountCreateDirs)
         for device, dest_dir, vfstype, mount_opts in self.opts['dirs']:
-            buildroot.mounts.add(
+            buildroot.mounts.add_user_mount(
                 FileSystemMountPoint(buildroot.make_chroot_path(dest_dir),
                                      filetype=vfstype,
                                      device=device,
                                      options=mount_opts))
 
     @traceLog()
-    def _mountPreInitHook(self):
+    def _mountCreateDirs(self):
         for device, dest_dir, vfstype, mount_opts in self.opts['dirs']:
             mockbuild.util.mkdirIfAbsent(self.buildroot.make_chroot_path(dest_dir))

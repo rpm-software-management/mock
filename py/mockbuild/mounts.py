@@ -106,9 +106,10 @@ class Mounts(object):
     @traceLog()
     def __init__(self, rootObj):
         self.rootObj = rootObj
-        self.mounts = []
+        self.managed_mounts = []  # mounts owned by mock
+        self.user_mounts = []  # mounts injected by user
         if not util.USE_NSPAWN:
-            self.mounts = [
+            self.managed_mounts = [
                 FileSystemMountPoint(filetype='proc',
                                      device='mock_chroot_proc',
                                      path=rootObj.make_chroot_path('/proc')),
@@ -117,31 +118,49 @@ class Mounts(object):
                                      path=rootObj.make_chroot_path('/sys')),
             ]
             if rootObj.config['internal_dev_setup']:
-                self.mounts.append(FileSystemMountPoint(filetype='tmpfs',
-                                                        device='mock_chroot_shmfs',
-                                                        path=rootObj.make_chroot_path('/dev/shm')))
+                self.managed_mounts.append(
+                    FileSystemMountPoint(
+                        filetype='tmpfs',
+                        device='mock_chroot_shmfs',
+                        path=rootObj.make_chroot_path('/dev/shm')
+                    )
+                )
                 opts = 'gid=%d,mode=0620,ptmxmode=0666' % grp.getgrnam('tty').gr_gid
                 if util.cmpKernelVer(os.uname()[2], '2.6.29') >= 0:
                     opts += ',newinstance'
-                    self.mounts.append(FileSystemMountPoint(filetype='devpts',
-                                                            device='mock_chroot_devpts',
-                                                            path=rootObj.make_chroot_path('/dev/pts'), options=opts))
+                    self.managed_mounts.append(
+                        FileSystemMountPoint(
+                            filetype='devpts',
+                            device='mock_chroot_devpts',
+                            path=rootObj.make_chroot_path('/dev/pts'),
+                            options=opts
+                        )
+                    )
 
     @traceLog()
     def add(self, mount):
-        self.mounts.append(mount)
+        self.managed_mounts.append(mount)
 
     @traceLog()
-    def mountall(self):
-        for m in self.mounts:
+    def add_user_mount(self, mount):
+        self.user_mounts.append(mount)
+
+    @traceLog()
+    def mountall_managed(self):
+        for m in self.managed_mounts:
+            m.mount()
+
+    @traceLog()
+    def mountall_user(self):
+        for m in self.user_mounts:
             m.mount()
 
     @traceLog()
     # pylint: disable=unused-argument
     def umountall(self, force=False, nowarn=False):
-        for m in reversed(self.mounts):
+        for m in reversed(self.managed_mounts + self.user_mounts):
             m.umount()
 
     @traceLog()
     def get_mountpoints(self):
-        return [m.mountpath for m in self.mounts]
+        return [m.mountpath for m in self.managed_mounts + self.user_mounts]
