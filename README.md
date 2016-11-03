@@ -30,6 +30,9 @@ Do you have a patch, an idea, or just a question? You can write to [buildsys mai
     git clone https://github.com/rpm-software-management/mock.git
     tito build --rpm
 
+
+Latest release for all supported platforms can be found in this [Copr repository](https://copr.fedorainfracloud.org/coprs/g/mock/mock-stable/).
+
 ## Nightly
 
 Package from latest commit in devel branch can be obtained from https://copr.fedorainfracloud.org/coprs/g/mock/mock/
