@@ -158,7 +158,7 @@ see site\-defaults.cfg for more information.
 Completely remove the specified chroot or cache dir or all of the chroot and cache.  \fITYPE\fR is one of all, chroot, cache, root\-cache, c\-cache, yum\-cache or dnf\-cache. In fact, dnf\-cache is just alias for yum\-cache and both removes Dnf and Yum cache.
 .TP
 \fB\-\-shell\fP [\fICOMMAND [\fIARGS...]\fR]
-Run the specified command interactively within the chroot (no 'clean' is performed). If no command specified, /bin/sh is run. Note that COMMAND is shell expanded using shell in chroot.
+Run the specified command interactively within the chroot (no 'clean' is performed). If no command specified, /bin/sh is run. Note that COMMAND is shell expanded using shell in chroot. Note that this command does not produce logs.
 .TP
 \fB\-\-sources\fR=\fISOURCES\fP
 Specifies sources (either a single file or a directory of files) to use to build an SRPM (used only with \-\-buildsrpm).
