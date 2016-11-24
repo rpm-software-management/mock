@@ -879,6 +879,7 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
     config_opts['macros'] = {
         '%_topdir': '%s/build' % config_opts['chroothome'],
         '%_rpmfilename': '%%{NAME}-%%{VERSION}-%%{RELEASE}.%%{ARCH}.rpm',
+        '%_install_langs': 'all',
     }
     # security config
     config_opts['no_root_shells'] = False
