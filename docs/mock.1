@@ -254,6 +254,11 @@ use old chroot instead of systemd\-nspawn.
 .TP
 \fB\-\-plugin\-option \fR\fIPLUGIN\fR\fB:\fR\fIKEY\fR\fB=\fR\fIVALUE\fP
 Set plugin specific parameter. This option may be used multiple times.
+Examples:
+
+\fB\-\-plugin\-option=root_cache:age_check=False\fR
+
+\fB\-\-plugin\-option=mount:dirs=("/dev/device", "/mount/path/in/chroot/", "vfstype", "mount_options")\fR
 .TP
 \fB\-\-postinstall\fR
 Try to install built packages in the same buildroot right after build.
