@@ -276,7 +276,7 @@ def getAddtlReqs(hdr, conf):
                       '-'.join([name])]:
         if this_srpm in conf:
             more_reqs = conf[this_srpm]
-            if isinstance(type(more_reqs), basestring):
+            if isinstance(more_reqs, basestring):
                 reqlist.append(more_reqs)
             else:
                 reqlist.extend(more_reqs)
