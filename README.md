@@ -12,14 +12,13 @@ This is area for developers. You may be looking for [user documentation](https:/
 
 Mock source tarballs: https://fedorahosted.org/releases/m/o/mock/
 
-
 ## Mock Branches
 
 Mock currently has one active branch plus master.
 
- * mock-1.0 - This branch is in bugfix mode and is used for EL-5
- * master - This is currently mock 1.2.x and is still getting features. It is used for everything else. This branch is used pure for releasing.
- * devel - all development happens here, if you want to send patches, use this branch 
+ * `mock-1.0` - This branch is in bugfix mode and is used for EL-5
+ * `master` - This is currently mock 1.2.x and is still getting features. It is used for everything else. This branch is used pure for releasing.
+ * `devel` - all development happens here, if you want to send patches, use this branch
 
 ## Communication
 
@@ -39,7 +38,7 @@ Latest release for all supported platforms can be found in this [Copr repository
 Package from latest commit in devel branch can be obtained from https://copr.fedorainfracloud.org/coprs/g/mock/mock/
 
 Latest status: [![build status](https://copr.fedorainfracloud.org/coprs/g/mock/mock/package/mock/status_image/last_build.png)](https://copr.fedorainfracloud.org/coprs/g/mock/mock/package/mock/)
- 
+
 ## License
 
 GPLv2+
