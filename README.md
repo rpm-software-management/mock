@@ -28,6 +28,7 @@ Do you have a patch, an idea, or just a question? You can write to [buildsys mai
 ## Getting and compiling mock
 
     git clone https://github.com/rpm-software-management/mock.git
+    cd mock
     tito build --rpm
 
 
