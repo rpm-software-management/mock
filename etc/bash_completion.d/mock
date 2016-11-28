@@ -4,6 +4,7 @@ _mock_root()
 {
     COMPREPLY+=( $( compgen -W "$( command ls ${1:-/etc/mock} 2>/dev/null | \
         sed -ne 's/\.cfg$//p' )" -X site-defaults -- "$cur" ) )
+    COMPREPLY+=( $( compgen -f -o plusdirs -X '!*.cfg' -- "$cur" ) )
 }
 
 _mock()
