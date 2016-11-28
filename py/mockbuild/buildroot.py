@@ -494,7 +494,7 @@ class Buildroot(object):
     @traceLog()
     def _setup_nosync(self):
         multilib = ('x86_64', 's390x')
-        self.tmpdir = tempfile.mkdtemp()
+        self.tmpdir = tempfile.mkdtemp(prefix="tmp.mock.")
         os.chmod(self.tmpdir, 0o777)
         tmp_libdir = os.path.join(self.tmpdir, '$LIB')
         mock_libdir = self.make_chroot_path(tmp_libdir)
@@ -532,7 +532,7 @@ class Buildroot(object):
         """
         Do the cleanup if this is the last process working with the buildroot.
         """
-        if os.path.exists(self.make_chroot_path()):
+        if not os.path.exists(self.make_chroot_path()):
             try:
                 if self.tmpdir:
                     for d in self.tmpdir, self.make_chroot_path(self.tmpdir):
