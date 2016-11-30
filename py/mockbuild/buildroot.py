@@ -530,14 +530,16 @@ class Buildroot(object):
     @traceLog()
     def finalize(self):
         """
-        Do the cleanup if this is the last process working with the buildroot.
+        Remove temporary files. If this is the last process working with the
+        buildroot (exclusive lock can be acquired) also kill orphan processes,
+        unmount mounts and call postumount hooks.
         """
+        if self.tmpdir:
+            for d in self.tmpdir, self.make_chroot_path(self.tmpdir):
+                if os.path.exists(d):
+                    shutil.rmtree(d)
         if os.path.exists(self.make_chroot_path()):
             try:
-                if self.tmpdir:
-                    for d in self.tmpdir, self.make_chroot_path(self.tmpdir):
-                        if os.path.exists(d):
-                            shutil.rmtree(d)
                 self._lock_buildroot(exclusive=True)
                 util.orphansKill(self.make_chroot_path())
                 self.mounts.umountall()
