@@ -494,7 +494,7 @@ class Buildroot(object):
     @traceLog()
     def _setup_nosync(self):
         multilib = ('x86_64', 's390x')
-        self.tmpdir = tempfile.mkdtemp()
+        self.tmpdir = tempfile.mkdtemp(prefix="tmp.mock.")
         os.chmod(self.tmpdir, 0o777)
         tmp_libdir = os.path.join(self.tmpdir, '$LIB')
         mock_libdir = self.make_chroot_path(tmp_libdir)
