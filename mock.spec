@@ -35,7 +35,7 @@ Requires: pigz
 Requires: usermode
 Requires: yum-utils
 Requires: createrepo_c
-Requires: distribution-gpg-keys >= 1.8
+Requires: distribution-gpg-keys >= 1.9
 %if 0%{?use_python2}
 Requires: pyliblzma
 %endif
