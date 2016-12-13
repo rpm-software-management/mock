@@ -228,7 +228,7 @@ def yieldSrpmHeaders(srpms, plainRpmOk=0):
             hdr = ts.hdrFromFdno(fd)
         except rpm.error as e:
             raise exception.Error(
-                "Cannot find/open srpm: %s. Error: %s" % (srpm, ''.join(e)))
+                "Cannot find/open srpm: %s. Error: %s" % (srpm, e))
         finally:
             os.close(fd)
 
