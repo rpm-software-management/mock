@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 # vim: noai:ts=4:sw=4:expandtab
 
-import distro
 import glob
 import os.path
 import shutil
 from textwrap import dedent
 
+import distro
 # pylint: disable=redefined-builtin
 from six.moves import input
 
