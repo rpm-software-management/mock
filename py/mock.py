@@ -21,7 +21,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA.
 from __future__ import print_function
-# pylint: disable=pointless-string-statement
+# pylint: disable=pointless-string-statement,wrong-import-position
 """
 usage:
        mock [options] {--init|--clean|--scrub=[all,chroot,cache,root-cache,c-cache,yum-cache,dnf-cache,lvm]}
