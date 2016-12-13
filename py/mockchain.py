@@ -152,6 +152,7 @@ enabled=1
 skip_if_unavailable=1
 metadata_expire=0
 cost=1
+best=1
 """ % (repoid, baseurl, baseurl)
 
         config_opts['yum.conf'] += localyumrepo
