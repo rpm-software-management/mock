@@ -460,6 +460,7 @@ class Commands(object):
             pkgs = [pkg for pkg in results if not pkg.endswith("src.rpm")]
             try:
                 self.install(*pkgs)
+            # pylint: disable=bare-except
             except:
                 self.buildroot.root_log.warning("Failed install built packages")
         finally:
