@@ -20,6 +20,9 @@ def package_manager(config_opts, chroot, plugins):
     if pm == 'yum':
         return Yum(config_opts, chroot, plugins)
     elif pm == 'dnf':
+        if os.path.isfile(config_opts['dnf_command']):
+            return Dnf(config_opts, chroot, plugins)
+        # RHEL without DNF
         (distribution, version) = distro.linux_distribution(full_distribution_name=False)[0:2]
         if distribution in ['redhat', 'centos']:
             version = int(version.split('.')[0])
@@ -34,6 +37,9 @@ You can suppress this warning when you put
 in Mock config.""")
                     input("Press Enter to continue.")
                 return Yum(config_opts, chroot, plugins)
+        # something else then EL, and no dnf_command exist
+        # This will likely mean some error later.
+        # Either user is smart or let him shot in his foot.
         return Dnf(config_opts, chroot, plugins)
     else:
         # TODO specific exception type
