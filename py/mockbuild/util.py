@@ -696,8 +696,8 @@ def clean_env():
 
 
 def get_fs_type(path):
-    cmd = '/usr/bin/stat -f -L -c %%T %s' % path
-    p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE,
+    cmd = ['/usr/bin/stat', '-f', '-L', '-c', '%T', path]
+    p = subprocess.Popen(cmd, shell=False, stdout=subprocess.PIPE,
                          universal_newlines=True)
     p.wait()
     with p.stdout as f:
