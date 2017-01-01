@@ -19,7 +19,7 @@
 
 Summary: Builds packages inside chroots
 Name: mock
-Version: 1.3.2
+Version: 1.3.3
 Release: 1%{?dist}
 License: GPLv2+
 Source: https://fedorahosted.org/releases/m/o/mock/%{name}-%{version}.tar.gz
@@ -259,6 +259,33 @@ python3-pylint py/mockbuild/ py/*.py || :
 %{python_sitelib}/mockbuild/plugins/lvm_root.*
 
 %changelog
+* Sun Jan 01 2017 Miroslav Suchý <msuchy@redhat.com> 1.3.3-1
+- use F25 for tests
+- handle cwd directories with spaces [RHBZ#1389663]
+- add config option `hostname` to set hostname
+  (constantine.peresypk@rackspace.com)
+- use DNF on RHEL, when it is installed and configured [RHBZ#1405783]
+- use best=1 for DNF
+- error is not iterable [RHBZ#1387895]
+- use best=true for dnf.conf for repos passed to mockchain using -a
+- add epel-7-aarch64 config
+- better naming for tmp directories
+- Remove tmpdirs regardless of buildroot existence (msimacek@redhat.com)
+- clarify examples of using more_buildreqs feature
+  (gitDeveloper@bitthinker.com)
+- fix more_buildreqs case: correctly compare if req is basestring
+  (gitDeveloper@bitthinker.com)
+- fix formating a bit (gitDeveloper@bitthinker.com)
+- add missing step in 'getting & compiling' part (gitDeveloper@bitthinker.com)
+- Add bash completion for .cfg files outside /etc/mock (#20)
+  (github@kayari.org)
+- man: example how to use --plugin-option
+- require most recent distribution-gpg-keys to get F25 keys
+- man: state that shell does not produce logs
+- Delay mounting of user-defined mountpoints (rhbz#1386544)
+  (msimacek@redhat.com)
+- man: clarify chroot cleanups
+
 * Mon Oct 17 2016 Miroslav Suchý 1.3.2-1
 - flake8 fixes
 - correctly escape --nocheck [GH#2] (msuchy@redhat.com)
