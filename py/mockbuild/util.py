@@ -76,7 +76,8 @@ personality_defs = {
 
 PLUGIN_LIST = ['tmpfs', 'root_cache', 'yum_cache', 'bind_mount',
                'ccache', 'selinux', 'package_state', 'chroot_scan',
-               'lvm_root', 'compress_logs', 'sign', 'pm_request']
+               'lvm_root', 'compress_logs', 'sign', 'pm_request',
+               'hw_info']
 
 USE_NSPAWN = False
 
@@ -827,6 +828,9 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
         'sign_opts': {
             'cmd': 'rpmsign',
             'opts': '--addsign %(rpms)s',
+        },
+        'hw_info_enable': True,
+        'hw_info_opts': {
         },
     }
 

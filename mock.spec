@@ -85,6 +85,16 @@ Requires: btrfs-progs
 %endif
 BuildRequires: perl
 
+# hwinfo plugin
+Requires: util-linux
+Requires: coreutils
+%if 0%{?rhel} == 6
+Requires: procps
+%else
+Requires: procps-ng
+%endif
+
+
 %description
 Mock takes an SRPM and builds it in a chroot.
 
