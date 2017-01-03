@@ -233,14 +233,14 @@ class Buildroot(object):
         if cmd:
             if isinstance(cmd, util.basestring):
                 cmd = cmd.split()
-            self.pkg_manager.execute(*cmd)
+            self.init_install_output = self.pkg_manager.execute(*cmd, returnOutput=1)
 
         if 'chroot_additional_packages' in self.config and self.config['chroot_additional_packages']:
             cmd = self.config['chroot_additional_packages']
             if isinstance(cmd, util.basestring):
                 cmd = cmd.split()
             cmd = ['install'] + cmd
-            self.pkg_manager.execute(*cmd)
+            self.init_install_output += self.pkg_manager.execute(*cmd, returnOutput=1)
 
         self.state.finish(update_state)
 

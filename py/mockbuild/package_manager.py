@@ -57,6 +57,7 @@ class _PackageManager(object):
         self.config = config
         self.plugins = plugins
         self.buildroot = buildroot
+        self.init_install_output = ""
 
     @traceLog()
     def build_invocation(self, *args):
