@@ -30,7 +30,7 @@ class HwInfo(object):
     @traceLog()
     def _PreInitHook(self):
         getLog().info("enabled HW Info plugin")
-        out_file = self.buildroot.resultdir + '/hw_info.txt'
+        out_file = self.buildroot.resultdir + '/hw_info.log'
         out = open(out_file, 'w')
 
         cmd = ["/usr/bin/lscpu"]
