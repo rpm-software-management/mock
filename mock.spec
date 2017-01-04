@@ -204,7 +204,7 @@ chmod 2775 %{_localstatedir}/cache/%{name}
 
 if [ -s /etc/os-release ]; then
     # fedora and rhel7
-    if grep -Fq Rawhide /etc/os-release; then
+    if grep -Fiq Rawhide /etc/os-release; then
         ver=rawhide
     else
         ver=$(source /etc/os-release && echo $VERSION_ID | cut -d. -f1 | grep -o '[0-9]\+')
