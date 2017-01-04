@@ -638,8 +638,8 @@ def _prepare_nspawn_command(chrootPath, user, cmd, private_network=False, env=No
         nspawn_argv.append('--chdir={0}'.format(cwd))
     if env:
         # BZ 1312384 workaround
-        env['PROMPT_COMMAND'] = 'printf "\\033]0;<mock-chroot>\\007"'
-        env['PS1'] = '<mock-chroot> \\s-\\v\\$ '
+        env['PROMPT_COMMAND'] = r'printf "\033]0;<mock-chroot>\007"'
+        env['PS1'] = r'<mock-chroot> \s-\v\$ '
         for k, v in env.items():
             nspawn_argv.append('--setenv={0}={1}'.format(k, v))
     cmd = nspawn_argv + cmd
@@ -656,9 +656,9 @@ def doshell(chrootPath=None, environ=None, uid=None, gid=None, cmd=None,
     if environ is None:
         environ = clean_env()
     if 'PROMPT_COMMAND' not in environ:
-        environ['PROMPT_COMMAND'] = 'printf "\\033]0;<mock-chroot>\\007"'
+        environ['PROMPT_COMMAND'] = r'printf "\033]0;<mock-chroot>\007"'
     if 'PS1' not in environ:
-        environ['PS1'] = '<mock-chroot> \\s-\\v\\$ '
+        environ['PS1'] = r'<mock-chroot> \s-\v\$ '
     if 'SHELL' not in environ:
         environ['SHELL'] = '/bin/sh'
     log.debug("doshell environment: %s", environ)
@@ -840,8 +840,8 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
         'HOME': '/builddir',
         'HOSTNAME': 'mock',
         'PATH': '/usr/bin:/bin:/usr/sbin:/sbin',
-        'PROMPT_COMMAND': 'printf "\\033]0;<mock-chroot>\\007"',
-        'PS1': '<mock-chroot> \\s-\\v\\$ ',
+        'PROMPT_COMMAND': r'printf "\033]0;<mock-chroot>\007"',
+        'PS1': r'<mock-chroot> \s-\v\$ ',
         'LANG': os.environ.setdefault('LANG', 'en_US.UTF-8'),
     }
 
