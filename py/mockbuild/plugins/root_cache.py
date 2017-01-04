@@ -79,7 +79,7 @@ class RootCache(object):
 
     def _haveVolatileRoot(self):
         return self.config['plugin_conf']['tmpfs_enable'] \
-            and not (str(self.config['plugin_conf']['tmpfs_opts']['keep_mounted'] == 'True'))
+            and not (str(self.config['plugin_conf']['tmpfs_opts']['keep_mounted']) == 'True')
 
     @traceLog()
     def _unpack_root_cache(self):
