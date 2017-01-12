@@ -895,6 +895,7 @@ if __name__ == '__main__':
             log.error("The most common cause for this error is trying to run /usr/libexec/mock/mock as an unprivileged user.")
             log.error("You should not run /usr/libexec/mock/mock directly.")
             print()
+            exitStatus = 2
         else:
             raise
 

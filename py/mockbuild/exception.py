@@ -26,6 +26,7 @@ class Error(Exception):
 # result/exit codes
 # 0 = yay!
 # 1 = something happened  - it's bad
+# 2 = run without setuid wrapper
 # 3 = invalid configuration
 # 5 = cmdline processing error
 # 6 = invalid architecture
