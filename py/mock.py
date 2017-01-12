@@ -892,9 +892,8 @@ if __name__ == '__main__':
             print()
             log.error("%s", e)
             print()
-            log.error("The most common cause for this error is trying to run /usr/sbin/mock as an unprivileged user.")
-            log.error("Check your path to make sure that /usr/bin/ is listed before /usr/sbin, "
-                      "or manually run /usr/bin/mock to see if that fixes this problem.")
+            log.error("The most common cause for this error is trying to run /usr/libexec/mock/mock as an unprivileged user.")
+            log.error("You should not run /usr/libexec/mock/mock directly.")
             print()
         else:
             raise
