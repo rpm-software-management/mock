@@ -494,7 +494,7 @@ def resize_pty(pty):
 # pylint: disable=unused-argument
 def do(command, shell=False, chrootPath=None, cwd=None, timeout=0, raiseExc=True,
        returnOutput=0, uid=None, gid=None, user=None, personality=None,
-       printOutput=False, env=None, pty=False, private_network=False,
+       printOutput=False, env=None, pty=False, nspawn_args=[],
        *args, **kargs):
 
     logger = kargs.get("logger", getLog())
@@ -515,7 +515,7 @@ def do(command, shell=False, chrootPath=None, cwd=None, timeout=0, raiseExc=True
             shell = False
         if chrootPath and USE_NSPAWN:
             command = _prepare_nspawn_command(chrootPath, user, command,
-                                              private_network=private_network, env=env, cwd=cwd)
+                                              nspawn_args=nspawn_args, env=env, cwd=cwd)
         logger.debug("Executing command: %s with env %s and shell %s", command, env, shell)
         with open(os.devnull, "r") as stdin:
             child = subprocess.Popen(
@@ -621,7 +621,7 @@ def is_in_dir(path, directory):
     return os.path.commonprefix([path, directory]) == directory
 
 
-def _prepare_nspawn_command(chrootPath, user, cmd, private_network=False, env=None, cwd=None):
+def _prepare_nspawn_command(chrootPath, user, cmd, nspawn_args=[], env=None, cwd=None):
     cmd_is_list = isinstance(cmd, list)
     if user:
         # user can be either id or name
@@ -632,8 +632,7 @@ def _prepare_nspawn_command(chrootPath, user, cmd, private_network=False, env=No
     elif not cmd_is_list:
         cmd = [cmd]
     nspawn_argv = ['/usr/bin/systemd-nspawn', '-q', '-M', uuid.uuid4().hex, '-D', chrootPath]
-    if private_network:
-        nspawn_argv.append('--private-network')
+    nspawn_argv.extend(nspawn_args)
     if cwd:
         nspawn_argv.append('--chdir={0}'.format(cwd))
     if env:
@@ -650,6 +649,7 @@ def _prepare_nspawn_command(chrootPath, user, cmd, private_network=False, env=No
 
 
 def doshell(chrootPath=None, environ=None, uid=None, gid=None, cmd=None,
+            nspawn_args=[],
             unshare_ipc=True):
     log = getLog()
     log.debug("doshell: chrootPath:%s, uid:%d, gid:%d", chrootPath, uid, gid)
@@ -670,7 +670,7 @@ def doshell(chrootPath=None, environ=None, uid=None, gid=None, cmd=None,
         cmd = ["/bin/sh", "-i", "-l"]
     if USE_NSPAWN:
         # nspawn cannot set gid
-        cmd = _prepare_nspawn_command(chrootPath, uid, cmd, env=environ)
+        cmd = _prepare_nspawn_command(chrootPath, uid, cmd, nspawn_args=nspawn_args, env=environ)
     preexec = ChildPreExec(personality=None, chrootPath=chrootPath, cwd=None,
                            uid=uid, gid=gid, env=environ, shell=True,
                            unshare_ipc=unshare_ipc)
@@ -739,6 +739,7 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
     config_opts['online'] = True
     config_opts['use_nspawn'] = False
     config_opts['rpmbuild_networking'] = False
+    config_opts['nspawn_args'] = []
     config_opts['use_container_host_hostname'] = True
 
     config_opts['internal_dev_setup'] = True
