@@ -631,7 +631,7 @@ def _prepare_nspawn_command(chrootPath, user, cmd, nspawn_args=[], env=None, cwd
             raise exception.Error('Internal Error: command must be list or shell=True.')
     elif not cmd_is_list:
         cmd = [cmd]
-    nspawn_argv = ['/usr/bin/systemd-nspawn', '-q', '-M', uuid.uuid4().hex, '-D', chrootPath]
+    nspawn_argv = ['/usr/bin/systemd-nspawn', '-q', '-a', '-M', uuid.uuid4().hex, '-D', chrootPath]
     nspawn_argv.extend(nspawn_args)
     if cwd:
         nspawn_argv.append('--chdir={0}'.format(cwd))
