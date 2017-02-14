@@ -813,7 +813,7 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
             'keep_mounted': False},
         'selinux_enable': True,
         'selinux_opts': {},
-        'package_state_enable': False,
+        'package_state_enable': True,
         'package_state_opts': {
             'available_pkgs': False,
             'installed_pkgs': True,
