@@ -372,7 +372,7 @@ def process_input(line):
 def logOutput(fds, logger, returnOutput=1, start=0, timeout=0, printOutput=False,
               child=None, chrootPath=None, pty=False):
     output = ""
-    done = 0
+    done = False
 
     # set all fds to nonblocking
     for fd in fds:
@@ -391,7 +391,7 @@ def logOutput(fds, logger, returnOutput=1, start=0, timeout=0, printOutput=False
         ansi_escape = re.compile(r'\x1b\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]\x0f?')
         while not done:
             if (time.time() - start) > timeout and timeout != 0:
-                done = 1
+                done = True
                 break
 
             i_rdy, o_rdy, e_rdy = select.select(fds, [], [], 1)
@@ -409,7 +409,7 @@ def logOutput(fds, logger, returnOutput=1, start=0, timeout=0, printOutput=False
                 # slurp as much input as is ready
                 raw = s.read()
                 if not raw:
-                    done = 1
+                    done = True
                     break
                 if printOutput:
                     if hasattr(sys.stdout, 'buffer'):
