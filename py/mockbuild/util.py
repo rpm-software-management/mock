@@ -880,7 +880,7 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
     config_opts['releasever'] = None
     config_opts['rpmbuild_arch'] = None  # <-- None means set automatically from target_arch
     config_opts['yum.conf'] = ''
-    config_opts['yum_builddep_opts'] = ''
+    config_opts['yum_builddep_opts'] = []
     config_opts['yum_common_opts'] = []
     config_opts['update_before_build'] = True
     config_opts['priorities.conf'] = '\n[main]\nenabled=0'
