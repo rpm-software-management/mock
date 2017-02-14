@@ -31,6 +31,7 @@ from textwrap import dedent
 import time
 import uuid
 
+import distro
 import termios
 from . import exception
 from .trace_decorator import getLog, traceLog
@@ -632,6 +633,10 @@ def _prepare_nspawn_command(chrootPath, user, cmd, nspawn_args=[], env=None, cwd
     elif not cmd_is_list:
         cmd = [cmd]
     nspawn_argv = ['/usr/bin/systemd-nspawn', '-q', '-M', uuid.uuid4().hex, '-D', chrootPath]
+    distro_label = distro.linux_distribution(full_distribution_name=False)[0]
+    if (distro_label != 'centos') and (distro_label != 'rhel'):
+        # EL7 does not support it (yet). See BZ 1417387
+        nspawn_argv += ['-a']
     nspawn_argv.extend(nspawn_args)
     if cwd:
         nspawn_argv.append('--chdir={0}'.format(cwd))
