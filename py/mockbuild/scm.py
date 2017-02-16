@@ -28,6 +28,8 @@ class scmWorker(object):
         self.wrk_dir = self.src_dir = None
         self.sources = []
         self.macros = macros
+        self.branch = None
+        self.postget = []
 
         self.method = opts['method']
         if self.method == "cvs":
@@ -36,12 +38,13 @@ class scmWorker(object):
             self.get = opts['svn_get']
         elif self.method == "git":
             self.get = opts['git_get']
+        elif self.method == "distgit":
+            self.get = opts['distgit_get']
+            self.postget = [opts['distgit_src_get']]
         else:
             self.log.error("Unsupported SCM method: %s", self.method)
             sys.exit(5)
 
-        self.branch = None
-        self.postget = []
         if 'branch' in opts:
             self.branch = opts['branch']
         if self.branch:
@@ -51,6 +54,8 @@ class scmWorker(object):
                 self.postget = ["git checkout " + self.branch]
                 if "--recursive" in self.get or "--recurse-submodules" in self.get:
                     self.postget.append("git submodule update --init --recursive")
+            elif self.method == "distgit":
+                self.get = self.get.replace("SCM_BRN", self.branch)
             elif self.method == "svn":
                 self.get = self.get.replace("SCM_BRN", self.branch)
             else:
@@ -82,8 +87,8 @@ class scmWorker(object):
 
     @traceLog()
     def get_sources(self):
-        self.wrk_dir = tempfile.mkdtemp(".mock-scm." + self.pkg)
-        self.src_dir = self.wrk_dir + "/" + self.pkg
+        self.wrk_dir = tempfile.mkdtemp(".mock-scm." + os.path.basename(self.pkg))
+        self.src_dir = self.wrk_dir + "/" + os.path.basename(self.pkg)
         self.log.debug("SCM checkout directory: %s", self.wrk_dir)
         util.do(shlex.split(self.get), shell=False, cwd=self.wrk_dir, env=os.environ)
         for command in self.postget:
@@ -150,7 +155,7 @@ class scmWorker(object):
             self.adjust_git_timestamps()
 
         # Generate a tarball from the checked out sources if needed
-        if str(self.write_tar).lower() == "true":
+        if str(self.write_tar).lower() == "true" and self.method != "distgit":
             tardir = self.name + "-" + self.version
             if tarball is None:
                 tarball = tardir + ".tar.gz"
