@@ -24,6 +24,7 @@ def init(plugins, conf, buildroot):
 
 class RootCache(object):
     """caches root environment in a tarball"""
+    # pylint: disable=too-few-public-methods
     @traceLog()
     def __init__(self, plugins, conf, buildroot):
         self.buildroot = buildroot
