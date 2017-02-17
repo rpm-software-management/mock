@@ -22,6 +22,7 @@ def init(plugins, conf, buildroot):
 
 class CCache(object):
     """enables ccache in buildroot/rpmbuild"""
+    # pylint: disable=too-few-public-methods
     @traceLog()
     def __init__(self, plugins, conf, buildroot):
         self.buildroot = buildroot
