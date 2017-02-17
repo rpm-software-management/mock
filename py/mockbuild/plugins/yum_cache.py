@@ -27,6 +27,7 @@ def init(plugins, conf, buildroot):
 
 class YumCache(object):
     """ mount /var/cache/yum or /var/cache/dnf of your machine to chroot """
+    # pylint: disable=too-few-public-methods
 
     METADATA_EXTS = (".sqlite", ".xml", ".bz2", ".gz", ".xz", ".solv", ".solvx")
 
