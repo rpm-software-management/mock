@@ -35,6 +35,7 @@ def init(plugins, conf, buildroot):
 
 class Mount(object):
     """mount dirs into chroot"""
+    # pylint: disable=too-few-public-methods
     @traceLog()
     def __init__(self, plugins, conf, buildroot):
         self.buildroot = buildroot
