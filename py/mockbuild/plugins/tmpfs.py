@@ -31,6 +31,7 @@ def init(plugins, conf, buildroot):
 
 class Tmpfs(object):
     """Mounts a tmpfs on the chroot dir"""
+    # pylint: disable=too-few-public-methods
     @traceLog()
     def __init__(self, plugins, conf, buildroot):
         self.buildroot = buildroot
