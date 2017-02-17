@@ -90,9 +90,21 @@ class scmWorker(object):
         self.wrk_dir = tempfile.mkdtemp(".mock-scm." + os.path.basename(self.pkg))
         self.src_dir = self.wrk_dir + "/" + os.path.basename(self.pkg)
         self.log.debug("SCM checkout directory: %s", self.wrk_dir)
-        util.do(shlex.split(self.get), shell=False, cwd=self.wrk_dir, env=os.environ)
+        try:
+            util.do(shlex.split(self.get), shell=False, cwd=self.wrk_dir, env=os.environ)
+        except PermissionError as e:
+            self.log.error("{} does not exist or cannot be executed due permissions."
+                           .format(shlex.split(self.get)[0]));
+            sys.exit(5)
+
         for command in self.postget:
-            util.do(shlex.split(command), shell=False, cwd=self.src_dir, env=os.environ)
+            try:
+                util.do(shlex.split(command), shell=False, cwd=self.src_dir, env=os.environ)
+            except PermissionError as e:
+                self.log.error("{} does not exist or cannot be executed due permissions."
+                               .format(shlex.split(command)[0]));
+                sys.exit(5)
+
         self.log.debug("Fetched sources from SCM")
 
     @traceLog()
