@@ -22,6 +22,7 @@ def init(plugins, conf, buildroot):
 
 class BindMount(object):
     """bind mount dirs from host into chroot"""
+    # pylint: disable=too-few-public-methods
     @traceLog()
     def __init__(self, plugins, conf, buildroot):
         self.buildroot = buildroot
