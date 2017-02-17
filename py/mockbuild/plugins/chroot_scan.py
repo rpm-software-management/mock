@@ -25,6 +25,7 @@ def init(plugins, conf, buildroot):
 
 class ChrootScan(object):
     """scan chroot for files of interest, copying to resultdir with relative paths"""
+    # pylint: disable=too-few-public-methods
     @traceLog()
     def __init__(self, plugins, conf, buildroot):
         self.buildroot = buildroot
