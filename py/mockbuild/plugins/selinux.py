@@ -35,6 +35,7 @@ class SELinux(object):
        - fake /proc/filesystems is mounted into build environment, excluding selinuxfs
        - option '--setopt=tsflags=nocontext' is appended to each 'yum' command
     """
+    # pylint: disable=too-few-public-methods
 
     @traceLog()
     def __init__(self, plugins, conf, buildroot):
