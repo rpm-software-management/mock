@@ -869,7 +869,7 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
         'cvs_get': 'cvs -d /srv/cvs co SCM_BRN SCM_PKG',
         'git_get': 'git clone SCM_BRN git://localhost/SCM_PKG.git SCM_PKG',
         'svn_get': 'svn co file:///srv/svn/SCM_PKG/SCM_BRN SCM_PKG',
-        'distgit_get': 'rpkg clone --branch SCM_BRN SCM_PKG SCM_PKG',
+        'distgit_get': 'rpkg clone -a --branch SCM_BRN SCM_PKG SCM_PKG',
         'distgit_src_get': 'rpkg sources',
         'spec': 'SCM_PKG.spec',
         'ext_src_dir': os.devnull,
