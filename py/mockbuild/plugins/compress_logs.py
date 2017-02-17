@@ -12,6 +12,7 @@ requires_api_version = "1.1"
 
 class CompressLogsPlugin(object):
     """Compress logs in resultdir."""
+    # pylint: disable=too-few-public-methods
     @traceLog()
     def __init__(self, plugins, conf, buildroot):
         self.buildroot = buildroot
