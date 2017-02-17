@@ -8,8 +8,8 @@
 # A list of all available pkgs + repos + other data
 # A list of all installed pkgs + repos + other data
 # into the results dir
-# two files - available_pkgs
-#             installed_pkgs
+# two files - available_pkgs.log
+#             installed_pkgs.log
 
 # our imports
 from mockbuild.trace_decorator import traceLog
@@ -49,7 +49,7 @@ class PackageState(object):
         if self.online and not self.avail_done and self.available_pkgs_enabled:
             with self.buildroot.uid_manager:
                 self.state.start("Outputting list of available packages")
-                out_file = self.buildroot.resultdir + '/available_pkgs'
+                out_file = self.buildroot.resultdir + '/available_pkgs.log'
                 chrootpath = self.buildroot.make_chroot_path()
                 if self.buildroot.config['package_manager'] == 'dnf':
                     cmd = "/usr/bin/dnf --installroot={0} repoquery -c {0}/etc/dnf.conf {1} > {2}".format(
@@ -65,7 +65,7 @@ class PackageState(object):
     def _installedPreBuildHook(self):
         if not self.inst_done and self.installed_pkgs_enabled:
             self.state.start("Outputting list of installed packages")
-            out_file = self.buildroot.resultdir + '/installed_pkgs'
+            out_file = self.buildroot.resultdir + '/installed_pkgs.log'
             cmd = "rpm -qa --root '%s' --qf '%%{nevra} %%{buildtime} %%{size} %%{pkgid} installed\\n' > %s" % (
                 self.buildroot.make_chroot_path(), out_file)
             with self.buildroot.uid_manager:
