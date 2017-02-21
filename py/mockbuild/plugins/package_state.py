@@ -31,6 +31,7 @@ def init(plugins, conf, buildroot):
 
 class PackageState(object):
     """dumps out a list of packages available and in the chroot"""
+    # pylint: disable=too-few-public-methods
     @traceLog()
     def __init__(self, plugins, conf, buildroot):
         self.buildroot = buildroot
