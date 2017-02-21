@@ -27,6 +27,7 @@ import stat
 import struct
 import subprocess
 import sys
+# pylint: disable=wrong-import-order
 import termios
 from textwrap import dedent
 import time
