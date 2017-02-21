@@ -1109,8 +1109,8 @@ def update_config_from_file(config_opts, config_file, uid_manager):
             if uid_manager and not all(getresuid()):
                 uid_manager.dropPrivsForever()
             include(config_file, config_opts)
-            writer = os.fdopen(w_pipe, 'wb')
-            pickle.dump(config_opts, writer)
+            with os.fdopen(w_pipe, 'wb') as writer:
+                pickle.dump(config_opts, writer)
         except:
             import traceback
             etype, evalue, raw_tb = sys.exc_info()
@@ -1123,8 +1123,7 @@ def update_config_from_file(config_opts, config_file, uid_manager):
         sys.exit(0)
     else:
         os.close(w_pipe)
-        reader = os.fdopen(r_pipe, 'rb')
-        try:
+        with os.fdopen(r_pipe, 'rb') as reader:
             while True:
                 try:
                     new_config = reader.read()
@@ -1137,8 +1136,6 @@ def update_config_from_file(config_opts, config_file, uid_manager):
                 raise exception.ConfigError('Error in configuration')
             if new_config:
                 config_opts.update(pickle.loads(new_config))
-        finally:
-            reader.close()
 
 
 @traceLog()
