@@ -33,6 +33,7 @@ import uuid
 
 import distro
 import termios
+
 from . import exception
 from .trace_decorator import getLog, traceLog
 from .uid import getresuid, setresuid
@@ -1223,6 +1224,7 @@ def pretty_getcwd():
             return ORIGINAL_CWD
         else:
             return find_non_nfs_dir()
+
 
 ORIGINAL_CWD = None
 ORIGINAL_CWD = pretty_getcwd()

@@ -441,9 +441,9 @@ class Commands(object):
         if not util.USE_NSPAWN:
             command = ["bash", "--login", "-c"] + [' '.join(command)]
         else:
-           if not self.config['rpmbuild_networking']:
-               nspawn_args.append('--private-network')
-           nspawn_args.extend(self.config['nspawn_args'])
+            if not self.config['rpmbuild_networking']:
+                nspawn_args.append('--private-network')
+            nspawn_args.extend(self.config['nspawn_args'])
         self.buildroot.doChroot(command,
                                 shell=False, logger=self.buildroot.build_log, timeout=timeout,
                                 uid=self.buildroot.chrootuid, gid=self.buildroot.chrootgid,

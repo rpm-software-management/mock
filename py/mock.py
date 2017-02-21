@@ -872,6 +872,7 @@ def run_command(options, args, config_opts, commands, buildroot, state):
     state.finish("run")
     state.alldone()
 
+
 if __name__ == '__main__':
     # TODO: this was documented as "fix for python 2.4 logging module bug:"
     # TODO: ...but it is apparently still needed; without it there are various
@@ -892,7 +893,8 @@ if __name__ == '__main__':
             print()
             log.error("%s", e)
             print()
-            log.error("The most common cause for this error is trying to run /usr/libexec/mock/mock as an unprivileged user.")
+            log.error("The most common cause for this error is trying to run "
+                      "/usr/libexec/mock/mock as an unprivileged user.")
             log.error("You should not run /usr/libexec/mock/mock directly.")
             print()
             exitStatus = 2

@@ -411,5 +411,6 @@ def main(args):
             log(opts.logfile, pkg)
     return return_code
 
+
 if __name__ == "__main__":
     sys.exit(main(sys.argv))

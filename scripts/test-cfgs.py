@@ -87,6 +87,7 @@ class Config(object):
             return 0
         return len(data)
 
+
 if __name__ == '__main__':
     configs = glob.glob('etc/mock/*.cfg')
     configs.sort()

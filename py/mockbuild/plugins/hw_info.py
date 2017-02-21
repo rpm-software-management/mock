@@ -8,6 +8,7 @@ import mockbuild.util
 
 requires_api_version = "1.1"
 
+
 # plugin entry point
 @traceLog()
 def init(plugins, conf, buildroot):
