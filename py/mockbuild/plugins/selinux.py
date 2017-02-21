@@ -105,6 +105,7 @@ class SELinux(object):
     def _selinuxYumIsSetoptSupported(self):
         try:
             # ugly hack: discover, whether yum supports --setopt option
+            # pylint: disable=import-error
             sys.path.insert(0, '/usr/share/yum-cli')
             import cli
             supported = hasattr(cli.YumBaseCli, "_parseSetOpts")
