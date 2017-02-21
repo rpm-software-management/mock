@@ -67,3 +67,4 @@ class ChrootScan(object):
         if count:
             logger.info("chroot_scan: %d files copied to %s", count, self.resultdir)
             logger.info("\n".join(copied))
+            self.buildroot.uid_manager.changeOwner(self.resultdir, recursive=True)
