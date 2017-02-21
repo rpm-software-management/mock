@@ -60,7 +60,7 @@ class ChrootScan(object):
                 m = regex.search(f)
                 if m:
                     srcpath = os.path.join(root, f)
-                    subprocess.call("cp --parents %s %s" % (srcpath, self.resultdir), shell=True)
+                    subprocess.call("cp --preserve=mode --parents %s %s" % (srcpath, self.resultdir), shell=True)
                     count += 1
                     copied.append(srcpath)
         logger.debug("chroot_scan: finished with %d files found", count)
