@@ -264,9 +264,15 @@ python3-pylint py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 
 %files scm
 %{python_sitelib}/mockbuild/scm.py*
+%if %{use_python3}
+%{python3_sitelib}/mockbuild/__pycache__/scm.*.py*
+%endif
 
 %files lvm
 %{python_sitelib}/mockbuild/plugins/lvm_root.*
+%if %{use_python3}
+%{python3_sitelib}/mockbuild/plugins/__pycache__/lvm_root.*.py*
+%endif
 
 %changelog
 * Sun Jan 01 2017 Miroslav Suchý <msuchy@redhat.com> 1.3.3-1
