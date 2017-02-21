@@ -27,12 +27,12 @@ import stat
 import struct
 import subprocess
 import sys
+import termios
 from textwrap import dedent
 import time
 import uuid
 
 import distro
-import termios
 
 from . import exception
 from .trace_decorator import getLog, traceLog
