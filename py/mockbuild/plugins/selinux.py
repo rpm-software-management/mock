@@ -92,10 +92,10 @@ class SELinux(object):
     def _selinuxDoYum(self, command, *args, **kargs):
         option = "--setopt=tsflags=nocontexts"
 
-        if type(command) is list:
+        if isinstance(command, list):
             if command[0].startswith(self.buildroot.pkg_manager.command):
                 command.append(option)
-        elif type(command) is str:
+        elif insinstance(command, str):
             if command.startswith(self.buildroot.pkg_manager.command):
                 command += " %s" % option
 
