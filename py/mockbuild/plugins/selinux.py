@@ -94,7 +94,7 @@ class SELinux(object):
         if isinstance(command, list):
             if command[0].startswith(self.buildroot.pkg_manager.command):
                 command.append(option)
-        elif insinstance(command, str):
+        elif isinstance(command, str):
             if command.startswith(self.buildroot.pkg_manager.command):
                 command += " %s" % option
 
