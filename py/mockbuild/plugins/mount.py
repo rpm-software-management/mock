@@ -52,5 +52,6 @@ class Mount(object):
 
     @traceLog()
     def _mountCreateDirs(self):
+        # pylint: disable=unused-variable
         for device, dest_dir, vfstype, mount_opts in self.opts['dirs']:
             mockbuild.util.mkdirIfAbsent(self.buildroot.make_chroot_path(dest_dir))
