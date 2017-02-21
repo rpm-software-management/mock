@@ -50,3 +50,4 @@ class HwInfo(object):
         out.write(output)
 
         out.close()
+        self.buildroot.uid_manager.changeOwner(out_file, gid=self.config['chrootgid'])
