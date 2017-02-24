@@ -161,6 +161,12 @@ class Buildroot(object):
                 self.state.start(update_state)
                 self.pkg_manager.update()
                 self.state.finish(update_state)
+        else:
+            # Change owner of homdir tree if the root of it not owned
+            # by the current user.
+            home = self.make_chroot_path(self.homedir)
+            if os.path.exists(home) and os.stat(home).st_uid != self.chrootuid:
+                self.chown_home_dir()
 
         # mark the buildroot as initialized
         util.touch(self.make_chroot_path('.initialized'))
