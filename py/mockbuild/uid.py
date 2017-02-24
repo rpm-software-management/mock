@@ -95,7 +95,7 @@ class UidManager(object):
             uid = self.unprivUid
         if gid is None:
             gid = self.unprivGid
-        os.chown(path, uid, gid)
+        os.lchown(path, uid, gid)
         if recursive:
             for root, dirs, files in os.walk(path):
                 for d in dirs:
@@ -107,7 +107,7 @@ class UidManager(object):
     def _tolerant_chown(path, uid, gid):
         """ chown() which does not raise error if file does not exist. """
         try:
-            os.chown(path, uid, gid)
+            os.lchown(path, uid, gid)
         except OSError as e:
             if e.errno == 2:  # No such file or directory
                 pass
