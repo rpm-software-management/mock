@@ -162,6 +162,7 @@ class Buildroot(object):
                 self.pkg_manager.update()
                 self.state.finish(update_state)
         else:
+            self._fixup_build_user()
             # Change owner of homdir tree if the root of it not owned
             # by the current user.
             home = self.make_chroot_path(self.homedir)
@@ -249,6 +250,13 @@ class Buildroot(object):
             self.init_install_output += self.pkg_manager.execute(*cmd, returnOutput=1)
 
         self.state.finish(update_state)
+
+    @traceLog()
+    def _fixup_build_user(self):
+        """ensure chrootuser has correct UID"""
+        self.doChroot(['/usr/sbin/usermod', '-u', str(self.chrootuid),
+                       self.chrootuser],
+                      shell=False, nosync=True)
 
     @traceLog()
     def _make_build_user(self):
