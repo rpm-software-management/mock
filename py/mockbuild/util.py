@@ -744,7 +744,7 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
     config_opts['root_log_fmt_name'] = "detailed"
     config_opts['state_log_fmt_name'] = "state"
     config_opts['online'] = True
-    config_opts['use_nspawn'] = True
+    config_opts['use_nspawn'] = False
     config_opts['rpmbuild_networking'] = False
     config_opts['nspawn_args'] = []
     config_opts['use_container_host_hostname'] = True
