@@ -42,7 +42,7 @@ else
     runcmd "$MOCKCMD --init"
 fi
 header "installing dependencies for $MOCKSRPM"
-runcmd "$MOCKCMD --installdeps $MOCKSRPM"
+runcmd "$MOCKCMD --disable-plugin=tmpfs --installdeps $MOCKSRPM"
 if [ ! -e $CHROOT/usr/include/python* ]; then
 echo "installdeps test FAILED. could not find /usr/include/python*"
 exit 1
