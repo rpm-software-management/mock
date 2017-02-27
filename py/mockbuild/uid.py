@@ -95,7 +95,7 @@ class UidManager(object):
             uid = self.unprivUid
         if gid is None:
             gid = self.unprivGid
-        os.lchown(path, uid, gid)
+        self._tolerant_chown(path, uid, gid)
         if recursive:
             for root, dirs, files in os.walk(path):
                 for d in dirs:
