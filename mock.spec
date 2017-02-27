@@ -39,9 +39,7 @@ Requires: distribution-gpg-keys >= 1.9
 %if 0%{?use_python2}
 Requires: pyliblzma
 %endif
-%if 0%{?rhel} != 6 && 0%{?fedora} > 0 && 0%{?fedora} < 24
 Requires: systemd
-%endif
 %if 0%{?fedora} > 23
 Requires: systemd-container
 %endif
@@ -50,13 +48,11 @@ Requires(post): coreutils
 %if 0%{?fedora} > 0
 Requires(post): system-release
 %endif
-%if 0%{?rhel} > 6
+%if 0%{?rhel} == 7
 Requires(post): /etc/os-release
 %endif
 BuildRequires: autoconf, automake
-%if 0%{?fedora} || 0%{?rhel} > 6
 BuildRequires: bash-completion
-%endif
 %if %{use_python3}
 Requires: python3
 Requires: python3-distro
@@ -80,7 +76,7 @@ Recommends: dnf
 Recommends: dnf-plugins-core
 Recommends: btrfs-progs
 %endif
-%if 0%{?rhel} >= 7
+%if 0%{?rhel} == 7
 Requires: btrfs-progs
 %endif
 BuildRequires: perl
@@ -88,11 +84,7 @@ BuildRequires: perl
 # hwinfo plugin
 Requires: util-linux
 Requires: coreutils
-%if 0%{?rhel} == 6
-Requires: procps
-%else
 Requires: procps-ng
-%endif
 
 
 %description
@@ -120,9 +112,6 @@ of the buildroot.
 
 %prep
 %setup -q
-%if 0%{?rhel} == 6
-sed -i "s|^USE_NSPAWN = True|USE_NSPAWN = False|" py/mockbuild/util.py
-%endif
 %if %{use_python3}
 for file in py/mock.py py/mockchain.py; do
   sed -i 1"s|#!/usr/bin/python |#!/usr/bin/python3 |" $file
@@ -186,12 +175,6 @@ elif [ -d %{buildroot}%{_sysconfdir}/bash_completion.d ]; then
     echo %{_sysconfdir}/bash_completion.d/mock >> %{name}.cfgs
 fi
 
-%if 0%{?rhel} == 6
-    # can be removed when yum-utils >= 1.1.31 lands in el6
-    echo "config_opts['plugin_conf']['package_state_enable'] = False" >> %{buildroot}%{_sysconfdir}/mock/site-defaults.cfg
-    echo "config_opts['use_nspawn'] = False" >> %{buildroot}%{_sysconfdir}/mock/site-defaults.cfg
-%endif
-
 
 %pre
 # check for existence of mock group, create it if not found
@@ -210,7 +193,7 @@ if [ -s /etc/os-release ]; then
         ver=$(source /etc/os-release && echo $VERSION_ID | cut -d. -f1 | grep -o '[0-9]\+')
     fi
 else
-    # rhel6 or something obsure, use buildtime version
+    # something obsure, use buildtime version
     ver=%{?rhel}%{?fedora}
 fi
 mock_arch=$(python -c "import rpmUtils.arch; baseArch = rpmUtils.arch.getBaseArch(); print baseArch")
