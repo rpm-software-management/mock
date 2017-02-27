@@ -1,6 +1,6 @@
 %{!?python_sitelib: %global python_sitelib %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib()")}
 
-%if 0%{?fedora} > 21
+%if 0%{?fedora}
 %global use_python3 1
 %global use_python2 0
 %else
@@ -25,7 +25,7 @@ License: GPLv2+
 Source: https://fedorahosted.org/releases/m/o/mock/%{name}-%{version}.tar.gz
 URL: https://github.com/rpm-software-management/mock/
 BuildArch: noarch
-%if 0%{?fedora} > 21
+%if 0%{?fedora}
 Requires: yum >= 3.4.3-505
 %else
 Requires: yum >= 2.4
@@ -40,12 +40,12 @@ Requires: distribution-gpg-keys >= 1.9
 Requires: pyliblzma
 %endif
 Requires: systemd
-%if 0%{?fedora} > 23
+%if 0%{?fedora}
 Requires: systemd-container
 %endif
 Requires(pre): shadow-utils
 Requires(post): coreutils
-%if 0%{?fedora} > 0
+%if 0%{?fedora}
 Requires(post): system-release
 %endif
 %if 0%{?rhel} == 7
