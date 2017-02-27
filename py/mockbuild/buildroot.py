@@ -285,6 +285,8 @@ class Buildroot(object):
         self.doChroot(['/usr/sbin/groupadd', '-g', dets['gid'], dets['group']],
                       shell=False, nosync=True)
         self.doChroot(shlex.split(self.config['useradd'] % dets), shell=False, nosync=True)
+        if not self.config['clean']:
+            self.uid_manager.changeOwner(self.make_chroot_path(self.homedir))
         self._enable_chrootuser_account()
 
     @traceLog()
@@ -414,8 +416,11 @@ class Buildroot(object):
         build_dirs = ['RPMS', 'SPECS', 'SRPMS', 'SOURCES', 'BUILD', 'BUILDROOT',
                       'originals']
         with self.uid_manager:
+            self.uid_manager.changeOwner(self.make_chroot_path(self.builddir))
             for item in build_dirs:
-                util.mkdirIfAbsent(self.make_chroot_path(self.builddir, item))
+                path = self.make_chroot_path(self.builddir, item)
+                util.mkdirIfAbsent(path)
+                self.uid_manager.changeOwner(path)
             if self.config['clean']:
                 self.chown_home_dir()
             # rpmmacros default
