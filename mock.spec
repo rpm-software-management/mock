@@ -19,8 +19,8 @@
 
 Summary: Builds packages inside chroots
 Name: mock
-Version: 1.3.4
-Release: 1%{?dist}
+Version: 1.4.0
+Release: 0%{?dist}
 License: GPLv2+
 Source: https://fedorahosted.org/releases/m/o/mock/%{name}-%{version}.tar.gz
 URL: https://github.com/rpm-software-management/mock/
