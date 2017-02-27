@@ -5,6 +5,7 @@
 # Copyright (C) 2007 Michael E Brown <mebrown@michaels-house.net>
 
 import ctypes
+import errno
 import os
 import pwd
 
@@ -109,7 +110,7 @@ class UidManager(object):
         try:
             os.lchown(path, uid, gid)
         except OSError as e:
-            if e.errno == 2:  # No such file or directory
+            if e.errno == errno.ENOENT:
                 pass
             else:
                 raise

@@ -39,6 +39,7 @@ usage:
 """
 
 # library imports
+import errno
 import glob
 import grp
 import logging
@@ -889,7 +890,7 @@ if __name__ == '__main__':
         raise
 
     except (OSError,) as e:
-        if e.errno == 1:
+        if e.errno == errno.EPERM:
             print()
             log.error("%s", e)
             print()
