@@ -19,7 +19,7 @@
 
 Summary: Builds packages inside chroots
 Name: mock
-Version: 1.3.3
+Version: 1.3.4
 Release: 1%{?dist}
 License: GPLv2+
 Source: https://fedorahosted.org/releases/m/o/mock/%{name}-%{version}.tar.gz
@@ -275,6 +275,33 @@ python3-pylint py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 %endif
 
 %changelog
+* Mon Feb 27 2017 Miroslav Suchý <msuchy@redhat.com> 1.3.4-1
+- add support for dist-git to scm plugin (clime@redhat.com)
+- preserve mode of files when doing chroot_scan [RHBZ#1297430]
+  (msuchy@redhat.com)
+- spec: add to package pycache for subpackages (msuchy@redhat.com)
+- restore permissions on chroot_scan dir (drop to unprivUid, unprivGid)
+  (gitDeveloper@bitthinker.com)
+- add fedora 26 configs (msuchy@redhat.com)
+- config: add best=1 also into rawhide configs (praiskup@redhat.com)
+- rename package_state's log to have .log suffix (gitDeveloper@bitthinker.com)
+- systemd-nspawn: run as PID2 #36 (msuchy@redhat.com)
+- fix defaults for yum_builddep_opts (gitDeveloper@bitthinker.com)
+- Support nspawn_args (walters@verbum.org)
+- return exit code 2 when /usr/libexec/mock/mock run directly without
+  consolehelper (msuchy@redhat.com)
+- change path of /usr/sbin/mock in error message (msuchy@redhat.com)
+- Fix debuginfo repo naming (msimacek@redhat.com)
+- more examples of PS1 [RHBZ#1183733] (msuchy@redhat.com)
+- simplify PROMPT_COMMAND string (msuchy@redhat.com)
+- "Rawhide" has been changed to "rawhide" in os-release file in current rawhide
+  (F26) [RHBZ#1409735] (msuchy@redhat.com)
+- Update local repo URLs for rawhide (mizdebsk@redhat.com)
+- Switch kojipkgs URLs to https (mizdebsk@redhat.com)
+- run pylint on plugins too (msuchy@redhat.com)
+- introduce hw_info plugin (msuchy@redhat.com)
+- remove fedora-23 configs (msuchy@redhat.com)
+
 * Sun Jan 01 2017 Miroslav Suchý <msuchy@redhat.com> 1.3.3-1
 - use F25 for tests
 - handle cwd directories with spaces [RHBZ#1389663]
