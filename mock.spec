@@ -73,8 +73,8 @@ Requires: python-six >= 1.4.0
 Requires: python-requests
 Requires: python >= 2.6
 Requires: rpm-python
-BuildRequires: python-devel
 %endif
+BuildRequires: python-devel
 %if 0%{?fedora}
 Recommends: dnf
 Recommends: dnf-plugins-core
