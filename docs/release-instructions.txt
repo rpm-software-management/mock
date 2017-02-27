@@ -48,37 +48,11 @@ Release checklist overview:
 8) merge changes back to devel branch
    $ git checkout devel
    $ git merge origin/master
-
-
-In the fedora git (koji) tree
-
-   1) cd to the previously cloned mock package repository
-       $ cd ../mock-fedora.git
-   2) change to the master branch:
-       $ fedpkg switch-branch master
-       	     or
-       $ git checkout master
-   3) upload the new source tarball from the upstream git tree
-       $ fedpkg new-sources ../mock.git/mock-<version>.tar.gz
-   4) copy in the new specfile that matches the tarball
-       $ cp ../mock.git/mock.spec .
-   5) commit and push the new sources
-       $ fedpkg commit --clog --push
-   6) initiate a koji build
-       $ fedpkg build --nowait
-   7) switch branches to the latest released fedora
-       $ fedpkg switch-branch f17
-              or
-       $ git checkout f17
-   8) merge master into the current release
-       $ git merge master
-      if there are conflicts, resolve and commit
-   9) push changes back to origin
-       $ fedpkg push
-   10) initiate a build for the branch
-       $ fedpkg build --nowait
-   11) repeat steps 8 and 9 for all supported fedora releases and EPEL releases
-      (e.g. f16, el6)
+9) release for EPEL and Fedora
+   $ git checkout master
+   # make sure that .tito/releasers.conf is up to date
+   $ tito release fedora-git-all
+   $ tito release epel-git-all
 
 Once the builds finish (successfully) you should push the just built
 packages to their respective testing repositories. This can be done
