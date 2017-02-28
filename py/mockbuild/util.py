@@ -748,6 +748,7 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
     config_opts['rpmbuild_networking'] = False
     config_opts['nspawn_args'] = []
     config_opts['use_container_host_hostname'] = True
+    config_opts['use_bootstrap_container'] = True
 
     config_opts['internal_dev_setup'] = True
     config_opts['internal_setarch'] = True
@@ -913,11 +914,11 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
 
     # configurable commands executables
     config_opts['yum_command'] = '/usr/bin/yum'
-    if os.path.isfile('/usr/bin/yum-deprecated'):
-        config_opts['yum_command'] = '/usr/bin/yum-deprecated'
+    config_opts['yum_install_command'] = 'install yum yum-utils shadow-utils distribution-gpg-keys'
 
     config_opts['yum_builddep_command'] = '/usr/bin/yum-builddep'
     config_opts['dnf_command'] = '/usr/bin/dnf'
+    config_opts['dnf_install_command'] = 'install dnf dnf-plugins-core distribution-gpg-keys'
     config_opts['rpm_command'] = '/bin/rpm'
     config_opts['rpmbuild_command'] = '/usr/bin/rpmbuild'
 

@@ -666,9 +666,26 @@ def main():
     log.info("mock.py version %s starting (python version = %s)...",
              __VERSION__, py_version)
     state = State()
+    outer_buildroot_state = State()
     plugins = Plugins(config_opts, state)
-    buildroot = Buildroot(config_opts, uidManager, state, plugins)
-    commands = Commands(config_opts, uidManager, plugins, state, buildroot)
+    outer_plugins = Plugins(config_opts, state)
+
+    # outer buildroot to bootstrap the installation - based on main config with some differences
+    outer_buildroot = None
+    if config_opts['use_bootstrap_container']:
+        # first take a copy of the config so we can make some modifications
+        outer_buildroot_config = config_opts.copy()
+        # add '-minimal' to the end of the root name
+        outer_buildroot_config['root'] = outer_buildroot_config['root'] + '-minimal'
+        # share a yum cache to save downloading everything twice
+        outer_buildroot_config['plugin_conf']['yum_cache_opts']['dir'] = "%(cache_topdir)s/"+config_opts['root']+"/%(package_manager)s_cache/"
+        outer_buildroot = Buildroot(outer_buildroot_config, uidManager, outer_buildroot_state, outer_plugins)
+        # this bit of config is needed after we have created the outer buildroot since we need to
+        # query pkg_manager to know which manager is in use
+        outer_buildroot_config['chroot_setup_cmd'] = outer_buildroot.pkg_manager.install_command
+
+    buildroot = Buildroot(config_opts, uidManager, state, plugins, outer_buildroot)
+    commands = Commands(config_opts, uidManager, plugins, state, buildroot, outer_buildroot)
 
     state.start("run")
 
@@ -703,6 +720,8 @@ def main():
     finally:
         buildroot.uid_manager.becomeUser(0, 0)
         buildroot.finalize()
+        if outer_buildroot is not None:
+            outer_buildroot.finalize()
         buildroot.uid_manager.restorePrivs()
 
 

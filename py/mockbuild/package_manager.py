@@ -15,13 +15,13 @@ from .exception import BuildError, Error, YumError
 from .trace_decorator import traceLog
 
 
-def package_manager(config_opts, chroot, plugins):
+def package_manager(config_opts, chroot, plugins, outer_buildroot = None):
     pm = config_opts.get('package_manager', 'yum')
     if pm == 'yum':
-        return Yum(config_opts, chroot, plugins)
+        return Yum(config_opts, chroot, plugins, outer_buildroot)
     elif pm == 'dnf':
         if os.path.isfile(config_opts['dnf_command']):
-            return Dnf(config_opts, chroot, plugins)
+            return Dnf(config_opts, chroot, plugins, outer_buildroot)
         # RHEL without DNF
         (distribution, version) = distro.linux_distribution(full_distribution_name=False)[0:2]
         if distribution in ['redhat', 'centos']:
@@ -49,15 +49,18 @@ in Mock config.""")
 class _PackageManager(object):
     name = None
     command = None
+    install_command = None
     builddep_command = None
     resolvedep_command = None
+    outerBuildroot = None
 
     @traceLog()
-    def __init__(self, config, buildroot, plugins):
+    def __init__(self, config, buildroot, plugins, outer_buildroot):
         self.config = config
         self.plugins = plugins
         self.buildroot = buildroot
         self.init_install_output = ""
+        self.outer_buildroot = outer_buildroot
 
     @traceLog()
     def build_invocation(self, *args):
@@ -109,7 +112,10 @@ class _PackageManager(object):
             kwargs['pty'] = kwargs.get('pty', True)
         self.buildroot.nuke_rpm_db()
         try:
-            out = util.do(invocation, env=env, **kwargs)
+            if self.outer_buildroot is None:
+                out = util.do(invocation, env=env, **kwargs)
+            else:
+                out = util.do(invocation, env=env, chrootPath=self.outer_buildroot.make_chroot_path(), **kwargs)
         except Error as e:
             raise YumError(str(e))
         self.plugins.call_hooks("postyum")
@@ -176,12 +182,17 @@ def check_yum_config(config, log):
 class Yum(_PackageManager):
     name = 'yum'
 
-    def __init__(self, config, buildroot, plugins):
-        super(Yum, self).__init__(config, buildroot, plugins)
+    def __init__(self, config, buildroot, plugins, outer_buildroot):
+        super(Yum, self).__init__(config, buildroot, plugins, outer_buildroot)
         self.command = config['yum_command']
+        self.install_command = config['yum_install_command']
         self.builddep_command = [config['yum_builddep_command']]
         self._check_command()
-        if os.path.exists('/usr/bin/yum-deprecated'):
+        yum_deprecated_path = '/usr/bin/yum-deprecated'
+        if outer_buildroot is not None:
+            yum_deprecated_path = outer_buildroot.make_chroot_path(yum_deprecated_path)
+        if os.path.exists(yum_deprecated_path):
+            self.command = '/usr/bin/yum-deprecated'
             self.resolvedep_command = [
                 'repoquery', '--resolve', '--requires',
                 '--config', self.buildroot.make_chroot_path('etc', 'yum', 'yum.conf')]
@@ -255,9 +266,10 @@ def _check_missing(output):
 class Dnf(_PackageManager):
     name = 'dnf'
 
-    def __init__(self, config, buildroot, plugins):
-        super(Dnf, self).__init__(config, buildroot, plugins)
+    def __init__(self, config, buildroot, plugins, outer_buildroot):
+        super(Dnf, self).__init__(config, buildroot, plugins, outer_buildroot)
         self.command = config['dnf_command']
+        self.install_command = config['dnf_install_command']
         self.builddep_command = [self.command, 'builddep']
         self._check_command()
         self.resolvedep_command = ['repoquery', '--resolve', '--requires']
