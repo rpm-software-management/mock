@@ -68,3 +68,6 @@ class ChrootScan(object):
             logger.info("chroot_scan: %d files copied to %s", count, self.resultdir)
             logger.info("\n".join(copied))
             self.buildroot.uid_manager.changeOwner(self.resultdir, recursive=True)
+            # some packages installs 555 perms on dirs,
+            # so user can't delete/move chroot_scan's results
+            subprocess.call(['chmod', '-R', 'u+w', self.resultdir])
