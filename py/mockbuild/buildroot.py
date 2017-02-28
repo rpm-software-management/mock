@@ -457,6 +457,7 @@ class Buildroot(object):
                 (stat.S_IFBLK | 0o666, os.makedev(7, 2), "dev/loop2"),
                 (stat.S_IFBLK | 0o666, os.makedev(7, 3), "dev/loop3"),
                 (stat.S_IFBLK | 0o666, os.makedev(7, 4), "dev/loop4"),
+                (stat.S_IFCHR | 0o600, os.makedev(10, 183), "dev/hwrng"),
             ]
             kver = os.uname()[2]
             self.root_log.debug("kernel version == %s", kver)
