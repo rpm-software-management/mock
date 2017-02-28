@@ -457,19 +457,20 @@ class Buildroot(object):
                 (stat.S_IFBLK | 0o666, os.makedev(7, 2), "dev/loop2"),
                 (stat.S_IFBLK | 0o666, os.makedev(7, 3), "dev/loop3"),
                 (stat.S_IFBLK | 0o666, os.makedev(7, 4), "dev/loop4"),
+                (stat.S_IFCHR | 0o600, os.makedev(10, 57), "dev/prandom"),
                 (stat.S_IFCHR | 0o600, os.makedev(10, 183), "dev/hwrng"),
             ]
             kver = os.uname()[2]
             self.root_log.debug("kernel version == %s", kver)
             for i in devFiles:
-                # create node
-                os.mknod(self.make_chroot_path(i[2]), i[0], i[1])
-                # set context. (only necessary if host running selinux enabled.)
-                # fails gracefully if chcon not installed.
-                if self.selinux:
-                    util.do(["chcon", "--reference=/" + i[2], self.make_chroot_path(i[2])],
-                            raiseExc=0, shell=False, env=self.env)
-
+                # create node, but only if it exist on host too
+                if os.path.isfile("/" + i[2]):
+                    os.mknod(self.make_chroot_path(i[2]), i[0], i[1])
+                    # set context. (only necessary if host running selinux enabled.)
+                    # fails gracefully if chcon not installed.
+                    if self.selinux:
+                        util.do(["chcon", "--reference=/" + i[2], self.make_chroot_path(i[2])],
+                                raiseExc=0, shell=False, env=self.env)
             os.symlink("/proc/self/fd/0", self.make_chroot_path("dev/stdin"))
             os.symlink("/proc/self/fd/1", self.make_chroot_path("dev/stdout"))
             os.symlink("/proc/self/fd/2", self.make_chroot_path("dev/stderr"))
