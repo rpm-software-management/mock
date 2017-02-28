@@ -16,12 +16,17 @@ class Plugins(object):
         self._hooks = {}
         self.state = state
 
+        self.initted = False
+
         self.plugins = config['plugins']
         self.plugin_conf = config['plugin_conf']
         self.plugin_dir = config['plugin_dir']
 
     @traceLog()
     def init_plugins(self, buildroot):
+        if self.initted:
+            return
+        self.initted = True
         for key in list(self.plugin_conf.keys()):
             if key.endswith('_opts'):
                 self.plugin_conf[key]['basedir'] = buildroot.basedir

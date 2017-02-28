@@ -13,14 +13,16 @@ import shutil
 from . import util
 from .exception import PkgError
 from .trace_decorator import getLog, traceLog
+from mockbuild.mounts import BindMountPoint
 
 
 class Commands(object):
     """Executes mock commands in the buildroot"""
     @traceLog()
-    def __init__(self, config, uid_manager, plugins, state, buildroot):
+    def __init__(self, config, uid_manager, plugins, state, buildroot, outer_buildroot):
         self.uid_manager = uid_manager
         self.buildroot = buildroot
+        self.outer_buildroot = outer_buildroot
         self.state = state
         self.plugins = plugins
         self.config = config
@@ -73,6 +75,8 @@ class Commands(object):
             self.backup_results()
         self.state.start("clean chroot")
         self.buildroot.delete()
+        if self.outer_buildroot is not None:
+            self.outer_buildroot.delete()
         self.state.finish("clean chroot")
 
     @traceLog()
@@ -90,22 +94,36 @@ class Commands(object):
                         self.buildroot.root_log.info("scrubbing everything for %s", self.config_name)
                         self.buildroot.delete()
                         util.rmtree(self.buildroot.cachedir, selinux=self.buildroot.selinux)
+                        if self.outer_buildroot is not None:
+                            self.outer_buildroot.delete()
+                            util.rmtree(self.outer_buildroot.cachedir, selinux=self.outer_buildroot.selinux)
                     elif scrub == 'chroot':
                         self.buildroot.root_log.info("scrubbing chroot for %s", self.config_name)
                         self.buildroot.delete()
+                        if self.outer_buildroot is not None:
+                            self.outer_buildroot.delete()
                     elif scrub == 'cache':
                         self.buildroot.root_log.info("scrubbing cache for %s", self.config_name)
                         util.rmtree(self.buildroot.cachedir, selinux=self.buildroot.selinux)
+                        if self.outer_buildroot is not None:
+                            util.rmtree(self.outer_buildroot.cachedir, selinux=self.outer_buildroot.selinux)
                     elif scrub == 'c-cache':
                         self.buildroot.root_log.info("scrubbing c-cache for %s", self.config_name)
                         util.rmtree(os.path.join(self.buildroot.cachedir, 'ccache'), selinux=self.buildroot.selinux)
+                        if self.outer_buildroot is not None:
+                            util.rmtree(os.path.join(self.outer_buildroot.cachedir, 'ccache'), selinux=self.outer_buildroot.selinux)
                     elif scrub == 'root-cache':
                         self.buildroot.root_log.info("scrubbing root-cache for %s", self.config_name)
                         util.rmtree(os.path.join(self.buildroot.cachedir, 'root_cache'), selinux=self.buildroot.selinux)
+                        if self.outer_buildroot is not None:
+                            util.rmtree(os.path.join(self.outer_buildroot.cachedir, 'root_cache'), selinux=self.outer_buildroot.selinux)
                     elif scrub == 'yum-cache' or scrub == 'dnf-cache':
                         self.buildroot.root_log.info("scrubbing yum-cache and dnf-cache for %s", self.config_name)
                         util.rmtree(os.path.join(self.buildroot.cachedir, 'yum_cache'), selinux=self.buildroot.selinux)
                         util.rmtree(os.path.join(self.buildroot.cachedir, 'dnf_cache'), selinux=self.buildroot.selinux)
+                        if self.outer_buildroot is not None:
+                            util.rmtree(os.path.join(self.outer_buildroot.cachedir, 'yum_cache'), selinux=self.outer_buildroot.selinux)
+                            util.rmtree(os.path.join(self.outer_buildroot.cachedir, 'dnf_cache'), selinux=self.outer_buildroot.selinux)
             except IOError as e:
                 getLog().warning("parts of chroot do not exist: %s", e)
                 raise
@@ -122,6 +140,13 @@ class Commands(object):
     @traceLog()
     def init(self, **kwargs):
         try:
+            if self.outer_buildroot is not None:
+                # add the extra bind mount to the outer chroot
+                inner_mount = self.outer_buildroot.make_chroot_path(self.buildroot.make_chroot_path())
+                util.mkdirIfAbsent(inner_mount)
+                util.mkdirIfAbsent(self.buildroot.make_chroot_path())
+                self.outer_buildroot.mounts.managed_mounts.append(BindMountPoint(self.buildroot.make_chroot_path(), inner_mount))
+                self.outer_buildroot.initialize(**kwargs)
             self.buildroot.initialize(**kwargs)
             if not self.buildroot.chroot_was_initialized:
                 self._show_installed_packages()
