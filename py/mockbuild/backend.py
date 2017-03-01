@@ -10,10 +10,11 @@ import glob
 import os
 import shutil
 
+from mockbuild.mounts import BindMountPoint
+
 from . import util
 from .exception import PkgError
 from .trace_decorator import getLog, traceLog
-from mockbuild.mounts import BindMountPoint
 
 
 class Commands(object):
@@ -111,19 +112,23 @@ class Commands(object):
                         self.buildroot.root_log.info("scrubbing c-cache for %s", self.config_name)
                         util.rmtree(os.path.join(self.buildroot.cachedir, 'ccache'), selinux=self.buildroot.selinux)
                         if self.outer_buildroot is not None:
-                            util.rmtree(os.path.join(self.outer_buildroot.cachedir, 'ccache'), selinux=self.outer_buildroot.selinux)
+                            util.rmtree(os.path.join(self.outer_buildroot.cachedir, 'ccache'),
+                                        selinux=self.outer_buildroot.selinux)
                     elif scrub == 'root-cache':
                         self.buildroot.root_log.info("scrubbing root-cache for %s", self.config_name)
                         util.rmtree(os.path.join(self.buildroot.cachedir, 'root_cache'), selinux=self.buildroot.selinux)
                         if self.outer_buildroot is not None:
-                            util.rmtree(os.path.join(self.outer_buildroot.cachedir, 'root_cache'), selinux=self.outer_buildroot.selinux)
+                            util.rmtree(os.path.join(self.outer_buildroot.cachedir, 'root_cache'),
+                                        selinux=self.outer_buildroot.selinux)
                     elif scrub == 'yum-cache' or scrub == 'dnf-cache':
                         self.buildroot.root_log.info("scrubbing yum-cache and dnf-cache for %s", self.config_name)
                         util.rmtree(os.path.join(self.buildroot.cachedir, 'yum_cache'), selinux=self.buildroot.selinux)
                         util.rmtree(os.path.join(self.buildroot.cachedir, 'dnf_cache'), selinux=self.buildroot.selinux)
                         if self.outer_buildroot is not None:
-                            util.rmtree(os.path.join(self.outer_buildroot.cachedir, 'yum_cache'), selinux=self.outer_buildroot.selinux)
-                            util.rmtree(os.path.join(self.outer_buildroot.cachedir, 'dnf_cache'), selinux=self.outer_buildroot.selinux)
+                            util.rmtree(os.path.join(self.outer_buildroot.cachedir, 'yum_cache'),
+                                        selinux=self.outer_buildroot.selinux)
+                            util.rmtree(os.path.join(self.outer_buildroot.cachedir, 'dnf_cache'),
+                                        selinux=self.outer_buildroot.selinux)
             except IOError as e:
                 getLog().warning("parts of chroot do not exist: %s", e)
                 raise
@@ -145,7 +150,8 @@ class Commands(object):
                 inner_mount = self.outer_buildroot.make_chroot_path(self.buildroot.make_chroot_path())
                 util.mkdirIfAbsent(inner_mount)
                 util.mkdirIfAbsent(self.buildroot.make_chroot_path())
-                self.outer_buildroot.mounts.managed_mounts.append(BindMountPoint(self.buildroot.make_chroot_path(), inner_mount))
+                self.outer_buildroot.mounts.managed_mounts.append(
+                    BindMountPoint(self.buildroot.make_chroot_path(), inner_mount))
                 self.outer_buildroot.initialize(**kwargs)
             self.buildroot.initialize(**kwargs)
             if not self.buildroot.chroot_was_initialized:

@@ -331,6 +331,13 @@ Disable configure OPTION for build.  This option may be used multiple times.  Fo
 \fB\-\-yum\fR
 Use yum as the current package manager. This is the default.
 
+.TP
+\fB\-\-bootstrap-chroot\fR
+build in two stages, using chroot rpm for creating the build chroot
+.TP
+\fB\-\-no-bootstrap-chroot\fR
+build in a single stage, using system rpm for creating the build chroot
+
 .SH "FILES"
 .LP
 \fI/etc/mock/\fP \- default configuration directory

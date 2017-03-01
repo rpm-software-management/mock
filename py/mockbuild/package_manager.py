@@ -36,11 +36,11 @@ You can suppress this warning when you put
   config_opts['dnf_warning'] = False
 in Mock config.""")
                     input("Press Enter to continue.")
-                return Yum(config_opts, chroot, plugins)
+                return Yum(config_opts, chroot, plugins, outer_buildroot)
         # something else then EL, and no dnf_command exist
         # This will likely mean some error later.
         # Either user is smart or let him shot in his foot.
-        return Dnf(config_opts, chroot, plugins)
+        return Dnf(config_opts, chroot, plugins, outer_buildroot)
     else:
         # TODO specific exception type
         raise Exception('Unrecognized package manager')
