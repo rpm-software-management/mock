@@ -334,6 +334,11 @@ def command_parse():
     parser.add_option("--dnf", help="use dnf as package manager",
                       dest="pkg_manager", action="store_const", const="dnf")
 
+    parser.add_option('--bootstrap-chroot', dest='bootstrapchroot', action='store_true',
+                        help="build in two stages, using chroot rpm for creating the build chroot")
+    parser.add_option('--no-bootstrap-chroot', dest='bootstrapchroot', action='store_false',
+                        help="build in a single stage, using system rpm for creating the build chroot")
+
     (options, args) = parser.parse_args()
 
     if options.mode == '__default__':
