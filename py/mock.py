@@ -335,9 +335,9 @@ def command_parse():
                       dest="pkg_manager", action="store_const", const="dnf")
 
     parser.add_option('--bootstrap-chroot', dest='bootstrapchroot', action='store_true',
-                        help="build in two stages, using chroot rpm for creating the build chroot")
+                      help="build in two stages, using chroot rpm for creating the build chroot")
     parser.add_option('--no-bootstrap-chroot', dest='bootstrapchroot', action='store_false',
-                        help="build in a single stage, using system rpm for creating the build chroot")
+                      help="build in a single stage, using system rpm for creating the build chroot")
 
     (options, args) = parser.parse_args()
 
@@ -683,8 +683,13 @@ def main():
         # add '-minimal' to the end of the root name
         outer_buildroot_config['root'] = outer_buildroot_config['root'] + '-minimal'
         # share a yum cache to save downloading everything twice
-        outer_buildroot_config['plugin_conf']['yum_cache_opts']['dir'] = "%(cache_topdir)s/"+config_opts['root']+"/%(package_manager)s_cache/"
-        outer_buildroot = Buildroot(outer_buildroot_config, uidManager, outer_buildroot_state, outer_plugins)
+        outer_buildroot_config['plugin_conf']['yum_cache_opts']['dir'] = \
+            "%(cache_topdir)s/"+config_opts['root']+"/%(package_manager)s_cache/"
+        # allow outer buildroot to access the network for getting packages
+        outer_buildroot_config['rpmbuild_networking'] = True
+        outer_buildroot_config['use_host_resolv'] = True
+        outer_buildroot = Buildroot(outer_buildroot_config,
+                                    uidManager, outer_buildroot_state, outer_plugins)
         # this bit of config is needed after we have created the outer buildroot since we need to
         # query pkg_manager to know which manager is in use
         outer_buildroot_config['chroot_setup_cmd'] = outer_buildroot.pkg_manager.install_command

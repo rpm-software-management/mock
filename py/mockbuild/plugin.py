@@ -16,7 +16,7 @@ class Plugins(object):
         self._hooks = {}
         self.state = state
 
-        self.initted = False
+        self.already_initialized = False
 
         self.plugins = config['plugins']
         self.plugin_conf = config['plugin_conf']
@@ -24,9 +24,9 @@ class Plugins(object):
 
     @traceLog()
     def init_plugins(self, buildroot):
-        if self.initted:
+        if self.already_initialized:
             return
-        self.initted = True
+        self.already_initialized = True
         for key in list(self.plugin_conf.keys()):
             if key.endswith('_opts'):
                 self.plugin_conf[key]['basedir'] = buildroot.basedir
