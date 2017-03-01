@@ -983,6 +983,8 @@ def set_config_opts_per_cmdline(config_opts, options, args):
         config_opts['unique-ext'] = options.uniqueext
     if options.rpmbuild_timeout is not None:
         config_opts['rpmbuild_timeout'] = options.rpmbuild_timeout
+    if options.bootstrapchroot is not None:
+        config_opts['use_bootstrap_container'] = options.bootstrapchroot
 
     for i in options.disabled_plugins:
         if i not in config_opts['plugins']:
