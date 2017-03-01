@@ -671,31 +671,35 @@ def main():
     log.info("mock.py version %s starting (python version = %s)...",
              __VERSION__, py_version)
     state = State()
-    outer_buildroot_state = State()
+    bootstrap_buildroot_state = State()
     plugins = Plugins(config_opts, state)
-    outer_plugins = Plugins(config_opts, state)
+    bootstrap_plugins = Plugins(config_opts, state)
 
     # outer buildroot to bootstrap the installation - based on main config with some differences
-    outer_buildroot = None
+    bootstrap_buildroot = None
     if config_opts['use_bootstrap_container']:
         # first take a copy of the config so we can make some modifications
-        outer_buildroot_config = config_opts.copy()
-        # add '-minimal' to the end of the root name
-        outer_buildroot_config['root'] = outer_buildroot_config['root'] + '-minimal'
+        bootstrap_buildroot_config = config_opts.copy()
+        # add '-bootstrap' to the end of the root name
+        bootstrap_buildroot_config['root'] = bootstrap_buildroot_config['root'] + '-bootstrap'
         # share a yum cache to save downloading everything twice
-        outer_buildroot_config['plugin_conf']['yum_cache_opts']['dir'] = \
+        bootstrap_buildroot_config['plugin_conf']['yum_cache_opts']['dir'] = \
             "%(cache_topdir)s/"+config_opts['root']+"/%(package_manager)s_cache/"
-        # allow outer buildroot to access the network for getting packages
-        outer_buildroot_config['rpmbuild_networking'] = True
-        outer_buildroot_config['use_host_resolv'] = True
-        outer_buildroot = Buildroot(outer_buildroot_config,
-                                    uidManager, outer_buildroot_state, outer_plugins)
-        # this bit of config is needed after we have created the outer buildroot since we need to
-        # query pkg_manager to know which manager is in use
-        outer_buildroot_config['chroot_setup_cmd'] = outer_buildroot.pkg_manager.install_command
+        # allow bootstrap buildroot to access the network for getting packages
+        bootstrap_buildroot_config['rpmbuild_networking'] = True
+        bootstrap_buildroot_config['use_host_resolv'] = True
+        # use system_*_command for bootstrapping
+        bootstrap_buildroot_config['yum_command'] = bootstrap_buildroot_config['system_yum_command']
+        bootstrap_buildroot_config['dnf_command'] = bootstrap_buildroot_config['system_dnf_command']
 
-    buildroot = Buildroot(config_opts, uidManager, state, plugins, outer_buildroot)
-    commands = Commands(config_opts, uidManager, plugins, state, buildroot, outer_buildroot)
+        bootstrap_buildroot = Buildroot(bootstrap_buildroot_config,
+                                        uidManager, bootstrap_buildroot_state, bootstrap_plugins)
+        # this bit of config is needed after we have created the bootstrap buildroot since we need to
+        # query pkg_manager to know which manager is in use
+        bootstrap_buildroot_config['chroot_setup_cmd'] = bootstrap_buildroot.pkg_manager.install_command
+
+    buildroot = Buildroot(config_opts, uidManager, state, plugins, bootstrap_buildroot)
+    commands = Commands(config_opts, uidManager, plugins, state, buildroot, bootstrap_buildroot)
 
     state.start("run")
 
@@ -730,8 +734,8 @@ def main():
     finally:
         buildroot.uid_manager.becomeUser(0, 0)
         buildroot.finalize()
-        if outer_buildroot is not None:
-            outer_buildroot.finalize()
+        if bootstrap_buildroot is not None:
+            bootstrap_buildroot.finalize()
         buildroot.uid_manager.restorePrivs()
 
 

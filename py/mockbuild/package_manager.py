@@ -15,13 +15,13 @@ from .exception import BuildError, Error, YumError
 from .trace_decorator import traceLog
 
 
-def package_manager(config_opts, chroot, plugins, outer_buildroot = None):
+def package_manager(config_opts, chroot, plugins, bootstrap_buildroot=None):
     pm = config_opts.get('package_manager', 'yum')
     if pm == 'yum':
-        return Yum(config_opts, chroot, plugins, outer_buildroot)
+        return Yum(config_opts, chroot, plugins, bootstrap_buildroot)
     elif pm == 'dnf':
         if os.path.isfile(config_opts['dnf_command']):
-            return Dnf(config_opts, chroot, plugins, outer_buildroot)
+            return Dnf(config_opts, chroot, plugins, bootstrap_buildroot)
         # RHEL without DNF
         (distribution, version) = distro.linux_distribution(full_distribution_name=False)[0:2]
         if distribution in ['redhat', 'centos']:
@@ -36,11 +36,11 @@ You can suppress this warning when you put
   config_opts['dnf_warning'] = False
 in Mock config.""")
                     input("Press Enter to continue.")
-                return Yum(config_opts, chroot, plugins, outer_buildroot)
+                return Yum(config_opts, chroot, plugins, bootstrap_buildroot)
         # something else then EL, and no dnf_command exist
         # This will likely mean some error later.
         # Either user is smart or let him shot in his foot.
-        return Dnf(config_opts, chroot, plugins, outer_buildroot)
+        return Dnf(config_opts, chroot, plugins, bootstrap_buildroot)
     else:
         # TODO specific exception type
         raise Exception('Unrecognized package manager')
@@ -52,15 +52,14 @@ class _PackageManager(object):
     install_command = None
     builddep_command = None
     resolvedep_command = None
-    outerBuildroot = None
 
     @traceLog()
-    def __init__(self, config, buildroot, plugins, outer_buildroot):
+    def __init__(self, config, buildroot, plugins, bootstrap_buildroot):
         self.config = config
         self.plugins = plugins
         self.buildroot = buildroot
         self.init_install_output = ""
-        self.outer_buildroot = outer_buildroot
+        self.bootstrap_buildroot = bootstrap_buildroot
 
     @traceLog()
     def build_invocation(self, *args):
@@ -112,10 +111,10 @@ class _PackageManager(object):
             kwargs['pty'] = kwargs.get('pty', True)
         self.buildroot.nuke_rpm_db()
         try:
-            if self.outer_buildroot is None:
+            if self.bootstrap_buildroot is None:
                 out = util.do(invocation, env=env, **kwargs)
             else:
-                out = util.do(invocation, env=env, chrootPath=self.outer_buildroot.make_chroot_path(), **kwargs)
+                out = util.do(invocation, env=env, chrootPath=self.bootstrap_buildroot.make_chroot_path(), **kwargs)
         except Error as e:
             raise YumError(str(e))
         self.plugins.call_hooks("postyum")
@@ -182,15 +181,15 @@ def check_yum_config(config, log):
 class Yum(_PackageManager):
     name = 'yum'
 
-    def __init__(self, config, buildroot, plugins, outer_buildroot):
-        super(Yum, self).__init__(config, buildroot, plugins, outer_buildroot)
+    def __init__(self, config, buildroot, plugins, bootstrap_buildroot):
+        super(Yum, self).__init__(config, buildroot, plugins, bootstrap_buildroot)
         self.command = config['yum_command']
         self.install_command = config['yum_install_command']
         self.builddep_command = [config['yum_builddep_command']]
         self._check_command()
         yum_deprecated_path = '/usr/bin/yum-deprecated'
-        if outer_buildroot is not None:
-            yum_deprecated_path = outer_buildroot.make_chroot_path(yum_deprecated_path)
+        if bootstrap_buildroot is not None:
+            yum_deprecated_path = bootstrap_buildroot.make_chroot_path(yum_deprecated_path)
         if os.path.exists(yum_deprecated_path):
             self.command = '/usr/bin/yum-deprecated'
             self.resolvedep_command = [
@@ -266,8 +265,8 @@ def _check_missing(output):
 class Dnf(_PackageManager):
     name = 'dnf'
 
-    def __init__(self, config, buildroot, plugins, outer_buildroot):
-        super(Dnf, self).__init__(config, buildroot, plugins, outer_buildroot)
+    def __init__(self, config, buildroot, plugins, bootstrap_buildroot):
+        super(Dnf, self).__init__(config, buildroot, plugins, bootstrap_buildroot)
         self.command = config['dnf_command']
         self.install_command = config['dnf_install_command']
         self.builddep_command = [self.command, 'builddep']

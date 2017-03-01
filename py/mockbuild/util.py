@@ -914,10 +914,12 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
 
     # configurable commands executables
     config_opts['yum_command'] = '/usr/bin/yum'
+    config_opts['system_yum_command'] = '/usr/bin/yum'
     config_opts['yum_install_command'] = 'install yum yum-utils shadow-utils distribution-gpg-keys'
 
     config_opts['yum_builddep_command'] = '/usr/bin/yum-builddep'
     config_opts['dnf_command'] = '/usr/bin/dnf'
+    config_opts['system_dnf_command'] = '/usr/bin/dnf'
     config_opts['dnf_install_command'] = 'install dnf dnf-plugins-core distribution-gpg-keys'
     config_opts['rpm_command'] = '/bin/rpm'
     config_opts['rpmbuild_command'] = '/usr/bin/rpmbuild'
