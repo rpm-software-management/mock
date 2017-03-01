@@ -23,7 +23,7 @@ from .trace_decorator import getLog, traceLog
 
 class Buildroot(object):
     @traceLog()
-    def __init__(self, config, uid_manager, state, plugins, outer_buildroot = None):
+    def __init__(self, config, uid_manager, state, plugins, outer_buildroot=None):
         self.config = config
         self.uid_manager = uid_manager
         self.state = state
