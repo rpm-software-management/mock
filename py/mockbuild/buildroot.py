@@ -23,12 +23,12 @@ from .trace_decorator import getLog, traceLog
 
 class Buildroot(object):
     @traceLog()
-    def __init__(self, config, uid_manager, state, plugins, outer_buildroot=None):
+    def __init__(self, config, uid_manager, state, plugins, bootstrap_buildroot=None):
         self.config = config
         self.uid_manager = uid_manager
         self.state = state
         self.plugins = plugins
-        self.outer_buildroot = outer_buildroot
+        self.bootstrap_buildroot = bootstrap_buildroot
         self.shared_root_name = config['root']
         if 'unique-ext' in config:
             config['root'] = "%s-%s" % (config['root'], config['unique-ext'])
@@ -58,7 +58,7 @@ class Buildroot(object):
         self.env.update(proxy_env)
         os.environ.update(proxy_env)
 
-        self.pkg_manager = package_manager(config, self, plugins, outer_buildroot)
+        self.pkg_manager = package_manager(config, self, plugins, bootstrap_buildroot)
         self.mounts = mounts.Mounts(self)
 
         self.root_log = getLog("mockbuild")
