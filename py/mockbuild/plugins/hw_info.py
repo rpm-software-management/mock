@@ -44,8 +44,8 @@ class HwInfo(object):
         out.write("\n\nMemory:\n")
         out.write(output)
 
-        cmd = ["/usr/bin/df", "-H", self.buildroot.make_chroot_path()]
-        output = mockbuild.util.do(cmd, shell=False, returnOutput=True, raiseExc=False)
+        cmd = ["df", "-H", self.buildroot.make_chroot_path()]
+        output = mockbuild.util.do(cmd, shell=True, returnOutput=True, raiseExc=False)
         out.write("\n\nStorage:\n")
         out.write(output)
 
