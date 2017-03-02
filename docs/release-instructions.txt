@@ -4,24 +4,12 @@ A note on mock versions:
 
   There are now two main branches to be aware of:
   	- mock-1.0 (pre-F13 and EPEL5)
-	- master (for releasing F-13+ and EPEL6+)
+    - mock-1.3 (EPEL6)
+	- master (for releasing F-13+ and EPEL7+)
     - devel (for development of future versions)
-  In the upstream git tree, mock-1.0 is tracked on the branch origin/mock-1.0,
-  while mock-1.1+ is in the master branch. Please be careful when
+  Please be careful when
   updating the various distro to use the correct branch and version
   number when generating tarfiles for RPM generation.
-
-Note that we've now switched over to using git for the package
-repositories (as opposed to the old CVS repositories). To make use of
-the new format, you must install the fedora-packager package and clone
-the mock package repository:
-
-    $ sudo yum install fedora-packager
-    $ fedpkg clone mock
-    $ mv mock mock-fedora.git
-
-The last step is not strictly required, but I do it to keep from
-confusing the package repository with the upstream (source) repository
 
 =====================================================================
 
@@ -42,13 +30,10 @@ Release checklist overview:
 6) push to main git repo (only from master branch):
    $ git push
    $ git push --tags
-7) copy tarball to fedorahosted:
-   $ tito build --tgz
-   $ scp mock-<version>.tar.gz fedorahosted.org:/srv/web/releases/m/o/mock/
-8) merge changes back to devel branch
+7) merge changes back to devel branch
    $ git checkout devel
    $ git merge origin/master
-9) release for EPEL and Fedora
+8) release for EPEL and Fedora
    $ git checkout master
    # make sure that .tito/releasers.conf is up to date
    $ tito release fedora-git-all

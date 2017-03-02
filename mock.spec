@@ -22,7 +22,12 @@ Name: mock
 Version: 1.4.0
 Release: 0%{?dist}
 License: GPLv2+
-Source: https://fedorahosted.org/releases/m/o/mock/%{name}-%{version}.tar.gz
+# Source is created by
+# git clone https://github.com/rpm-software-management/mock.git
+# cd mock
+# git reset --hard %{name}-%{version}
+# tito build --tgz
+Source: %{name}-%{version}.tar.gz
 URL: https://github.com/rpm-software-management/mock/
 BuildArch: noarch
 %if 0%{?fedora}
