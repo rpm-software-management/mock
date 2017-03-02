@@ -19,7 +19,7 @@
 
 Summary: Builds packages inside chroots
 Name: mock
-Version: 1.3.4
+Version: 1.3.5
 Release: 1%{?dist}
 License: GPLv2+
 Source: https://fedorahosted.org/releases/m/o/mock/%{name}-%{version}.tar.gz
@@ -275,6 +275,9 @@ python3-pylint py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 %endif
 
 %changelog
+* Thu Mar 02 2017 Miroslav Suchý <msuchy@redhat.com> 1.3.5-1
+- fix path to "df" [RHBZ#1428301] (msuchy@redhat.com)
+
 * Mon Feb 27 2017 Miroslav Suchý <msuchy@redhat.com> 1.3.4-1
 - add support for dist-git to scm plugin (clime@redhat.com)
 - preserve mode of files when doing chroot_scan [RHBZ#1297430]
