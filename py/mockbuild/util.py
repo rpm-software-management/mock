@@ -576,10 +576,7 @@ def do(command, shell=False, chrootPath=None, cwd=None, timeout=0, raiseExc=True
 
     logger.debug("Child return code was: %s", child.returncode)
     if raiseExc and child.returncode:
-        if returnOutput:
-            raise exception.Error("Command failed: \n # %s\n%s" % (command, output), child.returncode)
-        else:
-            raise exception.Error("Command failed. See logs for output.\n # %s" % (command,), child.returncode)
+        raise exception.Error("Command failed: \n # %s\n%s" % (command, output), child.returncode)
 
     return output
 
