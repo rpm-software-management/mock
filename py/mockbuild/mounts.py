@@ -54,6 +54,7 @@ class FileSystemMountPoint(MountPoint):
         if self.mounted:
             return
 
+        util.mkdirIfAbsent(self.path)
         cmd = ['/bin/mount', '-n', '-t', self.filetype]
         if self.options:
             cmd += ['-o', self.options]
@@ -93,6 +94,7 @@ class BindMountPoint(MountPoint):
     @traceLog()
     def mount(self):
         if not self.mounted:
+            util.mkdirIfAbsent(self.bindpath)
             cmd = ['/bin/mount', '-n', '--bind', self.srcpath, self.bindpath]
             util.do(cmd)
         self.mounted = True

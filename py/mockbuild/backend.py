@@ -148,7 +148,6 @@ class Commands(object):
             if self.bootstrap_buildroot is not None:
                 # add the extra bind mount to the outer chroot
                 inner_mount = self.bootstrap_buildroot.make_chroot_path(self.buildroot.make_chroot_path())
-                util.mkdirIfAbsent(inner_mount)
                 util.mkdirIfAbsent(self.buildroot.make_chroot_path())
                 self.bootstrap_buildroot.mounts.managed_mounts.append(
                     BindMountPoint(self.buildroot.make_chroot_path(), inner_mount))
