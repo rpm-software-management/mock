@@ -24,6 +24,10 @@ class MountPoint(object):
                 return True
         return False
 
+    def __repr__(self):
+        return "<mockbuild.mounts.MountPoint object [mountsource: {0}, mountpath: {1}]>".format(
+            self.mountsource, self.mountpath)
+
 
 class FileSystemMountPoint(MountPoint):
     '''class for managing filesystem mounts in the chroot'''
@@ -71,6 +75,11 @@ class FileSystemMountPoint(MountPoint):
         self.mounted = False
         return True
 
+    def __repr__(self):
+        return ("<mockbuild.mounts.FileSystemMountPoint object [device: {0}, path: {1}, filetype: {2}, options: {3}, "
+                "mounted: {4}]>".format(
+                    self.device, self.path, self.filetype, self.options, self.mounted))
+
 
 class BindMountPoint(MountPoint):
     '''class for managing bind-mounts in the chroot'''
@@ -100,6 +109,9 @@ class BindMountPoint(MountPoint):
         self.mounted = False
         return True
 
+    def __repr__(self):
+        return "<mockbuild.mounts.BindMountPoint object [src: {0}, bindpath: {1}, mounted: {2}]>".format(
+            self.srcpath, self.bindpath, self.mounted)
 
 class Mounts(object):
     '''class to manage all mountpoints'''
@@ -164,3 +176,7 @@ class Mounts(object):
     @traceLog()
     def get_mountpoints(self):
         return [m.mountpath for m in self.managed_mounts + self.user_mounts]
+
+    def __repr__(self):
+        return "<mockbuild.mounts.Mounts object managed: {0}, user: {1}>".format(repr(self.managed_mounts),
+                                                                                 repr(self.user_mounts))
