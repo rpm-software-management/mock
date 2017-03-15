@@ -48,6 +48,13 @@ def doLog(logger, level, *args, **kargs):
             logger.handle(logger.makeRecord(logger.name, level, *args, **kargs))
 
 
+def safe_repr(arg):
+    """ Generaly repr() can fail when called before __init__(), we will workaround this case """
+    try:
+        return repr(arg)
+    except AttributeError:
+        return str(type(arg))
+
 def traceLog(log=None):
     def decorator(func):
         @functools.wraps(func)
@@ -71,11 +78,11 @@ def traceLog(log=None):
                 l2 = logging.getLogger(l2)
 
             message = "ENTER %s("
-            message = message + ', '.join([repr(arg) for arg in args])
+            message = message + ', '.join([safe_repr(arg) for arg in args])
             if args and kw:
                 message += ', '
             for k, v in list(kw.items()):
-                message = message + "%s=%s" % (k, repr(v))
+                message = message + "%s=%s" % (k, safe_repr(v))
             message = message + ")"
 
             frame = inspect.getouterframes(inspect.currentframe())[1][0]
