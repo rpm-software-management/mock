@@ -186,7 +186,7 @@ def _safe_check_output(*args):
     # this can be done in one call in python3, but python2 requires this hack
     try:
         output = subprocess.check_output(*args, shell=False, stderr=subprocess.STDOUT)
-    except subprocess.CalledProcessError, e:
+    except subprocess.CalledProcessError as e:
         output = str(e.output)
     return output
 
