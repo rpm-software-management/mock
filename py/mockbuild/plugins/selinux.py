@@ -59,8 +59,9 @@ class SELinux(object):
         else:
             getLog().warning("selinux: 'yum' does not support '--setopt' option")
 
+    @staticmethod
     @traceLog()
-    def _selinuxCreateFauxFilesystems(self):
+    def _selinuxCreateFauxFilesystems():
         (fd, path) = tempfile.mkstemp(prefix="mock-selinux-plugin.")
         with os.fdopen(fd, 'w') as out:
             with open("/proc/filesystems") as host:
