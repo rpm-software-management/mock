@@ -745,11 +745,11 @@ def run_command(options, args, config_opts, commands, buildroot, state):
     # Fetch and prepare sources from SCM
     if config_opts['scm']:
         try:
-            import mockbuild.scm
+            import mockbuild.scm as scm
         except ImportError as e:
             raise mockbuild.exception.BadCmdline(
                 "Mock SCM module not installed: %s. You should install package mock-scm." % e)
-        scmWorker = mockbuild.scm.scmWorker(log, config_opts['scm_opts'], config_opts['macros'])
+        scmWorker = scm.scmWorker(log, config_opts['scm_opts'], config_opts['macros'])
         with buildroot.uid_manager:
             scmWorker.get_sources()
             (options.sources, options.spec) = scmWorker.prepare_sources()
