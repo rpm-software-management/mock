@@ -133,6 +133,7 @@ def add_local_repo(infile, destfile, baseurl, repoid=None):
        infile = mock chroot config file
        destfile = where to save out the result
        baseurl = baseurl of repo you wish to add"""
+    # pylint: disable=global-variable-not-assigned
     global config_opts
 
     try:
