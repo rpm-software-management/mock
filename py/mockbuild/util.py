@@ -182,6 +182,15 @@ def rmtree(path, selinux=False, exclude=()):
                 raise
 
 
+def _safe_check_output(*args):
+    # this can be done in one call in python3, but python2 requires this hack
+    try:
+        output = subprocess.check_output(*args, shell=False, stderr=subprocess.STDOUT)
+    except subprocess.CalledProcessError, e:
+        output = str(e.output)
+    return output
+
+
 @traceLog()
 def orphansKill(rootToKill, killsig=signal.SIGTERM):
     """kill off anything that is still chrooted."""
@@ -198,8 +207,10 @@ def orphansKill(rootToKill, killsig=signal.SIGTERM):
             except OSError:
                 pass
     else:
+        # we will ignore errors in machinectl, it sometimes fails for various errors (cannot find IP addr...)
+        # we do not care about exit code, we just want the output
         # RHEL7 does not know --no-legend, so we must filter the legend out
-        vm_list = subprocess.check_output(["/usr/bin/machinectl", "list", "--no-pager"])
+        vm_list = _safe_check_output(["/usr/bin/machinectl", "list", "--no-pager"])
         if (isinstance(vm_list, bytes)):
             vm_list = vm_list.decode("utf-8")
         vm_list = '\n'.join(vm_list.split('\n')[1:-2])
@@ -207,7 +218,7 @@ def orphansKill(rootToKill, killsig=signal.SIGTERM):
             if len(name) > 0:
                 m_uuid = name.split()[0]
                 try:
-                    vm_root = subprocess.check_output(["/usr/bin/machinectl", "show", "-pRootDirectory", m_uuid])
+                    vm_root = _safe_check_output(["/usr/bin/machinectl", "show", "-pRootDirectory", m_uuid])
                     if (isinstance(vm_root, bytes)):
                         vm_root = vm_root.decode("utf-8")
                 except subprocess.CalledProcessError:
