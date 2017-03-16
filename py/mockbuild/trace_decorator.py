@@ -55,7 +55,7 @@ def safe_repr(arg):
     except AttributeError:
         return str(type(arg))
 
-def traceLog(log=None):
+def traceLog(logger=None):
     def decorator(func):
         @functools.wraps(func)
         def trace(*args, **kw):
@@ -71,7 +71,7 @@ def traceLog(log=None):
             else:
                 lineno = func.__code__.co_firstlineno
 
-            l2 = kw.get('logger', log)
+            l2 = kw.get('logger', logger)
             if l2 is None:
                 l2 = logging.getLogger("trace.%s" % func.__module__)
             if isinstance(l2, basestring):
