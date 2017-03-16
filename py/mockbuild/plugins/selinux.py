@@ -101,8 +101,9 @@ class SELinux(object):
 
         return self._originalUtilDo(command, *args, **kargs)
 
+    @staticmethod
     @traceLog()
-    def _selinuxYumIsSetoptSupported(self):
+    def _selinuxYumIsSetoptSupported():
         try:
             # ugly hack: discover, whether yum supports --setopt option
             # pylint: disable=import-error
