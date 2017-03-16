@@ -100,7 +100,7 @@ class scmWorker(object):
         for command in self.postget:
             try:
                 util.do(shlex.split(command), shell=False, cwd=self.src_dir, env=os.environ)
-            except PermissionError as e:
+            except PermissionError:
                 self.log.error("{} does not exist or cannot be executed due permissions."
                                .format(shlex.split(command)[0]))
                 sys.exit(5)
