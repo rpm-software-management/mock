@@ -92,7 +92,7 @@ class scmWorker(object):
         self.log.debug("SCM checkout directory: %s", self.wrk_dir)
         try:
             util.do(shlex.split(self.get), shell=False, cwd=self.wrk_dir, env=os.environ)
-        except PermissionError as e:
+        except PermissionError:
             self.log.error("{} does not exist or cannot be executed due permissions."
                            .format(shlex.split(self.get)[0]))
             sys.exit(5)
