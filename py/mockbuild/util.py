@@ -508,7 +508,7 @@ def resize_pty(pty):
 # pylint: disable=unused-argument
 def do(command, shell=False, chrootPath=None, cwd=None, timeout=0, raiseExc=True,
        returnOutput=0, uid=None, gid=None, user=None, personality=None,
-       printOutput=False, env=None, pty=False, nspawn_args=[],
+       printOutput=False, env=None, pty=False, nspawn_args=None,
        *args, **kargs):
 
     logger = kargs.get("logger", getLog())
@@ -632,8 +632,10 @@ def is_in_dir(path, directory):
     return os.path.commonprefix([path, directory]) == directory
 
 
-def _prepare_nspawn_command(chrootPath, user, cmd, nspawn_args=[], env=None, cwd=None):
+def _prepare_nspawn_command(chrootPath, user, cmd, nspawn_args=None, env=None, cwd=None):
     cmd_is_list = isinstance(cmd, list)
+    if nspawn_args is None:
+        nspawn_args = []
     if user:
         # user can be either id or name
         if cmd_is_list:
@@ -664,7 +666,7 @@ def _prepare_nspawn_command(chrootPath, user, cmd, nspawn_args=[], env=None, cwd
 
 
 def doshell(chrootPath=None, environ=None, uid=None, gid=None, cmd=None,
-            nspawn_args=[],
+            nspawn_args=None,
             unshare_ipc=True):
     log = getLog()
     log.debug("doshell: chrootPath:%s, uid:%d, gid:%d", chrootPath, uid, gid)
