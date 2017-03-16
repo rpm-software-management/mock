@@ -241,6 +241,7 @@ class Buildroot(object):
         if cmd:
             if isinstance(cmd, util.basestring):
                 cmd = cmd.split()
+            # pylint: disable=attribute-defined-outside-init
             self.init_install_output = self.pkg_manager.execute(*cmd, returnOutput=1)
 
         if 'chroot_additional_packages' in self.config and self.config['chroot_additional_packages']:
