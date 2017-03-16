@@ -1110,6 +1110,7 @@ def include(config_file, config_opts, is_statement=False):
             content = f.read()
             content = re.sub(r'include\((.*)\)', r'include(\g<1>, config_opts, True)', content)
             code = compile(content, config_file, 'exec')
+        # pylint: disable=exec-used
         exec(code)
     else:
         raise exception.ConfigError("Could not find included config file: %s" % config_file)
