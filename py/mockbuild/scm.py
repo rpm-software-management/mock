@@ -102,7 +102,7 @@ class scmWorker(object):
                 util.do(shlex.split(command), shell=False, cwd=self.src_dir, env=os.environ)
             except PermissionError as e:
                 self.log.error("{} does not exist or cannot be executed due permissions."
-                               .format(shlex.split(command)[0]));
+                               .format(shlex.split(command)[0]))
                 sys.exit(5)
 
         self.log.debug("Fetched sources from SCM")
