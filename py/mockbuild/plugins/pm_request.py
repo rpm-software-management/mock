@@ -30,7 +30,8 @@ def init(plugins, conf, buildroot):
 
 
 class OutputFilter(object):
-    def filter(self, record):
+    @staticmethod
+    def filter(record):
         return record.levelno == logging.DEBUG
 
 
