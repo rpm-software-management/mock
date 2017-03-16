@@ -94,7 +94,7 @@ class scmWorker(object):
             util.do(shlex.split(self.get), shell=False, cwd=self.wrk_dir, env=os.environ)
         except PermissionError as e:
             self.log.error("{} does not exist or cannot be executed due permissions."
-                           .format(shlex.split(self.get)[0]));
+                           .format(shlex.split(self.get)[0]))
             sys.exit(5)
 
         for command in self.postget:
