@@ -10,7 +10,7 @@ This is area for developers. You may be looking for [user documentation](https:/
 
 ## Sources
 
-Mock source tarballs: https://fedorahosted.org/releases/m/o/mock/
+Mock source tarballs: https://github.com/rpm-software-management/mock/releases
 
 ## Mock Branches
 
