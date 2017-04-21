@@ -2,6 +2,9 @@
 # vim:expandtab:autoindent:tabstop=4:shiftwidth=4:filetype=python:textwidth=0:
 # License: GPL2 or later see COPYING
 
+# python library imports
+import codecs
+
 # our imports
 from mockbuild.trace_decorator import getLog, traceLog
 import mockbuild.util
@@ -32,7 +35,7 @@ class HwInfo(object):
     def _PreInitHook(self):
         getLog().info("enabled HW Info plugin")
         out_file = self.buildroot.resultdir + '/hw_info.log'
-        out = open(out_file, 'w')
+        out = codecs.open(out_file, 'w', 'utf-8', 'replace')
 
         cmd = ["/usr/bin/lscpu"]
         output = mockbuild.util.do(cmd, shell=False, returnOutput=True, raiseExc=False)
