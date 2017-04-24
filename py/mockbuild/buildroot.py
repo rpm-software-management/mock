@@ -515,7 +515,8 @@ class Buildroot(object):
         # but it will load nosync from the final chroot
         if self.bootstrap_buildroot is not None:
             self.tmpdir = self.bootstrap_buildroot.tmpdir
-            os.mkdir(self.tmpdir, 0o700)
+            if not os.path.isdir(self.tmpdir):
+                os.mkdir(self.tmpdir, 0o700)
         else:
             self.tmpdir = tempfile.mkdtemp(prefix="tmp.mock.")
         os.chmod(self.tmpdir, 0o777)
