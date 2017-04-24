@@ -118,6 +118,7 @@ class Buildroot(object):
         os.chmod(self.basedir, 0o2775)
         util.mkdirIfAbsent(self.make_chroot_path())
         self.plugins.call_hooks('mount_root')
+        self._setup_nosync()
         self.chroot_was_initialized = self.chroot_is_initialized()
         self._setup_result_dir()
         getLog().info("calling preinit hooks")
@@ -130,7 +131,6 @@ class Buildroot(object):
         if not util.USE_NSPAWN:
             self._setup_devices()
         self._setup_files()
-        self._setup_nosync()
         self.mounts.mountall_managed()
 
         # write out config details
@@ -511,7 +511,13 @@ class Buildroot(object):
     @traceLog()
     def _setup_nosync(self):
         multilib = ('x86_64', 's390x')
-        self.tmpdir = tempfile.mkdtemp(prefix="tmp.mock.")
+        # ld_preload need to be same as in bootstrap because we call DNF in bootstrap, but
+        # but it will load nosync from the final chroot
+        if self.bootstrap_buildroot is not None:
+            self.tmpdir = self.bootstrap_buildroot.tmpdir
+            os.mkdir(self.tmpdir, 0o700)
+        else:
+            self.tmpdir = tempfile.mkdtemp(prefix="tmp.mock.")
         os.chmod(self.tmpdir, 0o777)
         tmp_libdir = os.path.join(self.tmpdir, '$LIB')
         mock_libdir = self.make_chroot_path(tmp_libdir)
