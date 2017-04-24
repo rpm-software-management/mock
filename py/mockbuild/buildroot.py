@@ -518,7 +518,7 @@ class Buildroot(object):
             if not os.path.isdir(self.tmpdir):
                 os.mkdir(self.tmpdir, 0o700)
         else:
-            self.tmpdir = tempfile.mkdtemp(prefix="tmp.mock.")
+            self.tmpdir = tempfile.mkdtemp(prefix="tmp.mock.", dir='/var/tmp')
         os.chmod(self.tmpdir, 0o777)
         tmp_libdir = os.path.join(self.tmpdir, '$LIB')
         mock_libdir = self.make_chroot_path(tmp_libdir)
