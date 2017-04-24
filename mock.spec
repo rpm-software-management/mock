@@ -237,7 +237,7 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 %config(noreplace) %{_sysconfdir}/pam.d/%{name}
 %config(noreplace) %{_sysconfdir}/security/console.apps/%{name}
 
-# gpg keys
+# directory for personal gpg keys
 %dir %{_sysconfdir}/pki/mock
 %config(noreplace) %{_sysconfdir}/pki/mock/*
 
