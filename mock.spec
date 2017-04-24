@@ -215,7 +215,7 @@ fi
 
 %check
 # ignore the errors for now, just print them and hopefully somebody will fix it one day
-python3-pylint py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
+pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 
 %files -f %{name}.cfgs
 %defattr(-, root, root)
