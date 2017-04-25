@@ -460,7 +460,7 @@ class Commands(object):
                        'install': '-bi',
                        'build': '-bc',
                        'binary': '-bb'}[sc]
-            mode += [' --short-circuit']
+            mode += ['--short-circuit']
         additional_opts = [self.config.get('rpmbuild_opts', '')]
         if additional_opts == ['']:
             additional_opts = []
