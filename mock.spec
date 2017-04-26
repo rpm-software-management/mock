@@ -19,8 +19,8 @@
 
 Summary: Builds packages inside chroots
 Name: mock
-Version: 1.4.0
-Release: 0%{?dist}
+Version: 1.4.1
+Release: 1%{?dist}
 License: GPLv2+
 # Source is created by
 # git clone https://github.com/rpm-software-management/mock.git
@@ -263,6 +263,59 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 %endif
 
 %changelog
+* Wed Apr 26 2017 Miroslav Suchý <msuchy@redhat.com> 1.4.1-1
+- remove leading space [RHBZ#1442005]
+- copy nosync libraries to /var/tmp
+- use tmpdir same as in in bootstrap chroot (Issue#59)
+- do not ship distribution gpg keys
+- pylint has been renamed
+- Fix "init_install_output" error (marc.c.dionne@gmail.com)
+- Epel5 has been EOLed (Issue#66) 
+- hw_info: Protect log output against non-ASCII, closes #68
+  (ville.skytta@iki.fi)
+- secondary arch config cleanups (dennis@ausil.us)
+- Point more links to github (ville.skytta@iki.fi)
+- ignore exit codes from machinectl 
+- create bind mount paths just before mounting (#57) 
+- always print output of error in exception 
+- fix syntax in docs-examples (gitDeveloper@bitthinker.com)
+- do not refer to fedorahosted.org in Source0 
+- Missed an instance of outer_buildroot (michael@cullen-online.com)
+- Fixed up more PR comments, mostly being more consistent with naming
+  (michael@cullen-online.com)
+- Fixed pylint errors introduced by previous commit and other review comments
+  (michael@cullen-online.com)
+- Added command line options for overriding default bootstrap setting
+  (michael@cullen-online.com)
+- Bootstrap package manager using outer chroot (michael@cullen-online.com)
+- Add %%distro_section macro to Mageia targets (ngompa13@gmail.com)
+- test: ask for sudo password, so later we do not need to wait for password
+- we cannot use /tmp for testing as that is automatically mounted as tmpfs by
+  systemd-nspawn 
+- add /dev/prandom device to chroot (#33) 
+- add /dev/hwrng device to chroot (#33) 
+- enable package_state plugin by default again [RHBZ#1277187]
+  (gitDeveloper@bitthinker.com)
+- Use python errno module instead of hardcoding errno values.
+  (marcus.sundberg@aptilo.com)
+- UidManager.changeOwner: Use _tolerant_chown for top level as well
+  (marcus.sundberg@aptilo.com)
+- Buildroot: Ensure homedir and build dirs always have correct owner
+  (marcus.sundberg@aptilo.com)
+- UidManager: Use os.lchown instead of os.chown
+  (marcus.sundberg@aptilo.com)
+- Buildroot._init: Ensure chrootuser always has correct UID
+  (marcus.sundberg@aptilo.com)
+- Buildroot._init: Ensure homedir is owned by correct user.
+  (marcus.sundberg@aptilo.com)
+- change_home_dir: Actually set ownership of homedir
+  (marcus.sundberg@aptilo.com)
+- fix permissions in chroot_scan's result dir, so user can delete it
+  (gitDeveloper@bitthinker.com)
+- spec: simplify condition 
+- remove el6 references from spec file 
+- use systemd-nspawn by default
+
 * Mon Feb 27 2017 Miroslav Suchý <msuchy@redhat.com> 1.3.4-1
 - add support for dist-git to scm plugin (clime@redhat.com)
 - preserve mode of files when doing chroot_scan [RHBZ#1297430]
