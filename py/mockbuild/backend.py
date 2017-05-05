@@ -91,6 +91,8 @@ class Commands(object):
                 for scrub in scrub_opts:
                     # FIXME hooks for all plugins
                     self.plugins.call_hooks('scrub', scrub)
+                    if self.bootstrap_buildroot is not None:
+                        self.bootstrap_buildroot.plugins.call_hooks('scrub', scrub)
                     if scrub == 'all':
                         self.buildroot.root_log.info("scrubbing everything for %s", self.config_name)
                         self.buildroot.delete()
