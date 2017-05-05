@@ -118,11 +118,13 @@ class Buildroot(object):
         os.chmod(self.basedir, 0o2775)
         util.mkdirIfAbsent(self.make_chroot_path())
         self.plugins.call_hooks('mount_root')
+        # intentionally we do not call bootstrap hook here - it does not have sense
         self._setup_nosync()
         self.chroot_was_initialized = self.chroot_is_initialized()
         self._setup_result_dir()
         getLog().info("calling preinit hooks")
         self.plugins.call_hooks('preinit')
+        # intentionally we do not call bootstrap hook here - it does not have sense
         self.chroot_was_initialized = self.chroot_is_initialized()
 
         self._setup_dirs()
@@ -175,6 +177,7 @@ class Buildroot(object):
 
         # done with init
         self.plugins.call_hooks('postinit')
+        # intentionally we do not call bootstrap hook here - it does not have sense
 
         self.mounts.mountall_user()
 
@@ -568,6 +571,7 @@ class Buildroot(object):
                 util.orphansKill(self.make_chroot_path())
                 self.mounts.umountall()
                 self.plugins.call_hooks('postumount')
+                # intentionally we do not call bootstrap hook here - it does not have sense
             except BuildRootLocked:
                 pass
             finally:
@@ -584,6 +588,7 @@ class Buildroot(object):
             util.orphansKill(p)
             self.mounts.umountall()
             self.plugins.call_hooks('umount_root')
+            # intentionally we do not call bootstrap hook here - it does not have sense
             self._unlock_buildroot()
             subv = util.find_btrfs_in_chroot(self.mockdir, p)
             if subv:
@@ -591,3 +596,4 @@ class Buildroot(object):
             util.rmtree(self.basedir, selinux=self.selinux)
         self.chroot_was_initialized = False
         self.plugins.call_hooks('postclean')
+        # intentionally we do not call bootstrap hook here - it does not have sense

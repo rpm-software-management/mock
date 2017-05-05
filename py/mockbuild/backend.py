@@ -88,8 +88,9 @@ class Commands(object):
         try:
             try:
                 self.plugins.call_hooks('clean')
+                if self.bootstrap_buildroot is not None:
+                    self.bootstrap_buildroot.plugins.call_hooks('clean')
                 for scrub in scrub_opts:
-                    # FIXME hooks for all plugins
                     self.plugins.call_hooks('scrub', scrub)
                     if self.bootstrap_buildroot is not None:
                         self.bootstrap_buildroot.plugins.call_hooks('scrub', scrub)
@@ -159,6 +160,7 @@ class Commands(object):
                 self._show_installed_packages()
         except (KeyboardInterrupt, Exception):
             self.plugins.call_hooks('initfailed')
+            # intentionally we do not call bootstrap hook here - it does not have sense
             raise
 
     @traceLog()
@@ -222,6 +224,7 @@ class Commands(object):
 
         # tell caching we are building
         self.plugins.call_hooks('earlyprebuild')
+        # intentionally we do not call bootstrap hook here - it does not have sense
 
         baserpm = os.path.basename(srpm)
 
@@ -254,6 +257,7 @@ class Commands(object):
 
             # tell caching we are building
             self.plugins.call_hooks('prebuild')
+            # intentionally we do not call bootstrap hook here - it does not have sense
 
             results = self.rebuild_package(spec_path, timeout, check)
             # In the nspawn case, we retained root until here, but we
@@ -279,6 +283,8 @@ class Commands(object):
                 self.state.result = 'fail'
             # tell caching we are done building
             self.plugins.call_hooks('postbuild')
+            # intentionally we do not call bootstrap hook here - it does not have sense
+
         self.state.finish(buildstate)
 
     @traceLog()
@@ -286,6 +292,7 @@ class Commands(object):
         log = getLog()
         log.debug("shell: calling preshell hooks")
         self.plugins.call_hooks("preshell")
+        # intentionally we do not call bootstrap hook here - it does not have sense
         if options.unpriv or self.no_root_shells:
             uid = self.buildroot.chrootuid
             gid = self.buildroot.chrootgid
@@ -305,6 +312,7 @@ class Commands(object):
 
         log.debug("shell: calling postshell hooks")
         self.plugins.call_hooks('postshell')
+        # intentionally we do not call bootstrap hook here - it does not have sense
         return ret
 
     @traceLog()
@@ -316,6 +324,7 @@ class Commands(object):
             shell = True
         log.info("Running in chroot: %s", args)
         self.plugins.call_hooks("prechroot")
+        # intentionally we do not call bootstrap hook here - it does not have sense
         chrootstate = "chroot %s" % args
         self.state.start(chrootstate)
         try:
@@ -331,6 +340,7 @@ class Commands(object):
         finally:
             self.state.finish(chrootstate)
         self.plugins.call_hooks("postchroot")
+        # intentionally we do not call bootstrap hook here - it does not have sense
 
     #
     # UNPRIVILEGED:
@@ -343,6 +353,7 @@ class Commands(object):
 
         # tell caching we are building
         self.plugins.call_hooks('earlyprebuild')
+        # intentionally we do not call bootstrap hook here - it does not have sense
 
         try:
             self.uid_manager.becomeUser(self.buildroot.chrootuid, self.buildroot.chrootgid)
@@ -384,6 +395,7 @@ class Commands(object):
 
             # tell caching we are done building
             self.plugins.call_hooks('postbuild')
+            # intentionally we do not call bootstrap hook here - it does not have sense
             self.state.finish("buildsrpm")
 
     #

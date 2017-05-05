@@ -97,6 +97,7 @@ class _PackageManager(object):
     @traceLog()
     def execute(self, *args, **kwargs):
         self.plugins.call_hooks("preyum")
+        # intentionally we do not call bootstrap hook here - it does not have sense
         env = self.config['environment'].copy()
         env.update(util.get_proxy_environment(self.config))
         env['LC_MESSAGES'] = 'C'
@@ -118,6 +119,7 @@ class _PackageManager(object):
         except Error as e:
             raise YumError(str(e))
         self.plugins.call_hooks("postyum")
+        # intentionally we do not call bootstrap hook here - it does not have sense
         return out
 
     @traceLog()

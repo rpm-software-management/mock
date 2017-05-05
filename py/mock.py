@@ -709,6 +709,8 @@ def main():
 
     if options.list_snapshots:
         plugins.call_hooks('list_snapshots', required=True)
+        if bootstrap_buildroot is not None:
+            bootstrap_buildroot.plugins.call_hooks('list_snapshots', required=True)
         sys.exit(0)
 
     # dump configuration to log
@@ -887,20 +889,30 @@ def run_command(options, args, config_opts, commands, buildroot, state):
             log.critical("Requires a snapshot name")
             sys.exit(50)
         buildroot.plugins.call_hooks('make_snapshot', args[0], required=True)
+        if buildroot.bootstrap_buildroot is not None:
+            buildroot.bootstrap_buildroot.plugins.call_hooks('make_snapshot', args[0], required=True)
     elif options.mode == 'rollback-to':
         if len(args) < 1:
             log.critical("Requires a snapshot name")
             sys.exit(50)
         buildroot.plugins.call_hooks('rollback_to', args[0], required=True)
+        if buildroot.bootstrap_buildroot is not None:
+            buildroot.bootstrap_buildroot.plugins.call_hooks('rollback_to', args[0], required=True)
     elif options.mode == 'remove_snapshot':
         if len(args) < 1:
             log.critical("Requires a snapshot name")
             sys.exit(50)
         buildroot.plugins.call_hooks('remove_snapshot', args[0], required=True)
+        if buildroot.bootstrap_buildroot is not None:
+            buildroot.bootstrap_buildroot.plugins.call_hooks('remove_snapshot', args[0], required=True)
     elif options.mode == 'umount':
         buildroot.plugins.call_hooks('umount_root')
+        if buildroot.bootstrap_buildroot is not None:
+            buildroot.bootstrap_buildroot.plugins.call_hooks('umount_root')
     elif options.mode == 'mount':
         buildroot.plugins.call_hooks('mount_root')
+        if buildroot.bootstrap_buildroot is not None:
+            buildroot.bootstrap_buildroot.plugins.call_hooks('mount_root')
 
     buildroot.nuke_rpm_db()
     state.finish("run")
