@@ -50,7 +50,6 @@ Requires(post): system-release
 %if 0%{?rhel} == 7
 Requires(post): /etc/os-release
 %endif
-BuildRequires: autoconf, automake
 BuildRequires: bash-completion
 %if %{use_python3}
 Requires: python3
