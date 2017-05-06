@@ -30,15 +30,9 @@ License: GPLv2+
 Source: %{name}-%{version}.tar.gz
 URL: https://github.com/rpm-software-management/mock/
 BuildArch: noarch
-%if 0%{?fedora}
-Requires: yum >= 3.4.3-505
-%else
-Requires: yum >= 2.4
-%endif
 Requires: tar
 Requires: pigz
 Requires: usermode
-Requires: yum-utils
 Requires: createrepo_c
 Requires: distribution-gpg-keys >= 1.9
 %if 0%{?use_python2}
@@ -77,12 +71,15 @@ Requires: rpm-python
 %endif
 BuildRequires: python-devel
 %if 0%{?fedora}
-Recommends: dnf
+Requires: dnf
+Suggests: yum
 Recommends: dnf-plugins-core
 Recommends: btrfs-progs
 %endif
 %if 0%{?rhel} == 7
 Requires: btrfs-progs
+Requires: yum >= 2.4
+Requires: yum-utils
 %endif
 BuildRequires: perl
 
