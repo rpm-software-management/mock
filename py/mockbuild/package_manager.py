@@ -190,13 +190,20 @@ class Yum(_PackageManager):
         self.builddep_command = [config['yum_builddep_command']]
         self._check_command()
         yum_deprecated_path = '/usr/bin/yum-deprecated'
+        yum_builddep_deprecated_path = '/usr/bin/yum-builddep-deprecated'
         if bootstrap_buildroot is not None:
             yum_deprecated_path = bootstrap_buildroot.make_chroot_path(yum_deprecated_path)
+            yum_builddep_deprecated_path = bootstrap_buildroot.make_chroot_path(yum_builddep_deprecated_path)
         if os.path.exists(yum_deprecated_path):
+            yum_repoquery_command = '/usr/bin/repoquery'
+            if os.path.exists(yum_repoquery_command + '-deprecated'):
+                yum_repoquery_command = yum_repoquery_command + '-deprecated'
             self.command = '/usr/bin/yum-deprecated'
             self.resolvedep_command = [
-                'repoquery', '--resolve', '--requires',
+                yum_repoquery_command, '--resolve', '--requires',
                 '--config', self.buildroot.make_chroot_path('etc', 'yum', 'yum.conf')]
+        if os.path.exists(yum_builddep_deprecated_path):
+            self.builddep_command = ['/usr/bin/yum-builddep-deprecated']
 
     @traceLog()
     def _write_plugin_conf(self, name):
@@ -273,7 +280,7 @@ class Dnf(_PackageManager):
         self.install_command = config['dnf_install_command']
         self.builddep_command = [self.command, 'builddep']
         self._check_command()
-        self.resolvedep_command = ['repoquery', '--resolve', '--requires']
+        self.resolvedep_command = [self.command, 'repoquery', '--resolve', '--requires']
 
     @traceLog()
     def build_invocation(self, *args):
