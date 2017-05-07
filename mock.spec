@@ -72,7 +72,7 @@ BuildRequires: python-devel
 %if 0%{?fedora}
 Requires: dnf
 Suggests: yum
-Recommends: dnf-plugins-core
+Requires: dnf-plugins-core
 Recommends: btrfs-progs
 %endif
 %if 0%{?rhel} == 7
