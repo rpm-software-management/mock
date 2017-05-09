@@ -189,21 +189,27 @@ class Yum(_PackageManager):
         self.install_command = config['yum_install_command']
         self.builddep_command = [config['yum_builddep_command']]
         self._check_command()
-        yum_deprecated_path = '/usr/bin/yum-deprecated'
-        yum_builddep_deprecated_path = '/usr/bin/yum-builddep-deprecated'
         if bootstrap_buildroot is not None:
+            # we are in bootstrap so use old names
+            self.command = '/usr/bin/yum'
+            yum_deprecated_path = '/usr/bin/yum'
+            yum_builddep_deprecated_path = '/usr/bin/yum-builddep'
             yum_deprecated_path = bootstrap_buildroot.make_chroot_path(yum_deprecated_path)
             yum_builddep_deprecated_path = bootstrap_buildroot.make_chroot_path(yum_builddep_deprecated_path)
-        if os.path.exists(yum_deprecated_path):
-            yum_repoquery_command = '/usr/bin/repoquery'
-            if os.path.exists(yum_repoquery_command + '-deprecated'):
-                yum_repoquery_command = yum_repoquery_command + '-deprecated'
-            self.command = '/usr/bin/yum-deprecated'
-            self.resolvedep_command = [
-                yum_repoquery_command, '--resolve', '--requires',
-                '--config', self.buildroot.make_chroot_path('etc', 'yum', 'yum.conf')]
-        if os.path.exists(yum_builddep_deprecated_path):
-            self.builddep_command = ['/usr/bin/yum-builddep-deprecated']
+        else:
+            # we are building bootstrap or do not use bootstrap at all
+            yum_deprecated_path = '/usr/bin/yum-deprecated'
+            yum_builddep_deprecated_path = '/usr/bin/yum-builddep-deprecated'
+            if os.path.exists(yum_deprecated_path):
+                yum_repoquery_command = '/usr/bin/repoquery'
+                if os.path.exists(yum_repoquery_command + '-deprecated'):
+                    yum_repoquery_command = yum_repoquery_command + '-deprecated'
+                self.command = '/usr/bin/yum-deprecated'
+                self.resolvedep_command = [
+                    yum_repoquery_command, '--resolve', '--requires',
+                    '--config', self.buildroot.make_chroot_path('etc', 'yum', 'yum.conf')]
+            if os.path.exists(yum_builddep_deprecated_path):
+                self.builddep_command = ['/usr/bin/yum-builddep-deprecated']
 
     @traceLog()
     def _write_plugin_conf(self, name):
