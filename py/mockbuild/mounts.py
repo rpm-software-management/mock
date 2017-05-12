@@ -32,7 +32,7 @@ class MountPoint(object):
 class FileSystemMountPoint(MountPoint):
     '''class for managing filesystem mounts in the chroot'''
     @traceLog()
-    def __init__(self, path, filetype=None, device=None, options=None):
+    def __init__(self, path, filetype=None, device=None, options=None, keep_mounted=False):
         if not path:
             raise RuntimeError("no path specified for mountpoint")
         if not filetype:
@@ -48,6 +48,7 @@ class FileSystemMountPoint(MountPoint):
         self.filetype = filetype
         self.options = options
         self.mounted = self.ismounted()
+        self.keep_mounted = keep_mounted
 
     @traceLog()
     def mount(self):
@@ -67,6 +68,8 @@ class FileSystemMountPoint(MountPoint):
     # pylint: disable=unused-argument
     def umount(self, force=False, nowarn=False):
         if not self.mounted:
+            return
+        if self.keep_mounted and not force:
             return
         cmd = ['/bin/umount', '-n', '-l', self.path]
         try:
