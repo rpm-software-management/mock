@@ -23,12 +23,13 @@ from .trace_decorator import getLog, traceLog
 
 class Buildroot(object):
     @traceLog()
-    def __init__(self, config, uid_manager, state, plugins, bootstrap_buildroot=None):
+    def __init__(self, config, uid_manager, state, plugins, bootstrap_buildroot=None, is_bootstrap=False):
         self.config = config
         self.uid_manager = uid_manager
         self.state = state
         self.plugins = plugins
         self.bootstrap_buildroot = bootstrap_buildroot
+        self.is_bootstrap = is_bootstrap
         self.shared_root_name = config['root']
         if 'unique-ext' in config:
             config['root'] = "%s-%s" % (config['root'], config['unique-ext'])

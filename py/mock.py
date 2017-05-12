@@ -693,7 +693,8 @@ def main():
         bootstrap_buildroot_config['dnf_command'] = bootstrap_buildroot_config['system_dnf_command']
 
         bootstrap_buildroot = Buildroot(bootstrap_buildroot_config,
-                                        uidManager, bootstrap_buildroot_state, bootstrap_plugins)
+                                        uidManager, bootstrap_buildroot_state, bootstrap_plugins,
+                                        is_bootstrap=True)
         # this bit of config is needed after we have created the bootstrap buildroot since we need to
         # query pkg_manager to know which manager is in use
         bootstrap_buildroot_config['chroot_setup_cmd'] = bootstrap_buildroot.pkg_manager.install_command
