@@ -417,13 +417,10 @@ class Commands(object):
 
     @traceLog()
     def rebuild_installed_srpm(self, spec_path, timeout):
-        if not util.USE_NSPAWN:
-            command = ['{command} -bs --target {0} --nodeps {1}'.format(
-                self.rpmbuild_arch, spec_path,
-                command=self.config['rpmbuild_command'])]
-            command = ["bash", "--login", "-c"] + command
-        else:
-            command = [self.config['rpmbuild_command'], '-bs', '--target', self.rpmbuild_arch, '--nodeps', spec_path]
+        command = ['{command} -bs --target {0} --nodeps {1}'.format(
+            self.rpmbuild_arch, spec_path,
+            command=self.config['rpmbuild_command'])]
+        command = ["bash", "--login", "-c"] + command
         self.buildroot.doChroot(
             command,
             shell=False, logger=self.buildroot.build_log, timeout=timeout,
@@ -468,9 +465,8 @@ class Commands(object):
                   ['--target', self.rpmbuild_arch, '--nodeps'] + \
                   check_opt + [spec_path] + additional_opts
         nspawn_args = []
-        if not util.USE_NSPAWN:
-            command = ["bash", "--login", "-c"] + [' '.join(command)]
-        else:
+        command = ["bash", "--login", "-c"] + [' '.join(command)]
+        if util.USE_NSPAWN:
             if not self.config['rpmbuild_networking']:
                 nspawn_args.append('--private-network')
             nspawn_args.extend(self.config['nspawn_args'])
