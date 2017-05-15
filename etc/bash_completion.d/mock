@@ -38,6 +38,7 @@ _mock()
         -l|--list-snapshots|--rollback-to|--remove-snapshot|--umount|--yum|\
         --dnf|--pm-cmd|--yum-cmd|--dnf-cmd|--enablerepo|--disablerepo|\
         --rpmbuild-opts|--new-chroot|--old-chroot|--print-root-path|--trace|\
+        --bootstrap-chroot|--no-bootstrap-chroot|\
         --mount|--nocheck|--symlink-dereference|--postinstall)
             return 0
             ;;
@@ -109,6 +110,7 @@ _mock()
             --yum-cmd --dnf-cmd --enablerepo --disablerepo --short-circuit
             --rpmbuild-opts --snapshot --list-snapshots --remove-snapshot
             --rollback-to --umount --mount --old-chroot --new-chroot
+            --bootstrap-chroot --no-bootstrap-chroot
             --symlink-dereference --postinstall" -- "$cur" ) )
         return 0
     fi
