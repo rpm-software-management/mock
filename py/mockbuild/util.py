@@ -758,7 +758,7 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
     config_opts['rpmbuild_networking'] = False
     config_opts['nspawn_args'] = []
     config_opts['use_container_host_hostname'] = True
-    config_opts['use_bootstrap_container'] = True
+    config_opts['use_bootstrap_container'] = False
 
     config_opts['internal_dev_setup'] = True
     config_opts['internal_setarch'] = True
