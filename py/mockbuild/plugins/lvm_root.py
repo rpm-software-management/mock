@@ -217,6 +217,7 @@ class LvmPlugin(object):
         """ Returns percent of allocated space in thin pool """
         pool_id = self.vg_name + '/' + self.pool_name
         output = lvm_do(['lvdisplay', pool_id])
+        # pylint: disable=no-member
         compiled_re = re.compile(r'.*Allocated pool data\s*([0-9.]*)%$.*', re.DOTALL | re.MULTILINE)
         r_match = compiled_re.match(output)
         if r_match:
