@@ -915,6 +915,8 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
         '%_rpmfilename': '%%{NAME}-%%{VERSION}-%%{RELEASE}.%%{ARCH}.rpm',
     }
     config_opts['hostname'] = None
+    config_opts['module_enable'] = []
+    config_opts['module_install'] = []
 
     # security config
     config_opts['no_root_shells'] = False

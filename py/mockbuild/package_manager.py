@@ -81,7 +81,7 @@ class _PackageManager(object):
             invocation = [self.command]
             common_opts = self.config[self.name + '_common_opts']
         invocation += ['--installroot', self.buildroot.make_chroot_path('')]
-        if cmd == 'upgrade' or cmd == 'update':
+        if cmd in ['upgrade', 'update', 'module']:
             invocation += ['-y']
         releasever = self.config['releasever']
         if releasever:
