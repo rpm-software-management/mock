@@ -100,6 +100,7 @@ def repo_callback(optobj, opt, value, parser):
     Combines the values given for these options while preserving order
     from command line.
     '''
+    # pylint: disable=eval-used
     dest = eval('parser.values.%s' % optobj.dest)
     dest.extend((opt, value))
 
