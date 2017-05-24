@@ -100,7 +100,7 @@ class _PackageManager(object):
         # intentionally we do not call bootstrap hook here - it does not have sense
         env = self.config['environment'].copy()
         env.update(util.get_proxy_environment(self.config))
-        env['LC_MESSAGES'] = 'C'
+        env['LC_MESSAGES'] = 'C.UTF-8'
         if self.buildroot.nosync_path:
             env['LD_PRELOAD'] = self.buildroot.nosync_path
         invocation = self.build_invocation(*args)

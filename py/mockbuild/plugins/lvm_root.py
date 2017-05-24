@@ -16,7 +16,7 @@ requires_api_version = "1.1"
 
 def lvm_do(*args, **kwargs):
     env = os.environ.copy()
-    env['LC_ALL'] = 'C'
+    env['LC_ALL'] = 'C.UTF-8'
     output = util.do(*args, returnOutput=True, env=env, **kwargs)
     return output
 
