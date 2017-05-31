@@ -672,7 +672,7 @@ def main():
     log.info("mock.py version %s starting (python version = %s)...",
              __VERSION__, py_version)
     state = State()
-    bootstrap_buildroot_state = State()
+    bootstrap_buildroot_state = State(bootstrap=True)
     plugins = Plugins(config_opts, state)
     bootstrap_plugins = Plugins(config_opts, state)
 
