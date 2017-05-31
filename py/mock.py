@@ -674,7 +674,7 @@ def main():
     state = State()
     bootstrap_buildroot_state = State(bootstrap=True)
     plugins = Plugins(config_opts, state)
-    bootstrap_plugins = Plugins(config_opts, state)
+    bootstrap_plugins = Plugins(config_opts, bootstrap_buildroot_state)
 
     # outer buildroot to bootstrap the installation - based on main config with some differences
     bootstrap_buildroot = None
