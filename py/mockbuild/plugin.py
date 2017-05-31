@@ -22,6 +22,10 @@ class Plugins(object):
         self.plugin_conf = config['plugin_conf']
         self.plugin_dir = config['plugin_dir']
 
+    def __repr__(self):
+        return "<mockbuild.plugin.Plugins: state={0}, _hooks={1}, already_initialized={2}".format(
+            self.state, self._hooks, self.already_initialized)
+
     @traceLog()
     def init_plugins(self, buildroot):
         if self.already_initialized:
