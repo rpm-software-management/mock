@@ -258,6 +258,7 @@ class LvmPlugin(object):
         if not self.mount:
             self.prepare_mount()
         if self.mount:
+            self.buildroot.mounts.umountall()
             self.mount.umount()
 
     def create_head(self, snapshot_name):
