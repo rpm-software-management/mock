@@ -105,12 +105,13 @@ class BindMountPoint(MountPoint):
 
     @traceLog()
     def umount(self):
-        if self.mounted:
-            cmd = ['/bin/umount', '-n', self.bindpath]
-            try:
-                util.do(cmd)
-            except exception.Error:
-                return False
+        if not self.mounted:
+            return
+        cmd = ['/bin/umount', '-n', self.bindpath]
+        try:
+            util.do(cmd)
+        except exception.Error:
+            return False
         self.mounted = False
         return True
 
