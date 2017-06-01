@@ -176,8 +176,17 @@ class Mounts(object):
     @traceLog()
     # pylint: disable=unused-argument
     def umountall(self, force=False, nowarn=False):
-        for m in reversed(self.managed_mounts + self.user_mounts):
-            m.umount()
+        failed_old = 1
+        failed_new = 0
+        while (failed_new != failed_old):
+            # there can be deps, we will try to umount everything several times
+            # as long as in every loop at least one umount succeed.
+            failed_old = failed_new
+            failed_new = 0
+            for m in reversed(self.managed_mounts + self.user_mounts):
+                if m.umount() is False:
+                    failed_new += 1
+        
 
     @traceLog()
     def get_mountpoints(self):
