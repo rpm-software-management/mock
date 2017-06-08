@@ -16,6 +16,9 @@ import six
 from . import util
 from .trace_decorator import traceLog
 
+if six.PY2:
+    class PermissionError(OSError):
+        pass
 
 class scmWorker(object):
     """Build RPMs from SCM"""
