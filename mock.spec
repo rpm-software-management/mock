@@ -19,7 +19,7 @@
 
 Summary: Builds packages inside chroots
 Name: mock
-Version: 1.4.1
+Version: 1.4.2
 Release: 1%{?dist}
 License: GPLv2+
 # Source is created by
@@ -259,6 +259,38 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 %endif
 
 %changelog
+* Sat Jun 10 2017 Miroslav Suchý <msuchy@redhat.com> 1.4.2-1
+- define PermissionError for python2
+- make /etc/yum.conf symlink to /etc/yum/yum.conf
+- Do not use systemd-nspawn for EL6 chroots [RHBZ#1456421]
+- umount all internal mounts before umounting lvm
+- umountall try to umount several times in case there are deps between mounts
+- unify behaviour of umount
+- display which state start/stop, if normal or bootstrap
+- do not umount LVM volumes if umount_root is set to true [RHBZ#1447658]
+- use LC_ALL=C.UTF-8 rather than plain C
+- add modularity options to custom chroots config
+- initial support for modularity
+- add boostrap options to bash completation
+- set --no-bootstrap-chroot as default for now
+- Use bash --login with systemd-nspawn as well (rhbz #1450516)
+  (orion@cora.nwra.com)
+- docs: add note for subscription-manager.conf (#55)
+  (gitDeveloper@bitthinker.com)
+- Pass canonical spelling False, not false to mock's setopt=deltarpm
+  (ville.skytta@iki.fi)
+- make it easier to detect if buildroot is bootstrap or not
+- document other lvm options in site-defaults.cfg
+- do not call yum-deprecated from bootstrap chroot [RHBZ#1446294]
+- do not use bootstrap for custom chroots [RHBZ#1448321]
+- hard require dnf-plugins-core on Fedora
+- we do not BuildRequire autoconf and automake any more
+- do not require yum and yum-utils in Fedora
+- Fix calls of yum-builddep and repoquery, and use 'dnf repoquery' for dnf
+  (ngompa13@gmail.com)
+- call plugins of bootstrap when it has sense
+- call scrub hook for bootstrap chroot too [RHBZ#1446297]
+
 * Wed Apr 26 2017 Miroslav Suchý <msuchy@redhat.com> 1.4.1-1
 - remove leading space [RHBZ#1442005]
 - copy nosync libraries to /var/tmp
