@@ -730,8 +730,7 @@ def main():
         util.sethostname(config_opts['hostname'])
 
     # set personality (ie. setarch)
-    if config_opts['internal_setarch']:
-        util.condPersonality(config_opts['target_arch'])
+    util.condPersonality(config_opts['target_arch'])
 
     try:
         run_command(options, args, config_opts, commands, buildroot, state)

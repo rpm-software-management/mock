@@ -761,7 +761,6 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
     config_opts['use_bootstrap_container'] = False
 
     config_opts['internal_dev_setup'] = True
-    config_opts['internal_setarch'] = True
 
     # cleanup_on_* only take effect for separate --resultdir
     # config_opts provides fine-grained control. cmdline only has big hammer
