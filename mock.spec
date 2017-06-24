@@ -65,7 +65,7 @@ Requires: python-ctypes
 Requires: python2-distro
 Requires: python-six >= 1.4.0
 Requires: python-requests
-Requires: python
+Requires: python >= 2.7
 Requires: rpm-python
 %endif
 BuildRequires: python-devel
