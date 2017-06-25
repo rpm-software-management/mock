@@ -49,7 +49,7 @@ def doLog(logger, level, *args, **kargs):
 
 
 def safe_repr(arg):
-    """ Generaly repr() can fail when called before __init__(), we will workaround this case """
+    """ Generally repr() can fail when called before __init__(), we will workaround this case """
     try:
         return repr(arg)
     except AttributeError:
