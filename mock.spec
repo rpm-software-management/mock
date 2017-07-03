@@ -74,6 +74,9 @@ Requires: dnf
 Suggests: yum
 Requires: dnf-plugins-core
 Recommends: btrfs-progs
+# to detect correct default.cfg
+Requires(post): python3-dnf
+Requires(post): python3-hawkey
 %endif
 %if 0%{?rhel} == 7
 Requires: btrfs-progs
@@ -197,7 +200,11 @@ else
     # something obsure, use buildtime version
     ver=%{?rhel}%{?fedora}
 fi
+%if 0%{?fedora}
+mock_arch=$(python3 -c "import dnf.rpm; import hawkey; print(dnf.rpm.basearch(hawkey.detect_arch()))")
+%else
 mock_arch=$(python -c "import rpmUtils.arch; baseArch = rpmUtils.arch.getBaseArch(); print baseArch")
+%endif
 cfg=%{?fedora:fedora}%{?rhel:epel}-$ver-${mock_arch}.cfg
 if [ -e %{_sysconfdir}/%{name}/$cfg ]; then
     if [ "$(readlink %{_sysconfdir}/%{name}/default.cfg)" != "$cfg" ]; then
