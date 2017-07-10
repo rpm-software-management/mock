@@ -459,10 +459,7 @@ class Commands(object):
         if not check:
             # this is because EL5/6 does not know --nocheck
             # when EL5/6 targets are not supported, replace it with --nocheck
-            if util.USE_NSPAWN:
-                check_opt += ["--define", "__spec_check_template exit 0; "]
-            else:
-                check_opt += ["--define", "'__spec_check_template exit 0; '"]
+            check_opt += ["--define", "'__spec_check_template exit 0; '"]
 
         mode = ['-bb']
         sc = self.config.get('short_circuit')
