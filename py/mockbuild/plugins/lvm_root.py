@@ -30,10 +30,11 @@ def current_mounts():
 
 
 class Lock(object):
-    def __init__(self, path, name):
+    def __init__(self, path, name, sleep_time):
         lock_name = '.{0}.lock'.format(name)
         lock_path = os.path.join(path, lock_name)
         self.lock_file = open(lock_path, 'a+')
+        self.sleep_time = sleep_time
 
     def lock(self, exclusive, block=False):
         lock_type = fcntl.LOCK_EX if exclusive else fcntl.LOCK_SH
@@ -54,7 +55,7 @@ class Lock(object):
                 if not waiting and wait_fn:
                     wait_fn()
                     waiting = True
-                time.sleep(1)
+                time.sleep(self.sleep_time)
             else:
                 acquired_fn()
                 return
@@ -75,6 +76,7 @@ class LvmPlugin(object):
         self.ext = self.buildroot.config.get('unique-ext', 'head')
         self.head_lv = '+{0}.{1}'.format(self.conf_id, self.ext)
         self.fs_type = lvm_conf.get('filesystem', 'ext4')
+        self.sleep_time = lvm_conf.get('sleep_time', 1)
         self.root_path = os.path.realpath(self.buildroot.make_chroot_path())
         if not self.vg_name:
             raise LvmError("Volume group must be specified")
@@ -94,7 +96,7 @@ class LvmPlugin(object):
                 plugins.add_hook(hook_name, method)
 
     def create_lock(self, name):
-        return Lock(self.basepath, '{0}-{1}'.format(name, self.conf_id))
+        return Lock(self.basepath, '{0}-{1}'.format(name, self.conf_id), self.sleep_time)
 
     def prefix_name(self, name=''):
         return self.conf_id + '.' + name
