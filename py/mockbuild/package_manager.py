@@ -24,7 +24,7 @@ def package_manager(config_opts, chroot, plugins, bootstrap_buildroot=None):
             return Dnf(config_opts, chroot, plugins, bootstrap_buildroot)
         # RHEL without DNF
         (distribution, version) = distro.linux_distribution(full_distribution_name=False)[0:2]
-        if distribution in ['redhat', 'centos']:
+        if distribution in ['redhat', 'centos', 'ol']:
             version = int(version.split('.')[0])
             if version < 8:
                 if 'dnf_warning' in config_opts and config_opts['dnf_warning']:
