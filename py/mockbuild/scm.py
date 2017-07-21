@@ -155,6 +155,8 @@ class scmWorker(object):
         # Dig out some basic information from the spec file
         self.sources = []
         ts = rpm.ts()
+        # Spec might %include its sources
+        rpm.addMacro("_sourcedir", self.src_dir)
         rpm_spec = ts.parseSpec(self.spec)
         self.name = rpm.expandMacro("%{name}")
         self.version = rpm.expandMacro("%{version}")
