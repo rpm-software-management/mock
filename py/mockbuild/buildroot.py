@@ -131,8 +131,10 @@ class Buildroot(object):
         self._setup_dirs()
         if do_log:
             self._resetLogging()
-        if not util.USE_NSPAWN:
-            self._setup_devices()
+        # /dev is later overwritten by systemd-nspawn, but we need this for
+        # initial installation when chroot is empty
+        self._setup_devices()
+
         self._setup_files()
         self.mounts.mountall_managed()
 
