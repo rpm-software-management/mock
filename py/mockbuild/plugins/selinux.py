@@ -101,9 +101,11 @@ class SELinux(object):
 
         return self._originalUtilDo(command, *args, **kargs)
 
-    @staticmethod
     @traceLog()
-    def _selinuxYumIsSetoptSupported():
+    def _selinuxYumIsSetoptSupported(self):
+        if self.config['package_manager'] != 'yum':
+            # all DNF versions support --setopt
+            return True
         try:
             # ugly hack: discover, whether yum supports --setopt option
             # pylint: disable=import-error
