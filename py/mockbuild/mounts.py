@@ -186,7 +186,6 @@ class Mounts(object):
             for m in reversed(self.managed_mounts + self.user_mounts):
                 if m.umount() is False:
                     failed_new += 1
-        
 
     @traceLog()
     def get_mountpoints(self):
