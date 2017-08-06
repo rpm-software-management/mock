@@ -19,7 +19,7 @@
 
 Summary: Builds packages inside chroots
 Name: mock
-Version: 1.4.2
+Version: 1.4.3
 Release: 1%{?dist}
 License: GPLv2+
 # Source is created by
@@ -266,6 +266,23 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 %endif
 
 %changelog
+* Mon Aug 07 2017 Miroslav Suchý <msuchy@redhat.com> 1.4.3-1
+- selinux: do not try to import yum when PM is dnf [RHBZ#1474513]
+- create /dev nodes even when using nspawn [RHBZ#1467299]
+- scm: define _sourcedir to checkout directory
+  (ignatenkobrain@fedoraproject.org)
+- mageia-cauldron: Change releasever to 7 (ngompa13@gmail.com)
+- enhance detection of RHEL [RHBZ#1470189]
+- Add detection of OL (Oracle Linux) distribution
+  (pixdrift@users.noreply.github.com)
+- Make LVM sleep time configurable (mizdebsk@redhat.com)
+- on fedoras use python3 to detect correct arch in %%post [RHBZ#1462310]
+- backend.py: quote check_opt (jlebon@redhat.com)
+- Grammar fixes (ville.skytta@iki.fi)
+- Docstring spelling fix (ville.skytta@iki.fi)
+- Document python >= 2.7 requirement (ville.skytta@iki.fi)
+- Remove obsolete internal_setarch config option (ville.skytta@iki.fi)
+
 * Sat Jun 10 2017 Miroslav Suchý <msuchy@redhat.com> 1.4.2-1
 - define PermissionError for python2
 - make /etc/yum.conf symlink to /etc/yum/yum.conf
