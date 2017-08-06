@@ -83,7 +83,11 @@ Requires: btrfs-progs
 Requires: yum >= 2.4
 Requires: yum-utils
 %endif
+%if 0%{?fedora}
+BuildRequires: perl-interpreter
+%else
 BuildRequires: perl
+%endif
 
 # hwinfo plugin
 Requires: util-linux
