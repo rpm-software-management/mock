@@ -512,7 +512,7 @@ class Buildroot(object):
         # self.root_log.debug('touch required files')
         for item in [self.make_chroot_path('etc', 'fstab'),
                      self.make_chroot_path('etc', 'yum', 'yum.conf'),
-                     self.make_chroot_path('etc', 'dnf.conf'),
+                     self.make_chroot_path('etc', 'dnf', 'dnf.conf'),
                      self.make_chroot_path('var', 'log', 'yum.log')]:
             util.touch(item)
         short_yum_confpath = self.make_chroot_path('etc', 'yum.conf')
