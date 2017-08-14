@@ -478,7 +478,8 @@ class Buildroot(object):
             self.root_log.debug("kernel version == %s", kver)
             for i in devFiles:
                 # create node, but only if it exist on host too
-                if os.path.exists("/" + i[2]):
+                # except for loop devices, which only show up on the host after they are first used
+                if os.path.exists("/" + i[2]) or "loop" in i[2]:
                     os.mknod(self.make_chroot_path(i[2]), i[0], i[1])
                     # set context. (only necessary if host running selinux enabled.)
                     # fails gracefully if chcon not installed.
