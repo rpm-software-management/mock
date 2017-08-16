@@ -248,13 +248,8 @@ class LvmPlugin(object):
                 if target == self.root_path:
                     if src != os.path.realpath(lv_path):
                         self.force_umount_root()
-            if self.buildroot.is_bootstrap:
-                keep_mounted = False
-            else:
-                keep_mounted = not self.lvm_conf.get('umount_root')
             self.mount = mounts.FileSystemMountPoint(self.root_path, self.fs_type,
-                                                     lv_path, options=mount_options,
-                                                     keep_mounted=keep_mounted)
+                                                     lv_path, options=mount_options)
 
     def umount(self):
         if not self.mount:
