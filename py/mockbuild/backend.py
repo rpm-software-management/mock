@@ -39,7 +39,7 @@ class Commands(object):
         self.buildroot.chrootuid = config['chrootuid']
         self.chrootuser = 'mockbuild'
         self.buildroot.chrootgid = config['chrootgid']
-        self.chrootgroup = 'mockbuild'
+        self.chrootgroup = 'mock'
         self.use_host_resolv = config['use_host_resolv']
         self.chroot_file_contents = config['files']
         self.chroot_setup_cmd = config['chroot_setup_cmd']
