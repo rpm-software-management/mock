@@ -19,7 +19,7 @@
 
 Summary: Builds packages inside chroots
 Name: mock
-Version: 1.4.3
+Version: 1.4.4
 Release: 1%{?dist}
 License: GPLv2+
 # Source is created by
@@ -270,6 +270,15 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 %endif
 
 %changelog
+* Tue Aug 22 2017 Miroslav Suchý <msuchy@redhat.com> 1.4.4-1
+- Rename group inside of chroot from mockbuild to mock
+- add F27 configs
+- populate /etc/dnf/dnf.conf even when using yum PM
+- create /etc/dnf directory
+- correct path is /etc/dnf/dnf.conf instead of /etc/dnf.conf
+- perl dependency renamed to perl-interpreter
+  <https://fedoraproject.org/wiki/Changes/perl_Package_to_Install_Core_Modules>
+
 * Mon Aug 07 2017 Miroslav Suchý <msuchy@redhat.com> 1.4.3-1
 - selinux: do not try to import yum when PM is dnf [RHBZ#1474513]
 - create /dev nodes even when using nspawn [RHBZ#1467299]
