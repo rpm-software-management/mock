@@ -3,9 +3,9 @@
 A note on mock versions: 
 
   There are now two main branches to be aware of:
-  	- mock-1.0 (pre-F13 and EPEL5)
+    - mock-1.0 (pre-F13 and EPEL5)
     - mock-1.3 (EPEL6)
-	- master (for releasing F-13+ and EPEL7+)
+    - master (for releasing F-13+ and EPEL7+)
     - devel (for development of future versions)
   Please be careful when
   updating the various distro to use the correct branch and version
@@ -24,7 +24,7 @@ Release checklist overview:
 3) install snapshot version
    $ tito build --rpm -i
 4) run 'make check' and fix any reported failures until it passes
-   $ make check
+   $ make check 1>/tmp/test-output.txt  2>&1
 5) tag the git tree:
    $ tito tag
 6) push to main git repo (only from master branch):
