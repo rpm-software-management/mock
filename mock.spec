@@ -74,6 +74,7 @@ Requires: dnf
 Suggests: yum
 Requires: dnf-plugins-core
 Recommends: btrfs-progs
+Suggests: dnf-utils
 # to detect correct default.cfg
 Requires(post): python3-dnf
 Requires(post): python3-hawkey
