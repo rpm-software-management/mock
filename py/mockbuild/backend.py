@@ -481,10 +481,18 @@ class Commands(object):
             if not self.config['rpmbuild_networking']:
                 nspawn_args.append('--private-network')
             nspawn_args.extend(self.config['nspawn_args'])
+        if self.config['build_as_root']:
+            uid = 0
+            gid = 0
+            user = None
+        else:
+            uid = self.buildroot.chrootuid
+            gid = self.buildroot.chrootgid
+            user = self.buildroot.chrootuser
         self.buildroot.doChroot(command,
                                 shell=False, logger=self.buildroot.build_log, timeout=timeout,
-                                uid=self.buildroot.chrootuid, gid=self.buildroot.chrootgid,
-                                user=self.buildroot.chrootuser,
+                                uid=uid, gid=gid,
+                                user=user,
                                 nspawn_args=nspawn_args,
                                 printOutput=self.config['print_main_output'])
         bd_out = self.make_chroot_path(self.buildroot.builddir)
