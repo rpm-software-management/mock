@@ -44,6 +44,8 @@ Requires: systemd-container
 %endif
 Requires(pre): shadow-utils
 Requires(post): coreutils
+Requires: coreutils
+Requires: iproute
 %if 0%{?fedora}
 Requires(post): system-release
 %endif
@@ -144,7 +146,8 @@ install -d %{buildroot}%{_libexecdir}/mock
 install py/mockchain.py %{buildroot}%{_bindir}/mockchain
 install py/mock.py %{buildroot}%{_libexecdir}/mock/mock
 ln -s consolehelper %{buildroot}%{_bindir}/mock
-
+install create_default_route_in_container.sh %{buildroot}%{_libexecdir}/mock/
+ 
 install -d %{buildroot}%{_sysconfdir}/pam.d
 cp -a etc/pam/* %{buildroot}%{_sysconfdir}/pam.d/
 
