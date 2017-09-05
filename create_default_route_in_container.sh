@@ -2,6 +2,7 @@
 # This script is invoked when container is created without network.
 # It will set default route to localhost so multicast work.
 
+# uuid of the container, you can obtain it from `machinectl list`
 container=$1
 
 # setup
