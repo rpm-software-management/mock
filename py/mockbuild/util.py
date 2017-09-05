@@ -192,6 +192,30 @@ def _safe_check_output(*args):
 
 
 @traceLog()
+def get_machinectl_uuid(chroot_path):
+    """ Get UUID from machinectl. This function does not check if NSPAWN is used """
+    # we will ignore errors in machinectl, it sometimes fails for various errors (cannot find IP addr...)
+    # we do not care about exit code, we just want the output
+    # RHEL7 does not know --no-legend, so we must filter the legend out
+    vm_list = _safe_check_output(["/usr/bin/machinectl", "list", "--no-pager"])
+    if (isinstance(vm_list, bytes)):
+        vm_list = vm_list.decode("utf-8")
+    vm_list = '\n'.join(vm_list.split('\n')[1:-2])
+    for name in vm_list.split("\n"):
+        if len(name) > 0:
+            m_uuid = name.split()[0]
+            try:
+                vm_root = _safe_check_output(["/usr/bin/machinectl", "show", "-pRootDirectory", m_uuid])
+                if (isinstance(vm_root, bytes)):
+                    vm_root = vm_root.decode("utf-8")
+            except subprocess.CalledProcessError:
+                continue
+            vm_root = '='.join(vm_root.rstrip().split('=')[1:])
+            if vm_root == chroot_path:
+                return m_uuid
+
+
+@traceLog()
 def orphansKill(rootToKill, killsig=signal.SIGTERM):
     """kill off anything that is still chrooted."""
     getLog().debug("kill orphans")
@@ -207,26 +231,10 @@ def orphansKill(rootToKill, killsig=signal.SIGTERM):
             except OSError:
                 pass
     else:
-        # we will ignore errors in machinectl, it sometimes fails for various errors (cannot find IP addr...)
-        # we do not care about exit code, we just want the output
-        # RHEL7 does not know --no-legend, so we must filter the legend out
-        vm_list = _safe_check_output(["/usr/bin/machinectl", "list", "--no-pager"])
-        if (isinstance(vm_list, bytes)):
-            vm_list = vm_list.decode("utf-8")
-        vm_list = '\n'.join(vm_list.split('\n')[1:-2])
-        for name in vm_list.split("\n"):
-            if len(name) > 0:
-                m_uuid = name.split()[0]
-                try:
-                    vm_root = _safe_check_output(["/usr/bin/machinectl", "show", "-pRootDirectory", m_uuid])
-                    if (isinstance(vm_root, bytes)):
-                        vm_root = vm_root.decode("utf-8")
-                except subprocess.CalledProcessError:
-                    continue
-                vm_root = '='.join(vm_root.rstrip().split('=')[1:])
-                if vm_root == rootToKill:
-                    getLog().warning("Machine %s still running. Killing...", m_uuid)
-                    os.system("/usr/bin/machinectl terminate %s" % m_uuid)
+        m_uuid = get_machinectl_uuid(rootToKill)
+        if m_uuid:
+            getLog().warning("Machine %s still running. Killing...", m_uuid)
+            os.system("/usr/bin/machinectl terminate %s" % m_uuid)
 
 
 @traceLog()
