@@ -56,6 +56,14 @@ class Commands(object):
         # do we allow interactive root shells?
         self.no_root_shells = config['no_root_shells']
 
+    def _get_nspawn_args(self):
+        nspawn_args = []
+        if util.USE_NSPAWN:
+            if not self.config['rpmbuild_networking']:
+                nspawn_args.append('--private-network')
+            nspawn_args.extend(self.config['nspawn_args'])
+        return nspawn_args
+
     @traceLog()
     def backup_results(self):
         srcdir = os.path.join(self.buildroot.basedir, "result")
@@ -304,7 +312,7 @@ class Commands(object):
             self.state.start("shell")
             ret = util.doshell(chrootPath=self.buildroot.make_chroot_path(),
                                environ=self.buildroot.env, uid=uid, gid=gid,
-                               nspawn_args=self.config['nspawn_args'],
+                               nspawn_args=self._get_nspawn_args(),
                                cmd=cmd)
         finally:
             log.debug("shell: unmounting all filesystems")
@@ -332,10 +340,10 @@ class Commands(object):
                 self.buildroot.doChroot(args, shell=shell, printOutput=True,
                                         uid=self.buildroot.chrootuid, gid=self.buildroot.chrootgid,
                                         user=self.buildroot.chrootuser, cwd=options.cwd,
-                                        nspawn_args=self.config['nspawn_args'])
+                                        nspawn_args=self._get_nspawn_args())
             else:
                 self.buildroot.doChroot(args, shell=shell, cwd=options.cwd,
-                                        nspawn_args=self.config['nspawn_args'],
+                                        nspawn_args=self._get_nspawn_args(),
                                         printOutput=True)
         finally:
             self.state.finish(chrootstate)
@@ -413,7 +421,7 @@ class Commands(object):
     def get_specfile_name(self, srpm_path):
         files = self.buildroot.doChroot([self.config['rpm_command'], "-qpl", srpm_path],
                                         shell=False, uid=self.buildroot.chrootuid, gid=self.buildroot.chrootgid,
-                                        nspawn_args=self.config['nspawn_args'],
+                                        nspawn_args=self._get_nspawn_args(),
                                         user=self.buildroot.chrootuser,
                                         returnOutput=True)
         specs = [item.rstrip() for item in files.split('\n') if item.rstrip().endswith('.spec')]
@@ -427,7 +435,7 @@ class Commands(object):
         self.buildroot.doChroot([self.config['rpm_command'], "-Uvh", "--nodeps", srpm_path],
                                 shell=False, uid=self.buildroot.chrootuid, gid=self.buildroot.chrootgid,
                                 user=self.buildroot.chrootuser,
-                                nspawn_args=self.config['nspawn_args'])
+                                nspawn_args=self._get_nspawn_args())
 
     @traceLog()
     def rebuild_installed_srpm(self, spec_path, timeout):
@@ -440,7 +448,7 @@ class Commands(object):
             shell=False, logger=self.buildroot.build_log, timeout=timeout,
             uid=self.buildroot.chrootuid, gid=self.buildroot.chrootgid,
             user=self.buildroot.chrootuser,
-            nspawn_args=self.config['nspawn_args'],
+            nspawn_args=self._get_nspawn_args(),
             printOutput=self.config['print_main_output']
         )
         results = glob.glob("%s/%s/SRPMS/*src.rpm" % (self.make_chroot_path(),
@@ -475,17 +483,12 @@ class Commands(object):
         command = [self.config['rpmbuild_command']] + mode + \
                   ['--target', self.rpmbuild_arch, '--nodeps'] + \
                   check_opt + [spec_path] + additional_opts
-        nspawn_args = []
         command = ["bash", "--login", "-c"] + [' '.join(command)]
-        if util.USE_NSPAWN:
-            if not self.config['rpmbuild_networking']:
-                nspawn_args.append('--private-network')
-            nspawn_args.extend(self.config['nspawn_args'])
         self.buildroot.doChroot(command,
                                 shell=False, logger=self.buildroot.build_log, timeout=timeout,
                                 uid=self.buildroot.chrootuid, gid=self.buildroot.chrootgid,
                                 user=self.buildroot.chrootuser,
-                                nspawn_args=nspawn_args,
+                                nspawn_args=self._get_nspawn_args(),
                                 printOutput=self.config['print_main_output'])
         bd_out = self.make_chroot_path(self.buildroot.builddir)
         results = glob.glob(bd_out + '/RPMS/*.rpm')
