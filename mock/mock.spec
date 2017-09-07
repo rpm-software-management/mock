@@ -160,10 +160,6 @@ cp -a docs/mockchain.1 docs/mock.1 %{buildroot}%{_mandir}/man1/
 install -d %{buildroot}/var/lib/mock
 install -d %{buildroot}/var/cache/mock
 
-# just for %%ghosting purposes
-ln -s fedora-rawhide-x86_64.cfg %{buildroot}%{_sysconfdir}/mock/default.cfg
-
-
 %post
 # fix cache permissions from old installs
 chmod 2775 %{_localstatedir}/cache/%{name}
