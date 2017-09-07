@@ -14,9 +14,6 @@
 %global python_sitelib %{python_sitelib}
 %endif
 
-# mock group id allocate for Fedora
-%global mockgid  135
-
 Summary: Builds packages inside chroots
 Name: mock
 Version: 1.4.4
@@ -35,6 +32,7 @@ Requires: pigz
 Requires: usermode
 Requires: createrepo_c
 Requires: distribution-gpg-keys >= 1.9
+Requires(post): coreutils
 %if 0%{?use_python2}
 Requires: pyliblzma
 %endif
@@ -42,16 +40,8 @@ Requires: systemd
 %if 0%{?fedora}
 Requires: systemd-container
 %endif
-Requires(pre): shadow-utils
-Requires(post): coreutils
 Requires: coreutils
 Requires: iproute
-%if 0%{?fedora}
-Requires(post): system-release
-%endif
-%if 0%{?rhel} == 7
-Requires(post): /etc/os-release
-%endif
 BuildRequires: bash-completion
 %if %{use_python3}
 Requires: python3
@@ -77,9 +67,6 @@ Suggests: yum
 Requires: dnf-plugins-core
 Recommends: btrfs-progs
 Suggests: dnf-utils
-# to detect correct default.cfg
-Requires(post): python3-dnf
-Requires(post): python3-hawkey
 %endif
 %if 0%{?rhel} == 7
 Requires: btrfs-progs
@@ -173,62 +160,28 @@ cp -a docs/mockchain.1 docs/mock.1 %{buildroot}%{_mandir}/man1/
 install -d %{buildroot}/var/lib/mock
 install -d %{buildroot}/var/cache/mock
 
-# generate files section with config - there is many of them
-echo "%defattr(0644, root, mock)" > %{name}.cfgs
-find %{buildroot}%{_sysconfdir}/mock -name "*.cfg" \
-    | sed -e "s|^%{buildroot}|%%config(noreplace) |" >> %{name}.cfgs
 # just for %%ghosting purposes
 ln -s fedora-rawhide-x86_64.cfg %{buildroot}%{_sysconfdir}/mock/default.cfg
-# bash-completion
-if [ -d %{buildroot}%{_datadir}/bash-completion ]; then
-    echo %{_datadir}/bash-completion/completions/mock >> %{name}.cfgs
-    echo %{_datadir}/bash-completion/completions/mockchain >> %{name}.cfgs
-elif [ -d %{buildroot}%{_sysconfdir}/bash_completion.d ]; then
-    echo %{_sysconfdir}/bash_completion.d/mock >> %{name}.cfgs
-fi
 
-
-%pre
-# check for existence of mock group, create it if not found
-getent group mock > /dev/null || groupadd -f -g %mockgid -r mock
-exit 0
 
 %post
 # fix cache permissions from old installs
 chmod 2775 %{_localstatedir}/cache/%{name}
 
-if [ -s /etc/os-release ]; then
-    # fedora and rhel7
-    if grep -Fiq Rawhide /etc/os-release; then
-        ver=rawhide
-    else
-        ver=$(source /etc/os-release && echo $VERSION_ID | cut -d. -f1 | grep -o '[0-9]\+')
-    fi
-else
-    # something obsure, use buildtime version
-    ver=%{?rhel}%{?fedora}
-fi
-%if 0%{?fedora}
-mock_arch=$(python3 -c "import dnf.rpm; import hawkey; print(dnf.rpm.basearch(hawkey.detect_arch()))")
-%else
-mock_arch=$(python -c "import rpmUtils.arch; baseArch = rpmUtils.arch.getBaseArch(); print baseArch")
-%endif
-cfg=%{?fedora:fedora}%{?rhel:epel}-$ver-${mock_arch}.cfg
-if [ -e %{_sysconfdir}/%{name}/$cfg ]; then
-    if [ "$(readlink %{_sysconfdir}/%{name}/default.cfg)" != "$cfg" ]; then
-        ln -s $cfg %{_sysconfdir}/%{name}/default.cfg 2>/dev/null || ln -s -f $cfg %{_sysconfdir}/%{name}/default.cfg.rpmnew
-    fi
-else
-    echo "Warning: file %{_sysconfdir}/%{name}/$cfg does not exists."
-    echo "         unable to update %{_sysconfdir}/%{name}/default.cfg"
-fi
-:
-
 %check
 # ignore the errors for now, just print them and hopefully somebody will fix it one day
 pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 
-%files -f %{name}.cfgs
+%files
+%defattr(0644, root, mock)
+%config(noreplace) %{_sysconfdir}/mock/site-defaults.cfg
+%if 0%{?rhel} == 6
+%{_sysconfdir}/bash_completion.d/mock
+%else
+%{_datadir}/bash-completion/completions/mock
+%{_datadir}/bash-completion/completions/mockchain
+%endif
+
 %defattr(-, root, root)
 
 # executables
@@ -242,8 +195,6 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 %exclude %{python_sitelib}/mockbuild/plugins/lvm_root.*
 
 # config files
-%dir  %{_sysconfdir}/%{name}
-%ghost %config(noreplace,missingok) %{_sysconfdir}/%{name}/default.cfg
 %config(noreplace) %{_sysconfdir}/%{name}/*.ini
 %config(noreplace) %{_sysconfdir}/pam.d/%{name}
 %config(noreplace) %{_sysconfdir}/security/console.apps/%{name}
