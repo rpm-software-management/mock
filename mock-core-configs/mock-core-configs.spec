@@ -2,7 +2,7 @@
 %global mockgid 135
 
 Name:		mock-core-configs
-Version:	27.0
+Version:	27.1
 Release:	1%{?dist}
 Summary:	Mock core config files basic chroots
 
@@ -105,4 +105,7 @@ fi
 %ghost %config(noreplace,missingok) %{_sysconfdir}/mock/default.cfg
 
 %changelog
+* Thu Sep 07 2017 Miroslav Suchý <msuchy@redhat.com> 27.1-1
+- Split from Mock package.
+
 
