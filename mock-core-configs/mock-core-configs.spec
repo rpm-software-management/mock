@@ -32,7 +32,7 @@ Requires(post):	/etc/os-release
 %endif
 
 %description
-Config files which allows you to create chroots for:
+Config files which allow you to create chroots for:
  * Fedora
  * Epel
  * Mageia
