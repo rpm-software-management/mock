@@ -54,6 +54,7 @@ import shutil
 import sys
 import time
 
+from pprint import pformat
 from six.moves import configparser
 
 
@@ -118,6 +119,9 @@ def command_parse():
                       dest="mode",
                       help="Build a SRPM from spec (--spec ...) and sources"
                            "(--sources ...) or from SCM")
+    parser.add_option("--debug-config", action="store_const", const="debugconfig",
+                      dest="mode",
+                      help="Prints all options in config_opts")
     parser.add_option("--shell", action="store_const",
                       const="shell", dest="mode",
                       help="run the specified command interactively within the chroot."
@@ -544,6 +548,10 @@ def do_buildsrpm(config_opts, commands, buildroot, options, args):
     return rebuild_generic([options.spec], commands, buildroot, config_opts,
                            cmd=cmd, post=None, clean=clean)
 
+@traceLog()
+def do_debugconfig(config_opts):
+    for key in config_opts:
+        print("config_opts['{}'] = {}".format(key, pformat(config_opts[key])))
 
 @traceLog()
 def rootcheck():
@@ -821,6 +829,9 @@ def run_command(options, args, config_opts, commands, buildroot, state):
 
     elif options.mode == 'buildsrpm':
         do_buildsrpm(config_opts, commands, buildroot, options, args)
+
+    elif options.mode == 'debugconfig':
+        do_debugconfig(config_opts)
 
     elif options.mode == 'orphanskill':
         util.orphansKill(buildroot.make_chroot_path())
