@@ -52,6 +52,7 @@ Requires: python3-distro
 Requires: python3-six >= 1.4.0
 Requires: python3-requests
 Requires: rpm-python3
+Requires: python3-pyroute2
 BuildRequires: python3-devel
 #check
 BuildRequires: python3-pylint
@@ -60,6 +61,7 @@ Requires: python-ctypes
 Requires: python2-distro
 Requires: python-six >= 1.4.0
 Requires: python-requests
+Requires: python2-pyroute2
 Requires: python >= 2.7
 Requires: rpm-python
 %endif

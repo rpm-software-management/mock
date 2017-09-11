@@ -38,6 +38,7 @@ import distro
 from . import exception
 from .trace_decorator import getLog, traceLog
 from .uid import getresuid, setresuid
+from pyroute2 import IPRoute
 
 encoding = locale.getpreferredencoding()
 
@@ -377,6 +378,25 @@ def condUnshareIPC(unshare_ipc=True):
             # fails, there had to be a warning already
             pass
 
+def condUnshareNet(unshare_net=True):
+    if USE_NSPAWN and unshare_net:
+        try:
+            unshare(CLONE_NEWNET)
+            # Set up loopback interface and add default route via loopback in the namespace.
+            # Missing default route may confuse some software, see
+            # https://github.com/rpm-software-management/mock/issues/113
+            ipr = IPRoute()
+            dev = ipr.link_lookup(ifname='lo')[0]
+
+            ipr.link('set', index=dev, state='up')
+            ipr.route("add", dst="default", gateway="127.0.0.1")
+        except exception.UnshareFailed:
+            # IPC and UTS ns are supported since the same kernel version. If this
+            # fails, there had to be a warning already
+            pass
+        # pylint: disable=bare-except
+        except Exception as e:
+            getLog().warning("network namespace setup failed: %s", e)
 
 def process_input(line):
     out = []
@@ -516,7 +536,7 @@ def resize_pty(pty):
 # pylint: disable=unused-argument
 def do(command, shell=False, chrootPath=None, cwd=None, timeout=0, raiseExc=True,
        returnOutput=0, uid=None, gid=None, user=None, personality=None,
-       printOutput=False, env=None, pty=False, nspawn_args=None,
+       printOutput=False, env=None, pty=False, nspawn_args=None, unshare_net=False,
        *args, **kargs):
 
     logger = kargs.get("logger", getLog())
@@ -526,7 +546,7 @@ def do(command, shell=False, chrootPath=None, cwd=None, timeout=0, raiseExc=True
         master_pty, slave_pty = os.openpty()
         resize_pty(slave_pty)
         reader = os.fdopen(master_pty, 'rb')
-    preexec = ChildPreExec(personality, chrootPath, cwd, uid, gid, unshare_ipc=bool(chrootPath))
+    preexec = ChildPreExec(personality, chrootPath, cwd, uid, gid, unshare_ipc=bool(chrootPath), unshare_net=unshare_net)
     if env is None:
         env = clean_env()
     stdout = None
@@ -602,7 +622,7 @@ def do(command, shell=False, chrootPath=None, cwd=None, timeout=0, raiseExc=True
 
 class ChildPreExec(object):
     def __init__(self, personality, chrootPath, cwd, uid, gid, env=None,
-                 shell=False, unshare_ipc=False):
+                 shell=False, unshare_ipc=False, unshare_net=False):
         self.personality = personality
         self.chrootPath = chrootPath
         self.cwd = cwd
@@ -611,12 +631,14 @@ class ChildPreExec(object):
         self.env = env
         self.shell = shell
         self.unshare_ipc = unshare_ipc
+        self.unshare_net = unshare_net
         getLog().debug("child environment: %s", env)
 
     def __call__(self, *args, **kargs):
         if not self.shell:
             os.setsid()
         os.umask(0o02)
+        condUnshareNet(self.unshare_net)
         condPersonality(self.personality)
         condEnvironment(self.env)
         if not USE_NSPAWN:
@@ -675,7 +697,8 @@ def _prepare_nspawn_command(chrootPath, user, cmd, nspawn_args=None, env=None, c
 
 def doshell(chrootPath=None, environ=None, uid=None, gid=None, cmd=None,
             nspawn_args=None,
-            unshare_ipc=True):
+            unshare_ipc=True,
+            unshare_net=False):
     log = getLog()
     log.debug("doshell: chrootPath:%s, uid:%d, gid:%d", chrootPath, uid, gid)
     if environ is None:
@@ -698,7 +721,7 @@ def doshell(chrootPath=None, environ=None, uid=None, gid=None, cmd=None,
         cmd = _prepare_nspawn_command(chrootPath, uid, cmd, nspawn_args=nspawn_args, env=environ)
     preexec = ChildPreExec(personality=None, chrootPath=chrootPath, cwd=None,
                            uid=uid, gid=gid, env=environ, shell=True,
-                           unshare_ipc=unshare_ipc)
+                           unshare_ipc=unshare_ipc, unshare_net=unshare_net)
     log.debug("doshell: command: %s", cmd)
     return subprocess.call(cmd, preexec_fn=preexec, env=environ, shell=False)
 
