@@ -56,11 +56,11 @@ class Commands(object):
         # do we allow interactive root shells?
         self.no_root_shells = config['no_root_shells']
 
+        self.private_network= not config['rpmbuild_networking']
+
     def _get_nspawn_args(self):
         nspawn_args = []
         if util.USE_NSPAWN:
-            if not self.config['rpmbuild_networking']:
-                nspawn_args.append('--private-network')
             nspawn_args.extend(self.config['nspawn_args'])
         return nspawn_args
 
@@ -313,6 +313,7 @@ class Commands(object):
             ret = util.doshell(chrootPath=self.buildroot.make_chroot_path(),
                                environ=self.buildroot.env, uid=uid, gid=gid,
                                nspawn_args=self._get_nspawn_args(),
+                               unshare_net=self.private_network,
                                cmd=cmd)
         finally:
             log.debug("shell: unmounting all filesystems")
@@ -340,10 +341,12 @@ class Commands(object):
                 self.buildroot.doChroot(args, shell=shell, printOutput=True,
                                         uid=self.buildroot.chrootuid, gid=self.buildroot.chrootgid,
                                         user=self.buildroot.chrootuser, cwd=options.cwd,
-                                        nspawn_args=self._get_nspawn_args())
+                                        nspawn_args=self._get_nspawn_args(),
+                                        unshare_net=self.private_network)
             else:
                 self.buildroot.doChroot(args, shell=shell, cwd=options.cwd,
                                         nspawn_args=self._get_nspawn_args(),
+                                        unshare_net=self.private_network,
                                         printOutput=True)
         finally:
             self.state.finish(chrootstate)
