@@ -210,7 +210,7 @@ def command_parse():
                       dest="cleanup_after", default=None,
                       help="Clean chroot after building. Use with --resultdir."
                            " Only active for 'rebuild'.")
-    parser.add_option("--no-cleanup-after", action="store_false",
+    parser.add_option("-N", "--no-cleanup-after", action="store_false",
                       dest="cleanup_after", default=None,
                       help="Don't clean chroot after building. If automatic"
                            " cleanup is enabled, use this to disable.", )
