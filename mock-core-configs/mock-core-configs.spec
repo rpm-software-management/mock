@@ -13,7 +13,7 @@ URL:		https://github.com/rpm-software-management/mock/
 # cd mock/mock-core-configs
 # git reset --hard %{name}-%{version}
 # tito build --tgz
-Source:		%{name}-%{version}.tar.gz
+Source:		https://github.com/rpm-software-management/mock/releases/download/%{name}-%{version}-1/%{name}-%{version}.tar.gz
 BuildArch:	noarch
 Requires(pre):	shadow-utils
 Requires(post): coreutils
