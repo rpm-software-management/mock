@@ -16,7 +16,7 @@
 
 Summary: Builds packages inside chroots
 Name: mock
-Version: 1.4.4
+Version: 1.4.5
 Release: 1%{?dist}
 License: GPLv2+
 # Source is created by
@@ -221,6 +221,19 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 %endif
 
 %changelog
+* Fri Sep 15 2017 Miroslav Suchý <msuchy@redhat.com> 1.4.5-1
+- introduce -N for --no-cleanup-after (jsynacek@redhat.com)
+- add man page entry for --debug-config
+- Added option --debug-config (matejkudera1@seznam.cz)
+- site-defaults: Fix comment about nspawn/chroot default (ville.skytta@iki.fi)
+- move chroot configs to mock-core-configs directory
+- pass --private-network to every container spawning if specified
+- add script to create default route in container to localhost
+- [site-defaults] Fix umount_root documentation
+- Fix keeping the LVM volume mounted
+- suggest dnf-utils
+- Always create /dev/loop nodes
+
 * Tue Aug 22 2017 Miroslav Suchý <msuchy@redhat.com> 1.4.4-1
 - Rename group inside of chroot from mockbuild to mock
 - add F27 configs
