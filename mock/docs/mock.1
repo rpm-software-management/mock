@@ -99,6 +99,9 @@ the specified destination path.
 \fB\-\-chroot\fP \fICOMMAND [\fIARGS...\fR]
 Run the specified command non\-interactively within the chroot (no 'clean' is performed). Command output will be sent to the log files. Note that COMMAND is shell expanded only if there are no ARGS. Otherwise there is no shell expansion.
 .TP
+\fB\-\-debug-config\fP
+Prints all options in config_opts.
+.TP
 \fB\-\-dnf\-cmd\fP
 Execute following arguments with DNF with installroot set to the chroot path. DNF must be installed on the system.
 It will use the binary which is specified in 'dnf_command' option in site-defaults.cfg config, which by default is /usr/bin/dnf.
