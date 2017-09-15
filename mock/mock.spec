@@ -32,6 +32,7 @@ Requires: pigz
 Requires: usermode
 Requires: createrepo_c
 Requires: distribution-gpg-keys >= 1.9
+Requires: mock-core-configs
 Requires(post): coreutils
 %if 0%{?use_python2}
 Requires: pyliblzma
@@ -41,7 +42,9 @@ Requires: systemd
 Requires: systemd-container
 %endif
 Requires: coreutils
-Requires: iproute
+%if 0%{?fedora}
+Suggests: iproute
+%endif
 BuildRequires: bash-completion
 %if %{use_python3}
 Requires: python3
