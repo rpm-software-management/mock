@@ -16,7 +16,7 @@
 
 Summary: Builds packages inside chroots
 Name: mock
-Version: 1.4.5
+Version: 1.4.6
 Release: 1%{?dist}
 License: GPLv2+
 # Source is created by
@@ -224,6 +224,9 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 %endif
 
 %changelog
+* Fri Sep 15 2017 Miroslav Suchý <msuchy@redhat.com> 1.4.6-1
+- requires mock-core-configs
+
 * Fri Sep 15 2017 Miroslav Suchý <msuchy@redhat.com> 1.4.5-1
 - introduce -N for --no-cleanup-after (jsynacek@redhat.com)
 - add man page entry for --debug-config
