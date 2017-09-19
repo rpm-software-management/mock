@@ -550,7 +550,7 @@ def do_buildsrpm(config_opts, commands, buildroot, options, args):
 
 @traceLog()
 def do_debugconfig(config_opts):
-    for key in config_opts:
+    for key in sorted(config_opts):
         print("config_opts['{}'] = {}".format(key, pformat(config_opts[key])))
 
 @traceLog()
