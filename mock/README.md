@@ -18,7 +18,7 @@ Mock currently has one active branch plus master.
 
  * `mock-1.0` - This branch is in bugfix mode and is used for EL-5.
  * `mock-1.3` - This branch is in bugfix mode and is used for EL-6.
- * `master` - This is currently mock 1.4.x and is still getting features. It is used for everything else. This branch is used pure for releasing.
+ * `master` - This is currently mock 1.4.x and is still getting features. It is used for everything else. This branch is used purely for releasing.
  * `devel` - All development happens here, if you want to send patches, use this branch.
 
 ## Communication
