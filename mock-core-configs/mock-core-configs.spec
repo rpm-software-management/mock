@@ -2,7 +2,7 @@
 %global mockgid 135
 
 Name:		mock-core-configs
-Version:	27.2
+Version:	27.3
 Release:	1%{?dist}
 Summary:	Mock core config files basic chroots
 
@@ -105,6 +105,9 @@ fi
 %ghost %config(noreplace,missingok) %{_sysconfdir}/mock/default.cfg
 
 %changelog
+* Wed Sep 27 2017 Miroslav Suchý <msuchy@redhat.com> 27.3-1
+- use primary key for F-27+ on s390x (dan@danny.cz)
+
 * Tue Sep 12 2017 Miroslav Suchý <msuchy@redhat.com> 27.2-1
 - add source url
 - grammar fix
