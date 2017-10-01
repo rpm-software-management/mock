@@ -17,6 +17,7 @@ from . import util
 from .trace_decorator import traceLog
 
 if six.PY2:
+    # pylint: disable=redefined-builtin
     class PermissionError(OSError):
         pass
 
