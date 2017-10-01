@@ -79,6 +79,7 @@ class RootCache(object):
         self._unpack_root_cache()
 
     def _haveVolatileRoot(self):
+        # pylint: disable=unneeded-not
         return self.config['plugin_conf']['tmpfs_enable'] \
             and not (str(self.config['plugin_conf']['tmpfs_opts']['keep_mounted']) == 'True')
 
