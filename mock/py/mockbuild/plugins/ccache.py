@@ -36,7 +36,7 @@ class CCache(object):
         plugins.add_hook("prebuild", self._ccacheBuildHook)
         plugins.add_hook("preinit", self._ccachePreInitHook)
         buildroot.mounts.add(
-            BindMountPoint(srcpath=self.ccachePath, bindpath=buildroot.make_chroot_path("/tmp/ccache")))
+            BindMountPoint(srcpath=self.ccachePath, bindpath=buildroot.make_chroot_path("/var/tmp/ccache")))
 
     # =============
     # 'Private' API
@@ -53,11 +53,11 @@ class CCache(object):
     @traceLog()
     def _ccachePreInitHook(self):
         getLog().info("enabled ccache")
-        envupd = {"CCACHE_DIR": "/tmp/ccache", "CCACHE_UMASK": "002"}
+        envupd = {"CCACHE_DIR": "/var/tmp/ccache", "CCACHE_UMASK": "002"}
         if self.ccache_opts.get('compress') is not None:
             envupd["CCACHE_COMPRESS"] = str(self.ccache_opts['compress'])
         self.buildroot.env.update(envupd)
 
-        mockbuild.util.mkdirIfAbsent(self.buildroot.make_chroot_path('/tmp/ccache'))
+        mockbuild.util.mkdirIfAbsent(self.buildroot.make_chroot_path('/var/tmp/ccache'))
         mockbuild.util.mkdirIfAbsent(self.ccachePath)
         self.buildroot.uid_manager.changeOwner(self.ccachePath, recursive=True)
