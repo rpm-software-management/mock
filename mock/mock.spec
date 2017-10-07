@@ -1,6 +1,6 @@
 %{!?python_sitelib: %global python_sitelib %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib()")}
 
-%if 0%{?fedora}
+%if 0%{?fedora} || 0%{?mageia}
 %global use_python3 1
 %global use_python2 0
 %else
@@ -29,10 +29,13 @@ URL: https://github.com/rpm-software-management/mock/
 BuildArch: noarch
 Requires: tar
 Requires: pigz
+%if 0%{?mageia}
+Requires: usermode-consoleonly
+%else
 Requires: usermode
+%endif
 Requires: createrepo_c
-Requires: distribution-gpg-keys >= 1.9
-Requires: mock-core-configs
+Requires: mock-core-configs >= 27.4
 Requires(post): coreutils
 %if 0%{?use_python2}
 Requires: pyliblzma
@@ -45,13 +48,16 @@ Requires: coreutils
 %if 0%{?fedora}
 Suggests: iproute
 %endif
+%if 0%{?mageia}
+Suggests: iproute2
+%endif
 BuildRequires: bash-completion
 %if %{use_python3}
 Requires: python3
 Requires: python3-distro
 Requires: python3-six >= 1.4.0
 Requires: python3-requests
-Requires: rpm-python3
+Requires: python3-rpm
 Requires: python3-pyroute2
 BuildRequires: python3-devel
 #check
@@ -66,7 +72,7 @@ Requires: python >= 2.7
 Requires: rpm-python
 %endif
 BuildRequires: python-devel
-%if 0%{?fedora}
+%if 0%{?fedora} || 0%{?mageia}
 Requires: dnf
 Suggests: yum
 Requires: dnf-plugins-core

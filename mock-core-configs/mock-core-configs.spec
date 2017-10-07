@@ -15,6 +15,10 @@ URL:		https://github.com/rpm-software-management/mock/
 # tito build --tgz
 Source:		https://github.com/rpm-software-management/mock/releases/download/%{name}-%{version}-1/%{name}-%{version}.tar.gz
 BuildArch:	noarch
+
+# distribution-gpg-keys contains GPG keys used by mock configs
+Requires:	distribution-gpg-keys >= 1.15
+
 Requires(pre):	shadow-utils
 Requires(post): coreutils
 %if 0%{?fedora} || 0%{?mageia}
