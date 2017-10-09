@@ -2,7 +2,7 @@
 %global mockgid 135
 
 Name:		mock-core-configs
-Version:	27.3
+Version:	27.4
 Release:	1%{?dist}
 Summary:	Mock core config files basic chroots
 
@@ -119,6 +119,11 @@ fi
 %ghost %config(noreplace,missingok) %{_sysconfdir}/mock/default.cfg
 
 %changelog
+* Mon Oct 09 2017 Miroslav Suchý <msuchy@redhat.com> 27.4-1
+- Fix mock & mock-core-config specs to support Mageia (ngompa13@gmail.com)
+- Ensure mock-core-configs will select the right default on Mageia
+  (ngompa13@gmail.com)
+
 * Wed Sep 27 2017 Miroslav Suchý <msuchy@redhat.com> 27.3-1
 - use primary key for F-27+ on s390x (dan@danny.cz)
 
