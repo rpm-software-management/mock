@@ -707,6 +707,11 @@ def main():
         # this bit of config is needed after we have created the bootstrap buildroot since we need to
         # query pkg_manager to know which manager is in use
         bootstrap_buildroot_config['chroot_setup_cmd'] = bootstrap_buildroot.pkg_manager.install_command
+        # override configs for bootstrap_*
+        for k in bootstrap_buildroot_config.copy():
+            if "bootstrap_"+k in bootstrap_buildroot_config:
+                bootstrap_buildroot_config[k] = bootstrap_buildroot_config["bootstrap_"+k]
+                del bootstrap_buildroot_config["bootstrap_"+k]
 
     buildroot = Buildroot(config_opts, uidManager, state, plugins, bootstrap_buildroot)
     commands = Commands(config_opts, uidManager, plugins, state, buildroot, bootstrap_buildroot)
