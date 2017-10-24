@@ -701,6 +701,12 @@ def main():
         bootstrap_buildroot_config['yum_command'] = bootstrap_buildroot_config['system_yum_command']
         bootstrap_buildroot_config['dnf_command'] = bootstrap_buildroot_config['system_dnf_command']
 
+        # we don't need to install additional packages into the bootstrap buildroot
+        # since we care only about package manager in there
+        bootstrap_buildroot_config['chroot_additional_packages'] = []
+        bootstrap_buildroot_config['module_enable'] = []
+        bootstrap_buildroot_config['module_install'] = []
+
         bootstrap_buildroot = Buildroot(bootstrap_buildroot_config,
                                         uidManager, bootstrap_buildroot_state, bootstrap_plugins,
                                         is_bootstrap=True)
