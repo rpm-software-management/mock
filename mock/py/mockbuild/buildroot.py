@@ -52,7 +52,7 @@ class Buildroot(object):
         self.chrootuid = config['chrootuid']
         self.chrootuser = 'mockbuild'
         self.chrootgid = config['chrootgid']
-        self.chrootgroup = 'mock'
+        self.chrootgroup = config['chrootgroup']
         self.env = config['environment']
         self.env['HOME'] = self.homedir
         proxy_env = util.get_proxy_environment(config)
