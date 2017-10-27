@@ -60,12 +60,12 @@ which is usually a symlink to one of the installed configurations.
 .LP
 There is a site\-wide configuration file, /etc/mock/site\-defaults.cfg, which can
 be used to specify site\-wide options. The shipped version of this file has no
-active options, but does have a list of all of the configuration options,
+active options, but does have a list of all of the configuration options
 examples of how to set them, and their default values.
 .LP
 For backward compatibility, old\-style commands, ("rebuild", "init", "clean",
 etc.) without leading '\-\-' are still accepted, but are deprecated. See
-COMMANDS section, below, for detailed listing of all commands.
+COMMANDS section, below, for the detailed listing of all commands.
 .LP
 To use mock, a user should become a member of the \fBmock\fR group by
 adding their username to the \fBmock\fR line in /etc/group. This can
@@ -76,7 +76,7 @@ be done with the following command:
 Note that mock is not intended to be run directly as root.
 .LP
 Warning:
-Mock is running some parts of code under root privileges. There are known ways how to get root access once a user is in mock group (and once he can to run mock). This is possible when user abuses the mock configuration options. Please do not add anyone who is not trustworthy to the mock group!
+Mock is running some parts of code under root privileges. There are known ways how to get root access once a user is in mock group (and once he can to run mock). This is possible when a user abuses the mock configuration options. Please do not add anyone who is not trustworthy to the mock group!
 
 
 .SH "COMMANDS"
@@ -108,27 +108,27 @@ It will use the binary which is specified in 'dnf_command' option in site-defaul
 This option will enforce \-\-dnf.
 .TP
 \fB\-\-init\fP
-Initialize a chroot (clean, install chroot packages, etc.)
+Initialize a chroot (clean, install chroot packages, etc.).
 .TP
 \fB\-i\fR, \fB\-\-install\fP
-Do a yum install PACKAGE inside the chroot. No 'clean' is performed
+Do a yum install PACKAGE inside the chroot. No 'clean' is performed.
 .TP
 \fB\-\-installdeps\fP
 Find out deps for SRPM or RPM, and do a yum install to put them in the chroot. No 'clean' is performed
 .TP
 \fB\-l\fR, \fB\-\-list\-snapshots\fP
-List all existing snapshots of the chroot belonging to current configuration.
+List all existing snapshots of the chroot belonging to the current configuration.
 Current base snapshot is marked with an asterisk (\fB*\fR)
 .TP
 \fB\-\-mount\fP
 Mount all everything mounted in the chroot path including the root itself
-that might have been a LVM volume or TMPFS.
+that might have been an LVM volume or TMPFS.
 .TP
 \fB\-\-orphanskill\fP
-No\-op mode that simply checks that no stray processes are running in the chroot. Kills any processes that it finds using specified root.
+No\-op mode that simply checks that no stray processes are running in the chroot. Kills any processes that it finds using the specified root.
 .TP
 \fB\-\-pm\-cmd\fP
-Execute following arguments with current package manager with installroot set to
+Execute following arguments with the current package manager with installroot set to
 the chroot path.
 .TP
 \fB\-p\fR, \fB\-\-print\-root\-path\fP
@@ -146,7 +146,7 @@ undone.
 This feature is available only when lvm_root plugin is installed and enabled.
 .TP
 \fB\-\-rollback\-to\fP
-Return chroot to the state in specified snapshot and set it as the current
+Return chroot to the state in the specified snapshot and set it as the current
 base to which clean actions will return. It won't delete nor modify the snapshot
 that was set as base previously.
 This feature is available only when the lvm_root plugin is installed and enabled.
@@ -195,7 +195,7 @@ Note: While you can specify more commands on a command line, only one can be exe
 .LP
 .TP
 \fB\-\-arch\fR=\fIARCH\fP
-Calls the linux personality() syscall to tell the kernel to emulate a secondary architecture. For example, building i386 packages on an x86_64 buildhost.
+Calls the Linux personality() syscall to tell the kernel to emulate a secondary architecture. For example, building i386 packages on an x86_64 buildhost.
 .TP
 \fB\-\-cache\-alterations\fR
 Rebuild the root cache after making alterations to the chroot (i.e. \-\-install). This option is useful only when using tmpfs plugin.
@@ -370,7 +370,7 @@ To build a package from the default SCM repository configured in site\-defaults.
 \fBmock \-r fedora\-14\-i386 \-\-scm\-enable \-\-scm\-option package=pkg\fR
 .RE
 .LP
-To build execute a command inside of chroot.
+To execute a command inside of chroot.
 .LP
 .RS 5
 \fBmock \-r fedora\-21\-x86_64 \-\-chroot \-\- rpm --eval %dist\fR
