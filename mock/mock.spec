@@ -16,7 +16,7 @@
 
 Summary: Builds packages inside chroots
 Name: mock
-Version: 1.4.6
+Version: 1.4.7
 Release: 1%{?dist}
 License: GPLv2+
 # Source is created by
@@ -232,6 +232,25 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 %endif
 
 %changelog
+* Tue Oct 31 2017 Miroslav Suchý <msuchy@redhat.com> 1.4.7-1
+- user and group is actually not used here since some logic moved to buildroot.py
+- add config_opts['chrootgroup'] to site-defaults.cfg
+- Enable chrootgroup as a config file option
+- override some keys for bootstrap config
+- Add support for DeskOS
+- Delete rootdir as well when calling clean
+- Fix mock & mock-core-config specs to support Mageia
+- Ensure mock-core-configs will select the right default on Mageia
+- ccache: use different bind mount directory
+- new-chroot: set up new network namespace and add default route in it
+- use primary key for F-27+ on s390x
+- man: add dnf to see also
+- man: escape @
+- remove Seth email
+- more grammar fixes
+- fix typo in mock(1)
+- sort debug-config output
+
 * Fri Sep 15 2017 Miroslav Suchý <msuchy@redhat.com> 1.4.6-1
 - requires mock-core-configs
 
