@@ -121,36 +121,37 @@ class Mounts(object):
     @traceLog()
     def __init__(self, rootObj):
         self.rootObj = rootObj
+        self.essential_mounted = False
+        self.essential_mounts = [] # /proc, /sys ... normally managed by systemd
         self.managed_mounts = []  # mounts owned by mock
         self.user_mounts = []  # mounts injected by user
-        if not util.USE_NSPAWN:
-            self.managed_mounts = [
-                FileSystemMountPoint(filetype='proc',
-                                     device='mock_chroot_proc',
-                                     path=rootObj.make_chroot_path('/proc')),
-                FileSystemMountPoint(filetype='sysfs',
-                                     device='mock_chroot_sys',
-                                     path=rootObj.make_chroot_path('/sys')),
-            ]
-            if rootObj.config['internal_dev_setup']:
-                self.managed_mounts.append(
+        self.essential_mounts = [
+            FileSystemMountPoint(filetype='proc',
+                                 device='mock_chroot_proc',
+                                 path=rootObj.make_chroot_path('/proc')),
+            FileSystemMountPoint(filetype='sysfs',
+                                 device='mock_chroot_sys',
+                                 path=rootObj.make_chroot_path('/sys')),
+        ]
+        if rootObj.config['internal_dev_setup']:
+            self.essential_mounts.append(
+                FileSystemMountPoint(
+                    filetype='tmpfs',
+                    device='mock_chroot_shmfs',
+                    path=rootObj.make_chroot_path('/dev/shm')
+                )
+            )
+            opts = 'gid=%d,mode=0620,ptmxmode=0666' % grp.getgrnam('tty').gr_gid
+            if util.cmpKernelVer(os.uname()[2], '2.6.29') >= 0:
+                opts += ',newinstance'
+                self.essential_mounts.append(
                     FileSystemMountPoint(
-                        filetype='tmpfs',
-                        device='mock_chroot_shmfs',
-                        path=rootObj.make_chroot_path('/dev/shm')
+                        filetype='devpts',
+                        device='mock_chroot_devpts',
+                        path=rootObj.make_chroot_path('/dev/pts'),
+                        options=opts
                     )
                 )
-                opts = 'gid=%d,mode=0620,ptmxmode=0666' % grp.getgrnam('tty').gr_gid
-                if util.cmpKernelVer(os.uname()[2], '2.6.29') >= 0:
-                    opts += ',newinstance'
-                    self.managed_mounts.append(
-                        FileSystemMountPoint(
-                            filetype='devpts',
-                            device='mock_chroot_devpts',
-                            path=rootObj.make_chroot_path('/dev/pts'),
-                            options=opts
-                        )
-                    )
 
     @traceLog()
     def add(self, mount):
@@ -161,7 +162,15 @@ class Mounts(object):
         self.user_mounts.append(mount)
 
     @traceLog()
+    def mountall_essential(self):
+        for m in self.essential_mounts:
+            m.mount()
+        self.essential_mounted = True
+
+    @traceLog()
     def mountall_managed(self):
+        if not util.USE_NSPAWN:
+            self.mountall_essential()
         for m in self.managed_mounts:
             m.mount()
 
@@ -183,10 +192,20 @@ class Mounts(object):
             for m in reversed(self.managed_mounts + self.user_mounts):
                 if m.umount() is False:
                     failed_new += 1
+        if self.essential_mounted:
+            self.umountall_essential()
+
+    @traceLog()
+    def umountall_essential(self):
+        for m in reversed(self.essential_mounts):
+            m.umount()
+        self.essential_mounted = False
 
     @traceLog()
     def get_mountpoints(self):
-        return [m.mountpath for m in self.managed_mounts + self.user_mounts]
+        # including essentials (no matter if we use nspawn)
+        # this is used to exclude path in archiving etc. and we want to do that for essentials too
+        return [m.mountpath for m in self.essential_mounts + self.managed_mounts + self.user_mounts]
 
     def __repr__(self):
         return "<mockbuild.mounts.Mounts object managed: {0}, user: {1}>".format(repr(self.managed_mounts),

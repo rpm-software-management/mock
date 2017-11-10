@@ -97,6 +97,10 @@ class _PackageManager(object):
     @traceLog()
     def execute(self, *args, **kwargs):
         self.plugins.call_hooks("preyum")
+        pm_umount = False
+        if not self.buildroot.mounts.essential_mounted:
+            self.buildroot.mounts.mountall_essential()
+            pm_umount = True
         # intentionally we do not call bootstrap hook here - it does not have sense
         env = self.config['environment'].copy()
         env.update(util.get_proxy_environment(self.config))
@@ -118,6 +122,9 @@ class _PackageManager(object):
                 out = util.do(invocation, env=env, chrootPath=self.bootstrap_buildroot.make_chroot_path(), **kwargs)
         except Error as e:
             raise YumError(str(e))
+        finally:
+            if pm_umount:
+                self.buildroot.mounts.umountall_essential()
         self.plugins.call_hooks("postyum")
         # intentionally we do not call bootstrap hook here - it does not have sense
         return out
