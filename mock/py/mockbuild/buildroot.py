@@ -220,7 +220,7 @@ class Buildroot(object):
 
     @traceLog()
     def _setup_resolver_config(self):
-        if self.config['use_host_resolv']:
+        if self.config['use_host_resolv'] and self.config['rpmbuild_networking']:
             self._copy_config('resolv.conf')
             self._copy_config('hosts')
 
