@@ -608,7 +608,7 @@ class Buildroot(object):
             if subv:
                 util.do(["btrfs", "subv", "delete", "/" + subv])
             if not self.rootdir.startswith(self.basedir):
-              util.rmtree(self.rootdir, selinux=self.selinux)
+                util.rmtree(self.rootdir, selinux=self.selinux)
             util.rmtree(self.basedir, selinux=self.selinux)
         self.chroot_was_initialized = False
         self.plugins.call_hooks('postclean')
