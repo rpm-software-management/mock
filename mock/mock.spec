@@ -102,10 +102,17 @@ Mock takes an SRPM and builds it in a chroot.
 %package scm
 Summary: Mock SCM integration module
 Requires: %{name} = %{version}-%{release}
+%if 0%{?rhel} < 8
 Requires: cvs
 Requires: git
 Requires: subversion
 Requires: tar
+%else
+Recommends: cvs
+Recommends: git
+Recommends: subversion
+Recommends: tar
+%endif
 
 %description scm
 Mock SCM integration module.
