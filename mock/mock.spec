@@ -189,12 +189,8 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 %files
 %defattr(0644, root, mock)
 %config(noreplace) %{_sysconfdir}/mock/site-defaults.cfg
-%if 0%{?rhel} == 6
-%{_sysconfdir}/bash_completion.d/mock
-%else
 %{_datadir}/bash-completion/completions/mock
 %{_datadir}/bash-completion/completions/mockchain
-%endif
 
 %defattr(-, root, root)
 
