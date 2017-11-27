@@ -156,9 +156,9 @@ cp -a etc/mock/* %{buildroot}%{_sysconfdir}/mock/
 install -d %{buildroot}%{_sysconfdir}/security/console.apps/
 cp -a etc/consolehelper/mock %{buildroot}%{_sysconfdir}/security/console.apps/%{name}
 
-install -d %{buildroot}%{_datadir}/bash-completion/completions/
-cp -a etc/bash_completion.d/* %{buildroot}%{_datadir}/bash-completion/completions/
-ln -s mock %{buildroot}%{_datadir}/bash-completion/completions/mockchain
+install -d %{buildroot}%{_sysconfdir}/bash_completion.d/
+cp -a etc/bash_completion.d/* %{buildroot}%{_sysconfdir}/bash_completion.d
+ln -s mock %{buildroot}%{_sysconfdir}/bash_completion.d/mockchain
 
 install -d %{buildroot}%{_sysconfdir}/pki/mock
 cp -a etc/pki/* %{buildroot}%{_sysconfdir}/pki/mock/
@@ -183,7 +183,9 @@ if [ -d %{buildroot}%{_datadir}/bash-completion ]; then
     echo %{_datadir}/bash-completion/completions/mock >> %{name}.cfgs
     echo %{_datadir}/bash-completion/completions/mockchain >> %{name}.cfgs
 elif [ -d %{buildroot}%{_sysconfdir}/bash_completion.d ]; then
+    echo "%dir %attr(0755, root, root) %{_sysconfdir}/bash_completion.d" >> %{name}.cfgs
     echo %{_sysconfdir}/bash_completion.d/mock >> %{name}.cfgs
+    echo %{_sysconfdir}/bash_completion.d/mockchain >> %{name}.cfgs
 fi
 
 %if 0%{?rhel} == 6
