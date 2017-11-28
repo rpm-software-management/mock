@@ -241,12 +241,15 @@ class Yum(_PackageManager):
         # write in yum.conf into chroot
         # always truncate and overwrite (w+)
         self.buildroot.root_log.debug('configure yum')
-        yumconf_path = self.buildroot.make_chroot_path('etc', 'yum', 'yum.conf')
+        yumconf_path = os.path.join('etc', 'yum', 'yum.conf')
         # we need dnf too in case that yum is not installed and /usr/bin/yum points in fact to dnf
-        dnfconf_path = self.buildroot.make_chroot_path('etc', 'dnf', 'dnf.conf')
+        dnfconf_path = os.path.join('etc', 'dnf', 'dnf.conf')
         for conf_path in (yumconf_path, dnfconf_path):
-            with open(conf_path, 'w+') as conf_file:
+            chroot_conf_path = self.buildroot.make_chroot_path(conf_path)
+            with open(chroot_conf_path, 'w+') as conf_file:
                 conf_file.write(config_content)
+            if os.path.exists(conf_path):
+                shutil.copystat(conf_path, chroot_conf_path)
 
         # write in yum plugins into chroot
         self.buildroot.root_log.debug('configure yum priorities')
