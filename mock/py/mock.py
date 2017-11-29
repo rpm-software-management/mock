@@ -290,6 +290,9 @@ def command_parse():
     parser.add_option("--new-chroot", action="store_true", dest="new_chroot",
                       default=False,
                       help="use new chroot (systemd-nspawn).")
+    parser.add_option("--enable-network", action="store_true", dest="enable_network",
+                      default=False,
+                      help="enable networking.")
     parser.add_option("--postinstall", action="store_true", dest="post_install",
                       default=False, help="Try to install built packages in "
                                           "the same buildroot right after build")

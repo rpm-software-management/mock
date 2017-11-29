@@ -1068,6 +1068,9 @@ def set_config_opts_per_cmdline(config_opts, options, args):
     if options.new_chroot:
         USE_NSPAWN = True
 
+    if options.enable_network:
+        config_opts['rpmbuild_networking'] = True
+
     if options.mode in ("rebuild",) and len(args) > 1 and not options.resultdir:
         raise exception.BadCmdline(
             "Must specify --resultdir when building multiple RPMS.")
