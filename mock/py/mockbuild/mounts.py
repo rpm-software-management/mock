@@ -20,7 +20,7 @@ class MountPoint(object):
     @traceLog()
     def ismounted(self):
         with open('/proc/mounts') as f:
-            if self.mountpath in [x.split()[1] for x in f]:
+            if self.mountpath.rstrip('/') in [x.split()[1] for x in f]:
                 return True
         return False
 
