@@ -77,7 +77,7 @@ Requires: dnf
 Suggests: yum
 Requires: dnf-plugins-core
 Recommends: btrfs-progs
-Suggests: dnf-utils
+Recommends: dnf-utils
 %endif
 %if 0%{?rhel} == 7
 Requires: btrfs-progs

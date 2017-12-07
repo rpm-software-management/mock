@@ -114,6 +114,6 @@ class SELinux(object):
             supported = hasattr(cli.YumBaseCli, "_parseSetOpts")
             sys.path.pop(0)
             return supported
-        except SyntaxError:
+        except (SyntaxError, ModuleNotFoundError):
             # We're on python 3, assuming yum is new enough
             return True
