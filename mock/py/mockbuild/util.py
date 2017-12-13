@@ -973,6 +973,35 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
 @traceLog()
 def set_config_opts_per_cmdline(config_opts, options, args):
     "takes processed cmdline args and sets config options."
+
+    cli_opt_new = {}
+    for cli_opt in options.cli_config_opts:
+        k, v = cli_opt.split("=", 1)
+        # convert string to boolean and int if possible
+        if v in ['true', 'True']:
+            v = True
+        elif v in ['false', 'False']:
+            v = False
+        elif v in ['none', 'None']:
+            v = None
+        else:
+            try:
+                v = int(v)
+            except ValueError:
+                pass
+        if k not in cli_opt_new:
+            cli_opt_new[k] = v
+        elif isinstance(cli_opt_new[k], list):
+            cli_opt_new[k].append(v)
+        else:
+            if v == '':
+                # hack!
+                # specify k twice, second v is empty, this make it list with one value
+                cli_opt_new[k] = [cli_opt_new[k]]
+            else:
+                cli_opt_new[k] = [cli_opt_new[k], v]
+    config_opts.update(cli_opt_new)
+
     config_opts['verbose'] = options.verbose
     config_opts['print_main_output'] = config_opts['verbose'] > 0 and sys.stderr.isatty()
 

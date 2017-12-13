@@ -206,6 +206,9 @@ Clean chroot after building. Use with \-\-resultdir. Only active for '\-\-rebuil
 \fB\-\-configdir\fR=\fICONFIGDIR\fP
 Change directory where config files are found
 .TP
+\fB\-\-config-opts\fR=\fIKEY=VALUE\fP
+Override configuration option. Can be used multiple times. When used multiple times for the same key, it will create an array. This is evaluated first (after parsing configs) so any specialized command line option can override values defined in this option.
+.TP
 \fB\-\-cwd\fR=\fIDIR\fP
 Change to the specified directory (relative to the chroot) before running command when using \-\-chroot
 .TP

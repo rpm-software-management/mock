@@ -250,6 +250,8 @@ def command_parse():
     parser.add_option("--configdir", action="store", dest="configdir",
                       default=None,
                       help="Change where config files are found")
+    parser.add_option("--config-opts", action="append", dest="cli_config_opts",
+                      default=[], help="Override configuration option.")
     parser.add_option("--rpmbuild_timeout", action="store",
                       dest="rpmbuild_timeout", type="int", default=None,
                       help="Fail build if rpmbuild takes longer than 'timeout'"
