@@ -644,7 +644,7 @@ class ChildPreExec(object):
         if not USE_NSPAWN:
             condChroot(self.chrootPath)
             condDropPrivs(self.uid, self.gid)
-        condChdir(self.cwd)
+            condChdir(self.cwd)
         condUnshareIPC(self.unshare_ipc)
         reset_sigpipe()
 
