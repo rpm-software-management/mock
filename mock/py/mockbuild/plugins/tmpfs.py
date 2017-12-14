@@ -78,7 +78,7 @@ class Tmpfs(object):
             return
         force = False
         getLog().info("unmounting tmpfs.")
-        umountCmd = ["umount", "-n", self.buildroot.make_chroot_path()]
+        umountCmd = ["umount", "-R", "-n", self.buildroot.make_chroot_path()]
         # since we're in a separate namespace, the mount will be cleaned up
         # on exit, so just warn if it fails here
         try:
@@ -89,7 +89,7 @@ class Tmpfs(object):
 
         if force:
             # try umounting with force option
-            umountCmd = ["umount", "-n", "-f", self.buildroot.make_chroot_path()]
+            umountCmd = ["umount", "-R", "-n", "-f", self.buildroot.make_chroot_path()]
             try:
                 mockbuild.util.do(umountCmd, shell=False)
             except:
