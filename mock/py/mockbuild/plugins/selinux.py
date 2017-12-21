@@ -53,11 +53,8 @@ class SELinux(object):
 
         self.buildroot.mounts.add(BindMountPoint(srcpath=self.filesystems, bindpath=self.chrootFilesystems))
 
-        if self._selinuxYumIsSetoptSupported():
-            plugins.add_hook("preyum", self._selinuxPreYumHook)
-            plugins.add_hook("postyum", self._selinuxPostYumHook)
-        else:
-            getLog().warning("selinux: 'yum' does not support '--setopt' option")
+        plugins.add_hook("preyum", self._selinuxPreYumHook)
+        plugins.add_hook("postyum", self._selinuxPostYumHook)
 
     @staticmethod
     @traceLog()
@@ -100,20 +97,3 @@ class SELinux(object):
                 command += " %s" % option
 
         return self._originalUtilDo(command, *args, **kargs)
-
-    @traceLog()
-    def _selinuxYumIsSetoptSupported(self):
-        if self.config['package_manager'] != 'yum':
-            # all DNF versions support --setopt
-            return True
-        try:
-            # ugly hack: discover, whether yum supports --setopt option
-            # pylint: disable=import-error
-            sys.path.insert(0, '/usr/share/yum-cli')
-            import cli
-            supported = hasattr(cli.YumBaseCli, "_parseSetOpts")
-            sys.path.pop(0)
-            return supported
-        except SyntaxError:
-            # We're on python 3, assuming yum is new enough
-            return True
