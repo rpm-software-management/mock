@@ -8,7 +8,6 @@
 import atexit
 import os
 import stat
-import sys
 import tempfile
 
 # our imports
