@@ -217,20 +217,21 @@ def get_machinectl_uuid(chroot_path):
 
 
 @traceLog()
-def orphansKill(rootToKill, killsig=signal.SIGTERM):
+def orphansKill(rootToKill):
     """kill off anything that is still chrooted."""
     getLog().debug("kill orphans")
     if USE_NSPAWN is False:
-        for fn in [d for d in os.listdir("/proc") if d.isdigit()]:
-            try:
-                root = os.readlink("/proc/%s/root" % fn)
-                if os.path.realpath(root) == os.path.realpath(rootToKill):
-                    getLog().warning("Process ID %s still running in chroot. Killing...", fn)
-                    pid = int(fn, 10)
-                    os.kill(pid, killsig)
-                    os.waitpid(pid, 0)
-            except OSError:
-                pass
+        for killsig in [signal.SIGTERM, signal.SIGKILL]:
+            for fn in [d for d in os.listdir("/proc") if d.isdigit()]:
+                try:
+                    root = os.readlink("/proc/%s/root" % fn)
+                    if os.path.realpath(root) == os.path.realpath(rootToKill):
+                        getLog().warning("Process ID %s still running in chroot. Killing with %s...", fn, killsig)
+                        pid = int(fn, 10)
+                        os.kill(pid, killsig)
+                        os.waitpid(pid, 0)
+                except OSError:
+                    pass
     else:
         m_uuid = get_machinectl_uuid(rootToKill)
         if m_uuid:
