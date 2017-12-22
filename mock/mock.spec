@@ -16,7 +16,7 @@
 
 Summary: Builds packages inside chroots
 Name: mock
-Version: 1.4.7
+Version: 1.4.8
 Release: 1%{?dist}
 License: GPLv2+
 # Source is created by
@@ -230,6 +230,22 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 %endif
 
 %changelog
+* Fri Dec 22 2017 Miroslav Suchý <msuchy@redhat.com> 1.4.8-1
+- orphanskill: send SIGKILL when SIGTERM is not enough [RHBZ#1495214]
+- pass --non-unique to usermod because of old targets
+- remove _selinuxYumIsSetoptSupported()
+- only use -R if first umount failed
+- use recursive unmount for tmpfs
+- do not cd to dir if nspawn is used [GH#108]
+- add new option --config-opts [GH#138]
+- add --enable-network to bash_completation
+- Strip trailing / from mountpath in ismounted()
+- new cli option --enable-network [RHBZ#1513953]
+- when creating yum/dnf.conf copy timestamp from host [RHBZ#1293910]
+- do not populate /etc/resolv.conf when networking is disabled [RHBZ#1514028]
+- soften mock-scm dependencies [RHBZ#1515989]
+- mount /proc and /sys before executing any PM command [RHBZ#1467299]
+
 * Tue Oct 31 2017 Miroslav Suchý <msuchy@redhat.com> 1.4.7-1
 - user and group is actually not used here since some logic moved to buildroot.py
 - add config_opts['chrootgroup'] to site-defaults.cfg
