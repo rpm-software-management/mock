@@ -16,6 +16,7 @@ import grp
 import locale
 import logging
 import os
+import functools
 import os.path
 import pickle
 import pwd
@@ -85,6 +86,7 @@ PLUGIN_LIST = ['tmpfs', 'root_cache', 'yum_cache', 'bind_mount',
 
 USE_NSPAWN = False
 
+_OPS_TIMEOUT = 0
 
 class commandTimeoutExpired(exception.Error):
     def __init__(self, msg):
@@ -535,7 +537,7 @@ def resize_pty(pty):
 #
 @traceLog()
 # pylint: disable=unused-argument
-def do(command, shell=False, chrootPath=None, cwd=None, timeout=0, raiseExc=True,
+def _do(command, shell=False, chrootPath=None, cwd=None, timeout=0, raiseExc=True,
        returnOutput=0, uid=None, gid=None, user=None, personality=None,
        printOutput=False, env=None, pty=False, nspawn_args=None, unshare_net=False,
        *args, **kargs):
@@ -620,6 +622,10 @@ def do(command, shell=False, chrootPath=None, cwd=None, timeout=0, raiseExc=True
 
     return output
 
+def do(command, *args, **kargs):
+    timeout = kargs.get('timeout', _OPS_TIMEOUT)
+    f = functools.partial(_do, timeout=timeout)
+    return f(command, **kargs)
 
 class ChildPreExec(object):
     def __init__(self, personality, chrootPath, cwd, uid, gid, env=None,
@@ -968,6 +974,8 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
     config_opts['rpm_command'] = '/bin/rpm'
     config_opts['rpmbuild_command'] = '/usr/bin/rpmbuild'
 
+    config_opts['opstimeout'] = 0
+
     return config_opts
 
 
@@ -1223,11 +1231,16 @@ def update_config_from_file(config_opts, config_file, uid_manager):
                 config_opts.update(pickle.loads(new_config))
 
 
+def setup_operations_timeout(config_opts):
+    global _OPS_TIMEOUT
+    _OPS_TIMEOUT = config_opts.get('opstimeout', 0)
+
 @traceLog()
 def do_update_config(log, config_opts, cfg, uidManager, name, skipError=True):
     if os.path.exists(cfg):
         config_opts['config_paths'].append(cfg)
         update_config_from_file(config_opts, cfg, uidManager)
+        setup_operations_timeout(config_opts)
         check_macro_definition(config_opts)
     elif not skipError:
         log.error("Could not find required config file: %s", cfg)
