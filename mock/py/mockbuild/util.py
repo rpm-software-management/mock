@@ -411,10 +411,11 @@ def process_input(line):
     return ''.join(out)
 
 
-def logOutput(fds, logger, returnOutput=1, start=0, timeout=0, printOutput=False,
+def logOutput(fdout, fderr, logger, returnOutput=1, start=0, timeout=0, printOutput=False,
               child=None, chrootPath=None, pty=False):
     output = ""
     done = False
+    fds = [fdout, fderr]
 
     # set all fds to nonblocking
     for fd in fds:
@@ -476,7 +477,10 @@ def logOutput(fds, logger, returnOutput=1, start=0, timeout=0, printOutput=False
                     for line in lines:
                         if line != '':
                             line = ansi_escape.sub('', line)
-                            logger.debug(line)
+                            if fderr is s and not line.startswith('+ '):
+                                logger.debug("BUILDSTDERR: " + line)
+                            else:
+                                logger.debug(line)
                     for h in logger.handlers:
                         h.flush()
                 if returnOutput:
@@ -576,7 +580,7 @@ def do(command, shell=False, chrootPath=None, cwd=None, timeout=0, raiseExc=True
             with child.stderr:
                 # use select() to poll for output so we dont block
                 output = logOutput(
-                    [reader if pty else child.stdout, child.stderr],
+                    reader if pty else child.stdout, child.stderr,
                     logger, returnOutput, start, timeout, pty=pty,
                     printOutput=printOutput, child=child,
                     chrootPath=chrootPath)
