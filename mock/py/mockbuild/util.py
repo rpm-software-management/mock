@@ -478,7 +478,7 @@ def logOutput(fdout, fderr, logger, returnOutput=1, start=0, timeout=0, printOut
                         if line != '':
                             line = ansi_escape.sub('', line)
                             if fderr is s and not line.startswith('+ '):
-                                logger.debug("BUILDSTDERR: " + line)
+                                logger.debug("BUILDSTDERR: %s", line)
                             else:
                                 logger.debug(line)
                     for h in logger.handlers:
