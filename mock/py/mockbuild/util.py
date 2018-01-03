@@ -16,7 +16,6 @@ import grp
 import locale
 import logging
 import os
-import functools
 import os.path
 import pickle
 import pwd
@@ -540,7 +539,7 @@ def resize_pty(pty):
 def _do(command, shell=False, chrootPath=None, cwd=None, timeout=0, raiseExc=True,
        returnOutput=0, uid=None, gid=None, user=None, personality=None,
        printOutput=False, env=None, pty=False, nspawn_args=None, unshare_net=False,
-       *args, **kargs):
+       *_, **kargs):
 
     logger = kargs.get("logger", getLog())
     output = ""
@@ -622,10 +621,10 @@ def _do(command, shell=False, chrootPath=None, cwd=None, timeout=0, raiseExc=Tru
 
     return output
 
-def do(command, *args, **kargs):
-    timeout = kargs.get('timeout', _OPS_TIMEOUT)
-    f = functools.partial(_do, timeout=timeout)
-    return f(command, **kargs)
+def do(command, *_, **kargs):
+    if 'timeout' not in kargs:
+        kargs['timeout'] = _OPS_TIMEOUT
+    return _do(command, **kargs)
 
 class ChildPreExec(object):
     def __init__(self, personality, chrootPath, cwd, uid, gid, env=None,
