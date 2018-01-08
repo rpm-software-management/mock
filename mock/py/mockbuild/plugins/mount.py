@@ -42,6 +42,9 @@ class Mount(object):
         self.config = buildroot.config
         self.state = buildroot.state
         self.opts = conf
+        # Skip mounting user-specified mounts if we're in the boostrap chroot
+        if buildroot.is_bootstrap:
+            return
         plugins.add_hook("postinit", self._mountCreateDirs)
         for device, dest_dir, vfstype, mount_opts in self.opts['dirs']:
             buildroot.mounts.add_user_mount(
