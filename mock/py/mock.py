@@ -685,15 +685,15 @@ def main():
     log.info("mock.py version %s starting (python version = %s)...",
              __VERSION__, py_version)
     state = State()
-    bootstrap_buildroot_state = State(bootstrap=True)
     plugins = Plugins(config_opts, state)
-    bootstrap_plugins = Plugins(config_opts, bootstrap_buildroot_state)
 
     # outer buildroot to bootstrap the installation - based on main config with some differences
     bootstrap_buildroot = None
     if config_opts['use_bootstrap_container']:
         # first take a copy of the config so we can make some modifications
         bootstrap_buildroot_config = config_opts.copy()
+        # copy plugins configuration so we get a separate deep copy
+        bootstrap_buildroot_config['plugin_conf'] = config_opts['plugin_conf'].copy()
         # add '-bootstrap' to the end of the root name
         bootstrap_buildroot_config['root'] = bootstrap_buildroot_config['root'] + '-bootstrap'
         # share a yum cache to save downloading everything twice
@@ -706,6 +706,8 @@ def main():
         bootstrap_buildroot_config['yum_command'] = bootstrap_buildroot_config['system_yum_command']
         bootstrap_buildroot_config['dnf_command'] = bootstrap_buildroot_config['system_dnf_command']
 
+        bootstrap_buildroot_state = State(bootstrap=True)
+        bootstrap_plugins = Plugins(bootstrap_buildroot_config, bootstrap_buildroot_state)
         bootstrap_buildroot = Buildroot(bootstrap_buildroot_config,
                                         uidManager, bootstrap_buildroot_state, bootstrap_plugins,
                                         is_bootstrap=True)
