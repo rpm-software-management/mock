@@ -540,12 +540,14 @@ def resize_pty(pty):
 #
 @traceLog()
 # pylint: disable=unused-argument
-def _do(command, shell=False, chrootPath=None, cwd=None, timeout=0, raiseExc=True,
+def do(command, shell=False, chrootPath=None, cwd=None, timeout=0, raiseExc=True,
        returnOutput=0, uid=None, gid=None, user=None, personality=None,
        printOutput=False, env=None, pty=False, nspawn_args=None, unshare_net=False,
        *_, **kargs):
 
     logger = kargs.get("logger", getLog())
+    if timeout == 0:
+        timeout = _OPS_TIMEOUT
     output = ""
     start = time.time()
     if pty:
@@ -624,11 +626,6 @@ def _do(command, shell=False, chrootPath=None, cwd=None, timeout=0, raiseExc=Tru
         raise exception.Error("Command failed: \n # %s\n%s" % (command, output), child.returncode)
 
     return output
-
-def do(command, *_, **kargs):
-    if 'timeout' not in kargs:
-        kargs['timeout'] = _OPS_TIMEOUT
-    return _do(command, **kargs)
 
 class ChildPreExec(object):
     def __init__(self, personality, chrootPath, cwd, uid, gid, env=None,
