@@ -21,7 +21,7 @@ Requires:	distribution-gpg-keys >= 1.15
 
 Requires(pre):	shadow-utils
 Requires(post): coreutils
-%if 0%{?fedora} || 0%{?mageia}
+%if 0%{?fedora} || 0%{?mageia} || 0%{?rhel} > 7
 # to detect correct default.cfg
 Requires(post):	python3-dnf
 Requires(post):	python3-hawkey
@@ -29,7 +29,7 @@ Requires(post):	system-release
 Requires(post):	python3
 Requires(post):	sed
 %endif
-%if 0%{?rhel}
+%if 0%{?rhel} <= 7
 # to detect correct default.cfg
 Requires(post):	python
 Requires(post):	yum
@@ -76,7 +76,7 @@ exit 0
 
 %post
 if [ -s /etc/os-release ]; then
-    # fedora and rhel7
+    # fedora and rhel7+
     if grep -Fiq Rawhide /etc/os-release; then
         ver=rawhide
     # mageia
@@ -91,7 +91,7 @@ else
     # something obsure, use buildtime version
     ver=%{?rhel}%{?fedora}%{?mageia}
 fi
-%if 0%{?fedora} || 0%{?mageia}
+%if 0%{?fedora} || 0%{?mageia} || %{?rhel} > 7
 if [ -s /etc/mageia-release ]; then
     mock_arch=$(sed -n '/^$/!{$ s/.* \(\w*\)$/\1/p}' /etc/mageia-release)
 else
