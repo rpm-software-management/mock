@@ -20,9 +20,9 @@ def package_manager(config_opts, chroot, plugins, bootstrap_buildroot=None):
     if pm == 'yum':
         return Yum(config_opts, chroot, plugins, bootstrap_buildroot)
     elif pm == 'dnf':
-        if os.path.isfile(config_opts['dnf_command']):
+        if os.path.isfile(config_opts['dnf_command']) or bootstrap_buildroot is not None:
             return Dnf(config_opts, chroot, plugins, bootstrap_buildroot)
-        # RHEL without DNF
+        # RHEL without DNF and without bootstrap buildroot
         (distribution, version) = distro.linux_distribution(full_distribution_name=False)[0:2]
         if distribution in ['redhat', 'rhel', 'centos', 'ol']:
             version = int(version.split('.')[0])
@@ -195,7 +195,9 @@ class Yum(_PackageManager):
         self.command = config['yum_command']
         self.install_command = config['yum_install_command']
         self.builddep_command = [config['yum_builddep_command']]
-        self._check_command()
+        # the command in bootstrap may not exists yet
+        if bootstrap_buildroot is None:
+            self._check_command()
         if bootstrap_buildroot is not None:
             # we are in bootstrap so use old names
             self.command = '/usr/bin/yum'
@@ -298,7 +300,9 @@ class Dnf(_PackageManager):
         self.command = config['dnf_command']
         self.install_command = config['dnf_install_command']
         self.builddep_command = [self.command, 'builddep']
-        self._check_command()
+        # the command in bootstrap may not exists yet
+        if bootstrap_buildroot is None:
+            self._check_command()
         self.resolvedep_command = [self.command, 'repoquery', '--resolve', '--requires']
 
     @traceLog()
