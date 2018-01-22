@@ -121,7 +121,6 @@ class Mounts(object):
     @traceLog()
     def __init__(self, rootObj):
         self.rootObj = rootObj
-        self.essential_mounted = False
         self.essential_mounts = [] # /proc, /sys ... normally managed by systemd
         self.managed_mounts = []  # mounts owned by mock
         self.user_mounts = []  # mounts injected by user
@@ -152,6 +151,7 @@ class Mounts(object):
                         options=opts
                     )
                 )
+        self.essential_mounted = all(m.ismounted() for m in self.essential_mounts)
 
     @traceLog()
     def add(self, mount):
