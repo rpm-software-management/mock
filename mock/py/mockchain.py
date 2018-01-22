@@ -138,7 +138,9 @@ def add_local_repo(infile, destfile, baseurl, repoid=None):
 
     try:
         with open(infile) as f:
-            code = compile(f.read(), infile, 'exec')
+            content = f.read()
+            content = re.sub(r'include\((.*)\)', r'exec(open(\g<1>).read(), {}, locals())', content)
+            code = compile(content, infile, 'exec')
         # pylint: disable=exec-used
         exec(code)
         if not repoid:
