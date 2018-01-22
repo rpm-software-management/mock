@@ -2,7 +2,7 @@
 %global mockgid 135
 
 Name:		mock-core-configs
-Version:	27.4
+Version:	27.5
 Release:	1%{?dist}
 Summary:	Mock core config files basic chroots
 
@@ -119,6 +119,12 @@ fi
 %ghost %config(noreplace,missingok) %{_sysconfdir}/mock/default.cfg
 
 %changelog
+* Mon Jan 22 2018 Miroslav Suchý <msuchy@redhat.com> 27.5-1
+- add fedora 28 configs
+- remove failovermethod=priority for repos which use dnf
+- remove fedora 24 configs
+- set skip_if_unavailable=False for all repos
+
 * Mon Oct 09 2017 Miroslav Suchý <msuchy@redhat.com> 27.4-1
 - Fix mock & mock-core-config specs to support Mageia (ngompa13@gmail.com)
 - Ensure mock-core-configs will select the right default on Mageia
