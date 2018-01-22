@@ -70,7 +70,7 @@ Requires: python2-pyroute2
 Requires: python >= 2.7
 Requires: rpm-python
 %endif
-BuildRequires: python-devel
+BuildRequires: python2-devel
 %if 0%{?fedora} || 0%{?mageia}
 Requires: dnf
 Suggests: yum
