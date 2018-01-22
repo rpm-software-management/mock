@@ -1173,25 +1173,6 @@ def check_config(config_opts):
 
 
 @traceLog()
-def include(config_file, config_opts, is_statement=False):
-    if os.path.exists(config_file):
-        if is_statement and config_file in config_opts['config_paths']:
-            getLog().warning("Multiple inclusion of %s, skipping" % config_file)
-            return
-
-        config_opts['config_paths'].append(config_file)
-
-        with open(config_file) as f:
-            content = f.read()
-            content = re.sub(r'include\((.*)\)', r'include(\g<1>, config_opts, True)', content)
-            code = compile(content, config_file, 'exec')
-        # pylint: disable=exec-used
-        exec(code)
-    else:
-        raise exception.ConfigError("Could not find included config file: %s" % config_file)
-
-
-@traceLog()
 def update_config_from_file(config_opts, config_file, uid_manager):
     config_file = os.path.realpath(config_file)
     r_pipe, w_pipe = os.pipe()
@@ -1200,7 +1181,11 @@ def update_config_from_file(config_opts, config_file, uid_manager):
             os.close(r_pipe)
             if uid_manager and not all(getresuid()):
                 uid_manager.dropPrivsForever()
-            include(config_file, config_opts)
+            with open(config_file) as f:
+                content = f.read()
+                content = re.sub(r'include\((.*)\)', r'exec(open(\g<1>).read(), {}, locals())', content)
+                code = compile(content, config_file, 'exec')
+            exec(code)
             with os.fdopen(w_pipe, 'wb') as writer:
                 pickle.dump(config_opts, writer)
         except:
