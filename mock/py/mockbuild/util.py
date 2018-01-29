@@ -648,7 +648,9 @@ class ChildPreExec(object):
         condUnshareNet(self.unshare_net)
         condPersonality(self.personality)
         condEnvironment(self.env)
-        if not USE_NSPAWN:
+        # Even if nspawn is allowed to be used, it won't be used unless there
+        # is a chrootPath set
+        if not USE_NSPAWN or not self.chrootPath:
             condChroot(self.chrootPath)
             condDropPrivs(self.uid, self.gid)
             condChdir(self.cwd)
