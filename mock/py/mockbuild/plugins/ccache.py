@@ -25,6 +25,8 @@ class CCache(object):
     # pylint: disable=too-few-public-methods
     @traceLog()
     def __init__(self, plugins, conf, buildroot):
+        if buildroot.is_bootstrap:
+            return
         self.buildroot = buildroot
         self.config = buildroot.config
         self.state = buildroot.state
