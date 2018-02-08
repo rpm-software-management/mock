@@ -27,7 +27,7 @@ def package_manager(config_opts, chroot, plugins, bootstrap_buildroot=None):
         if distribution in ['redhat', 'rhel', 'centos', 'ol']:
             version = int(version.split('.')[0])
             if version < 8:
-                if 'dnf_warning' not in config_opts or config_opts['dnf_warning']:
+                if ('dnf_warning' not in config_opts or config_opts['dnf_warning']) and not config_opts['use_bootstrap_container']:
                     print("""WARNING! WARNING! WARNING!
 You are building package for distribution which use DNF. However your system
 does not support DNF. You can continue with YUM, which will likely succeed,
