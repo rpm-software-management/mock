@@ -723,6 +723,9 @@ def main():
     buildroot = Buildroot(config_opts, uidManager, state, plugins, bootstrap_buildroot)
     commands = Commands(config_opts, uidManager, plugins, state, buildroot, bootstrap_buildroot)
 
+    if config_opts['use_bootstrap_container']:
+        bootstrap_buildroot.config['chroot_setup_cmd'] = buildroot.pkg_manager.install_command
+
     state.start("run")
 
     if options.printrootpath:
