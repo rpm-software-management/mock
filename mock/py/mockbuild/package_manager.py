@@ -15,13 +15,13 @@ from .exception import BuildError, Error, YumError
 from .trace_decorator import traceLog
 
 
-def package_manager(config_opts, chroot, plugins, bootstrap_buildroot=None):
+def package_manager(config_opts, buildroot, plugins, bootstrap_buildroot=None):
     pm = config_opts.get('package_manager', 'yum')
     if pm == 'yum':
-        return Yum(config_opts, chroot, plugins, bootstrap_buildroot)
+        return Yum(config_opts, buildroot, plugins, bootstrap_buildroot)
     elif pm == 'dnf':
         if os.path.isfile(config_opts['dnf_command']) or bootstrap_buildroot is not None:
-            return Dnf(config_opts, chroot, plugins, bootstrap_buildroot)
+            return Dnf(config_opts, buildroot, plugins, bootstrap_buildroot)
         # RHEL without DNF and without bootstrap buildroot
         (distribution, version) = distro.linux_distribution(full_distribution_name=False)[0:2]
         if distribution in ['redhat', 'rhel', 'centos', 'ol']:
@@ -36,11 +36,11 @@ You can suppress this warning when you put
   config_opts['dnf_warning'] = False
 in Mock config.""")
                     input("Press Enter to continue.")
-                return Yum(config_opts, chroot, plugins, bootstrap_buildroot)
+                return Yum(config_opts, buildroot, plugins, bootstrap_buildroot)
         # something else then EL, and no dnf_command exist
         # This will likely mean some error later.
         # Either user is smart or let him shot in his foot.
-        return Dnf(config_opts, chroot, plugins, bootstrap_buildroot)
+        return Dnf(config_opts, buildroot, plugins, bootstrap_buildroot)
     else:
         # TODO specific exception type
         raise Exception('Unrecognized package manager')
