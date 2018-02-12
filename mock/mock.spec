@@ -536,7 +536,7 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 - call rpmbuild correctly
 
 * Tue Mar  8 2016 Miroslav Suchý <msuchy@redhat.com> - 1.2.16-1
-- remove old %if statements
+- remove old %%if statements
 - systemd-nspawn is now in systemd-container package
 - become root user correct way [RHBZ#1312820][RHBZ#1311796]
 - remove the sparc config
