@@ -38,6 +38,15 @@ Release checklist overview:
    # make sure that .tito/releasers.conf is up to date
    $ tito release fedora-git-all
    $ tito release epel-git-all
+   $ tito release @copr
+9) publish tgz
+   $ tito build --tgz
+   Go to:
+   https://github.com/rpm-software-management/mock/releases
+   Click Draft new release
+   Choose existing tag. E.g., mock-1.4.9-1 @ master
+   Enter the same tag as release title.
+   Attach the binary.
 
 Once the builds finish (successfully) you should push the just built
 packages to their respective testing repositories. This can be done
