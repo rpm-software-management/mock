@@ -33,7 +33,7 @@ class CCache(object):
         self.ccache_opts = conf
         tmpdict = self.ccache_opts.copy()
         tmpdict.update({'chrootuid': self.buildroot.chrootuid})
-        self.ccachePath = self.ccache_opts['dir'] % tmpdict
+        self.ccachePath = self.ccache_opts['dir']
         buildroot.preexisting_deps.append("ccache")
         plugins.add_hook("prebuild", self._ccacheBuildHook)
         plugins.add_hook("preinit", self._ccachePreInitHook)

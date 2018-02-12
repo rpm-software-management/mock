@@ -32,7 +32,7 @@ import termios
 from textwrap import dedent
 import time
 import uuid
-
+import jinja2
 import distro
 
 from . import exception
@@ -769,6 +769,12 @@ def find_non_nfs_dir():
             return d
     raise exception.Error('Cannot find non-NFS directory in: %s' % dirs)
 
+@traceLog()
+def postsetup_config_opts(config_opts):
+    if 'unique-ext' in config_opts:
+        config_opts['root'] = "%s-%s" % (config_opts['root'], config_opts['unique-ext'])
+    if 'rootdir' not in config_opts:
+        config_opts['rootdir'] = os.path.join(config_opts['basedir'], 'root')
 
 @traceLog()
 def setup_default_config_opts(unprivUid, version, pkgpythondir):
@@ -776,7 +782,7 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
     config_opts = {}
     config_opts['version'] = version
     config_opts['basedir'] = '/var/lib/mock'  # root name is automatically added to this
-    config_opts['resultdir'] = '%(basedir)s/%(root)s/result'
+    config_opts['resultdir'] = '{{ config.basedir }}/{{ config.root }}/result'
     config_opts['cache_topdir'] = '/var/cache/mock'
     config_opts['clean'] = True
     config_opts['check'] = True
@@ -791,6 +797,7 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
         #  'mock' group doesn't exist, must set in config file
         pass
     config_opts['chrootgroup'] = 'mock'
+    config_opts['chrootuser'] = 'mockbuild'
     config_opts['build_log_fmt_name'] = "unadorned"
     config_opts['root_log_fmt_name'] = "detailed"
     config_opts['state_log_fmt_name'] = "state"
@@ -829,19 +836,19 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
         'ccache_opts': {
             'max_cache_size': "4G",
             'compress': None,
-            'dir': "%(cache_topdir)s/%(root)s/ccache/u%(chrootuid)s/"},
+            'dir': "{{ config.cache_topdir }}/{{ config.root }}/ccache/u{{ config.chrootuid }}/"},
         'yum_cache_enable': True,
         'yum_cache_opts': {
             'max_age_days': 30,
             'max_metadata_age_days': 30,
-            'dir': "%(cache_topdir)s/%(root)s/%(package_manager)s_cache/",
-            'target_dir': "/var/cache/%(package_manager)s/",
+            'dir': "{{ config.cache_topdir }}/{{ config.root }}/{{ config.package_manager }}_cache/",
+            'target_dir': "/var/cache/{{ config.package_manager }}/",
             'online': True},
         'root_cache_enable': True,
         'root_cache_opts': {
             'age_check': True,
             'max_age_days': 15,
-            'dir': "%(cache_topdir)s/%(root)s/root_cache/",
+            'dir': "{{ config.cache_topdir }}/{{ config.root }}/root_cache/",
             'compress_program': 'pigz',
             'exclude_dirs': ["./proc", "./sys", "./dev", "./tmp/ccache", "./var/cache/yum", "./var/cache/dnf"],
             'extension': '.gz'},
@@ -933,7 +940,7 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
 
     # dependent on guest OS
     config_opts['useradd'] = \
-        '/usr/sbin/useradd -o -m -u %(uid)s -g %(gid)s -d %(home)s -n %(user)s'
+        '/usr/sbin/useradd -o -m -u {{ config.chrootuid }} -g {{ config.chrootgid }} -d {{ config.chroothome }} -n {{ config.chrootuser }}'
     config_opts['use_host_resolv'] = True
     config_opts['chroot_setup_cmd'] = ('groupinstall', 'buildsys-build')
     config_opts['target_arch'] = 'i386'
@@ -1175,35 +1182,69 @@ def check_config(config_opts):
                                     "- option config_opts['root'] must be present in your config.")
 
 
-@traceLog()
-def include(config_file, config_opts, is_statement=False):
-    if os.path.exists(config_file):
-        if is_statement and config_file in config_opts['config_paths']:
-            getLog().warning("Multiple inclusion of %s, skipping" % config_file)
-            return
+def _check_unrendered_config_opts(config_opts, content):
+    env = jinja2.Environment(undefined=jinja2.StrictUndefined, loader=jinja2.FileSystemLoader('/'))
+    template = env.from_string(content)
 
-        config_opts['config_paths'].append(config_file)
+    try:
+        template.render(config=config_opts)
+    except jinja2.exceptions.UndefinedError as ex:
+        m_ar = ex.message.split('attribute')
+        if len(m_ar) == 2:
+            new_msg = "Missing config option %s" % m_ar[-1].strip()
+        else:
+            new_msg = ex.message
+        raise exception.ConfigError(new_msg)
 
-        with open(config_file) as f:
-            content = f.read()
-            content = re.sub(r'include\((.*)\)', r'include(\g<1>, config_opts, True)', content)
-            code = compile(content, config_file, 'exec')
-        # pylint: disable=exec-used
+
+def _render_config_template(content, config_opts):
+
+    def _non_empty_finalizer(v):
+        return None if isinstance(v, jinja2.Undefined) else v
+
+    env = jinja2.Environment(finalize=_non_empty_finalizer, loader=jinja2.FileSystemLoader('/'))
+    template = env.from_string(content)
+    part_old = None
+    while True:
+        part = template.render(config=config_opts)
+        code = compile(part, '<string>', 'exec')
         exec(code)
-    else:
-        raise exception.ConfigError("Could not find included config file: %s" % config_file)
+        if part_old == part:
+            break
+        part_old = part
 
 
 @traceLog()
-def update_config_from_file(config_opts, config_file, uid_manager):
-    config_file = os.path.realpath(config_file)
+def eval_config_template(content, config_opts):
+    _render_config_template(content, config_opts)
+    _check_unrendered_config_opts(config_opts, content)
+
+
+def _config_to_eval(config_opts):
+    return '\n'.join(['config_opts["{}"] = {}'.format(k, repr(v)) for k,v in config_opts.items()])
+
+
+@traceLog()
+def update_config_from_file(config_opts, config_files, uid_manager):
+    config_file = None
     r_pipe, w_pipe = os.pipe()
     if os.fork() == 0:
         try:
             os.close(r_pipe)
             if uid_manager and not all(getresuid()):
                 uid_manager.dropPrivsForever()
-            include(config_file, config_opts)
+
+            merged = _config_to_eval(config_opts)
+            for config_file in config_files:
+                config_file = os.path.realpath(config_file)
+                with open(config_file) as f:
+                    content = f.read()
+                    ex = re.compile('^#.*$', flags=re.MULTILINE)
+                    content = re.sub(ex, '', content)
+                    merged = "{}\n{}".format(merged, content)
+
+            eval_config_template(merged, config_opts)
+
             with os.fdopen(w_pipe, 'wb') as writer:
                 pickle.dump(config_opts, writer)
         except:
@@ -1238,12 +1279,16 @@ def setup_operations_timeout(config_opts):
     _OPS_TIMEOUT = config_opts.get('opstimeout', 0)
 
 @traceLog()
-def do_update_config(log, config_opts, cfg, uidManager, name, skipError=True):
+def do_update_config(log, config_opts, cfg_paths, uidManager):
+    update_config_from_file(config_opts, cfg_paths, uidManager)
+
+    setup_operations_timeout(config_opts)
+    check_macro_definition(config_opts)
+
+@traceLog()
+def do_update_config_paths(log, config_opts, cfg, name, skipError=True):
     if os.path.exists(cfg):
         config_opts['config_paths'].append(cfg)
-        update_config_from_file(config_opts, cfg, uidManager)
-        setup_operations_timeout(config_opts)
-        check_macro_definition(config_opts)
     elif not skipError:
         log.error("Could not find required config file: %s", cfg)
         if name == "default":
@@ -1277,17 +1322,18 @@ def load_config(config_path, name, uidManager, version, pkg_python_dir):
     config_opts['config_file'] = chroot_cfg_path
 
     cfg = os.path.join(config_path, 'site-defaults.cfg')
-    do_update_config(log, config_opts, cfg, uidManager, name)
-
-    do_update_config(log, config_opts, chroot_cfg_path, uidManager, name, skipError=False)
+    do_update_config_paths(log, config_opts, cfg, name)
+    do_update_config_paths(log, config_opts, chroot_cfg_path, name, skipError=False)
 
     # Read user specific config file
     cfg = os.path.join(os.path.expanduser(
         '~' + pwd.getpwuid(os.getuid())[0]), '.mock/user.cfg')
-    do_update_config(log, config_opts, cfg, uidManager, name)
+    do_update_config_paths(log, config_opts, cfg, name)
     cfg = os.path.join(os.path.expanduser(
         '~' + pwd.getpwuid(os.getuid())[0]), '.config/mock.cfg')
-    do_update_config(log, config_opts, cfg, uidManager, name)
+    do_update_config_paths(log, config_opts, cfg, name)
+
+    do_update_config(log, config_opts, config_opts['config_paths'], uidManager)
 
     # default /etc/hosts contents
     if not config_opts['use_host_resolv'] and 'etc/hosts' not in config_opts['files']:
@@ -1297,6 +1343,9 @@ def load_config(config_path, name, uidManager, version, pkg_python_dir):
             ''')
     if config_opts['use_container_host_hostname'] and '%_buildhost' not in config_opts['macros']:
         config_opts['macros']['%_buildhost'] = socket.getfqdn()
+
+    postsetup_config_opts(config_opts)
+
     return config_opts
 
 
