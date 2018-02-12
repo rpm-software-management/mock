@@ -16,7 +16,7 @@
 
 Summary: Builds packages inside chroots
 Name: mock
-Version: 1.4.8
+Version: 1.4.9
 Release: 1%{?dist}
 License: GPLv2+
 # Source is created by
@@ -230,6 +230,31 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 %endif
 
 %changelog
+* Mon Feb 12 2018 Miroslav Suchý <msuchy@redhat.com> 1.4.9-1
+- "setup_cmd" of bootstrap container is the actuall $pm_install_command from
+  the main container [RHBZ#1540813]
+- do not produce warning when we are using different PM for bootstrap container
+- Honor the "cwd" flag when nspawn is being used and "chrootPath" is not set
+  (matthew.prahl@outlook.com)
+- do not run ccache in bootstrap chroot [RHBZ#1540813]
+- use DNF on EL7 when bootstrap is used [RHBZ#1540813]
+- site-defaults: fix quoting in sign_opts example [RHBZ#1537797]
+  (tmz@pobox.com)
+- Detect if essential mounts are already mounted (msimacek@redhat.com)
+- Update Python 2 dependency declarations to new packaging standards
+- improvement code/docs for opstimeout (Mikhail_Campos-Guadamuz@epam.com)
+- simplifying of utils.do() (Mikhail_Campos-Guadamuz@epam.com)
+- New config option 'opstimeout' has been added. (Mikhail_Campos-
+  Guadamuz@epam.com)
+- Don't setup user mounts in the bootstrap buildroot (bkorren@redhat.com)
+- el5 is sensitive to order of params
+- Default for config_opts['dnf_warning'] according to docs
+  (praiskup@redhat.com)
+- Avoid manual interpolation in logging of BUILDSTDERR (Mikhail_Campos-
+  Guadamuz@epam.com)
+- Splitting stdout and stderr in build.log. All stderr output lines are
+  prefixed by 'BUILDSTDERR:' (Mikhail_Campos-Guadamuz@epam.com)
+
 * Fri Dec 22 2017 Miroslav Suchý <msuchy@redhat.com> 1.4.8-1
 - orphanskill: send SIGKILL when SIGTERM is not enough [RHBZ#1495214]
 - pass --non-unique to usermod because of old targets
