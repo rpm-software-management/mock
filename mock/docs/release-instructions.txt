@@ -47,6 +47,8 @@ Release checklist overview:
    Choose existing tag. E.g., mock-1.4.9-1 @ master
    Enter the same tag as release title.
    Attach the binary.
+10) Prepare release notes. And add list of contributed authors:
+   git log mock-1.4.8-1.. --format="%aN" | sort |uniq
 
 Once the builds finish (successfully) you should push the just built
 packages to their respective testing repositories. This can be done
