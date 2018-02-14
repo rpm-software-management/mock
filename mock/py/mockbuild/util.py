@@ -692,9 +692,6 @@ def _prepare_nspawn_command(chrootPath, user, cmd, nspawn_args=None, env=None, c
     if cwd:
         nspawn_argv.append('--chdir={0}'.format(cwd))
     if env:
-        # BZ 1312384 workaround
-        env['PROMPT_COMMAND'] = r'printf "\033]0;<mock-chroot>\007"'
-        env['PS1'] = r'<mock-chroot> \s-\v\$ '
         for k, v in env.items():
             nspawn_argv.append('--setenv={0}={1}'.format(k, v))
     cmd = nspawn_argv + cmd
