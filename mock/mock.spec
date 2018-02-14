@@ -58,6 +58,7 @@ Requires: python3-six >= 1.4.0
 Requires: python3-requests
 Requires: python3-rpm
 Requires: python3-pyroute2
+Requires: python3-jinja2
 BuildRequires: python3-devel
 #check
 BuildRequires: python3-pylint
@@ -67,6 +68,11 @@ Requires: python2-distro
 Requires: python-six >= 1.4.0
 Requires: python-requests
 Requires: python2-pyroute2
+%if 0%{?rhel} == 7
+Requires: python-jinja2
+%else
+Requires: python2-jinja2
+%endif
 Requires: python >= 2.7
 Requires: rpm-python
 %endif

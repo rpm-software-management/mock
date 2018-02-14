@@ -1180,11 +1180,11 @@ def _check_unrendered_config_opts(config_opts, content):
     template = env.from_string(content)
 
     try:
-        template.render(config=config_opts)
+        template.render(config_opts=config_opts)
     except jinja2.exceptions.UndefinedError as ex:
         m_ar = ex.message.split('attribute')
         if len(m_ar) == 2:
-            new_msg = "Missing config option %s" % m_ar[-1].strip()
+            new_msg = "Missing config option {0}".format(m_ar[-1].strip())
         else:
             new_msg = ex.message
         raise exception.ConfigError(new_msg)
@@ -1199,7 +1199,7 @@ def _render_config_template(content, config_opts):
     template = env.from_string(content)
     part_old = None
     while True:
-        part = template.render(config=config_opts)
+        part = template.render(config_opts=config_opts)
         code = compile(part, '<string>', 'exec')
         exec(code)
         if part_old == part:
