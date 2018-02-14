@@ -698,7 +698,7 @@ def main():
         bootstrap_buildroot_config['root'] = bootstrap_buildroot_config['root'] + '-bootstrap'
         # share a yum cache to save downloading everything twice
         bootstrap_buildroot_config['plugin_conf']['yum_cache_opts']['dir'] = \
-            "{{ config.cache_topdir }}/"+config_opts['root']+"/{{ config.package_manager }}_cache/"
+            "%(cache_topdir)s/"+config_opts['root']+"/%(package_manager)s_cache/"
         # allow bootstrap buildroot to access the network for getting packages
         bootstrap_buildroot_config['rpmbuild_networking'] = True
         bootstrap_buildroot_config['use_host_resolv'] = True

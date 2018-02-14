@@ -31,7 +31,7 @@ class RootCache(object):
         self.root_cache_opts = conf
         self.config = buildroot.config
         self.state = buildroot.state
-        self.rootSharedCachePath = self.root_cache_opts['dir']
+        self.rootSharedCachePath = self.root_cache_opts['dir'] % self.root_cache_opts
         self.rootCacheFile = os.path.join(self.rootSharedCachePath, "cache.tar")
         self.rootCacheLock = None
         self.compressProgram = self.root_cache_opts['compress_program']

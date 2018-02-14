@@ -38,8 +38,8 @@ class YumCache(object):
         self.state = buildroot.state
         self.yum_cache_opts = conf
         self.yum_cache_opts['package_manager'] = self.config['package_manager']
-        self.yumSharedCachePath = self.yum_cache_opts['dir']
-        self.target_path = self.yum_cache_opts['target_dir']
+        self.yumSharedCachePath = self.yum_cache_opts['dir'] % self.yum_cache_opts
+        self.target_path = self.yum_cache_opts['target_dir'] % self.yum_cache_opts
         self.online = self.config['online']
         plugins.add_hook("preyum", self._yumCachePreYumHook)
         plugins.add_hook("postyum", self._yumCachePostYumHook)

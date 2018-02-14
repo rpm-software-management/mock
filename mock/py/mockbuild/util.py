@@ -769,12 +769,6 @@ def find_non_nfs_dir():
             return d
     raise exception.Error('Cannot find non-NFS directory in: %s' % dirs)
 
-@traceLog()
-def postsetup_config_opts(config_opts):
-    if 'unique-ext' in config_opts:
-        config_opts['root'] = "%s-%s" % (config_opts['root'], config_opts['unique-ext'])
-    if 'rootdir' not in config_opts:
-        config_opts['rootdir'] = os.path.join(config_opts['basedir'], 'root')
 
 @traceLog()
 def setup_default_config_opts(unprivUid, version, pkgpythondir):
@@ -782,7 +776,7 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
     config_opts = {}
     config_opts['version'] = version
     config_opts['basedir'] = '/var/lib/mock'  # root name is automatically added to this
-    config_opts['resultdir'] = '{{ config.basedir }}/{{ config.root }}/result'
+    config_opts['resultdir'] = '%(basedir)s/%(root)s/result'
     config_opts['cache_topdir'] = '/var/cache/mock'
     config_opts['clean'] = True
     config_opts['check'] = True
@@ -797,7 +791,6 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
         #  'mock' group doesn't exist, must set in config file
         pass
     config_opts['chrootgroup'] = 'mock'
-    config_opts['chrootuser'] = 'mockbuild'
     config_opts['build_log_fmt_name'] = "unadorned"
     config_opts['root_log_fmt_name'] = "detailed"
     config_opts['state_log_fmt_name'] = "state"
@@ -836,19 +829,19 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
         'ccache_opts': {
             'max_cache_size': "4G",
             'compress': None,
-            'dir': "{{ config.cache_topdir }}/{{ config.root }}/ccache/u{{ config.chrootuid }}/"},
+            'dir': "%(cache_topdir)s/%(root)s/ccache/u%(chrootuid)s/"},
         'yum_cache_enable': True,
         'yum_cache_opts': {
             'max_age_days': 30,
             'max_metadata_age_days': 30,
-            'dir': "{{ config.cache_topdir }}/{{ config.root }}/{{ config.package_manager }}_cache/",
-            'target_dir': "/var/cache/{{ config.package_manager }}/",
+            'dir': "%(cache_topdir)s/%(root)s/%(package_manager)s_cache/",
+            'target_dir': "/var/cache/%(package_manager)s/",
             'online': True},
         'root_cache_enable': True,
         'root_cache_opts': {
             'age_check': True,
             'max_age_days': 15,
-            'dir': "{{ config.cache_topdir }}/{{ config.root }}/root_cache/",
+            'dir': "%(cache_topdir)s/%(root)s/root_cache/",
             'compress_program': 'pigz',
             'exclude_dirs': ["./proc", "./sys", "./dev", "./tmp/ccache", "./var/cache/yum", "./var/cache/dnf"],
             'extension': '.gz'},
@@ -940,7 +933,7 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
 
     # dependent on guest OS
     config_opts['useradd'] = \
-        '/usr/sbin/useradd -o -m -u {{ config.chrootuid }} -g {{ config.chrootgid }} -d {{ config.chroothome }} -n {{ config.chrootuser }}'
+        '/usr/sbin/useradd -o -m -u %(uid)s -g %(gid)s -d %(home)s -n %(user)s'
     config_opts['use_host_resolv'] = True
     config_opts['chroot_setup_cmd'] = ('groupinstall', 'buildsys-build')
     config_opts['target_arch'] = 'i386'
@@ -1241,6 +1234,8 @@ def update_config_from_file(config_opts, config_files, uid_manager):
                     content = f.read()
                     ex = re.compile('^#.*$', flags=re.MULTILINE)
                     content = re.sub(ex, '', content)
+                    # support of the old include syntax
+                    content = re.sub(r'include\((.*)\)', r'{% include \g<1> %}', content)
                     merged = "{}\n{}".format(merged, content)
 
             eval_config_template(merged, config_opts)
@@ -1343,9 +1338,6 @@ def load_config(config_path, name, uidManager, version, pkg_python_dir):
             ''')
     if config_opts['use_container_host_hostname'] and '%_buildhost' not in config_opts['macros']:
         config_opts['macros']['%_buildhost'] = socket.getfqdn()
-
-    postsetup_config_opts(config_opts)
-
     return config_opts
 
 

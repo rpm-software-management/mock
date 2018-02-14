@@ -31,11 +31,16 @@ class Buildroot(object):
         self.bootstrap_buildroot = bootstrap_buildroot
         self.is_bootstrap = is_bootstrap
         self.shared_root_name = config['root']
+        if 'unique-ext' in config:
+            config['root'] = "%s-%s" % (config['root'], config['unique-ext'])
         self.root_name = config['root']
         self.mockdir = config['basedir']
         self.basedir = os.path.join(config['basedir'], config['root'])
-        self.rootdir = config['rootdir']
-        self.resultdir = config['resultdir']
+        if 'rootdir' in config:
+            self.rootdir = config['rootdir']
+        else:
+            self.rootdir = os.path.join(self.basedir, 'root')
+        self.resultdir = config['resultdir'] % config
         self.homedir = config['chroothome']
         self.cache_topdir = config['cache_topdir']
         self.cachedir = os.path.join(self.cache_topdir, self.shared_root_name)
@@ -45,7 +50,7 @@ class Buildroot(object):
                         and util.selinuxEnabled())
 
         self.chrootuid = config['chrootuid']
-        self.chrootuser = config['chrootuser']
+        self.chrootuser = 'mockbuild'
         self.chrootgid = config['chrootgid']
         self.chrootgroup = config['chrootgroup']
         self.env = config['environment']
@@ -294,7 +299,7 @@ class Buildroot(object):
 
         self.doChroot(['/usr/sbin/groupadd', '-g', dets['gid'], dets['group']],
                       shell=False, nosync=True)
-        self.doChroot(shlex.split(self.config['useradd']), shell=False, nosync=True)
+        self.doChroot(shlex.split(self.config['useradd'] % dets), shell=False, nosync=True)
         if not self.config['clean']:
             self.uid_manager.changeOwner(self.make_chroot_path(self.homedir))
         self._enable_chrootuser_account()
