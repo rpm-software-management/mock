@@ -204,6 +204,17 @@ class Commands(object):
             self.uid_manager.restorePrivs()
 
     @traceLog()
+    def installSpecDeps(self, spec_file):
+        try:
+            from pyrpm.spec import Spec
+            spec = Spec.from_file(spec_file)
+            self.uid_manager.becomeUser(0, 0)
+            self.buildroot.pkg_manager.install(*spec.build_requires, check=True)
+
+        finally:
+            self.uid_manager.restorePrivs()
+
+    @traceLog()
     def _show_installed_packages(self):
         '''report the installed packages in the chroot to the root log'''
         self.buildroot.root_log.info("Installed packages:")

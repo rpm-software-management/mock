@@ -810,10 +810,16 @@ def run_command(options, args, config_opts, commands, buildroot, state):
         if len(args) == 0:
             log.critical("You must specify an SRPM file with --installdeps")
             sys.exit(50)
-
-        util.checkSrpmHeaders(args, plainRpmOk=1)
         commands.init()
-        commands.installSrpmDeps(*args)
+        rpms = []
+        for file in args:
+            if file.split(".")[-1] == "spec":
+                commands.installSpecDeps(file)
+            else:
+                rpms.append(file)
+        if rpms:
+            util.checkSrpmHeaders(rpms, plainRpmOk=1)
+            commands.installSrpmDeps(*rpms)
 
     elif options.mode == 'install':
         if len(args) == 0:
