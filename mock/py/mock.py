@@ -813,7 +813,7 @@ def run_command(options, args, config_opts, commands, buildroot, state):
         commands.init()
         rpms = []
         for file in args:
-            if file.split(".")[-1] == "spec":
+            if os.path.splitext(file)[1] == ".spec":
                 commands.installSpecDeps(file)
             else:
                 rpms.append(file)
