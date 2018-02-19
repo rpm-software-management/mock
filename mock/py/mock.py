@@ -144,7 +144,7 @@ def command_parse():
                       help="initialize the chroot, do not build anything")
     parser.add_option("--installdeps", action="store_const", const="installdeps",
                       dest="mode",
-                      help="install build dependencies for a specified SRPM")
+                      help="install build dependencies for a specified SRPM or SPEC file")
     parser.add_option("-i", "--install", action="store_const", const="install",
                       dest="mode",
                       help="install packages using package manager")
