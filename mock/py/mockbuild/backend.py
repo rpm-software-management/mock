@@ -11,6 +11,7 @@ import os
 import shutil
 
 from mockbuild.mounts import BindMountPoint
+import rpm
 
 from . import util
 from .exception import PkgError
@@ -206,10 +207,11 @@ class Commands(object):
     @traceLog()
     def installSpecDeps(self, spec_file):
         try:
-            from pyrpm.spec import Spec
-            spec = Spec.from_file(spec_file)
+            spec=rpm.spec(spec_file).sourceHeader.dsFromHeader()
             self.uid_manager.becomeUser(0, 0)
-            self.buildroot.pkg_manager.install(*spec.build_requires, check=True)
+            for i in range(len(spec)): 
+                requirement_name = spec[i].split(" ")[1]
+                self.buildroot.pkg_manager.install(requirement_name, check=True)
 
         finally:
             self.uid_manager.restorePrivs()
