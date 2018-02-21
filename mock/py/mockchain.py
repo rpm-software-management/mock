@@ -1,4 +1,4 @@
-#!/usr/bin/python -tt
+#!/usr/bin/python3 -tt
 # -*- coding: utf-8 -*-
 # vim: noai:ts=4:sw=4:expandtab
 

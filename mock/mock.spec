@@ -127,9 +127,9 @@ of the buildroot.
 
 %prep
 %setup -q
-%if %{use_python3}
+%if %{use_python2}
 for file in py/mock.py py/mockchain.py; do
-  sed -i 1"s|#!/usr/bin/python |#!/usr/bin/python3 |" $file
+  sed -i 1"s|#!/usr/bin/python3 |#!/usr/bin/python |" $file
 done
 %endif
 
