@@ -210,7 +210,7 @@ class Commands(object):
             spec=rpm.spec(spec_file).sourceHeader.dsFromHeader()
             self.uid_manager.becomeUser(0, 0)
             for i in range(len(spec)): 
-                requirement_name = spec[i].split(" ")[1]
+                requirement_name = spec[i][2:]
                 self.buildroot.pkg_manager.install(requirement_name, check=True)
 
         finally:
