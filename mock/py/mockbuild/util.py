@@ -23,6 +23,7 @@ import pwd
 import re
 import select
 import signal
+import shlex
 import socket
 import stat
 import struct
@@ -1510,3 +1511,62 @@ def find_btrfs_in_chroot(mockdir, chroot_path):
         if subv.startswith(chroot_path[1:]):
             return subv
     return None
+
+
+@traceLog()
+def createrepo(config_opts, path):
+    """ Create repository in given path. """
+    cmd = shlex.split(config_opts["createrepo_command"])
+    if os.path.exists(os.path.join(path, 'repodata/repomd.xml')):
+        cmd.append('--update')
+    cmd.append(path)
+    return do(cmd)
+
+
+REPOS_ID = []
+@traceLog()
+def generate_repo_id(baseurl):
+    """ generate repository id for yum.conf out of baseurl """
+    repoid = "/".join(baseurl.split('//')[1:]).replace('/', '_')
+    repoid = re.sub(r'[^a-zA-Z0-9_]', '', repoid)
+    suffix = ''
+    i = 1
+    while repoid + suffix in REPOS_ID:
+        suffix = str(i)
+        i += 1
+    repoid = repoid + suffix
+    REPOS_ID.append(repoid)
+    return repoid
+
+
+@traceLog()
+def add_local_repo(config_opts, infile, destfile, baseurl, repoid=None):
+    try:
+        with open(infile) as f:
+            code = compile(f.read(), infile, 'exec')
+        # pylint: disable=exec-used
+        exec(code)
+        if not repoid:
+            repoid = generate_repo_id(baseurl)
+        else:
+            REPOS_ID.append(repoid)
+        localyumrepo = """
+            [{}]
+            name={}
+            baseurl={}
+            enabled=1
+            skip_if_unavailable=1
+            metadata_expire=0
+            cost=1
+            best=1
+            """.format(repoid, baseurl, baseurl)
+
+        config_opts['yum.conf'] += localyumrepo
+        with open(destfile, 'w') as br_dest:
+            for k, v in list(config_opts.items()):
+                br_dest.write("config_opts[%r] = %r\n" % (k, v))
+        return True, ''
+    except (IOError, OSError):
+        return False, "Could not write mock config to {}".format(destfile)
+
+    return True, ''

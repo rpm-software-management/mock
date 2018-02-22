@@ -70,6 +70,8 @@ class PackageState(object):
             cmd = "rpm -qa --root '%s' --qf '%%{nevra} %%{buildtime} %%{size} %%{pkgid} installed\\n' > %s" % (
                 self.buildroot.make_chroot_path(), out_file)
             with self.buildroot.uid_manager:
+                self.buildroot.uid_manager.becomeUser(0, 0)
                 mockbuild.util.do(cmd, shell=True, env=self.buildroot.env)
+                self.buildroot.uid_manager.restorePrivs()
             self.inst_done = True
             self.state.finish("Outputting list of installed packages")
