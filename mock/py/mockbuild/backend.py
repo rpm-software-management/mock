@@ -570,10 +570,12 @@ class Commands(object):
     @traceLog()
     def copy_build_results(self, results):
         self.buildroot.root_log.debug("Copying packages to result dir")
+        self.buildroot.uid_manager.becomeUser(0, 0)
         ret = []
         for item in results:
             shutil.copy2(item, self.buildroot.resultdir)
             ret.append(os.path.join(self.buildroot.resultdir, os.path.split(item)[1]))
+        self.buildroot.uid_manager.restorePrivs()
         return ret
 
     @traceLog()
