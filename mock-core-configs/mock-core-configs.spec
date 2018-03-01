@@ -2,7 +2,7 @@
 %global mockgid 135
 
 Name:		mock-core-configs
-Version:	28.2
+Version:	28.3
 Release:	1%{?dist}
 Summary:	Mock core config files basic chroots
 
@@ -119,6 +119,11 @@ fi
 %ghost %config(noreplace,missingok) %{_sysconfdir}/mock/default.cfg
 
 %changelog
+* Thu Mar 01 2018 Miroslav Suchý <msuchy@redhat.com> 28.3-1
+- bump up releasever in rawhide configs
+- add CentOS SCL repositories to EPEL 6 & 7 (x86_64)
+  (tmz@pobox.com)
+
 * Mon Jan 22 2018 Miroslav Suchý <msuchy@redhat.com> 28.2-1
 - fix wrong RHEL condition
 
