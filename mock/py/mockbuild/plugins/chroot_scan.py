@@ -34,6 +34,7 @@ class ChrootScan(object):
         self.scan_opts = conf
         self.resultdir = os.path.join(buildroot.resultdir, "chroot_scan")
         plugins.add_hook("postbuild", self._scanChroot)
+        plugins.add_hook("initfailed", self._scanChroot)
         getLog().info("chroot_scan: initialized")
 
     def _only_failed(self):
