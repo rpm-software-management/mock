@@ -42,12 +42,12 @@ class HwInfo(object):
         out.write("CPU info:\n")
         out.write(output)
 
-        cmd = ["/usr/bin/free"]
+        cmd = ["/bin/free"]
         output = mockbuild.util.do(cmd, shell=False, returnOutput=True, raiseExc=False)
         out.write("\n\nMemory:\n")
         out.write(output)
 
-        cmd = ["/usr/bin/df", "-H", self.buildroot.make_chroot_path()]
+        cmd = ["/bin/df", "-H", self.buildroot.make_chroot_path()]
         output = mockbuild.util.do(cmd, shell=False, returnOutput=True, raiseExc=False)
         out.write("\n\nStorage:\n")
         out.write(output)

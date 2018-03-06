@@ -299,7 +299,7 @@ def get_machinectl_uuid(chroot_path):
     # we will ignore errors in machinectl, it sometimes fails for various errors (cannot find IP addr...)
     # we do not care about exit code, we just want the output
     # RHEL7 does not know --no-legend, so we must filter the legend out
-    vm_list = _safe_check_output(["/usr/bin/machinectl", "list", "--no-pager"])
+    vm_list = _safe_check_output(["/bin/machinectl", "list", "--no-pager"])
     if (isinstance(vm_list, bytes)):
         vm_list = vm_list.decode("utf-8")
     vm_list = '\n'.join(vm_list.split('\n')[1:-2])
@@ -307,7 +307,7 @@ def get_machinectl_uuid(chroot_path):
         if len(name) > 0:
             m_uuid = name.split()[0]
             try:
-                vm_root = _safe_check_output(["/usr/bin/machinectl", "show", "-pRootDirectory", m_uuid])
+                vm_root = _safe_check_output(["/bin/machinectl", "show", "-pRootDirectory", m_uuid])
                 if (isinstance(vm_root, bytes)):
                     vm_root = vm_root.decode("utf-8")
             except subprocess.CalledProcessError:
@@ -337,7 +337,7 @@ def orphansKill(rootToKill):
         m_uuid = get_machinectl_uuid(rootToKill)
         if m_uuid:
             getLog().warning("Machine %s still running. Killing...", m_uuid)
-            os.system("/usr/bin/machinectl terminate %s" % m_uuid)
+            os.system("/bin/machinectl terminate %s" % m_uuid)
 
 
 @traceLog()
@@ -875,7 +875,7 @@ def clean_env():
 
 
 def get_fs_type(path):
-    cmd = ['/usr/bin/stat', '-f', '-L', '-c', '%T', path]
+    cmd = ['/bin/stat', '-f', '-L', '-c', '%T', path]
     p = subprocess.Popen(cmd, shell=False, stdout=subprocess.PIPE,
                          universal_newlines=True)
     p.wait()
