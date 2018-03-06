@@ -24,7 +24,7 @@ from __future__ import print_function
 # pylint: disable=pointless-string-statement,wrong-import-position
 """
 usage:
-       mock [options] {--init|--clean|--scrub=[all,chroot,cache,root-cache,c-cache,yum-cache,dnf-cache,lvm]}
+       mock [options] {--init|--clean|--scrub=[all,chroot,cache,root-cache,c-cache,yum-cache,dnf-cache,lvm,overlayfs]}
        mock [options] [--rebuild] /path/to/srpm(s)
        mock [options] --buildsrpm {--spec /path/to/spec --sources /path/to/src|
        --scm-enable [--scm-option key=value]}
@@ -133,7 +133,7 @@ def command_parse():
                       dest="mode",
                       help="completely remove the specified chroot")
     scrub_choices = ('chroot', 'cache', 'root-cache', 'c-cache', 'yum-cache',
-                     'dnf-cache', 'lvm', 'all')
+                     'dnf-cache', 'lvm', 'overlayfs', 'all')
     scrub_metavar = "[all|chroot|cache|root-cache|c-cache|yum-cache|dnf-cache]"
     parser.add_option("--scrub", action="callback", type="choice", default=[],
                       choices=scrub_choices, metavar=scrub_metavar,
@@ -180,11 +180,11 @@ def command_parse():
 
     parser.add_option("--snapshot", action="store_const", const="snapshot",
                       dest="mode",
-                      help="Create a new LVM snapshot with given name")
+                      help="Create a new LVM/overlayfs snapshot with given name")
 
     parser.add_option("--remove-snapshot", action="store_const", const="remove_snapshot",
                       dest="mode",
-                      help="Remove LVM snapshot with given name")
+                      help="Remove LVM/overlayfs snapshot with given name")
 
     parser.add_option("--rollback-to", action="store_const", const="rollback-to",
                       dest="mode",
@@ -326,7 +326,7 @@ def command_parse():
                       default=False)
 
     parser.add_option("-l", "--list-snapshots",
-                      help="list LVM snapshots associated with buildroot",
+                      help="list LVM/overlayfs snapshots associated with buildroot",
                       dest="list_snapshots", action="store_true",
                       default=False)
 
