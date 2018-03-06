@@ -35,7 +35,7 @@ class RootCache(object):
         self.rootCacheFile = os.path.join(self.rootSharedCachePath, "cache.tar")
         self.rootCacheLock = None
         self.compressProgram = self.root_cache_opts['compress_program']
-        if self.compressProgram == 'pigz' and not os.path.exists('/usr/bin/pigz'):
+        if self.compressProgram == 'pigz' and not os.path.exists('/bin/pigz'):
             getLog().warning("specified 'pigz' as the root cache compress program but not available; using gzip")
             self.compressProgram = 'gzip'
         # bsdtar use different decompress program
