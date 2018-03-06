@@ -143,13 +143,13 @@ Do a yum remove PACKAGE inside the chroot. No 'clean' is performed.
 \fB\-\-remove\-snapshot\fP
 Remove given snapshot freeing the space it occupied. This action cannot be
 undone.
-This feature is available only when lvm_root plugin is installed and enabled.
+This feature is available only when lvm_root or overlayfs plugin is installed and enabled.
 .TP
 \fB\-\-rollback\-to\fP
 Return chroot to the state in the specified snapshot and set it as the current
 base to which clean actions will return. It won't delete nor modify the snapshot
 that was set as base previously.
-This feature is available only when the lvm_root plugin is installed and enabled.
+This feature is available only when the lvm_root or overlayfs plugin is installed and enabled.
 .TP
 \fB\-\-scm\-enable\fP
 Enable building from an SCM (CVS/Git/SVN/DistGit). The SCM repository must be
@@ -176,7 +176,7 @@ Do a package update inside the chroot. The package list is optional, if omitted,
 Make a snapshot of the current state of the chroot. That snapshot will be set
 as the current base to which \fV\-\-clean\fP and implicit clean happening during
 rebuild command will return.
-This feature is available only when the lvm_root plugin is installed and enabled.
+This feature is available only when the lvm_root or overlayfs plugin is installed and enabled.
 .TP
 \fB\-\-umount\fP
 Umount all everything mounted in the chroot path including the root itself

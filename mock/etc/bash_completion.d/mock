@@ -74,7 +74,7 @@ _mock()
             ;;
         --scrub)
             COMPREPLY=( $( compgen -W "all chroot cache root-cache c-cache
-                yum-cache dnf-cache lvm" -- "$cur" ) )
+                yum-cache dnf-cache lvm overlayfs" -- "$cur" ) )
             return 0
             ;;
         -i|--install|install)
