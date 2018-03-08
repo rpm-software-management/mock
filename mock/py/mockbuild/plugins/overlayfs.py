@@ -2,10 +2,10 @@
 # This file is part of overlayfs plugin for mock
 # Copyright (C) 2018  Zdeněk Žamberský ( https://github.com/zzambers )
 #
-# This program is free software; you can redistribute it and/or
-# modify it under the terms of the GNU General Public License
-# as published by the Free Software Foundation; either version 2
-# of the License, or (at your option) any later version.
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 2 of the License, or
+# (at your option) any later version.
 #
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -13,8 +13,7 @@
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
 
@@ -29,8 +28,8 @@
 # config_opts['plugin_conf']['root_cache_enable'] = False
 # config_opts['plugin_conf']['overlayfs_enable'] = True
 # config_opts['plugin_conf']['overlayfs_opts']['base_dir'] = /some/directory
-# config_opts['plugin_conf']['overlayfs_opts']['debug'] = False
 # config_opts['plugin_conf']['overlayfs_opts']['touch_rpmdb'] = False
+# config_opts['plugin_conf']['overlayfs_opts']['trace_hooks'] = False
 #
 # ( Plugin uses postinit snapshot, similary to LVM, root chache is pointless. )
 #
@@ -38,15 +37,18 @@
 #            asociated with snapshots (layers, refs etc., see lower for details)
 #            It is further namespaced by configname so the same directory can be
 #            used in multiple mock configs without problems.
-# debug - print debug info, default: False
 # touch_rpmdb - automatically "touch" rpmdb files after each mount to copy
 #               them to upper layer to overcome rpm/yum issue,
 #               when calling them directly in chroot. See:
 #                   https://bugzilla.redhat.com/show_bug.cgi?id=1213602
+# pylint: disable=line-too-long
 #                   https://docs.docker.com/storage/storagedriver/overlayfs-driver/#limitations-on-overlayfs-compatibility
+# pylint: enable=line-too-long
 #               ( Option is not required when installing using mock --install,
 #               issue is work-arounded automatically there)
 #               defult: False
+# trace_hooks - print info messages about plugin's hooks being called,
+#               default: False
 #
 # plugin's resources asociated with config can be released by:
 #     mock -r <config> scrub all
@@ -133,7 +135,6 @@ import shutil
 import subprocess
 import uuid
 import re
-import sys
 
 requires_api_version = "1.1"
 
@@ -151,9 +152,9 @@ class OverlayFsPlugin(object):
         self.rootDir = buildroot.rootdir
         if not self.rootDir:
             raise Exception("Failed to get root dir")
-        self.debug = conf.get('debug')
-        if not self.debug:
-            self.debug = False
+        self.traceHooks = conf.get('trace_hooks')
+        if not self.traceHooks:
+            self.traceHooks = False
         self.touchRpmdbEnabled = conf.get('touch_rpmdb')
         if not self.touchRpmdbEnabled:
             self.touchRpmdbEnabled = False
@@ -245,12 +246,14 @@ class OverlayFsPlugin(object):
 
     # file operations
 
-    def readFile(self, filename):
+    @staticmethod
+    def readFile(filename):
         with open(filename) as fileObj:
             value = fileObj.read()
             return value
 
-    def writeFile(self, filename, value):
+    @staticmethod
+    def writeFile(filename, value):
         with open(filename, "w") as fileObj:
             fileObj.write(value)
 
@@ -279,7 +282,8 @@ class OverlayFsPlugin(object):
         counter = self.getLayerRefcount(layerId)
         if counter <= 0:
             # should not happen
-            raise Exception("refcounter is already <= 0: " + layerId +  " !")
+            errMsg = "refcounter is already <= 0: {} !".format(layerId)
+            raise Exception(errMsg)
         counter -= 1
         self.setLayerRefCount(layerId, counter)
         return counter
@@ -290,7 +294,8 @@ class OverlayFsPlugin(object):
         layerDir = self.getLayerDir(layerId)
         return os.path.exists(layerDir)
 
-    def isSameLayer(self, layerId1, layerId2):
+    @staticmethod
+    def isSameLayer(layerId1, layerId2):
         return layerId1 == layerId2
 
 
@@ -319,7 +324,8 @@ class OverlayFsPlugin(object):
         newLayerId = str(uuid.uuid4())
         if self.layerExists(newLayerId):
             # paranoia... :)
-            raise Exception("Layer already exists: " + newLayerId +  " !")
+            errMsg = "Layer already exists: {} !".format(newLayerId)
+            raise Exception(errMsg)
 
         # create directory for the new layer
         newLayerDir = self.getLayerDir(newLayerId)
@@ -344,7 +350,8 @@ class OverlayFsPlugin(object):
 
     def unrefOrDeleteLayer(self, layerId):
         if not self.layerExists(layerId):
-            raise Exception("Layer does not exist: " + layerId +  " !")
+            errMsg = "Layer does not exist: {} !".format(layerId)
+            raise Exception(errMsg)
         counter = self.unrefLayer(layerId)
         if not counter > 0:
             parentLayerId = self.getParentLayer(layerId)
@@ -359,29 +366,35 @@ class OverlayFsPlugin(object):
 
     # special refs
 
-    def getBaseLayerRef(self):
+    @staticmethod
+    def getBaseLayerRef():
         return ".base"
 
-    def getCurrentLayerRef(self):
+    @staticmethod
+    def getCurrentLayerRef():
         return ".current"
 
-    def getUpperLayerRef(self):
+    @staticmethod
+    def getUpperLayerRef():
         return ".upper"
 
-    def getPostinitLayerRef(self):
+    @staticmethod
+    def getPostinitLayerRef():
         return "postinit"
 
     # operations on refs
 
     def getLayerFromRef(self, name):
         if not self.refExists(name):
-            raise Exception("Ref does not exist: " + name +  " !")
+            errMsg = "Ref does not exist: {} !".format(name)
+            raise Exception(errMsg)
         refFile = self.getRefFile(name)
         return self.readFile(refFile)
 
     def createRef(self, name, layerId):
         if self.refExists(name):
-            raise Exception("Ref already exists: " + name +  " !")
+            errMsg = "Ref already exists: {} !".format(name)
+            raise Exception(errMsg)
         refFile = self.getRefFile(name)
         self.writeFile(refFile, layerId)
         self.refLayer(layerId)
@@ -398,7 +411,8 @@ class OverlayFsPlugin(object):
 
     def createLayerAndRef(self, name, parentLayerId):
         if self.refExists(name):
-            raise Exception("Ref already exists: " + name +  " !")
+            errMsg = "Ref already exists: {} !".format(name)
+            raise Exception(errMsg)
         newLayerId = self.createLayer(parentLayerId)
         self.createRef(name, newLayerId)
         return newLayerId
@@ -452,11 +466,13 @@ class OverlayFsPlugin(object):
     def listSnapshots(self):
         return self.listRefs(False)
 
-    def checkSnapshotName(self, snapshotName):
+    @staticmethod
+    def checkSnapshotName(snapshotName):
         snapshotNamePattern = "[A-Za-z0-9_-][A-Za-z0-9_.-]*"
         if not re.match(snapshotNamePattern, snapshotName):
-            exceptionString = "Invalid snapshot name: " + snapshotName +  ", needs to has form of: " + snapshotNamePattern + " !"
-            raise Exception(exceptionString)
+            formatStr = "Invalid snapshot name:  {}, needs to has form of: {} !"
+            errMsg = formatStr.format(snapshotName, snapshotNamePattern)
+            raise Exception(errMsg)
 
 
     #######################
@@ -536,9 +552,7 @@ class OverlayFsPlugin(object):
         os.mkdir(workDir)
 
         # make sure kernel has required module loaded
-        modprobeCmds = []
-        modprobeCmds.append("modprobe")
-        modprobeCmds.append("overlay")
+        modprobeCmds = ["modprobe", "overlay"]
         subprocess.check_call(modprobeCmds)
 
         mountCmds = []
@@ -619,9 +633,10 @@ class OverlayFsPlugin(object):
         mountLockFile = self.getMountLockFile()
         os.rmdir(mountLockFile)
 
-    def debugPrint(self, message):
-        if self.debug:
-            sys.stderr.write("DEBUG: Overalyfs pluin: " + message + "\n")
+    def traceHook(self, name):
+        if self.traceHooks:
+            debugMsg = "Overalyfs pluin: {}".format(name)
+            self.buildroot.root_log.info(debugMsg)
 
     # touch rpmdb files to make overlayfs copy them to upper layer to overcome
     # yum/rpm problems, due to overlayfs limitations. For more details see
@@ -633,7 +648,7 @@ class OverlayFsPlugin(object):
             rpmDbFileNames = os.listdir(rpmDbDir)
             for rpmDbFileName in rpmDbFileNames:
                 rpmDbFile = os.path.join(rpmDbDir, rpmDbFileName)
-                with open(rpmDbFile, "ab") as rpmDbFileObj:
+                with open(rpmDbFile, "ab") as _rpmDbFileObj:
                     pass
 
     ###############
@@ -645,7 +660,7 @@ class OverlayFsPlugin(object):
     # snapshots
 
     def hook_make_snapshot(self, name):
-        self.debugPrint("hook_make_snapshot")
+        self.traceHook("hook_make_snapshot")
         self.checkSnapshotName(name)
         self.basicInit()
         self.snapshotLock()
@@ -656,7 +671,7 @@ class OverlayFsPlugin(object):
             self.snapshotUnlock()
 
     def hook_remove_snapshot(self, name):
-        self.debugPrint("hook_remove_snapshot")
+        self.traceHook("hook_remove_snapshot")
         self.checkSnapshotName(name)
         self.basicInit()
         self.snapshotLock()
@@ -667,7 +682,7 @@ class OverlayFsPlugin(object):
             self.snapshotUnlock()
 
     def hook_rollback_to(self, name):
-        self.debugPrint("hook_rollback_to")
+        self.traceHook("hook_rollback_to")
         self.checkSnapshotName(name)
         self.basicInit()
         self.snapshotLock()
@@ -678,7 +693,7 @@ class OverlayFsPlugin(object):
             self.snapshotUnlock()
 
     def hook_list_snapshots(self):
-        self.debugPrint("hook_list_snapshots")
+        self.traceHook("hook_list_snapshots")
         self.basicInit()
         self.snapshotLock()
         try:
@@ -698,7 +713,7 @@ class OverlayFsPlugin(object):
     # mounting
 
     def hook_mount_root(self):
-        self.debugPrint("hook_mount_root")
+        self.traceHook("hook_mount_root")
         self.basicInit()
         self.mountLock()
         try:
@@ -712,7 +727,7 @@ class OverlayFsPlugin(object):
             self.mountUnlock()
 
     def hook_umount_root(self):
-        self.debugPrint("hook_umount_root")
+        self.traceHook("hook_umount_root")
         pluginInstanceDir = self.getPluginInstanceDir()
         # pluginInstance dir exists -> it does not follow scub
         if os.path.exists(pluginInstanceDir):
@@ -727,7 +742,7 @@ class OverlayFsPlugin(object):
                 self.mountUnlock()
 
     def hook_postumount(self):
-        self.debugPrint("hook_postumount")
+        self.traceHook("hook_postumount")
         pluginInstanceDir = self.getPluginInstanceDir()
         # pluginInstance dir exists -> it does not follow scub
         if os.path.exists(pluginInstanceDir):
@@ -746,7 +761,7 @@ class OverlayFsPlugin(object):
     # this one is tricky it is called with mounted fiesystems
     # (root + managed mounts), but to do snapshot root cannot be mounted
     def hook_postinit(self):
-        self.debugPrint("hook_postinit")
+        self.traceHook("hook_postinit")
         self.basicInit()
         self.mountLock()
         try:
@@ -772,7 +787,7 @@ class OverlayFsPlugin(object):
             self.mountUnlock()
 
     def hook_postclean(self):
-        self.debugPrint("hook_postclean")
+        self.traceHook("hook_postclean")
         pluginInstanceDir = self.getPluginInstanceDir()
         # pluginInstance dir exists -> it does not follow scub
         if os.path.exists(pluginInstanceDir):
@@ -786,7 +801,7 @@ class OverlayFsPlugin(object):
                 self.snapshotUnlock()
 
     def hook_scrub(self, what):
-        self.debugPrint("hook_scrub")
+        self.traceHook("hook_scrub")
         self.basicInit()
         self.snapshotLock()
         try:
@@ -805,7 +820,7 @@ class OverlayFsPlugin(object):
             self.snapshotUnlock()
 
     def hook_preyum(self):
-        self.debugPrint("hook_preyum")
+        self.traceHook("hook_preyum")
         self.basicInit()
         self.mountLock()
         try:
