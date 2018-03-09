@@ -10,7 +10,8 @@ header() {
 
 runcmd() {
     echo $1
-    ret=time sh -c "$1"
+    time sh -c "$1"
+    ret=$?
     return $ret
 }
 
