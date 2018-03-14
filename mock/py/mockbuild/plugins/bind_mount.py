@@ -7,6 +7,7 @@
 # python library imports
 
 # our imports
+import os
 from mockbuild.mounts import BindMountPoint
 from mockbuild.trace_decorator import traceLog
 import mockbuild.util
@@ -43,8 +44,9 @@ class BindMount(object):
 
     @traceLog()
     def _bindMountCreateDirs(self):
-        create_dirs = self.config['plugin_conf']['bind_mount_opts']['create_dirs']
         for srcdir, destdir in self.bind_opts['dirs']:
-            if create_dirs:
+            if os.path.isdir(srcdir):
                 mockbuild.util.mkdirIfAbsent(srcdir)
-            mockbuild.util.mkdirIfAbsent(self.buildroot.make_chroot_path(destdir))
+                mockbuild.util.mkdirIfAbsent(self.buildroot.make_chroot_path(destdir))
+            else:
+                mockbuild.util.do(['/usr/bin/touch', self.buildroot.make_chroot_path(destdir)])
