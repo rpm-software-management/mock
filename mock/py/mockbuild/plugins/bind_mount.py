@@ -51,3 +51,4 @@ class BindMount(object):
                 mockbuild.util.mkdirIfAbsent(self.buildroot.make_chroot_path(destdir))
             else:
                 mockbuild.util.touch(self.buildroot.make_chroot_path(destdir))
+
