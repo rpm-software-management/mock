@@ -122,7 +122,7 @@ Current base snapshot is marked with an asterisk (\fB*\fR)
 .TP
 \fB\-\-mount\fP
 Mount all everything mounted in the chroot path including the root itself
-that might have been an LVM volume or TMPFS.
+that might have been an LVM volume, TMPFS or overlayfs.
 .TP
 \fB\-\-orphanskill\fP
 No\-op mode that simply checks that no stray processes are running in the chroot. Kills any processes that it finds using the specified root.
@@ -180,7 +180,7 @@ This feature is available only when the lvm_root or overlayfs plugin is installe
 .TP
 \fB\-\-umount\fP
 Umount all everything mounted in the chroot path including the root itself
-that might have been an LVM volume or TMPFS.
+that might have been an LVM volume, TMPFS or overalyfs.
 .TP
 \fB\-\-yum\-cmd\fP
 Execute following arguments with YUM with installroot set to the chroot path. Yum must be installed on the system.
