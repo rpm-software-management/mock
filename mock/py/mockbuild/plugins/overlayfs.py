@@ -127,6 +127,38 @@
 # - additional locking is performed, to make sure, they are not concurently used
 #   in a way, which could lead to corruption of internal file structures.
 # - I also tried to make these only methods, which contain mock specific code...
+#
+# CONCURRENCY / LOCKING STRATEGY
+# - improper concurrent use of mock commands ( generally hooks calls ) could
+#   cause corruption of internal data structures. Therefore plugin does
+#   additional locking to prevent this corruption from happening.
+# - locking should enforce following rules:
+#   1. Snapshot operations are prevented when when other snapshot operation
+#      is currently in progress
+#   2. Snapshot oprations are prevented, when buildroot is mounted, be it
+#      explicitly (mock --mount) or implicitly ( by mock --init, --shell,
+#      --chroot, --install etc.)
+#      implicit postinit snapshot is somewhat special case here
+#      ( unmount and mount of buildroot is actually done in postinit hook,
+#        relying on mock not to allow any other commands operationg
+#        on buildroot, when init operation is in progress ).
+#   3. Explicit mount fails, if buildroot is currently implicitly mounted by
+#      mock command (mock --init, --shell, --chroot, --install etc.) and
+#      buildroot will be unmounted after that command finishes
+#   4. When buildroot is explicitly mounted other mock operations are not
+#      permited until root is explicitly unmounted by mock --umount
+#   5. Mount operations are prevented, when one is currently in progress
+# - two locks are used to enforce rules listed higher:
+#   snapshot lock - prevents concurrent running of snapshot operations
+#                 - also prevens snapshot operations when root is mounted and
+#                   root to be mounted implicitly and explicitly at the same
+#                   time ( because lock is acquired prior to mount and released
+#                   after umount )
+#   mount lock - prevents running multiple mount operations (and some other
+#                related operaions) concurrently. This is because mount
+#                operations are actually composed of several operations,
+#                so other mount operations must be prevented,
+#                when one is already in progress.
 
 
 import os
@@ -158,6 +190,10 @@ class OverlayFsPlugin(object):
         self.touchRpmdbEnabled = conf.get('touch_rpmdb')
         if not self.touchRpmdbEnabled:
             self.touchRpmdbEnabled = False
+        # variables used to correctly handle explicit mounts
+        self.mountHookCalled = False
+        self.preinitHookCalled = False
+        self.failedMount = False
         plugins.add_hook("make_snapshot", self.hook_make_snapshot)
         plugins.add_hook("remove_snapshot", self.hook_remove_snapshot)
         plugins.add_hook("rollback_to", self.hook_rollback_to)
@@ -169,6 +205,7 @@ class OverlayFsPlugin(object):
         plugins.add_hook("postclean", self.hook_postclean)
         plugins.add_hook("scrub", self.hook_scrub)
         plugins.add_hook("preyum", self.hook_preyum)
+        plugins.add_hook("preinit", self.hook_preinit)
 
     ################
     #    FILES    #
@@ -651,6 +688,23 @@ class OverlayFsPlugin(object):
                 with open(rpmDbFile, "ab") as _rpmDbFileObj:
                     pass
 
+    # Methods needed to implement explicit mount support
+    # ( to decide if buildroot should be unmounted at the end )
+
+    def isMountFail(self):
+        # mount hook was called but failed
+        return self.mountHookCalled and self.failedMount
+
+    def isExplicitMount(self):
+        if not self.mountHookCalled:
+            # hook was not called at all -> not an explicit mount
+            return False
+        if self.preinitHookCalled:
+            # if preinit hook was called, mount was implicit
+            return False
+        # othervise mount should be explicit one
+        return True
+
     ###############
     #    HOOKS    #
     ###############
@@ -714,6 +768,9 @@ class OverlayFsPlugin(object):
 
     def hook_mount_root(self):
         self.traceHook("hook_mount_root")
+        # mount is considered fail until buildroot successfully mounted
+        self.failedMount = True
+        self.mountHookCalled = True
         self.basicInit()
         self.mountLock()
         try:
@@ -721,6 +778,7 @@ class OverlayFsPlugin(object):
             self.snapshotLock()
             self.initLayers()
             self.mountRoot()
+            self.failedMount = False
             if self.touchRpmdbEnabled:
                 self.touchRpmdb()
         finally:
@@ -749,6 +807,16 @@ class OverlayFsPlugin(object):
             self.basicInit()
             self.mountLock()
             try:
+                # Do not unmount buildroot if mount was attempted and failed,
+                # it is either as result of some error and buildroot should not
+                # be mounted or maybe was already explicitly mounted previously,
+                # in which case we do not want to unmount it
+                if self.isMountFail():
+                    return
+                # Do not umount buildroot on the end if mount was
+                # done explicitly
+                if self.isExplicitMount():
+                    return
                 self.buildroot.mounts.umountall()
                 self.unmountRoot()
                 # again allow snapshot operations (by mock) after unmount
@@ -828,3 +896,8 @@ class OverlayFsPlugin(object):
                 self.touchRpmdb()
         finally:
             self.mountUnlock()
+
+    def hook_preinit(self):
+        self.traceHook("hook_preinit")
+        # used as mechanism to detect implicit mount
+        self.preinitHookCalled = True

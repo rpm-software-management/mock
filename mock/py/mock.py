@@ -192,10 +192,10 @@ def command_parse():
 
     parser.add_option("--umount", action="store_const", const="umount",
                       dest="mode", help="Umount the buildroot if it's "
-                      "mounted from separate device (LVM)")
+                      "mounted from separate device (LVM/overlayfs)")
     parser.add_option("--mount", action="store_const", const="mount",
                       dest="mode", help="Mount the buildroot if it's "
-                      "mounted from separate device (LVM)")
+                      "mounted from separate device (LVM/overlayfs)")
 
     # options
     parser.add_option("-r", "--root", action="store", type="string", dest="chroot",
