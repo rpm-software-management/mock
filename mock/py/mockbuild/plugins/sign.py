@@ -34,7 +34,7 @@ class Sign(object):
         getLog().info("enabled package signing")
 
     def sign_results(self):
-        rpms = self.buildroot.final_rpm_list
+        rpms = ["{0}/{1}".format(self.buildroot.resultdir,rpm) for rpm in self.buildroot.final_rpm_list]
         if rpms:
             getLog().info("Signing %s", ', '.join(rpms))
             opts = self.conf['opts'] % {'rpms': ' '.join(rpms), 'resultdir': self.buildroot.resultdir}
