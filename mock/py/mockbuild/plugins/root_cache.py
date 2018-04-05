@@ -197,7 +197,7 @@ class RootCache(object):
                     raise
                 # now create the cache log file
                 with open(os.path.join(self.rootSharedCachePath, "cache.log"), "w") as l:
-                    l.write(self.buildroot.pkg_manager.init_install_output)
+                    l.write(self.buildroot.pkg_manager.init_install_output.encode())
                 self.state.finish("creating root cache")
         finally:
             self._rootCacheUnlock()
