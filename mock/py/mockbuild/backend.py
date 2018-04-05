@@ -511,6 +511,7 @@ class Commands(object):
         bd_out = self.make_chroot_path(self.buildroot.builddir)
         results = glob.glob(bd_out + '/RPMS/*.rpm')
         results += glob.glob(bd_out + '/SRPMS/*.rpm')
+        self.buildroot.final_rpm_list = results
         return results
 
     @traceLog()

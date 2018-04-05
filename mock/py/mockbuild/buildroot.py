@@ -70,6 +70,7 @@ class Buildroot(object):
         self.plugins.init_plugins(self)
         self.tmpdir = None
         self.nosync_path = None
+        self.final_rpm_list = None
 
     @traceLog()
     def make_chroot_path(self, *paths):
