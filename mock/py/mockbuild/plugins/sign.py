@@ -29,12 +29,11 @@ class Sign(object):
         self.conf = conf
         self.buildroot = buildroot
         self.plugins.add_hook('postbuild', self.sign_results)
-
         getLog().info(conf)
         getLog().info("enabled package signing")
 
     def sign_results(self):
-        rpms = ["{0}/{1}".format(self.buildroot.resultdir,rpm) for rpm in self.buildroot.final_rpm_list]
+        rpms = [os.path.join(self.buildroot.resultdir, rpm) for rpm in self.buildroot.final_rpm_list]
         if rpms:
             getLog().info("Signing %s", ', '.join(rpms))
             opts = self.conf['opts'] % {'rpms': ' '.join(rpms), 'resultdir': self.buildroot.resultdir}
