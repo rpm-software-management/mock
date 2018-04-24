@@ -124,7 +124,7 @@ class RootCache(object):
                     os.chdir(mockbuild.util.find_non_nfs_dir())
                 mockbuild.util.mkdirIfAbsent(self.buildroot.make_chroot_path())
                 mockbuild.util.do(
-                    ["tar"] + self.compressArgs + ["-xf", self.rootCacheFile, "-C", self.buildroot.make_chroot_path()],
+                    ["gtar"] + self.compressArgs + ["-xf", self.rootCacheFile, "-C", self.buildroot.make_chroot_path()],
                     shell=False, printOutput=True
                 )
                 for item in self.exclude_dirs:
@@ -184,7 +184,7 @@ class RootCache(object):
                 self.state.start("creating root cache")
                 try:
                     mockbuild.util.do(
-                        ["tar", "--one-file-system", "--exclude-caches", "--exclude-caches-under"] +
+                        ["gtar", "--one-file-system", "--exclude-caches", "--exclude-caches-under"] +
                         self.compressArgs +
                         ["-cf", self.rootCacheFile,
                          "-C", self.buildroot.make_chroot_path()] +

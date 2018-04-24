@@ -192,7 +192,7 @@ class scmWorker(object):
             cwd_dir = os.getcwd()
             os.chdir(self.wrk_dir)
             os.rename(self.name, tardir)
-            cmd = "tar caf " + tarball + " " + taropts + " " + tardir
+            cmd = "gtar caf " + tarball + " " + taropts + " " + tardir
             util.do(shlex.split(cmd), shell=False, cwd=self.wrk_dir, env=os.environ)
             os.rename(tarball, tardir + "/" + tarball)
             os.rename(tardir, self.name)
