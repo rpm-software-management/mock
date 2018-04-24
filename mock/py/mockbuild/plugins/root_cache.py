@@ -123,8 +123,13 @@ class RootCache(object):
                     prev_cwd = os.getcwd()
                     os.chdir(mockbuild.util.find_non_nfs_dir())
                 mockbuild.util.mkdirIfAbsent(self.buildroot.make_chroot_path())
+                if self.config["tar"] == "bsdtar":
+                    __tar_cmd = "bsdtar"
+                else:
+                    __tar_cmd = "gtar"
                 mockbuild.util.do(
-                    ["tar"] + self.compressArgs + ["-xf", self.rootCacheFile, "-C", self.buildroot.make_chroot_path()],
+                    [__tar_cmd] + self.compressArgs + ["-xf", self.rootCacheFile,
+                                                       "-C", self.buildroot.make_chroot_path()],
                     shell=False, printOutput=True
                 )
                 for item in self.exclude_dirs:
@@ -182,15 +187,19 @@ class RootCache(object):
                 mockbuild.util.do(["sync"], shell=False)
                 self._root_cache_handle_mounts()
                 self.state.start("creating root cache")
+                if self.config['tar'] == 'bsdtar':
+                    __tar_cmd = ["bsdtar", "--one-file-system"] + self.compressArgs + \
+                                ["-cf", self.rootCacheFile,
+                                 "-C", self.buildroot.make_chroot_path()] + \
+                                self.exclude_tar_cmds + ["."]
+                else:
+                    __tar_cmd = ["gtar", "--one-file-system", "--exclude-caches", "--exclude-caches-under"] + \
+                                 self.compressArgs + \
+                                 ["-cf", self.rootCacheFile,
+                                  "-C", self.buildroot.make_chroot_path()] + \
+                                  self.exclude_tar_cmds + ["."]
                 try:
-                    mockbuild.util.do(
-                        ["tar", "--one-file-system", "--exclude-caches", "--exclude-caches-under"] +
-                        self.compressArgs +
-                        ["-cf", self.rootCacheFile,
-                         "-C", self.buildroot.make_chroot_path()] +
-                        self.exclude_tar_cmds + ["."],
-                        shell=False
-                    )
+                    mockbuild.util.do(__tar_cmd, shell=False)
                 except:
                     if os.path.exists(self.rootCacheFile):
                         os.remove(self.rootCacheFile)

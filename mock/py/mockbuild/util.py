@@ -814,6 +814,8 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
     config_opts['createrepo_on_rpms'] = False
     config_opts['createrepo_command'] = '/usr/bin/createrepo_c -d -q -x *.src.rpm'  # default command
 
+    config_opts['tar'] = "gnutar"
+
     config_opts['backup_on_clean'] = False
     config_opts['backup_base_dir'] = os.path.join(config_opts['basedir'], "backup")
 
@@ -842,6 +844,7 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
             'age_check': True,
             'max_age_days': 15,
             'dir': "%(cache_topdir)s/%(root)s/root_cache/",
+            'tar': "gnutar",
             'compress_program': 'pigz',
             'exclude_dirs': ["./proc", "./sys", "./dev", "./tmp/ccache", "./var/cache/yum", "./var/cache/dnf"],
             'extension': '.gz'},

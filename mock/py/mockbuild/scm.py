@@ -21,10 +21,12 @@ if six.PY2:
     class PermissionError(OSError):
         pass
 
+
 class scmWorker(object):
     """Build RPMs from SCM"""
     @traceLog()
-    def __init__(self, log, opts, macros):
+    def __init__(self, log, config_opts, macros):
+        opts = config_opts['scm_opts']
         self.log = log
         self.log.debug("Initializing SCM integration...")
 
@@ -34,6 +36,7 @@ class scmWorker(object):
         self.macros = macros
         self.branch = None
         self.postget = []
+        self.config = config_opts
 
         self.method = opts['method']
         if self.method == "cvs":
@@ -179,8 +182,12 @@ class scmWorker(object):
                 tarball = tardir + ".tar.gz"
             taropts = ""
 
+            if self.config["tar"] == "bsdtar":
+                __tar_cmd = "bsdtar"
+            else:
+                __tar_cmd = "gtar"
             # Always exclude vcs data from tarball unless told not to
-            if str(self.exclude_vcs).lower() == "true":
+            if str(self.exclude_vcs).lower() == "true" and __tar_cmd == 'gtar':
                 proc = subprocess.Popen(['tar', '--help'], shell=False, stdout=subprocess.PIPE)
                 proc_result = proc.communicate()[0]
                 if six.PY3:
@@ -192,7 +199,7 @@ class scmWorker(object):
             cwd_dir = os.getcwd()
             os.chdir(self.wrk_dir)
             os.rename(self.name, tardir)
-            cmd = "tar caf " + tarball + " " + taropts + " " + tardir
+            cmd = "%{0} caf %{1} %{2} %{3}".format(__tar_cmd, tarball, taropts, tardir)
             util.do(shlex.split(cmd), shell=False, cwd=self.wrk_dir, env=os.environ)
             os.rename(tarball, tardir + "/" + tarball)
             os.rename(tardir, self.name)
