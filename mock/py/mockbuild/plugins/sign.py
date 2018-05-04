@@ -5,7 +5,6 @@
 # Copyright (C) 2014 Facebook
 
 # python library imports
-import glob
 import os
 import subprocess
 
