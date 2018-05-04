@@ -554,7 +554,8 @@ def do(command, shell=False, chrootPath=None, cwd=None, timeout=0, raiseExc=True
         master_pty, slave_pty = os.openpty()
         resize_pty(slave_pty)
         reader = os.fdopen(master_pty, 'rb')
-    preexec = ChildPreExec(personality, chrootPath, cwd, uid, gid, unshare_ipc=bool(chrootPath), unshare_net=unshare_net)
+    preexec = ChildPreExec(personality, chrootPath, cwd, uid, gid,
+                           unshare_ipc=bool(chrootPath), unshare_net=unshare_net)
     if env is None:
         env = clean_env()
     stdout = None
