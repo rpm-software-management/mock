@@ -157,6 +157,7 @@ if __name__ == "__main__":
 
     @traceLog()
     def anotherFunc(*args):
+        # pylint: disable=no-value-for-parameter
         return testFunc(*args)
 
     anotherFunc("pretty")
