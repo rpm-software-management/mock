@@ -244,6 +244,7 @@ def orphansKill(rootToKill):
 def yieldSrpmHeaders(srpms, plainRpmOk=0):
     import rpm
     ts = rpm.TransactionSet('/')
+    # pylint: disable=protected-access
     flags = (rpm._RPMVSF_NOSIGNATURES | rpm._RPMVSF_NODIGESTS)
     ts.setVSFlags(flags)
     for srpm in srpms:
