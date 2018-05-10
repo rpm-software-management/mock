@@ -16,7 +16,7 @@
 
 Summary: Builds packages inside chroots
 Name: mock
-Version: 1.4.9
+Version: 1.4.10
 Release: 1%{?dist}
 License: GPLv2+
 # Source is created by
@@ -230,6 +230,19 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 %endif
 
 %changelog
+* Thu May 10 2018 Miroslav Suchý <msuchy@redhat.com> 1.4.10-1
+- remove executable bit from trace_decorator.py
+- Change sign plugint to sign only builded rpm and not every file in results
+  [RHBZ#1217495] (necas.marty@gmail.com)
+- overlayfs plugin: added explicit mount support (zzambers@redhat.com)
+- encode content before writing [RHBZ#1564035]
+- allow to bind_mount just one file (necas.marty@gmail.com)
+- added overlayfs plugin (zzambers@redhat.com)
+- invoke chroot scan for 'initfailed' event (clime7@gmail.com)
+- add support for .spec in --installdeps (necas.marty@gmail.com)
+- revert workaround introduced in 057c51d6 [RHBZ#1544801]
+- comment out macro in changelog (msuchy@redhat.com)
+
 * Mon Feb 12 2018 Miroslav Suchý <msuchy@redhat.com> 1.4.9-1
 - "setup_cmd" of bootstrap container is the actuall $pm_install_command from
   the main container [RHBZ#1540813]
