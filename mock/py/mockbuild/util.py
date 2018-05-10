@@ -852,7 +852,8 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
                 # ('/host/path', '/bind/mount/path/in/chroot/' ),
                 # ('/another/host/path', '/another/bind/mount/path/in/chroot/'),
             ],
-            'create_dirs': False},
+            'create_dirs': False,
+            'skip_bootstrap': True},
         'mount_enable': True,
         'mount_opts': {'dirs': [
             # specify like this:

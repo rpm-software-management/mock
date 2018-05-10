@@ -32,7 +32,8 @@ class BindMount(object):
         self.state = buildroot.state
         self.bind_opts = conf
         # Skip mounting user-specified mounts if we're in the boostrap chroot
-        if buildroot.is_bootstrap:
+        skip_bootstrap = self.config['plugin_conf']['bind_mount_opts']['skip_bootstrap']
+        if skip_bootstrap and buildroot.is_bootstrap:
             return
         plugins.add_hook("postinit", self._bindMountCreateDirs)
         for srcdir, destdir in self.bind_opts['dirs']:
