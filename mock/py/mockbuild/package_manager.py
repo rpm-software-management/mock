@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # vim: noai:ts=4:sw=4:expandtab
 
+import copy
 import glob
 import os.path
 import shutil
@@ -42,6 +43,8 @@ in Mock config.""")
         # This will likely mean some error later.
         # Either user is smart or let him shot in his foot.
         return Dnf(config_opts, buildroot, plugins, bootstrap_buildroot)
+    elif pm == 'microdnf':
+        return MicroDnf(config_opts, buildroot, plugins, bootstrap_buildroot)
     else:
         # TODO specific exception type
         raise Exception('Unrecognized package manager')
@@ -53,6 +56,9 @@ class _PackageManager(object):
     install_command = None
     builddep_command = None
     resolvedep_command = None
+    # When support_installroot is False then command is run in target chroot
+    # you must ensure that `command` is available in the chroot
+    support_installroot = True
 
     @traceLog()
     def __init__(self, config, buildroot, plugins, bootstrap_buildroot):
@@ -79,7 +85,8 @@ class _PackageManager(object):
                 invocation = [self.command]
         else:
             invocation = [self.command]
-        invocation += ['--installroot', self.buildroot.make_chroot_path('')]
+        if self.support_installroot:
+            invocation += ['--installroot', self.buildroot.make_chroot_path('')]
         if cmd in ['upgrade', 'update', 'module']:
             invocation += ['-y']
         releasever = self.config['releasever']
@@ -92,6 +99,7 @@ class _PackageManager(object):
         invocation += common_opts
         invocation += args
         return invocation
+
 
     @traceLog()
     def execute(self, *args, **kwargs):
@@ -115,7 +123,9 @@ class _PackageManager(object):
             kwargs['pty'] = kwargs.get('pty', True)
         self.buildroot.nuke_rpm_db()
         try:
-            if self.bootstrap_buildroot is None:
+            if not self.support_installroot:
+                out = util.do(invocation, env=env, chrootPath=self.buildroot.make_chroot_path(), **kwargs)
+            elif self.bootstrap_buildroot is None:
                 out = util.do(invocation, env=env, **kwargs)
             else:
                 out = util.do(invocation, env=env, chrootPath=self.bootstrap_buildroot.make_chroot_path(), **kwargs)
@@ -188,9 +198,11 @@ def check_yum_config(config, log):
 
 class Yum(_PackageManager):
     name = 'yum'
+    support_installroot = True
 
     def __init__(self, config, buildroot, plugins, bootstrap_buildroot):
         super(Yum, self).__init__(config, buildroot, plugins, bootstrap_buildroot)
+        self.pm = config['package_manager']
         self.command = config['yum_command']
         self.install_command = config['yum_install_command']
         self.builddep_command = [config['yum_builddep_command']]
@@ -293,9 +305,11 @@ def _check_missing(output):
 
 class Dnf(_PackageManager):
     name = 'dnf'
+    support_installroot = True
 
     def __init__(self, config, buildroot, plugins, bootstrap_buildroot):
         super(Dnf, self).__init__(config, buildroot, plugins, bootstrap_buildroot)
+        self.pm = config['package_manager']
         self.command = config['dnf_command']
         self.install_command = config['dnf_install_command']
         self.builddep_command = [self.command, 'builddep']
@@ -339,3 +353,42 @@ class Dnf(_PackageManager):
                 if 'no such command: builddep' in line.lower():
                     raise BuildError("builddep command missing.\nPlease install package dnf-plugins-core.")
             raise
+
+
+class MicroDnf(Dnf):
+    name = 'microdnf'
+    support_installroot = False
+
+    def __init__(self, config, buildroot, plugins, bootstrap_buildroot):
+        super(MicroDnf, self).__init__(config, buildroot, plugins, bootstrap_buildroot)
+        self.command = config['microdnf_command']
+        self.install_command = config['microdnf_install_command']
+        self.builddep_command = [config['microdnf_builddep_command'], 'builddep']
+        self.saved_releasever = config['releasever']
+        self.config['releasever'] = None
+
+    def _check_command(self):
+        """ Check if main command exists """
+        super(MicroDnf, self)._check_command()
+        if not os.path.exists(self.config['dnf_command']):
+            raise Exception("""Command {0} is not available. Either install package containing this command
+or run mock with --yum or --dnf to overwrite config value. However this may
+lead to different dependency solving!""".format(self.config['dnf_command']))
+
+    @traceLog()
+    def execute(self, *args, **kwargs):
+        args_copy = list(copy.copy(args))
+        cmd = args_copy[0]
+        if cmd not in ['update', 'remove', 'install']:
+            self.command = self.config['dnf_command']
+            self.support_installroot = True
+            self.config['releasever'] = self.saved_releasever
+        # else it is builddep or resolvedep and we keep command == config['microdnf_command']
+        if cmd == "dnf-install":
+            cmd = args_copy[0] = "install"
+        result = super(MicroDnf, self).execute(*args_copy, **kwargs)
+        # restore original value
+        self.command = self.config['microdnf_command']
+        self.support_installroot = False
+        self.config['releasever'] = None
+        return result
