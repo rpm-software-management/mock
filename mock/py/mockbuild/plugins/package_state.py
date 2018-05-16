@@ -52,7 +52,7 @@ class PackageState(object):
                 self.state.start("Outputting list of available packages")
                 out_file = self.buildroot.resultdir + '/available_pkgs.log'
                 chrootpath = self.buildroot.make_chroot_path()
-                if self.buildroot.config['package_manager'] == 'dnf':
+                if self.buildroot.config['package_manager'] in ['dnf', 'microdnf']:
                     cmd = "/usr/bin/dnf --installroot={0} repoquery -c {0}/etc/dnf/dnf.conf {1} > {2}".format(
                         chrootpath, repoquery_avail_opts, out_file)
                 else:
