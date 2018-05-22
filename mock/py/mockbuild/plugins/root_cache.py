@@ -197,7 +197,7 @@ class RootCache(object):
                                  self.compressArgs + \
                                  ["-cf", self.rootCacheFile,
                                   "-C", self.buildroot.make_chroot_path()] + \
-                                  self.exclude_tar_cmds + ["."]
+                                 self.exclude_tar_cmds + ["."]
                 try:
                     mockbuild.util.do(__tar_cmd, shell=False)
                 except:
@@ -205,8 +205,8 @@ class RootCache(object):
                         os.remove(self.rootCacheFile)
                     raise
                 # now create the cache log file
-                with open(os.path.join(self.rootSharedCachePath, "cache.log"), "wb") as l:
-                    l.write(self.buildroot.pkg_manager.init_install_output.encode())
+                with open(os.path.join(self.rootSharedCachePath, "cache.log"), "wb") as cache_log:
+                    cache_log.write(self.buildroot.pkg_manager.init_install_output.encode())
                 self.state.finish("creating root cache")
         finally:
             self._rootCacheUnlock()
