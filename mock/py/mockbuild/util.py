@@ -87,6 +87,7 @@ USE_NSPAWN = False
 
 _OPS_TIMEOUT = 0
 
+
 class commandTimeoutExpired(exception.Error):
     def __init__(self, msg):
         exception.Error.__init__(self, msg)
@@ -381,6 +382,7 @@ def condUnshareIPC(unshare_ipc=True):
             # fails, there had to be a warning already
             pass
 
+
 def condUnshareNet(unshare_net=True):
     if USE_NSPAWN and unshare_net:
         try:
@@ -400,6 +402,7 @@ def condUnshareNet(unshare_net=True):
         # pylint: disable=bare-except
         except Exception as e:
             getLog().warning("network namespace setup failed: %s", e)
+
 
 def process_input(line):
     out = []
@@ -628,6 +631,7 @@ def do(command, shell=False, chrootPath=None, cwd=None, timeout=0, raiseExc=True
         raise exception.Error("Command failed: \n # %s\n%s" % (command, output), child.returncode)
 
     return output
+
 
 class ChildPreExec(object):
     def __init__(self, personality, chrootPath, cwd, uid, gid, env=None,
@@ -1239,6 +1243,7 @@ def update_config_from_file(config_opts, config_file, uid_manager):
 def setup_operations_timeout(config_opts):
     global _OPS_TIMEOUT
     _OPS_TIMEOUT = config_opts.get('opstimeout', 0)
+
 
 @traceLog()
 def do_update_config(log, config_opts, cfg, uidManager, name, skipError=True):
