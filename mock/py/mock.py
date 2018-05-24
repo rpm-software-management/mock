@@ -264,8 +264,7 @@ def command_parse():
                            " before running command when using --chroot")
 
     parser.add_option("--spec", action="store",
-                      help="Specifies spec file to use to build an SRPM"
-                           "(used only with --buildsrpm)")
+                      help="Specifies spec file to use to build an SRPM")
     parser.add_option("--sources", action="store",
                       help="Specifies sources (either a single file or a directory of files)"
                       "to use to build an SRPM (used only with --buildsrpm)")
@@ -503,10 +502,14 @@ def rebuild_generic(items, commands, buildroot, config_opts, cmd, post=None, cle
 
 
 @traceLog()
-def do_rebuild(config_opts, commands, buildroot, srpms):
+def do_rebuild(config_opts, commands, buildroot, options, srpms):
     "rebuilds a list of srpms using provided chroot"
     if len(srpms) < 1:
         log.critical("No package specified to rebuild command.")
+        sys.exit(50)
+
+    if len(srpms) > 1 and options.spec:
+        log.critical("--spec argument only supported with single srpm.")
         sys.exit(50)
 
     util.checkSrpmHeaders(srpms)
@@ -514,7 +517,7 @@ def do_rebuild(config_opts, commands, buildroot, srpms):
 
     def build(srpm):
         commands.build(srpm, timeout=config_opts['rpmbuild_timeout'],
-                       check=config_opts['check'])
+                       check=config_opts['check'], spec=options.spec)
 
     def post_build():
         if config_opts['post_install']:
@@ -846,7 +849,7 @@ def run_command(options, args, config_opts, commands, buildroot, state):
             if srpm:
                 args.append(srpm)
             scmWorker.clean()
-        do_rebuild(config_opts, commands, buildroot, args)
+        do_rebuild(config_opts, commands, buildroot, options, args)
 
     elif options.mode == 'buildsrpm':
         do_buildsrpm(config_opts, commands, buildroot, options, args)
