@@ -35,7 +35,7 @@ class Error(Exception):
 # 25 = LVM manipulation error
 # 30 = Yum emitted an error of some sort
 # 40 = some error in the pkg we're building
-# 50 = tried to fork a subcommand and it errored out
+# 50 = error in mock command (varies for each command)
 # 60 = buildroot locked
 # 65 = LVM thinpool locked
 # 70 = result dir could not be created
