@@ -226,6 +226,8 @@ def command_parse():
                       default=True, help="pass --nocheck to rpmbuild to skip 'make check' tests")
     parser.add_option("--arch", action="store", dest="arch",
                       default=None, help="Sets kernel personality().")
+    parser.add_option("--forcearch", action="store", dest="forcearch",
+                      default=None, help="Force architecture to DNF (pass --forcearch to DNF).")
     parser.add_option("--target", action="store", dest="rpmbuild_arch",
                       default=None, help="passed to rpmbuild as --target")
     parser.add_option("-D", "--define", action="append", dest="rpmmacros",
@@ -463,7 +465,7 @@ def check_arch_combination(target_arch, config_opts):
     except KeyError:
         return
     host_arch = os.uname()[-1]
-    if host_arch not in legal:
+    if (host_arch not in legal) and not config_opts['forcearch']:
         raise mockbuild.exception.InvalidArchitecture(
             "Cannot build target {0} on arch {1}, because it is not listed in legal_host_arches {2}"
             .format(target_arch, host_arch, legal))

@@ -197,6 +197,9 @@ Note: While you can specify more commands on a command line, only one can be exe
 \fB\-\-arch\fR=\fIARCH\fP
 Calls the Linux personality() syscall to tell the kernel to emulate a secondary architecture. For example, building i386 packages on an x86_64 buildhost.
 .TP
+\fB\-\-forcearch\fR=\fIARCH\fP
+Pass \-\-forcearch to DNF. This will enable to install packages for different architecture. Works only for DNF and you have to have package qemu-user-static installed.
+.TP
 \fB\-\-cache\-alterations\fR
 Rebuild the root cache after making alterations to the chroot (i.e. \-\-install). This option is useful only when using tmpfs plugin.
 .TP

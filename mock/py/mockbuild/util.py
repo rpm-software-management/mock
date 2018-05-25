@@ -964,6 +964,7 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
     config_opts['hostname'] = None
     config_opts['module_enable'] = []
     config_opts['module_install'] = []
+    config_opts['forcearch'] = None
 
     # security config
     config_opts['no_root_shells'] = False
@@ -1030,6 +1031,8 @@ def set_config_opts_per_cmdline(config_opts, options, args):
         config_opts['rpmbuild_arch'] = options.rpmbuild_arch
     elif config_opts['rpmbuild_arch'] is None:
         config_opts['rpmbuild_arch'] = config_opts['target_arch']
+    if options.forcearch:
+        config_opts['forcearch'] = options.forcearch
 
     if not options.clean:
         config_opts['clean'] = options.clean

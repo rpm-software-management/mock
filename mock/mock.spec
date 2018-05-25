@@ -88,7 +88,7 @@ BuildRequires: perl-interpreter
 %else
 BuildRequires: perl
 %endif
-
+Suggests: qemu-user-static
 # hwinfo plugin
 Requires: util-linux
 Requires: coreutils
