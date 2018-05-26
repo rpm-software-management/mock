@@ -438,7 +438,7 @@ class Commands(object):
     def copy_spec_into_chroot(self, spec_path):
         specFilename = os.path.basename(spec_path)
         dest = self.buildroot.make_chroot_path(self.buildroot.builddir, 'originals')
-        shutil.copyfile(spec_path, os.path.join(dest, specFilename))
+        shutil.copy2(spec_path, os.path.join(dest, specFilename))
         return os.path.join(self.buildroot.builddir, 'originals', specFilename)
 
     @traceLog()
