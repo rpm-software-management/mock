@@ -2,7 +2,7 @@
 
 . ${TESTDIR}/functions
 
-header "test --spec argument twith rebuild"
+header "test --spec argument with rebuild"
 runcmd "$MOCKCMD --spec ${TESTDIR}/test-C.spec ${TESTDIR}/test-C-1.1-0.src.rpm"
 res=$?
 

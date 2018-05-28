@@ -846,11 +846,14 @@ def run_command(options, args, config_opts, commands, buildroot, state):
         commands.remove(*args)
 
     elif options.mode == 'rebuild':
-        if config_opts['scm']:
+        if config_opts['scm'] or (options.spec and options.sources):
             srpm = do_buildsrpm(config_opts, commands, buildroot, options, args)
             if srpm:
                 args.append(srpm)
-            scmWorker.clean()
+            if config_opts['scm']:
+                scmWorker.clean()
+            else:
+                config_opts['clean'] = False
         do_rebuild(config_opts, commands, buildroot, options, args)
 
     elif options.mode == 'buildsrpm':
