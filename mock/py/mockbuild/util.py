@@ -691,9 +691,10 @@ def _prepare_nspawn_command(chrootPath, user, cmd, nspawn_args=None, env=None, c
         cmd = [cmd]
     nspawn_argv = ['/usr/bin/systemd-nspawn', '-q', '-M', uuid.uuid4().hex, '-D', chrootPath]
     distro_label = distro.linux_distribution(full_distribution_name=False)[0]
-    if (distro_label != 'centos') and (distro_label != 'ol') and \
-       (distro_label != 'rhel') and (distro_label != 'deskos'):
-        # EL7 does not support it (yet). See BZ 1417387
+    distro_version = float(distro.version() or 0)
+    epel = ('centos', 'deskos', 'ol', 'rhel')
+    if distro_label not in epel or distro_version >= 7.5:
+        # EL < 7.5 does not support the nspawn -a option. See BZ 1417387
         nspawn_argv += ['-a']
     nspawn_argv.extend(nspawn_args)
     if cwd:
