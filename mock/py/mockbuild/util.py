@@ -8,6 +8,7 @@
 from __future__ import print_function
 
 from ast import literal_eval
+import atexit
 import ctypes
 import errno
 import fcntl
@@ -27,6 +28,7 @@ import stat
 import struct
 import subprocess
 import sys
+import tempfile
 # pylint: disable=wrong-import-order
 import termios
 from textwrap import dedent
@@ -677,6 +679,16 @@ def is_in_dir(path, directory):
     return os.path.commonprefix([path, directory]) == directory
 
 
+def _nspawnTempResolvAtExit(path):
+    """Remove nspawn temporary resolv.conf from host."""
+    try:
+        os.remove(path)
+    except OSError as e:
+        if e.errno == errno.ENOENT:
+            pass
+        getLog().warning("unable to delete temporary resolv.conf (%s): %s", path, e)
+
+
 def _prepare_nspawn_command(chrootPath, user, cmd, nspawn_args=None, env=None, cwd=None):
     cmd_is_list = isinstance(cmd, list)
     if nspawn_args is None:
@@ -1301,12 +1313,19 @@ def load_config(config_path, name, uidManager, version, pkg_python_dir):
         '~' + pwd.getpwuid(os.getuid())[0]), '.config/mock.cfg')
     do_update_config(log, config_opts, cfg, uidManager, name)
 
-    # default /etc/hosts contents
-    if not config_opts['use_host_resolv'] and 'etc/hosts' not in config_opts['files']:
-        config_opts['files']['etc/hosts'] = dedent('''\
-            127.0.0.1 localhost localhost.localdomain
-            ::1       localhost localhost.localdomain localhost6 localhost6.localdomain6
-            ''')
+    if not config_opts['use_host_resolv']:
+        # default /etc/hosts contents
+        if 'etc/hosts' not in config_opts['files']:
+            config_opts['files']['etc/hosts'] = dedent('''\
+                127.0.0.1 localhost localhost.localdomain
+                ::1       localhost localhost.localdomain localhost6 localhost6.localdomain6
+                ''')
+        # bind mount an empty /etc/resolv.conf when using nspawn and networking is disabled
+        if config_opts['use_nspawn'] and not config_opts['rpmbuild_networking']:
+            resolv_fd, resolv_path = tempfile.mkstemp(prefix="mock-resolv.")
+            atexit.register(_nspawnTempResolvAtExit, resolv_path)
+            config_opts['nspawn_args'] += ['--bind={0}:/etc/resolv.conf'.format(resolv_path)]
+
     if config_opts['use_container_host_hostname'] and '%_buildhost' not in config_opts['macros']:
         config_opts['macros']['%_buildhost'] = socket.getfqdn()
     return config_opts
