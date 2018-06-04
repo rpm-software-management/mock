@@ -65,22 +65,20 @@ class _PackageManager(object):
     @traceLog()
     def build_invocation(self, *args):
         invocation = []
-        common_opts = []
+        common_opts = self.config[self.name + '_common_opts']
         cmd = args[0]
         if cmd == 'builddep':
             args = args[1:]
             invocation += self.builddep_command
-            common_opts = self.config[self.name + '_builddep_opts']
+            common_opts += self.config[self.name + '_builddep_opts']
         elif cmd == 'resolvedep':
             if self.resolvedep_command:
                 args = args[1:]
                 invocation = self.resolvedep_command
             else:
                 invocation = [self.command]
-                common_opts = self.config[self.name + '_common_opts']
         else:
             invocation = [self.command]
-            common_opts = self.config[self.name + '_common_opts']
         invocation += ['--installroot', self.buildroot.make_chroot_path('')]
         if cmd in ['upgrade', 'update', 'module']:
             invocation += ['-y']
