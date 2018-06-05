@@ -247,6 +247,7 @@ def orphansKill(rootToKill):
 def yieldSrpmHeaders(srpms, plainRpmOk=0):
     import rpm
     ts = rpm.TransactionSet('/')
+    # When RPM > 4.14.90 is common we can use RPMVSF_MASK_NOSIGNATURES, RPMVSF_MASK_NODIGESTS
     # pylint: disable=protected-access
     flags = (rpm._RPMVSF_NOSIGNATURES | rpm._RPMVSF_NODIGESTS)
     ts.setVSFlags(flags)
