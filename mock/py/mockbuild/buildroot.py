@@ -298,8 +298,9 @@ class Buildroot(object):
         self.doChroot(['/usr/sbin/groupdel', dets['group']],
                       shell=False, raiseExc=False, nosync=True)
 
-        self.doChroot(['/usr/sbin/groupadd', '-g', dets['gid'], dets['group']],
-                      shell=False, nosync=True)
+        if self.chrootgid != 0:
+            self.doChroot(['/usr/sbin/groupadd', '-g', dets['gid'], dets['group']],
+                          shell=False, nosync=True)
         self.doChroot(shlex.split(self.config['useradd'] % dets), shell=False, nosync=True)
         if not self.config['clean']:
             self.uid_manager.changeOwner(self.make_chroot_path(self.homedir))
