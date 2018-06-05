@@ -50,7 +50,7 @@ class Buildroot(object):
                         and util.selinuxEnabled())
 
         self.chrootuid = config['chrootuid']
-        self.chrootuser = 'mockbuild'
+        self.chrootuser = config['chrootuser'] 
         self.chrootgid = config['chrootgid']
         self.chrootgroup = config['chrootgroup']
         self.env = config['environment']
