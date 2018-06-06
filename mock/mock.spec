@@ -77,6 +77,7 @@ Suggests: yum
 Requires: dnf-plugins-core
 Recommends: btrfs-progs
 Suggests: dnf-utils
+Suggests: qemu-user-static
 %endif
 %if 0%{?rhel} == 7
 Requires: btrfs-progs
@@ -88,7 +89,6 @@ BuildRequires: perl-interpreter
 %else
 BuildRequires: perl
 %endif
-Suggests: qemu-user-static
 # hwinfo plugin
 Requires: util-linux
 Requires: coreutils
