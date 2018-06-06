@@ -956,7 +956,7 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
     # dependent on guest OS
     config_opts['useradd'] = \
         '/usr/sbin/useradd -o -m -u %(uid)s -g %(gid)s -d %(home)s -n %(user)s'
-    config_opts['use_host_resolv'] = True
+    config_opts['use_host_resolv'] = False
     config_opts['chroot_setup_cmd'] = ('groupinstall', 'buildsys-build')
     config_opts['target_arch'] = 'i386'
     config_opts['releasever'] = None
@@ -1140,6 +1140,7 @@ def set_config_opts_per_cmdline(config_opts, options, args):
 
     if options.enable_network:
         config_opts['rpmbuild_networking'] = True
+        config_opts['use_host_resolv'] = True
 
     if options.mode in ("rebuild",) and len(args) > 1 and not options.resultdir:
         raise exception.BadCmdline(
