@@ -1324,7 +1324,7 @@ def load_config(config_path, name, uidManager, version, pkg_python_dir):
                 ''')
         # bind mount an empty /etc/resolv.conf when using nspawn and networking is disabled
         if config_opts['use_nspawn'] and not config_opts['rpmbuild_networking']:
-            resolv_fd, resolv_path = tempfile.mkstemp(prefix="mock-resolv.")
+            resolv_path = (tempfile.mkstemp(prefix="mock-resolv."))[1]
             atexit.register(_nspawnTempResolvAtExit, resolv_path)
             config_opts['nspawn_args'] += ['--bind={0}:/etc/resolv.conf'.format(resolv_path)]
 
