@@ -141,7 +141,7 @@ for i in py/mock.py py/mockchain.py; do
     perl -p -i -e 's|^PKGPYTHONDIR\s*=.*|PKGPYTHONDIR="%{python_sitelib}/mockbuild"|' $i
 done
 for i in docs/mockchain.1 docs/mock.1; do
-    perl -p -i -e 's|@VERSION@|%{version}"|' $i
+    perl -p -i -e 's|\@VERSION\@|%{version}"|' $i
 done
 
 %install
