@@ -16,6 +16,7 @@ mkdir -p %{buildroot}/%{_sysconfdir}
 echo "A is here" >> %{buildroot}/%{_sysconfdir}/%{name}-installed
 
 %files
+%{_sysconfdir}/%{name}-installed
 
 %changelog
 * Sat May 26 2018 Sam Fowler <sfowler at redhat.com>
