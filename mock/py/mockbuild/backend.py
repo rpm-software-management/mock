@@ -238,7 +238,7 @@ class Commands(object):
     #       -> except hooks. :)
     #
     @traceLog()
-    def build(self, srpm, timeout, check=True):
+    def build(self, srpm, timeout, check=True, spec=None):
         """build an srpm into binary rpms, capture log"""
 
         # tell caching we are building
@@ -263,8 +263,11 @@ class Commands(object):
             srpm = self.copy_srpm_into_chroot(srpm)
             self.install_srpm(srpm)
 
-            spec = self.get_specfile_name(srpm)
-            spec_path = os.path.join(self.buildroot.builddir, 'SPECS', spec)
+            if spec:
+                spec_path = self.copy_spec_into_chroot(spec)
+            else:
+                spec = self.get_specfile_name(srpm)
+                spec_path = os.path.join(self.buildroot.builddir, 'SPECS', spec)
 
             rebuilt_srpm = self.rebuild_installed_srpm(spec_path, timeout)
 
@@ -430,6 +433,13 @@ class Commands(object):
         dest = self.buildroot.make_chroot_path(self.buildroot.builddir, 'originals')
         shutil.copyfile(srpm_path, os.path.join(dest, srpmFilename))
         return os.path.join(self.buildroot.builddir, 'originals', srpmFilename)
+
+    @traceLog()
+    def copy_spec_into_chroot(self, spec_path):
+        specFilename = os.path.basename(spec_path)
+        dest = self.buildroot.make_chroot_path(self.buildroot.builddir, 'originals')
+        shutil.copy2(spec_path, os.path.join(dest, specFilename))
+        return os.path.join(self.buildroot.builddir, 'originals', specFilename)
 
     @traceLog()
     def get_specfile_name(self, srpm_path):
