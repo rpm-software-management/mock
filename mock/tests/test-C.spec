@@ -12,9 +12,8 @@ Test package for mockchain building chains
 %build
 
 %install
-[ "$RPM_BUILD_ROOT" != "/" ] && rm -rf $RPM_BUILD_ROOT
-mkdir -p $RPM_BUILD_ROOT/etc
-echo "A is here" >> %{_sysconfdir}/%{name}-installed
+mkdir -p %{buildroot}/%{_sysconfdir}
+echo "A is here" >> %{buildroot}/%{_sysconfdir}/%{name}-installed
 
 %files
 
