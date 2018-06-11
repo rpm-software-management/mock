@@ -685,9 +685,8 @@ def _nspawnTempResolvAtExit(path):
     try:
         os.remove(path)
     except OSError as e:
-        if e.errno in [errno.ENOENT, errno.EPERM]:
-            pass
-        getLog().warning("unable to delete temporary resolv.conf (%s): %s", path, e)
+        if e.errno not in [errno.ENOENT, errno.EPERM]:
+            getLog().warning("unable to delete temporary resolv.conf (%s): %s", path, e)
 
 
 def _prepare_nspawn_command(chrootPath, user, cmd, nspawn_args=None, env=None, cwd=None):
