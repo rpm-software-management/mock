@@ -16,7 +16,7 @@
 
 Summary: Builds packages inside chroots
 Name: mock
-Version: 1.4.10
+Version: 1.4.11
 Release: 1%{?dist}
 License: GPLv2+
 # Source is created by
@@ -230,6 +230,22 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 %endif
 
 %changelog
+* Tue Jun 12 2018 Miroslav Suchý <msuchy@redhat.com> 1.4.11-1
+- fix @VERSION@ processing in man pages (ktdreyer@ktdreyer.com)
+- update testing.src.rpm to recent standard
+- Allow --spec arg to be used with rebuild option (sfowler@redhat.com)
+- Disable use_host_resolv by default (tmz@pobox.com)
+- Add support for microdnf [GH#76] (zdenekirsax@gmail.com)
+- skip running groupadd if gid is 0 (nhorman@tuxdriver.com)
+- Allow overriding of mock chroot build user name (nhorman@tuxdriver.com)
+- do not populate /etc/resolv.conf when networking is disabled (RHBZ#1514028)
+  (tmz@pobox.com)
+- add version to EL check in _prepare_nspawn_command() (tmz@pobox.com)
+- pass force-arch to builddep and resolvedep [GH#120]
+- Support setting up foreign architecture chroots
+- add support for bsdtar
+- use fedora 28 for tests
+
 * Thu May 10 2018 Miroslav Suchý <msuchy@redhat.com> 1.4.10-1
 - remove executable bit from trace_decorator.py
 - Change sign plugint to sign only builded rpm and not every file in results
