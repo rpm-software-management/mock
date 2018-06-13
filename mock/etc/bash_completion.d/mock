@@ -39,7 +39,7 @@ _mock()
         --dnf|--pm-cmd|--yum-cmd|--dnf-cmd|--enablerepo|--disablerepo|\
         --rpmbuild-opts|--new-chroot|--old-chroot|--print-root-path|--trace|\
         --bootstrap-chroot|--no-bootstrap-chroot|--enable-network|\
-        --mount|--nocheck|--symlink-dereference|--postinstall)
+        --mount|--nocheck|--symlink-dereference|--postinstall|--forcearch)
             return 0
             ;;
         -r|--root)
@@ -111,7 +111,7 @@ _mock()
             --rpmbuild-opts --snapshot --list-snapshots --remove-snapshot
             --rollback-to --umount --mount --old-chroot --new-chroot
             --bootstrap-chroot --no-bootstrap-chroot --enable-network
-            --symlink-dereference --postinstall" -- "$cur" ) )
+            --symlink-dereference --postinstall --forcearch" -- "$cur" ) )
         return 0
     fi
 
