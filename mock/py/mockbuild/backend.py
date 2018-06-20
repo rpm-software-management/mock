@@ -20,6 +20,7 @@ from .trace_decorator import getLog, traceLog
 
 class Commands(object):
     """Executes mock commands in the buildroot"""
+
     @traceLog()
     def __init__(self, config, uid_manager, plugins, state, buildroot, bootstrap_buildroot):
         self.uid_manager = uid_manager
@@ -207,7 +208,7 @@ class Commands(object):
     @traceLog()
     def installSpecDeps(self, spec_file):
         try:
-            spec=rpm.spec(spec_file).sourceHeader.dsFromHeader()
+            spec = rpm.spec(spec_file).sourceHeader.dsFromHeader()
             self.uid_manager.becomeUser(0, 0)
             for i in range(len(spec)): # pylint: disable=consider-using-enumerate
                 requirement_name = spec[i][2:]
