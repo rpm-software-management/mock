@@ -651,7 +651,6 @@ def do_with_status(command, shell=False, chrootPath=None, cwd=None, timeout=0, r
                    returnOutput=0, uid=None, gid=None, user=None, personality=None,
                    printOutput=False, env=None, pty=False, nspawn_args=None, unshare_net=False,
                    *_, **kargs):
-
     logger = kargs.get("logger", getLog())
     if timeout == 0:
         timeout = _OPS_TIMEOUT
@@ -1332,7 +1331,7 @@ def include(config_file, config_opts, is_statement=False):
             content = re.sub(r'include\((.*)\)', r'include(\g<1>, config_opts, True)', content)
             code = compile(content, config_file, 'exec')
         # pylint: disable=exec-used
-        exec(code)
+        exec (code)
     else:
         raise exception.ConfigError("Could not find included config file: %s" % config_file)
 
@@ -1524,6 +1523,8 @@ def createrepo(config_opts, path):
 
 
 REPOS_ID = []
+
+
 @traceLog()
 def generate_repo_id(baseurl):
     """ generate repository id for yum.conf out of baseurl """
@@ -1545,7 +1546,7 @@ def add_local_repo(config_opts, infile, destfile, baseurl, repoid=None):
         with open(infile) as f:
             code = compile(f.read(), infile, 'exec')
         # pylint: disable=exec-used
-        exec(code)
+        exec (code)
         if not repoid:
             repoid = generate_repo_id(baseurl)
         else:

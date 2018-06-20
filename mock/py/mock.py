@@ -21,6 +21,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA.
 from __future__ import print_function
+
 # pylint: disable=pointless-string-statement,wrong-import-position
 """
 usage:
@@ -62,7 +63,6 @@ import requests
 from six.moves.urllib_parse import urlsplit
 from six.moves import configparser
 from mockbuild import util
-
 
 # all of the variables below are substituted by the build system
 __VERSION__ = "unreleased_version"
@@ -198,10 +198,10 @@ def command_parse():
 
     parser.add_option("--umount", action="store_const", const="umount",
                       dest="mode", help="Umount the buildroot if it's "
-                      "mounted from separate device (LVM/overlayfs)")
+                                        "mounted from separate device (LVM/overlayfs)")
     parser.add_option("--mount", action="store_const", const="mount",
                       dest="mode", help="Mount the buildroot if it's "
-                      "mounted from separate device (LVM/overlayfs)")
+                                        "mounted from separate device (LVM/overlayfs)")
     # chain
     parser.add_option("--chain", action="store_true", dest="chain",
                       default=False,
@@ -295,14 +295,14 @@ def command_parse():
                       help="Specifies spec file to use to build an SRPM")
     parser.add_option("--sources", action="store",
                       help="Specifies sources (either a single file or a directory of files)"
-                      "to use to build an SRPM (used only with --buildsrpm)")
+                           "to use to build an SRPM (used only with --buildsrpm)")
     parser.add_option("--symlink-dereference", action="store_true", dest="symlink_dereference",
                       default=False, help="Follow symlinks in sources (used only with --buildsrpm)")
     parser.add_option("--short-circuit", action="store", type='choice',
                       choices=['prep', 'install', 'build', 'binary'],
                       help="Pass short-circuit option to rpmbuild to skip already "
-                      "complete stages. Warning: produced packages are unusable. "
-                      "Implies --no-clean. Valid options: build, install, binary")
+                           "complete stages. Warning: produced packages are unusable. "
+                           "Implies --no-clean. Valid options: build, install, binary")
     parser.add_option("--rpmbuild-opts", action="store",
                       help="Pass additional options to rpmbuild")
     parser.add_option("--enablerepo", action="callback", type="string",
@@ -338,11 +338,11 @@ def command_parse():
     parser.add_option("--enable-plugin", action="append",
                       dest="enabled_plugins", type="string", default=[],
                       help="Enable plugin. Currently-available plugins: %s"
-                      % repr(plugins))
+                           % repr(plugins))
     parser.add_option("--disable-plugin", action="append",
                       dest="disabled_plugins", type="string", default=[],
                       help="Disable plugin. Currently-available plugins: %s"
-                      % repr(plugins))
+                           % repr(plugins))
     parser.add_option("--plugin-option", action="append", dest="plugin_opts",
                       default=[], type="string",
                       metavar="PLUGIN:KEY=VALUE",
@@ -493,7 +493,7 @@ def check_arch_combination(target_arch, config_opts):
     if (host_arch not in legal) and not config_opts['forcearch']:
         raise mockbuild.exception.InvalidArchitecture(
             "Cannot build target {0} on arch {1}, because it is not listed in legal_host_arches {2}"
-            .format(target_arch, host_arch, legal))
+                .format(target_arch, host_arch, legal))
 
 
 @traceLog()
@@ -579,13 +579,16 @@ def do_buildsrpm(config_opts, commands, buildroot, options, args):
         return commands.buildsrpm(spec=spec, sources=options.sources,
                                   timeout=config_opts['rpmbuild_timeout'],
                                   follow_links=options.symlink_dereference)
+
     return rebuild_generic([options.spec], commands, buildroot, config_opts,
                            cmd=cmd, post=None, clean=clean)
+
 
 @traceLog()
 def do_debugconfig(config_opts):
     for key in sorted(config_opts):
         print("config_opts['{}'] = {}".format(key, pformat(config_opts[key])))
+
 
 @traceLog()
 def rootcheck():
@@ -648,17 +651,16 @@ def unshare_namespace(config_opts):
             else:
                 sys.exit(e.resultcode)
 
+
 @traceLog()
 def chain():
     mockconfig_path = MOCKCONFDIR
 
     config_opts = {}
 
-
     options, pkgs = command_parse()
     # take mock config + list of pkgs
     cfg = options.chroot
-
 
     config_opts = mockbuild.util.load_config(mockconfig_path, cfg, None, __VERSION__, PKGPYTHONDIR)
 
@@ -742,7 +744,7 @@ def chain():
             elif pkg.startswith('http://') or pkg.startswith('https://') or pkg.startswith('ftp://'):
                 url = pkg
                 try:
-                    log.info( 'Fetching %s', url)
+                    log.info('Fetching %s', url)
                     r = requests.get(url)
                     # pylint: disable=no-member
                     if r.status_code == requests.codes.ok:
@@ -768,8 +770,8 @@ def chain():
                 pdn = s_pkg.replace('.src.rpm', '')
                 resultdir = os.path.join(options.local_repo_dir, pdn)
                 util.mkdirIfAbsent(resultdir)
-                build_ret_code = main([pkg],resultdir)
-            except (mockbuild.exception.RootError,) as e :
+                build_ret_code = main([pkg], resultdir)
+            except (mockbuild.exception.RootError,) as e:
                 log.warning(e.msg)
                 failed.append(pkg)
             log.info("End build: %s", pkg)
@@ -822,6 +824,7 @@ def chain():
             log.info(pkg)
     return return_code
 
+
 @traceLog()
 def main(rpms=None, resultdir=None):
     "Main executable entry point."
@@ -850,7 +853,7 @@ def main(rpms=None, resultdir=None):
         options.verbose = 0
 
     if rpms:
-        args=rpms
+        args = rpms
     if resultdir:
         options.resultdir = resultdir
 
@@ -906,7 +909,7 @@ def main(rpms=None, resultdir=None):
         bootstrap_buildroot_config['root'] = bootstrap_buildroot_config['root'] + '-bootstrap'
         # share a yum cache to save downloading everything twice
         bootstrap_buildroot_config['plugin_conf']['yum_cache_opts']['dir'] = \
-            "%(cache_topdir)s/"+config_opts['root']+"/%(package_manager)s_cache/"
+            "%(cache_topdir)s/" + config_opts['root'] + "/%(package_manager)s_cache/"
         # allow bootstrap buildroot to access the network for getting packages
         bootstrap_buildroot_config['rpmbuild_networking'] = True
         bootstrap_buildroot_config['use_host_resolv'] = True
@@ -924,9 +927,9 @@ def main(rpms=None, resultdir=None):
         bootstrap_buildroot.config['chroot_setup_cmd'] = bootstrap_buildroot.pkg_manager.install_command
         # override configs for bootstrap_*
         for k in bootstrap_buildroot.config.copy():
-            if "bootstrap_"+k in bootstrap_buildroot.config:
-                bootstrap_buildroot.config[k] = bootstrap_buildroot_config["bootstrap_"+k]
-                del bootstrap_buildroot.config["bootstrap_"+k]
+            if "bootstrap_" + k in bootstrap_buildroot.config:
+                bootstrap_buildroot.config[k] = bootstrap_buildroot_config["bootstrap_" + k]
+                del bootstrap_buildroot.config["bootstrap_" + k]
 
     buildroot = Buildroot(config_opts, uidManager, state, plugins, bootstrap_buildroot)
     commands = Commands(config_opts, uidManager, plugins, state, buildroot, bootstrap_buildroot)
