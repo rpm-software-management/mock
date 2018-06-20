@@ -1283,6 +1283,20 @@ def do_update_config(log, config_opts, cfg, uidManager, name, skipError=True):
             log.error("  If you're trying to specify a path, include the .cfg extension, e.g. -r ./target.cfg")
         sys.exit(1)
 
+@traceLog()
+def setup_host_resolv(config_opts):
+    if not config_opts['use_host_resolv']:
+        # default /etc/hosts contents
+        if 'etc/hosts' not in config_opts['files']:
+            config_opts['files']['etc/hosts'] = dedent('''\
+                127.0.0.1 localhost localhost.localdomain
+                ::1       localhost localhost.localdomain localhost6 localhost6.localdomain6
+                ''')
+        # bind mount an empty /etc/resolv.conf when using nspawn and networking is disabled
+        if config_opts['use_nspawn'] and not config_opts['rpmbuild_networking']:
+            resolv_path = (tempfile.mkstemp(prefix="mock-resolv."))[1]
+            atexit.register(_nspawnTempResolvAtExit, resolv_path)
+            config_opts['nspawn_args'] += ['--bind={0}:/etc/resolv.conf'.format(resolv_path)]
 
 @traceLog()
 def load_config(config_path, name, uidManager, version, pkg_python_dir):
@@ -1319,19 +1333,6 @@ def load_config(config_path, name, uidManager, version, pkg_python_dir):
     cfg = os.path.join(os.path.expanduser(
         '~' + pwd.getpwuid(os.getuid())[0]), '.config/mock.cfg')
     do_update_config(log, config_opts, cfg, uidManager, name)
-
-    if not config_opts['use_host_resolv']:
-        # default /etc/hosts contents
-        if 'etc/hosts' not in config_opts['files']:
-            config_opts['files']['etc/hosts'] = dedent('''\
-                127.0.0.1 localhost localhost.localdomain
-                ::1       localhost localhost.localdomain localhost6 localhost6.localdomain6
-                ''')
-        # bind mount an empty /etc/resolv.conf when using nspawn and networking is disabled
-        if config_opts['use_nspawn'] and not config_opts['rpmbuild_networking']:
-            resolv_path = (tempfile.mkstemp(prefix="mock-resolv."))[1]
-            atexit.register(_nspawnTempResolvAtExit, resolv_path)
-            config_opts['nspawn_args'] += ['--bind={0}:/etc/resolv.conf'.format(resolv_path)]
 
     if config_opts['use_container_host_hostname'] and '%_buildhost' not in config_opts['macros']:
         config_opts['macros']['%_buildhost'] = socket.getfqdn()

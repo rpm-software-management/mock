@@ -663,6 +663,8 @@ def main():
     # cmdline options override config options
     util.set_config_opts_per_cmdline(config_opts, options, args)
 
+    util.setup_host_resolv(config_opts)
+
     # allow a different mock group to be specified
     if config_opts['chrootgid'] != mockgid:
         uidManager.restorePrivs()
