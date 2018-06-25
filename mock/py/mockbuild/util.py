@@ -815,7 +815,7 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
     config_opts['online'] = True
     config_opts['use_nspawn'] = True
     config_opts['rpmbuild_networking'] = False
-    config_opts['nspawn_args'] = []
+    config_opts['nspawn_args'] = ['--capability=cap_ipc_lock']
     config_opts['use_container_host_hostname'] = True
     config_opts['use_bootstrap_container'] = False
 
