@@ -33,13 +33,13 @@ _mock()
     declare -F _split_longopt &>/dev/null && _split_longopt && split=true
 
     case "$prev" in
-        -h|--help|--debug-config|--copyout|--arch|-D|--define|--with|--without|\
-        --uniqueext|--rpmbuild_timeout|--cwd|--scm-option|--snapshot|\
-        -l|--list-snapshots|--rollback-to|--remove-snapshot|--umount|--yum|\
-        --dnf|--pm-cmd|--yum-cmd|--dnf-cmd|--enablerepo|--disablerepo|\
-        --rpmbuild-opts|--new-chroot|--old-chroot|--print-root-path|--trace|\
-        --bootstrap-chroot|--no-bootstrap-chroot|--enable-network|\
-        --mount|--nocheck|--symlink-dereference|--postinstall|--forcearch)
+        -h|--help|--version)
+            # no further arguments are accepted after the above arguments
+            return 0
+            ;;
+        --arch|--config-opts|-D|--define|--disablerepo|--enablerepo|--forcearch|--plugin-option|\
+        --rpmbuild-opts|--rpmbuild_timeout|--scm-option|--uniqueext|--with|--without)
+            # argument required but no completions available
             return 0
             ;;
         -r|--root)
@@ -136,7 +136,12 @@ _mockchain()
     declare -F _split_longopt &>/dev/null && _split_longopt && split=true
 
     case "$prev" in
-        -h|--help|-a|--addrepo)
+        -h|--help)
+            # no further arguments are accepted after the above arguments
+            return 0
+            ;;
+        -a|--addrepo|--mock-option|--tmp_prefix)
+            # argument required but no completions available
             return 0
             ;;
         -r|--root)
