@@ -263,7 +263,8 @@ class Commands(object):
             srpm = self.copy_srpm_into_chroot(srpm)
             self.install_srpm(srpm)
 
-            if spec:
+            if spec and not self.config['scm']:
+                # scm sets options.spec, but we want to get spec from SRPM when using scm
                 spec_path = self.copy_spec_into_chroot(spec)
             else:
                 spec = self.get_specfile_name(srpm)
