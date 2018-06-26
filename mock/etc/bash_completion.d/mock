@@ -4,7 +4,7 @@ _mock_root()
 {
     COMPREPLY+=( $( compgen -W "$( command ls ${1:-/etc/mock} 2>/dev/null | \
         sed -ne 's/\.cfg$//p' )" -X site-defaults -- "$cur" ) )
-    COMPREPLY+=( $( compgen -f -o plusdirs -X '!*.cfg' -- "$cur" ) )
+    _filedir 'cfg'
 }
 
 _mock()
@@ -46,8 +46,7 @@ _mock()
             return
             ;;
         --spec)
-            local IFS=$'\n'
-            COMPREPLY=( $( compgen -f -o plusdirs -X "!*.spec" -- "$cur" ) )
+            _filedir 'spec'
             return
             ;;
         --target)
@@ -72,8 +71,7 @@ _mock()
             return
             ;;
         -i|--install|install)
-            local IFS=$'\n'
-            COMPREPLY=( $( compgen -f -o plusdirs -X '!*.rpm' -- "$cur" ) )
+            _filedir 'rpm'
             COMPREPLY=( $( compgen -W '"${COMPREPLY[@]}"' -X '*.src.rpm' ) )
             COMPREPLY=( $( compgen -W '"${COMPREPLY[@]}"' -X '*.nosrc.rpm' ) )
             [[ $cur != */* && $cur != [.~]* ]] && \
