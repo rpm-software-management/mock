@@ -9,16 +9,10 @@ _mock_root()
 
 _mock()
 {
-    COMPREPLY=()
-    local cur prev cword cfgdir=/etc/mock
-    local -a words
-    if declare -F _get_comp_words_by_ref &>/dev/null ; then
-        _get_comp_words_by_ref cur prev words cword
-    else
-        cur=$2 prev=$3 words=("${COMP_WORDS[@]}") cword=$COMP_CWORD
-    fi
+    local cur prev words cword split
+    _init_completion -s || return
 
-    local word count=0
+    local cfgdir=/etc/mock count=0
     for word in "${words[@]}" ; do
         [[ $count -eq $cword ]] && break
         if [[ "$word" == --configdir ]] ; then
@@ -29,32 +23,29 @@ _mock()
         count=$((++count))
     done
 
-    local split=false
-    declare -F _split_longopt &>/dev/null && _split_longopt && split=true
-
     case "$prev" in
         -h|--help|--version)
             # no further arguments are accepted after the above arguments
-            return 0
+            return
             ;;
         --arch|--config-opts|-D|--define|--disablerepo|--enablerepo|--forcearch|--plugin-option|\
         --rpmbuild-opts|--rpmbuild_timeout|--scm-option|--uniqueext|--with|--without)
             # argument required but no completions available
-            return 0
+            return
             ;;
         -r|--root)
             _mock_root $cfgdir
-            return 0
+            return
             ;;
         --configdir|--resultdir|--copyin|--sources)
             local IFS=$'\n'
             COMPREPLY=( $( compgen -d -- "$cur" ) )
-            return 0
+            return
             ;;
         --spec)
             local IFS=$'\n'
             COMPREPLY=( $( compgen -f -o plusdirs -X "!*.spec" -- "$cur" ) )
-            return 0
+            return
             ;;
         --target)
             # Yep, compatible archs, not compatible build archs
@@ -64,18 +55,18 @@ _mock()
             COMPREPLY=( $( compgen -W "$( command rpm --showrc | \
                 sed -ne 's/^\s*compatible\s\s*archs\s*:\s*\(.*\)/\1/i p' )" \
                 -- "$cur" ) )
-            return 0
+            return
             ;;
         --enable-plugin|--disable-plugin)
             COMPREPLY=( $( compgen -W "$( $1 $prev=DOES_NOT_EXIST 2>&1 | \
                 sed -ne "s/[',]//g" -e 's/.*[[(]\([^])]*\)[])]/\1/p' )" \
                 -- "$cur" ) ) #' unconfuse emacs
-            return 0
+            return
             ;;
         --scrub)
             COMPREPLY=( $( compgen -W "all chroot cache root-cache c-cache
                 yum-cache dnf-cache lvm overlayfs" -- "$cur" ) )
-            return 0
+            return
             ;;
         -i|--install|install)
             local IFS=$'\n'
@@ -84,93 +75,74 @@ _mock()
             COMPREPLY=( $( compgen -W '"${COMPREPLY[@]}"' -X '*.nosrc.rpm' ) )
             [[ $cur != */* && $cur != [.~]* ]] && \
                 declare -F _yum_list &>/dev/null && _yum_list all "$cur"
-            return 0
+            return
             ;;
         --remove|remove)
             declare -F _yum_list &>/dev/null && _yum_list all "$cur"
-            return 0
+            return
             ;;
         --short-circuit)
             COMPREPLY=( $( compgen -W "install binary build" -- "$cur" ) )
-            return 0
+            return
             ;;
     esac
 
-    $split && return 0
+    $split && return
 
     if [[ "$cur" == -* ]] ; then
-        COMPREPLY=( $( compgen -W "--version --help --debug-config --rebuild --buildsrpm
-            --shell --chroot --clean --scrub --init --installdeps --install
-            --update --remove --orphanskill --copyin --copyout --root --offline
-            --no-clean --cleanup-after --no-cleanup-after --arch --target
-            --define --with --without --resultdir --uniqueext --configdir
-            --rpmbuild_timeout --unpriv --cwd --spec --sources --verbose
-            --quiet --trace --enable-plugin --disable-plugin --nocheck
-            --print-root-path --scm-enable --scm-option --yum --dnf --pm-cmd
-            --yum-cmd --dnf-cmd --enablerepo --disablerepo --short-circuit
-            --rpmbuild-opts --snapshot --list-snapshots --remove-snapshot
-            --rollback-to --umount --mount --old-chroot --new-chroot
-            --bootstrap-chroot --no-bootstrap-chroot --enable-network
-            --symlink-dereference --postinstall --forcearch" -- "$cur" ) )
-        return 0
+        COMPREPLY=( $( compgen -W '$( _parse_help "$1" )' -- "$cur" ) )
+        # _parse_help fails to pick up --define (it's a parsing failure due to
+        # the quoted 'MACRO EXPR' argument)
+        COMPREPLY+=( $( compgen -W '--define=' -- "$cur" ) )
+        [[ $COMPREPLY == *= ]] && compopt -o nospace
+    else
+        _filedir '@(?(no)src.r|s)pm'
     fi
 
-    local IFS=$'\n'
-    COMPREPLY=( $( compgen -f -o plusdirs -X '!*.@(?(no)src.r|s)pm' \
-        -- "$cur" ) )
 } &&
-complete -F _mock -o filenames mock mock.py
+complete -F _mock mock mock.py
 
 _mockchain()
 {
-    COMPREPLY=()
-    local cur prev cword
-    local -a words
-    if declare -F _get_comp_words_by_ref &>/dev/null ; then
-        _get_comp_words_by_ref cur prev words cword
-    else
-        cur=$2 prev=$3 words=("${COMP_WORDS[@]}") cword=$COMP_CWORD
-    fi
-
-    local split=false
-    declare -F _split_longopt &>/dev/null && _split_longopt && split=true
+    local cur prev words cword split
+    _init_completion -s || return
 
     case "$prev" in
         -h|--help)
             # no further arguments are accepted after the above arguments
-            return 0
+            return
             ;;
         -a|--addrepo|--mock-option|--tmp_prefix)
             # argument required but no completions available
-            return 0
+            return
             ;;
         -r|--root)
             _mock_root
-            return 0
+            return
             ;;
         -l|--localrepo)
             _filedir -d
-            return 0
+            return
             ;;
         --log)
             _filedir
-            return 0
+            return
             ;;
     esac
 
-    $split && return 0
+    $split && return
 
     if [[ "$cur" == -* ]] ; then
-        COMPREPLY=( $( compgen -W "--help --root --localrepo --continue
-            --addrepo --recurse --log" -- "$cur" ) )
-        return 0
+        COMPREPLY=( $( compgen -W '$( _parse_help "$1" )' -- "$cur" ) )
+        # _parse_help fails to pick up --mock-option
+        COMPREPLY+=( $( compgen -W '--mock-option=' -- "$cur" ) )
+        [[ $COMPREPLY == *= ]] && compopt -o nospace
+    else
+        _filedir '@(?(no)src.r|s)pm'
     fi
 
-    local IFS=$'\n'
-    COMPREPLY=( $( compgen -f -o plusdirs -X '!*.@(?(no)src.r|s)pm' \
-        -- "$cur" ) )
 } &&
-complete -F _mockchain -o filenames mockchain mockchain.py
+complete -F _mockchain mockchain mockchain.py
 
 # Local variables:
 # mode: shell-script
