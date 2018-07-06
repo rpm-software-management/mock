@@ -766,7 +766,7 @@ def clean_env():
         'HOSTNAME': 'mock',
         'PATH': '/usr/bin:/bin:/usr/sbin:/sbin',
     }
-    env['LANG'] = os.environ.setdefault('LANG', 'en_US.UTF-8')
+    env['LANG'] = os.environ.setdefault('LANG', 'C.UTF-8')
     return env
 
 
@@ -922,7 +922,7 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
         'PATH': '/usr/bin:/bin:/usr/sbin:/sbin',
         'PROMPT_COMMAND': r'printf "\033]0;<mock-chroot>\007"',
         'PS1': r'<mock-chroot> \s-\v\$ ',
-        'LANG': os.environ.setdefault('LANG', 'en_US.UTF-8'),
+        'LANG': os.environ.setdefault('LANG', 'C.UTF-8'),
     }
 
     runtime_plugins = [runtime_plugin
