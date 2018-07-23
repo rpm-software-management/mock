@@ -46,9 +46,14 @@ _mock()
             _mock_root $cfgdir
             return 0
             ;;
-        --configdir|--resultdir|--copyin|--sources)
+        --configdir|--resultdir|--sources)
             local IFS=$'\n'
             COMPREPLY=( $( compgen -d -- "$cur" ) )
+            return 0
+            ;;
+        --copyin)
+            local IFS=$'\n'
+            COMPREPLY=( $( compgen -f -o plusdirs -- "$cur" ) )
             return 0
             ;;
         --spec)
