@@ -113,7 +113,6 @@ fi
 
 
 %files -f %{name}.cfgs
-%defattr(-, root, root, -)
 %license COPYING
 %dir  %{_sysconfdir}/mock
 %ghost %config(noreplace,missingok) %{_sysconfdir}/mock/default.cfg
