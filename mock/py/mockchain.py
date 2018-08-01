@@ -367,6 +367,8 @@ def main(args):
                     log(opts.logfile, "Will try to build again (if some other package will succeed).")
                 else:
                     log(opts.logfile, "See logs/results in %s" % opts.local_repo_dir)
+                    if not opts.cont:
+                        sys.exit(1)
             elif ret == 1:
                 log(opts.logfile, "Success building %s" % os.path.basename(pkg))
                 built_pkgs.append(pkg)
