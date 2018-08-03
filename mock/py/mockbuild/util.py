@@ -105,6 +105,8 @@ def get_proxy_environment(config):
         value = config.get(key)
         if value:
             env[key] = value
+        elif os.getenv(key):
+            env[key] = os.getenv(key)
     return env
 
 
