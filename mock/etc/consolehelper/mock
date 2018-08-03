@@ -2,4 +2,4 @@ USER=root
 PROGRAM=/usr/libexec/mock/mock
 SESSION=false
 FALLBACK=false
-KEEP_ENV_VARS=COLUMNS,SSH_AUTH_SOCK,http_proxy,https_proxy,no_proxy
+KEEP_ENV_VARS=COLUMNS,SSH_AUTH_SOCK,http_proxy,ftp_proxy,https_proxy,no_proxy
