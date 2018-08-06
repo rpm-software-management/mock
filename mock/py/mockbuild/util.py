@@ -1043,7 +1043,8 @@ def set_config_opts_per_cmdline(config_opts, options, args):
     config_opts.update(cli_opt_new)
 
     config_opts['verbose'] = options.verbose
-    config_opts['print_main_output'] = config_opts['verbose'] > 0 and sys.stderr.isatty()
+    if 'print_main_output' not in config_opts or config_opts['print_main_output'] is None:
+        config_opts['print_main_output'] = config_opts['verbose'] > 0 and sys.stderr.isatty()
 
     # do some other options and stuff
     if options.arch:
