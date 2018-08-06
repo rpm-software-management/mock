@@ -17,7 +17,7 @@ Source:		https://github.com/rpm-software-management/mock/releases/download/%{nam
 BuildArch:	noarch
 
 # distribution-gpg-keys contains GPG keys used by mock configs
-Requires:	distribution-gpg-keys >= 1.21
+Requires:	distribution-gpg-keys >= 1.22
 
 Requires(pre):	shadow-utils
 Requires(post): coreutils
@@ -42,6 +42,7 @@ Config files which allow you to create chroots for:
  * Epel
  * Mageia
  * Custom chroot
+ * OpenSuse Tumbleweed and Leap
 
 %prep
 %setup -q
