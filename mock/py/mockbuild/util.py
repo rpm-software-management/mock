@@ -83,7 +83,7 @@ personality_defs = {
 PLUGIN_LIST = ['tmpfs', 'root_cache', 'yum_cache', 'bind_mount',
                'ccache', 'selinux', 'package_state', 'chroot_scan',
                'lvm_root', 'compress_logs', 'sign', 'pm_request',
-               'hw_info']
+               'hw_info', 'qemu_user_static']
 
 USE_NSPAWN = False
 
@@ -913,6 +913,10 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
         },
         'hw_info_enable': True,
         'hw_info_opts': {
+        },
+        'qemu_user_static_enable': False,
+        'qemu_user_static_opts': {
+            'binary_path': None,
         },
     }
 
