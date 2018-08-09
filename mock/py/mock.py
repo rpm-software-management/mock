@@ -854,6 +854,8 @@ def run_command(options, args, config_opts, commands, buildroot, state):
                 args.append(srpm)
             if config_opts['scm']:
                 scmWorker.clean()
+                options.spec = None
+                options.sources = None
             else:
                 config_opts['clean'] = False
         do_rebuild(config_opts, commands, buildroot, options, args)
