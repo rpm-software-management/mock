@@ -404,8 +404,7 @@ def condUnshareNet(unshare_net=True):
             # IPC and UTS ns are supported since the same kernel version. If this
             # fails, there had to be a warning already
             pass
-        # pylint: disable=bare-except
-        except Exception as e:
+        except Exception as e: # pylint: disable=broad-except
             getLog().warning("network namespace setup failed: %s", e)
 
 
@@ -526,6 +525,7 @@ def selinuxEnabled():
         with open(enforce_filename) as f:
             if f.read().strip() in ("1", "0"):
                 return True
+    # pylint: disable=bare-except
     except:
         pass
     return False
@@ -604,7 +604,7 @@ def do(command, shell=False, chrootPath=None, cwd=None, timeout=0, raiseExc=True
         try:
             if child is not None:
                 os.waitpid(child.pid, 0)
-        except:
+        except: # pylint: disable=bare-except
             pass
         raise
     finally:
@@ -1129,7 +1129,7 @@ def set_config_opts_per_cmdline(config_opts, options, args):
                 % (option, p))
         try:
             v = literal_eval(v)
-        except:
+        except: # pylint: disable=bare-except
             pass
         config_opts['plugin_conf'][p + "_opts"].update({k: v})
 
@@ -1239,7 +1239,7 @@ def update_config_from_file(config_opts, config_file, uid_manager):
             include(config_file, config_opts)
             with os.fdopen(w_pipe, 'wb') as writer:
                 pickle.dump(config_opts, writer)
-        except:
+        except: # pylint: disable=bare-except
             import traceback
             etype, evalue, raw_tb = sys.exc_info()
             tb = traceback.extract_tb(raw_tb)
@@ -1390,7 +1390,7 @@ def find_btrfs_in_chroot(mockdir, chroot_path):
         if e.errno == errno.ENOENT:
             return None
         raise e
-    except Exception as e:
+    except Exception as e: # pylint: disable=broad-except
         # it is not btrfs volume
         log = getLog()
         log.debug("Please ignore the error above above about btrfs.")
