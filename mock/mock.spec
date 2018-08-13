@@ -1,5 +1,3 @@
-%{!?python_sitelib: %global python_sitelib %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib()")}
-
 %if 0%{?fedora} || 0%{?mageia}
 %global use_python3 1
 %global use_python2 0
@@ -11,7 +9,7 @@
 %if %{use_python3}
 %global python_sitelib %{python3_sitelib}
 %else
-%global python_sitelib %{python_sitelib}
+%global python_sitelib %{python2_sitelib}
 %endif
 
 Summary: Builds packages inside chroots
