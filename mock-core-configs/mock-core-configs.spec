@@ -2,7 +2,7 @@
 %global mockgid 135
 
 Name:		mock-core-configs
-Version:	29.0
+Version:	29.1
 Release:	1%{?dist}
 Summary:	Mock core config files basic chroots
 
@@ -119,6 +119,12 @@ fi
 %ghost %config(noreplace,missingok) %{_sysconfdir}/mock/default.cfg
 
 %changelog
+* Mon Aug 13 2018 Miroslav Suchý <msuchy@redhat.com> 29.1-1
+- add fedora 29 configs and change rawhide to F30
+- defattr is not needed since rpm 4.2
+- Replace armv5tl with aarch64 for Mageia Cauldron (ngompa13@gmail.com)
+- check gpg keys for rawhide
+
 * Wed May 02 2018 Miroslav Suchý <msuchy@redhat.com> 28.4-1
 - requires distribution-gpg-keys with opensuse keys
 - Add initial openSUSE distribution targets (ngompa13@gmail.com)
