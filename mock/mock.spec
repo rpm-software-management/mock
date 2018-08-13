@@ -16,7 +16,7 @@
 
 Summary: Builds packages inside chroots
 Name: mock
-Version: 1.4.11
+Version: 1.4.12
 Release: 1%{?dist}
 License: GPLv2+
 # Source is created by
@@ -230,6 +230,21 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 %endif
 
 %changelog
+* Mon Aug 13 2018 Miroslav Suchý <msuchy@redhat.com> 1.4.12-1
+- Don't try to use a spec we've already cleaned up (otaylor@fishsoup.net)
+- only set print_main_output when not set in configs
+  (chuck.wilson+github@gmail.com)
+- Try to get the proxy from environment (brunovern.a@gmail.com)
+- stop after first failure if -c or --recurse is not used
+- fallback to C.UTF-8 locale (tomek@pipebreaker.pl)
+- completion: improve --copy(in|out), --cwd, --macro-file, --rootdir, and
+  --sources (tmz@pobox.com)
+- do not get spec from command line when using scm [GH#203]
+- enable cap_ipc_lock in nspawn container [RHBZ#1580435]
+- use host's resolv.conf when --enable-network is set on cml [RHBZ#1593212]
+  (jskarvad@redhat.com)
+- add --forcearch to bash_completion
+
 * Tue Jun 12 2018 Miroslav Suchý <msuchy@redhat.com> 1.4.11-1
 - fix @VERSION@ processing in man pages (ktdreyer@ktdreyer.com)
 - update testing.src.rpm to recent standard
