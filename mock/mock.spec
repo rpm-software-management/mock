@@ -14,7 +14,7 @@
 
 Summary: Builds packages inside chroots
 Name: mock
-Version: 1.4.12
+Version: 1.4.13
 Release: 1%{?dist}
 License: GPLv2+
 # Source is created by
@@ -228,6 +228,9 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 %endif
 
 %changelog
+* Mon Aug 13 2018 Miroslav Suchý <msuchy@redhat.com> 1.4.13-1
+- fix python_sitelib macro
+
 * Mon Aug 13 2018 Miroslav Suchý <msuchy@redhat.com> 1.4.12-1
 - Don't try to use a spec we've already cleaned up (otaylor@fishsoup.net)
 - only set print_main_output when not set in configs
