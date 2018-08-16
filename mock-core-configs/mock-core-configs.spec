@@ -2,7 +2,7 @@
 %global mockgid 135
 
 Name:		mock-core-configs
-Version:	29.1
+Version:	29.2
 Release:	1%{?dist}
 Summary:	Mock core config files basic chroots
 
@@ -119,6 +119,9 @@ fi
 %ghost %config(noreplace,missingok) %{_sysconfdir}/mock/default.cfg
 
 %changelog
+* Thu Aug 16 2018 Miroslav Suchý <msuchy@redhat.com> 29.2-1
+- add gpg keys for release rawhide-1 (msuchy@redhat.com)
+
 * Mon Aug 13 2018 Miroslav Suchý <msuchy@redhat.com> 29.1-1
 - add fedora 29 configs and change rawhide to F30
 - defattr is not needed since rpm 4.2
