@@ -5,6 +5,7 @@ import copy
 import glob
 import os.path
 import shutil
+import sys
 from textwrap import dedent
 
 import distro
@@ -156,7 +157,22 @@ class _PackageManager(object):
     # pylint: disable=unused-argument
     @traceLog()
     def builddep(self, *args, **kwargs):
-        return self.execute('builddep', returnOutput=1, *args)
+        try:
+            result = self.execute('builddep', returnOutput=1, *args)
+        except (FileNotFoundError) as error:
+            er = str(error)
+            if "builddep" in er:
+                print(error)
+                print("""
+Error:      dnf-utils is not installed. Dnf-utils is needed to complete this action.
+            To install dnf-utils use one of the commands below:
+            $ dnf install dnf-utils
+            or
+            $ yum install dnf-utils""")
+                sys.exit(120)
+            else:
+                raise
+        return result
 
     @traceLog()
     def copy_gpg_keys(self):
