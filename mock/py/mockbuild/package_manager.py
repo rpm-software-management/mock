@@ -164,11 +164,11 @@ class _PackageManager(object):
             if "builddep" in er:
                 print(error)
                 print("""
-Error:      dnf-utils is not installed. Dnf-utils is needed to complete this action.
-            To install dnf-utils use one of the commands below:
+Error:      Neither dnf-utils nor yum-utils are installed. Dnf-utils or yum-utils are needed to complete this action.
+            To install dnf-utils use:
             $ dnf install dnf-utils
-            or
-            $ yum install dnf-utils""")
+            or yum-utils:
+            $ yum install yum-utils""")
                 sys.exit(120)
             else:
                 raise
