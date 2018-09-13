@@ -41,6 +41,7 @@ class Error(Exception):
 # 70 = result dir could not be created
 # 80 = unshare of namespace failed
 # 110 = unbalanced call to state functions
+# 120 = weak dependent package not installed
 
 class BuildError(Error):
     "rpmbuild failed."
