@@ -95,6 +95,8 @@ PLUGIN_LIST = ['tmpfs', 'root_cache', 'yum_cache', 'bind_mount',
 
 USE_NSPAWN = False
 
+RHEL_CLONES = ['centos', 'deskos', 'ol', 'rhel', 'scientific']
+
 _OPS_TIMEOUT = 0
 
 
@@ -714,8 +716,7 @@ def _prepare_nspawn_command(chrootPath, user, cmd, nspawn_args=None, env=None, c
     nspawn_argv = ['/usr/bin/systemd-nspawn', '-q', '-M', uuid.uuid4().hex, '-D', chrootPath]
     distro_label = distro.linux_distribution(full_distribution_name=False)[0]
     distro_version = float(distro.version() or 0)
-    epel = ('centos', 'deskos', 'ol', 'rhel')
-    if distro_label not in epel or distro_version >= 7.5:
+    if distro_label not in RHEL_CLONES or distro_version >= 7.5:
         # EL < 7.5 does not support the nspawn -a option. See BZ 1417387
         nspawn_argv += ['-a']
     nspawn_argv.extend(nspawn_args)
