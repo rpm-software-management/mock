@@ -2,7 +2,7 @@
 %global mockgid 135
 
 Name:		mock-core-configs
-Version:	29.3
+Version:	29.4
 Release:	1%{?dist}
 Summary:	Mock core config files basic chroots
 
@@ -121,6 +121,10 @@ fi
 %ghost %config(noreplace,missingok) %{_sysconfdir}/mock/default.cfg
 
 %changelog
+* Fri Nov 16 2018 Miroslav Suchý <msuchy@redhat.com> 29.4-1
+- use correct gpg keys for rhelbeta-8
+- add virtual platform module
+
 * Thu Nov 15 2018 Miroslav Suchý <msuchy@redhat.com> 29.3-1
 - add rhelbeta-8-* configs
 - move EOLed configs to /etc/mock/eol directory
