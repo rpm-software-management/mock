@@ -26,7 +26,7 @@ def package_manager(config_opts, buildroot, plugins, bootstrap_buildroot=None):
             return Dnf(config_opts, buildroot, plugins, bootstrap_buildroot)
         # RHEL without DNF and without bootstrap buildroot
         (distribution, version) = distro.linux_distribution(full_distribution_name=False)[0:2]
-        if distribution in utils.RHEL_CLONES:
+        if distribution in util.RHEL_CLONES:
             version = int(version.split('.')[0])
             if version < 8:
                 if ('dnf_warning' not in config_opts or config_opts['dnf_warning']) and \
