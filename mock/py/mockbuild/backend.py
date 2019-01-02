@@ -7,11 +7,11 @@
 # Copyright (C) 2007 Michael E Brown <mebrown@michaels-house.net>
 
 import glob
+import rpm
 import os
 import shutil
 
 from mockbuild.mounts import BindMountPoint
-import rpm
 
 from . import util
 from .exception import PkgError
