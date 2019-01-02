@@ -7,8 +7,8 @@
 # Copyright (C) 2007 Michael E Brown <mebrown@michaels-house.net>
 
 import glob
-import rpm
 import os
+import rpm
 import shutil
 
 from mockbuild.mounts import BindMountPoint
