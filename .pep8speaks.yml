@@ -25,3 +25,4 @@ pycodestyle:
             - cyclic-import
             - no-else-return
             - len-as-condition
+            - too-many-boolean-expressions
