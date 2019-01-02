@@ -874,7 +874,7 @@ class OverlayFsPlugin(object):
         self.snapshotLock()
         try:
             self.initLayers()
-            if what == "all" or what == "overlayfs":
+            if what in ("all", "overlayfs"):
                 baseSnapshotName = self.getBaseLayerRef()
                 self.restoreSnapshot(baseSnapshotName)
                 postinitSnapshotName = self.getPostinitLayerRef()
