@@ -130,7 +130,7 @@ class Commands(object):
                         if self.bootstrap_buildroot is not None:
                             util.rmtree(os.path.join(self.bootstrap_buildroot.cachedir, 'root_cache'),
                                         selinux=self.bootstrap_buildroot.selinux)
-                    elif scrub == 'yum-cache' or scrub == 'dnf-cache':
+                    elif scrub in ['yum-cache', 'dnf-cache']:
                         self.buildroot.root_log.info("scrubbing yum-cache and dnf-cache for %s", self.config_name)
                         util.rmtree(os.path.join(self.buildroot.cachedir, 'yum_cache'), selinux=self.buildroot.selinux)
                         util.rmtree(os.path.join(self.buildroot.cachedir, 'dnf_cache'), selinux=self.buildroot.selinux)
