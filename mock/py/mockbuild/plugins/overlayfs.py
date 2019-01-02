@@ -570,7 +570,7 @@ class OverlayFsPlugin(object):
     def createLayerList2(self, layerList,layerId):
         parentLayerId = self.getParentLayer(layerId)
         layerList.append(layerId)
-        if parentLayerId != None:
+        if parentLayerId is not None:
             self.createLayerList2(layerList,parentLayerId)
 
     # mount root: upperLayer (+ its parents) using overlayfs
