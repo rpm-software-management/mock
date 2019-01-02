@@ -52,7 +52,7 @@ class FileSystemMountPoint(MountPoint):
     @traceLog()
     def mount(self):
         if self.mounted:
-            return
+            return None
 
         util.mkdirIfAbsent(self.path)
         cmd = ['/bin/mount', '-n', '-t', self.filetype]
@@ -67,7 +67,7 @@ class FileSystemMountPoint(MountPoint):
     # pylint: disable=unused-argument
     def umount(self, force=False, nowarn=False):
         if not self.mounted:
-            return
+            return None
         cmd = ['/bin/umount', '-n', '-l', self.path]
         try:
             util.do(cmd)
@@ -103,7 +103,7 @@ class BindMountPoint(MountPoint):
     @traceLog()
     def umount(self):
         if not self.mounted:
-            return
+            return None
         cmd = ['/bin/umount', '-n', self.bindpath]
         try:
             util.do(cmd)
