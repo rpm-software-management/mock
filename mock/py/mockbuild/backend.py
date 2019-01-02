@@ -8,9 +8,9 @@
 
 import glob
 import os
-import rpm
 import shutil
 
+import rpm
 from mockbuild.mounts import BindMountPoint
 
 from . import util
