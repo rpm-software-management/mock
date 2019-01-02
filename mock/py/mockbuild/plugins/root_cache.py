@@ -38,11 +38,17 @@ class RootCache(object):
         if self.compressProgram == 'pigz' and not os.path.exists('/usr/bin/pigz'):
             getLog().warning("specified 'pigz' as the root cache compress program but not available; using gzip")
             self.compressProgram = 'gzip'
+        # bsdtar use different decompress program
+        self.decompressProgram = self.root_cache_opts['decompress_program'] or self.compressProgram
         if self.compressProgram:
             self.compressArgs = ['--use-compress-program', self.compressProgram]
             self.rootCacheFile = self.rootCacheFile + self.root_cache_opts['extension']
         else:
             self.compressArgs = []
+        if self.decompressProgram:
+            self.decompressArgs = ['--use-compress-program', self.decompressProgram]
+        else:
+            self.decompressArgs = []
         plugins.add_hook("preinit", self._rootCachePreInitHook)
         plugins.add_hook("preshell", self._rootCachePreShellHook)
         plugins.add_hook("prechroot", self._rootCachePreShellHook)
@@ -128,7 +134,7 @@ class RootCache(object):
                 else:
                     __tar_cmd = "gtar"
                 mockbuild.util.do(
-                    [__tar_cmd] + self.compressArgs + ["-xf", self.rootCacheFile,
+                    [__tar_cmd] + self.decompressArgs + ["-xf", self.rootCacheFile,
                                                        "-C", self.buildroot.make_chroot_path()],
                     shell=False, printOutput=True
                 )
