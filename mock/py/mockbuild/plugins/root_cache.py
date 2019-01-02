@@ -154,14 +154,18 @@ class RootCache(object):
     @traceLog()
     def _root_cache_handle_mounts(self):
         br_path = self.buildroot.make_chroot_path()
+        if self.config['tar'] == 'bsdtar':
+            anchor = '^'
+        else:
+            anchor = ''
         for m in self.buildroot.mounts.get_mountpoints():
             if m.startswith('/'):
                 if m.startswith(br_path):
-                    self.exclude_tar_cmds.append('--exclude=.%s' % m[len(br_path):])
+                    self.exclude_tar_cmds.append('--exclude=%s./%s' % (anchor, m[len(br_path):]))
                 else:
-                    self.exclude_tar_cmds.append('--exclude=.%s' % m)
+                    self.exclude_tar_cmds.append('--exclude=%s.%s' % (anchor, m))
             else:
-                self.exclude_tar_cmds.append('--exclude=./%s' % m)
+                self.exclude_tar_cmds.append('--exclude=%s./%s' % (anchor, m))
 
     @traceLog()
     def _rootCachePostInitHook(self):
