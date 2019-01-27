@@ -36,11 +36,18 @@ import time
 import uuid
 
 import distro
+import jinja2
+import six
 
 from . import exception
 from .trace_decorator import getLog, traceLog
 from .uid import getresuid, setresuid
 from pyroute2 import IPRoute
+# pylint: disable=useless-import-alias,no-name-in-module
+if six.PY2:
+    from collections import MutableMapping as MutableMapping
+else:
+    from collections.abc import MutableMapping as MutableMapping
 
 encoding = locale.getpreferredencoding()
 
@@ -106,6 +113,53 @@ class commandTimeoutExpired(exception.Error):
         self.msg = msg
         self.resultcode = 10
 
+# pylint: disable=no-member,unsupported-assignment-operation
+class TemplatedDictionary(MutableMapping):
+    """ Dictionary where __getitem__() is run through Jinja2 template """
+    def __init__(self, *args, **kwargs):
+        '''Use the object dict'''
+        self.__dict__.update(*args, **kwargs)
+    # The next five methods are requirements of the ABC.
+    def __setitem__(self, key, value):
+        self.__dict__[key] = value
+    def __getitem__(self, key):
+        return self.__render_value(self.__dict__[key])
+    def __delitem__(self, key):
+        del self.__dict__[key]
+    def __iter__(self):
+        return iter(self.__dict__)
+    def __len__(self):
+        return len(self.__dict__)
+    # The final two methods aren't required, but nice to have
+    def __str__(self):
+        '''returns simple dict representation of the mapping'''
+        return str(self.__dict__)
+    def __repr__(self):
+        '''echoes class, id, & reproducible representation in the REPL'''
+        return '{}, TemplatedDictionary({})'.format(super(TemplatedDictionary, self).__repr__(),
+                                                    self.__dict__)
+    def copy(self):
+        return TemplatedDictionary(self.__dict__)
+    def __render_value(self, value):
+        if isinstance(value, basestring):
+            return self.__render_string(value)
+        elif isinstance(value, list):
+            # we cannot use list comprehension here, as we need to NOT modify the list (pointer to list)
+            # and we need to modifiy only individual values in the list
+            # If we would create new list, we cannot assign to it, which often happens in configs (e.g. plugins)
+            for i in range(len(value)): # pylint: disable=consider-using-enumerate
+                value[i] = self.__render_value(value[i])
+            return value
+        elif isinstance(value, dict):
+            # we cannot use list comprehension here, same reasoning as for `list` above
+            for k in value.keys():
+                value[k] = self.__render_value(value[k])
+            return value
+        else:
+            return value
+    def __render_string(self, value):
+        template = jinja2.Template(value)
+        return template.render(self.__dict__)
 
 @traceLog()
 def get_proxy_environment(config):
@@ -801,7 +855,7 @@ def find_non_nfs_dir():
 @traceLog()
 def setup_default_config_opts(unprivUid, version, pkgpythondir):
     "sets up default configuration."
-    config_opts = {}
+    config_opts = TemplatedDictionary()
     config_opts['version'] = version
     config_opts['basedir'] = '/var/lib/mock'  # root name is automatically added to this
     config_opts['resultdir'] = '%(basedir)s/%(root)s/result'

@@ -700,7 +700,7 @@ def main():
         # first take a copy of the config so we can make some modifications
         bootstrap_buildroot_config = config_opts.copy()
         # copy plugins configuration so we get a separate deep copy
-        bootstrap_buildroot_config['plugin_conf'] = config_opts['plugin_conf'].copy()
+        bootstrap_buildroot_config['plugin_conf'] = config_opts['plugin_conf'].copy() # pylint: disable=no-member
         # add '-bootstrap' to the end of the root name
         bootstrap_buildroot_config['root'] = bootstrap_buildroot_config['root'] + '-bootstrap'
         # share a yum cache to save downloading everything twice

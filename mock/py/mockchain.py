@@ -241,7 +241,7 @@ def log(lf, msg):
     print(msg)
 
 
-config_opts = {}
+config_opts = mockbuild.util.TemplatedDictionary()
 
 
 def main(args):
