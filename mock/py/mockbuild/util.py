@@ -991,6 +991,10 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
     config_opts['module_install'] = []
     config_opts['forcearch'] = None
 
+    config_opts['bootstrap_chroot_additional_packages'] = []
+    config_opts['bootstrap_module_enable'] = []
+    config_opts['bootstrap_module_install'] = []
+
     # security config
     config_opts['no_root_shells'] = False
     config_opts['extra_chroot_dirs'] = []
