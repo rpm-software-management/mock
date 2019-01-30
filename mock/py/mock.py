@@ -778,7 +778,7 @@ def run_command(options, args, config_opts, commands, buildroot, state):
     # Fetch and prepare sources from SCM
     if config_opts['scm']:
         try:
-            import mockbuild.scm as scm
+            from mockbuild import scm
         except ImportError as e:
             raise mockbuild.exception.BadCmdline(
                 "Mock SCM module not installed: %s. You should install package mock-scm." % e)
