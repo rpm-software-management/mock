@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/bash
 # This script is invoked when container is created without network.
 # It will set default route to localhost so multicast work.
 
