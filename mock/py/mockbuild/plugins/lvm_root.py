@@ -156,6 +156,7 @@ class LvmPlugin(object):
             # We don't have a registered snapshot, but postinit exists, so use it
             self.set_current_snapshot(postinit)
             return postinit
+        return None
 
     def set_current_snapshot(self, name):
         if not self.lv_is_our(name):
