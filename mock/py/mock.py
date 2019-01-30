@@ -977,7 +977,7 @@ if __name__ == '__main__':
         main()
 
     except (SystemExit,):
-        raise
+        raise # pylint: disable=try-except-raise
 
     except (OSError,) as e:
         if e.errno == errno.EPERM:
