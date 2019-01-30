@@ -114,12 +114,14 @@ class LvmPlugin(object):
                  if entry[0] == lv_name]
         if query:
             return query[0]
+        return None
 
     def get_lv_path(self, lv_name=None):
         name = lv_name or self.head_lv
         entry = self.query_lv(name, 'lv_path')
         if entry:
             return entry[0]
+        return None
 
     def lv_exists(self, lv_name=None):
         name = lv_name or self.head_lv
@@ -139,6 +141,7 @@ class LvmPlugin(object):
 
     def list_our_lvs(self, *options):
         lvs = self.query_lvs('lv_name', 'lv_attr', 'pool_lv', *options)
+        # pylint: disable=inconsistent-return-statements
         return [[entry[0]] + entry[3:] for entry in lvs
                 if self._lv_entry_is_our(entry[:3])]
 
