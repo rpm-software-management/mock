@@ -1467,3 +1467,4 @@ def find_btrfs_in_chroot(mockdir, chroot_path):
         subv = l.split()[8]
         if subv.startswith(chroot_path[1:]):
             return subv
+    return None
