@@ -135,7 +135,7 @@ class RootCache(object):
                     __tar_cmd = "gtar"
                 mockbuild.util.do(
                     [__tar_cmd] + self.decompressArgs + ["-xf", self.rootCacheFile,
-                                                       "-C", self.buildroot.make_chroot_path()],
+                                                         "-C", self.buildroot.make_chroot_path()],
                     shell=False, printOutput=True
                 )
                 for item in self.exclude_dirs:
