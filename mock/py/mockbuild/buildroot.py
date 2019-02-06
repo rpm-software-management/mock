@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # vim: noai:ts=4:sw=4:expandtab
 
+import errno
 import fcntl
 import glob
 import grp
@@ -501,15 +502,40 @@ class Buildroot(object):
             kver = os.uname()[2]
             self.root_log.debug("kernel version == %s", kver)
             for i in devFiles:
+                src_path = "/" + i[2]
+                chroot_path = self.make_chroot_path(i[2])
+
+                if util.cmpKernelVer(kver, '2.6.18') >= 0 and src_path == '/dev/ptmx':
+                    continue
+
                 # create node, but only if it exist on host too
                 # except for loop devices, which only show up on the host after they are first used
-                if os.path.exists("/" + i[2]) or "loop" in i[2]:
-                    os.mknod(self.make_chroot_path(i[2]), i[0], i[1])
+                if os.path.exists(src_path) or "loop" in src_path:
+                    try:
+                        os.mknod(chroot_path, i[0], i[1])
+                    except OSError as e:
+                        # If mknod gives us a permission error, fall back to a different
+                        # strategy of using a bind mount from root to host. This won't
+                        # work for the loop devices, so just skip them in this case.
+                        if e.errno == errno.EPERM:
+                            if os.path.exists(src_path):
+                                self.mounts.add_device_bindmount(src_path)
+                            continue
+                        else:
+                            raise
+
+                    # Further adjustments if we created a new node instead of bind-mounting
+                    # an existing one:
+
                     # set context. (only necessary if host running selinux enabled.)
                     # fails gracefully if chcon not installed.
                     if self.selinux:
-                        util.do(["chcon", "--reference=/" + i[2], self.make_chroot_path(i[2])],
+                        util.do(["chcon", "--reference=" + src_path, chroot_path],
                                 raiseExc=0, shell=False, env=self.env)
+
+                    if src_path in ('/dev/tty', '/dev/ptmx'):
+                        os.chown(chroot_path, pwd.getpwnam('root')[2], grp.getgrnam('tty')[2])
+
             os.symlink("/proc/self/fd/0", self.make_chroot_path("dev/stdin"))
             os.symlink("/proc/self/fd/1", self.make_chroot_path("dev/stdout"))
             os.symlink("/proc/self/fd/2", self.make_chroot_path("dev/stderr"))
@@ -519,17 +545,12 @@ class Buildroot(object):
                 os.remove(self.make_chroot_path('etc', 'mtab'))
             os.symlink("../proc/self/mounts", self.make_chroot_path('etc', 'mtab'))
 
-            os.chown(self.make_chroot_path('dev/tty'), pwd.getpwnam('root')[2], grp.getgrnam('tty')[2])
-            os.chown(self.make_chroot_path('dev/ptmx'), pwd.getpwnam('root')[2], grp.getgrnam('tty')[2])
-
             # symlink /dev/fd in the chroot for everything except RHEL4
             if util.cmpKernelVer(kver, '2.6.9') > 0:
                 os.symlink("/proc/self/fd", self.make_chroot_path("dev/fd"))
 
             os.umask(prevMask)
 
-            if util.cmpKernelVer(kver, '2.6.18') >= 0:
-                os.unlink(self.make_chroot_path('/dev/ptmx'))
             os.symlink("pts/ptmx", self.make_chroot_path('/dev/ptmx'))
 
     @traceLog()
