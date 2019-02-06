@@ -85,17 +85,29 @@ class FileSystemMountPoint(MountPoint):
 class BindMountPoint(MountPoint):
     '''class for managing bind-mounts in the chroot'''
     @traceLog()
-    def __init__(self, srcpath, bindpath):
+    def __init__(self, srcpath, bindpath, recursive=False, options=None):
         MountPoint.__init__(self, mountsource=srcpath, mountpath=bindpath)
         self.srcpath = srcpath
         self.bindpath = bindpath
+        self.recursive = recursive
+        self.options = options
         self.mounted = self.ismounted()
 
     @traceLog()
     def mount(self):
         if not self.mounted:
-            util.mkdirIfAbsent(self.bindpath)
-            cmd = ['/bin/mount', '-n', '--bind', self.srcpath, self.bindpath]
+            if os.path.isdir(self.srcpath):
+                util.mkdirIfAbsent(self.bindpath)
+            elif not os.path.exists(self.bindpath):
+                util.touch(self.bindpath)
+            cmd = ['/bin/mount', '-n']
+            if self.recursive:
+                cmd.append('--rbind')
+            else:
+                cmd.append('--bind')
+            if self.options:
+                cmd += ['-o', self.options]
+            cmd += [self.srcpath, self.bindpath]
             util.do(cmd)
         self.mounted = True
         return True
@@ -104,7 +116,13 @@ class BindMountPoint(MountPoint):
     def umount(self):
         if not self.mounted:
             return None
-        cmd = ['/bin/umount', '-n', self.bindpath]
+        cmd = ['/bin/umount', '-n']
+        if self.recursive:
+            # The mount is busy because of the submounts - a lazy unmount
+            # implies a recursive unmount, so takes care of that.
+            # (-R also works, but is implemented in userspace, and thus racy)
+            cmd += ['-l']
+        cmd.append(self.bindpath)
         try:
             util.do(cmd)
         except exception.Error:
@@ -128,9 +146,16 @@ class Mounts(object):
             FileSystemMountPoint(filetype='proc',
                                  device='mock_chroot_proc',
                                  path=rootObj.make_chroot_path('/proc')),
-            FileSystemMountPoint(filetype='sysfs',
-                                 device='mock_chroot_sys',
-                                 path=rootObj.make_chroot_path('/sys')),
+            # Instead of mounting a fresh sysfs, we bind mount /sys.
+            # This avoids problems with kernel restrictions if running within a
+            # user namespace, and is pretty much identical otherwise. The
+            # bind mount additionally needs to be recursive, because the
+            # kernel forbids mounts that might reveal parts of /sys that
+            # a container runtime overmounted to hide from the container.
+            BindMountPoint(srcpath='/sys',
+                           bindpath=rootObj.make_chroot_path('/sys'),
+                           recursive=True,
+                           options="nodev,noexec,nosuid,readonly"),
         ]
         if rootObj.config['internal_dev_setup']:
             self.essential_mounts.append(
