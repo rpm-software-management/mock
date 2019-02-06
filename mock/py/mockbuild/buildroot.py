@@ -369,6 +369,21 @@ class Buildroot(object):
                     fo.write(chroot_file_contents[key])
 
     @traceLog()
+    def ensure_rpm_config_home(self):
+        """Create a fake home directory with an appropriate .rpmmacros"""
+
+        rpm_config_home = os.path.join(self.basedir, 'rpmconfig')
+        util.mkdirIfAbsent(rpm_config_home)
+
+        # Since /proc and /sys are mounted special filesystems when RPM is running
+        # to install the buildroot, it doesn't make sense for RPM to try and
+        # set the permissions on them - and that might fail with permission errors.
+        with open(os.path.join(rpm_config_home, ".rpmmacros"), "w") as f:
+            f.write("%_netsharedpath /proc:/sys\n")
+
+        return rpm_config_home
+
+    @traceLog()
     def nuke_rpm_db(self):
         """remove rpm DB lock files from the chroot"""
 
