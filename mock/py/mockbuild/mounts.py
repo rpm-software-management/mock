@@ -183,6 +183,13 @@ class Mounts(object):
         self.managed_mounts.append(mount)
 
     @traceLog()
+    def add_device_bindmount(self, path):
+        mount = BindMountPoint(path,
+                               self.rootObj.make_chroot_path(path),
+                               options="noexec,nosuid,readonly")
+        self.essential_mounts.append(mount)
+
+    @traceLog()
     def add_user_mount(self, mount):
         self.user_mounts.append(mount)
 
