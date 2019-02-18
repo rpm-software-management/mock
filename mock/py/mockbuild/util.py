@@ -875,6 +875,7 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
             'dir': "%(cache_topdir)s/%(root)s/root_cache/",
             'tar': "gnutar",
             'compress_program': 'pigz',
+            'decompress_program': None,
             'exclude_dirs': ["./proc", "./sys", "./dev", "./tmp/ccache", "./var/cache/yum", "./var/cache/dnf"],
             'extension': '.gz'},
         'bind_mount_enable': True,
