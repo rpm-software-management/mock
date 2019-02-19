@@ -17,7 +17,7 @@ Source:		https://github.com/rpm-software-management/mock/releases/download/%{nam
 BuildArch:	noarch
 
 # distribution-gpg-keys contains GPG keys used by mock configs
-Requires:	distribution-gpg-keys >= 1.26
+Requires:	distribution-gpg-keys >= 1.29
 
 Requires(pre):	shadow-utils
 Requires(post): coreutils
