@@ -14,7 +14,7 @@
 
 Summary: Builds packages inside chroots
 Name: mock
-Version: 1.4.13
+Version: 1.4.14
 Release: 1%{?dist}
 License: GPLv2+
 # Source is created by
@@ -230,6 +230,23 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 %endif
 
 %changelog
+* Tue Feb 19 2019 Miroslav Suchý <msuchy@redhat.com> 1.4.14-1
+- config['decompress_program'] default (praiskup@redhat.com)
+- add example for jinja templates
+- implement templated configs using jinja2
+- move live defaults from site-defaults.cfg to utils.py
+- introduce "decompress_program" option for root_cache for bsdtar
+- fix exclude patter for bsdtar
+- delete old changelog entries
+- use f29 for tests
+- update the default in sitec-defaults.cfg
+- Recommend dnf-utils (fzatlouk@redhat.com)
+- ignore useless-object-inheritance pylint warning
+- add scientific linux on list of rhel clones [GH#228]
+- Use 32-bit personality for armv7*/armv8* builds (bero@lindev.ch)
+- create custom error message for dnf-utils not being installed
+  (pjunak)
+
 * Mon Aug 13 2018 Miroslav Suchý <msuchy@redhat.com> 1.4.13-1
 - fix python_sitelib macro
 
