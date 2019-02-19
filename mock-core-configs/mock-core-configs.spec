@@ -2,7 +2,7 @@
 %global mockgid 135
 
 Name:		mock-core-configs
-Version:	30.0
+Version:	30.1
 Release:	1%{?dist}
 Summary:	Mock core config files basic chroots
 
@@ -121,6 +121,19 @@ fi
 %ghost %config(noreplace,missingok) %{_sysconfdir}/mock/default.cfg
 
 %changelog
+* Tue Feb 19 2019 Miroslav Suchý <msuchy@redhat.com> 30.1-1
+- default for config['decompress_program'] (praiskup@redhat.com)
+- require recent distribution-gpg-keys which has F31 key
+- add examples how to enable/install module in F29+ configs
+- add module_platform_id
+- add modular repos
+- enable gpgcheck for debuginfo for rawhide
+- enable gpgcheck for testing and debuginfo for F30
+- EOL Fedora 27 configs
+- remove mdpolicy from F30
+- add Fedora 30 configs
+- add link to distribution-gpg-keys for rhel8 bootstrap
+
 * Fri Nov 16 2018 Miroslav Suchý <msuchy@redhat.com> 29.4-1
 - use correct gpg keys for rhelbeta-8
 - add virtual platform module
