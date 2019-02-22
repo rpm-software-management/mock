@@ -63,7 +63,7 @@ BuildRequires: python3-pylint
 %else
 Requires: python-ctypes
 Requires: python2-distro
-Requires: python2-jinja2
+Requires: python-jinja2
 Requires: python-six >= 1.4.0
 Requires: python-requests
 Requires: python2-pyroute2
