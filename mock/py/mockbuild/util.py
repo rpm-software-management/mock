@@ -1124,6 +1124,11 @@ def set_config_opts_per_cmdline(config_opts, options, args):
     if options.forcearch:
         config_opts['forcearch'] = options.forcearch
 
+    # if armv7hl is forced when being the target it enables it to build from aarch64 hosts
+    if config_opts['target_arch'] == 'armv7hl':
+        config_opts['forcearch'] = 'armv7hl'
+        options.arch = 'armv7hl'
+
     if not options.clean:
         config_opts['clean'] = options.clean
 
