@@ -2,7 +2,7 @@
 %global mockgid 135
 
 Name:		mock-core-configs
-Version:	30.1
+Version:	30.2
 Release:	1%{?dist}
 Summary:	Mock core config files basic chroots
 
@@ -121,6 +121,14 @@ fi
 %ghost %config(noreplace,missingok) %{_sysconfdir}/mock/default.cfg
 
 %changelog
+* Fri Mar 01 2019 Miroslav Suchý <msuchy@redhat.com> 30.2-1
+- disable modular repos
+- Add openSUSE Leap AArch64 configs (ngompa13@gmail.com)
+- Add openSUSE Leap 15.1 configuration (ngompa13@gmail.com)
+- Bump releasever in Cauldron to 8 and create symlinks to cauldron configs
+  (ngompa13@gmail.com)
+- Add Mageia 7 configs (ngompa13@gmail.com)
+
 * Tue Feb 19 2019 Miroslav Suchý <msuchy@redhat.com> 30.1-1
 - default for config['decompress_program'] (praiskup@redhat.com)
 - require recent distribution-gpg-keys which has F31 key
