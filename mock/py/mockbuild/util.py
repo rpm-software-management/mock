@@ -667,6 +667,7 @@ def do(command, shell=False, chrootPath=None, cwd=None, timeout=0, raiseExc=True
             command = ['/bin/sh', '-c'] + command
             shell = False
         if chrootPath and USE_NSPAWN:
+            logger.debug("Using nspawn with args %s", nspawn_args)
             command = _prepare_nspawn_command(chrootPath, user, command,
                                               nspawn_args=nspawn_args, env=env, cwd=cwd)
         logger.debug("Executing command: %s with env %s and shell %s", command, env, shell)
@@ -838,6 +839,7 @@ def doshell(chrootPath=None, environ=None, uid=None, gid=None, cmd=None,
         cmd = ["/bin/sh", "-i", "-l"]
     if USE_NSPAWN:
         # nspawn cannot set gid
+        logger.debug("Using nspawn with args %s", nspawn_args)
         cmd = _prepare_nspawn_command(chrootPath, uid, cmd, nspawn_args=nspawn_args, env=environ)
     preexec = ChildPreExec(personality=None, chrootPath=chrootPath, cwd=None,
                            uid=uid, gid=gid, env=environ, shell=True,
