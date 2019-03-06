@@ -1,4 +1,6 @@
-%if 0%{?fedora} || 0%{?mageia}
+%bcond_without tests
+
+%if 0%{?fedora} || 0%{?mageia} || 0%{?rhel} >= 8
 %global use_python3 1
 %global use_python2 0
 %else
@@ -58,8 +60,9 @@ Requires: python3-requests
 Requires: python3-rpm
 Requires: python3-pyroute2
 BuildRequires: python3-devel
-#check
+%if %{with tests}
 BuildRequires: python3-pylint
+%endif
 %else
 Requires: python-ctypes
 Requires: python2-distro
@@ -71,20 +74,22 @@ Requires: python >= 2.7
 Requires: rpm-python
 %endif
 BuildRequires: python2-devel
-%if 0%{?fedora} || 0%{?mageia}
+%if 0%{?fedora} || 0%{?mageia} || 0%{?rhel} >= 8
 Requires: dnf
 Suggests: yum
 Requires: dnf-plugins-core
 Recommends: btrfs-progs
 Recommends: dnf-utils
 Suggests: qemu-user-static
-%endif
+%else
 %if 0%{?rhel} == 7
 Requires: btrfs-progs
 Requires: yum >= 2.4
 Requires: yum-utils
 %endif
-%if 0%{?fedora}
+%endif
+
+%if 0%{?fedora} || 0%{?rhel} >= 8
 BuildRequires: perl-interpreter
 %else
 BuildRequires: perl
@@ -178,8 +183,10 @@ install -d %{buildroot}/var/lib/mock
 install -d %{buildroot}/var/cache/mock
 
 %check
+%if %{with tests}
 # ignore the errors for now, just print them and hopefully somebody will fix it one day
 pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
+%endif
 
 %files
 %defattr(0644, root, mock)
