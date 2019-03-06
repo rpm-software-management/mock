@@ -187,7 +187,7 @@ class Buildroot(object):
 
         self.state.finish("chroot init")
 
-    def doChroot(self, command, shell=False, nosync=False, *args, **kargs):
+    def doChroot(self, command, nosync=False, *args, **kargs):
         """execute given command in root"""
         self.nuke_rpm_db()
         env = dict(self.env)
@@ -202,7 +202,7 @@ class Buildroot(object):
                 kargs['gid'] = pwd.getpwuid(kargs['uid'])[0]
             self.uid_manager.becomeUser(0, 0)
         result = util.do_with_status(command, chrootPath=self.make_chroot_path(),
-                         env=env, shell=shell, *args, **kargs)
+                         env=env, *args, **kargs)
         if util.USE_NSPAWN:
             self.uid_manager.restorePrivs()
         return result
