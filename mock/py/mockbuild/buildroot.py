@@ -201,7 +201,7 @@ class Buildroot(object):
             if 'user' not in kargs:
                 kargs['gid'] = pwd.getpwuid(kargs['uid'])[0]
             self.uid_manager.becomeUser(0, 0)
-        result = util.do(command, chrootPath=self.make_chroot_path(),
+        result = util.do_with_status(command, chrootPath=self.make_chroot_path(),
                          env=env, shell=shell, *args, **kargs)
         if util.USE_NSPAWN:
             self.uid_manager.restorePrivs()

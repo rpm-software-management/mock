@@ -449,7 +449,8 @@ class Commands(object):
                                         nspawn_args=self._get_nspawn_args(),
                                         unshare_net=self.private_network,
                                         user=self.buildroot.chrootuser,
-                                        returnOutput=True)
+                                        returnOutput=True
+                                       )[0]
         specs = [item.rstrip() for item in files.split('\n') if item.rstrip().endswith('.spec')]
         if len(specs) < 1:
             raise PkgError(
