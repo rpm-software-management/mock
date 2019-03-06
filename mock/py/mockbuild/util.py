@@ -634,6 +634,10 @@ def resize_pty(pty):
         pass
 
 
+def do(*args, **kargs):
+    """ returns output of the command. Arguments are the same as for do_with_status() """
+    return do_with_status(*args, **kargs)[0]
+
 # logger =
 # output = [1|0]
 # chrootPath
@@ -642,7 +646,7 @@ def resize_pty(pty):
 #
 @traceLog()
 # pylint: disable=unused-argument
-def do(command, shell=False, chrootPath=None, cwd=None, timeout=0, raiseExc=True,
+def do_with_status(command, shell=False, chrootPath=None, cwd=None, timeout=0, raiseExc=True,
        returnOutput=0, uid=None, gid=None, user=None, personality=None,
        printOutput=False, env=None, pty=False, nspawn_args=None, unshare_net=False,
        *_, **kargs):
@@ -729,7 +733,7 @@ def do(command, shell=False, chrootPath=None, cwd=None, timeout=0, raiseExc=True
     if raiseExc and child.returncode:
         raise exception.Error("Command failed: \n # %s\n%s" % (command, output), child.returncode)
 
-    return output
+    return (output, child.returncode)
 
 
 class ChildPreExec(object):
