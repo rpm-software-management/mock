@@ -159,7 +159,36 @@ class TemplatedDictionary(MutableMapping):
             return value
     def __render_string(self, value):
         template = jinja2.Template(value)
-        return template.render(self.__dict__)
+        return _to_native(template.render(self.__dict__))
+
+
+def _to_bytes(obj, encoding='utf-8', errors='strict', nonstring='strict'):
+    if isinstance(obj, six.binary_type):
+        return obj
+    elif isinstance(obj, six.text_type):
+        return obj.encode(encoding, errors)
+    else:
+        if nonstring == 'strict':
+            raise TypeError('First argument must be a string')
+        raise ValueError('nonstring must be one of: ["strict",]')
+
+
+def _to_text(obj, encoding='utf-8', errors='strict', nonstring='strict'):
+    if isinstance(obj, six.text_type):
+        return obj
+    elif isinstance(obj, six.binary_type):
+        return obj.decode(encoding, errors)
+    else:
+        if nonstring == 'strict':
+            raise TypeError('First argument must be a string')
+        raise ValueError('nonstring must be one of: ["strict",]')
+
+
+if six.PY2:
+    _to_native = _to_bytes
+else:
+    _to_native = _to_text
+
 
 @traceLog()
 def get_proxy_environment(config):
