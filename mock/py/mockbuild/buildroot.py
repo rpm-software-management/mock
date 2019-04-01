@@ -244,12 +244,6 @@ class Buildroot(object):
     def _init_pkg_management(self):
         update_state = '{0} install'.format(self.pkg_manager.name)
         self.state.start(update_state)
-        if 'module_enable' in self.config and self.config['module_enable']:
-            cmd = ['module', 'enable'] + self.config['module_enable']
-            self.pkg_manager.init_install_output += self.pkg_manager.execute(*cmd, returnOutput=1)
-        if 'module_install' in self.config and self.config['module_install']:
-            cmd = ['module', 'install'] + self.config['module_install']
-            self.pkg_manager.init_install_output += self.pkg_manager.execute(*cmd, returnOutput=1)
 
         cmd = self.config['chroot_setup_cmd']
         if cmd:
@@ -262,6 +256,13 @@ class Buildroot(object):
             if isinstance(cmd, util.basestring):
                 cmd = cmd.split()
             cmd = ['install'] + cmd
+            self.pkg_manager.init_install_output += self.pkg_manager.execute(*cmd, returnOutput=1)
+
+        if 'module_enable' in self.config and self.config['module_enable']:
+            cmd = ['module', 'enable'] + self.config['module_enable']
+            self.pkg_manager.init_install_output += self.pkg_manager.execute(*cmd, returnOutput=1)
+        if 'module_install' in self.config and self.config['module_install']:
+            cmd = ['module', 'install'] + self.config['module_install']
             self.pkg_manager.init_install_output += self.pkg_manager.execute(*cmd, returnOutput=1)
 
         self.state.finish(update_state)
