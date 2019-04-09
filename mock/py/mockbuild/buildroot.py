@@ -188,7 +188,7 @@ class Buildroot(object):
         self.state.finish("chroot init")
 
     def doChroot(self, command, nosync=False, *args, **kargs):
-        """execute given command in root"""
+        """Execute given command in root. Returns (output, child.returncode)"""
         self.nuke_rpm_db()
         env = dict(self.env)
         if nosync and self.nosync_path:
