@@ -509,18 +509,31 @@ class Commands(object):
         additional_opts = [self.config.get('rpmbuild_opts', '')]
         if additional_opts == ['']:
             additional_opts = []
+        bd_out = self.make_chroot_path(self.buildroot.builddir)
         command = [self.config['rpmbuild_command']] + mode + \
                   ['--target', self.rpmbuild_arch, '--nodeps'] + \
                   check_opt + [spec_path] + additional_opts
         command = ["bash", "--login", "-c"] + [' '.join(command)]
-        self.buildroot.doChroot(command,
-                                shell=False, logger=self.buildroot.build_log, timeout=timeout,
-                                uid=self.buildroot.chrootuid, gid=self.buildroot.chrootgid,
-                                user=self.buildroot.chrootuser,
-                                nspawn_args=self._get_nspawn_args(),
-                                unshare_net=self.private_network,
-                                printOutput=self.config['print_main_output'])
-        bd_out = self.make_chroot_path(self.buildroot.builddir)
+        ret_code = self.buildroot.doChroot(command,
+                                           shell=False, logger=self.buildroot.build_log, timeout=timeout,
+                                           uid=self.buildroot.chrootuid, gid=self.buildroot.chrootgid,
+                                           user=self.buildroot.chrootuser,
+                                           nspawn_args=self._get_nspawn_args(),
+                                           unshare_net=self.private_network,
+                                           printOutput=self.config['print_main_output'])[1]
+        if ret_code == 11:
+            self.buildroot.root_log.info("Dynamic buildrequires detected")
+            buildreqs = glob.glob(bd_out + '/SRPMS/*.buildreqs.nosrc.rpm')
+            self.installSrpmDeps(buildreqs)
+            for f_buildreqs in buildreqs:
+                os.remove(f_buildreqs)
+            self.buildroot.doChroot(command,
+                                    shell=False, logger=self.buildroot.build_log, timeout=timeout,
+                                    uid=self.buildroot.chrootuid, gid=self.buildroot.chrootgid,
+                                    user=self.buildroot.chrootuser,
+                                    nspawn_args=self._get_nspawn_args(),
+                                    unshare_net=self.private_network,
+                                    printOutput=self.config['print_main_output'])
         results = glob.glob(bd_out + '/RPMS/*.rpm')
         results += glob.glob(bd_out + '/SRPMS/*.rpm')
         self.buildroot.final_rpm_list = [os.path.basename(result) for result in results]
