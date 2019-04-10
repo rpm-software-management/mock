@@ -525,7 +525,7 @@ class Commands(object):
         if ret_code == 11:
             self.buildroot.root_log.info("Dynamic buildrequires detected")
             buildreqs = glob.glob(bd_out + '/SRPMS/*.buildreqs.nosrc.rpm')
-            self.installSrpmDeps(buildreqs)
+            self.installSrpmDeps(*buildreqs)
             for f_buildreqs in buildreqs:
                 os.remove(f_buildreqs)
             self.buildroot.doChroot(command,
