@@ -520,7 +520,8 @@ class Commands(object):
                                            user=self.buildroot.chrootuser,
                                            nspawn_args=self._get_nspawn_args(),
                                            unshare_net=self.private_network,
-                                           printOutput=self.config['print_main_output'])[1]
+                                           printOutput=self.config['print_main_output'],
+                                           raiseExc=False)[1]
         if ret_code == 11:
             self.buildroot.root_log.info("Dynamic buildrequires detected")
             buildreqs = glob.glob(bd_out + '/SRPMS/*.buildreqs.nosrc.rpm')
