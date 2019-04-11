@@ -14,7 +14,7 @@ import rpm
 from mockbuild.mounts import BindMountPoint
 
 from . import util
-from .exception import PkgError
+from .exception import PkgError, Error
 from .trace_decorator import getLog, traceLog
 
 
@@ -514,15 +514,17 @@ class Commands(object):
                   ['--target', self.rpmbuild_arch, '--nodeps'] + \
                   check_opt + [spec_path] + additional_opts
         command = ["bash", "--login", "-c"] + [' '.join(command)]
-        ret_code = self.buildroot.doChroot(command,
-                                           shell=False, logger=self.buildroot.build_log, timeout=timeout,
-                                           uid=self.buildroot.chrootuid, gid=self.buildroot.chrootgid,
-                                           user=self.buildroot.chrootuser,
-                                           nspawn_args=self._get_nspawn_args(),
-                                           unshare_net=self.private_network,
-                                           printOutput=self.config['print_main_output'],
-                                           raiseExc=False)[1]
-        if ret_code == 11:
+        try:
+            self.buildroot.doChroot(command,
+                                    shell=False, logger=self.buildroot.build_log, timeout=timeout,
+                                    uid=self.buildroot.chrootuid, gid=self.buildroot.chrootgid,
+                                    user=self.buildroot.chrootuser,
+                                    nspawn_args=self._get_nspawn_args(),
+                                    unshare_net=self.private_network,
+                                    printOutput=self.config['print_main_output'])
+        except Error as e:
+            if e.resultcode != 11:
+                raise e
             self.buildroot.root_log.info("Dynamic buildrequires detected")
             buildreqs = glob.glob(bd_out + '/SRPMS/*.buildreqs.nosrc.rpm')
             self.installSrpmDeps(*buildreqs)
