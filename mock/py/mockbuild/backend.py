@@ -290,7 +290,7 @@ class Commands(object):
             self.plugins.call_hooks('prebuild')
             # intentionally we do not call bootstrap hook here - it does not have sense
 
-            results = self.rebuild_package(spec_path, timeout, check)
+            results = self.rebuild_package(spec_path, timeout, check, dynamic_buildreqs)
             # In the nspawn case, we retained root until here, but we
             # need to ensure our output files are owned by the caller's uid.
             # So drop them now.
@@ -497,7 +497,7 @@ class Commands(object):
         return results[0]
 
     @traceLog()
-    def rebuild_package(self, spec_path, timeout, check):
+    def rebuild_package(self, spec_path, timeout, check, dynamic_buildrequires):
         # --nodeps because rpm in the root may not be able to read rpmdb
         # created by rpm that created it (outside of chroot)
         check_opt = []
@@ -526,7 +526,7 @@ class Commands(object):
             return command
 
         bd_out = self.make_chroot_path(self.buildroot.builddir)
-        if self.config.get('dynamic_buildrequires'):
+        if dynamic_buildrequires and self.config.get('dynamic_buildrequires'):
             # Technically, we should run rpmbuild+installSrpmDeps until
             # * it fails
             # * installSrpmDeps does nothing
