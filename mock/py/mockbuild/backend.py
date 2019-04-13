@@ -272,6 +272,14 @@ class Commands(object):
 
             rebuilt_srpm = self.rebuild_installed_srpm(spec_path, timeout)
 
+            # Check if we will have dynamic BuildRequires, but do not allow it
+            hdr = next(util.yieldSrpmHeaders((rebuilt_srpm,)))
+            dynamic_buildreqs = 'rpmlib(DynamicBuildRequires)' in hdr[rpm.RPMTAG_REQUIRES]
+
+            if dynamic_buildreqs and not self.config.get('dynamic_buildrequires'):
+                raise Error('DynamicBuildRequires are found but support is disabled.'
+                            ' See "dynamic_buildrequires" in config_opts.')
+
             self.installSrpmDeps(rebuilt_srpm)
             self.state.finish(buildsetup)
 
