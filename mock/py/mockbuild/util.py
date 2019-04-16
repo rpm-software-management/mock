@@ -647,9 +647,9 @@ def do(*args, **kargs):
 @traceLog()
 # pylint: disable=unused-argument
 def do_with_status(command, shell=False, chrootPath=None, cwd=None, timeout=0, raiseExc=True,
-       returnOutput=0, uid=None, gid=None, user=None, personality=None,
-       printOutput=False, env=None, pty=False, nspawn_args=None, unshare_net=False,
-       *_, **kargs):
+                   returnOutput=0, uid=None, gid=None, user=None, personality=None,
+                   printOutput=False, env=None, pty=False, nspawn_args=None, unshare_net=False,
+                   *_, **kargs):
 
     logger = kargs.get("logger", getLog())
     if timeout == 0:
