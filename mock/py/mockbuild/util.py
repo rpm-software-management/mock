@@ -1290,7 +1290,7 @@ def set_config_opts_per_cmdline(config_opts, options, args):
 
     if options.scm:
         try:
-            # pylint: disable=unused-variable
+            # pylint: disable=unused-variable,unused-import
             from . import scm
         except ImportError as e:
             raise exception.BadCmdline(
