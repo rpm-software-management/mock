@@ -843,7 +843,7 @@ def doshell(chrootPath=None, environ=None, uid=None, gid=None, cmd=None,
         cmd = ["/bin/sh", "-i", "-l"]
     if USE_NSPAWN:
         # nspawn cannot set gid
-        logger.debug("Using nspawn with args %s", nspawn_args)
+        log.debug("Using nspawn with args %s", nspawn_args)
         cmd = _prepare_nspawn_command(chrootPath, uid, cmd, nspawn_args=nspawn_args, env=environ)
     preexec = ChildPreExec(personality=None, chrootPath=chrootPath, cwd=None,
                            uid=uid, gid=gid, env=environ, shell=True,
