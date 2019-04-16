@@ -543,6 +543,7 @@ class Commands(object):
                 if e.resultcode != 11:
                     raise e
                 self.buildroot.root_log.info("Dynamic buildrequires detected")
+                self.buildroot.root_log.info("Going to install missing buildrequires")
                 buildreqs = glob.glob(bd_out + '/SRPMS/*.buildreqs.nosrc.rpm')
                 self.installSrpmDeps(*buildreqs)
                 for f_buildreqs in buildreqs:
