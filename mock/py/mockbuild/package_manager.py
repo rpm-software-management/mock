@@ -334,13 +334,21 @@ class Dnf(_PackageManager):
             self._check_command()
         self.resolvedep_command = [self.command, 'repoquery', '--resolve', '--requires']
 
+    def _get_disabled_plugins(self):
+        if 'dnf_disable_plugins' in self.config:
+            disabled_plugins = self.config['dnf_disable_plugins']
+        else:
+            disabled_plugins = []
+        return ["--disableplugin={}".format(x) for x in disabled_plugins]
+
     @traceLog()
     def build_invocation(self, *args):
         if 'dnf_builddep_opts' not in self.config:
             self.config['dnf_builddep_opts'] = self.config['yum_builddep_opts']
         if 'dnf_common_opts' not in self.config:
-            self.config['dnf_common_opts'] = self.config['yum_common_opts'] + ['--disableplugin=local',
-                                                                               '--setopt=deltarpm=False']
+            self.config['dnf_common_opts'] = self.config['yum_common_opts'] + \
+                                             ['--setopt=deltarpm=False', ]
+        self.config['dnf_common_opts'].extend(self._get_disabled_plugins())
         if 'forcearch' in self.config and '--forcearch' not in self.config['dnf_common_opts'] \
            and self.config['forcearch']:
             self.config['dnf_common_opts'].extend(['--forcearch', self.config['forcearch']])
