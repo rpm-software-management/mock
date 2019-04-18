@@ -317,7 +317,9 @@ def main(args):
     if err.strip():
         log(opts.logfile, "Error making local repo: %s" % opts.local_repo_dir)
         log(opts.logfile, "Err: %s" % err)
-        sys.exit(1)
+        # Temporary disable
+        # https://github.com/rpm-software-management/mock/issues/249
+        #sys.exit(1)
 
     download_dir = tempfile.mkdtemp()
     downloaded_pkgs = {}
