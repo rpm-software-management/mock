@@ -72,8 +72,8 @@ Requires: python-requests
 Requires: python2-pyroute2
 Requires: python >= 2.7
 Requires: rpm-python
-%endif
 BuildRequires: python2-devel
+%endif
 %if 0%{?fedora} || 0%{?mageia} || 0%{?rhel} >= 8
 Requires: dnf
 Suggests: yum
