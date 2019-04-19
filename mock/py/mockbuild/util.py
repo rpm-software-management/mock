@@ -383,7 +383,7 @@ def getNEVRA(hdr):
     if epoch is None:
         epoch = 0
     ret = (name, epoch, ver, rel, arch)
-    return tuple(x.decode() if i != 1 else x for i, x in enumerate(ret))
+    return tuple(_to_text(x) if i != 1 else x for i, x in enumerate(ret))
 
 
 @traceLog()
