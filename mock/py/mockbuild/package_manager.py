@@ -9,6 +9,7 @@ import sys
 from textwrap import dedent
 
 import distro
+import six
 # pylint: disable=redefined-builtin
 from six.moves import input
 
@@ -16,6 +17,8 @@ from . import util
 from .exception import BuildError, Error, YumError
 from .trace_decorator import traceLog
 
+if six.PY2:
+    FileNotFoundError = IOError
 
 def package_manager(config_opts, buildroot, plugins, bootstrap_buildroot=None):
     pm = config_opts.get('package_manager', 'yum')
