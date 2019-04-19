@@ -803,7 +803,10 @@ def _prepare_nspawn_command(chrootPath, user, cmd, nspawn_args=None, env=None, c
         cmd = [cmd]
     nspawn_argv = ['/usr/bin/systemd-nspawn', '-q', '-M', uuid.uuid4().hex, '-D', chrootPath]
     distro_label = distro.linux_distribution(full_distribution_name=False)[0]
-    distro_version = float(distro.version() or 0)
+    try:
+        distro_version = float(distro.version() or 0)
+    except ValueError:
+        distro_version = 0
     if distro_label not in RHEL_CLONES or distro_version >= 7.5:
         # EL < 7.5 does not support the nspawn -a option. See BZ 1417387
         nspawn_argv += ['-a']
