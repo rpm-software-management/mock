@@ -16,7 +16,7 @@
 
 Summary: Builds packages inside chroots
 Name: mock
-Version: 1.4.14
+Version: 1.4.15
 Release: 1%{?dist}
 License: GPLv2+
 # Source is created by
@@ -237,6 +237,22 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 %endif
 
 %changelog
+* Mon Apr 22 2019 Miroslav Suchý <msuchy@redhat.com> 1.4.15-1
+- ignore weird distro.version() [RHBZ#1690374]
+- switch to string rpm's API [RHBZ#1693759]
+- FileNotFoundError is not defined in Python 2 [RHBZ#1696234]
+- Fix python2-devel build require
+- temporary do not make errors from createrepo_c fatal [GH#249]
+- allow to configure disabled DNF plugins [GH#210]
+- print warning when user is not in the mock group [GH#244]
+- implement Dynamic Build Dependencies (msuchy@redhat.com)
+- Allow mock to be built for epel 8, and without tests
+  (vanmeeuwen@kolabsys.com)
+- Add debug logging for systemd-nspawn and related args (riehecky@fnal.gov)
+- Fix mock for non-ascii paths on python2 (a.badger@gmail.com)
+- require python-jinja2 rather than python2-jinja2
+- Fix --enable-network documentation in man page (directhex@apebox.org)
+
 * Tue Feb 19 2019 Miroslav Suchý <msuchy@redhat.com> 1.4.14-1
 - config['decompress_program'] default (praiskup@redhat.com)
 - add example for jinja templates
