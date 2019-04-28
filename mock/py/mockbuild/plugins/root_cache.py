@@ -216,7 +216,7 @@ class RootCache(object):
                     raise
                 # now create the cache log file
                 with open(os.path.join(self.rootSharedCachePath, "cache.log"), "wb") as cache_log:
-                    cache_log.write(self.buildroot.pkg_manager.init_install_output.encode())
+                    cache_log.write(self.buildroot.pkg_manager.init_install_output.encode(mockbuild.util.encoding))
                 self.state.finish("creating root cache")
         finally:
             self._rootCacheUnlock()
