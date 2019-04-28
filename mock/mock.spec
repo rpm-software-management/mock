@@ -1,16 +1,14 @@
 %bcond_without tests
 
-%if 0%{?fedora} || 0%{?mageia} || 0%{?rhel} >= 8
+%if 0%{?fedora} || 0%{?mageia} || 0%{?rhel} >= 7
 %global use_python3 1
 %global use_python2 0
+%global __python %{__python3}
+%global python_sitelib %{python3_sitelib}
 %else
 %global use_python3 0
 %global use_python2 1
-%endif
-
-%if %{use_python3}
-%global python_sitelib %{python3_sitelib}
-%else
+%global __python %{__python2}
 %global python_sitelib %{python2_sitelib}
 %endif
 
@@ -52,16 +50,15 @@ Suggests: iproute2
 %endif
 BuildRequires: bash-completion
 %if %{use_python3}
-Requires: python3
-Requires: python3-distro
-Requires: python3-jinja2
-Requires: python3-six >= 1.4.0
-Requires: python3-requests
-Requires: python3-rpm
-Requires: python3-pyroute2
-BuildRequires: python3-devel
+Requires: python%{python3_pkgversion}-distro
+Requires: python%{python3_pkgversion}-jinja2
+Requires: python%{python3_pkgversion}-six >= 1.4.0
+Requires: python%{python3_pkgversion}-requests
+Requires: python%{python3_pkgversion}-rpm
+Requires: python%{python3_pkgversion}-pyroute2
+BuildRequires: python%{python3_pkgversion}-devel
 %if %{with tests}
-BuildRequires: python3-pylint
+BuildRequires: python%{python3_pkgversion}-pylint
 %endif
 %else
 Requires: python-ctypes
@@ -132,11 +129,9 @@ of the buildroot.
 
 %prep
 %setup -q
-%if %{use_python2}
 for file in py/mock.py py/mockchain.py; do
-  sed -i 1"s|#!/usr/bin/python3 |#!/usr/bin/python |" $file
+  sed -i 1"s|#!/usr/bin/python3 |#!%{__python} |" $file
 done
-%endif
 
 %build
 for i in py/mock.py py/mockchain.py; do
