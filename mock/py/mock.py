@@ -338,11 +338,11 @@ def command_parse():
     parser.add_option("--enable-plugin", action="append",
                       dest="enabled_plugins", type="string", default=[],
                       help="Enable plugin. Currently-available plugins: %s"
-                           % repr(plugins))
+                      % repr(plugins))
     parser.add_option("--disable-plugin", action="append",
                       dest="disabled_plugins", type="string", default=[],
                       help="Disable plugin. Currently-available plugins: %s"
-                           % repr(plugins))
+                      % repr(plugins))
     parser.add_option("--plugin-option", action="append", dest="plugin_opts",
                       default=[], type="string",
                       metavar="PLUGIN:KEY=VALUE",
@@ -493,7 +493,7 @@ def check_arch_combination(target_arch, config_opts):
     if (host_arch not in legal) and not config_opts['forcearch']:
         raise mockbuild.exception.InvalidArchitecture(
             "Cannot build target {0} on arch {1}, because it is not listed in legal_host_arches {2}"
-                .format(target_arch, host_arch, legal))
+            .format(target_arch, host_arch, legal))
 
 
 @traceLog()
