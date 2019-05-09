@@ -220,9 +220,6 @@ def command_parse():
                       help="log to the file named by this option, defaults to not logging")
     parser.add_option('--tmp_prefix', default=None, dest='tmp_prefix',
                       help="tmp dir prefix - will default to username-pid if not specified")
-    parser.add_option('-m', '--mock-option', default=[], action='append',
-                      dest='mock_option',
-                      help="option to pass directly to mock")
     # options
     parser.add_option("-r", "--root", action="store", type="string", dest="chroot",
                       help="chroot config file name or path. Taken as a path if it ends "
