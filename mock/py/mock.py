@@ -27,6 +27,7 @@ from __future__ import print_function
 usage:
        mock [options] {--init|--clean|--scrub=[all,chroot,cache,root-cache,c-cache,yum-cache,dnf-cache,lvm,overlayfs]}
        mock [options] [--rebuild] /path/to/srpm(s)
+       mock [options] [--chain] /path/to/srpm(s)
        mock [options] --buildsrpm {--spec /path/to/spec --sources /path/to/src|
        --scm-enable [--scm-option key=value]}
        mock [options] {--shell|--chroot} <cmd>
@@ -117,6 +118,9 @@ def command_parse():
     parser.add_option("--rebuild", action="store_const", const="rebuild",
                       dest="mode", default='__default__',
                       help="rebuild the specified SRPM(s)")
+    parser.add_option("--chain", action="store_const", const="chain",
+                      dest="mode",
+                      help="build multiple RPMs in chain loop")
     parser.add_option("--buildsrpm", action="store_const", const="buildsrpm",
                       dest="mode",
                       help="Build a SRPM from spec (--spec ...) and sources"
@@ -199,9 +203,6 @@ def command_parse():
                       dest="mode", help="Mount the buildroot if it's "
                                         "mounted from separate device (LVM/overlayfs)")
     # chain
-    parser.add_option("--chain", action="store_true", dest="chain",
-                      default=False,
-                      help="if you want put multiple RPMs")
     parser.add_option('--localrepo', default=None,
                       help="local path for the local repo, defaults to making its own")
     parser.add_option('-c', '--continue', default=False, action='store_true',
