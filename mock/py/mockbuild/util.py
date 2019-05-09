@@ -987,19 +987,19 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
         'ccache_opts': {
             'max_cache_size': "4G",
             'compress': None,
-            'dir': "%(cache_topdir)s/%(root)s/ccache/u%(chrootuid)s/"},
+            'dir': "{{cache_topdir}}/%(root)s/ccache/u%(chrootuid)s/"},
         'yum_cache_enable': True,
         'yum_cache_opts': {
             'max_age_days': 30,
             'max_metadata_age_days': 30,
-            'dir': "%(cache_topdir)s/%(root)s/%(package_manager)s_cache/",
+            'dir': "{{cache_topdir}}/%(root)s/%(package_manager)s_cache/",
             'target_dir': "/var/cache/%(package_manager)s/",
             'online': True},
         'root_cache_enable': True,
         'root_cache_opts': {
             'age_check': True,
             'max_age_days': 15,
-            'dir': "%(cache_topdir)s/%(root)s/root_cache/",
+            'dir': "{{cache_topdir}}/%(root)s/root_cache/",
             'tar': "gnutar",
             'compress_program': 'pigz',
             'decompress_program': None,

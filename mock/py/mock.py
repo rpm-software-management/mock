@@ -691,7 +691,7 @@ def main():
         bootstrap_buildroot_config['root'] = bootstrap_buildroot_config['root'] + '-bootstrap'
         # share a yum cache to save downloading everything twice
         bootstrap_buildroot_config['plugin_conf']['yum_cache_opts']['dir'] = \
-            "%(cache_topdir)s/" + config_opts['root'] + "/%(package_manager)s_cache/"
+            "{{cache_topdir}}/" + config_opts['root'] + "/%(package_manager)s_cache/"
         # we don't want to affect the bootstrap.config['nspawn_args'] array, deep copy
         bootstrap_buildroot_config['nspawn_args'] = config_opts.get('nspawn_args', []).copy()
 
