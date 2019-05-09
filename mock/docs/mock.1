@@ -85,6 +85,9 @@ Mock is running some parts of code under root privileges. There are known ways h
 \fB\-\-buildsrpm\fP
 Build the specified SRPM either from a spec file and source file/directory or SCM. The chroot (including the results directory) is cleaned first, unless \-\-no\-clean is specified.
 .TP
+\fB\-\-chain\fR
+When passing more than one SRPM, it will try to build failed builds if at least one subsequent SRPM succeed. This mimic the behaviour of deprecated mockchain.
+.TP
 \fB\-\-clean\fP
 Purge the chroot tree.
 .TP
@@ -208,9 +211,6 @@ Pass \-\-forcearch to DNF. This will enable to install packages for different ar
 \fB\-\-cache\-alterations\fR
 Rebuild the root cache after making alterations to the chroot (i.e. \-\-install). This option is useful only when using tmpfs plugin.
 .TP
-\fB\-\-chain\fR
-When passing more than one SRPM, it will try to build failed builds if at least one subsequent SRPM succeed. This mimic the behaviour of deprecated mockchain. Only active for '\-\-rebuild'.
-.TP
 \fB\-\-cleanup\-after\fR
 Clean chroot after building. Use with \-\-resultdir. Only active for '\-\-rebuild'.
 .TP
@@ -251,9 +251,6 @@ It can be specified multiple times.
 \fB\-\-enable\-network\fR
 Enable networking. If you want to have reproducible builds then your builds should run without a network.
 This option overrides config_opts['rpmbuild_networking'] and config_opts['use_host_resolv'], setting both True.
-.TP
-\fB\-\-log\fR=\fIFILENAME\fP
-Log to the file named by this option, defaults to not logging.
 .TP
 \fB\-\-localrepo\fR=\fIREPO\fR\fR
 Set the path to put the results/repo in. This path needs to be somewhere
@@ -339,6 +336,7 @@ Follow symlinks in sources (used only with \-\-buildsrpm).
 .TP
 \fB\-\-target\fR=\fIARCH\fP
 This argument is passed to rpmbuild to specify the target arch to build. It defaults to whatever is specified for \-\-arch, or whatever is specified in the config file as config_opts['target_arch'].
+.TP
 \fB\-\-tmp_prefix\fR=\fIPREFIX\fP
 Tmp dir prefix - will default to username-pid if not specified.
 .TP
