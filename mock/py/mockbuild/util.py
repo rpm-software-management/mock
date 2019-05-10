@@ -1552,15 +1552,16 @@ def add_local_repo(config_opts, infile, destfile, baseurl, repoid=None):
         else:
             REPOS_ID.append(repoid)
         localyumrepo = """
-            [{}]
-            name={}
-            baseurl={}
-            enabled=1
-            skip_if_unavailable=1
-            metadata_expire=0
-            cost=1
-            best=1
-            """.format(repoid, baseurl, baseurl)
+
+[{}]
+name={}
+baseurl={}
+enabled=1
+skip_if_unavailable=1
+metadata_expire=0
+cost=1
+best=1
+""".format(repoid, baseurl, baseurl)
 
         config_opts['yum.conf'] += localyumrepo
         with open(destfile, 'w') as br_dest:
