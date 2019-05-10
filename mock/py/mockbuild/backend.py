@@ -486,12 +486,16 @@ class Commands(object):
                     s_pkg = os.path.basename(pkg)
                     pdn = s_pkg.replace('.src.rpm', '')
                     resultdir = os.path.join(self.config['local_repo_dir'], pdn)
+                    self.buildroot.resultdir = resultdir
+                    self.buildroot._resetLogging(force=True)
                     util.mkdirIfAbsent(resultdir)
+                    success_file = os.path.join(resultdir, 'success')
                     build_ret_code = 0
                     try:
-                        #do_rebuild(self.config, self, buildroot, options, [pkg])
-                        self.build(pkg, timeout=self.config['rpmbuild_timeout'],
-                                   check=self.config['check'])
+                        if os.path.exists(success_file):
+                            build_ret_code = 2
+                        else:
+                            do_rebuild(self.config, self, buildroot, options, [pkg])
                     except Error:
                         build_ret_code = 1
                     finally:
@@ -503,7 +507,7 @@ class Commands(object):
                 except (RootError,) as e:
                     log.warning(e.msg)
                     failed.append(pkg)
-                log.info("End build: %s", pkg)
+                log.info("End chain build: %s", pkg)
                 if build_ret_code == 1:
                     failed.append(pkg)
                     log.info("Error building %s.", os.path.basename(pkg))
@@ -511,12 +515,14 @@ class Commands(object):
                         log.info("Will try to build again (if some other package will succeed).")
                     else:
                         log.info("See logs/results in %s", self.config['local_repo_dir'])
+                        util.touch(os.path.join(resultdir, 'fail'))
                 elif build_ret_code == 0:
                     log.info("Success building %s", os.path.basename(pkg))
                     built_pkgs.append(pkg)
+                    util.touch(success_file)
                     # createrepo with the new pkgs
                     util.createrepo(self.config, self.config['local_repo_dir'])
-                elif build_ret_code == 2: # FIXME dead code now
+                elif build_ret_code == 2:
                     log.info("Skipping already built pkg %s", os.path.basename(pkg))
 
             if failed and options.recurse:

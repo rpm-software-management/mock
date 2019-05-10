@@ -325,9 +325,9 @@ class Buildroot(object):
                     f.write(l + '\n')
 
     @traceLog()
-    def _resetLogging(self):
+    def _resetLogging(self, force=False):
         # ensure we dont attach the handlers multiple times.
-        if self.logging_initialized:
+        if self.logging_initialized and not force:
             return
         self.logging_initialized = True
 

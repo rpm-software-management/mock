@@ -557,7 +557,7 @@ def unshare_namespace(config_opts):
 
 
 @traceLog()
-def main(rpms=None, resultdir=None):
+def main():
     "Main executable entry point."
 
     # initial sanity check for correct invocation method
@@ -582,11 +582,6 @@ def main(rpms=None, resultdir=None):
     (options, args) = command_parse()
     if options.printrootpath or options.list_snapshots:
         options.verbose = 0
-
-    if rpms:
-        args = rpms
-    if resultdir:
-        options.resultdir = resultdir
 
     # config path -- can be overridden on cmdline
     config_path = MOCKCONFDIR
