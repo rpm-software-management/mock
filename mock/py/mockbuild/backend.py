@@ -22,6 +22,7 @@ from mockbuild.mounts import BindMountPoint
 from . import util
 from .exception import PkgError, Error, RootError
 from .trace_decorator import getLog, traceLog
+from .rebuild import do_rebuild
 
 
 class Commands(object):
@@ -479,7 +480,7 @@ class Commands(object):
                         continue
                     else:
                         downloaded_pkgs[pkg] = url
-                log.info("Start build: %s", pkg)
+                log.info("Start chain build: %s", pkg)
                 build_ret_code = 0
                 try:
                     s_pkg = os.path.basename(pkg)
@@ -488,7 +489,9 @@ class Commands(object):
                     util.mkdirIfAbsent(resultdir)
                     build_ret_code = 0
                     try:
-                        self.chroot([pkg], options)
+                        #do_rebuild(self.config, self, buildroot, options, [pkg])
+                        self.build(pkg, timeout=self.config['rpmbuild_timeout'],
+                                   check=self.config['check'])
                     except Error:
                         build_ret_code = 1
                     finally:
