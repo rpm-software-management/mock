@@ -314,7 +314,6 @@ class Commands(object):
             self.state.result = 'success'
 
             self.state.finish(rpmbuildstate)
-
         finally:
             if dropped_privs:
                 self.uid_manager.restorePrivs()
@@ -323,8 +322,8 @@ class Commands(object):
             # tell caching we are done building
             self.plugins.call_hooks('postbuild')
             # intentionally we do not call bootstrap hook here - it does not have sense
+            self.state.finish(buildstate)
 
-        self.state.finish(buildstate)
 
     @traceLog()
     def shell(self, options, cmd=None):
