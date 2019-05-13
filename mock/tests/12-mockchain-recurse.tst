@@ -3,7 +3,7 @@
 . ${TESTDIR}/functions
 
 header "test mockchain recursive success"
-runcmd "$MOCKCHAIN --recurse ${TESTDIR}/*.src.rpm"
+runcmd "$MOCKCHAIN --offline --recurse ${TESTDIR}/*.src.rpm"
 res=$?
 
 if [ $res -ne 0 ]; then
