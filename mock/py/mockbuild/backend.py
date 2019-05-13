@@ -539,10 +539,11 @@ class Commands(object):
                         msg = downloaded_pkgs.get(pkg, pkg)
                         log.info(msg)
                     try_again = False
+                    return_code = 4
             else:
                 try_again = False
                 if failed:
-                    return_code = 2
+                    return_code = 4
 
         # cleaning up our download dir
         shutil.rmtree(download_dir, ignore_errors=True)
