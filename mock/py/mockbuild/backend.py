@@ -261,6 +261,7 @@ class Commands(object):
         # note: moved to do this before the user change below!
         self.buildroot.nuke_rpm_db()
         dropped_privs = False
+        buildsetup_finished = False
         try:
             if not util.USE_NSPAWN:
                 self.uid_manager.becomeUser(self.buildroot.chrootuid, self.buildroot.chrootgid)
@@ -290,6 +291,7 @@ class Commands(object):
 
             self.installSrpmDeps(rebuilt_srpm)
             self.state.finish(buildsetup)
+            buildsetup_finished = True
 
             rpmbuildstate = "rpmbuild %s" % baserpm
             self.state.start(rpmbuildstate)
@@ -315,6 +317,9 @@ class Commands(object):
 
             self.state.finish(rpmbuildstate)
         finally:
+            if not buildsetup_finished:
+                self.state.finish(buildsetup)
+            self.state.finish(buildstate)
             if dropped_privs:
                 self.uid_manager.restorePrivs()
             if self.state.result != 'success':
@@ -322,7 +327,6 @@ class Commands(object):
             # tell caching we are done building
             self.plugins.call_hooks('postbuild')
             # intentionally we do not call bootstrap hook here - it does not have sense
-            self.state.finish(buildstate)
 
 
     @traceLog()
