@@ -695,7 +695,7 @@ def main():
 
     result = 0
     try:
-        run_command(options, args, config_opts, commands, buildroot, state)
+        result = run_command(options, args, config_opts, commands, buildroot, state)
     except mockbuild.exception.Error:
         result = 1
     finally:
@@ -709,6 +709,7 @@ def main():
 
 @traceLog()
 def run_command(options, args, config_opts, commands, buildroot, state):
+    result = 0
     # TODO separate this
     # Fetch and prepare sources from SCM
     if config_opts['scm']:
@@ -736,9 +737,9 @@ def run_command(options, args, config_opts, commands, buildroot, state):
     elif options.mode == 'chain':
         if len(args) == 0:
             log.critical("You must specify an SRPM file with --chain")
-            sys.exit(50)
+            return 50
         commands.init(do_log=True)
-        commands.chain(args, options, buildroot)
+        result = commands.chain(args, options, buildroot)
 
     elif options.mode == 'shell':
         if len(args):
@@ -746,19 +747,19 @@ def run_command(options, args, config_opts, commands, buildroot, state):
         else:
             cmd = None
         commands.init(do_log=False)
-        sys.exit(commands.shell(options, cmd))
+        return commands.shell(options, cmd)
 
     elif options.mode == 'chroot':
         if len(args) == 0:
             log.critical("You must specify a command to run with --chroot")
-            sys.exit(50)
+            return 50
         commands.init(do_log=True)
         commands.chroot(args, options)
 
     elif options.mode == 'installdeps':
         if len(args) == 0:
             log.critical("You must specify an SRPM file with --installdeps")
-            sys.exit(50)
+            return 50
         commands.init()
         rpms = []
         for file in args:
@@ -773,7 +774,7 @@ def run_command(options, args, config_opts, commands, buildroot, state):
     elif options.mode == 'install':
         if len(args) == 0:
             log.critical("You must specify a package list to install.")
-            sys.exit(50)
+            return 50
 
         commands.init()
         commands.install(*args)
@@ -785,7 +786,7 @@ def run_command(options, args, config_opts, commands, buildroot, state):
     elif options.mode == 'remove':
         if len(args) == 0:
             log.critical("You must specify a package list to remove.")
-            sys.exit(50)
+            return 50
         commands.init()
         commands.remove(*args)
 
@@ -815,16 +816,16 @@ def run_command(options, args, config_opts, commands, buildroot, state):
         commands.init()
         if len(args) < 2:
             log.critical("Must have source and destinations for copyin")
-            sys.exit(50)
+            return 50
         dest = buildroot.make_chroot_path(args[-1])
         if len(args) > 2 and not os.path.isdir(dest):
             log.critical("multiple source files and %s is not a directory!", dest)
-            sys.exit(50)
+            return 50
         args = args[:-1]
         for src in args:
             if not os.path.lexists(src):
                 log.critical("No such file or directory: %s", src)
-                sys.exit(50)
+                return 50
             log.info("copying %s to %s", src, dest)
             if os.path.isdir(src):
                 dest2 = dest
@@ -833,7 +834,7 @@ def run_command(options, args, config_opts, commands, buildroot, state):
                     dest2 = os.path.join(dest2, path_suffix)
                     if os.path.exists(dest2):
                         log.critical("Destination %s already exists!", dest2)
-                        sys.exit(50)
+                        return 50
                 shutil.copytree(src, dest2)
             else:
                 shutil.copy(src, dest)
@@ -844,18 +845,18 @@ def run_command(options, args, config_opts, commands, buildroot, state):
         with buildroot.uid_manager:
             if len(args) < 2:
                 log.critical("Must have source and destinations for copyout")
-                sys.exit(50)
+                return 50
             dest = args[-1]
             sources = []
             for arg in args[:-1]:
                 matches = glob.glob(buildroot.make_chroot_path(arg.replace('~', buildroot.homedir)))
                 if not matches:
                     log.critical("%s not found", arg)
-                    sys.exit(50)
+                    return 50
                 sources += matches
             if len(sources) > 1 and not os.path.isdir(dest):
                 log.critical("multiple source files and %s is not a directory!", dest)
-                sys.exit(50)
+                return 50
             for src in sources:
                 log.info("copying %s to %s", src, dest)
                 if os.path.isdir(src):
@@ -874,21 +875,21 @@ def run_command(options, args, config_opts, commands, buildroot, state):
     elif options.mode == 'snapshot':
         if len(args) < 1:
             log.critical("Requires a snapshot name")
-            sys.exit(50)
+            return 50
         buildroot.plugins.call_hooks('make_snapshot', args[0], required=True)
         if buildroot.bootstrap_buildroot is not None:
             buildroot.bootstrap_buildroot.plugins.call_hooks('make_snapshot', args[0], required=True)
     elif options.mode == 'rollback-to':
         if len(args) < 1:
             log.critical("Requires a snapshot name")
-            sys.exit(50)
+            return 50
         buildroot.plugins.call_hooks('rollback_to', args[0], required=True)
         if buildroot.bootstrap_buildroot is not None:
             buildroot.bootstrap_buildroot.plugins.call_hooks('rollback_to', args[0], required=True)
     elif options.mode == 'remove_snapshot':
         if len(args) < 1:
             log.critical("Requires a snapshot name")
-            sys.exit(50)
+            return 50
         buildroot.plugins.call_hooks('remove_snapshot', args[0], required=True)
         if buildroot.bootstrap_buildroot is not None:
             buildroot.bootstrap_buildroot.plugins.call_hooks('remove_snapshot', args[0], required=True)
@@ -904,6 +905,7 @@ def run_command(options, args, config_opts, commands, buildroot, state):
     buildroot.nuke_rpm_db()
     state.finish("run")
     state.alldone()
+    return result
 
 
 if __name__ == '__main__':
@@ -918,7 +920,7 @@ if __name__ == '__main__':
     (opts, packages) = command_parse()
 
     try:
-        main()
+        exitStatus = main()
 
     except (SystemExit,):
         raise # pylint: disable=try-except-raise
