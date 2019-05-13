@@ -446,6 +446,7 @@ class Commands(object):
         download_dir = tempfile.mkdtemp()
         downloaded_pkgs = {}
         built_pkgs = []
+        skipped_pkgs = []
         try_again = True
         to_be_built = args
         return_code = 0
@@ -524,6 +525,7 @@ class Commands(object):
                     util.createrepo(self.config, self.config['local_repo_dir'])
                 elif build_ret_code == 2:
                     log.info("Skipping already built pkg %s", os.path.basename(pkg))
+                    skipped_pkgs.append(pkg)
 
             if failed and options.recurse:
                 if len(failed) != len(to_be_built):
@@ -546,7 +548,11 @@ class Commands(object):
         shutil.rmtree(download_dir, ignore_errors=True)
 
         log.info("Results out to: %s", self.config['local_repo_dir'])
-        log.info("Pkgs built: %s", len(built_pkgs))
+        if skipped_pkgs:
+            log.info("Packages skipped: %s", len(skipped_pkgs))
+            for pkg in skipped_pkgs:
+                log.info(pkg)
+        log.info("Packages built: %s", len(built_pkgs))
         if built_pkgs:
             if failed:
                 if len(built_pkgs):
