@@ -85,10 +85,10 @@ from mockbuild.backend import Commands
 from mockbuild.buildroot import Buildroot
 import mockbuild.exception
 from mockbuild.plugin import Plugins
+import mockbuild.rebuild
 from mockbuild.state import State
 from mockbuild.trace_decorator import traceLog
 import mockbuild.uid
-import mockbuild.rebuild
 
 
 # pylint: disable=unused-argument

@@ -1331,7 +1331,7 @@ def include(config_file, config_opts, is_statement=False):
             content = re.sub(r'include\((.*)\)', r'include(\g<1>, config_opts, True)', content)
             code = compile(content, config_file, 'exec')
         # pylint: disable=exec-used
-        exec (code)
+        exec(code)
     else:
         raise exception.ConfigError("Could not find included config file: %s" % config_file)
 
@@ -1546,7 +1546,7 @@ def add_local_repo(config_opts, infile, destfile, baseurl, repoid=None):
         with open(infile) as f:
             code = compile(f.read(), infile, 'exec')
         # pylint: disable=exec-used
-        exec (code)
+        exec(code)
         if not repoid:
             repoid = generate_repo_id(baseurl)
         else:
