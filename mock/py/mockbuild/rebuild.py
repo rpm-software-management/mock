@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*- 
+# -*- coding: utf-8 -*-
 # vim:expandtab:autoindent:tabstop=4:shiftwidth=4:filetype=python:textwidth=0:
 # License: GPL2 or later see COPYING
 
@@ -11,6 +11,7 @@ from .exception import BadCmdline
 from .trace_decorator import traceLog
 
 log = logging.getLogger()
+
 
 @traceLog()
 def rebuild_generic(items, commands, buildroot, config_opts, cmd, post=None, clean=True):
