@@ -2,7 +2,7 @@
 %global mockgid 135
 
 Name:		mock-core-configs
-Version:	30.2
+Version:	30.3
 Release:	1%{?dist}
 Summary:	Mock core config files basic chroots
 
@@ -121,6 +121,10 @@ fi
 %ghost %config(noreplace,missingok) %{_sysconfdir}/mock/default.cfg
 
 %changelog
+* Thu May 16 2019 Miroslav Suchý <msuchy@redhat.com> 30.3-1
+- Allow AArch64 systems to build 32-bit ARM packages (ngompa13@gmail.com)
+- Fix openSUSE Tumbleweed DistTag definition (ngompa13@gmail.com)
+
 * Fri Mar 01 2019 Miroslav Suchý <msuchy@redhat.com> 30.2-1
 - disable modular repos
 - Add openSUSE Leap AArch64 configs (ngompa13@gmail.com)
