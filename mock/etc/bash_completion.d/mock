@@ -117,7 +117,7 @@ _mockchain()
             # argument required but no completions available
             return
             ;;
-        -r|--root)
+        -r|--root|--chain)
             _mock_root
             return
             ;;
