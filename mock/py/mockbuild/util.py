@@ -24,6 +24,7 @@ import re
 import select
 import signal
 import shlex
+import shutil
 import socket
 import stat
 import struct
@@ -1398,17 +1399,34 @@ def do_update_config(log, config_opts, cfg, uidManager, name, skipError=True):
 @traceLog()
 def setup_host_resolv(config_opts):
     if not config_opts['use_host_resolv']:
-        # default /etc/hosts contents
+        # If we don't copy host's resolv.conf, we at least want to resolve
+        # our own hostname.  See commit 28027fc26d.
         if 'etc/hosts' not in config_opts['files']:
             config_opts['files']['etc/hosts'] = dedent('''\
                 127.0.0.1 localhost localhost.localdomain
                 ::1       localhost localhost.localdomain localhost6 localhost6.localdomain6
                 ''')
-        # bind mount an empty /etc/resolv.conf when using nspawn and networking is disabled
-        if config_opts['use_nspawn'] and not config_opts['rpmbuild_networking']:
-            resolv_path = (tempfile.mkstemp(prefix="mock-resolv."))[1]
-            atexit.register(_nspawnTempResolvAtExit, resolv_path)
-            config_opts['nspawn_args'] += ['--bind={0}:/etc/resolv.conf'.format(resolv_path)]
+
+    if not config_opts['use_nspawn']:
+        # Not using nspawn -> don't touch /etc/resolv.conf; we already have
+        # a valid file prepared by Buildroot._init() (if user requested).
+        return
+
+    if config_opts['rpmbuild_networking'] and not config_opts['use_host_resolv']:
+        # keep the default systemd-nspawn's /etc/resolv.conf
+        return
+
+    # Either we want to have empty resolv.conf to speedup name resolution
+    # failure (rpmbuild_networking is off, see commit 3f939785bb), or we want
+    # to copy hosts resolv.conf file.
+
+    resolv_path = (tempfile.mkstemp(prefix="mock-resolv."))[1]
+    atexit.register(_nspawnTempResolvAtExit, resolv_path)
+
+    if config_opts['use_host_resolv']:
+        shutil.copyfile('/etc/resolv.conf', resolv_path)
+
+    config_opts['nspawn_args'] += ['--bind={0}:/etc/resolv.conf'.format(resolv_path)]
 
 @traceLog()
 def load_config(config_path, name, uidManager, version, pkg_python_dir):
