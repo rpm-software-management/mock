@@ -2,7 +2,12 @@
 
 _mock_root()
 {
-    COMPREPLY+=( $( compgen -W "$( command ls ${1:-/etc/mock} 2>/dev/null | \
+    if [ -z "$1" ]; then
+        CFGDIRS=(/etc/mock, "$HOME/.config/mock/")
+    else
+        CFGDIRS=($1)
+    fi
+    COMPREPLY+=( $( compgen -W "$( command ls \"${CFGDIRS[@]}\" 2>/dev/null | \
         sed -ne 's/\.cfg$//p' )" -X site-defaults -- "$cur" ) )
     _filedir 'cfg'
 }
