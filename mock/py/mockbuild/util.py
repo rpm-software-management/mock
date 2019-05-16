@@ -1384,6 +1384,7 @@ def setup_operations_timeout(config_opts):
 @traceLog()
 def do_update_config(log, config_opts, cfg, uidManager, name, skipError=True):
     if os.path.exists(cfg):
+        log.info("Reading configuration from %s", cfg)
         config_opts['config_paths'].append(cfg)
         update_config_from_file(config_opts, cfg, uidManager)
         setup_operations_timeout(config_opts)
@@ -1448,7 +1449,12 @@ def load_config(config_path, name, uidManager, version, pkg_python_dir):
         chroot_cfg_path = name
         config_opts['chroot_name'] = os.path.splitext(os.path.basename(name))[0]
     else:
-        chroot_cfg_path = '%s/%s.cfg' % (config_path, name)
+        # ~/.config/mock/CHROOTNAME.cfg
+        cfg = os.path.join(os.path.expanduser('~' + pwd.getpwuid(os.getuid())[0]), '.config/mock/{}.cfg'.format(name))
+        if os.path.exists(cfg):
+            chroot_cfg_path = cfg
+        else:
+            chroot_cfg_path = '%s/%s.cfg' % (config_path, name)
     config_opts['config_file'] = chroot_cfg_path
 
     cfg = os.path.join(config_path, 'site-defaults.cfg')

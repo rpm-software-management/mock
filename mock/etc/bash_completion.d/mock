@@ -2,8 +2,24 @@
 
 _mock_root()
 {
-    COMPREPLY+=( $( compgen -W "$( command ls ${1:-/etc/mock} 2>/dev/null | \
-        sed -ne 's/\.cfg$//p' )" -X site-defaults -- "$cur" ) )
+    test $# -eq 0 && set -- /etc/mock "$HOME/.config/mock"
+
+    local suggest=$(
+      shopt -s nullglob
+      for dir in "$@"; do
+         # work with absolute paths!
+         cd "$dir" &>/dev/null || continue
+         for file in *; do
+             case $file in
+             site-defaults*) ;; # skip site defaults
+             *' '*) ;; # skip files with white spaces
+             *.cfg) echo "${file%%.cfg}" ;;
+             esac
+         done
+      done
+    )
+
+    COMPREPLY+=( $( compgen -W "$suggest" -- "$cur" ) )
     _filedir 'cfg'
 }
 
@@ -12,13 +28,14 @@ _mock()
     local cur prev words cword split
     _init_completion -s || return
 
-    local cfgdir=/etc/mock count=0
+    local cfgdirs=( /etc/mock "$HOME/.config/mock" )
+    local count=0
     for word in "${words[@]}" ; do
         [[ $count -eq $cword ]] && break
         if [[ "$word" == --configdir ]] ; then
-            cfgdir="${words[((count+1))]}"
+            cfgdirs=( "${words[((count+1))]}" )
         elif [[ "$word" == --configdir=* ]] ; then
-            cfgdir=${word/*=/}
+            cfgdirs=( ${word/*=/} )
         fi
         count=$((++count))
     done
@@ -33,8 +50,8 @@ _mock()
             # argument required but no completions available
             return
             ;;
-        -r|--root)
-            _mock_root $cfgdir
+        -r|--root|--chain)
+            _mock_root "${cfgdirs[@]}"
             return
             ;;
         --configdir|--cwd|--resultdir|--rootdir)
@@ -117,7 +134,7 @@ _mockchain()
             # argument required but no completions available
             return
             ;;
-        -r|--root|--chain)
+        -r|--root)
             _mock_root
             return
             ;;
