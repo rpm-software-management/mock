@@ -1424,6 +1424,9 @@ def setup_host_resolv(config_opts):
     resolv_path = (tempfile.mkstemp(prefix="mock-resolv."))[1]
     atexit.register(_nspawnTempResolvAtExit, resolv_path)
 
+    # make sure that anyone in container can read resolv.conf file
+    os.chmod(resolv_path, 0o644)
+
     if config_opts['use_host_resolv']:
         shutil.copyfile('/etc/resolv.conf', resolv_path)
 
