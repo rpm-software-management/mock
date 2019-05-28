@@ -52,6 +52,7 @@ from optparse import OptionParser
 from pprint import pformat
 import os
 import os.path
+import signal
 import pwd
 import shutil
 import sys
@@ -60,6 +61,7 @@ import time
 # pylint: disable=import-error
 from six.moves import configparser
 from mockbuild import util
+from functools import partial
 
 # all of the variables below are substituted by the build system
 __VERSION__ = "unreleased_version"
@@ -89,6 +91,11 @@ import mockbuild.rebuild
 from mockbuild.state import State
 from mockbuild.trace_decorator import traceLog
 import mockbuild.uid
+
+signal_names = {1: "SIGHUP",
+                13: "SIGPIPE",
+                15: "SIGTERM"
+                }
 
 
 # pylint: disable=unused-argument
@@ -397,6 +404,13 @@ def command_parse():
     return (options, args)
 
 
+def handle_signals(buildroot, number, frame):
+
+    log.info("\nReceived signal {} activating orphansKill".format(signal_names[number]))
+    util.orphansKill(buildroot.make_chroot_path())
+    sys.exit(128 + number)
+
+
 @traceLog()
 def setup_logging(config_path, config_opts, options):
     log_ini = os.path.join(config_path, config_opts["log_config_file"])
@@ -672,6 +686,11 @@ def main():
     util.setup_host_resolv(config_opts)
 
     buildroot = Buildroot(config_opts, uidManager, state, plugins, bootstrap_buildroot)
+    signal.signal(signal.SIGTERM, partial(handle_signals, buildroot))
+    signal.signal(signal.SIGPIPE, partial(handle_signals, buildroot))
+    signal.signal(signal.SIGHUP, partial(handle_signals, buildroot))
+
+    log.info("Signal handler active")
     commands = Commands(config_opts, uidManager, plugins, state, buildroot, bootstrap_buildroot)
 
     if config_opts['use_bootstrap_container']:

@@ -43,6 +43,9 @@ class Error(Exception):
 # 80 = unshare of namespace failed
 # 110 = unbalanced call to state functions
 # 120 = weak dependent package not installed
+# 129 = the main process get signal SIGHUP, the console was closed
+# 141 = the main process get signal SIGPIPE, the pipe does not exist or was closed
+# 143 = the main process get signal SIGTERM, something tries to kill mock process
 
 class BuildError(Error):
     "rpmbuild failed."
