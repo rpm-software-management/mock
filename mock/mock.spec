@@ -14,7 +14,7 @@
 
 Summary: Builds packages inside chroots
 Name: mock
-Version: 1.4.15
+Version: 1.4.16
 Release: 1%{?dist}
 License: GPLv2+
 # Source is created by
@@ -232,6 +232,11 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 %endif
 
 %changelog
+* Wed May 22 2019 Miroslav Suchý <msuchy@redhat.com> 1.4.16-1
+- switch to python3 on el7
+- respect use_host_resolv config even with use_nspawn (praiskup@redhat.com)
+- Fix crash on non-ascii dnf log messages (bkorren@redhat.com)
+
 * Mon Apr 22 2019 Miroslav Suchý <msuchy@redhat.com> 1.4.15-1
 - ignore weird distro.version() [RHBZ#1690374]
 - switch to string rpm's API [RHBZ#1693759]

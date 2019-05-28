@@ -43,6 +43,12 @@ Package from the latest commit in the devel branch can be obtained from https://
 
 Latest status: [![build status](https://copr.fedorainfracloud.org/coprs/g/mock/mock/package/mock/status_image/last_build.png)](https://copr.fedorainfracloud.org/coprs/g/mock/mock/package/mock/)
 
+
+## Sponsor
+
+This project is sponsored by [Red Hat](https://www.redhat.com/). [Buy](https://www.redhat.com/en/store) Red Hat subscription to sponsor this project.
+
+
 ## License
 
 GPLv2+
