@@ -131,7 +131,10 @@ class _PackageManager(object):
             elif self.bootstrap_buildroot is None:
                 out = util.do(invocation, env=env, **kwargs)
             else:
-                out = util.do(invocation, env=env, chrootPath=self.bootstrap_buildroot.make_chroot_path(), **kwargs)
+                out = util.do(invocation, env=env,
+                              chrootPath=self.bootstrap_buildroot.make_chroot_path(),
+                              nspawn_args=self.bootstrap_buildroot.config['nspawn_args'],
+                              **kwargs)
         except Error as e:
             raise YumError(str(e))
         finally:

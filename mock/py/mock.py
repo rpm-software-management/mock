@@ -594,8 +594,6 @@ def main():
     # cmdline options override config options
     util.set_config_opts_per_cmdline(config_opts, options, args)
 
-    util.setup_host_resolv(config_opts)
-
     # allow a different mock group to be specified
     if config_opts['chrootgid'] != mockgid:
         uidManager.restorePrivs()
@@ -637,9 +635,14 @@ def main():
         # share a yum cache to save downloading everything twice
         bootstrap_buildroot_config['plugin_conf']['yum_cache_opts']['dir'] = \
             "%(cache_topdir)s/" + config_opts['root'] + "/%(package_manager)s_cache/"
+        # we don't want to affect the bootstrap.config['nspawn_args'] array, deep copy
+        bootstrap_buildroot_config['nspawn_args'] = config_opts.get('nspawn_args', []).copy()
+
         # allow bootstrap buildroot to access the network for getting packages
         bootstrap_buildroot_config['rpmbuild_networking'] = True
         bootstrap_buildroot_config['use_host_resolv'] = True
+        util.setup_host_resolv(bootstrap_buildroot_config)
+
         # use system_*_command for bootstrapping
         bootstrap_buildroot_config['yum_command'] = bootstrap_buildroot_config['system_yum_command']
         bootstrap_buildroot_config['dnf_command'] = bootstrap_buildroot_config['system_dnf_command']
@@ -657,6 +660,10 @@ def main():
             if "bootstrap_" + k in bootstrap_buildroot.config:
                 bootstrap_buildroot.config[k] = bootstrap_buildroot_config["bootstrap_" + k]
                 del bootstrap_buildroot.config["bootstrap_" + k]
+
+    # this changes config_opts['nspawn_args'], so do it after initializing
+    # bootstrap chroot to not inherit the changes there
+    util.setup_host_resolv(config_opts)
 
     buildroot = Buildroot(config_opts, uidManager, state, plugins, bootstrap_buildroot)
     commands = Commands(config_opts, uidManager, plugins, state, buildroot, bootstrap_buildroot)
