@@ -95,7 +95,7 @@ class _PackageManager(object):
             invocation += ['-y']
         releasever = self.config['releasever']
         if releasever:
-            invocation += ['--releasever', releasever]
+            invocation += ['--releasever', str(releasever)]
         if not self.config['online']:
             invocation.append('-C')
         if self.config['enable_disable_repos']:
