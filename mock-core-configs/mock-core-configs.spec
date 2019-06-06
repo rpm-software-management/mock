@@ -2,7 +2,7 @@
 %global mockgid 135
 
 Name:		mock-core-configs
-Version:	30.2
+Version:	30.3
 Release:	1%{?dist}
 Summary:	Mock core config files basic chroots
 
@@ -121,6 +121,11 @@ fi
 %ghost %config(noreplace,missingok) %{_sysconfdir}/mock/default.cfg
 
 %changelog
+* Thu Jun 06 2019 Miroslav Suchý <msuchy@redhat.com> 30.3-1
+- Add 'fastestmirror=1' to Mageia mock configs (ngompa13@gmail.com)
+- bootstrap: disable sclo* repos for epel --installroot (praiskup@redhat.com)
+- drop Fedora ppc64 configs [RHBZ#1714489]
+
 * Fri Mar 01 2019 Miroslav Suchý <msuchy@redhat.com> 30.2-1
 - disable modular repos
 - Add openSUSE Leap AArch64 configs (ngompa13@gmail.com)
