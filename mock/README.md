@@ -6,7 +6,7 @@ Mock is used by the Fedora Build system to populate a chroot environment, which 
 
 ## User documentation
 
-This is area for developers. You may be looking for [user documentation](https://github.com/rpm-software-management/mock/wiki).
+This is an area for developers. You may be looking for [user documentation](https://github.com/rpm-software-management/mock/wiki).
 
 ## Sources
 
@@ -16,8 +16,8 @@ Mock source tarballs: https://github.com/rpm-software-management/mock/releases
 
 Mock currently has one active branch plus master.
 
- * `mock-1.0` - This branch is in bugfix mode and is used for EL-5.
- * `mock-1.3` - This branch is in bugfix mode and is used for EL-6.
+ * `mock-1.0` - This branch was used for EL-5 and there will be no changes.
+ * `mock-1.3` - This branch is in security-fixes-only mode and is used for EL-6.
  * `master` - This is currently mock 1.4.x and is still getting features. It is used for everything else. This branch is used purely for releasing.
  * `devel` - All development happens here, if you want to send patches, use this branch.
 
@@ -35,11 +35,11 @@ Do you have a patch, an idea, or just a question? You can write to [buildsys mai
     tito build --rpm
 
 
-Latest release for all supported platforms can be found in this [Copr repository](https://copr.fedorainfracloud.org/coprs/g/mock/mock-stable/).
+The latest release for all supported platforms can be found in this [Copr repository](https://copr.fedorainfracloud.org/coprs/g/mock/mock-stable/).
 
 ## Nightly
 
-Package from latest commit in devel branch can be obtained from https://copr.fedorainfracloud.org/coprs/g/mock/mock/
+Package from the latest commit in the devel branch can be obtained from https://copr.fedorainfracloud.org/coprs/g/mock/mock/
 
 Latest status: [![build status](https://copr.fedorainfracloud.org/coprs/g/mock/mock/package/mock/status_image/last_build.png)](https://copr.fedorainfracloud.org/coprs/g/mock/mock/package/mock/)
 

@@ -325,15 +325,16 @@ class Buildroot(object):
                     f.write(l + '\n')
 
     @traceLog()
-    def _resetLogging(self):
+    def _resetLogging(self, force=False):
         # ensure we dont attach the handlers multiple times.
-        if self.logging_initialized:
+        if self.logging_initialized and not force:
             return
         self.logging_initialized = True
 
         with self.uid_manager:
-            util.mkdirIfAbsent(self.resultdir)
+            self.uid_manager.becomeUser(0, 0)
 
+            util.mkdirIfAbsent(self.resultdir)
             # attach logs to log files.
             # This happens in addition to anything that
             # is set up in the config file... ie. logs go everywhere
@@ -348,6 +349,7 @@ class Buildroot(object):
                 fh.setLevel(logging.NOTSET)
                 log.addHandler(fh)
                 log.info("Mock Version: %s", self.config['version'])
+            self.uid_manager.restorePrivs()
 
     @traceLog()
     def _init_aux_files(self):

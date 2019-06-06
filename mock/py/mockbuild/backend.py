@@ -6,20 +6,28 @@
 # Major reorganization and adaptation by Michael Brown
 # Copyright (C) 2007 Michael E Brown <mebrown@michaels-house.net>
 
+import cgi
 import glob
 import os
 import shutil
+import sys
+import tempfile
 
+# 3rd party imports
+import requests
 import rpm
+from six.moves.urllib_parse import urlsplit
 from mockbuild.mounts import BindMountPoint
 
 from . import util
-from .exception import PkgError, Error
+from .exception import PkgError, Error, RootError
 from .trace_decorator import getLog, traceLog
+from .rebuild import do_rebuild
 
 
 class Commands(object):
     """Executes mock commands in the buildroot"""
+
     @traceLog()
     def __init__(self, config, uid_manager, plugins, state, buildroot, bootstrap_buildroot):
         self.uid_manager = uid_manager
@@ -207,7 +215,7 @@ class Commands(object):
     @traceLog()
     def installSpecDeps(self, spec_file):
         try:
-            spec=rpm.spec(spec_file).sourceHeader.dsFromHeader()
+            spec = rpm.spec(spec_file).sourceHeader.dsFromHeader()
             self.uid_manager.becomeUser(0, 0)
             for i in range(len(spec)): # pylint: disable=consider-using-enumerate
                 requirement_name = spec[i][2:]
@@ -253,6 +261,7 @@ class Commands(object):
         # note: moved to do this before the user change below!
         self.buildroot.nuke_rpm_db()
         dropped_privs = False
+        buildsetup_finished = False
         try:
             if not util.USE_NSPAWN:
                 self.uid_manager.becomeUser(self.buildroot.chrootuid, self.buildroot.chrootgid)
@@ -282,6 +291,7 @@ class Commands(object):
 
             self.installSrpmDeps(rebuilt_srpm)
             self.state.finish(buildsetup)
+            buildsetup_finished = True
 
             rpmbuildstate = "rpmbuild %s" % baserpm
             self.state.start(rpmbuildstate)
@@ -306,8 +316,10 @@ class Commands(object):
             self.state.result = 'success'
 
             self.state.finish(rpmbuildstate)
-
         finally:
+            if not buildsetup_finished:
+                self.state.finish(buildsetup)
+            self.state.finish(buildstate)
             if dropped_privs:
                 self.uid_manager.restorePrivs()
             if self.state.result != 'success':
@@ -316,7 +328,6 @@ class Commands(object):
             self.plugins.call_hooks('postbuild')
             # intentionally we do not call bootstrap hook here - it does not have sense
 
-        self.state.finish(buildstate)
 
     @traceLog()
     def shell(self, options, cmd=None):
@@ -375,6 +386,186 @@ class Commands(object):
             self.state.finish(chrootstate)
         self.plugins.call_hooks("postchroot")
         # intentionally we do not call bootstrap hook here - it does not have sense
+
+    @traceLog()
+    def chain(self, args, options, buildroot):
+        log = getLog()
+        if not options.tmp_prefix:
+            try:
+                options.tmp_prefix = os.getlogin()
+            except OSError as e:
+                log.error("Could not find login name for tmp dir prefix add --tmp_prefix")
+                sys.exit(1)
+        pid = os.getpid()
+        self.config['uniqueext'] = '{0}-{1}'.format(options.tmp_prefix, pid)
+
+        # create a tempdir for our local info
+        if options.localrepo:
+            local_tmp_dir = os.path.abspath(options.localrepo)
+            if not os.path.exists(local_tmp_dir):
+                os.makedirs(local_tmp_dir)
+                os.chmod(local_tmp_dir, 0o755)
+        else:
+            pre = 'mock-chain-{0}-'.format(self.config['uniqueext'])
+            local_tmp_dir = tempfile.mkdtemp(prefix=pre, dir='/var/tmp')
+            os.chmod(local_tmp_dir, 0o755)
+
+        self.config['local_repo_dir'] = os.path.normpath(local_tmp_dir + '/results/' + self.config['chroot_name'] + '/')
+
+        if not os.path.exists(self.config['local_repo_dir']):
+            os.makedirs(self.config['local_repo_dir'], mode=0o755)
+
+        local_baseurl = "file://{0}".format(self.config['local_repo_dir'])
+        log.info("results dir: %s", self.config['local_repo_dir'])
+        tmp_config_path = os.path.normpath(local_tmp_dir + '/configs/' + self.config['chroot_name'] + '/')
+
+        if not os.path.exists(tmp_config_path):
+            os.makedirs(tmp_config_path, mode=0o755)
+
+        log.info("config dir: %s", tmp_config_path)
+
+        my_mock_config = os.path.join(tmp_config_path, "{0}.cfg".format(self.config['chroot_name']))
+
+        # modify with localrepo
+        res, msg = util.add_local_repo(self.config, self.config['config_file'], my_mock_config, local_baseurl,
+                                       'local_build_repo')
+        if not res:
+            log.error("Could not write out local config: %s", msg)
+            sys.exit(1)
+
+        for baseurl in options.repos:
+            res, msg = util.add_local_repo(self.config, my_mock_config, my_mock_config, baseurl)
+            if not res:
+                log.error("Could not add: %s to yum config in mock chroot: %s", baseurl, msg)
+                sys.exit(1)
+
+        # these files needed from the mock.config dir to make mock run
+        for fn in ['site-defaults.cfg', 'logging.ini']:
+            pth = os.path.join(self.config['config_path'], fn)
+            shutil.copyfile(pth, os.path.join(tmp_config_path, fn))
+
+        util.createrepo(self.config, self.config['local_repo_dir'])
+
+        download_dir = tempfile.mkdtemp()
+        downloaded_pkgs = {}
+        built_pkgs = []
+        skipped_pkgs = []
+        try_again = True
+        to_be_built = args
+        return_code = 0
+        num_of_tries = 0
+        while try_again:
+            num_of_tries += 1
+            failed = []
+            for pkg in to_be_built:
+                if not pkg.endswith('.rpm'):
+                    log.error("%s doesn't appear to be an rpm - skipping", pkg)
+                    failed.append(pkg)
+                    continue
+                elif pkg.startswith('http://') or pkg.startswith('https://') or pkg.startswith('ftp://'):
+                    url = pkg
+                    try:
+                        log.info('Fetching %s', url)
+                        r = requests.get(url)
+                        # pylint: disable=no-member
+                        if r.status_code == requests.codes.ok:
+                            fn = urlsplit(r.url).path.rsplit('/', 1)[1]
+                            if 'content-disposition' in r.headers:
+                                _, params = cgi.parse_header(r.headers['content-disposition'])
+                                if 'filename' in params and params['filename']:
+                                    fn = params['filename']
+                            pkg = download_dir + '/' + fn
+                            with open(pkg, 'wb') as fd:
+                                for chunk in r.iter_content(4096):
+                                    fd.write(chunk)
+                    except Exception as e:
+                        log.error('Downloading %s: %s', url, str(e))
+                        failed.append(url)
+                        continue
+                    else:
+                        downloaded_pkgs[pkg] = url
+                log.info("Start chain build: %s", pkg)
+                build_ret_code = 0
+                try:
+                    s_pkg = os.path.basename(pkg)
+                    pdn = s_pkg.replace('.src.rpm', '')
+                    resultdir = os.path.join(self.config['local_repo_dir'], pdn)
+                    self.buildroot.resultdir = resultdir
+                    self.buildroot._resetLogging(force=True)
+                    util.mkdirIfAbsent(resultdir)
+                    success_file = os.path.join(resultdir, 'success')
+                    build_ret_code = 0
+                    try:
+                        if os.path.exists(success_file):
+                            build_ret_code = 2
+                        else:
+                            do_rebuild(self.config, self, buildroot, options, [pkg])
+                    except Error:
+                        build_ret_code = 1
+                    finally:
+                        buildroot.uid_manager.becomeUser(0, 0)
+                        buildroot.finalize()
+                        if buildroot.bootstrap_buildroot is not None:
+                            buildroot.bootstrap_buildroot.finalize()
+                            buildroot.uid_manager.restorePrivs()
+                except (RootError,) as e:
+                    log.warning(e.msg)
+                    failed.append(pkg)
+                log.info("End chain build: %s", pkg)
+                if build_ret_code == 1:
+                    failed.append(pkg)
+                    log.info("Error building %s.", os.path.basename(pkg))
+                    if options.recurse:
+                        log.info("Will try to build again (if some other package will succeed).")
+                    else:
+                        log.info("See logs/results in %s", self.config['local_repo_dir'])
+                        util.touch(os.path.join(resultdir, 'fail'))
+                elif build_ret_code == 0:
+                    log.info("Success building %s", os.path.basename(pkg))
+                    built_pkgs.append(pkg)
+                    util.touch(success_file)
+                    # createrepo with the new pkgs
+                    util.createrepo(self.config, self.config['local_repo_dir'])
+                elif build_ret_code == 2:
+                    log.info("Skipping already built pkg %s", os.path.basename(pkg))
+                    skipped_pkgs.append(pkg)
+
+            if failed and options.recurse:
+                if len(failed) != len(to_be_built):
+                    to_be_built = failed
+                    try_again = True
+                    log.info('Some package succeeded, some failed.')
+                    log.info('Trying to rebuild %s failed pkgs, because --recurse is set.', len(failed))
+                else:
+                    log.info("Tried %s times - following pkgs could not be successfully built:", num_of_tries)
+                    for pkg in failed:
+                        msg = downloaded_pkgs.get(pkg, pkg)
+                        log.info(msg)
+                    try_again = False
+                    return_code = 4
+            else:
+                try_again = False
+                if failed:
+                    return_code = 4
+
+        # cleaning up our download dir
+        shutil.rmtree(download_dir, ignore_errors=True)
+
+        log.info("Results out to: %s", self.config['local_repo_dir'])
+        if skipped_pkgs:
+            log.info("Packages skipped: %s", len(skipped_pkgs))
+            for pkg in skipped_pkgs:
+                log.info(pkg)
+        log.info("Packages built: %s", len(built_pkgs))
+        if built_pkgs:
+            if failed:
+                if len(built_pkgs):
+                    log.info("Some packages successfully built in this order:")
+            else:
+                log.info("Packages successfully built in this order:")
+            for pkg in built_pkgs:
+                log.info(pkg)
+        return return_code
 
     #
     # UNPRIVILEGED:
@@ -570,10 +761,12 @@ class Commands(object):
     @traceLog()
     def copy_build_results(self, results):
         self.buildroot.root_log.debug("Copying packages to result dir")
+        self.buildroot.uid_manager.becomeUser(0, 0)
         ret = []
         for item in results:
             shutil.copy2(item, self.buildroot.resultdir)
             ret.append(os.path.join(self.buildroot.resultdir, os.path.split(item)[1]))
+        self.buildroot.uid_manager.restorePrivs()
         return ret
 
     @traceLog()

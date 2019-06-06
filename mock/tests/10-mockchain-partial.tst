@@ -3,7 +3,7 @@
 . ${TESTDIR}/functions
 
 header "test mockchain partial failure"
-runcmd "$MOCKCHAIN -c ${TESTDIR}/*.src.rpm"
+runcmd "$MOCKCHAIN --offline -c ${TESTDIR}/*.src.rpm"
 res=$?
 
 if [ $res -ne 2 ]; then

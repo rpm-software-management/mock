@@ -28,6 +28,7 @@ class Error(Exception):
 # 1 = something happened  - it's bad
 # 2 = run without setuid wrapper
 # 3 = invalid configuration
+# 4 = only some packages were build during --chain
 # 5 = cmdline processing error
 # 6 = invalid architecture
 # 10 = problem building the package

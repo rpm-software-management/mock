@@ -33,7 +33,7 @@ def package_manager(config_opts, buildroot, plugins, bootstrap_buildroot=None):
             version = int(version.split('.')[0])
             if version < 8:
                 if ('dnf_warning' not in config_opts or config_opts['dnf_warning']) and \
-                   not config_opts['use_bootstrap_container']:
+                        not config_opts['use_bootstrap_container']:
                     print("""WARNING! WARNING! WARNING!
 You are building package for distribution which use DNF. However your system
 does not support DNF. You can continue with YUM, which will likely succeed,
@@ -95,7 +95,7 @@ class _PackageManager(object):
             invocation += ['-y']
         releasever = self.config['releasever']
         if releasever:
-            invocation += ['--releasever', releasever]
+            invocation += ['--releasever', str(releasever)]
         if not self.config['online']:
             invocation.append('-C')
         if self.config['enable_disable_repos']:
@@ -103,7 +103,6 @@ class _PackageManager(object):
         invocation += common_opts
         invocation += args
         return invocation
-
 
     @traceLog()
     def execute(self, *args, **kwargs):
@@ -132,7 +131,10 @@ class _PackageManager(object):
             elif self.bootstrap_buildroot is None:
                 out = util.do(invocation, env=env, **kwargs)
             else:
-                out = util.do(invocation, env=env, chrootPath=self.bootstrap_buildroot.make_chroot_path(), **kwargs)
+                out = util.do(invocation, env=env,
+                              chrootPath=self.bootstrap_buildroot.make_chroot_path(),
+                              nspawn_args=self.bootstrap_buildroot.config['nspawn_args'],
+                              **kwargs)
         except Error as e:
             raise YumError(str(e))
         finally:

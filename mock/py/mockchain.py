@@ -245,6 +245,8 @@ config_opts = mockbuild.util.TemplatedDictionary()
 
 
 def main(args):
+    print("Warning: mockchain has been deprecated. Please use `mock --chain` command.")
+    time.sleep(1)
     opts, args = parse_args(args)
     # take mock config + list of pkgs
     cfg = opts.chroot

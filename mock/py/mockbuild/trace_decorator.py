@@ -110,14 +110,6 @@ def traceLog(logger=None):
     return decorator
 
 
-# helper function so we can use back-compat format but not be ugly
-def decorateAllFunctions(module, logger=None):
-    methods = [method for method in dir(module)
-               if isinstance(getattr(module, method), types.FunctionType)]
-    for i in methods:
-        setattr(module, i, traceLog(logger)(getattr(module, i)))
-
-
 # unit tests...
 if __name__ == "__main__":
     logging.basicConfig(

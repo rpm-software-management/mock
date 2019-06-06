@@ -652,7 +652,6 @@ def do_with_status(command, shell=False, chrootPath=None, cwd=None, timeout=0, r
                    returnOutput=0, uid=None, gid=None, user=None, personality=None,
                    printOutput=False, env=None, pty=False, nspawn_args=None, unshare_net=False,
                    *_, **kargs):
-
     logger = kargs.get("logger", getLog())
     if timeout == 0:
         timeout = _OPS_TIMEOUT
@@ -1385,6 +1384,7 @@ def setup_operations_timeout(config_opts):
 @traceLog()
 def do_update_config(log, config_opts, cfg, uidManager, name, skipError=True):
     if os.path.exists(cfg):
+        log.info("Reading configuration from %s", cfg)
         config_opts['config_paths'].append(cfg)
         update_config_from_file(config_opts, cfg, uidManager)
         setup_operations_timeout(config_opts)
@@ -1424,6 +1424,9 @@ def setup_host_resolv(config_opts):
     resolv_path = (tempfile.mkstemp(prefix="mock-resolv."))[1]
     atexit.register(_nspawnTempResolvAtExit, resolv_path)
 
+    # make sure that anyone in container can read resolv.conf file
+    os.chmod(resolv_path, 0o644)
+
     if config_opts['use_host_resolv']:
         shutil.copyfile('/etc/resolv.conf', resolv_path)
 
@@ -1449,7 +1452,12 @@ def load_config(config_path, name, uidManager, version, pkg_python_dir):
         chroot_cfg_path = name
         config_opts['chroot_name'] = os.path.splitext(os.path.basename(name))[0]
     else:
-        chroot_cfg_path = '%s/%s.cfg' % (config_path, name)
+        # ~/.config/mock/CHROOTNAME.cfg
+        cfg = os.path.join(os.path.expanduser('~' + pwd.getpwuid(os.getuid())[0]), '.config/mock/{}.cfg'.format(name))
+        if os.path.exists(cfg):
+            chroot_cfg_path = cfg
+        else:
+            chroot_cfg_path = '%s/%s.cfg' % (config_path, name)
     config_opts['config_file'] = chroot_cfg_path
 
     cfg = os.path.join(config_path, 'site-defaults.cfg')
@@ -1529,3 +1537,65 @@ def find_btrfs_in_chroot(mockdir, chroot_path):
         if subv.startswith(chroot_path[1:]):
             return subv
     return None
+
+
+@traceLog()
+def createrepo(config_opts, path):
+    """ Create repository in given path. """
+    cmd = shlex.split(config_opts["createrepo_command"])
+    if os.path.exists(os.path.join(path, 'repodata/repomd.xml')):
+        cmd.append('--update')
+    cmd.append(path)
+    return do(cmd)
+
+
+REPOS_ID = []
+
+
+@traceLog()
+def generate_repo_id(baseurl):
+    """ generate repository id for yum.conf out of baseurl """
+    repoid = "/".join(baseurl.split('//')[1:]).replace('/', '_')
+    repoid = re.sub(r'[^a-zA-Z0-9_]', '', repoid)
+    suffix = ''
+    i = 1
+    while repoid + suffix in REPOS_ID:
+        suffix = str(i)
+        i += 1
+    repoid = repoid + suffix
+    REPOS_ID.append(repoid)
+    return repoid
+
+
+@traceLog()
+def add_local_repo(config_opts, infile, destfile, baseurl, repoid=None):
+    try:
+        with open(infile) as f:
+            code = compile(f.read(), infile, 'exec')
+        # pylint: disable=exec-used
+        exec(code)
+        if not repoid:
+            repoid = generate_repo_id(baseurl)
+        else:
+            REPOS_ID.append(repoid)
+        localyumrepo = """
+
+[{}]
+name={}
+baseurl={}
+enabled=1
+skip_if_unavailable=1
+metadata_expire=0
+cost=1
+best=1
+""".format(repoid, baseurl, baseurl)
+
+        config_opts['yum.conf'] += localyumrepo
+        with open(destfile, 'w') as br_dest:
+            for k, v in list(config_opts.items()):
+                br_dest.write("config_opts[%r] = %r\n" % (k, v))
+        return True, ''
+    except (IOError, OSError):
+        return False, "Could not write mock config to {}".format(destfile)
+
+    return True, ''

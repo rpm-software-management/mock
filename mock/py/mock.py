@@ -21,11 +21,13 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301  USA.
 from __future__ import print_function
+
 # pylint: disable=pointless-string-statement,wrong-import-position
 """
 usage:
        mock [options] {--init|--clean|--scrub=[all,chroot,cache,root-cache,c-cache,yum-cache,dnf-cache,lvm,overlayfs]}
        mock [options] [--rebuild] /path/to/srpm(s)
+       mock [options] [--chain] /path/to/srpm(s)
        mock [options] --buildsrpm {--spec /path/to/spec --sources /path/to/src|
        --scm-enable [--scm-option key=value]}
        mock [options] {--shell|--chroot} <cmd>
@@ -46,17 +48,18 @@ import logging
 import logging.config
 # pylint: disable=deprecated-module
 from optparse import OptionParser
+
+from pprint import pformat
 import os
 import os.path
 import pwd
-import shlex
 import shutil
 import sys
 import time
 
-from pprint import pformat
+# pylint: disable=import-error
 from six.moves import configparser
-
+from mockbuild import util
 
 # all of the variables below are substituted by the build system
 __VERSION__ = "unreleased_version"
@@ -76,13 +79,13 @@ log = logging.getLogger()
 
 # our imports
 # pylint: disable=wrong-import-position
-from mockbuild import util
+
 import mockbuild.backend
 from mockbuild.backend import Commands
 from mockbuild.buildroot import Buildroot
 import mockbuild.exception
-from mockbuild.exception import BadCmdline
 from mockbuild.plugin import Plugins
+import mockbuild.rebuild
 from mockbuild.state import State
 from mockbuild.trace_decorator import traceLog
 import mockbuild.uid
@@ -115,6 +118,9 @@ def command_parse():
     parser.add_option("--rebuild", action="store_const", const="rebuild",
                       dest="mode", default='__default__',
                       help="rebuild the specified SRPM(s)")
+    parser.add_option("--chain", action="store_const", const="chain",
+                      dest="mode",
+                      help="build multiple RPMs in chain loop")
     parser.add_option("--buildsrpm", action="store_const", const="buildsrpm",
                       dest="mode",
                       help="Build a SRPM from spec (--spec ...) and sources"
@@ -192,11 +198,23 @@ def command_parse():
 
     parser.add_option("--umount", action="store_const", const="umount",
                       dest="mode", help="Umount the buildroot if it's "
-                      "mounted from separate device (LVM/overlayfs)")
+                                        "mounted from separate device (LVM/overlayfs)")
     parser.add_option("--mount", action="store_const", const="mount",
                       dest="mode", help="Mount the buildroot if it's "
-                      "mounted from separate device (LVM/overlayfs)")
-
+                                        "mounted from separate device (LVM/overlayfs)")
+    # chain
+    parser.add_option('--localrepo', default=None,
+                      help="local path for the local repo, defaults to making its own")
+    parser.add_option('-c', '--continue', default=False, action='store_true',
+                      dest='cont',
+                      help="if a pkg fails to build, continue to the next one")
+    parser.add_option('-a', '--addrepo', default=[], action='append',
+                      dest='repos',
+                      help="add these repo baseurls to the chroot's yum config")
+    parser.add_option('--recurse', default=False, action='store_true',
+                      help="if more than one pkg and it fails to build, try to build the rest and come back to it")
+    parser.add_option('--tmp_prefix', default=None, dest='tmp_prefix',
+                      help="tmp dir prefix - will default to username-pid if not specified")
     # options
     parser.add_option("-r", "--root", action="store", type="string", dest="chroot",
                       help="chroot config file name or path. Taken as a path if it ends "
@@ -269,14 +287,14 @@ def command_parse():
                       help="Specifies spec file to use to build an SRPM")
     parser.add_option("--sources", action="store",
                       help="Specifies sources (either a single file or a directory of files)"
-                      "to use to build an SRPM (used only with --buildsrpm)")
+                           "to use to build an SRPM (used only with --buildsrpm)")
     parser.add_option("--symlink-dereference", action="store_true", dest="symlink_dereference",
                       default=False, help="Follow symlinks in sources (used only with --buildsrpm)")
     parser.add_option("--short-circuit", action="store", type='choice',
                       choices=['prep', 'install', 'build', 'binary'],
                       help="Pass short-circuit option to rpmbuild to skip already "
-                      "complete stages. Warning: produced packages are unusable. "
-                      "Implies --no-clean. Valid options: build, install, binary")
+                           "complete stages. Warning: produced packages are unusable. "
+                           "Implies --no-clean. Valid options: build, install, binary")
     parser.add_option("--rpmbuild-opts", action="store",
                       help="Pass additional options to rpmbuild")
     parser.add_option("--enablerepo", action="callback", type="string",
@@ -471,97 +489,10 @@ def check_arch_combination(target_arch, config_opts):
 
 
 @traceLog()
-def rebuild_generic(items, commands, buildroot, config_opts, cmd, post=None, clean=True):
-    start = time.time()
-    try:
-        for item in items:
-            log.info("Start(%s)  Config(%s)", item, buildroot.shared_root_name)
-            if clean:
-                commands.clean()
-            commands.init(prebuild=not config_opts.get('short_circuit'))
-            ret = cmd(item)
-            elapsed = time.time() - start
-            log.info("Done(%s) Config(%s) %d minutes %d seconds",
-                     item, config_opts['chroot_name'], elapsed // 60, elapsed % 60)
-            log.info("Results and/or logs in: %s", buildroot.resultdir)
-
-        if config_opts["cleanup_on_success"]:
-            log.info("Cleaning up build root ('cleanup_on_success=True')")
-            commands.clean()
-        if post:
-            post()
-        return ret
-
-    except (Exception, KeyboardInterrupt):
-        elapsed = time.time() - start
-        log.error("Exception(%s) Config(%s) %d minutes %d seconds",
-                  item, buildroot.shared_root_name, elapsed // 60, elapsed % 60)
-        log.info("Results and/or logs in: %s", buildroot.resultdir)
-        if config_opts["cleanup_on_failure"]:
-            log.info("Cleaning up build root ('cleanup_on_failure=True')")
-            commands.clean()
-        raise
-
-
-@traceLog()
-def do_rebuild(config_opts, commands, buildroot, options, srpms):
-    "rebuilds a list of srpms using provided chroot"
-    if len(srpms) < 1:
-        log.critical("No package specified to rebuild command.")
-        sys.exit(50)
-
-    if len(srpms) > 1 and options.spec:
-        log.critical("--spec argument only supported with single srpm.")
-        sys.exit(50)
-
-    util.checkSrpmHeaders(srpms)
-    clean = config_opts['clean'] and not config_opts['scm']
-
-    def build(srpm):
-        commands.build(srpm, timeout=config_opts['rpmbuild_timeout'],
-                       check=config_opts['check'], spec=options.spec)
-
-    def post_build():
-        if config_opts['post_install']:
-            if buildroot.chroot_was_initialized:
-                commands.install_build_results(commands.build_results)
-            else:
-                commands.init()
-                commands.install_build_results(commands.build_results)
-                commands.clean()
-
-        if config_opts["createrepo_on_rpms"]:
-            log.info("Running createrepo on binary rpms in resultdir")
-            with buildroot.uid_manager:
-                cmd = shlex.split(config_opts["createrepo_command"])
-                cmd.append(buildroot.resultdir)
-                util.do(cmd)
-
-    rebuild_generic(srpms, commands, buildroot, config_opts, cmd=build,
-                    post=post_build, clean=clean)
-
-
-# pylint: disable=unused-argument
-@traceLog()
-def do_buildsrpm(config_opts, commands, buildroot, options, args):
-    # verify the input command line arguments actually exist
-    if not os.path.isfile(options.spec):
-        raise BadCmdline("Input specfile does not exist: %s" % options.spec)
-    if not os.path.isdir(options.sources) and not os.path.isfile(options.sources):
-        raise BadCmdline("Input sources directory or file does not exist: %s" % options.sources)
-    clean = config_opts['clean']
-
-    def cmd(spec):
-        return commands.buildsrpm(spec=spec, sources=options.sources,
-                                  timeout=config_opts['rpmbuild_timeout'],
-                                  follow_links=options.symlink_dereference)
-    return rebuild_generic([options.spec], commands, buildroot, config_opts,
-                           cmd=cmd, post=None, clean=clean)
-
-@traceLog()
 def do_debugconfig(config_opts):
     for key in sorted(config_opts):
         print("config_opts['{}'] = {}".format(key, pformat(config_opts[key])))
+
 
 @traceLog()
 def rootcheck():
@@ -649,7 +580,6 @@ def main():
         uidManager.dropPrivsTemp()
 
     (options, args) = command_parse()
-
     if options.printrootpath or options.list_snapshots:
         options.verbose = 0
 
@@ -659,11 +589,10 @@ def main():
         config_path = options.configdir
 
     config_opts = util.load_config(config_path, options.chroot, uidManager, __VERSION__, PKGPYTHONDIR)
+    config_opts['config_path'] = config_path
 
     # cmdline options override config options
     util.set_config_opts_per_cmdline(config_opts, options, args)
-
-    util.setup_host_resolv(config_opts)
 
     # allow a different mock group to be specified
     if config_opts['chrootgid'] != mockgid:
@@ -705,10 +634,15 @@ def main():
         bootstrap_buildroot_config['root'] = bootstrap_buildroot_config['root'] + '-bootstrap'
         # share a yum cache to save downloading everything twice
         bootstrap_buildroot_config['plugin_conf']['yum_cache_opts']['dir'] = \
-            "%(cache_topdir)s/"+config_opts['root']+"/%(package_manager)s_cache/"
+            "%(cache_topdir)s/" + config_opts['root'] + "/%(package_manager)s_cache/"
+        # we don't want to affect the bootstrap.config['nspawn_args'] array, deep copy
+        bootstrap_buildroot_config['nspawn_args'] = config_opts.get('nspawn_args', []).copy()
+
         # allow bootstrap buildroot to access the network for getting packages
         bootstrap_buildroot_config['rpmbuild_networking'] = True
         bootstrap_buildroot_config['use_host_resolv'] = True
+        util.setup_host_resolv(bootstrap_buildroot_config)
+
         # use system_*_command for bootstrapping
         bootstrap_buildroot_config['yum_command'] = bootstrap_buildroot_config['system_yum_command']
         bootstrap_buildroot_config['dnf_command'] = bootstrap_buildroot_config['system_dnf_command']
@@ -723,9 +657,13 @@ def main():
         bootstrap_buildroot.config['chroot_setup_cmd'] = bootstrap_buildroot.pkg_manager.install_command
         # override configs for bootstrap_*
         for k in bootstrap_buildroot.config.copy():
-            if "bootstrap_"+k in bootstrap_buildroot.config:
-                bootstrap_buildroot.config[k] = bootstrap_buildroot_config["bootstrap_"+k]
-                del bootstrap_buildroot.config["bootstrap_"+k]
+            if "bootstrap_" + k in bootstrap_buildroot.config:
+                bootstrap_buildroot.config[k] = bootstrap_buildroot_config["bootstrap_" + k]
+                del bootstrap_buildroot.config["bootstrap_" + k]
+
+    # this changes config_opts['nspawn_args'], so do it after initializing
+    # bootstrap chroot to not inherit the changes there
+    util.setup_host_resolv(config_opts)
 
     buildroot = Buildroot(config_opts, uidManager, state, plugins, bootstrap_buildroot)
     commands = Commands(config_opts, uidManager, plugins, state, buildroot, bootstrap_buildroot)
@@ -762,18 +700,23 @@ def main():
     # set personality (ie. setarch)
     util.condPersonality(config_opts['target_arch'])
 
+    result = 0
     try:
-        run_command(options, args, config_opts, commands, buildroot, state)
+        result = run_command(options, args, config_opts, commands, buildroot, state)
+    except mockbuild.exception.Error:
+        result = 1
     finally:
         buildroot.uid_manager.becomeUser(0, 0)
         buildroot.finalize()
         if bootstrap_buildroot is not None:
             bootstrap_buildroot.finalize()
         buildroot.uid_manager.restorePrivs()
+    return result
 
 
 @traceLog()
 def run_command(options, args, config_opts, commands, buildroot, state):
+    result = 0
     # TODO separate this
     # Fetch and prepare sources from SCM
     if config_opts['scm']:
@@ -798,25 +741,32 @@ def run_command(options, args, config_opts, commands, buildroot, state):
         else:
             commands.scrub(options.scrub)
 
+    elif options.mode == 'chain':
+        if len(args) == 0:
+            log.critical("You must specify an SRPM file with --chain")
+            return 50
+        commands.init(do_log=True)
+        result = commands.chain(args, options, buildroot)
+
     elif options.mode == 'shell':
         if len(args):
             cmd = args
         else:
             cmd = None
         commands.init(do_log=False)
-        sys.exit(commands.shell(options, cmd))
+        return commands.shell(options, cmd)
 
     elif options.mode == 'chroot':
         if len(args) == 0:
             log.critical("You must specify a command to run with --chroot")
-            sys.exit(50)
+            return 50
         commands.init(do_log=True)
         commands.chroot(args, options)
 
     elif options.mode == 'installdeps':
         if len(args) == 0:
             log.critical("You must specify an SRPM file with --installdeps")
-            sys.exit(50)
+            return 50
         commands.init()
         rpms = []
         for file in args:
@@ -831,7 +781,7 @@ def run_command(options, args, config_opts, commands, buildroot, state):
     elif options.mode == 'install':
         if len(args) == 0:
             log.critical("You must specify a package list to install.")
-            sys.exit(50)
+            return 50
 
         commands.init()
         commands.install(*args)
@@ -843,13 +793,13 @@ def run_command(options, args, config_opts, commands, buildroot, state):
     elif options.mode == 'remove':
         if len(args) == 0:
             log.critical("You must specify a package list to remove.")
-            sys.exit(50)
+            return 50
         commands.init()
         commands.remove(*args)
 
     elif options.mode == 'rebuild':
         if config_opts['scm'] or (options.spec and options.sources):
-            srpm = do_buildsrpm(config_opts, commands, buildroot, options, args)
+            srpm = mockbuild.rebuild.do_buildsrpm(config_opts, commands, buildroot, options, args)
             if srpm:
                 args.append(srpm)
             if config_opts['scm']:
@@ -858,10 +808,10 @@ def run_command(options, args, config_opts, commands, buildroot, state):
                 options.sources = None
             else:
                 config_opts['clean'] = False
-        do_rebuild(config_opts, commands, buildroot, options, args)
+        mockbuild.rebuild.do_rebuild(config_opts, commands, buildroot, options, args)
 
     elif options.mode == 'buildsrpm':
-        do_buildsrpm(config_opts, commands, buildroot, options, args)
+        mockbuild.rebuild.do_buildsrpm(config_opts, commands, buildroot, options, args)
 
     elif options.mode == 'debugconfig':
         do_debugconfig(config_opts)
@@ -873,16 +823,16 @@ def run_command(options, args, config_opts, commands, buildroot, state):
         commands.init()
         if len(args) < 2:
             log.critical("Must have source and destinations for copyin")
-            sys.exit(50)
+            return 50
         dest = buildroot.make_chroot_path(args[-1])
         if len(args) > 2 and not os.path.isdir(dest):
             log.critical("multiple source files and %s is not a directory!", dest)
-            sys.exit(50)
+            return 50
         args = args[:-1]
         for src in args:
             if not os.path.lexists(src):
                 log.critical("No such file or directory: %s", src)
-                sys.exit(50)
+                return 50
             log.info("copying %s to %s", src, dest)
             if os.path.isdir(src):
                 dest2 = dest
@@ -891,7 +841,7 @@ def run_command(options, args, config_opts, commands, buildroot, state):
                     dest2 = os.path.join(dest2, path_suffix)
                     if os.path.exists(dest2):
                         log.critical("Destination %s already exists!", dest2)
-                        sys.exit(50)
+                        return 50
                 shutil.copytree(src, dest2)
             else:
                 shutil.copy(src, dest)
@@ -902,18 +852,18 @@ def run_command(options, args, config_opts, commands, buildroot, state):
         with buildroot.uid_manager:
             if len(args) < 2:
                 log.critical("Must have source and destinations for copyout")
-                sys.exit(50)
+                return 50
             dest = args[-1]
             sources = []
             for arg in args[:-1]:
                 matches = glob.glob(buildroot.make_chroot_path(arg.replace('~', buildroot.homedir)))
                 if not matches:
                     log.critical("%s not found", arg)
-                    sys.exit(50)
+                    return 50
                 sources += matches
             if len(sources) > 1 and not os.path.isdir(dest):
                 log.critical("multiple source files and %s is not a directory!", dest)
-                sys.exit(50)
+                return 50
             for src in sources:
                 log.info("copying %s to %s", src, dest)
                 if os.path.isdir(src):
@@ -932,21 +882,21 @@ def run_command(options, args, config_opts, commands, buildroot, state):
     elif options.mode == 'snapshot':
         if len(args) < 1:
             log.critical("Requires a snapshot name")
-            sys.exit(50)
+            return 50
         buildroot.plugins.call_hooks('make_snapshot', args[0], required=True)
         if buildroot.bootstrap_buildroot is not None:
             buildroot.bootstrap_buildroot.plugins.call_hooks('make_snapshot', args[0], required=True)
     elif options.mode == 'rollback-to':
         if len(args) < 1:
             log.critical("Requires a snapshot name")
-            sys.exit(50)
+            return 50
         buildroot.plugins.call_hooks('rollback_to', args[0], required=True)
         if buildroot.bootstrap_buildroot is not None:
             buildroot.bootstrap_buildroot.plugins.call_hooks('rollback_to', args[0], required=True)
     elif options.mode == 'remove_snapshot':
         if len(args) < 1:
             log.critical("Requires a snapshot name")
-            sys.exit(50)
+            return 50
         buildroot.plugins.call_hooks('remove_snapshot', args[0], required=True)
         if buildroot.bootstrap_buildroot is not None:
             buildroot.bootstrap_buildroot.plugins.call_hooks('remove_snapshot', args[0], required=True)
@@ -962,6 +912,7 @@ def run_command(options, args, config_opts, commands, buildroot, state):
     buildroot.nuke_rpm_db()
     state.finish("run")
     state.alldone()
+    return result
 
 
 if __name__ == '__main__':
@@ -973,8 +924,10 @@ if __name__ == '__main__':
 
     exitStatus = 0
 
+    (opts, packages) = command_parse()
+
     try:
-        main()
+        exitStatus = main()
 
     except (SystemExit,):
         raise # pylint: disable=try-except-raise

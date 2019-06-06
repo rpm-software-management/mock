@@ -6,6 +6,8 @@ mock \- build SRPMs in a chroot
 .LP
 mock  [options] \fB\-\-rebuild\fR \fISRPM [\fISRPM...\fR]
 .LP
+mock  [options] \fB\-\-chain\fR \fISRPM [\fISRPM...\fR]
+.LP
 mock  [options] \fB\-\-buildsrpm\fR {\-\-spec \fIspec\fR \-\-sources \fIsrc\fR \-\-symlink\-dereference | \-\-scm\-enable}
 .LP
 mock  [options] \fB\-\-chroot\fR \fI<cmd>\fR
@@ -84,6 +86,9 @@ Mock is running some parts of code under root privileges. There are known ways h
 .TP
 \fB\-\-buildsrpm\fP
 Build the specified SRPM either from a spec file and source file/directory or SCM. The chroot (including the results directory) is cleaned first, unless \-\-no\-clean is specified.
+.TP
+\fB\-\-chain\fR
+When passing more than one SRPM, it will try to build failed builds if at least one subsequent SRPM succeed. This mimic the behaviour of deprecated mockchain.
 .TP
 \fB\-\-clean\fP
 Purge the chroot tree.
@@ -194,6 +199,11 @@ Note: While you can specify more commands on a command line, only one can be exe
 .SH "OPTIONS"
 .LP
 .TP
+\fB\-a\fR, \fB\-\-addrepo\fR=\fIREPO\fP
+Add this repo baseurl to the yumconfig for the chroot. This can be specified
+multiple times. Let's you point to multiple paths beyond the default to pull
+build deps from.
+.TP
 \fB\-\-arch\fR=\fIARCH\fP
 Calls the Linux personality() syscall to tell the kernel to emulate a secondary architecture. For example, building i386 packages on an x86_64 buildhost.
 .TP
@@ -211,6 +221,9 @@ Change directory where config files are found
 .TP
 \fB\-\-config-opts\fR=\fIKEY=VALUE\fP
 Override configuration option. Can be used multiple times. When used multiple times for the same key, it will create an array. This is evaluated first (after parsing configs) so any specialized command line option can override values defined in this option.
+.TP
+\fB\-\-continue\fR
+If a pkg fails to build, continue to the next one, default is to stop.
 .TP
 \fB\-\-cwd\fR=\fIDIR\fP
 Change to the specified directory (relative to the chroot) before running command when using \-\-chroot
@@ -240,6 +253,11 @@ It can be specified multiple times.
 \fB\-\-enable\-network\fR
 Enable networking. If you want to have reproducible builds then your builds should run without a network.
 This option overrides config_opts['rpmbuild_networking'] and config_opts['use_host_resolv'], setting both True.
+.TP
+\fB\-\-localrepo\fR=\fIREPO\fR\fR
+Set the path to put the results/repo in. This path needs to be somewhere
+accessible to users other than you for reading as the mock process doesn't run
+as you. Will make a tempdir if not set.
 .TP
 \fB\-h\fR, \fB\-\-help\fR
 Show usage information and exit.
@@ -279,9 +297,15 @@ Try to install built packages in the same buildroot right after the build.
 \fB\-q\fR, \fB\-\-quiet\fR
 Be quiet.
 .TP
+\fB\-\-recurse\fR
+Build all pkgs, record the failures and try to rebuild them again and again
+until everything gets built (or until the set of pkgs failing to build are the
+same over) sets --continue.
+.TP
 \fB\-r\fR \fICONFIG\fP, \fB\-\-root\fR=\fICONFIG\fP
 Uses specified chroot configuration as defined in
-/etc/mock/<\fICONFIG\fP>.cfg. Optionally if CONFIG ends in '.cfg', it is
+~/.config/mock/<\fICONFIG\fP>.cfg or /etc/mock/<\fICONFIG\fP>.cfg.
+Optionally if CONFIG ends in '.cfg', it is
 interpreted as full path to config file. If none specified, uses the chroot
 config linked to by /etc/mock/default.cfg.
 .TP
@@ -315,6 +339,9 @@ Follow symlinks in sources (used only with \-\-buildsrpm).
 .TP
 \fB\-\-target\fR=\fIARCH\fP
 This argument is passed to rpmbuild to specify the target arch to build. It defaults to whatever is specified for \-\-arch, or whatever is specified in the config file as config_opts['target_arch'].
+.TP
+\fB\-\-tmp_prefix\fR=\fIPREFIX\fP
+Tmp dir prefix - will default to username-pid if not specified.
 .TP
 \fB\-\-trace\fR
 Enables verbose tracing of function enter/exit with function arguments and return codes. Useful for debugging mock itself.

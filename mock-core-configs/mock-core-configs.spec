@@ -121,10 +121,9 @@ fi
 %ghost %config(noreplace,missingok) %{_sysconfdir}/mock/default.cfg
 
 %changelog
-* Thu Jun 06 2019 Miroslav Suchý <msuchy@redhat.com> 30.3-1
-- Add 'fastestmirror=1' to Mageia mock configs (ngompa13@gmail.com)
-- bootstrap: disable sclo* repos for epel --installroot (praiskup@redhat.com)
-- drop Fedora ppc64 configs [RHBZ#1714489]
+* Thu May 16 2019 Miroslav Suchý <msuchy@redhat.com> 30.3-1
+- Allow AArch64 systems to build 32-bit ARM packages (ngompa13@gmail.com)
+- Fix openSUSE Tumbleweed DistTag definition (ngompa13@gmail.com)
 
 * Fri Mar 01 2019 Miroslav Suchý <msuchy@redhat.com> 30.2-1
 - disable modular repos
