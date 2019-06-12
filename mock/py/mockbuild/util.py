@@ -1095,7 +1095,7 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
 
     config_opts['package_manager'] = 'yum'
 
-    config_opts['dynamic_buildrequires'] = False
+    config_opts['dynamic_buildrequires'] = True
 
     # configurable commands executables
     config_opts['yum_command'] = '/usr/bin/yum'
