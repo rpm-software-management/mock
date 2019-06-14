@@ -283,7 +283,8 @@ class Commands(object):
 
             # Check if we will have dynamic BuildRequires, but do not allow it
             hdr = next(util.yieldSrpmHeaders((rebuilt_srpm,)))
-            dynamic_buildreqs = 'rpmlib(DynamicBuildRequires)' in hdr[rpm.RPMTAG_REQUIRES]
+            requires = {util._to_text(req) for req in hdr[rpm.RPMTAG_REQUIRES]}
+            dynamic_buildreqs = 'rpmlib(DynamicBuildRequires)' in requires
 
             if dynamic_buildreqs and not self.config.get('dynamic_buildrequires'):
                 raise Error('DynamicBuildRequires are found but support is disabled.'
