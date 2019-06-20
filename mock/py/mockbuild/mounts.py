@@ -143,15 +143,16 @@ class Mounts(object):
         self.managed_mounts = []  # mounts owned by mock
         self.user_mounts = []  # mounts injected by user
         self.essential_mounts = [
-            FileSystemMountPoint(filetype='proc',
-                                 device='mock_chroot_proc',
-                                 path=rootObj.make_chroot_path('/proc')),
-            # Instead of mounting a fresh sysfs, we bind mount /sys.
-            # This avoids problems with kernel restrictions if running within a
-            # user namespace, and is pretty much identical otherwise. The
-            # bind mount additionally needs to be recursive, because the
-            # kernel forbids mounts that might reveal parts of /sys that
-            # a container runtime overmounted to hide from the container.
+            # Instead of mounting a fresh procfs and sysfs, we bind mount /proc
+            # and /sys. This avoids problems with kernel restrictions if running
+            # within a user namespace, and is pretty much identical otherwise.
+            # The bind mount additionally needs to be recursive, because the
+            # kernel forbids mounts that might reveal parts of the filesystem
+            # that a container runtime overmounted to hide from the container.
+            BindMountPoint(srcpath='/proc',
+                           bindpath=rootObj.make_chroot_path('/proc'),
+                           recursive=True,
+                           options="nodev,noexec,nosuid,readonly"),
             BindMountPoint(srcpath='/sys',
                            bindpath=rootObj.make_chroot_path('/sys'),
                            recursive=True,
