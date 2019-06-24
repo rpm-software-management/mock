@@ -718,35 +718,40 @@ class Commands(object):
             return command
 
         bd_out = self.make_chroot_path(self.buildroot.builddir)
+        max_loops = int(self.config.get('dynamic_buildrequires_max_loops'))
+        success = False
         if dynamic_buildrequires and self.config.get('dynamic_buildrequires'):
-            # Technically, we should run rpmbuild+installSrpmDeps until
-            # * it fails
-            # * installSrpmDeps does nothing
-            # but we don't have necessary infrastructure in place
-            try:
-                self.buildroot.doChroot(get_command(['-br']),
-                                        shell=False, logger=self.buildroot.build_log, timeout=timeout,
-                                        uid=self.buildroot.chrootuid, gid=self.buildroot.chrootgid,
-                                        user=self.buildroot.chrootuser,
-                                        nspawn_args=self._get_nspawn_args(),
-                                        unshare_net=self.private_network,
-                                        printOutput=self.config['print_main_output'])
-            except Error as e:
-                if e.resultcode != 11:
-                    raise e
-                self.buildroot.root_log.info("Dynamic buildrequires detected")
-                self.buildroot.root_log.info("Going to install missing buildrequires")
-                buildreqs = glob.glob(bd_out + '/SRPMS/*.buildreqs.nosrc.rpm')
-                self.installSrpmDeps(*buildreqs)
-                for f_buildreqs in buildreqs:
-                    os.remove(f_buildreqs)
-                if not sc:
-                    # We want to (re-)write src.rpm with dynamic BuildRequires,
-                    # but with short-circuit it doesn't matter
-                    mode = ['-ba']
-                # rpmbuild -br already does %prep, so we don't need waste time
-                # on re-doing it
-                mode += ['--noprep']
+            while not success or max_loops > 0:
+                # run rpmbuild+installSrpmDeps until
+                # * it fails
+                # * installSrpmDeps does nothing
+                # * or we run out of dynamic_buildrequires_max_loops tries
+                try:
+                    self.buildroot.doChroot(get_command(['-br']),
+                                            shell=False, logger=self.buildroot.build_log, timeout=timeout,
+                                            uid=self.buildroot.chrootuid, gid=self.buildroot.chrootgid,
+                                            user=self.buildroot.chrootuser,
+                                            nspawn_args=self._get_nspawn_args(),
+                                            unshare_net=self.private_network,
+                                            printOutput=self.config['print_main_output'])
+                    success = True
+                except Error as e:
+                    if e.resultcode != 11:
+                        raise e
+                    max_loops -= 1
+                    self.buildroot.root_log.info("Dynamic buildrequires detected")
+                    self.buildroot.root_log.info("Going to install missing buildrequires")
+                    buildreqs = glob.glob(bd_out + '/SRPMS/*.buildreqs.nosrc.rpm')
+                    self.installSrpmDeps(*buildreqs)
+                    for f_buildreqs in buildreqs:
+                        os.remove(f_buildreqs)
+                    if not sc:
+                        # We want to (re-)write src.rpm with dynamic BuildRequires,
+                        # but with short-circuit it doesn't matter
+                        mode = ['-ba']
+                    # rpmbuild -br already does %prep, so we don't need waste time
+                    # on re-doing it
+                    mode += ['--noprep']
         self.buildroot.doChroot(get_command(mode),
                                 shell=False, logger=self.buildroot.build_log, timeout=timeout,
                                 uid=self.buildroot.chrootuid, gid=self.buildroot.chrootgid,
