@@ -9,7 +9,6 @@ import inspect
 import logging
 import os
 import sys
-import types
 
 try:
     basestring
