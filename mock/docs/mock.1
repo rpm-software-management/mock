@@ -315,6 +315,8 @@ Change directory where resulting files (RPMs and build logs) are written. Result
 \fB\-\-resultdir=./my/"%(dist)s"/"%(target_arch)s"/\fR
 
 This option enables automatic cleanup, this can be changed in config file (by cleanup_on_success, cleanup_on_failure configuration options) or overridden by \-\-no\-cleanup\-after/\-\-cleanup\-after arguments.
+
+Note that this option does not have an effect for \-\-chain command. You can use \-\-localrepo instead.
 .TP
 \fB\-\-rootdir\fR=\fIROOTDIR\fP
 The path for where the chroot should be built. By default it is created in /var/lib/mock/<\fICONFIG\fP>/root/.
