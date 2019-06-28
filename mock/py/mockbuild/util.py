@@ -1577,17 +1577,12 @@ def generate_repo_id(baseurl):
 
 
 @traceLog()
-def add_local_repo(config_opts, infile, destfile, baseurl, repoid=None):
-    try:
-        with open(infile) as f:
-            code = compile(f.read(), infile, 'exec')
-        # pylint: disable=exec-used
-        exec(code)
-        if not repoid:
-            repoid = generate_repo_id(baseurl)
-        else:
-            REPOS_ID.append(repoid)
-        localyumrepo = """
+def add_local_repo(config_opts, baseurl, repoid=None):
+    if not repoid:
+        repoid = generate_repo_id(baseurl)
+    else:
+        REPOS_ID.append(repoid)
+    localyumrepo = """
 
 [{}]
 name={}
@@ -1599,12 +1594,4 @@ cost=1
 best=1
 """.format(repoid, baseurl, baseurl)
 
-        config_opts['yum.conf'] += localyumrepo
-        with open(destfile, 'w') as br_dest:
-            for k, v in list(config_opts.items()):
-                br_dest.write("config_opts[%r] = %r\n" % (k, v))
-        return True, ''
-    except (IOError, OSError):
-        return False, "Could not write mock config to {}".format(destfile)
-
-    return True, ''
+    config_opts['yum.conf'] += localyumrepo

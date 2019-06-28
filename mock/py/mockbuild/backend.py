@@ -418,32 +418,10 @@ class Commands(object):
 
         local_baseurl = "file://{0}".format(self.config['local_repo_dir'])
         log.info("results dir: %s", self.config['local_repo_dir'])
-        tmp_config_path = os.path.normpath(local_tmp_dir + '/configs/' + self.config['chroot_name'] + '/')
-
-        if not os.path.exists(tmp_config_path):
-            os.makedirs(tmp_config_path, mode=0o755)
-
-        log.info("config dir: %s", tmp_config_path)
-
-        my_mock_config = os.path.join(tmp_config_path, "{0}.cfg".format(self.config['chroot_name']))
-
         # modify with localrepo
-        res, msg = util.add_local_repo(self.config, self.config['config_file'], my_mock_config, local_baseurl,
-                                       'local_build_repo')
-        if not res:
-            log.error("Could not write out local config: %s", msg)
-            sys.exit(1)
-
+        util.add_local_repo(self.config, local_baseurl, 'local_build_repo')
         for baseurl in options.repos:
-            res, msg = util.add_local_repo(self.config, my_mock_config, my_mock_config, baseurl)
-            if not res:
-                log.error("Could not add: %s to yum config in mock chroot: %s", baseurl, msg)
-                sys.exit(1)
-
-        # these files needed from the mock.config dir to make mock run
-        for fn in ['site-defaults.cfg', 'logging.ini']:
-            pth = os.path.join(self.config['config_path'], fn)
-            shutil.copyfile(pth, os.path.join(tmp_config_path, fn))
+            util.add_local_repo(self.config, baseurl)
 
         util.createrepo(self.config, self.config['local_repo_dir'])
 
