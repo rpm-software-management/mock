@@ -207,6 +207,12 @@ class Buildroot(object):
             self.uid_manager.restorePrivs()
         return result
 
+    def all_chroot_packages(self):
+        """package set, result of rpm -qa in the buildroot"""
+        out, _ = self.doChroot([self.config['rpm_command'], "-qa"],
+                               returnOutput=True, printOutput=False, shell=False)
+        return set(out.splitlines())
+
     @traceLog()
     def _copy_config(self, filename):
         etcdir = self.make_chroot_path('etc')
