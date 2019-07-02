@@ -209,8 +209,9 @@ class Buildroot(object):
 
     def all_chroot_packages(self):
         """package set, result of rpm -qa in the buildroot"""
-        out, _ = self.doChroot([self.config['rpm_command'], "-qa"],
-                               returnOutput=True, printOutput=False, shell=False)
+        out = util.do([self.config['rpm_command'], "-qa",
+                       "--root", self.make_chroot_path()],
+                      returnOutput=True, printOutput=False, shell=False)
         return set(out.splitlines())
 
     @traceLog()
