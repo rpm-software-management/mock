@@ -1098,6 +1098,8 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
     config_opts['dynamic_buildrequires'] = True
     config_opts['dynamic_buildrequires_max_loops'] = 10
 
+    config_opts['dev_loop_count'] = 12
+
     # configurable commands executables
     config_opts['yum_command'] = '/usr/bin/yum'
     config_opts['system_yum_command'] = '/usr/bin/yum'
