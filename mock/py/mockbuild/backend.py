@@ -721,11 +721,12 @@ class Commands(object):
         max_loops = int(self.config.get('dynamic_buildrequires_max_loops'))
         success = False
         if dynamic_buildrequires and self.config.get('dynamic_buildrequires'):
-            while not success or max_loops > 0:
+            while not success and max_loops > 0:
                 # run rpmbuild+installSrpmDeps until
                 # * it fails
                 # * installSrpmDeps does nothing
                 # * or we run out of dynamic_buildrequires_max_loops tries
+                packages_before = self.buildroot.all_chroot_packages()
                 try:
                     self.buildroot.doChroot(get_command(['-br']),
                                             shell=False, logger=self.buildroot.build_log, timeout=timeout,
@@ -743,6 +744,9 @@ class Commands(object):
                     self.buildroot.root_log.info("Going to install missing buildrequires")
                     buildreqs = glob.glob(bd_out + '/SRPMS/*.buildreqs.nosrc.rpm')
                     self.installSrpmDeps(*buildreqs)
+                    packages_after = self.buildroot.all_chroot_packages()
+                    if packages_after == packages_before:
+                        success = True
                     for f_buildreqs in buildreqs:
                         os.remove(f_buildreqs)
                     if not sc:
