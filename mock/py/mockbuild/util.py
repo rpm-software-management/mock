@@ -582,7 +582,7 @@ def logOutput(fdout, fderr, logger, returnOutput=1, start=0, timeout=0, printOut
                         if line != '':
                             line = ansi_escape.sub('', line)
                             if fderr is s and not line.startswith('+ '):
-                                logger.debug("BUILDSTDERR: %s", line)
+                                logger.debug("%s%s" % (logging.getLogger('mockbuild').stderr_line_prefix, line))
                             else:
                                 logger.debug(line)
                     for h in logger.handlers:
@@ -1119,6 +1119,8 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
     config_opts['dnf_disable_plugins'] = ['local', 'spacewalk']
 
     config_opts['opstimeout'] = 0
+
+    config_opts['stderr_line_prefix'] = ""
 
     return config_opts
 
