@@ -453,9 +453,9 @@ def setup_logging(config_path, config_opts, options):
     if options.trace:
         logging.getLogger("trace").propagate = 1
 
-    logging.getLogger("mockbuild").stderr_line_prefix = ""
+    logging.getLogger("mockbuild")._mock_stderr_line_prefix = ""
     if config_opts['stderr_line_prefix'] != "":
-        logging.getLogger("mockbuild").stderr_line_prefix = config_opts['stderr_line_prefix']
+        logging.getLogger("mockbuild")._mock_stderr_line_prefix = config_opts['stderr_line_prefix']
 
 
 @traceLog()
