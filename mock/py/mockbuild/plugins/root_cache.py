@@ -58,7 +58,17 @@ class RootCache(object):
         plugins.add_hook("postchroot", self._rootCachePostShellHook)
         plugins.add_hook("postyum", self._rootCachePostShellHook)
         self.exclude_dirs = self.root_cache_opts['exclude_dirs']
-        self.exclude_tar_cmds = ["--exclude=" + item for item in self.exclude_dirs]
+        self.exclude_tar_cmds = []
+        for dir in self.exclude_dirs:
+            self._tarExcludeOption(dir)
+
+    def _tarExcludeOption(self, dir):
+        if self.config['tar'] == 'bsdtar':
+            anchor = '^'
+        else:
+            anchor = ''
+
+        self.exclude_tar_cmds.append('--exclude=' + anchor + dir)
 
     # =============
     # 'Private' API
@@ -160,18 +170,14 @@ class RootCache(object):
     @traceLog()
     def _root_cache_handle_mounts(self):
         br_path = self.buildroot.make_chroot_path()
-        if self.config['tar'] == 'bsdtar':
-            anchor = '^'
-        else:
-            anchor = ''
         for m in self.buildroot.mounts.get_mountpoints():
             if m.startswith('/'):
                 if m.startswith(br_path):
-                    self.exclude_tar_cmds.append('--exclude=%s./%s' % (anchor, m[len(br_path):]))
+                    self._tarExcludeOption('./' + m[len(br_path):])
                 else:
-                    self.exclude_tar_cmds.append('--exclude=%s.%s' % (anchor, m))
+                    self._tarExcludeOption('.' + m)
             else:
-                self.exclude_tar_cmds.append('--exclude=%s./%s' % (anchor, m))
+                self._tarExcludeOption('./' + m)
 
     @traceLog()
     def _rootCachePostInitHook(self):
