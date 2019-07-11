@@ -352,7 +352,7 @@ class Dnf(_PackageManager):
             self.config['dnf_builddep_opts'] = self.config['yum_builddep_opts']
         if 'dnf_common_opts' not in self.config:
             self.config['dnf_common_opts'] = self.config['yum_common_opts'] + \
-                                             ['--setopt=deltarpm=False', ]
+                                             ['--setopt=deltarpm=False', '--allowerasing']
         self.config['dnf_common_opts'].extend(self._get_disabled_plugins())
         if 'forcearch' in self.config and '--forcearch' not in self.config['dnf_common_opts'] \
            and self.config['forcearch']:
