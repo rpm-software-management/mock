@@ -77,7 +77,7 @@ fi
 
 %pre
 %if 0%{?fedora} || 0%{?mageia} || 0%{?rhel} > 7
-%sysusers_create mock.conf
+%sysusers_create_package mock mock.conf
 %else
 # check for existence of mock group, create it if not found
 getent group mock > /dev/null || groupadd -f -g %mockgid -r mock
