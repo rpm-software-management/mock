@@ -472,7 +472,9 @@ def setup_uid_manager(mockgid):
     # consolehelper
     if os.environ.get("USERHELPER_UID") is not None:
         unprivUid = int(os.environ['USERHELPER_UID'])
-        os.setgroups((mockgid,))
+        unprivName = pwd.getpwuid(unprivUid).pw_name
+        secondary_groups = [g.gr_gid for g in grp.getgrall() if unprivName in g.gr_mem]
+        os.setgroups([mockgid] + secondary_groups)
         unprivGid = pwd.getpwuid(unprivUid)[3]
 
     uidManager = mockbuild.uid.UidManager(unprivUid, unprivGid)
