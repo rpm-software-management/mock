@@ -19,7 +19,6 @@ BuildArch:	noarch
 # distribution-gpg-keys contains GPG keys used by mock configs
 Requires:	distribution-gpg-keys >= 1.29
 
-Requires(pre):	shadow-utils
 Requires(post): coreutils
 %if 0%{?fedora} || 0%{?mageia} || 0%{?rhel} > 7
 # to detect correct default.cfg
@@ -53,6 +52,9 @@ Config files which allow you to create chroots for:
 
 
 %install
+mkdir -p %{buildroot}%{_sysusersdir}
+cp -a mock.conf %{buildroot}%{_sysusersdir}
+
 mkdir -p %{buildroot}%{_sysconfdir}/mock/eol
 cp -a etc/mock/*.cfg %{buildroot}%{_sysconfdir}/mock
 cp -a etc/mock/eol/*cfg %{buildroot}%{_sysconfdir}/mock/eol
@@ -71,10 +73,10 @@ elif [ -d %{buildroot}%{_sysconfdir}/bash_completion.d ]; then
     echo %{_sysconfdir}/bash_completion.d/mock >> %{name}.cfgs
 fi
 
+
 %pre
-# check for existence of mock group, create it if not found
-getent group mock > /dev/null || groupadd -f -g %mockgid -r mock
-exit 0
+%sysusers_create mock.conf
+
 
 %post
 if [ -s /etc/os-release ]; then
@@ -116,6 +118,7 @@ fi
 
 %files -f %{name}.cfgs
 %license COPYING
+%{_sysusersdir}/mock.conf
 %dir  %{_sysconfdir}/mock
 %dir  %{_sysconfdir}/mock/eol
 %ghost %config(noreplace,missingok) %{_sysconfdir}/mock/default.cfg
