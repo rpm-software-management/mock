@@ -29,6 +29,7 @@ Requires(post):	python3
 Requires(post):	sed
 %endif
 %if 0%{?rhel} && 0%{?rhel} <= 7
+Requires(pre): shadow-utils
 # to detect correct default.cfg
 Requires(post):	python
 Requires(post):	yum
@@ -75,8 +76,13 @@ fi
 
 
 %pre
+%if 0%{?fedora} || 0%{?mageia} || 0%{?rhel} > 7
 %sysusers_create mock.conf
-
+%else
+# check for existence of mock group, create it if not found
+getent group mock > /dev/null || groupadd -f -g %mockgid -r mock
+exit 0
+%endif
 
 %post
 if [ -s /etc/os-release ]; then
