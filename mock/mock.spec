@@ -129,12 +129,12 @@ of the buildroot.
 
 %prep
 %setup -q
-for file in py/mock.py py/mockchain.py; do
+for file in py/mock.py py/mockchain.py py/mock-parse-buildlog.py; do
   sed -i 1"s|#!/usr/bin/python3 |#!%{__python} |" $file
 done
 
 %build
-for i in py/mock.py py/mockchain.py; do
+for i in py/mock.py py/mockchain.py py/mock-parse-buildlog.py; do
     perl -p -i -e 's|^__VERSION__\s*=.*|__VERSION__="%{version}"|' $i
     perl -p -i -e 's|^SYSCONFDIR\s*=.*|SYSCONFDIR="%{_sysconfdir}"|' $i
     perl -p -i -e 's|^PYTHONDIR\s*=.*|PYTHONDIR="%{python_sitelib}"|' $i
@@ -148,6 +148,7 @@ done
 install -d %{buildroot}%{_bindir}
 install -d %{buildroot}%{_libexecdir}/mock
 install py/mockchain.py %{buildroot}%{_bindir}/mockchain
+install py/mock-parse-buildlog.py %{buildroot}%{_bindir}/mock-parse-buildlog
 install py/mock.py %{buildroot}%{_libexecdir}/mock/mock
 ln -s consolehelper %{buildroot}%{_bindir}/mock
 install create_default_route_in_container.sh %{buildroot}%{_libexecdir}/mock/
@@ -164,6 +165,7 @@ cp -a etc/consolehelper/mock %{buildroot}%{_sysconfdir}/security/console.apps/%{
 install -d %{buildroot}%{_datadir}/bash-completion/completions/
 cp -a etc/bash_completion.d/* %{buildroot}%{_datadir}/bash-completion/completions/
 ln -s mock %{buildroot}%{_datadir}/bash-completion/completions/mockchain
+ln -s mock %{buildroot}%{_datadir}/bash-completion/completions/mock-parse-buildlog
 
 install -d %{buildroot}%{_sysconfdir}/pki/mock
 cp -a etc/pki/* %{buildroot}%{_sysconfdir}/pki/mock/
@@ -188,12 +190,14 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 %config(noreplace) %{_sysconfdir}/mock/site-defaults.cfg
 %{_datadir}/bash-completion/completions/mock
 %{_datadir}/bash-completion/completions/mockchain
+%{_datadir}/bash-completion/completions/mock-parse-buildlog
 
 %defattr(-, root, root)
 
 # executables
 %{_bindir}/mock
 %{_bindir}/mockchain
+%{_bindir}/mock-parse-buildlog
 %{_libexecdir}/mock
 
 # python stuff
