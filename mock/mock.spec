@@ -140,7 +140,7 @@ for i in py/mock.py py/mockchain.py py/mock-parse-buildlog.py; do
     perl -p -i -e 's|^PYTHONDIR\s*=.*|PYTHONDIR="%{python_sitelib}"|' $i
     perl -p -i -e 's|^PKGPYTHONDIR\s*=.*|PKGPYTHONDIR="%{python_sitelib}/mockbuild"|' $i
 done
-for i in docs/mockchain.1 docs/mock.1; do
+for i in docs/mockchain.1 docs/mock.1 docs/mock-parse-buildlog.1; do
     perl -p -i -e 's|\@VERSION\@|%{version}"|' $i
 done
 
@@ -174,7 +174,7 @@ install -d %{buildroot}%{python_sitelib}/
 cp -a py/mockbuild %{buildroot}%{python_sitelib}/
 
 install -d %{buildroot}%{_mandir}/man1
-cp -a docs/mockchain.1 docs/mock.1 %{buildroot}%{_mandir}/man1/
+cp -a docs/mockchain.1 docs/mock.1 docs/mock-parse-buildlog.1 %{buildroot}%{_mandir}/man1/
 
 install -d %{buildroot}/var/lib/mock
 install -d %{buildroot}/var/cache/mock
@@ -217,6 +217,7 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 # docs
 %{_mandir}/man1/mock.1*
 %{_mandir}/man1/mockchain.1*
+%{_mandir}/man1/mock-parse-buildlog.1*
 
 # cache & build dirs
 %defattr(0775, root, mock, 02775)
