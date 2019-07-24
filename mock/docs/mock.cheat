@@ -1,0 +1,14 @@
+# to build a package
+mock -r fedora-30-x86_64 foo.src.rpm
+
+# to enter shell in different distribution
+mock -r epel-7-x86_64 --shell
+
+# to run command in different distribution
+mock -r epel-7-x86_64 --chroot cat /etc/os-release
+
+# to build for different architecture
+mock -r fedora-30-s390x --forcearch=s390x foo.src.rpm
+
+# to clean everything
+mock -r fedora-30-x86_64 --scrub=all

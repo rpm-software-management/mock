@@ -175,6 +175,8 @@ cp -a py/mockbuild %{buildroot}%{python_sitelib}/
 
 install -d %{buildroot}%{_mandir}/man1
 cp -a docs/mockchain.1 docs/mock.1 docs/mock-parse-buildlog.1 %{buildroot}%{_mandir}/man1/
+install -d %{buildroot}%{_datadir}/cheat
+cp -a docs/mock.cheat %{buildroot}%{_datadir}/cheat/mock
 
 install -d %{buildroot}/var/lib/mock
 install -d %{buildroot}/var/cache/mock
@@ -218,6 +220,7 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 %{_mandir}/man1/mock.1*
 %{_mandir}/man1/mockchain.1*
 %{_mandir}/man1/mock-parse-buildlog.1*
+%{_datadir}/cheat/mock
 
 # cache & build dirs
 %defattr(0775, root, mock, 02775)
