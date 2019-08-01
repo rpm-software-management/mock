@@ -371,22 +371,24 @@ class Commands(object):
         # intentionally we do not call bootstrap hook here - it does not have sense
         chrootstate = "chroot %s" % args
         self.state.start(chrootstate)
+        result=0
         try:
             if options.unpriv:
-                self.buildroot.doChroot(args, shell=shell, printOutput=True,
+                result = self.buildroot.doChroot(args, shell=shell, printOutput=True,
                                         uid=self.buildroot.chrootuid, gid=self.buildroot.chrootgid,
                                         user=self.buildroot.chrootuser, cwd=options.cwd,
-                                        nspawn_args=self._get_nspawn_args(),
+                                        nspawn_args=self._get_nspawn_args(), raiseExc=False,
                                         unshare_net=self.private_network)
             else:
-                self.buildroot.doChroot(args, shell=shell, cwd=options.cwd,
+                result = self.buildroot.doChroot(args, shell=shell, cwd=options.cwd,
                                         nspawn_args=self._get_nspawn_args(),
                                         unshare_net=self.private_network,
-                                        printOutput=True)
+                                        printOutput=True, raiseExc=False)
         finally:
             self.state.finish(chrootstate)
         self.plugins.call_hooks("postchroot")
         # intentionally we do not call bootstrap hook here - it does not have sense
+        return result
 
     @traceLog()
     def chain(self, args, options, buildroot):

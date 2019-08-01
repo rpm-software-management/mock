@@ -206,7 +206,7 @@ class Buildroot(object):
                                      env=env, *args, **kargs)
         if util.USE_NSPAWN:
             self.uid_manager.restorePrivs()
-        return result
+        return result[1]
 
     def all_chroot_packages(self):
         """package set, result of rpm -qa in the buildroot"""
