@@ -378,12 +378,12 @@ class Commands(object):
                                                  uid=self.buildroot.chrootuid, gid=self.buildroot.chrootgid,
                                                  user=self.buildroot.chrootuser, cwd=options.cwd,
                                                  nspawn_args=self._get_nspawn_args(), raiseExc=False,
-                                                 unshare_net=self.private_network)
+                                                 unshare_net=self.private_network)[1]
             else:
                 result = self.buildroot.doChroot(args, shell=shell, cwd=options.cwd,
                                                  nspawn_args=self._get_nspawn_args(),
                                                  unshare_net=self.private_network,
-                                                 printOutput=True, raiseExc=False)
+                                                 printOutput=True, raiseExc=False)[1]
         finally:
             self.state.finish(chrootstate)
         self.plugins.call_hooks("postchroot")
