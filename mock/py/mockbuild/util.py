@@ -315,6 +315,8 @@ def get_machinectl_uuid(chroot_path):
             vm_root = '='.join(vm_root.rstrip().split('=')[1:])
             if vm_root == chroot_path:
                 return m_uuid
+    # we should never get here
+    return None
 
 
 @traceLog()
