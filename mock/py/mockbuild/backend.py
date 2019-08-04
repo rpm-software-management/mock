@@ -375,15 +375,15 @@ class Commands(object):
         try:
             if options.unpriv:
                 result = self.buildroot.doChroot(args, shell=shell, printOutput=True,
-                                        uid=self.buildroot.chrootuid, gid=self.buildroot.chrootgid,
-                                        user=self.buildroot.chrootuser, cwd=options.cwd,
-                                        nspawn_args=self._get_nspawn_args(), raiseExc=False,
-                                        unshare_net=self.private_network)
+                                                 uid=self.buildroot.chrootuid, gid=self.buildroot.chrootgid,
+                                                 user=self.buildroot.chrootuser, cwd=options.cwd,
+                                                 nspawn_args=self._get_nspawn_args(), raiseExc=False,
+                                                 unshare_net=self.private_network)
             else:
                 result = self.buildroot.doChroot(args, shell=shell, cwd=options.cwd,
-                                        nspawn_args=self._get_nspawn_args(),
-                                        unshare_net=self.private_network,
-                                        printOutput=True, raiseExc=False)
+                                                 nspawn_args=self._get_nspawn_args(),
+                                                 unshare_net=self.private_network,
+                                                 printOutput=True, raiseExc=False)
         finally:
             self.state.finish(chrootstate)
         self.plugins.call_hooks("postchroot")
