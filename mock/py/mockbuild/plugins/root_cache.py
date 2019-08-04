@@ -59,16 +59,16 @@ class RootCache(object):
         plugins.add_hook("postyum", self._rootCachePostShellHook)
         self.exclude_dirs = self.root_cache_opts['exclude_dirs']
         self.exclude_tar_cmds = []
-        for dir in self.exclude_dirs:
-            self._tarExcludeOption(dir)
+        for ex_dir in self.exclude_dirs:
+            self._tarExcludeOption(ex_dir)
 
-    def _tarExcludeOption(self, dir):
+    def _tarExcludeOption(self, ex_dir):
         if self.config['tar'] == 'bsdtar':
             anchor = '^'
         else:
             anchor = ''
 
-        self.exclude_tar_cmds.append('--exclude=' + anchor + dir)
+        self.exclude_tar_cmds.append('--exclude=' + anchor + ex_dir)
 
     # =============
     # 'Private' API
