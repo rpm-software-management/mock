@@ -20,6 +20,9 @@ BuildArch:	noarch
 Requires:	distribution-gpg-keys >= 1.29
 
 Requires(post): coreutils
+%if 0%{?fedora} > 29 || 0%{?rhel} > 8
+BuildRequires: systemd-rpm-macros
+%endif
 %if 0%{?fedora} || 0%{?mageia} || 0%{?rhel} > 7
 # to detect correct default.cfg
 Requires(post):	python3-dnf
@@ -54,7 +57,9 @@ Config files which allow you to create chroots for:
 
 %install
 mkdir -p %{buildroot}%{_sysusersdir}
+%if 0%{?fedora} > 29 || 0%{?rhel} > 8
 cp -a mock.conf %{buildroot}%{_sysusersdir}
+%endif
 
 mkdir -p %{buildroot}%{_sysconfdir}/mock/eol
 cp -a etc/mock/*.cfg %{buildroot}%{_sysconfdir}/mock
@@ -76,7 +81,7 @@ fi
 
 
 %pre
-%if 0%{?fedora} || 0%{?mageia} || 0%{?rhel} > 7
+%if 0%{?fedora} > 29 || 0%{?rhel} > 8
 %sysusers_create_package mock mock.conf
 %else
 # check for existence of mock group, create it if not found
@@ -124,7 +129,9 @@ fi
 
 %files -f %{name}.cfgs
 %license COPYING
+%if 0%{?fedora} > 29 || 0%{?rhel} > 8
 %{_sysusersdir}/mock.conf
+%endif
 %dir  %{_sysconfdir}/mock
 %dir  %{_sysconfdir}/mock/eol
 %ghost %config(noreplace,missingok) %{_sysconfdir}/mock/default.cfg
