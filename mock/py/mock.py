@@ -709,8 +709,6 @@ def main():
     result = 0
     try:
         result = run_command(options, args, config_opts, commands, buildroot, state)
-    except mockbuild.exception.Error:
-        result = 1
     finally:
         buildroot.uid_manager.becomeUser(0, 0)
         buildroot.finalize()
