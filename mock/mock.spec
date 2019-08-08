@@ -14,7 +14,7 @@
 
 Summary: Builds packages inside chroots
 Name: mock
-Version: 1.4.16
+Version: 1.4.17
 Release: 1%{?dist}
 License: GPLv2+
 # Source is created by
@@ -240,6 +240,40 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 %endif
 
 %changelog
+* Thu Aug 08 2019 Miroslav Suchý <msuchy@redhat.com> 1.4.17-1
+- change of exit code during transition from mockchain to mock --chain
+- support run in Fedora Toolbox (otaylor@fishsoup.net)
+- add cheat sheet
+- Adding tool for parsing build.log (sisi.chlupova@gmail.com)
+- load secondary groups [RHBZ#1264005]
+- pass --allowerasing by default to DNF [GH#251]
+- make include() functional for --chain [GH#263]
+- Removing buildstderr from log - configurable via 
+  _mock_stderr_line_prefix (sisi.chlupova@gmail.com)
+- Fixup: Use rpm -qa --root instead of running rpm -qa in chroot
+  (miro@hroncok.cz)
+- DynamicBuildrequires: Detect when no new packages were installed
+  (miro@hroncok.cz)
+- Allow more loop devices (sisi.chlupova@gmail.com)
+- Fix binary locations in /bin for split-usr setups (bero@lindev.ch)
+- describe behaviour of resultdir together with --chain [GH#267]
+- repeat dynamic requires if needed [GH#276]
+- Fix compatibility with pre-4.15 RPM versions with DynamicBuildRequires
+  (i.gnatenko.brain@gmail.com)
+- Enable dynamic BuildRequires by default (i.gnatenko.brain@gmail.com)
+- bootstrap: independent network configuration (praiskup@redhat.com)
+- Update the man page about ~/.config/mock/FOO.cfg (miro@hroncok.cz)
+- explicitely convert releasever to string [GH#270]
+- grant anyone access to bind-mounted /etc/resolv.conf (praiskup@redhat.com)
+- -r FOO will try to read first ~/.mock/FOO.cfg if exists
+- enhance man page of mock about --chain
+- bash completion for --chain
+- respect use_host_resolv config even with use_nspawn (praiskup@redhat.com)
+- Fix crash on non-ascii dnf log messages (bkorren@redhat.com)
+- add deprecation warning to mockchain
+- replace mockchain with `mock --chain` command (necas.marty@gmail.com)
+- switch to python3 on el7 (msuchy@redhat.com)
+
 * Wed May 22 2019 Miroslav Suchý <msuchy@redhat.com> 1.4.16-1
 - switch to python3 on el7
 - respect use_host_resolv config even with use_nspawn (praiskup@redhat.com)
