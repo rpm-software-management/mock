@@ -3,7 +3,7 @@
 . ${TESTDIR}/functions
 
 header "test mockchain success"
-runcmd "$MOCKCHAIN --offline -c ${TESTDIR}/test-C-1.1-0.src.rpm ${TESTDIR}/test-B-1.1-0.src.rpm ${TESTDIR}/test-A-1.1-0.src.rpm"
+runcmd "$MOCKCHAIN -c ${TESTDIR}/test-C-1.1-0.src.rpm ${TESTDIR}/test-B-1.1-0.src.rpm ${TESTDIR}/test-A-1.1-0.src.rpm"
 res=$?
 
 if [ $res -ne 0 ]; then
