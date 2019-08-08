@@ -2,7 +2,7 @@
 %global mockgid 135
 
 Name:		mock-core-configs
-Version:	30.4
+Version:	30.5
 Release:	1%{?dist}
 Summary:	Mock core config files basic chroots
 
@@ -137,6 +137,18 @@ fi
 %ghost %config(noreplace,missingok) %{_sysconfdir}/mock/default.cfg
 
 %changelog
+* Thu Aug 08 2019 Miroslav Suchý <msuchy@redhat.com> 30.5-1
+- disable updates-modulare repos for now
+- buildrequire systemd-srpm-macros to get _sysusersdir
+- removed info about metadata expire (khoidinhtrinh@gmail.com)
+- added updates-modular to 29 and 30 (khoidinhtrinh@gmail.com)
+- replace groupadd using sysusers.d
+- core-configs: epel-7 profiles to use mirrorlists (praiskup@redhat.com)
+- EOL Fedora 28
+- do not protect packages in chroot [GH#286]
+- Fix value for dist for OpenMandriva 4.0 configs (ngompa13@gmail.com)
+- Add initial OpenMandriva distribution targets (ngompa13@gmail.com)
+
 * Thu Jun 06 2019 Miroslav Suchý <msuchy@redhat.com> 30.4-1
 - Add 'fastestmirror=1' to Mageia mock configs (ngompa13@gmail.com)
 - bootstrap: disable sclo* repos for epel --installroot (praiskup@redhat.com)
