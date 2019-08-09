@@ -1,0 +1,6 @@
+addFilter(r'macro-in-comment %{name}')
+addFilter(r'macro-in-comment %{version}')
+addFilter(r'specfile-error warning: Macro expanded in comment on line [0-9]*: %{name}-%{version}')
+
+# SPELLING ERRORS
+addFilter(r'spelling-error .* en_US (chroots|Config|chroot) ')
