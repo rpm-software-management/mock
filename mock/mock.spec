@@ -78,6 +78,7 @@ Requires: dnf-plugins-core
 Recommends: btrfs-progs
 Recommends: dnf-utils
 Suggests: qemu-user-static
+Suggests: procenv
 %else
 %if 0%{?rhel} == 7
 Requires: btrfs-progs
