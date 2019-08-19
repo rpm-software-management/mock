@@ -1,3 +1,6 @@
+# Single python3 version in Fedora, python3_pkgversion macro not available
+%{!?python3_pkgversion:%global python3_pkgversion 3}
+
 # mock group id allocate for Fedora
 %global mockgid 135
 
@@ -23,18 +26,21 @@ Requires(post): coreutils
 %if 0%{?fedora} > 29 || 0%{?rhel} > 8
 BuildRequires:  systemd-rpm-macros
 %endif
-%if 0%{?fedora} || 0%{?mageia} || 0%{?rhel} > 7
 # to detect correct default.cfg
-Requires(post): python3-dnf
-Requires(post): python3-hawkey
+%if 0%{?fedora} || 0%{?mageia} || 0%{?rhel} > 7
+Requires(post): python%{python3_pkgversion}-dnf
+Requires(post): python%{python3_pkgversion}-hawkey
+Requires(post): python%{python3_pkgversion}
+%else
+Requires(post): python2-dnf
+Requires(post): python2-hawkey
+Requires(post): python2
+%endif # rhel > 7 || fedora
 Requires(post): system-release
-Requires(post): python3
 Requires(post): sed
-%endif
 %if 0%{?rhel} && 0%{?rhel} <= 7
 Requires(pre):  shadow-utils
 # to detect correct default.cfg
-Requires(post): python
 Requires(post): yum
 Requires(post): /etc/os-release
 %endif
@@ -110,10 +116,10 @@ fi
 if [ -s /etc/mageia-release ]; then
     mock_arch=$(sed -n '/^$/!{$ s/.* \(\w*\)$/\1/p}' /etc/mageia-release)
 else
-    mock_arch=$(python3 -c "import dnf.rpm; import hawkey; print(dnf.rpm.basearch(hawkey.detect_arch()))")
+    mock_arch=$(%{__python3} -c "import dnf.rpm; import hawkey; print(dnf.rpm.basearch(hawkey.detect_arch()))")
 fi
 %else
-mock_arch=$(python -c "import rpmUtils.arch; baseArch = rpmUtils.arch.getBaseArch(); print baseArch")
+mock_arch=$(%{__python2} -c "import dnf.rpm; import hawkey; print(dnf.rpm.basearch(hawkey.detect_arch()))")
 %endif
 cfg=%{?fedora:fedora}%{?rhel:epel}%{?mageia:mageia}-$ver-${mock_arch}.cfg
 if [ -e %{_sysconfdir}/mock/$cfg ]; then
@@ -238,5 +244,3 @@ fi
 
 * Thu Sep 07 2017 Miroslav Suchý <msuchy@redhat.com> 27.1-1
 - Split from Mock package.
-
-
