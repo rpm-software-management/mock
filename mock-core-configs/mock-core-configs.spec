@@ -20,9 +20,6 @@ BuildArch:  noarch
 Requires:   distribution-gpg-keys >= 1.29
 
 Requires(post): coreutils
-%if 0%{?fedora} > 29 || 0%{?rhel} > 8
-BuildRequires:  systemd-rpm-macros
-%endif
 %if 0%{?fedora} || 0%{?mageia} || 0%{?rhel} > 7
 # to detect correct default.cfg
 Requires(post): python3-dnf
@@ -31,8 +28,8 @@ Requires(post): system-release
 Requires(post): python3
 Requires(post): sed
 %endif
-%if 0%{?rhel} && 0%{?rhel} <= 7
 Requires(pre):  shadow-utils
+%if 0%{?rhel} && 0%{?rhel} <= 7
 # to detect correct default.cfg
 Requires(post): python
 Requires(post): yum
@@ -81,13 +78,9 @@ fi
 
 
 %pre
-%if 0%{?fedora} > 29 || 0%{?rhel} > 8
-%sysusers_create_package mock mock.conf
-%else
 # check for existence of mock group, create it if not found
 getent group mock > /dev/null || groupadd -f -g %mockgid -r mock
 exit 0
-%endif
 
 %post
 if [ -s /etc/os-release ]; then
@@ -129,9 +122,6 @@ fi
 
 %files -f %{name}.cfgs
 %license COPYING
-%if 0%{?fedora} > 29 || 0%{?rhel} > 8
-%{_sysusersdir}/mock.conf
-%endif
 %dir  %{_sysconfdir}/mock
 %dir  %{_sysconfdir}/mock/eol
 %ghost %config(noreplace,missingok) %{_sysconfdir}/mock/default.cfg
