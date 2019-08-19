@@ -2,7 +2,7 @@
 %global mockgid 135
 
 Name:       mock-core-configs
-Version:    30.5
+Version:    31.1
 Release:    1%{?dist}
 Summary:    Mock core config files basic chroots
 
@@ -137,6 +137,14 @@ fi
 %ghost %config(noreplace,missingok) %{_sysconfdir}/mock/default.cfg
 
 %changelog
+* Mon Aug 19 2019 Miroslav Suchý <msuchy@redhat.com> 31.1-1
+- add fedora 31 configs and rawhide is now 32
+- Add local-source repo definition to Fedora Rawhide (miro@hroncok.cz)
+
+* Mon Aug 19 2019 Miroslav Suchý <msuchy@redhat.com>
+- add fedora 31 configs and rawhide is now 32
+- Add local-source repo definition to Fedora Rawhide (miro@hroncok.cz)
+
 * Thu Aug 08 2019 Miroslav Suchý <msuchy@redhat.com> 30.5-1
 - disable updates-modulare repos for now
 - buildrequire systemd-srpm-macros to get _sysusersdir
