@@ -60,11 +60,12 @@ cp -a mock.conf %{buildroot}%{_sysusersdir}
 
 mkdir -p %{buildroot}%{_sysconfdir}/mock/eol
 cp -a etc/mock/*.cfg %{buildroot}%{_sysconfdir}/mock
+cp -a etc/mock/*.tpl %{buildroot}%{_sysconfdir}/mock
 cp -a etc/mock/eol/*cfg %{buildroot}%{_sysconfdir}/mock/eol
 
 # generate files section with config - there is many of them
 echo "%defattr(0644, root, mock)" > %{name}.cfgs
-find %{buildroot}%{_sysconfdir}/mock -name "*.cfg" \
+find %{buildroot}%{_sysconfdir}/mock -name "*.cfg" -o -name '*.tpl' \
     | sed -e "s|^%{buildroot}|%%config(noreplace) |" >> %{name}.cfgs
 # just for %%ghosting purposes
 ln -s fedora-rawhide-x86_64.cfg %{buildroot}%{_sysconfdir}/mock/default.cfg
