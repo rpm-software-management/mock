@@ -61,6 +61,7 @@ import time
 # pylint: disable=import-error
 from six.moves import configparser
 from mockbuild import util
+from mockbuild.mounts import BindMountPoint
 from functools import partial
 
 # all of the variables below are substituted by the build system
@@ -614,6 +615,9 @@ def main():
     # cmdline options override config options
     util.set_config_opts_per_cmdline(config_opts, options, args)
 
+    # setup 'redhat_subscription_key_id' option before enabling jinja
+    util.subscription_redhat_init(config_opts)
+
     # Now when all options are correctly loaded from config files and program
     # options, turn the jinja templating ON.
     config_opts['__jinja_expand'] = True
@@ -684,6 +688,12 @@ def main():
             if "bootstrap_" + k in bootstrap_buildroot.config:
                 bootstrap_buildroot.config[k] = bootstrap_buildroot_config["bootstrap_" + k]
                 del bootstrap_buildroot.config["bootstrap_" + k]
+
+        if config_opts['redhat_subscription_required']:
+            key_dir = '/etc/pki/entitlement'
+            chroot_dir = bootstrap_buildroot.make_chroot_path(key_dir)
+            mount_point = BindMountPoint(srcpath=key_dir, bindpath=chroot_dir)
+            bootstrap_buildroot.mounts.add(mount_point)
 
     # this changes config_opts['nspawn_args'], so do it after initializing
     # bootstrap chroot to not inherit the changes there

@@ -956,6 +956,8 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
     config_opts['backup_on_clean'] = False
     config_opts['backup_base_dir'] = os.path.join(config_opts['basedir'], "backup")
 
+    config_opts['redhat_subscription_required'] = False
+
     # (global) plugins and plugin configs.
     # ordering constraings: tmpfs must be first.
     #    root_cache next.
@@ -1610,3 +1612,35 @@ best=1
 """.format(repoid=repoid, baseurl=baseurl)
 
     config_opts['yum.conf'] += localyumrepo
+
+
+def subscription_redhat_init(opts):
+    if not opts['redhat_subscription_required']:
+        return
+
+    if 'redhat_subscription_key_id' in opts:
+        return
+
+    if not os.path.isdir('/etc/pki/entitlement'):
+        raise exception.ConfigError("/etc/pki/entitlment is not a directory, "
+                                    "is subscription-manager installed?")
+
+    keys = glob("/etc/pki/entitlement/*-key.pem")
+    if not keys:
+        raise exception.ConfigError(
+            "No key found in /etc/pki/entitlement directory.  It means "
+            "this machine is not subscribed.  Please use \n"
+            "  1. subscription-manager register\n"
+            "  2. subscription-manager list --all --available "
+            "(available pool IDs)\n"
+            "  3. subscription-manager attach --pool <POOL_ID>\n"
+            "If you don't have Red Hat subscription yet, consider "
+            "getting subscription:\n"
+            "  https://access.redhat.com/solutions/253273\n"
+            "You can have a free developer subscription:\n"
+            "  https://developers.redhat.com/faq/"
+        )
+
+    # Use the first available key.
+    key_file_name = os.path.basename(keys[0])
+    opts['redhat_subscription_key_id'] = key_file_name.split('-')[0]
