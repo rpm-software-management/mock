@@ -125,7 +125,9 @@ class TemplatedDictionary(MutableMapping):
     def __setitem__(self, key, value):
         self.__dict__[key] = value
     def __getitem__(self, key):
-        return self.__render_value(self.__dict__[key])
+        if '__jinja_expand' in self.__dict__:
+            return self.__render_value(self.__dict__[key])
+        return self.__dict__[key]
     def __delitem__(self, key):
         del self.__dict__[key]
     def __iter__(self):

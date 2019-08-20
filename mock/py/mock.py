@@ -614,6 +614,10 @@ def main():
     # cmdline options override config options
     util.set_config_opts_per_cmdline(config_opts, options, args)
 
+    # Now when all options are correctly loaded from config files and program
+    # options, turn the jinja templating ON.
+    config_opts['__jinja_expand'] = True
+
     # allow a different mock group to be specified
     if config_opts['chrootgid'] != mockgid:
         uidManager.restorePrivs()
