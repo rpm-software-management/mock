@@ -1123,10 +1123,11 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
     config_opts['yum_builddep_command'] = '/usr/bin/yum-builddep'
     config_opts['dnf_command'] = '/usr/bin/dnf'
     config_opts['system_dnf_command'] = '/usr/bin/dnf'
-    config_opts['dnf_install_command'] = 'install dnf dnf-plugins-core distribution-gpg-keys'
+    config_opts['dnf_install_command'] = 'install dnf dnf-plugins-core shadow-utils distribution-gpg-keys'
     config_opts['microdnf_command'] = '/usr/bin/microdnf'
     # "dnf-install" is special keyword which tells mock to use install but with DNF
-    config_opts['microdnf_install_command'] = 'dnf-install microdnf dnf dnf-plugins-core distribution-gpg-keys'
+    config_opts['microdnf_install_command'] = \
+        'dnf-install microdnf dnf dnf-plugins-core shadow-utils distribution-gpg-keys'
     config_opts['microdnf_builddep_command'] = '/usr/bin/dnf'
     config_opts['microdnf_builddep_opts'] = []
     config_opts['microdnf_common_opts'] = []
