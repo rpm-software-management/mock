@@ -27,23 +27,21 @@ Requires(post): coreutils
 BuildRequires:  systemd-rpm-macros
 %endif
 # to detect correct default.cfg
-%if 0%{?fedora} || 0%{?mageia} || 0%{?rhel} > 7
-Requires(post): python%{python3_pkgversion}-dnf
-Requires(post): python%{python3_pkgversion}-hawkey
-Requires(post): python%{python3_pkgversion}
-%else
+%if 0%{?rhel} > 0 && 0%{?rhel} <= 7
 Requires(post): python2-dnf
 Requires(post): python2-hawkey
 Requires(post): python2
-%endif # rhel > 7 || fedora
-Requires(post): system-release
-Requires(post): sed
-%if 0%{?rhel} && 0%{?rhel} <= 7
 Requires(pre):  shadow-utils
 # to detect correct default.cfg
 Requires(post): yum
 Requires(post): /etc/os-release
-%endif
+%else
+Requires(post): python%{python3_pkgversion}-dnf
+Requires(post): python%{python3_pkgversion}-hawkey
+Requires(post): python%{python3_pkgversion}
+%endif # rhel > 0 && rhel <= 7
+Requires(post): system-release
+Requires(post): sed
 
 %description
 Config files which allow you to create chroots for:
@@ -112,15 +110,17 @@ else
     # something obsure, use buildtime version
     ver=%{?rhel}%{?fedora}%{?mageia}
 fi
-%if 0%{?fedora} || 0%{?mageia} || 0%{?rhel} > 7
-if [ -s /etc/mageia-release ]; then
-    mock_arch=$(sed -n '/^$/!{$ s/.* \(\w*\)$/\1/p}' /etc/mageia-release)
-else
-    mock_arch=$(%{__python3} -c "import dnf.rpm; import hawkey; print(dnf.rpm.basearch(hawkey.detect_arch()))")
-fi
-%else
-mock_arch=$(%{__python2} -c "import dnf.rpm; import hawkey; print(dnf.rpm.basearch(hawkey.detect_arch()))")
+%if 0%{?rhel} > 0 && 0%{?rhel} <= 7
+    mock_arch=$(%{__python2} -c "import dnf.rpm; import hawkey; print(dnf.rpm.basearch(hawkey.detect_arch()))")
+Relse
+    if [ -s /etc/mageia-release ]; then
+	mock_arch=$(sed -n '/^$/!{$ s/.* \(\w*\)$/\1/p}' /etc/mageia-release)
+    else
+	mock_arch=$(%{__python3} -c "import dnf.rpm; import hawkey; print(dnf.rpm.basearch(hawkey.detect_arch()))")
+    fi
 %endif
+
+
 cfg=%{?fedora:fedora}%{?rhel:epel}%{?mageia:mageia}-$ver-${mock_arch}.cfg
 if [ -e %{_sysconfdir}/mock/$cfg ]; then
     if [ "$(readlink %{_sysconfdir}/mock/default.cfg)" != "$cfg" ]; then
@@ -130,8 +130,6 @@ else
     echo "Warning: file %{_sysconfdir}/mock/$cfg does not exist."
     echo "         unable to update %{_sysconfdir}/mock/default.cfg"
 fi
-:
-
 
 %files -f %{name}.cfgs
 %license COPYING
