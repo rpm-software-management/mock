@@ -53,11 +53,6 @@ Config files which allow you to create chroots for:
 
 
 %install
-mkdir -p %{buildroot}%{_sysusersdir}
-%if 0%{?fedora} > 29 || 0%{?rhel} > 8
-cp -a mock.conf %{buildroot}%{_sysusersdir}
-%endif
-
 mkdir -p %{buildroot}%{_sysconfdir}/mock/eol
 cp -a etc/mock/*.cfg %{buildroot}%{_sysconfdir}/mock
 cp -a etc/mock/*.tpl %{buildroot}%{_sysconfdir}/mock
