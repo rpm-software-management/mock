@@ -429,13 +429,6 @@ def unshare(flags):
     except AttributeError:
         pass
 
-    if flags & CLONE_NEWNS:
-        # Unsharing the mount namespace isn't immediately effective if the
-        # source mount propagation status is 'shared' - changes to the mounts
-        # will still propagate back to the parent namespace. Do the same
-        # thing as unshare(1) and make all mounts private.
-        do(['mount', '--make-rprivate', '/'])
-
 
 def sethostname(hostname):
     getLog().info("Setting hostname: %s", hostname)
