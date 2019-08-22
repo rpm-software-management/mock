@@ -142,22 +142,47 @@ class Mounts(object):
         self.essential_mounts = [] # /proc, /sys ... normally managed by systemd
         self.managed_mounts = []  # mounts owned by mock
         self.user_mounts = []  # mounts injected by user
-        self.essential_mounts = [
-            # Instead of mounting a fresh procfs and sysfs, we bind mount /proc
-            # and /sys. This avoids problems with kernel restrictions if running
-            # within a user namespace, and is pretty much identical otherwise.
-            # The bind mount additionally needs to be recursive, because the
-            # kernel forbids mounts that might reveal parts of the filesystem
-            # that a container runtime overmounted to hide from the container.
-            BindMountPoint(srcpath='/proc',
-                           bindpath=rootObj.make_chroot_path('/proc'),
-                           recursive=True,
-                           options="nodev,noexec,nosuid,readonly"),
-            BindMountPoint(srcpath='/sys',
-                           bindpath=rootObj.make_chroot_path('/sys'),
-                           recursive=True,
-                           options="nodev,noexec,nosuid,readonly"),
-        ]
+        self.essential_mounts = []
+
+        # Instead of mounting a fresh procfs and sysfs, we bind mount /proc
+        # and /sys. This avoids problems with kernel restrictions if running
+        # within a user namespace, and is pretty much identical otherwise.
+        # The bind mounts additionally need to be recursive, because the
+        # kernel forbids mounts that might reveal parts of the filesystem
+        # that a container runtime overmounted to hide from the container
+        # (rhbz#1745048).
+        for mount in ['proc', 'sys']:
+            mount_point = "/" + mount
+            device = 'mock_hide_{}fs_from_host'.format(mount)
+            host_path = rootObj.make_chroot_path(mount_point)
+
+            self.essential_mounts += [
+                # The recursive mount point needs to be later lazy umounted and
+                # it would affect hosts's counterpart sub-mounts as well.  To
+                # avoid this, we need to make the mount point and parent mount
+                # point private in unshare()d namespace.  But since the parent
+                # mount point of /sys and /proc so far was plain '/' mount (and
+                # we need to keep that one shared, to keep LVM/tmpfs features
+                # working) we crate a new parent mount for the final mountpoint
+                # on the same path.  So the mount graph looks like:
+                #   / (shared) -> /sys (private) -> /sys (recursive, private)
+                #
+                # Acknowledgement, IOW: We mount on host_path twice and it is
+                # expected.  This is because when you umount 'rprivate' mount
+                # then parent mount point is notified .. so first we mount tmpfs
+                # stub which we actually never use -- but is private -- and only
+                # then we mount above the actual mount point.  This prevents
+                # from umount events to propagate to host from chroot.
+                FileSystemMountPoint(filetype='tmpfs',
+                                     device=device,
+                                     path=host_path,
+                                     options="rprivate"),
+                BindMountPoint(srcpath=mount_point,
+                               bindpath=host_path,
+                               recursive=True,
+                               options="nodev,noexec,nosuid,readonly,rprivate"),
+            ]
+
         if rootObj.config['internal_dev_setup']:
             self.essential_mounts.append(
                 FileSystemMountPoint(

@@ -11,7 +11,7 @@ import stat
 import tempfile
 
 # our imports
-from mockbuild.mounts import BindMountPoint
+from mockbuild.mounts import BindMountPoint, FileSystemMountPoint
 from mockbuild.trace_decorator import getLog, traceLog
 import mockbuild.util
 
@@ -32,6 +32,7 @@ class SELinux(object):
     """On SELinux enabled box, this plugin will pretend, that SELinux is disabled in build environment.
 
        - fake /proc/filesystems is mounted into build environment, excluding selinuxfs
+       - fake /sys/fs/selinux directory mount point
        - option '--setopt=tsflags=nocontext' is appended to each 'yum' command
     """
     # pylint: disable=too-few-public-methods
@@ -51,6 +52,12 @@ class SELinux(object):
         atexit.register(self._selinuxAtExit)
 
         self.buildroot.mounts.add(BindMountPoint(srcpath=self.filesystems, bindpath=self.chrootFilesystems))
+
+        self.buildroot.mounts.add(
+            FileSystemMountPoint(filetype='tmpfs',
+                                 device='mock_hide_selinux_fs',
+                                 path=buildroot.make_chroot_path('/sys/fs/selinux'))
+        )
 
         plugins.add_hook("preyum", self._selinuxPreYumHook)
         plugins.add_hook("postyum", self._selinuxPostYumHook)
