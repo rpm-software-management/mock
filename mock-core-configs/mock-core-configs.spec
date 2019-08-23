@@ -130,6 +130,7 @@ else
     echo "Warning: file %{_sysconfdir}/mock/$cfg does not exist."
     echo "         unable to update %{_sysconfdir}/mock/default.cfg"
 fi
+:
 
 %files -f %{name}.cfgs
 %license COPYING
