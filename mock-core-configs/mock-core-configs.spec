@@ -2,7 +2,7 @@
 %global mockgid 135
 
 Name:       mock-core-configs
-Version:    31.1
+Version:    31.2
 Release:    1%{?dist}
 Summary:    Mock core config files basic chroots
 
@@ -125,6 +125,11 @@ fi
 %ghost %config(noreplace,missingok) %{_sysconfdir}/mock/default.cfg
 
 %changelog
+* Mon Aug 26 2019 Miroslav Suchý <msuchy@redhat.com> 31.2-1
+- revert sysusers setting [RHBZ#1740545]
+- add rhelepel-8 configs (praiskup@redhat.com)
+- add RHEL 7/8 (praiskup@redhat.com)
+
 * Mon Aug 19 2019 Miroslav Suchý <msuchy@redhat.com> 31.1-1
 - add fedora 31 configs and rawhide is now 32
 - Add local-source repo definition to Fedora Rawhide (miro@hroncok.cz)
