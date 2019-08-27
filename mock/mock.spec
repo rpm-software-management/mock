@@ -38,7 +38,7 @@ Requires: mock-core-configs >= 27.4
 Requires: pyliblzma
 %endif
 Requires: systemd
-%if 0%{?fedora}
+%if 0%{?fedora} || 0%{?rhel} >= 8
 Requires: systemd-container
 %endif
 Requires: coreutils
