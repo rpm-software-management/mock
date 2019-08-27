@@ -14,7 +14,7 @@
 
 Summary: Builds packages inside chroots
 Name: mock
-Version: 1.4.17
+Version: 1.4.18
 Release: 1%{?dist}
 License: GPLv2+
 # Source is created by
@@ -241,6 +241,22 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 %endif
 
 %changelog
+* Tue Aug 27 2019 Miroslav Suchý <msuchy@redhat.com> 1.4.18-1
+- use forcearch even when --forcearch is not specified
+  (turecek.dominik@gmail.com)
+- requires systemd-container on rhel8 [RHBZ#1744538]
+- mock: only make /sys and /proc mounts rprivate (praiskup@redhat.com)
+- Add Red Hat subscription-manager support (praiskup@redhat.com)
+- Turn jinja ON a bit later, once configs are loaded (praiskup@redhat.com)
+- bootstrap-chroot: always explicitly install shadow-utils
+  (praiskup@redhat.com)
+- Add procenv plugin for more detailed buildtime information
+  (riehecky@fnal.gov)
+- enable selinux plugin for nspawn [RHBZ#1740421]
+- Added signals handling by calling orphansKill for signals: SIGTERM, SIGPIPE
+  and SIGHUP (janbuchmaier@seznam.cz)
+- Mention user configuration file in a man page (jkonecny@redhat.com)
+
 * Thu Aug 08 2019 Miroslav Suchý <msuchy@redhat.com> 1.4.17-1
 - change of exit code during transition from mockchain to mock --chain
 - support run in Fedora Toolbox (otaylor@fishsoup.net)
