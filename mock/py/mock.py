@@ -504,9 +504,9 @@ def check_arch_combination(target_arch, config_opts):
         return
     host_arch = os.uname()[-1]
     if (host_arch not in legal) and not config_opts['forcearch']:
-        raise mockbuild.exception.InvalidArchitecture(
-            "Cannot build target {0} on arch {1}, because it is not listed in legal_host_arches {2}"
-            .format(target_arch, host_arch, legal))
+        log.info("Unable to build arch {0} natively on arch {1}. Setting forcearch to use software emulation."
+                 .format(target_arch, host_arch))
+        config_opts['forcearch'] = target_arch
 
 
 @traceLog()
