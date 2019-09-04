@@ -1,4 +1,4 @@
-%bcond_without tests
+%bcond_with tests
 
 %if 0%{?fedora} || 0%{?mageia} || 0%{?rhel} >= 7
 %global use_python3 1
