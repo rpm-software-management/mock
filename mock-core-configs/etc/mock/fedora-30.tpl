@@ -1,6 +1,4 @@
-config_opts['root'] = 'fedora-30-x86_64'
-config_opts['target_arch'] = 'x86_64'
-config_opts['legal_host_arches'] = ('x86_64',)
+config_opts['root'] = 'fedora-30-{{ target_arch }}'
 # config_opts['module_enable'] = ['list', 'of', 'modules']
 # config_opts['module_install'] = ['module1/profile', 'module2/profile']
 config_opts['chroot_setup_cmd'] = 'install @buildsys-build'
@@ -53,7 +51,7 @@ skip_if_unavailable=False
 
 [local]
 name=local
-baseurl=https://kojipkgs.fedoraproject.org/repos/f30-build/latest/x86_64/
+baseurl=https://kojipkgs.fedoraproject.org/repos/f30-build/latest/$basearch/
 cost=2000
 enabled=0
 skip_if_unavailable=False
