@@ -756,6 +756,8 @@ class Commands(object):
         for item in results:
             shutil.copy2(item, self.buildroot.resultdir)
             ret.append(os.path.join(self.buildroot.resultdir, os.path.split(item)[1]))
+        self.buildroot.uid_manager.changeOwner(self.buildroot.resultdir,
+                                               recursive=True)
         self.buildroot.uid_manager.restorePrivs()
         return ret
 
