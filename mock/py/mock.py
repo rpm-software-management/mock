@@ -59,10 +59,10 @@ import sys
 import time
 
 # pylint: disable=import-error
+from functools import partial
 from six.moves import configparser
 from mockbuild import util
 from mockbuild.mounts import BindMountPoint
-from functools import partial
 
 # all of the variables below are substituted by the build system
 __VERSION__ = "unreleased_version"
