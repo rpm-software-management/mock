@@ -14,7 +14,7 @@
 
 Summary: Builds packages inside chroots
 Name: mock
-Version: 1.4.18
+Version: 1.4.19
 Release: 1%{?dist}
 License: GPLv2+
 # Source is created by
@@ -241,6 +241,11 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 %endif
 
 %changelog
+* Tue Sep 10 2019 Miroslav Suchý <msuchy@redhat.com> 1.4.19-1
+- results should be owned by unpriv user [GH#322]
+- do not build with tests by default
+- Resultdir variable is missing in config. (sisi.chlupova@gmail.com)
+
 * Tue Aug 27 2019 Miroslav Suchý <msuchy@redhat.com> 1.4.18-1
 - use forcearch even when --forcearch is not specified
   (turecek.dominik@gmail.com)
