@@ -56,8 +56,9 @@ Config files which allow you to create chroots for:
 mkdir -p %{buildroot}%{_sysusersdir}
 
 mkdir -p %{buildroot}%{_sysconfdir}/mock/eol
+mkdir -p %{buildroot}%{_sysconfdir}/mock/templates
 cp -a etc/mock/*.cfg %{buildroot}%{_sysconfdir}/mock
-cp -a etc/mock/*.tpl %{buildroot}%{_sysconfdir}/mock
+cp -a etc/mock/templates/*.tpl %{buildroot}%{_sysconfdir}/mock/templates
 cp -a etc/mock/eol/*cfg %{buildroot}%{_sysconfdir}/mock/eol
 
 # generate files section with config - there is many of them
@@ -122,6 +123,7 @@ fi
 %license COPYING
 %dir  %{_sysconfdir}/mock
 %dir  %{_sysconfdir}/mock/eol
+%dir  %{_sysconfdir}/mock/templates
 %ghost %config(noreplace,missingok) %{_sysconfdir}/mock/default.cfg
 
 %changelog
