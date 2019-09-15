@@ -66,9 +66,13 @@ class Commands(object):
         self.private_network = not config['rpmbuild_networking']
 
     def _get_nspawn_args(self):
-        nspawn_args = []
-        if util.USE_NSPAWN:
-            nspawn_args.extend(self.config['nspawn_args'])
+        if not util.USE_NSPAWN:
+            return []
+
+        nspawn_args = self.config['nspawn_args']
+        nspawn_args.extend(["--bind", "/dev/loop-control"])
+        for i in range(self.config['dev_loop_count']):
+            nspawn_args.extend(["--bind", "/dev/loop{0}".format(i)])
         return nspawn_args
 
     @traceLog()
