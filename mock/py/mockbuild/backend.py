@@ -72,7 +72,10 @@ class Commands(object):
         nspawn_args = self.config['nspawn_args']
         nspawn_args.extend(["--bind", "/dev/loop-control"])
         for i in range(self.config['dev_loop_count']):
-            nspawn_args.extend(["--bind", "/dev/loop{0}".format(i)])
+            loop = "/dev/loop{0}".format(i)
+            if not os.path.exists(loop):
+                continue
+            nspawn_args.extend(["--bind", loop])
         return nspawn_args
 
     @traceLog()
