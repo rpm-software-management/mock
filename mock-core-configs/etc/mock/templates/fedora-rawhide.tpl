@@ -70,6 +70,8 @@ skip_if_unavailable=False
 [rawhide-modular]
 name=Fedora - Modular Rawhide - Developmental packages for the next Fedora release
 metalink=https://mirrors.fedoraproject.org/metalink?repo=rawhide-modular&arch=$basearch
+# if you want to enable it, you should set best=0
+# see https://bugzilla.redhat.com/show_bug.cgi?id=1673851
 enabled=0
 gpgcheck=1
 gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-fedora-$releasever-$basearch file:///usr/share/distribution-gpg-keys/fedora/RPM-GPG-KEY-fedora-32-primary file:///usr/share/distribution-gpg-keys/fedora/RPM-GPG-KEY-fedora-31-primary

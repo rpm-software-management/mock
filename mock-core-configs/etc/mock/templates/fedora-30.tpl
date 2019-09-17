@@ -101,6 +101,8 @@ skip_if_unavailable=False
 [fedora-modular]
 name=Fedora Modular $releasever - $basearch
 metalink=https://mirrors.fedoraproject.org/metalink?repo=fedora-modular-$releasever&arch=$basearch
+# if you want to enable it, you should set best=0
+# see https://bugzilla.redhat.com/show_bug.cgi?id=1673851
 enabled=0
 repo_gpgcheck=0
 type=rpm
