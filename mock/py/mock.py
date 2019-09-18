@@ -668,6 +668,9 @@ def main():
     # configure logging
     setup_logging(config_path, config_opts, options)
 
+    # see if we need to force old-chroot because systemd-nspawn can't work
+    util.check_for_nspawn_support()
+
     # verify that we're not trying to build an arch that we can't
     check_arch_combination(config_opts['rpmbuild_arch'], config_opts)
 
