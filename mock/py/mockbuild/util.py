@@ -977,6 +977,29 @@ def find_non_nfs_dir():
     raise exception.Error('Cannot find non-NFS directory in: %s' % dirs)
 
 
+def nspawn_supported():
+    """Detect some situations where the systemd-nspawn chroot code won't work"""
+    with open("/proc/1/cmdline", "rb") as f:
+        # if PID 1 has a non-0 UID, then we're running in a user namespace
+        # without a PID namespace. systemd-nspawn won't work
+        if os.fstat(f.fileno()).st_uid != 0:
+            return False
+
+        argv0 = f.read().split(b'\0')[0]
+
+        # If PID 1 is not systemd, then we're in a PID namespace, or systemd
+        # isn't running on the system: systemd-nspawn won't work.
+        return os.path.basename(argv0) == b'systemd'
+
+
+def check_for_nspawn_support():
+    global USE_NSPAWN
+
+    if USE_NSPAWN and not nspawn_supported():
+        getLog().info("systemd-nspawn not supported, disabling")
+        USE_NSPAWN = False
+
+
 @traceLog()
 def setup_default_config_opts(unprivUid, version, pkgpythondir):
     "sets up default configuration."
