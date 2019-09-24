@@ -931,6 +931,9 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
     config_opts['use_container_host_hostname'] = True
     config_opts['use_bootstrap_container'] = False
 
+    config_opts['use_bootstrap_image'] = False
+    config_opts['bootstrap_image'] = 'fedora:latest'
+
     config_opts['internal_dev_setup'] = True
 
     # cleanup_on_* only take effect for separate --resultdir

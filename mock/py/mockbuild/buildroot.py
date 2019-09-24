@@ -60,6 +60,9 @@ class Buildroot(object):
         self.env.update(proxy_env)
         os.environ.update(proxy_env)
 
+        self.use_bootstrap_image = self.config['use_bootstrap_image']
+        self.bootstrap_image = self.config['bootstrap_image']
+
         self.pkg_manager = package_manager(config, self, plugins, bootstrap_buildroot)
         self.mounts = mounts.Mounts(self)
 
@@ -250,6 +253,9 @@ class Buildroot(object):
 
     @traceLog()
     def _init_pkg_management(self):
+        if self.is_bootstrap and self.use_bootstrap_image:
+            getLog().debug("Skipping package management init in the bootstrap chroot due to using bootstrap image")
+            return
         update_state = '{0} install'.format(self.pkg_manager.name)
         self.state.start(update_state)
         if 'module_enable' in self.config and self.config['module_enable']:
