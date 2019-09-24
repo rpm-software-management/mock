@@ -2,7 +2,7 @@
 %global mockgid 135
 
 Name:       mock-core-configs
-Version:    31.3
+Version:    31.4
 Release:    1%{?dist}
 Summary:    Mock core config files basic chroots
 
@@ -127,6 +127,14 @@ fi
 %ghost %config(noreplace,missingok) %{_sysconfdir}/mock/default.cfg
 
 %changelog
+* Tue Sep 24 2019 Miroslav Suchý <msuchy@redhat.com> 31.4-1
+- provide explanation why modular repos are disabled
+- add epel-8
+- Changing cfg files for fedora rawhide to use tpl file
+  (sisi.chlupova@gmail.com)
+- Changing cfg files for fedora 31 to use tpl file (sisi.chlupova@gmail.com)
+- Changing cfg files for fedora 29 to use tpl file (sisi.chlupova@gmail.com)
+
 * Sat Sep 14 2019 Miroslav Suchý <msuchy@redhat.com> 31.3-1
 - mock-core-configs: installroot fix for fedora 31+ i386 (praiskup@redhat.com)
 - Moving templates into templates dir (sisi.chlupova@gmail.com)
