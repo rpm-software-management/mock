@@ -3,6 +3,7 @@ config_opts['dist'] = 'el8'  # only useful for --resultdir variable subst
 config_opts['releasever'] = '8'
 config_opts['package_manager'] = 'dnf'
 config_opts['extra_chroot_dirs'] = [ '/run/lock', ]
+config_opts['dnf_vars'] = { 'stream': '8-stream' }
 
 config_opts['yum.conf'] = """
 [main]
