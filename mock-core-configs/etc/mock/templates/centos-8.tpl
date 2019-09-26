@@ -32,7 +32,13 @@ name=CentOS-$releasever - AppStream
 mirrorlist=http://mirrorlist.centos.org/?release=8&arch=$basearch&repo=AppStream&infra=$infra
 #baseurl=http://mirror.centos.org/$contentdir/$releasever/AppStream/$basearch/os/
 gpgcheck=1
-enabled=1
+gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
+
+[PowerTools]
+name=CentOS-$releasever - PowerTools
+mirrorlist=http://mirrorlist.centos.org/?release=8&arch=$basearch&repo=PowerTools&infra=$infra
+#baseurl=http://mirror.centos.org/$contentdir/$releasever/PowerTools/$basearch/os/
+gpgcheck=1
 gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
 
 [centosplus]
@@ -69,14 +75,6 @@ gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Officia
 name=CentOS-$releasever - fasttrack
 mirrorlist=http://mirrorlist.centos.org/?release=8&arch=$basearch&repo=fasttrack&infra=$infra
 #baseurl=http://mirror.centos.org/$contentdir/$releasever/fasttrack/$basearch/os/
-gpgcheck=1
-enabled=0
-gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
-
-[PowerTools]
-name=CentOS-$releasever - PowerTools
-mirrorlist=http://mirrorlist.centos.org/?release=8&arch=$basearch&repo=PowerTools&infra=$infra
-#baseurl=http://mirror.centos.org/$contentdir/$releasever/PowerTools/$basearch/os/
 gpgcheck=1
 enabled=0
 gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
