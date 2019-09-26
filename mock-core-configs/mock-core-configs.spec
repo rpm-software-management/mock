@@ -2,7 +2,7 @@
 %global mockgid 135
 
 Name:       mock-core-configs
-Version:    31.4
+Version:    31.5
 Release:    1%{?dist}
 Summary:    Mock core config files basic chroots
 
@@ -127,6 +127,16 @@ fi
 %ghost %config(noreplace,missingok) %{_sysconfdir}/mock/default.cfg
 
 %changelog
+* Thu Sep 26 2019 Miroslav Suchý <msuchy@redhat.com> 31.5-1
+- expand contentdir for now
+- expand $stream for now
+- add extra_chroot_dirs to centos8
+- use dnf for centos8
+- add centos-stream-8
+- rhelepel: reuse epel-8.tpl (praiskup@redhat.com)
+- Add Amazon Linux 2 configs (haroldji@amazon.com)
+- centos-8: enable PowerTools repo (praiskup@redhat.com)
+
 * Tue Sep 24 2019 Miroslav Suchý <msuchy@redhat.com> 31.4-1
 - provide explanation why modular repos are disabled
 - add epel-8
