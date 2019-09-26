@@ -97,7 +97,7 @@ gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Officia
 
 [Stream-centosplus-source]
 name=CentOS-Stream - Plus Sources
-aseurl=http://vault.centos.org/centos/8-stream/centosplus/Source/
+baseurl=http://vault.centos.org/centos/8-stream/centosplus/Source/
 gpgcheck=1
 enabled=0
 gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
