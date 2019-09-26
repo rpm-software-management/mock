@@ -26,7 +26,7 @@ module_platform_id=platform:el8
 
 [Stream-BaseOS]
 name=CentOS-Stream - Base
-baseurl=http://mirror.centos.org/$contentdir/8-stream/BaseOS/$basearch/os/
+baseurl=http://mirror.centos.org/centos/8-stream/BaseOS/$basearch/os/
 failovermethod=priority
 gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
 gpgcheck=1
@@ -34,21 +34,21 @@ skip_if_unavailable=False
 
 [Stream-AppStream]
 name=CentOS-Stream - AppStream
-baseurl=http://mirror.centos.org/$contentdir/8-stream/AppStream/$basearch/os/
+baseurl=http://mirror.centos.org/centos/8-stream/AppStream/$basearch/os/
 gpgcheck=1
 enabled=1
 gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
 
 [Stream-centosplus]
 name=CentOS-Stream - Plus
-baseurl=http://mirror.centos.org/$contentdir/8-stream/centosplus/$basearch/os/
+baseurl=http://mirror.centos.org/centos/8-stream/centosplus/$basearch/os/
 gpgcheck=1
 enabled=0
 gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
 
 [cr]
 name=CentOS-$releasever - cr
-baseurl=http://mirror.centos.org/$contentdir/8/cr/$basearch/os/
+baseurl=http://mirror.centos.org/centos/8/cr/$basearch/os/
 gpgcheck=1
 enabled=0
 gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
@@ -62,42 +62,42 @@ gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Officia
 
 [Stream-extras]
 name=CentOS-Stream - Extras
-baseurl=http://mirror.centos.org/$contentdir/8-stream/extras/$basearch/os/
+baseurl=http://mirror.centos.org/centos/8-stream/extras/$basearch/os/
 gpgcheck=1
 enabled=1
 gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
 
 [Stream-PowerTools]
 name=CentOS-Stream - PowerTools
-baseurl=http://mirror.centos.org/$contentdir/8-stream/PowerTools/$basearch/os/
+baseurl=http://mirror.centos.org/centos/8-stream/PowerTools/$basearch/os/
 gpgcheck=1
 enabled=1
 gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
 
 [Stream-BaseOS-source]
 name=CentOS-Stream - BaseOS Sources
-baseurl=http://vault.centos.org/$contentdir/8-stream/BaseOS/Source/
+baseurl=http://vault.centos.org/centos/8-stream/BaseOS/Source/
 gpgcheck=1
 enabled=0
 gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
 
 [Stream-AppStream-source]
 name=CentOS-Stream - AppStream Sources
-baseurl=http://vault.centos.org/$contentdir/8-stream/AppStream/Source/
+baseurl=http://vault.centos.org/centos/8-stream/AppStream/Source/
 gpgcheck=1
 enabled=0
 gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
 
 [Stream-extras-source]
 name=CentOS-Stream - Extras Sources
-baseurl=http://vault.centos.org/$contentdir/8-stream/extras/Source/
+baseurl=http://vault.centos.org/centos/8-stream/extras/Source/
 gpgcheck=1
 enabled=0
 gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
 
 [Stream-centosplus-source]
 name=CentOS-Stream - Plus Sources
-aseurl=http://vault.centos.org/$contentdir/8-stream/centosplus/Source/
+aseurl=http://vault.centos.org/centos/8-stream/centosplus/Source/
 gpgcheck=1
 enabled=0
 gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
