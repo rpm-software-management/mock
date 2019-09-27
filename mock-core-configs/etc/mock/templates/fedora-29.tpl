@@ -6,6 +6,7 @@ config_opts['dist'] = 'fc29'  # only useful for --resultdir variable subst
 config_opts['extra_chroot_dirs'] = [ '/run/lock', ]
 config_opts['releasever'] = '29'
 config_opts['package_manager'] = 'dnf'
+config_opts['bootstrap_image'] = 'fedora:29'
 
 config_opts['yum.conf'] = """
 [main]

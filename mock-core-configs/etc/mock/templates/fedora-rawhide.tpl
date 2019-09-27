@@ -8,6 +8,9 @@ config_opts['releasever'] = '32'
 
 config_opts['package_manager'] = 'dnf'
 
+config_opts['bootstrap_image'] = 'fedora:rawhide'
+
+
 config_opts['yum.conf'] = """
 [main]
 keepcache=1
