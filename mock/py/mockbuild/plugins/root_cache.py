@@ -138,9 +138,14 @@ class RootCache(object):
             mockbuild.util.do(cmd, printOutput=True)
 
             # start a container and detach immediately
-            cmd = ["podman", "run", "--detach", self.buildroot.bootstrap_image, "/bin/true"]
+            cmd = ["podman", "run", "-it", "--detach", self.buildroot.bootstrap_image, "/bin/bash"]
             container_id = mockbuild.util.do(cmd, returnOutput=True)
             container_id = container_id.strip()
+
+            # make sure the image contains expected packages
+            cmd = ["podman", "exec", container_id, self.buildroot.pkg_manager.command, "-y"]
+            cmd += self.buildroot.pkg_manager.install_command.split()
+            mockbuild.util.do(cmd, printOutput=True)
 
             # export container and compress it
             getLog().info("Exporting container: %s as %s", self.buildroot.bootstrap_image, self.rootCacheFile)
@@ -154,7 +159,7 @@ class RootCache(object):
             cache_file.close()
 
             # remove the container
-            cmd = ["podman", "rm", container_id]
+            cmd = ["podman", "rm", "-f", container_id]
             mockbuild.util.do(cmd)
 
         # optimization: don't unpack root cache if chroot was not cleaned (unless we are using tmpfs)
