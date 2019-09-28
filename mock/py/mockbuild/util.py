@@ -1231,6 +1231,8 @@ def set_config_opts_per_cmdline(config_opts, options, args):
         config_opts['rpmbuild_timeout'] = options.rpmbuild_timeout
     if options.bootstrapchroot is not None:
         config_opts['use_bootstrap_container'] = options.bootstrapchroot
+    if options.usebootstrapimage is not None:
+        config_opts['use_bootstrap_image'] = options.usebootstrapimage
 
     for i in options.disabled_plugins:
         if i not in config_opts['plugins']:
