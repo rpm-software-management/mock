@@ -405,18 +405,15 @@ class Commands(object):
         # create a tempdir for our local info
         if options.localrepo:
             local_tmp_dir = os.path.abspath(options.localrepo)
-            if not os.path.exists(local_tmp_dir):
-                os.makedirs(local_tmp_dir)
-                os.chmod(local_tmp_dir, 0o755)
         else:
             pre = 'mock-chain-{0}-'.format(self.config['uniqueext'])
-            local_tmp_dir = tempfile.mkdtemp(prefix=pre, dir='/var/tmp')
-            os.chmod(local_tmp_dir, 0o755)
+            with self.uid_manager:
+                local_tmp_dir = tempfile.mkdtemp(prefix=pre, dir='/var/tmp')
 
-        self.config['local_repo_dir'] = os.path.normpath(local_tmp_dir + '/results/' + self.config['chroot_name'] + '/')
-
-        if not os.path.exists(self.config['local_repo_dir']):
-            os.makedirs(self.config['local_repo_dir'], mode=0o755)
+        with self.uid_manager:
+            self.config['local_repo_dir'] = os.path.normpath(
+                local_tmp_dir + '/results/' + self.config['chroot_name'] + '/')
+            util.mkdirIfAbsent(self.config['local_repo_dir'])
 
         local_baseurl = "file://{0}".format(self.config['local_repo_dir'])
         log.info("results dir: %s", self.config['local_repo_dir'])
@@ -425,7 +422,8 @@ class Commands(object):
         for baseurl in options.repos:
             util.add_local_repo(self.config, baseurl)
 
-        util.createrepo(self.config, self.config['local_repo_dir'])
+        with self.uid_manager:
+            util.createrepo(self.config, self.config['local_repo_dir'])
 
         download_dir = tempfile.mkdtemp()
         downloaded_pkgs = {}
@@ -506,7 +504,8 @@ class Commands(object):
                     built_pkgs.append(pkg)
                     util.touch(success_file)
                     # createrepo with the new pkgs
-                    util.createrepo(self.config, self.config['local_repo_dir'])
+                    with self.uid_manager:
+                        util.createrepo(self.config, self.config['local_repo_dir'])
                 elif build_ret_code == 2:
                     log.info("Skipping already built pkg %s", os.path.basename(pkg))
                     skipped_pkgs.append(pkg)
@@ -751,14 +750,10 @@ class Commands(object):
     @traceLog()
     def copy_build_results(self, results):
         self.buildroot.root_log.debug("Copying packages to result dir")
-        self.buildroot.uid_manager.becomeUser(0, 0)
         ret = []
         for item in results:
             shutil.copy2(item, self.buildroot.resultdir)
             ret.append(os.path.join(self.buildroot.resultdir, os.path.split(item)[1]))
-        self.buildroot.uid_manager.changeOwner(self.buildroot.resultdir,
-                                               recursive=True)
-        self.buildroot.uid_manager.restorePrivs()
         return ret
 
     @traceLog()

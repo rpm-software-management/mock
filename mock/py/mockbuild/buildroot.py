@@ -346,8 +346,6 @@ class Buildroot(object):
         self.logging_initialized = True
 
         with self.uid_manager:
-            self.uid_manager.becomeUser(0, 0)
-
             util.mkdirIfAbsent(self.resultdir)
             # attach logs to log files.
             # This happens in addition to anything that
@@ -363,7 +361,6 @@ class Buildroot(object):
                 fh.setLevel(logging.NOTSET)
                 log.addHandler(fh)
                 log.info("Mock Version: %s", self.config['version'])
-            self.uid_manager.restorePrivs()
 
     @traceLog()
     def _init_aux_files(self):
