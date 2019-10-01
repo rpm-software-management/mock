@@ -979,7 +979,7 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
             'tar': "gnutar",
             'compress_program': 'pigz',
             'decompress_program': None,
-            'exclude_dirs': ["./proc", "./sys", "./dev", "./tmp/ccache", "./var/cache/yum", "./var/cache/dnf"],
+            'exclude_dirs': ["./proc", "./sys", "./dev", "./tmp/ccache", "./var/cache/yum", "./var/cache/dnf", "./var/log"],
             'extension': '.gz'},
         'bind_mount_enable': True,
         'bind_mount_opts': {
