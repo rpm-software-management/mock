@@ -142,7 +142,7 @@ for i in py/mock.py py/mockchain.py py/mock-parse-buildlog.py; do
     perl -p -i -e 's|^PYTHONDIR\s*=.*|PYTHONDIR="%{python_sitelib}"|' $i
     perl -p -i -e 's|^PKGPYTHONDIR\s*=.*|PKGPYTHONDIR="%{python_sitelib}/mockbuild"|' $i
 done
-for i in docs/mockchain.1 docs/mock.1 docs/mock-parse-buildlog.1; do
+for i in docs/mock.1 docs/mock-parse-buildlog.1; do
     perl -p -i -e 's|\@VERSION\@|%{version}"|' $i
 done
 
@@ -166,7 +166,6 @@ cp -a etc/consolehelper/mock %{buildroot}%{_sysconfdir}/security/console.apps/%{
 
 install -d %{buildroot}%{_datadir}/bash-completion/completions/
 cp -a etc/bash_completion.d/* %{buildroot}%{_datadir}/bash-completion/completions/
-ln -s mock %{buildroot}%{_datadir}/bash-completion/completions/mockchain
 ln -s mock %{buildroot}%{_datadir}/bash-completion/completions/mock-parse-buildlog
 
 install -d %{buildroot}%{_sysconfdir}/pki/mock
@@ -176,7 +175,7 @@ install -d %{buildroot}%{python_sitelib}/
 cp -a py/mockbuild %{buildroot}%{python_sitelib}/
 
 install -d %{buildroot}%{_mandir}/man1
-cp -a docs/mockchain.1 docs/mock.1 docs/mock-parse-buildlog.1 %{buildroot}%{_mandir}/man1/
+cp -a docs/mock.1 docs/mock-parse-buildlog.1 %{buildroot}%{_mandir}/man1/
 install -d %{buildroot}%{_datadir}/cheat
 cp -a docs/mock.cheat %{buildroot}%{_datadir}/cheat/mock
 
@@ -193,7 +192,6 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 %defattr(0644, root, mock)
 %config(noreplace) %{_sysconfdir}/mock/site-defaults.cfg
 %{_datadir}/bash-completion/completions/mock
-%{_datadir}/bash-completion/completions/mockchain
 %{_datadir}/bash-completion/completions/mock-parse-buildlog
 
 %defattr(-, root, root)
@@ -220,7 +218,6 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 
 # docs
 %{_mandir}/man1/mock.1*
-%{_mandir}/man1/mockchain.1*
 %{_mandir}/man1/mock-parse-buildlog.1*
 %{_datadir}/cheat/mock
 
