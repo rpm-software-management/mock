@@ -1,4 +1,4 @@
-# bash >= 3 completion for mock(1) and mockchain(1)
+# bash >= 3 completion for mock(1)
 
 _mock_root()
 {
@@ -119,48 +119,6 @@ _mock()
 
 } &&
 complete -F _mock mock mock.py
-
-_mockchain()
-{
-    local cur prev words cword split
-    _init_completion -s || return
-
-    case "$prev" in
-        -h|--help)
-            # no further arguments are accepted after the above arguments
-            return
-            ;;
-        -a|--addrepo|--mock-option|--tmp_prefix)
-            # argument required but no completions available
-            return
-            ;;
-        -r|--root)
-            _mock_root
-            return
-            ;;
-        -l|--localrepo)
-            _filedir -d
-            return
-            ;;
-        --log)
-            _filedir
-            return
-            ;;
-    esac
-
-    $split && return
-
-    if [[ "$cur" == -* ]] ; then
-        COMPREPLY=( $( compgen -W '$( _parse_help "$1" )' -- "$cur" ) )
-        # _parse_help fails to pick up --mock-option
-        COMPREPLY+=( $( compgen -W '--mock-option=' -- "$cur" ) )
-        [[ $COMPREPLY == *= ]] && compopt -o nospace
-    else
-        _filedir '@(?(no)src.r|s)pm'
-    fi
-
-} &&
-complete -F _mockchain mockchain mockchain.py
 
 # Local variables:
 # mode: shell-script
