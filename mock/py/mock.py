@@ -675,6 +675,9 @@ def main():
         bootstrap_buildroot_config['yum_command'] = bootstrap_buildroot_config['system_yum_command']
         bootstrap_buildroot_config['dnf_command'] = bootstrap_buildroot_config['system_dnf_command']
 
+        # disable updating bootstrap chroot
+        bootstrap_buildroot_config['update_before_build'] = False
+
         bootstrap_buildroot_state = State(bootstrap=True)
         bootstrap_plugins = Plugins(bootstrap_buildroot_config, bootstrap_buildroot_state)
         bootstrap_buildroot = Buildroot(bootstrap_buildroot_config,
