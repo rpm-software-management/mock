@@ -32,7 +32,7 @@ class HwInfo(object):
     # 'Private' API
     # =============
     @traceLog()
-    def _PreInitHook(self):
+    def _unprivPreInitHook(self):
         getLog().info("enabled HW Info plugin")
         out_file = self.buildroot.resultdir + '/hw_info.log'
         out = codecs.open(out_file, 'w', 'utf-8', 'replace')
@@ -53,4 +53,8 @@ class HwInfo(object):
         out.write(output)
 
         out.close()
-        self.buildroot.uid_manager.changeOwner(out_file, gid=self.config['chrootgid'])
+
+    @traceLog()
+    def _PreInitHook(self):
+        with self.buildroot.uid_manager:
+            self._unprivPreInitHook()
