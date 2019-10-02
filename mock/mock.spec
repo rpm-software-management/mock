@@ -131,12 +131,12 @@ of the buildroot.
 
 %prep
 %setup -q
-for file in py/mock.py py/mockchain.py py/mock-parse-buildlog.py; do
+for file in py/mock.py py/mock-parse-buildlog.py; do
   sed -i 1"s|#!/usr/bin/python3 |#!%{__python} |" $file
 done
 
 %build
-for i in py/mock.py py/mockchain.py py/mock-parse-buildlog.py; do
+for i in py/mock.py py/mock-parse-buildlog.py; do
     perl -p -i -e 's|^__VERSION__\s*=.*|__VERSION__="%{version}"|' $i
     perl -p -i -e 's|^SYSCONFDIR\s*=.*|SYSCONFDIR="%{_sysconfdir}"|' $i
     perl -p -i -e 's|^PYTHONDIR\s*=.*|PYTHONDIR="%{python_sitelib}"|' $i
@@ -149,7 +149,7 @@ done
 %install
 install -d %{buildroot}%{_bindir}
 install -d %{buildroot}%{_libexecdir}/mock
-install py/mockchain.py %{buildroot}%{_bindir}/mockchain
+install mockchain %{buildroot}%{_bindir}/mockchain
 install py/mock-parse-buildlog.py %{buildroot}%{_bindir}/mock-parse-buildlog
 install py/mock.py %{buildroot}%{_libexecdir}/mock/mock
 ln -s consolehelper %{buildroot}%{_bindir}/mock

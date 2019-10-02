@@ -1,0 +1,28 @@
+#! /bin/bash
+
+mock_command=(mock --chain)
+args=()
+
+while test $# -gt 0; do
+    case $1 in
+    --mock-option)
+        shift
+        mock_command+=( "$1" )
+        ;;
+    --mock-option=*)
+        option=${1//--mock-option=}
+        mock_command+=( "$option" )
+        ;;
+    *)
+        args+=( "$1" )
+        ;;
+    esac
+    shift
+done
+
+mock_command+=( "${args[@]}" )
+
+echo >&2
+echo >&2 "## mockchain is deprecated, use mock --chain instead ##"
+echo >&2
+exec "${mock_command[@]}"
