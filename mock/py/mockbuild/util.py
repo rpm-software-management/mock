@@ -1112,6 +1112,8 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
     config_opts['extra_chroot_dirs'] = []
 
     config_opts['package_manager'] = 'yum'
+    config_opts['package_manager_max_attempts'] = 1
+    config_opts['package_manager_attempt_delay'] = 10
 
     config_opts['dynamic_buildrequires'] = True
     config_opts['dynamic_buildrequires_max_loops'] = 10

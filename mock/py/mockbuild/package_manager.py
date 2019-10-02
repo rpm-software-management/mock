@@ -6,6 +6,7 @@ import glob
 import os.path
 import shutil
 import sys
+import time
 from textwrap import dedent
 
 import distro
@@ -127,21 +128,41 @@ class _PackageManager(object):
         else:
             kwargs['pty'] = kwargs.get('pty', True)
         self.buildroot.nuke_rpm_db()
-        try:
-            if not self.support_installroot:
-                out = util.do(invocation, env=env, chrootPath=self.buildroot.make_chroot_path(), **kwargs)
-            elif self.bootstrap_buildroot is None:
-                out = util.do(invocation, env=env, **kwargs)
-            else:
-                out = util.do(invocation, env=env,
-                              chrootPath=self.bootstrap_buildroot.make_chroot_path(),
-                              nspawn_args=self.bootstrap_buildroot.config['nspawn_args'],
-                              **kwargs)
-        except Error as e:
-            raise YumError(str(e))
-        finally:
-            if pm_umount:
-                self.buildroot.mounts.umountall_essential()
+
+        error = None
+        max_attempts = int(self.config['package_manager_max_attempts'])
+        for attempt in range(max(max_attempts, 1)):
+            if error:
+                sleep_seconds = int(self.config['package_manager_attempt_delay'])
+                self.buildroot.root_log.warning(
+                    "Dnf command failed, retrying, attempt #%s, sleeping %ss",
+                    attempt + 1, sleep_seconds)
+                time.sleep(sleep_seconds)
+
+            try:
+                if not self.support_installroot:
+                    out = util.do(invocation, env=env,
+                                  chrootPath=self.buildroot.make_chroot_path(),
+                                  **kwargs)
+                elif self.bootstrap_buildroot is None:
+                    out = util.do(invocation, env=env,
+                                  **kwargs)
+                else:
+                    out = util.do(invocation, env=env,
+                                  chrootPath=self.bootstrap_buildroot.make_chroot_path(),
+                                  nspawn_args=self.bootstrap_buildroot.config['nspawn_args'],
+                                  **kwargs)
+                error = None
+                break
+            except Error as e:
+                error = YumError(str(e))
+
+        if pm_umount:
+            self.buildroot.mounts.umountall_essential()
+
+        if error is not None:
+            raise error
+
         self.plugins.call_hooks("postyum")
         # intentionally we do not call bootstrap hook here - it does not have sense
         return out
