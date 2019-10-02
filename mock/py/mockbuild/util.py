@@ -41,6 +41,8 @@ import distro
 import jinja2
 import six
 
+from mockbuild.mounts import BindMountPoint
+
 from . import exception
 from .trace_decorator import getLog, traceLog
 from .uid import getresuid, setresuid
@@ -1592,7 +1594,7 @@ def generate_repo_id(baseurl):
 
 
 @traceLog()
-def add_local_repo(config_opts, baseurl, repoid=None):
+def add_local_repo(config_opts, baseurl, repoid=None, bootstrap=None):
     if not repoid:
         repoid = generate_repo_id(baseurl)
     else:
@@ -1610,6 +1612,14 @@ best=1
 """.format(repoid=repoid, baseurl=baseurl)
 
     config_opts['yum.conf'] += localyumrepo
+
+    if bootstrap is None or not baseurl.startswith("file:///"):
+        return
+
+    local_dir = baseurl.replace("file://", "", 1)
+    mountpoint = bootstrap.make_chroot_path(local_dir)
+    bootstrap.mounts.add(BindMountPoint(srcpath=local_dir,
+                                        bindpath=mountpoint))
 
 
 def subscription_redhat_init(opts):
