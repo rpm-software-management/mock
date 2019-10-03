@@ -83,6 +83,7 @@ class Tmpfs(object):
         # on exit, so just warn if it fails here
         try:
             mockbuild.util.do(umountCmd, shell=False)
+        # pylint: disable=bare-except
         except:
             getLog().warning("tmpfs-plugin: exception while umounting tmpfs! (cwd: %s)", mockbuild.util.pretty_getcwd())
             force = True
@@ -92,6 +93,7 @@ class Tmpfs(object):
             umountCmd = ["umount", "-R", "-n", "-f", self.buildroot.make_chroot_path()]
             try:
                 mockbuild.util.do(umountCmd, shell=False)
+            # pylint: disable=bare-except
             except:
                 getLog().warning(
                     "tmpfs-plugin: exception while force umounting tmpfs! (cwd: %s)", mockbuild.util.pretty_getcwd())
