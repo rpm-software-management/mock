@@ -284,6 +284,7 @@ class Commands(object):
 
             # Check if we will have dynamic BuildRequires, but do not allow it
             hdr = next(util.yieldSrpmHeaders((rebuilt_srpm,)))
+            # pylint: disable=no-member
             requires = {util._to_text(req) for req in hdr[rpm.RPMTAG_REQUIRES]}
             dynamic_buildreqs = 'rpmlib(DynamicBuildRequires)' in requires
 
