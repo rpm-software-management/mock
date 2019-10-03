@@ -105,10 +105,12 @@ class Commands(object):
                 self.plugins.call_hooks('clean')
                 if self.bootstrap_buildroot is not None:
                     self.bootstrap_buildroot.plugins.call_hooks('clean')
+
                 for scrub in scrub_opts:
                     self.plugins.call_hooks('scrub', scrub)
                     if self.bootstrap_buildroot is not None:
                         self.bootstrap_buildroot.plugins.call_hooks('scrub', scrub)
+
                     if scrub == 'all':
                         self.buildroot.root_log.info("scrubbing everything for %s", self.config_name)
                         self.buildroot.delete()
@@ -119,34 +121,20 @@ class Commands(object):
                     elif scrub == 'chroot':
                         self.buildroot.root_log.info("scrubbing chroot for %s", self.config_name)
                         self.buildroot.delete()
-                        if self.bootstrap_buildroot is not None:
-                            self.bootstrap_buildroot.delete()
                     elif scrub == 'cache':
                         self.buildroot.root_log.info("scrubbing cache for %s", self.config_name)
                         util.rmtree(self.buildroot.cachedir, selinux=self.buildroot.selinux)
-                        if self.bootstrap_buildroot is not None:
-                            util.rmtree(self.bootstrap_buildroot.cachedir, selinux=self.bootstrap_buildroot.selinux)
                     elif scrub == 'c-cache':
                         self.buildroot.root_log.info("scrubbing c-cache for %s", self.config_name)
                         util.rmtree(os.path.join(self.buildroot.cachedir, 'ccache'), selinux=self.buildroot.selinux)
-                        if self.bootstrap_buildroot is not None:
-                            util.rmtree(os.path.join(self.bootstrap_buildroot.cachedir, 'ccache'),
-                                        selinux=self.bootstrap_buildroot.selinux)
                     elif scrub == 'root-cache':
                         self.buildroot.root_log.info("scrubbing root-cache for %s", self.config_name)
                         util.rmtree(os.path.join(self.buildroot.cachedir, 'root_cache'), selinux=self.buildroot.selinux)
-                        if self.bootstrap_buildroot is not None:
-                            util.rmtree(os.path.join(self.bootstrap_buildroot.cachedir, 'root_cache'),
-                                        selinux=self.bootstrap_buildroot.selinux)
                     elif scrub in ['yum-cache', 'dnf-cache']:
                         self.buildroot.root_log.info("scrubbing yum-cache and dnf-cache for %s", self.config_name)
                         util.rmtree(os.path.join(self.buildroot.cachedir, 'yum_cache'), selinux=self.buildroot.selinux)
                         util.rmtree(os.path.join(self.buildroot.cachedir, 'dnf_cache'), selinux=self.buildroot.selinux)
-                        if self.bootstrap_buildroot is not None:
-                            util.rmtree(os.path.join(self.bootstrap_buildroot.cachedir, 'yum_cache'),
-                                        selinux=self.bootstrap_buildroot.selinux)
-                            util.rmtree(os.path.join(self.bootstrap_buildroot.cachedir, 'dnf_cache'),
-                                        selinux=self.bootstrap_buildroot.selinux)
+
             except IOError as e:
                 getLog().warning("parts of chroot do not exist: %s", e)
                 raise
