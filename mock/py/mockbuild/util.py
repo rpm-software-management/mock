@@ -1339,6 +1339,9 @@ def check_config(config_opts):
 
 @traceLog()
 def include(config_file, config_opts, is_statement=False):
+    if not os.path.isabs(config_file):
+        config_file = os.path.join(config_opts['config_path'], config_file)
+
     if os.path.exists(config_file):
         if is_statement and config_file in config_opts['config_paths']:
             getLog().warning("Multiple inclusion of %s, skipping" % config_file)
@@ -1461,6 +1464,7 @@ def load_config(config_path, name, uidManager, version, pkg_python_dir):
     config_opts = setup_default_config_opts(gid, version, pkg_python_dir)
 
     # array to save config paths
+    config_opts['config_path'] = config_path
     config_opts['config_paths'] = []
     config_opts['chroot_name'] = name
 
