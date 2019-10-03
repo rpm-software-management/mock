@@ -651,6 +651,10 @@ def main():
     state = State()
     plugins = Plugins(config_opts, state)
 
+    # When scrubbing all, we also want to scrub a bootstrap chroot
+    if options.scrub:
+        config_opts['use_bootstrap_container'] = True
+
     # outer buildroot to bootstrap the installation - based on main config with some differences
     bootstrap_buildroot = None
     if config_opts['use_bootstrap_container']:
