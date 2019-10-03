@@ -154,12 +154,14 @@ class scmWorker(object):
 
         # Add passed RPM macros before parsing spec file
         for macro, expression in list(self.macros.items()):
+            # pylint: disable=no-member
             rpm.addMacro(macro.lstrip('%'), expression)
 
         # Dig out some basic information from the spec file
         self.sources = []
         ts = rpm.ts()
         # Spec might %include its sources
+        # pylint: disable=no-member
         rpm.addMacro("_sourcedir", self.src_dir)
         rpm_spec = ts.parseSpec(self.spec)
         self.name = rpm.expandMacro("%{name}")
