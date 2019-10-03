@@ -635,7 +635,6 @@ def main():
         config_path = options.configdir
 
     config_opts = util.load_config(config_path, options.chroot, uidManager, __VERSION__, PKGPYTHONDIR)
-    config_opts['config_path'] = config_path
 
     # cmdline options override config options
     util.set_config_opts_per_cmdline(config_opts, options, args)
