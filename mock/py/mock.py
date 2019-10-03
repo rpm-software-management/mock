@@ -413,7 +413,7 @@ def command_parse():
 
 def handle_signals(buildroot, number, frame):
 
-    log.info("\nReceived signal {} activating orphansKill".format(signal_names[number]))
+    log.info("\nReceived signal %s activating orphansKill", signal_names[number])
     util.orphansKill(buildroot.make_chroot_path())
     sys.exit(128 + number)
 
@@ -510,8 +510,8 @@ def check_arch_combination(target_arch, config_opts):
         return
     host_arch = os.uname()[-1]
     if (host_arch not in legal) and not config_opts['forcearch']:
-        log.info("Unable to build arch {0} natively on arch {1}. Setting forcearch to use software emulation."
-                 .format(target_arch, host_arch))
+        log.info("Unable to build arch %s natively on arch %s. Setting forcearch to use software emulation.",
+                 target_arch, host_arch)
         config_opts['forcearch'] = target_arch
 
 
