@@ -187,14 +187,14 @@ class RootCache(object):
                     mockbuild.util.mkdirIfAbsent(self.buildroot.make_chroot_path(item))
 
                 if self.buildroot.is_bootstrap and self.buildroot.use_bootstrap_image:
-                     # The bootstrap image frequently lacks distribution-gpg-keys.
-                     # Copy the files from the host to avoid invoking package manager
-                     # or rebuilding the cached bootstrap chroot.
-                     keys_path = "/usr/share/distribution-gpg-keys"
-                     dest_path = os.path.dirname(keys_path)
-                     getLog().debug("Copying %s to the bootstrap chroot" % keys_path)
-                     cmd = ["cp", "-a", keys_path, self.buildroot.make_chroot_path(dest_path)]
-                     mockbuild.util.do(cmd)
+                    # The bootstrap image frequently lacks distribution-gpg-keys.
+                    # Copy the files from the host to avoid invoking package manager
+                    # or rebuilding the cached bootstrap chroot.
+                    keys_path = "/usr/share/distribution-gpg-keys"
+                    dest_path = os.path.dirname(keys_path)
+                    getLog().debug("Copying %s to the bootstrap chroot" % keys_path)
+                    cmd = ["cp", "-a", keys_path, self.buildroot.make_chroot_path(dest_path)]
+                    mockbuild.util.do(cmd)
 
                 self._rootCacheUnlock()
                 self.buildroot.chrootWasCached = True
