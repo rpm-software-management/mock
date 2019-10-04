@@ -2,7 +2,7 @@
 %global mockgid 135
 
 Name:       mock-core-configs
-Version:    31.5
+Version:    31.6
 Release:    1%{?dist}
 Summary:    Mock core config files basic chroots
 
@@ -127,6 +127,11 @@ fi
 %ghost %config(noreplace,missingok) %{_sysconfdir}/mock/default.cfg
 
 %changelog
+* Fri Oct 04 2019 Miroslav Suchý <msuchy@redhat.com> 31.6-1
+- disable modular repo for f29
+- configure podman containers for Fedora, EPEL and Mageia (frostyx@email.cz)
+- Fix baseurl typo in centos-stream config (dollierp@redhat.com)
+
 * Thu Sep 26 2019 Miroslav Suchý <msuchy@redhat.com> 31.5-1
 - expand contentdir for now
 - expand $stream for now
