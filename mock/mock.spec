@@ -14,7 +14,7 @@
 
 Summary: Builds packages inside chroots
 Name: mock
-Version: 1.4.19
+Version: 1.4.20
 Release: 1%{?dist}
 License: GPLv2+
 # Source is created by
@@ -239,6 +239,20 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 %endif
 
 %changelog
+* Fri Oct 04 2019 Miroslav Suchý <msuchy@redhat.com> 1.4.20-1
+- /bin/mockchain wrapper around 'mock --chain' (praiskup@redhat.com)
+- mock: options for retrying packager managers' actions (praiskup@redhat.com)
+- remove mockchain [RHBZ#1757388]
+- chain: don't skip local repository (praiskup@redhat.com)
+- chain: propagate local repository to bootstrap chroot (praiskup@redhat.com)
+- hw_info: don't create root-owned files (praiskup@redhat.com)
+- ignore ./var/log when creating root_cache - fixes #309
+  (jiri.novak@ghorland.net)
+- mock: don't create root files if possible (praiskup@redhat.com)
+- add commandline options for using bootstrap image (frostyx@email.cz)
+- Use podman to pull and export an image as a bootstrap chroot
+  (dmach@redhat.com)
+
 * Tue Sep 10 2019 Miroslav Suchý <msuchy@redhat.com> 1.4.19-1
 - results should be owned by unpriv user [GH#322]
 - do not build with tests by default
