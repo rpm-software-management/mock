@@ -20,7 +20,7 @@ License: GPLv2+
 # Source is created by
 # git clone https://github.com/rpm-software-management/mock.git
 # cd mock
-# git reset --hard %{name}-%{version}
+# git reset --hard %%{name}-%%{version}
 # tito build --tgz
 Source: %{name}-%{version}.tar.gz
 URL: https://github.com/rpm-software-management/mock/
