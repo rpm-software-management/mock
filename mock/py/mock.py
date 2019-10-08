@@ -752,11 +752,9 @@ def main():
     try:
         result = run_command(options, args, config_opts, commands, buildroot, state)
     finally:
-        buildroot.uid_manager.becomeUser(0, 0)
         buildroot.finalize()
         if bootstrap_buildroot is not None:
             bootstrap_buildroot.finalize()
-        buildroot.uid_manager.restorePrivs()
     return result
 
 
