@@ -1655,3 +1655,8 @@ def subscription_redhat_init(opts):
     # Use the first available key.
     key_file_name = os.path.basename(keys[0])
     opts['redhat_subscription_key_id'] = key_file_name.split('-')[0]
+
+
+def is_host_rh_family():
+    distro_name = distro.linux_distribution(full_distribution_name=False)[0]
+    return distro_name in RHEL_CLONES + ['fedora']

@@ -503,7 +503,7 @@ def setup_uid_manager(mockgid):
 
 
 @traceLog()
-def check_arch_combination(target_arch, config_opts):
+def check_arch_combination(target_arch, config_opts, log):
     try:
         legal = config_opts['legal_host_arches']
     except KeyError:
@@ -514,6 +514,19 @@ def check_arch_combination(target_arch, config_opts):
                  target_arch, host_arch)
         config_opts['forcearch'] = target_arch
 
+    if config_opts['forcearch']:
+        binary = '/usr/bin/qemu-x86_64-static'
+        if not os.path.exists(binary):
+            # qemu-user-static is required, but seems to be missing
+            if util.is_host_rh_family():
+                # fail asap on RH systems
+                raise RuntimeError('the --forcearch feature requires the '
+                                   'qemu-user-static.rpm package to be installed')
+            # on other systems we are not sure where the qemu-user-static
+            # binaries are installed.  Notify the user verbosely, but do our
+            # best and continue!
+            log.warning("missing %s mock will likely fail ...", binary)
+            time.sleep(5)
 
 @traceLog()
 def do_debugconfig(config_opts):
@@ -641,7 +654,7 @@ def main():
     setup_logging(config_path, config_opts, options)
 
     # verify that we're not trying to build an arch that we can't
-    check_arch_combination(config_opts['rpmbuild_arch'], config_opts)
+    check_arch_combination(config_opts['rpmbuild_arch'], config_opts, log)
 
     # security cleanup (don't need/want this in the chroot)
     if 'SSH_AUTH_SOCK' in os.environ:
