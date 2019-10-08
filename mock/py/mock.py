@@ -726,6 +726,10 @@ def main():
     signal.signal(signal.SIGPIPE, partial(handle_signals, buildroot))
     signal.signal(signal.SIGHUP, partial(handle_signals, buildroot))
 
+    # postprocess option arguments for bootstrap
+    if options.mode in ['installdeps', 'install']:
+        args = [buildroot.file_on_cmdline(arg) for arg in args]
+
     log.info("Signal handler active")
     commands = Commands(config_opts, uidManager, plugins, state, buildroot, bootstrap_buildroot)
 

@@ -216,6 +216,7 @@ class Commands(object):
     def installSpecDeps(self, spec_file):
         try:
             # pylint: disable=no-member
+            spec_file = util.host_file(spec_file)
             spec = rpm.spec(spec_file).sourceHeader.dsFromHeader()
             self.uid_manager.becomeUser(0, 0)
             for i in range(len(spec)): # pylint: disable=consider-using-enumerate

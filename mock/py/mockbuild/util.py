@@ -355,6 +355,7 @@ def yieldSrpmHeaders(srpms, plainRpmOk=0):
     flags = (rpm._RPMVSF_NOSIGNATURES | rpm._RPMVSF_NODIGESTS)
     ts.setVSFlags(flags)
     for srpm in srpms:
+        srpm = host_file(srpm)
         try:
             fd = os.open(srpm, os.O_RDONLY)
         except OSError as e:
@@ -776,6 +777,24 @@ class ChildPreExec(object):
             condChdir(self.cwd)
         condUnshareIPC(self.unshare_ipc)
         reset_sigpipe()
+
+
+class BindMountedFile(str):
+    'see host_file() doc'
+    def __new__(cls, value, on_host=None):
+        the_string = str.__new__(cls, value)
+        the_string.on_host = on_host if on_host else value
+        return the_string
+
+
+def host_file(file):
+    """
+    Some functions accept arguments which may be either str() or
+    BindMountedFile();  we use this helper to work with those transparently.
+    TODO: all the code parts which need this should be fixed so they
+    are executed _inside_ bootstrap chroot, not on host.
+    """
+    return file.on_host if hasattr(file, 'on_host') else file
 
 
 def reset_sigpipe():
