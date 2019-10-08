@@ -489,11 +489,9 @@ class Commands(object):
                     except Error:
                         build_ret_code = 1
                     finally:
-                        buildroot.uid_manager.becomeUser(0, 0)
                         buildroot.finalize()
                         if buildroot.bootstrap_buildroot is not None:
                             buildroot.bootstrap_buildroot.finalize()
-                            buildroot.uid_manager.restorePrivs()
                 except (RootError,) as e:
                     log.warning(e.msg)
                     failed.append(pkg)
