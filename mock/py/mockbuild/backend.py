@@ -297,13 +297,17 @@ class Commands(object):
             buildsetup_finished = True
 
             rpmbuildstate = "rpmbuild %s" % baserpm
-            self.state.start(rpmbuildstate)
 
             # tell caching we are building
             self.plugins.call_hooks('prebuild')
             # intentionally we do not call bootstrap hook here - it does not have sense
 
-            results = self.rebuild_package(spec_path, timeout, check, dynamic_buildreqs)
+            try:
+                self.state.start(rpmbuildstate)
+                results = self.rebuild_package(spec_path, timeout, check, dynamic_buildreqs)
+            finally:
+                self.state.finish(rpmbuildstate)
+
             # In the nspawn case, we retained root until here, but we
             # need to ensure our output files are owned by the caller's uid.
             # So drop them now.
@@ -318,7 +322,6 @@ class Commands(object):
                 raise PkgError('No build results found')
             self.state.result = 'success'
 
-            self.state.finish(rpmbuildstate)
         finally:
             if not buildsetup_finished:
                 self.state.finish(buildsetup)
