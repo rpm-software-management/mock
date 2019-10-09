@@ -53,7 +53,8 @@ class SELinux(object):
 
         self.buildroot.mounts.add(BindMountPoint(srcpath=self.filesystems, bindpath=self.chrootFilesystems))
 
-        self.buildroot.mounts.add(
+        self.buildroot.mounts.essential_mounts.append(
+            # essential mounts since we _always_ need to hide it
             FileSystemMountPoint(filetype='tmpfs',
                                  device='mock_hide_selinux_fs',
                                  path=buildroot.make_chroot_path('/sys/fs/selinux'))
