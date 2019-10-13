@@ -134,6 +134,10 @@ class Commands(object):
                         self.buildroot.root_log.info("scrubbing yum-cache and dnf-cache for %s", self.config_name)
                         util.rmtree(os.path.join(self.buildroot.cachedir, 'yum_cache'), selinux=self.buildroot.selinux)
                         util.rmtree(os.path.join(self.buildroot.cachedir, 'dnf_cache'), selinux=self.buildroot.selinux)
+                    elif scrub == 'bootstrap' and self.bootstrap_buildroot is not None:
+                        self.buildroot.root_log.info("scrubbing bootstrap for %s", self.config_name)
+                        self.bootstrap_buildroot.delete()
+                        util.rmtree(self.bootstrap_buildroot.cachedir, selinux=self.bootstrap_buildroot.selinux)
 
             except IOError as e:
                 getLog().warning("parts of chroot do not exist: %s", e)
