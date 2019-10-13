@@ -147,7 +147,7 @@ def command_parse():
                       dest="mode",
                       help="completely remove the specified chroot")
     scrub_choices = ('chroot', 'cache', 'root-cache', 'c-cache', 'yum-cache',
-                     'dnf-cache', 'lvm', 'overlayfs', 'all')
+                     'dnf-cache', 'lvm', 'overlayfs', 'bootstrap', 'all')
     scrub_metavar = "[all|chroot|cache|root-cache|c-cache|yum-cache|dnf-cache]"
     parser.add_option("--scrub", action="callback", type="choice", default=[],
                       choices=scrub_choices, metavar=scrub_metavar,
