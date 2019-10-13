@@ -1036,6 +1036,11 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
         'procenv_enable': False,
         'procenv_opts': {
         },
+        'compress_logs_enable': False,
+        'compress_logs_opts': {
+            'command': 'gzip',
+        },
+
     }
 
     config_opts['environment'] = {
