@@ -212,7 +212,8 @@ def command_parse():
                                         "mounted from separate device (LVM/overlayfs)")
     # chain
     parser.add_option('--localrepo', default=None,
-                      help="local path for the local repo, defaults to making its own")
+                      help=("local path for the local repo, defaults to making "
+                            "its own (--chain mode only)"))
     parser.add_option('-c', '--continue', default=False, action='store_true',
                       dest='cont',
                       help="if a pkg fails to build, continue to the next one")
@@ -403,6 +404,11 @@ def command_parse():
         if not options.scm:
             raise mockbuild.exception.BadCmdline("Must specify both --spec and "
                                                  "--sources with --buildsrpm")
+
+    if options.localrepo and options.mode != 'chain':
+        raise mockbuild.exception.BadCmdline(
+            "The --localrepo option works only with --chain")
+
     if options.spec:
         options.spec = os.path.expanduser(options.spec)
     if options.sources:
