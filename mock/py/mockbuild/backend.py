@@ -497,24 +497,25 @@ class Commands(object):
                     log.warning(e.msg)
                     failed.append(pkg)
                 log.info("End chain build: %s", pkg)
-                if build_ret_code == 1:
-                    failed.append(pkg)
-                    log.info("Error building %s.", os.path.basename(pkg))
-                    if options.recurse:
-                        log.info("Will try to build again (if some other package will succeed).")
-                    else:
-                        log.info("See logs/results in %s", self.config['local_repo_dir'])
-                        util.touch(os.path.join(resultdir, 'fail'))
-                elif build_ret_code == 0:
-                    log.info("Success building %s", os.path.basename(pkg))
-                    built_pkgs.append(pkg)
-                    util.touch(success_file)
-                    # createrepo with the new pkgs
-                    with self.uid_manager:
+
+                with self.uid_manager:
+                    if build_ret_code == 1:
+                        failed.append(pkg)
+                        log.info("Error building %s.", os.path.basename(pkg))
+                        if options.recurse:
+                            log.info("Will try to build again (if some other package will succeed).")
+                        else:
+                            log.info("See logs/results in %s", self.config['local_repo_dir'])
+                            util.touch(os.path.join(resultdir, 'fail'))
+                    elif build_ret_code == 0:
+                        log.info("Success building %s", os.path.basename(pkg))
+                        built_pkgs.append(pkg)
+                        util.touch(success_file)
+                        # createrepo with the new pkgs
                         util.createrepo(self.config, self.config['local_repo_dir'])
-                elif build_ret_code == 2:
-                    log.info("Skipping already built pkg %s", os.path.basename(pkg))
-                    skipped_pkgs.append(pkg)
+                    elif build_ret_code == 2:
+                        log.info("Skipping already built pkg %s", os.path.basename(pkg))
+                        skipped_pkgs.append(pkg)
 
             if failed and options.recurse:
                 if len(failed) != len(to_be_built):
