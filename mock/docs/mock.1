@@ -258,9 +258,8 @@ Enable networking. If you want to have reproducible builds then your builds shou
 This option overrides config_opts['rpmbuild_networking'] and config_opts['use_host_resolv'], setting both True.
 .TP
 \fB\-\-localrepo\fR=\fIREPO\fR\fR
-Set the path to put the results/repo in. This path needs to be somewhere
-accessible to users other than you for reading as the mock process doesn't run
-as you. Will make a tempdir if not set.
+Set the path to put the results/repo in (works only in \fB\-\-chain\fR mode).
+Will make a tempdir if not set.
 .TP
 \fB\-h\fR, \fB\-\-help\fR
 Show usage information and exit.
