@@ -926,7 +926,7 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
     config_opts = TemplatedDictionary()
     config_opts['version'] = version
     config_opts['basedir'] = '/var/lib/mock'  # root name is automatically added to this
-    config_opts['resultdir'] = '%(basedir)s/%(root)s/result'
+    config_opts['resultdir'] = '%(basedir)s/{{root}}/result'
     config_opts['cache_topdir'] = '/var/cache/mock'
     config_opts['clean'] = True
     config_opts['check'] = True
@@ -987,19 +987,19 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
         'ccache_opts': {
             'max_cache_size': "4G",
             'compress': None,
-            'dir': "{{cache_topdir}}/%(root)s/ccache/u%(chrootuid)s/"},
+            'dir': "{{cache_topdir}}/{{root}}/ccache/u%(chrootuid)s/"},
         'yum_cache_enable': True,
         'yum_cache_opts': {
             'max_age_days': 30,
             'max_metadata_age_days': 30,
-            'dir': "{{cache_topdir}}/%(root)s/{{package_manager}}_cache/",
+            'dir': "{{cache_topdir}}/{{root}}/{{package_manager}}_cache/",
             'target_dir': "/var/cache/{{package_manager}}/",
             'online': True},
         'root_cache_enable': True,
         'root_cache_opts': {
             'age_check': True,
             'max_age_days': 15,
-            'dir': "{{cache_topdir}}/%(root)s/root_cache/",
+            'dir': "{{cache_topdir}}/{{root}}/root_cache/",
             'tar': "gnutar",
             'compress_program': 'pigz',
             'decompress_program': None,
