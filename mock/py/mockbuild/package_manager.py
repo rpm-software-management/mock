@@ -216,13 +216,6 @@ Error:      Neither dnf-utils nor yum-utils are installed. Dnf-utils or yum-util
     def initialize_config(self):
         raise NotImplementedError()
 
-    def replace_in_config(self, config_content):
-        """ expand resultdir in the yum.conf segment of the mock
-        configuration file.
-        """
-        return config_content.replace(
-            "%(resultdir)s", self.config['resultdir'] % self.config)
-
     def _check_command(self):
         """ Check if main command exists """
         if not os.path.exists(self.command):
@@ -291,7 +284,6 @@ class Yum(_PackageManager):
             "plugins=1", dedent("""\
                            plugins=1
                            pluginconfpath={0}""".format(pluginconf_dir)))
-        config_content = self.replace_in_config(config_content)
 
         check_yum_config(config_content, self.buildroot.root_log)
 
@@ -388,7 +380,6 @@ class Dnf(_PackageManager):
             config_content = self.config['dnf.conf']
         else:
             config_content = self.config['yum.conf']
-        config_content = self.replace_in_config(config_content)
 
         check_yum_config(config_content, self.buildroot.root_log)
         util.mkdirIfAbsent(self.buildroot.make_chroot_path('etc', 'dnf'))
