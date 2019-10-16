@@ -1047,7 +1047,7 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
         'sign_enable': False,
         'sign_opts': {
             'cmd': 'rpmsign',
-            'opts': '--addsign %(rpms)s',
+            'opts': '--addsign {{rpms}}',
         },
         'hw_info_enable': True,
         'hw_info_opts': {
