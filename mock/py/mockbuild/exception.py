@@ -47,6 +47,54 @@ class Error(Exception):
 # 141 = the main process get signal SIGPIPE, the pipe does not exist or was closed
 # 143 = the main process get signal SIGTERM, something tries to kill mock process
 
+def get_class_by_code(exit_code):
+    if exit_code == 0:
+        return None
+    elif exit_code == 1:
+        return Error("Unknow error happened.")
+    elif exit_code == 2:
+        return Error("Run without setuid wrapper.", 2)
+    elif exit_code == 3:
+        return ConfigError("Invalid configuration.")
+    elif exit_code == 4:
+        return Error("Only some packages were build during --chain.", 4)
+    elif exit_code == 5:
+        return BadCmdline("Command-line processing error.")
+    elif exit_code == 6:
+        return InvalidArchitecture("Invalid architecture.")
+    elif exit_code == 10:
+        return BuildError("Error during rpmbuild phase. Check the build.log.")
+    elif exit_code == 20:
+        return RootError("Error in the chroot. Check the root.log.")
+    elif exit_code == 25:
+        return LvmError("LVM manipulation failed.")
+    elif exit_code == 30:
+        return YumError("Package manager emitted an error of some sort.")
+    elif exit_code == 40:
+        return PkgError("Error with the srpm given to us.")
+    elif exit_code == 50:
+        return Error("Error in mock command (varies for each command)", 50)
+    elif exit_code == 60:
+        return BuildRootLocked("Build-root in use by another process.")
+    elif exit_code == 65:
+        return LvmLocked("LVM thinpool is locked.")
+    elif exit_code == 70:
+        return ResultDirNotAccessible("Result dir could not be created.")
+    elif exit_code == 80:
+        return UnshareFailed("Call to C library unshare(2) syscall failed.")
+    elif exit_code == 110:
+        return StateError("Unbalanced call to state functions. Check the state.log")
+    elif exit_code == 120:
+        return Error("Weak dependent package not installed.", 120)
+    elif exit_code == 129:
+        return Error("The main process get signal SIGHUP, the console was closed.", 129)
+    elif exit_code == 141:
+        return Error("The main process get signal SIGPIPE, the pipe does not exist or was closed.", 141)
+    elif exit_code == 143:
+        return Error("The main process get signal SIGTERM, something tries to kill mock process.", 143)
+    else:
+        return Error("Unknow error %{} happened.".format(exit_code), exit_code)
+
 class BuildError(Error):
     "rpmbuild failed."
     def __init__(self, msg):
