@@ -314,7 +314,7 @@ config linked to by /etc/mock/default.cfg.
 \fB\-\-resultdir\fR=\fIRESULTDIR\fP
 Change directory where resulting files (RPMs and build logs) are written. Resultdir can contain python\-string substitutions for any variable in the chroot config. For example:
 
-\fB\-\-resultdir=./my/"%(dist)s"/"%(target_arch)s"/\fR
+\fB\-\-resultdir=./my/"{{dist}}"/"{{target_arch}}"/\fR
 
 This option enables automatic cleanup, this can be changed in config file (by cleanup_on_success, cleanup_on_failure configuration options) or overridden by \-\-no\-cleanup\-after/\-\-cleanup\-after arguments.
 
