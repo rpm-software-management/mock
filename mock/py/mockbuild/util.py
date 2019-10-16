@@ -987,7 +987,7 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
         'ccache_opts': {
             'max_cache_size': "4G",
             'compress': None,
-            'dir': "{{cache_topdir}}/{{root}}/ccache/u%(chrootuid)s/"},
+            'dir': "{{cache_topdir}}/{{root}}/ccache/u{{chrootuid}}/"},
         'yum_cache_enable': True,
         'yum_cache_opts': {
             'max_age_days': 30,
