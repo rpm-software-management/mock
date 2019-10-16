@@ -442,6 +442,7 @@ class Buildroot(object):
                 'tmp/ccache',
                 'var/tmp',
                 'etc/dnf',
+                'etc/dnf/vars',
                 'etc/yum.repos.d',
                 'etc/yum',
                 'proc',

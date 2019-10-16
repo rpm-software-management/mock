@@ -354,6 +354,13 @@ class Dnf(_PackageManager):
             self._check_command()
         self.resolvedep_command = [self.command, 'repoquery', '--resolve', '--requires']
 
+    def initialize_vars(self):
+        self.buildroot.root_log.debug('configure DNF vars')
+        var_path = self.buildroot.make_chroot_path('etc/dnf/vars/')
+        for key in self.config['dnf_vars'].keys():
+            with open(os.path.join(var_path, key), 'w+') as conf_file:
+                conf_file.write(self.config['dnf_vars'][key])
+
     def _get_disabled_plugins(self):
         if 'dnf_disable_plugins' in self.config:
             disabled_plugins = self.config['dnf_disable_plugins']
@@ -386,6 +393,7 @@ class Dnf(_PackageManager):
         dnfconf_path = self.buildroot.make_chroot_path('etc', 'dnf', 'dnf.conf')
         with open(dnfconf_path, 'w+') as dnfconf_file:
             dnfconf_file.write(config_content)
+        self.initialize_vars()
 
     def builddep(self, *pkgs, **kwargs):
         try:
