@@ -926,7 +926,7 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
     config_opts = TemplatedDictionary()
     config_opts['version'] = version
     config_opts['basedir'] = '/var/lib/mock'  # root name is automatically added to this
-    config_opts['resultdir'] = '%(basedir)s/{{root}}/result'
+    config_opts['resultdir'] = '{{basedir}}/{{root}}/result'
     config_opts['cache_topdir'] = '/var/cache/mock'
     config_opts['clean'] = True
     config_opts['check'] = True
@@ -971,7 +971,7 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
     config_opts['tar'] = "gnutar"
 
     config_opts['backup_on_clean'] = False
-    config_opts['backup_base_dir'] = os.path.join(config_opts['basedir'], "backup")
+    config_opts['backup_base_dir'] = "{{basedir}}/backup"
 
     config_opts['redhat_subscription_required'] = False
 
