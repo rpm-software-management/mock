@@ -296,9 +296,6 @@ class Buildroot(object):
         if not os.path.exists(self.make_chroot_path('usr/sbin/useradd')):
             raise RootError("Could not find useradd in chroot, maybe the install failed?")
 
-        dets = {'uid': str(self.chrootuid), 'gid': str(self.chrootgid),
-                'user': self.chrootuser, 'group': self.chrootgroup, 'home': self.homedir}
-
         excluded = [self.make_chroot_path(self.homedir, path)
                     for path in self.config['exclude_from_homedir_cleanup']] + \
             self.mounts.get_mountpoints()
@@ -307,18 +304,18 @@ class Buildroot(object):
 
         # ok for these two to fail
         if self.config['clean']:
-            self.doChroot(['/usr/sbin/userdel', '-r', '-f', dets['user']],
+            self.doChroot(['/usr/sbin/userdel', '-r', '-f', self.chrootuser],
                           shell=False, raiseExc=False, nosync=True)
         else:
-            self.doChroot(['/usr/sbin/userdel', '-f', dets['user']],
+            self.doChroot(['/usr/sbin/userdel', '-f', self.chrootuser],
                           shell=False, raiseExc=False, nosync=True)
-        self.doChroot(['/usr/sbin/groupdel', dets['group']],
+        self.doChroot(['/usr/sbin/groupdel', self.chrootgroup],
                       shell=False, raiseExc=False, nosync=True)
 
-        if self.chrootgid != 0:
-            self.doChroot(['/usr/sbin/groupadd', '-g', dets['gid'], dets['group']],
+        if self.chrootgid:
+            self.doChroot(['/usr/sbin/groupadd', '-g', self.chrootgid, self.chrootgroup],
                           shell=False, nosync=True)
-        self.doChroot(shlex.split(self.config['useradd'] % dets), shell=False, nosync=True)
+        self.doChroot(shlex.split(self.config['useradd']), shell=False, nosync=True)
         if not self.config['clean']:
             self.uid_manager.changeOwner(self.make_chroot_path(self.homedir))
         self._enable_chrootuser_account()

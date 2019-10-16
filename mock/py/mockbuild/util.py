@@ -1102,7 +1102,7 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
 
     # dependent on guest OS
     config_opts['useradd'] = \
-        '/usr/sbin/useradd -o -m -u %(uid)s -g %(gid)s -d %(home)s -n %(user)s'
+        '/usr/sbin/useradd -o -m -u {{chrootuid}} -g {{chrootgid}} -d {{chroothome}} -n {{chrootuser}}'
     config_opts['use_host_resolv'] = False
     config_opts['chroot_setup_cmd'] = ('groupinstall', 'buildsys-build')
     config_opts['target_arch'] = 'i386'
