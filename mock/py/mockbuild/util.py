@@ -677,6 +677,7 @@ def do_with_status(command, shell=False, chrootPath=None, cwd=None, timeout=0, r
     if env is None:
         env = clean_env()
     stdout = None
+    command = [str(x) for x in command]
     try:
         child = None
         if shell and isinstance(command, list):
@@ -871,7 +872,7 @@ def doshell(chrootPath=None, environ=None, uid=None, gid=None, cmd=None,
     if cmd:
         if not isinstance(cmd, list):
             cmd = [cmd]
-        cmd = ['/bin/sh', '-c'] + cmd
+        cmd = ['/bin/sh', '-c'] + [str(x) for x in cmd]
     else:
         cmd = ["/bin/sh", "-i", "-l"]
     if USE_NSPAWN:
