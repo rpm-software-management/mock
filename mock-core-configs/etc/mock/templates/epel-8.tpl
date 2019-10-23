@@ -1,3 +1,5 @@
+config_opts['chroot_setup_cmd'] += " epel-release epel-rpm-macros fedpkg-minimal"
+
 config_opts['yum.conf'] += """
 
 [epel]
