@@ -13,6 +13,7 @@ import time
 # our imports
 from mockbuild.trace_decorator import getLog, traceLog
 import mockbuild.util
+from mockbuild.podman import Podman
 
 requires_api_version = "1.1"
 
@@ -130,37 +131,13 @@ class RootCache(object):
 
         if self.buildroot.is_bootstrap and self.buildroot.use_bootstrap_image \
                 and not os.path.exists(self.rootCacheFile):
-            getLog().info("Using bootstrap image: %s", self.buildroot.bootstrap_image)
-
-            # pull the latest image
-            getLog().info("Pulling image: %s", self.buildroot.bootstrap_image)
-            cmd = ["podman", "pull", self.buildroot.bootstrap_image]
-            mockbuild.util.do(cmd, printOutput=True)
-
-            # start a container and detach immediately
-            cmd = ["podman", "run", "-it", "--detach", self.buildroot.bootstrap_image, "/bin/bash"]
-            container_id = mockbuild.util.do(cmd, returnOutput=True)
-            container_id = container_id.strip()
-
-            # make sure the image contains expected packages
-            cmd = ["podman", "exec", container_id, self.buildroot.pkg_manager.command, "-y"]
-            cmd += self.buildroot.pkg_manager.install_command.split()
-            mockbuild.util.do(cmd, printOutput=True)
-
-            # export container and compress it
-            getLog().info("Exporting container: %s as %s", self.buildroot.bootstrap_image, self.rootCacheFile)
-            cmd_podman = ["podman", "export", container_id]
-            podman = subprocess.Popen(cmd_podman, stdout=subprocess.PIPE)
-            cache_file = open(self.rootCacheFile, "w")
-            cmd_compressor = [self.compressProgram, "--stdout"]
-            compressor = subprocess.Popen(cmd_compressor, stdin=podman.stdout, stdout=cache_file)
-            compressor.communicate()
-            podman.communicate()
-            cache_file.close()
-
-            # remove the container
-            cmd = ["podman", "rm", "-f", container_id]
-            mockbuild.util.do(cmd)
+            podman = Podman(self.buildroot, self.buildroot.bootstrap_image)
+            podman.pull_image()
+            podman.get_container_id()
+            podman.exec([self.buildroot.pkg_manager.command, '-y']
+                        + self.buildroot.pkg_manager.install_command.split())
+            podman.export(self.rootCacheFile, self.compressProgram)
+            podman.remove()
 
         # optimization: don't unpack root cache if chroot was not cleaned (unless we are using tmpfs)
         if os.path.exists(self.rootCacheFile):
