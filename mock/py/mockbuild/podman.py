@@ -49,8 +49,22 @@ class Podman:
         cache_file.close()
 
     @traceLog()
+    def cp(self, destination, tar_cmd):
+        """ copy content of container to destination directory """
+        getLog().info("Copy content of container %s to %s", self.image, destination)
+        cmd_podman = ["podman", "export", self.container_id]
+        podman = subprocess.Popen(cmd_podman, stdout=subprocess.PIPE)
+        cmd_tar = [tar_cmd, "-xC", destination]
+        tar = subprocess.Popen(cmd_tar, stdin=podman.stdout)
+        tar.communicate()
+        podman.communicate()
+
+    @traceLog()
     def remove(self):
         """ remove the container """
         cmd = ["podman", "rm", "-f", self.container_id]
         util.do(cmd)
         self.container_id = None
+
+    def __repr__(self):
+        return "Podman({}({}))".format(self.image, self.container_id)
