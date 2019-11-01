@@ -16,11 +16,6 @@ import six
 from . import util
 from .trace_decorator import traceLog
 
-if six.PY2:
-    # pylint: disable=redefined-builtin
-    class PermissionError(OSError):
-        pass
-
 
 class scmWorker(object):
     """Build RPMs from SCM"""
@@ -192,8 +187,7 @@ class scmWorker(object):
             if str(self.exclude_vcs).lower() == "true" and __tar_cmd == 'gtar':
                 proc = subprocess.Popen(['tar', '--help'], shell=False, stdout=subprocess.PIPE)
                 proc_result = proc.communicate()[0]
-                if six.PY3:
-                    proc_result = proc_result.decode()
+                proc_result = proc_result.decode()
                 if "--exclude-vcs" in proc_result:
                     taropts = "--exclude-vcs"
 

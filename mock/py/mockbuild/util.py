@@ -47,19 +47,10 @@ from . import exception
 from .trace_decorator import getLog, traceLog
 from .uid import getresuid, setresuid
 from pyroute2 import IPRoute
-# pylint: disable=useless-import-alias,no-name-in-module
-if six.PY2:
-    from collections import MutableMapping as MutableMapping
-else:
-    from collections.abc import MutableMapping as MutableMapping
+# pylint: disable=no-name-in-module
+from collections.abc import MutableMapping
 
 encoding = locale.getpreferredencoding()
-
-try:
-    # pylint: disable=used-before-assignment
-    basestring = basestring
-except NameError:
-    basestring = str
 
 _libc = ctypes.cdll.LoadLibrary(None)
 _libc.personality.argtypes = [ctypes.c_ulong]
@@ -147,7 +138,7 @@ class TemplatedDictionary(MutableMapping):
     def copy(self):
         return TemplatedDictionary(self.__dict__)
     def __render_value(self, value):
-        if isinstance(value, basestring):
+        if isinstance(value, str):
             return self.__render_string(value)
         elif isinstance(value, list):
             # we cannot use list comprehension here, as we need to NOT modify the list (pointer to list)
@@ -168,16 +159,15 @@ class TemplatedDictionary(MutableMapping):
         return _to_native(template.render(self.__dict__))
 
 
-def _to_bytes(obj, arg_encoding='utf-8', errors='strict', nonstring='strict'):
-    if isinstance(obj, six.binary_type):
-        return obj
-    elif isinstance(obj, six.text_type):
-        return obj.encode(arg_encoding, errors)
-    else:
-        if nonstring == 'strict':
-            raise TypeError('First argument must be a string')
-        raise ValueError('nonstring must be one of: ["strict",]')
-
+#def _to_bytes(obj, arg_encoding='utf-8', errors='strict', nonstring='strict'):
+#    if isinstance(obj, six.binary_type):
+#        return obj
+#    elif isinstance(obj, six.text_type):
+#        return obj.encode(arg_encoding, errors)
+#    else:
+#        if nonstring == 'strict':
+#            raise TypeError('First argument must be a string')
+#        raise ValueError('nonstring must be one of: ["strict",]')
 
 def _to_text(obj, arg_encoding='utf-8', errors='strict', nonstring='strict'):
     if isinstance(obj, six.text_type):
@@ -189,11 +179,7 @@ def _to_text(obj, arg_encoding='utf-8', errors='strict', nonstring='strict'):
             raise TypeError('First argument must be a string')
         raise ValueError('nonstring must be one of: ["strict",]')
 
-
-if six.PY2:
-    _to_native = _to_bytes
-else:
-    _to_native = _to_text
+_to_native = _to_text
 
 
 @traceLog()
@@ -413,7 +399,7 @@ def getAddtlReqs(hdr, conf):
                       '-'.join([name])]:
         if this_srpm in conf:
             more_reqs = conf[this_srpm]
-            if isinstance(more_reqs, basestring):
+            if isinstance(more_reqs, str):
                 reqlist.append(more_reqs)
             else:
                 reqlist.extend(more_reqs)

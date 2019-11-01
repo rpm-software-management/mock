@@ -51,7 +51,7 @@ class Commands(object):
         self.chroot_file_contents = config['files']
         self.chroot_setup_cmd = config['chroot_setup_cmd']
         self.nspawn_args = config['nspawn_args']
-        if isinstance(self.chroot_setup_cmd, util.basestring):
+        if isinstance(self.chroot_setup_cmd, str):
             # accept strings in addition to other sequence types
             self.chroot_setup_cmd = self.chroot_setup_cmd.split()
         self.more_buildreqs = config['more_buildreqs']
