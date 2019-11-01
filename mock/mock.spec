@@ -14,7 +14,7 @@
 
 Summary: Builds packages inside chroots
 Name: mock
-Version: 1.4.20
+Version: 1.4.21
 Release: 1%{?dist}
 License: GPLv2+
 # Source is created by
@@ -239,6 +239,13 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 %endif
 
 %changelog
+* Fri Nov 01 2019 Miroslav Suchý <msuchy@redhat.com> 1.4.21-1
+- copy distribution-gpg-keys if this is boostrap and we use container image
+- move podman initialization to buildroot.py [GH#380]
+- bootstrap: fix --install and --installdeps [RHBZ#1447627]
+- mock: selinuxfs, one more fix for nspawn [RHBZ#1756972]
+- mock: fix broken rpmbuildstate [GH#349]
+
 * Fri Oct 04 2019 Miroslav Suchý <msuchy@redhat.com> 1.4.20-1
 - /bin/mockchain wrapper around 'mock --chain' (praiskup@redhat.com)
 - mock: options for retrying packager managers' actions (praiskup@redhat.com)
