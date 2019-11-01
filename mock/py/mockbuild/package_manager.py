@@ -209,6 +209,17 @@ Error:      Neither dnf-utils nor yum-utils are installed. Dnf-utils or yum-util
         return result
 
     @traceLog()
+    def copy_distribution_gpg_keys(self):
+        # The bootstrap image frequently lacks distribution-gpg-keys.
+        # Copy the files from the host to avoid invoking package manager
+        # or rebuilding the cached bootstrap chroot.
+        keys_path = "/usr/share/distribution-gpg-keys"
+        dest_path = os.path.dirname(keys_path)
+        self.buildroot.root_log.debug("Copying %s to the bootstrap chroot" % keys_path)
+        cmd = ["cp", "-a", keys_path, self.buildroot.make_chroot_path(dest_path)]
+        util.do(cmd)
+
+    @traceLog()
     def copy_gpg_keys(self):
         pki_dir = self.buildroot.make_chroot_path('etc', 'pki', 'mock')
         util.mkdirIfAbsent(pki_dir)
@@ -217,6 +228,8 @@ Error:      Neither dnf-utils nor yum-utils are installed. Dnf-utils or yum-util
 
     def initialize(self):
         self.copy_gpg_keys()
+        if self.buildroot.is_bootstrap and self.buildroot.use_bootstrap_image:
+            self.copy_distribution_gpg_keys()
         self.initialize_config()
 
     def initialize_config(self):
