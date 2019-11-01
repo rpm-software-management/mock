@@ -7,13 +7,11 @@
 # python library imports
 import fcntl
 import os
-import subprocess
 import time
 
 # our imports
 from mockbuild.trace_decorator import getLog, traceLog
 import mockbuild.util
-from mockbuild.podman import Podman
 
 requires_api_version = "1.1"
 
@@ -128,16 +126,6 @@ class RootCache(object):
         # lock so others dont accidentally use root cache while we operate on it.
         if self.rootCacheLock is None:
             self.rootCacheLock = open(os.path.join(self.rootSharedCachePath, "rootcache.lock"), "a+")
-
-        if self.buildroot.is_bootstrap and self.buildroot.use_bootstrap_image \
-                and not os.path.exists(self.rootCacheFile):
-            podman = Podman(self.buildroot, self.buildroot.bootstrap_image)
-            podman.pull_image()
-            podman.get_container_id()
-            podman.exec([self.buildroot.pkg_manager.command, '-y']
-                        + self.buildroot.pkg_manager.install_command.split())
-            podman.export(self.rootCacheFile, self.compressProgram)
-            podman.remove()
 
         # optimization: don't unpack root cache if chroot was not cleaned (unless we are using tmpfs)
         if os.path.exists(self.rootCacheFile):
