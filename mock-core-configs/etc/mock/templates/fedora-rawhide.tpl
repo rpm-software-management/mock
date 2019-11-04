@@ -11,7 +11,7 @@ config_opts['package_manager'] = 'dnf'
 config_opts['bootstrap_image'] = 'fedora:rawhide'
 
 
-config_opts['yum.conf'] = """
+config_opts['dnf.conf'] = """
 [main]
 keepcache=1
 debuglevel=2

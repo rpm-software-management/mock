@@ -10,7 +10,7 @@ config_opts['releasever'] = '31'
 config_opts['package_manager'] = 'dnf'
 config_opts['bootstrap_image'] = 'fedora:31'
 
-config_opts['yum.conf'] = """
+config_opts['dnf.conf'] = """
 [main]
 keepcache=1
 debuglevel=2
