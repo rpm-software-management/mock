@@ -161,7 +161,7 @@ class Commands(object):
                 util.mkdirIfAbsent(self.buildroot.make_chroot_path())
                 self.bootstrap_buildroot.initialize(**kwargs)
                 self.buildroot.mounts.managed_mounts.append(
-                    BindMountPoint(self.buildroot.make_chroot_path(), inner_mount))
+                    BindMountPoint(self.buildroot.make_chroot_path(), inner_mount, recursive=True))
             self.buildroot.initialize(**kwargs)
             if not self.buildroot.chroot_was_initialized:
                 self._show_installed_packages()
