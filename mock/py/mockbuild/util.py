@@ -1124,7 +1124,7 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
     config_opts['no_root_shells'] = False
     config_opts['extra_chroot_dirs'] = []
 
-    config_opts['package_manager'] = 'yum'
+    config_opts['package_manager'] = 'dnf'
     config_opts['package_manager_max_attempts'] = 1
     config_opts['package_manager_attempt_delay'] = 10
 
