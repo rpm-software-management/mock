@@ -225,7 +225,7 @@ Error:      Neither dnf-utils nor yum-utils are installed. Dnf-utils or yum-util
 
     def initialize(self):
         self.copy_gpg_keys()
-        if self.buildroot.is_bootstrap and self.buildroot.use_bootstrap_image:
+        if self.buildroot.is_bootstrap:
             self.copy_distribution_gpg_keys()
         self.initialize_config()
 
