@@ -509,7 +509,7 @@ def setup_uid_manager(mockgid):
 
 
 @traceLog()
-def check_arch_combination(target_arch, config_opts, log):
+def check_arch_combination(target_arch, config_opts):
     try:
         legal = config_opts['legal_host_arches']
     except KeyError:
@@ -660,7 +660,7 @@ def main():
     setup_logging(config_path, config_opts, options)
 
     # verify that we're not trying to build an arch that we can't
-    check_arch_combination(config_opts['rpmbuild_arch'], config_opts, log)
+    check_arch_combination(config_opts['rpmbuild_arch'], config_opts)
 
     # security cleanup (don't need/want this in the chroot)
     if 'SSH_AUTH_SOCK' in os.environ:
