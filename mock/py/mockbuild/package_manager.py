@@ -10,7 +10,6 @@ import time
 from textwrap import dedent
 
 import distro
-import six
 # pylint: disable=redefined-builtin
 from six.moves import input
 

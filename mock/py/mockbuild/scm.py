@@ -11,8 +11,6 @@ import subprocess
 import sys
 import tempfile
 
-import six
-
 from . import util
 from .trace_decorator import traceLog
 
