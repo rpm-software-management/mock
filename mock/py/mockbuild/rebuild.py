@@ -88,7 +88,7 @@ def do_buildsrpm(config_opts, commands, buildroot, options, args):
     # verify the input command line arguments actually exist
     if not os.path.isfile(options.spec):
         raise BadCmdline("Input specfile does not exist: %s" % options.spec)
-    if not os.path.isdir(options.sources) and not os.path.isfile(options.sources):
+    if options.sources and not os.path.isdir(options.sources) and not os.path.isfile(options.sources):
         raise BadCmdline("Input sources directory or file does not exist: %s" % options.sources)
     clean = config_opts['clean']
 

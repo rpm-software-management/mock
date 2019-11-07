@@ -571,16 +571,16 @@ class Commands(object):
             # copy spec/sources
             shutil.copy(spec, self.buildroot.make_chroot_path(self.buildroot.builddir, "SPECS"))
 
-            # Resolve any symlinks
-            sources = os.path.realpath(sources)
-
-            if os.path.isdir(sources):
-                util.rmtree(self.buildroot.make_chroot_path(self.buildroot.builddir, "SOURCES"))
-                shutil.copytree(sources,
+            if sources:
+                # Resolve any symlinks
+                sources = os.path.realpath(sources)
+                if os.path.isdir(sources):
+                    util.rmtree(self.buildroot.make_chroot_path(self.buildroot.builddir, "SOURCES"))
+                    shutil.copytree(sources,
                                 self.buildroot.make_chroot_path(self.buildroot.builddir, "SOURCES"),
                                 symlinks=(not follow_links))
-            else:
-                shutil.copy(sources, self.buildroot.make_chroot_path(self.buildroot.builddir, "SOURCES"))
+                else:
+                    shutil.copy(sources, self.buildroot.make_chroot_path(self.buildroot.builddir, "SOURCES"))
 
             spec = self.buildroot.make_chroot_path(self.buildroot.builddir, "SPECS", os.path.basename(spec))
             # get rid of rootdir prefix
