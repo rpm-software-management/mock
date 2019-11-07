@@ -400,7 +400,7 @@ def command_parse():
             raise mockbuild.exception.BadCmdline("--target option accepts only "
                                                  "one arch. Invalid: %s" % options.rpmbuild_arch)
 
-    if options.mode == 'buildsrpm' and not (options.spec and options.sources):
+    if options.mode == 'buildsrpm' and not (options.spec):
         if not options.scm:
             raise mockbuild.exception.BadCmdline("Must specify both --spec and "
                                                  "--sources with --buildsrpm")
