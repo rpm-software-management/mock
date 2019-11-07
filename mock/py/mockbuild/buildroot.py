@@ -470,6 +470,7 @@ class Buildroot(object):
         build_dirs = ['RPMS', 'SPECS', 'SRPMS', 'SOURCES', 'BUILD', 'BUILDROOT',
                       'originals']
         with self.uid_manager:
+            util.mkdirIfAbsent(self.make_chroot_path(self.builddir))
             self.uid_manager.changeOwner(self.make_chroot_path(self.builddir))
             for item in build_dirs:
                 path = self.make_chroot_path(self.builddir, item)
