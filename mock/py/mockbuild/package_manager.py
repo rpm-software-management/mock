@@ -9,6 +9,7 @@ import sys
 import time
 from textwrap import dedent
 
+from distutils.dir_util import copy_tree
 import distro
 # pylint: disable=redefined-builtin
 from six.moves import input
@@ -222,8 +223,15 @@ Error:      Neither dnf-utils nor yum-utils are installed. Dnf-utils or yum-util
         for pki_file in glob.glob("/etc/pki/mock/RPM-GPG-KEY-*"):
             shutil.copy(pki_file, pki_dir)
 
+    @traceLog()
+    def copy_certs(self):
+        cert_path = "/etc/pki/ca-trust/extracted"
+        pki_dir = self.buildroot.make_chroot_path(cert_path)
+        copy_tree(cert_path, pki_dir)
+
     def initialize(self):
         self.copy_gpg_keys()
+        self.copy_certs()
         if self.buildroot.is_bootstrap:
             self.copy_distribution_gpg_keys()
         self.initialize_config()
