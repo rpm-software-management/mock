@@ -50,6 +50,9 @@ def safe_repr(arg):
         return str(type(arg))
 
 def traceLog(logger=None):
+    def noop(func):
+            return func
+
     def decorator(func):
         @functools.wraps(func)
         def trace(*args, **kw):
@@ -101,7 +104,12 @@ def traceLog(logger=None):
 
             return result
         return trace
-    return decorator
+        #end of trace()
+
+    if logging.getLogger("trace").propagate:
+        return decorator
+    else:
+        return noop
 
 
 # unit tests...
