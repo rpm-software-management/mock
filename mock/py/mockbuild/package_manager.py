@@ -212,8 +212,10 @@ Error:      Neither dnf-utils nor yum-utils are installed. Dnf-utils or yum-util
         # or rebuilding the cached bootstrap chroot.
         keys_path = "/usr/share/distribution-gpg-keys"
         dest_path = os.path.dirname(keys_path)
+        chroot_path = self.buildroot.make_chroot_path(dest_path)
+        util.mkdirIfAbsent(chroot_path)
         self.buildroot.root_log.debug("Copying %s to the bootstrap chroot" % keys_path)
-        cmd = ["cp", "-a", keys_path, self.buildroot.make_chroot_path(dest_path)]
+        cmd = ["cp", "-a", keys_path, chroot_path]
         util.do(cmd)
 
     @traceLog()
