@@ -20,9 +20,7 @@ from .trace_decorator import traceLog
 
 def package_manager(config_opts, buildroot, plugins, bootstrap_buildroot=None):
     pm = config_opts.get('package_manager', 'yum')
-    is_bootstrap_image = False
-    if buildroot.is_bootstrap and buildroot.use_bootstrap_image:
-        is_bootstrap_image = True
+    is_bootstrap_image = bool(buildroot.is_bootstrap and buildroot.use_bootstrap_image)
     if pm == 'yum':
         return Yum(config_opts, buildroot, plugins, bootstrap_buildroot, is_bootstrap_image)
     elif pm == 'dnf':
