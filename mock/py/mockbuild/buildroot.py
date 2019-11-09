@@ -444,6 +444,7 @@ class Buildroot(object):
                 'var/lib/yum',
                 'var/lib/dbus',
                 'var/log',
+                'var/cache/dnf',
                 'var/cache/yum',
                 'etc/rpm',
                 'tmp',
