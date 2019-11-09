@@ -979,8 +979,6 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
         'yum_cache_opts': {
             'max_age_days': 30,
             'max_metadata_age_days': 30,
-            'dir': "{{cache_topdir}}/{{root}}/{{package_manager}}_cache/",
-            'target_dir': "/var/cache/{{package_manager}}/",
             'online': True},
         'root_cache_enable': True,
         'root_cache_opts': {
