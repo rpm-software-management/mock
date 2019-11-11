@@ -663,7 +663,11 @@ def do_with_status(command, shell=False, chrootPath=None, cwd=None, timeout=0, r
     if env is None:
         env = clean_env()
     stdout = None
-    command = [str(x) for x in command]
+
+    if isinstance(command, list):
+        # convert int args to strings
+        command = [str(x) for x in command]
+
     try:
         child = None
         if shell and isinstance(command, list):
