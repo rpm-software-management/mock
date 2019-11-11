@@ -91,8 +91,6 @@ class Commands(object):
             self.backup_results()
         self.state.start("clean chroot")
         self.buildroot.delete()
-        if self.bootstrap_buildroot is not None:
-            self.bootstrap_buildroot.delete()
         self.state.finish("clean chroot")
 
     @traceLog()
