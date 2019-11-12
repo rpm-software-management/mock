@@ -28,12 +28,20 @@ class Podman:
         cmd = ["podman", "run", "-it", "--detach", self.image, "/bin/bash"]
         container_id = util.do(cmd, returnOutput=True)
         self.container_id = container_id.strip()
+        return self.container_id
 
     @traceLog()
     def exec(self, command):
-        """ make sure the image contains expected packages """
+        """ exec command in container """
         cmd = ["podman", "exec", self.container_id] + command
         util.do(cmd, printOutput=True)
+
+    @traceLog()
+    def install_pkgmgmt_packages(self):
+        """ make sure the image contains expected packages """
+        cmd = [self.buildroot.pkg_manager.command, '-y']
+        cmd += self.buildroot.pkg_manager.install_command.split()
+        self.exec(cmd)
 
     @traceLog()
     def export(self, cache_file_name, compress_program):
