@@ -205,7 +205,6 @@ Error:      Neither dnf-utils nor yum-utils are installed. Dnf-utils or yum-util
 
     @traceLog()
     def copy_distribution_gpg_keys(self):
-        # The bootstrap image frequently lacks distribution-gpg-keys.
         # Copy the files from the host to avoid invoking package manager
         # or rebuilding the cached bootstrap chroot.
         keys_path = "/usr/share/distribution-gpg-keys"

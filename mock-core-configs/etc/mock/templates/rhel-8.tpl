@@ -4,8 +4,8 @@ config_opts['extra_chroot_dirs'] = [ '/run/lock', ]
 config_opts['releasever'] = '8'
 config_opts['package_manager'] = 'dnf'
 
-config_opts['dnf_install_command'] += ' subscription-manager https://kojipkgs.fedoraproject.org//packages/distribution-gpg-keys/1.34/1.el8/noarch/distribution-gpg-keys-1.34-1.el8.noarch.rpm'
-config_opts['yum_install_command'] += ' subscription-manager https://kojipkgs.fedoraproject.org//packages/distribution-gpg-keys/1.34/1.el8/noarch/distribution-gpg-keys-1.34-1.el8.noarch.rpm'
+config_opts['dnf_install_command'] += ' subscription-manager'
+config_opts['yum_install_command'] += ' subscription-manager'
 
 config_opts['root'] = 'rhel-8-{{ target_arch }}'
 

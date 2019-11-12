@@ -2,8 +2,8 @@ config_opts['chroot_setup_cmd'] = 'install bash bzip2 coreutils cpio diffutils f
 config_opts['dist'] = 'el7'  # only useful for --resultdir variable subst
 config_opts['releasever'] = '7Server'
 
-config_opts['dnf_install_command'] += ' subscription-manager https://kojipkgs.fedoraproject.org//packages/distribution-gpg-keys/1.34/1.el7/noarch/distribution-gpg-keys-1.34-1.el7.noarch.rpm'
-config_opts['yum_install_command'] += ' subscription-manager https://kojipkgs.fedoraproject.org//packages/distribution-gpg-keys/1.34/1.el7/noarch/distribution-gpg-keys-1.34-1.el7.noarch.rpm'
+config_opts['dnf_install_command'] += ' subscription-manager'
+config_opts['yum_install_command'] += ' subscription-manager'
 
 config_opts['root'] = 'rhel-7-{{ target_arch }}'
 
