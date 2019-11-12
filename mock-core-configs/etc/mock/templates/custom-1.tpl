@@ -1,6 +1,3 @@
-config_opts['root'] = 'custom-1-x86_64'
-config_opts['target_arch'] = 'x86_64'
-config_opts['legal_host_arches'] = ('x86_64',)
 config_opts['chroot_setup_cmd'] = ''
 config_opts['chroot_additional_packages'] = ''
 config_opts['extra_chroot_dirs'] = [ '/run/lock', ]
