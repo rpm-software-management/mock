@@ -145,8 +145,7 @@ class Buildroot(object):
         self.plugins.call_hooks('preinit')
         # intentionally we do not call bootstrap hook here - it does not have sense
         self.chroot_was_initialized = self.chroot_is_initialized()
-        if self.is_bootstrap and self.use_bootstrap_image \
-                and not self.chroot_was_initialized:
+        if self.uses_bootstrap_image and not self.chroot_was_initialized:
             podman = Podman(self, self.bootstrap_image)
             podman.pull_image()
             podman.get_container_id()
@@ -154,6 +153,7 @@ class Buildroot(object):
                 __tar_cmd = "bsdtar"
             else:
                 __tar_cmd = "gtar"
+            podman.install_pkgmgmt_packages()
             podman.cp(self.make_chroot_path(), __tar_cmd)
             podman.remove()
 
@@ -280,6 +280,12 @@ class Buildroot(object):
 
     @traceLog()
     def _init_pkg_management(self):
+        if self.uses_bootstrap_image:
+            # we already 'Podman.install_pkgmgmt_packages' to have working
+            # pkg management stack in bootstrap (the rest of this method, like
+            # modules, isn't usefull in bootstrap)
+            return
+
         update_state = '{0} install'.format(self.pkg_manager.name)
         self.state.start(update_state)
         if 'module_enable' in self.config and self.config['module_enable']:
@@ -722,3 +728,7 @@ class Buildroot(object):
         self.chroot_was_initialized = False
         self.plugins.call_hooks('postclean')
         # intentionally we do not call bootstrap hook here - it does not have sense
+
+    @property
+    def uses_bootstrap_image(self):
+        return self.is_bootstrap and self.use_bootstrap_image
