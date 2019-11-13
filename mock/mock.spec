@@ -34,6 +34,7 @@ Requires: usermode
 %endif
 Requires: createrepo_c
 Requires: mock-core-configs >= 27.4
+Requires: distribution-gpg-keys
 %if 0%{?use_python2}
 Requires: pyliblzma
 %endif
