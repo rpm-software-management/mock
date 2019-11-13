@@ -23,6 +23,16 @@ from .package_manager import package_manager
 from .trace_decorator import getLog, traceLog
 from .podman import Podman
 
+
+def noop_in_bootstrap(f):
+    def wrapper(self, *args, **kwargs):
+        if self.is_bootstrap:
+            getLog().debug("method {} skipped in bootstrap".format(f.__name__))
+            return
+        return f(self, *args, **kwargs)
+    return wrapper
+
+
 class Buildroot(object):
     @traceLog()
     def __init__(self, config, uid_manager, state, plugins, bootstrap_buildroot=None, is_bootstrap=False):
@@ -295,6 +305,7 @@ class Buildroot(object):
         self.state.finish(update_state)
 
     @traceLog()
+    @noop_in_bootstrap
     def _fixup_build_user(self):
         """ensure chrootuser has correct UID"""
         # --non-unique can be removed after 2019-03-31 (EOL of SLES 11)
@@ -303,6 +314,7 @@ class Buildroot(object):
                       shell=False, nosync=True)
 
     @traceLog()
+    @noop_in_bootstrap
     def _make_build_user(self):
         if not os.path.exists(self.make_chroot_path('usr/sbin/useradd')):
             raise RootError("Could not find useradd in chroot, maybe the install failed?")
