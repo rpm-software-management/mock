@@ -5,6 +5,7 @@ config_opts['package_manager'] = 'dnf'
 config_opts['extra_chroot_dirs'] = [ '/run/lock', ]
 config_opts['bootstrap_image'] = 'centos:8'
 
+config_opts['yum_install_cmd'] = 'dnf-yum dnf-plugins-core'
 
 config_opts['yum.conf'] = """
 [main]

@@ -5,7 +5,7 @@ config_opts['releasever'] = '8'
 config_opts['package_manager'] = 'dnf'
 
 config_opts['dnf_install_command'] += ' subscription-manager'
-config_opts['yum_install_command'] += ' subscription-manager'
+config_opts['yum_install_command'] = 'dnf-yum dnf-plugins-core subscription-manager'
 
 config_opts['root'] = 'rhel-8-{{ target_arch }}'
 
