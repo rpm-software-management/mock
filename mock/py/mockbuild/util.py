@@ -509,7 +509,7 @@ def process_input(line):
 
 
 def logOutput(fdout, fderr, logger, returnOutput=1, start=0, timeout=0, printOutput=False,
-              child=None, chrootPath=None, pty=False):
+              child=None, chrootPath=None, pty=False, returnStderr=True):
     output = ""
     done = False
     fds = [fdout, fderr]
@@ -559,6 +559,10 @@ def logOutput(fdout, fderr, logger, returnOutput=1, start=0, timeout=0, printOut
                     else:
                         print(raw, end='')
                     sys.stdout.flush()
+
+                if returnStderr is False and s == fderr:
+                    continue
+
                 txt_input = raw.decode(encoding, 'replace')
                 lines = txt_input.split("\n")
                 if tail:
@@ -648,7 +652,7 @@ def do(*args, **kargs):
 def do_with_status(command, shell=False, chrootPath=None, cwd=None, timeout=0, raiseExc=True,
                    returnOutput=0, uid=None, gid=None, user=None, personality=None,
                    printOutput=False, env=None, pty=False, nspawn_args=None, unshare_net=False,
-                   *_, **kargs):
+                   returnStderr=True, *_, **kargs):
     logger = kargs.get("logger", getLog())
     if timeout == 0:
         timeout = _OPS_TIMEOUT
@@ -697,7 +701,7 @@ def do_with_status(command, shell=False, chrootPath=None, cwd=None, timeout=0, r
                     reader if pty else child.stdout, child.stderr,
                     logger, returnOutput, start, timeout, pty=pty,
                     printOutput=printOutput, child=child,
-                    chrootPath=chrootPath)
+                    chrootPath=chrootPath, returnStderr=returnStderr)
     except:
         # kill children if they arent done
         if child is not None and child.returncode is None:
