@@ -329,9 +329,6 @@ class Yum(_PackageManager):
         self.command = config['yum_command']
         self.install_command = config['yum_install_command']
         self.builddep_command = [config['yum_builddep_command']]
-        # the command in bootstrap may not exists yet
-        if bootstrap_buildroot is None:
-            self._check_command()
         if bootstrap_buildroot is not None:
             # we are in bootstrap so use old names
             self.command = '/usr/bin/yum'
@@ -353,6 +350,9 @@ class Yum(_PackageManager):
                     '--config', self.buildroot.make_chroot_path('etc', 'yum', 'yum.conf')]
             if os.path.exists(yum_builddep_deprecated_path):
                 self.builddep_command = ['/usr/bin/yum-builddep-deprecated']
+        # the command in bootstrap may not exists yet
+        if bootstrap_buildroot is None:
+            self._check_command()
 
     @traceLog()
     def _write_plugin_conf(self, name):
