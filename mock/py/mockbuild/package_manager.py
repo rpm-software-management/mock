@@ -39,6 +39,11 @@ def package_manager_exists_on_host(name, config_opts):
     option = '{}_command'.format(name)
     pathname = config_opts[option]
     if not os.path.isfile(pathname):
+        if pathname == '/usr/bin/yum':
+            # only _exact_ match here, with custom config like
+            # /usr/local/bin/yum user must know where yum is
+            if os.path.isfile('/usr/bin/yum-deprecated'):
+                return True
         return False
     real_pathname = os.path.realpath(pathname)
     # resolve symlinks, and detect that e.g. /bin/yum doesn't point to /bin/dnf
