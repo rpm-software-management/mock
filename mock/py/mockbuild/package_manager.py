@@ -16,41 +16,86 @@ from six.moves import input
 
 from . import util
 from .exception import BuildError, Error, YumError
-from .trace_decorator import traceLog
+from .trace_decorator import traceLog, getLog
 
-def package_manager(config_opts, buildroot, plugins, bootstrap_buildroot=None):
-    pm = config_opts.get('package_manager', 'yum')
-    is_bootstrap_image = bool(buildroot.is_bootstrap and buildroot.use_bootstrap_image)
-    if pm == 'yum':
-        return Yum(config_opts, buildroot, plugins, bootstrap_buildroot, is_bootstrap_image)
-    elif pm == 'dnf':
-        if os.path.isfile(config_opts['dnf_command']) or bootstrap_buildroot is not None:
-            return Dnf(config_opts, buildroot, plugins, bootstrap_buildroot, is_bootstrap_image)
-        # RHEL without DNF and without bootstrap buildroot
-        (distribution, version) = distro.linux_distribution(full_distribution_name=False)[0:2]
-        if distribution in util.RHEL_CLONES:
-            version = int(version.split('.')[0])
-            if version < 8:
-                if ('dnf_warning' not in config_opts or config_opts['dnf_warning']) and \
-                        not config_opts['use_bootstrap_container']:
-                    print("""WARNING! WARNING! WARNING!
-You are building package for distribution which use DNF. However your system
-does not support DNF. You can continue with YUM, which will likely succeed,
-but the result may be little different.
+fallbacks = {
+    'dnf': ['dnf', 'yum'],
+    'yum': ['yum', 'dnf'],
+    'microdnf': ['microdnf', 'dnf', 'yum'],
+}
+
+
+def package_manager_from_string(name):
+    if name == 'yum':
+        return Yum
+    if name == 'dnf':
+        return Dnf
+    if name == 'microdnf':
+        return MicroDnf
+    raise Exception('Unrecognized package manager "{}"', name)
+
+
+def package_manager_class_fallback(desired, config_opts, bootstrap):
+    getLog().debug("search for '%s' package manager", desired)
+    if desired not in fallbacks:
+        raise Exception('Unexpected package manager "{}"', desired)
+
+    for manager in fallbacks[desired]:
+        option = '{}_command'.format(manager)
+        if os.path.isfile(config_opts[option]):
+            ret_val = package_manager_from_string(manager)
+            if desired == manager:
+                return ret_val
+
+            getLog().info("Using '%s' instead of '%s'%s", manager, desired,
+                          " for bootstrap chroot" if bootstrap else "")
+
+            if 'dnf_warning' in config_opts and not config_opts['dnf_warning']:
+                return ret_val
+
+            if not bootstrap:
+                print("""WARNING! WARNING! WARNING!
+You are building package for distribution which uses {0}. However your system
+does not support {0}. You can continue with {1}, which will likely succeed,
+but the installed chroot may look a little different.
+  1. Please consider --bootstrap-chroot option, or
+  2. install {0} on your host system.
 You can suppress this warning when you put
   config_opts['dnf_warning'] = False
-in Mock config.""")
-                    input("Press Enter to continue.")
-                return Yum(config_opts, buildroot, plugins, bootstrap_buildroot, is_bootstrap_image)
-        # something else then EL, and no dnf_command exist
-        # This will likely mean some error later.
-        # Either user is smart or let him shot in his foot.
-        return Dnf(config_opts, buildroot, plugins, bootstrap_buildroot, is_bootstrap_image)
-    elif pm == 'microdnf':
-        return MicroDnf(config_opts, buildroot, plugins, bootstrap_buildroot, is_bootstrap_image)
-    else:
-        # TODO specific exception type
-        raise Exception('Unrecognized package manager')
+in Mock config.""".format(desired.upper(), manager.upper()))
+                input("Press Enter to continue.")
+
+            return ret_val
+
+    raise Exception("No package from {} found".format(fallbacks[desired]))
+
+
+def package_manager_class(config_opts, buildroot, bootstrap_buildroot=None):
+    pm = config_opts.get('package_manager', 'yum')
+
+    if buildroot.is_bootstrap:
+        # pkgmanager _to install_ bootstrap.  we don't care about the package
+        # manager too much, so we tolerate cross-pkgmanager installation here
+        return package_manager_class_fallback(pm, config_opts, True)
+
+    if bootstrap_buildroot:
+        # Installing from bootstrap to destination buildroot, we expect that the
+        # desired pkg manager is installed and there's need to warn and do
+        # fallbacks.
+        return package_manager_from_string(pm)
+
+    # installing from host directly to destination buildroot, this may fail
+    # miserably (especially if pm=dnf, and only yum is available).
+    return package_manager_class_fallback(pm, config_opts, False)
+
+
+def package_manager(config_opts, buildroot, plugins, bootstrap_buildroot=None):
+    is_bootstrap_image = False
+    if buildroot.is_bootstrap and buildroot.use_bootstrap_image:
+        is_bootstrap_image = True
+    cls = package_manager_class(config_opts, buildroot, bootstrap_buildroot)
+    return cls(config_opts, buildroot, plugins, bootstrap_buildroot,
+               is_bootstrap_image)
 
 
 class _PackageManager(object):
