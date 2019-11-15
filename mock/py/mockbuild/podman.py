@@ -20,7 +20,7 @@ class Podman:
         """ pull the latest image """
         getLog().info("Pulling image: %s", self.image)
         cmd = ["podman", "pull", self.image]
-        util.do(cmd, printOutput=True)
+        util.do(cmd, printOutput=True, env=self.buildroot.env)
 
     @traceLog()
     def get_container_id(self):
@@ -34,7 +34,7 @@ class Podman:
     def exec(self, command):
         """ exec command in container """
         cmd = ["podman", "exec", self.container_id] + command
-        util.do(cmd, printOutput=True)
+        util.do(cmd, printOutput=True, env=self.buildroot.env)
 
     @traceLog()
     def install_pkgmgmt_packages(self):
