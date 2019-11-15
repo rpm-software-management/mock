@@ -55,11 +55,12 @@ Config files which allow you to create chroots for:
 %install
 mkdir -p %{buildroot}%{_sysusersdir}
 
-mkdir -p %{buildroot}%{_sysconfdir}/mock/eol
+mkdir -p %{buildroot}%{_sysconfdir}/mock/eol/templates
 mkdir -p %{buildroot}%{_sysconfdir}/mock/templates
 cp -a etc/mock/*.cfg %{buildroot}%{_sysconfdir}/mock
 cp -a etc/mock/templates/*.tpl %{buildroot}%{_sysconfdir}/mock/templates
 cp -a etc/mock/eol/*cfg %{buildroot}%{_sysconfdir}/mock/eol
+cp -a etc/mock/eol/templates/*.tpl %{buildroot}%{_sysconfdir}/mock/eol/templates
 
 # generate files section with config - there is many of them
 echo "%defattr(0644, root, mock)" > %{name}.cfgs
