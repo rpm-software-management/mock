@@ -51,7 +51,7 @@ def safe_repr(arg):
 
 def traceLog(logger=None):
     def noop(func):
-            return func
+        return func
 
     def decorator(func):
         @functools.wraps(func)
