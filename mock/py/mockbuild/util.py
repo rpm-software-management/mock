@@ -919,6 +919,7 @@ def find_non_nfs_dir():
 def setup_default_config_opts(unprivUid, version, pkgpythondir):
     "sets up default configuration."
     config_opts = TemplatedDictionary()
+    config_opts['config_paths'] = []
     config_opts['version'] = version
     config_opts['basedir'] = '/var/lib/mock'  # root name is automatically added to this
     config_opts['resultdir'] = '{{basedir}}/{{root}}/result'
@@ -1493,7 +1494,6 @@ def load_config(config_path, name, uidManager, version, pkg_python_dir):
 
     # array to save config paths
     config_opts['config_path'] = config_path
-    config_opts['config_paths'] = []
     config_opts['chroot_name'] = name
 
     # Read in the config files: default, and then user specified
