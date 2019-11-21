@@ -1367,12 +1367,12 @@ def check_config(config_opts):
 
 
 @traceLog()
-def include(config_file, config_opts, is_statement=False):
+def include(config_file, config_opts):
     if not os.path.isabs(config_file):
         config_file = os.path.join(config_opts['config_path'], config_file)
 
     if os.path.exists(config_file):
-        if is_statement and config_file in config_opts['config_paths']:
+        if config_file in config_opts['config_paths']:
             getLog().warning("Multiple inclusion of %s, skipping" % config_file)
             return
 
@@ -1380,7 +1380,7 @@ def include(config_file, config_opts, is_statement=False):
 
         with open(config_file) as f:
             content = f.read()
-            content = re.sub(r'include\((.*)\)', r'include(\g<1>, config_opts, True)', content)
+            content = re.sub(r'include\((.*)\)', r'include(\g<1>, config_opts)', content)
             code = compile(content, config_file, 'exec')
         # pylint: disable=exec-used
         exec(code)
