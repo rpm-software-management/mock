@@ -1436,7 +1436,6 @@ def setup_operations_timeout(config_opts):
 def do_update_config(log, config_opts, cfg, uidManager, name, skipError=True):
     if os.path.exists(cfg):
         log.info("Reading configuration from %s", cfg)
-        config_opts['config_paths'].append(cfg)
         update_config_from_file(config_opts, cfg, uidManager)
         setup_operations_timeout(config_opts)
         check_macro_definition(config_opts)
