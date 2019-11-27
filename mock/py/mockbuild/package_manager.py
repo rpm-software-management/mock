@@ -89,7 +89,7 @@ in Mock config.""".format(desired.upper(), manager.upper()))
 
 
 def package_manager_class(config_opts, buildroot, bootstrap_buildroot=None):
-    pm = config_opts.get('package_manager', 'yum')
+    pm = config_opts.get('package_manager', 'dnf')
 
     if buildroot.is_bootstrap:
         # pkgmanager _to install_ bootstrap.  we don't care about the package
