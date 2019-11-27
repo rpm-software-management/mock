@@ -57,6 +57,7 @@ import pwd
 import shutil
 import sys
 import time
+import copy
 
 # pylint: disable=import-error
 from functools import partial
@@ -685,9 +686,13 @@ def main():
         # first take a copy of the config so we can make some modifications
         bootstrap_buildroot_config = config_opts.copy()
         # copy plugins configuration so we get a separate deep copy
-        bootstrap_buildroot_config['plugin_conf'] = config_opts['plugin_conf'].copy() # pylint: disable=no-member
+        bootstrap_buildroot_config['plugin_conf'] = \
+            copy.deepcopy(config_opts['plugin_conf'])  # pylint: disable=no-member
         # add '-bootstrap' to the end of the root name
         bootstrap_buildroot_config['root'] = bootstrap_buildroot_config['root'] + '-bootstrap'
+        # don't share root cache tarball
+        bootstrap_buildroot_config['plugin_conf']['root_cache_opts']['dir'] = \
+            "{{cache_topdir}}/" + bootstrap_buildroot_config['root'] + "/root_cache/"
         # we don't want to affect the bootstrap.config['nspawn_args'] array, deep copy
         bootstrap_buildroot_config['nspawn_args'] = config_opts.get('nspawn_args', []).copy()
 
