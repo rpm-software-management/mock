@@ -88,6 +88,7 @@ class Buildroot(object):
         self.final_rpm_list = None
 
         self._homedir_bindmounts = {}
+        self._setup_nspawn_loop_devices()
 
     @traceLog()
     def make_chroot_path(self, *paths):
@@ -511,6 +512,22 @@ class Buildroot(object):
 
                 for key, value in list(self.config['macros'].items()):
                     rpmmacros.write("%s %s\n" % (key, value))
+
+    @traceLog()
+    def _setup_nspawn_loop_devices(self):
+        if not util.USE_NSPAWN or self.is_bootstrap:
+            return
+
+        self.config['nspawn_args'].append('--bind=/dev/loop-control')
+        # for nspawn we create the loop devices directly on host
+        for i in range(self.config['dev_loop_count']):
+            loop_file = '/dev/loop{}'.format(i)
+            try:
+                os.mknod(loop_file, stat.S_IFBLK | 0o666, os.makedev(7, i))
+            except OSError as e:
+                if e.errno != errno.EEXIST:
+                    raise
+            self.config['nspawn_args'].append('--bind={0}'.format(loop_file))
 
     @traceLog()
     def _setup_devices(self):
