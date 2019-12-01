@@ -86,7 +86,7 @@ class LvmPlugin(object):
         self.basepath = buildroot.mockdir
         self.snap_info = os.path.join(self.basepath, snapinfo_name)
         self.lock = self.create_lock('lvm')
-        self.pool_lock = self.create_lock('lmv-pool')
+        self.pool_lock = self.create_lock('lvm-pool')
         self.mount = None
 
         prefix = 'hook_'
