@@ -1532,6 +1532,11 @@ def load_config(config_path, name, uidManager, version, pkg_python_dir):
 
     if config_opts['use_container_host_hostname'] and '%_buildhost' not in config_opts['macros']:
         config_opts['macros']['%_buildhost'] = socket.getfqdn()
+
+    # Now when all options are correctly loaded from config files, turn the
+    # jinja templating ON.
+    config_opts['__jinja_expand'] = True
+
     return config_opts
 
 
