@@ -259,6 +259,9 @@ It can be specified multiple times.
 Enable networking. If you want to have reproducible builds then your builds should run without a network.
 This option overrides config_opts['rpmbuild_networking'] and config_opts['use_host_resolv'], setting both True.
 .TP
+\fB\-\-isolation\fR=\fILEVEL\fR\fR
+What should be used for isolation of chroot. The valid options are 'simple' and 'nspawn'. The 'simple' method uses chroot() call. The 'nspawn' method utilize systemd-nspawn(1) and run the chroot inside that container. The default is 'nspawn'.
+.TP
 \fB\-\-localrepo\fR=\fIREPO\fR\fR
 Set the path to put the results/repo in (works only in \fB\-\-chain\fR mode).
 Will make a tempdir if not set.
@@ -270,7 +273,7 @@ Show usage information and exit.
 Use pre\-defined rpm macro file. Macros passed to '\-\-define' override macros of the same name from FILE.
 .TP
 \fB\-\-new\-chroot\fR
-Use new chroot (systemd\-nspawn). This is the default.
+Deprecated. Use \fV\-\-isolation=nspawn\fP.
 .TP
 \fB\-n\fR, \fB\-\-no\-clean\fR
 Do not clean chroot before building a package.
@@ -285,7 +288,7 @@ Don't clean chroot after building. If automatic cleanup is enabled, use this to 
 Run in an 'offline' mode where we tell 'yum' to run completely from the local cache. Also, disables cache expiry for the mock yum cache.
 .TP
 \fB\-\-old\-chroot\fR
-use old chroot instead of systemd\-nspawn.
+Deprecated. Use \fV\-\-isolation=simple\fP.
 .TP
 \fB\-\-plugin\-option \fR\fIPLUGIN\fR\fB:\fR\fIKEY\fR\fB=\fR\fIVALUE\fP
 Set plugin specific parameter. This option may be used multiple times.

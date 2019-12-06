@@ -317,10 +317,13 @@ def command_parse():
                       callback=repo_callback)
     parser.add_option("--old-chroot", action="store_true", dest="old_chroot",
                       default=False,
-                      help="use old chroot instead of systemd-nspawn.")
+                      help="Obsoleted. Use --isolation=simple")
     parser.add_option("--new-chroot", action="store_true", dest="new_chroot",
                       default=False,
-                      help="use new chroot (systemd-nspawn).")
+                      help="Obsoleted. Use --isolation=nspawn")
+    parser.add_option("--isolation", action="store", dest="isolation",
+                      default="nspawn",
+                      help="what level of isolation to use. Valid option: simple, nspawn")
     parser.add_option("--enable-network", action="store_true", dest="enable_network",
                       default=False,
                       help="enable networking.")

@@ -95,6 +95,10 @@ _mock()
                 declare -F _yum_list &>/dev/null && _yum_list all "$cur"
             return
             ;;
+        --isolation)
+            COMPREPLY=( $( compgen -W "simple nspawn" -- "$cur" ) )
+            return
+            ;;
         --remove|remove)
             declare -F _yum_list &>/dev/null && _yum_list all "$cur"
             return
