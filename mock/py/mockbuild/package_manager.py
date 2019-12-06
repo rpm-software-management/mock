@@ -10,7 +10,6 @@ import time
 from textwrap import dedent
 
 from distutils.dir_util import copy_tree
-import distro
 
 from . import util
 from .exception import BuildError, Error, YumError
