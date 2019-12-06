@@ -29,7 +29,7 @@ def package_manager_from_string(name):
         return Dnf
     if name == 'microdnf':
         return MicroDnf
-    raise Exception('Unrecognized package manager "{}"', name)
+    raise Exception('Unrecognized package manager "{}"'.format(name))
 
 
 def package_manager_exists_on_host(name, config_opts):
@@ -54,7 +54,7 @@ def package_manager_exists_on_host(name, config_opts):
 def package_manager_class_fallback(desired, config_opts, bootstrap):
     getLog().debug("search for '%s' package manager", desired)
     if desired not in fallbacks:
-        raise Exception('Unexpected package manager "{}"', desired)
+        raise Exception('Unexpected package manager "{}"'.format(desired))
 
     for manager in fallbacks[desired]:
         if package_manager_exists_on_host(manager, config_opts):
