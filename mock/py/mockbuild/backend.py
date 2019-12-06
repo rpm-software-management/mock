@@ -12,11 +12,11 @@ import os
 import shutil
 import sys
 import tempfile
+from urllib.parse import urlsplit
 
 # 3rd party imports
 import requests
 import rpm
-from six.moves.urllib_parse import urlsplit
 from mockbuild.mounts import BindMountPoint, FileSystemMountPoint
 
 from . import util

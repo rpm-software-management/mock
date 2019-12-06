@@ -52,7 +52,6 @@ BuildRequires: bash-completion
 %if %{use_python3}
 Requires: python%{python3_pkgversion}-distro
 Requires: python%{python3_pkgversion}-jinja2
-Requires: python%{python3_pkgversion}-six >= 1.4.0
 Requires: python%{python3_pkgversion}-requests
 Requires: python%{python3_pkgversion}-rpm
 Requires: python%{python3_pkgversion}-pyroute2
@@ -64,7 +63,6 @@ BuildRequires: python%{python3_pkgversion}-pylint
 Requires: python-ctypes
 Requires: python2-distro
 Requires: python-jinja2
-Requires: python-six >= 1.4.0
 Requires: python-requests
 Requires: python2-pyroute2
 Requires: python >= 2.7

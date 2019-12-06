@@ -39,7 +39,6 @@ import uuid
 
 import distro
 import jinja2
-import six
 
 from mockbuild.mounts import BindMountPoint
 
@@ -166,20 +165,10 @@ class TemplatedDictionary(MutableMapping):
         raise ValueError("too deep jinja re-evaluation on '{}'".format(orig))
 
 
-#def _to_bytes(obj, arg_encoding='utf-8', errors='strict', nonstring='strict'):
-#    if isinstance(obj, six.binary_type):
-#        return obj
-#    elif isinstance(obj, six.text_type):
-#        return obj.encode(arg_encoding, errors)
-#    else:
-#        if nonstring == 'strict':
-#            raise TypeError('First argument must be a string')
-#        raise ValueError('nonstring must be one of: ["strict",]')
-
 def _to_text(obj, arg_encoding='utf-8', errors='strict', nonstring='strict'):
-    if isinstance(obj, six.text_type):
+    if isinstance(obj, str):
         return obj
-    elif isinstance(obj, six.binary_type):
+    elif isinstance(obj, bytes):
         return obj.decode(arg_encoding, errors)
     else:
         if nonstring == 'strict':

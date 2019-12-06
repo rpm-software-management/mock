@@ -6,8 +6,7 @@
 import glob
 import os
 import os.path
-
-from six.moves import urllib
+import urllib
 
 
 class Config(object):

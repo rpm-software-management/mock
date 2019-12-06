@@ -41,6 +41,7 @@ usage:
 """
 
 # library imports
+import configparser
 import errno
 import glob
 import grp
@@ -61,7 +62,6 @@ import copy
 
 # pylint: disable=import-error
 from functools import partial
-from six.moves import configparser
 from mockbuild import util
 from mockbuild.mounts import BindMountPoint
 

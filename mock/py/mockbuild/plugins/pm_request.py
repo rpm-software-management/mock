@@ -11,7 +11,7 @@ import shlex
 import socket
 import sys
 
-from six.moves import cStringIO as StringIO
+from io import StringIO
 
 from mockbuild import util
 from mockbuild.exception import Error

@@ -11,8 +11,6 @@ from textwrap import dedent
 
 from distutils.dir_util import copy_tree
 import distro
-# pylint: disable=redefined-builtin
-from six.moves import input
 
 from . import util
 from .exception import BuildError, Error, YumError
