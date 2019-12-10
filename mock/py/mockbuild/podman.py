@@ -39,8 +39,12 @@ class Podman:
     @traceLog()
     def install_pkgmgmt_packages(self):
         """ make sure the image contains expected packages """
-        cmd = [self.buildroot.pkg_manager.command, '-y']
-        cmd += self.buildroot.pkg_manager.install_command.split()
+        pmname = self.buildroot.config.get('package_manager', 'dnf')
+        binary = self.buildroot.config.get('{}_command'.format(pmname))
+        install_command = self.buildroot.config.get('{}_install_command'.format(pmname))
+
+        cmd = [binary, '-y']
+        cmd += install_command.split()
         self.exec(cmd)
 
     @traceLog()
