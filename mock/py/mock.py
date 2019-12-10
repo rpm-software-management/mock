@@ -383,7 +383,8 @@ def command_parse():
                       help="build in a single stage, using system rpm for creating the build chroot")
 
     parser.add_option('--use-bootstrap-image', dest='usebootstrapimage', action='store_true',
-                      help="create bootstrap chroot from container image")
+                      help="create bootstrap chroot from container image (turns "
+                           "--bootstrap-chroot on)")
     parser.add_option('--no-bootstrap-image', dest='usebootstrapimage', action='store_false',
                       help="don't create bootstrap chroot from container image")
 
