@@ -53,7 +53,7 @@ gpgcheck=1
 skip_if_unavailable=False
 
 [fedora-debuginfo]
-name=Fedora Rawhide - aarch64 - Debug
+name=Fedora Rawhide - Debug
 metalink=https://mirrors.fedoraproject.org/metalink?repo=rawhide-debug&arch=$basearch
 enabled=0
 gpgkey=file:///usr/share/distribution-gpg-keys/fedora/RPM-GPG-KEY-fedora-$releasever-primary file:///usr/share/distribution-gpg-keys/fedora/RPM-GPG-KEY-fedora-32-primary file:///usr/share/distribution-gpg-keys/fedora/RPM-GPG-KEY-fedora-31-primary
