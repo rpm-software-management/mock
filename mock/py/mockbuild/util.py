@@ -1298,13 +1298,15 @@ def set_config_opts_per_cmdline(config_opts, options, args):
     if options.new_chroot:
         USE_NSPAWN = True
         log.error('Option --new-chroot has been deprecated. Use --isolation=nspawn instead.')
-    if options.isolation == 'simple':
-        USE_NSPAWN = False
-    elif options.isolation == 'nspawn':
-        USE_NSPAWN = True
-    else:
-        raise exception.BadCmdline("Bad option for '--isolation'. Unknown value: %s"
-                                   % (options.isolation))
+
+    if options.isolation is not None:
+        if options.isolation == 'simple':
+            USE_NSPAWN = False
+        elif options.isolation == 'nspawn':
+            USE_NSPAWN = True
+        else:
+            raise exception.BadCmdline("Bad option for '--isolation'. Unknown value: %s"
+                                       % (options.isolation))
 
     if options.enable_network:
         config_opts['rpmbuild_networking'] = True
