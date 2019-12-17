@@ -322,7 +322,6 @@ def command_parse():
                       default=False,
                       help="Obsoleted. Use --isolation=nspawn")
     parser.add_option("--isolation", action="store", dest="isolation",
-                      default="nspawn",
                       help="what level of isolation to use. Valid option: simple, nspawn")
     parser.add_option("--enable-network", action="store_true", dest="enable_network",
                       default=False,
