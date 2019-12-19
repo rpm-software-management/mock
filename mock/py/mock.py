@@ -540,9 +540,14 @@ def check_arch_combination(target_arch, config_opts):
 
 @traceLog()
 def do_debugconfig(config_opts):
+    jinja_expand = config_opts['__jinja_expand']
+    config_opts['__jinja_expand'] = False
     for key in sorted(config_opts):
-        print("config_opts['{}'] = {}".format(key, pformat(config_opts[key])))
-
+        if key == '__jinja_expand':
+            print("config_opts['{}'] = {}".format(key, pformat(jinja_expand)))
+        else:
+            print("config_opts['{}'] = {}".format(key, pformat(config_opts[key])))
+    config_opts['__jinja_expand'] = jinja_expand
 
 @traceLog()
 def rootcheck():
