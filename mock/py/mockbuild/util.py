@@ -1493,13 +1493,17 @@ def setup_host_resolv(config_opts):
     config_opts['nspawn_args'] += ['--bind={0}:/etc/resolv.conf'.format(resolv_path)]
 
 @traceLog()
-def load_config(config_path, name, uidManager, version, pkg_python_dir):
-    log = logging.getLogger()
+def load_defaults(uidManager, version, pkg_python_dir):
     if uidManager:
         gid = uidManager.unprivUid
     else:
         gid = os.getuid()
-    config_opts = setup_default_config_opts(gid, version, pkg_python_dir)
+    return setup_default_config_opts(gid, version, pkg_python_dir)
+
+@traceLog()
+def load_config(config_path, name, uidManager, version, pkg_python_dir):
+    log = logging.getLogger()
+    config_opts = load_defaults(uidManager, version, pkg_python_dir)
 
     # array to save config paths
     config_opts['config_path'] = config_path

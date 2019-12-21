@@ -539,14 +539,18 @@ def check_arch_combination(target_arch, config_opts):
             time.sleep(5)
 
 @traceLog()
-def do_debugconfig(config_opts):
+def do_debugconfig(config_opts, uidManager):
     jinja_expand = config_opts['__jinja_expand']
+    defaults = util.load_defaults(uidManager, __VERSION__, PKGPYTHONDIR)
+    defaults['__jinja_expand'] = False
     config_opts['__jinja_expand'] = False
     for key in sorted(config_opts):
         if key == '__jinja_expand':
-            print("config_opts['{}'] = {}".format(key, pformat(jinja_expand)))
+            value = jinja_expand
         else:
-            print("config_opts['{}'] = {}".format(key, pformat(config_opts[key])))
+            value = config_opts[key]
+        if key not in defaults or (key in defaults and config_opts[key] != defaults[value]):
+            print("config_opts['{}'] = {}".format(key, pformat(value)))
     config_opts['__jinja_expand'] = jinja_expand
 
 @traceLog()
@@ -889,7 +893,7 @@ def run_command(options, args, config_opts, commands, buildroot, state):
         mockbuild.rebuild.do_buildsrpm(config_opts, commands, buildroot, options, args)
 
     elif options.mode == 'debugconfig':
-        do_debugconfig(config_opts)
+        do_debugconfig(config_opts, buildroot.uid_manager)
 
     elif options.mode == 'orphanskill':
         util.orphansKill(buildroot.make_chroot_path())
