@@ -549,7 +549,8 @@ def do_debugconfig(config_opts, uidManager):
             value = jinja_expand
         else:
             value = config_opts[key]
-        if key not in defaults or (key in defaults and config_opts[key] != defaults[value]):
+        if (key in defaults) and (key in config_opts) and (config_opts[key] != defaults[key]) or \
+           (key not in defaults):
             print("config_opts['{}'] = {}".format(key, pformat(value)))
     config_opts['__jinja_expand'] = jinja_expand
 
