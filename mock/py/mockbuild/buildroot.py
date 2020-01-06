@@ -384,6 +384,11 @@ class Buildroot(object):
                     (self.state.state_log, "state.log", self.config['state_log_fmt_str']),
                     (self.build_log, "build.log", self.config['build_log_fmt_str']),
                     (self.root_log, "root.log", self.config['root_log_fmt_str'])):
+                # release used FileHandlers if re-initializing to not leak FDs
+                if force:
+                    for handler in log.handlers[:]:
+                        handler.close()
+                        log.removeHandler(handler)
                 fullPath = os.path.join(self.resultdir, filename)
                 fh = logging.FileHandler(fullPath, "a+")
                 formatter = logging.Formatter(fmt_str)
