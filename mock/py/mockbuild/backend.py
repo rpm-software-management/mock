@@ -29,7 +29,9 @@ class Commands(object):
     """Executes mock commands in the buildroot"""
 
     @traceLog()
-    def __init__(self, config, uid_manager, plugins, state, buildroot, bootstrap_buildroot):
+    def __init__(
+        self, config, uid_manager, plugins, state, buildroot, bootstrap_buildroot
+    ):
         self.uid_manager = uid_manager
         self.buildroot = buildroot
         self.bootstrap_buildroot = bootstrap_buildroot
@@ -37,38 +39,38 @@ class Commands(object):
         self.plugins = plugins
         self.config = config
 
-        self.rpmbuild_arch = config['rpmbuild_arch']
-        self.clean_the_chroot = config['clean']
+        self.rpmbuild_arch = config["rpmbuild_arch"]
+        self.clean_the_chroot = config["clean"]
 
         self.build_results = []
 
         # config options
-        self.configs = config['config_paths']
-        self.config_name = config['chroot_name']
-        self.buildroot.chrootuid = config['chrootuid']
-        self.buildroot.chrootgid = config['chrootgid']
-        self.use_host_resolv = config['use_host_resolv']
-        self.chroot_file_contents = config['files']
-        self.chroot_setup_cmd = config['chroot_setup_cmd']
-        self.nspawn_args = config['nspawn_args']
+        self.configs = config["config_paths"]
+        self.config_name = config["chroot_name"]
+        self.buildroot.chrootuid = config["chrootuid"]
+        self.buildroot.chrootgid = config["chrootgid"]
+        self.use_host_resolv = config["use_host_resolv"]
+        self.chroot_file_contents = config["files"]
+        self.chroot_setup_cmd = config["chroot_setup_cmd"]
+        self.nspawn_args = config["nspawn_args"]
         if isinstance(self.chroot_setup_cmd, str):
             # accept strings in addition to other sequence types
             self.chroot_setup_cmd = self.chroot_setup_cmd.split()
-        self.more_buildreqs = config['more_buildreqs']
-        self.cache_alterations = config['cache_alterations']
+        self.more_buildreqs = config["more_buildreqs"]
+        self.cache_alterations = config["cache_alterations"]
 
-        self.backup = config['backup_on_clean']
-        self.backup_base_dir = config['backup_base_dir']
+        self.backup = config["backup_on_clean"]
+        self.backup_base_dir = config["backup_base_dir"]
 
         # do we allow interactive root shells?
-        self.no_root_shells = config['no_root_shells']
+        self.no_root_shells = config["no_root_shells"]
 
-        self.private_network = not config['rpmbuild_networking']
+        self.private_network = not config["rpmbuild_networking"]
 
     def _get_nspawn_args(self):
         nspawn_args = []
         if util.USE_NSPAWN:
-            nspawn_args.extend(self.config['nspawn_args'])
+            nspawn_args.extend(self.config["nspawn_args"])
         return nspawn_args
 
     @traceLog()
@@ -76,12 +78,14 @@ class Commands(object):
         srcdir = os.path.join(self.buildroot.basedir, "result")
         if not os.path.exists(srcdir):
             return
-        dstdir = os.path.join(self.backup_base_dir, self.config['root'])
+        dstdir = os.path.join(self.backup_base_dir, self.config["root"])
         util.mkdirIfAbsent(dstdir)
         rpms = glob.glob(os.path.join(srcdir, "*rpm"))
         if len(rpms) == 0:
             return
-        self.state.state_log.info("backup_results: saving with cp %s %s", " ".join(rpms), dstdir)
+        self.state.state_log.info(
+            "backup_results: saving with cp %s %s", " ".join(rpms), dstdir
+        )
         util.run(cmd="cp %s %s" % (" ".join(rpms), dstdir))
 
     @traceLog()
@@ -100,42 +104,78 @@ class Commands(object):
         self.state.start(statestr)
         try:
             try:
-                self.plugins.call_hooks('clean')
+                self.plugins.call_hooks("clean")
                 if self.bootstrap_buildroot is not None:
-                    self.bootstrap_buildroot.plugins.call_hooks('clean')
+                    self.bootstrap_buildroot.plugins.call_hooks("clean")
 
                 for scrub in scrub_opts:
-                    self.plugins.call_hooks('scrub', scrub)
+                    self.plugins.call_hooks("scrub", scrub)
                     if self.bootstrap_buildroot is not None:
-                        self.bootstrap_buildroot.plugins.call_hooks('scrub', scrub)
+                        self.bootstrap_buildroot.plugins.call_hooks("scrub", scrub)
 
-                    if scrub == 'all':
-                        self.buildroot.root_log.info("scrubbing everything for %s", self.config_name)
+                    if scrub == "all":
+                        self.buildroot.root_log.info(
+                            "scrubbing everything for %s", self.config_name
+                        )
                         self.buildroot.delete()
-                        util.rmtree(self.buildroot.cachedir, selinux=self.buildroot.selinux)
+                        util.rmtree(
+                            self.buildroot.cachedir, selinux=self.buildroot.selinux
+                        )
                         if self.bootstrap_buildroot is not None:
                             self.bootstrap_buildroot.delete()
-                            util.rmtree(self.bootstrap_buildroot.cachedir, selinux=self.bootstrap_buildroot.selinux)
-                    elif scrub == 'chroot':
-                        self.buildroot.root_log.info("scrubbing chroot for %s", self.config_name)
+                            util.rmtree(
+                                self.bootstrap_buildroot.cachedir,
+                                selinux=self.bootstrap_buildroot.selinux,
+                            )
+                    elif scrub == "chroot":
+                        self.buildroot.root_log.info(
+                            "scrubbing chroot for %s", self.config_name
+                        )
                         self.buildroot.delete()
-                    elif scrub == 'cache':
-                        self.buildroot.root_log.info("scrubbing cache for %s", self.config_name)
-                        util.rmtree(self.buildroot.cachedir, selinux=self.buildroot.selinux)
-                    elif scrub == 'c-cache':
-                        self.buildroot.root_log.info("scrubbing c-cache for %s", self.config_name)
-                        util.rmtree(os.path.join(self.buildroot.cachedir, 'ccache'), selinux=self.buildroot.selinux)
-                    elif scrub == 'root-cache':
-                        self.buildroot.root_log.info("scrubbing root-cache for %s", self.config_name)
-                        util.rmtree(os.path.join(self.buildroot.cachedir, 'root_cache'), selinux=self.buildroot.selinux)
-                    elif scrub in ['yum-cache', 'dnf-cache']:
-                        self.buildroot.root_log.info("scrubbing yum-cache and dnf-cache for %s", self.config_name)
-                        util.rmtree(os.path.join(self.buildroot.cachedir, 'yum_cache'), selinux=self.buildroot.selinux)
-                        util.rmtree(os.path.join(self.buildroot.cachedir, 'dnf_cache'), selinux=self.buildroot.selinux)
-                    elif scrub == 'bootstrap' and self.bootstrap_buildroot is not None:
-                        self.buildroot.root_log.info("scrubbing bootstrap for %s", self.config_name)
+                    elif scrub == "cache":
+                        self.buildroot.root_log.info(
+                            "scrubbing cache for %s", self.config_name
+                        )
+                        util.rmtree(
+                            self.buildroot.cachedir, selinux=self.buildroot.selinux
+                        )
+                    elif scrub == "c-cache":
+                        self.buildroot.root_log.info(
+                            "scrubbing c-cache for %s", self.config_name
+                        )
+                        util.rmtree(
+                            os.path.join(self.buildroot.cachedir, "ccache"),
+                            selinux=self.buildroot.selinux,
+                        )
+                    elif scrub == "root-cache":
+                        self.buildroot.root_log.info(
+                            "scrubbing root-cache for %s", self.config_name
+                        )
+                        util.rmtree(
+                            os.path.join(self.buildroot.cachedir, "root_cache"),
+                            selinux=self.buildroot.selinux,
+                        )
+                    elif scrub in ["yum-cache", "dnf-cache"]:
+                        self.buildroot.root_log.info(
+                            "scrubbing yum-cache and dnf-cache for %s", self.config_name
+                        )
+                        util.rmtree(
+                            os.path.join(self.buildroot.cachedir, "yum_cache"),
+                            selinux=self.buildroot.selinux,
+                        )
+                        util.rmtree(
+                            os.path.join(self.buildroot.cachedir, "dnf_cache"),
+                            selinux=self.buildroot.selinux,
+                        )
+                    elif scrub == "bootstrap" and self.bootstrap_buildroot is not None:
+                        self.buildroot.root_log.info(
+                            "scrubbing bootstrap for %s", self.config_name
+                        )
                         self.bootstrap_buildroot.delete()
-                        util.rmtree(self.bootstrap_buildroot.cachedir, selinux=self.bootstrap_buildroot.selinux)
+                        util.rmtree(
+                            self.bootstrap_buildroot.cachedir,
+                            selinux=self.bootstrap_buildroot.selinux,
+                        )
 
             except IOError as e:
                 getLog().warning("parts of chroot do not exist: %s", e)
@@ -145,9 +185,9 @@ class Commands(object):
 
     @traceLog()
     def make_chroot_path(self, *args):
-        '''For safety reasons, self._rootdir should not be used directly. Instead
+        """For safety reasons, self._rootdir should not be used directly. Instead
         use this handy helper function anytime you want to reference a path in
-        relation to the chroot.'''
+        relation to the chroot."""
         return self.buildroot.make_chroot_path(*args)
 
     @traceLog()
@@ -155,23 +195,30 @@ class Commands(object):
         try:
             if self.bootstrap_buildroot is not None:
                 # add the extra bind mount to the outer chroot
-                inner_mount = self.bootstrap_buildroot.make_chroot_path(self.buildroot.make_chroot_path())
+                inner_mount = self.bootstrap_buildroot.make_chroot_path(
+                    self.buildroot.make_chroot_path()
+                )
                 util.mkdirIfAbsent(self.buildroot.make_chroot_path())
                 self.bootstrap_buildroot.initialize(**kwargs)
                 # Hide re-mounted chroot from host by rprivate tmpfs.
                 self.buildroot.mounts.managed_mounts.append(
-                    FileSystemMountPoint(filetype='tmpfs',
-                                         device='hide_root_in_bootstrap',
-                                         path=inner_mount,
-                                         options="rprivate"))
+                    FileSystemMountPoint(
+                        filetype="tmpfs",
+                        device="hide_root_in_bootstrap",
+                        path=inner_mount,
+                        options="rprivate",
+                    )
+                )
                 self.buildroot.mounts.managed_mounts.append(
-                    BindMountPoint(self.buildroot.make_chroot_path(), inner_mount,
-                                   recursive=True))
+                    BindMountPoint(
+                        self.buildroot.make_chroot_path(), inner_mount, recursive=True
+                    )
+                )
             self.buildroot.initialize(**kwargs)
             if not self.buildroot.chroot_was_initialized:
                 self._show_installed_packages()
         except (KeyboardInterrupt, Exception):
-            self.plugins.call_hooks('initfailed')
+            self.plugins.call_hooks("initfailed")
             # intentionally we do not call bootstrap hook here - it does not have sense
             raise
 
@@ -216,7 +263,7 @@ class Commands(object):
             spec_file = util.host_file(spec_file)
             spec = rpm.spec(spec_file).sourceHeader.dsFromHeader()
             self.uid_manager.becomeUser(0, 0)
-            for i in range(len(spec)): # pylint: disable=consider-using-enumerate
+            for i in range(len(spec)):  # pylint: disable=consider-using-enumerate
                 requirement_name = spec[i][2:]
                 self.buildroot.pkg_manager.install(requirement_name, check=True)
 
@@ -225,12 +272,12 @@ class Commands(object):
 
     @traceLog()
     def _show_installed_packages(self):
-        '''report the installed packages in the chroot to the root log'''
+        """report the installed packages in the chroot to the root log"""
         self.buildroot.root_log.info("Installed packages:")
         self.buildroot.nuke_rpm_db()
         util.do(
-            "%s --root %s -qa" % (self.config['rpm_command'],
-                                  self.buildroot.make_chroot_path()),
+            "%s --root %s -qa"
+            % (self.config["rpm_command"], self.buildroot.make_chroot_path()),
             raiseExc=False,
             shell=True,
             env=self.buildroot.env,
@@ -249,7 +296,7 @@ class Commands(object):
         """build an srpm into binary rpms, capture log"""
 
         # tell caching we are building
-        self.plugins.call_hooks('earlyprebuild')
+        self.plugins.call_hooks("earlyprebuild")
         # intentionally we do not call bootstrap hook here - it does not have sense
 
         baserpm = os.path.basename(srpm)
@@ -263,7 +310,9 @@ class Commands(object):
         buildsetup_finished = False
         try:
             if not util.USE_NSPAWN:
-                self.uid_manager.becomeUser(self.buildroot.chrootuid, self.buildroot.chrootgid)
+                self.uid_manager.becomeUser(
+                    self.buildroot.chrootuid, self.buildroot.chrootgid
+                )
                 dropped_privs = True
             buildsetup = "build setup for %s" % baserpm
             self.state.start(buildsetup)
@@ -271,12 +320,12 @@ class Commands(object):
             srpm = self.copy_srpm_into_chroot(srpm)
             self.install_srpm(srpm)
 
-            if spec and not self.config['scm']:
+            if spec and not self.config["scm"]:
                 # scm sets options.spec, but we want to get spec from SRPM when using scm
                 spec_path = self.copy_spec_into_chroot(spec)
             else:
                 spec = self.get_specfile_name(srpm)
-                spec_path = os.path.join(self.buildroot.builddir, 'SPECS', spec)
+                spec_path = os.path.join(self.buildroot.builddir, "SPECS", spec)
 
             rebuilt_srpm = self.rebuild_installed_srpm(spec_path, timeout)
 
@@ -284,11 +333,13 @@ class Commands(object):
             hdr = next(util.yieldSrpmHeaders((rebuilt_srpm,)))
             # pylint: disable=no-member
             requires = {util._to_text(req) for req in hdr[rpm.RPMTAG_REQUIRES]}
-            dynamic_buildreqs = 'rpmlib(DynamicBuildRequires)' in requires
+            dynamic_buildreqs = "rpmlib(DynamicBuildRequires)" in requires
 
-            if dynamic_buildreqs and not self.config.get('dynamic_buildrequires'):
-                raise Error('DynamicBuildRequires are found but support is disabled.'
-                            ' See "dynamic_buildrequires" in config_opts.')
+            if dynamic_buildreqs and not self.config.get("dynamic_buildrequires"):
+                raise Error(
+                    "DynamicBuildRequires are found but support is disabled."
+                    ' See "dynamic_buildrequires" in config_opts.'
+                )
 
             self.installSrpmDeps(rebuilt_srpm)
             self.state.finish(buildsetup)
@@ -297,12 +348,14 @@ class Commands(object):
             rpmbuildstate = "rpmbuild %s" % baserpm
 
             # tell caching we are building
-            self.plugins.call_hooks('prebuild')
+            self.plugins.call_hooks("prebuild")
             # intentionally we do not call bootstrap hook here - it does not have sense
 
             try:
                 self.state.start(rpmbuildstate)
-                results = self.rebuild_package(spec_path, timeout, check, dynamic_buildreqs)
+                results = self.rebuild_package(
+                    spec_path, timeout, check, dynamic_buildreqs
+                )
             finally:
                 self.state.finish(rpmbuildstate)
 
@@ -310,15 +363,17 @@ class Commands(object):
             # need to ensure our output files are owned by the caller's uid.
             # So drop them now.
             if not dropped_privs:
-                self.uid_manager.becomeUser(self.buildroot.chrootuid, self.buildroot.chrootgid)
+                self.uid_manager.becomeUser(
+                    self.buildroot.chrootuid, self.buildroot.chrootgid
+                )
                 dropped_privs = True
             if results:
                 self.build_results.extend(self.copy_build_results(results))
-            elif self.config.get('short_circuit'):
+            elif self.config.get("short_circuit"):
                 self.buildroot.root_log.info("Short circuit builds don't produce RPMs")
             else:
-                raise PkgError('No build results found')
-            self.state.result = 'success'
+                raise PkgError("No build results found")
+            self.state.result = "success"
 
         finally:
             if not buildsetup_finished:
@@ -326,12 +381,11 @@ class Commands(object):
             self.state.finish(buildstate)
             if dropped_privs:
                 self.uid_manager.restorePrivs()
-            if self.state.result != 'success':
-                self.state.result = 'fail'
+            if self.state.result != "success":
+                self.state.result = "fail"
             # tell caching we are done building
-            self.plugins.call_hooks('postbuild')
+            self.plugins.call_hooks("postbuild")
             # intentionally we do not call bootstrap hook here - it does not have sense
-
 
     @traceLog()
     def shell(self, options, cmd=None):
@@ -348,17 +402,21 @@ class Commands(object):
 
         try:
             self.state.start("shell")
-            ret = util.doshell(chrootPath=self.buildroot.make_chroot_path(),
-                               environ=self.buildroot.env, uid=uid, gid=gid,
-                               nspawn_args=self._get_nspawn_args(),
-                               unshare_net=self.private_network,
-                               cmd=cmd)
+            ret = util.doshell(
+                chrootPath=self.buildroot.make_chroot_path(),
+                environ=self.buildroot.env,
+                uid=uid,
+                gid=gid,
+                nspawn_args=self._get_nspawn_args(),
+                unshare_net=self.private_network,
+                cmd=cmd,
+            )
         finally:
             log.debug("shell: unmounting all filesystems")
             self.state.finish("shell")
 
         log.debug("shell: calling postshell hooks")
-        self.plugins.call_hooks('postshell')
+        self.plugins.call_hooks("postshell")
         # intentionally we do not call bootstrap hook here - it does not have sense
         return ret
 
@@ -374,19 +432,31 @@ class Commands(object):
         # intentionally we do not call bootstrap hook here - it does not have sense
         chrootstate = "chroot %s" % args
         self.state.start(chrootstate)
-        result=0
+        result = 0
         try:
             if options.unpriv:
-                result = self.buildroot.doChroot(args, shell=shell, printOutput=True,
-                                                 uid=self.buildroot.chrootuid, gid=self.buildroot.chrootgid,
-                                                 user=self.buildroot.chrootuser, cwd=options.cwd,
-                                                 nspawn_args=self._get_nspawn_args(), raiseExc=False,
-                                                 unshare_net=self.private_network)[1]
+                result = self.buildroot.doChroot(
+                    args,
+                    shell=shell,
+                    printOutput=True,
+                    uid=self.buildroot.chrootuid,
+                    gid=self.buildroot.chrootgid,
+                    user=self.buildroot.chrootuser,
+                    cwd=options.cwd,
+                    nspawn_args=self._get_nspawn_args(),
+                    raiseExc=False,
+                    unshare_net=self.private_network,
+                )[1]
             else:
-                result = self.buildroot.doChroot(args, shell=shell, cwd=options.cwd,
-                                                 nspawn_args=self._get_nspawn_args(),
-                                                 unshare_net=self.private_network,
-                                                 printOutput=True, raiseExc=False)[1]
+                result = self.buildroot.doChroot(
+                    args,
+                    shell=shell,
+                    cwd=options.cwd,
+                    nspawn_args=self._get_nspawn_args(),
+                    unshare_net=self.private_network,
+                    printOutput=True,
+                    raiseExc=False,
+                )[1]
         finally:
             self.state.finish(chrootstate)
         self.plugins.call_hooks("postchroot")
@@ -400,35 +470,43 @@ class Commands(object):
             try:
                 options.tmp_prefix = os.getlogin()
             except OSError as e:
-                log.error("Could not find login name for tmp dir prefix add --tmp_prefix")
+                log.error(
+                    "Could not find login name for tmp dir prefix add --tmp_prefix"
+                )
                 sys.exit(1)
         pid = os.getpid()
-        self.config['uniqueext'] = '{0}-{1}'.format(options.tmp_prefix, pid)
+        self.config["uniqueext"] = "{0}-{1}".format(options.tmp_prefix, pid)
 
         # create a tempdir for our local info
         if options.localrepo:
             local_tmp_dir = os.path.abspath(options.localrepo)
         else:
-            pre = 'mock-chain-{0}-'.format(self.config['uniqueext'])
+            pre = "mock-chain-{0}-".format(self.config["uniqueext"])
             with self.uid_manager:
-                local_tmp_dir = tempfile.mkdtemp(prefix=pre, dir='/var/tmp')
+                local_tmp_dir = tempfile.mkdtemp(prefix=pre, dir="/var/tmp")
 
         with self.uid_manager:
-            self.config['local_repo_dir'] = os.path.normpath(
-                local_tmp_dir + '/results/' + self.config['chroot_name'] + '/')
-            util.mkdirIfAbsent(self.config['local_repo_dir'])
+            self.config["local_repo_dir"] = os.path.normpath(
+                local_tmp_dir + "/results/" + self.config["chroot_name"] + "/"
+            )
+            util.mkdirIfAbsent(self.config["local_repo_dir"])
 
-        local_baseurl = "file://{0}".format(self.config['local_repo_dir'])
-        log.info("results dir: %s", self.config['local_repo_dir'])
+        local_baseurl = "file://{0}".format(self.config["local_repo_dir"])
+        log.info("results dir: %s", self.config["local_repo_dir"])
         # modify with localrepo
-        util.add_local_repo(self.config, local_baseurl, 'local_build_repo',
-                            bootstrap=buildroot.bootstrap_buildroot)
+        util.add_local_repo(
+            self.config,
+            local_baseurl,
+            "local_build_repo",
+            bootstrap=buildroot.bootstrap_buildroot,
+        )
         for baseurl in options.repos:
-            util.add_local_repo(self.config, baseurl,
-                                bootstrap=buildroot.bootstrap_buildroot)
+            util.add_local_repo(
+                self.config, baseurl, bootstrap=buildroot.bootstrap_buildroot
+            )
 
         with self.uid_manager:
-            util.createrepo(self.config, self.config['local_repo_dir'])
+            util.createrepo(self.config, self.config["local_repo_dir"])
 
         download_dir = tempfile.mkdtemp()
         downloaded_pkgs = {}
@@ -442,28 +520,34 @@ class Commands(object):
             num_of_tries += 1
             failed = []
             for pkg in to_be_built:
-                if not pkg.endswith('.rpm'):
+                if not pkg.endswith(".rpm"):
                     log.error("%s doesn't appear to be an rpm - skipping", pkg)
                     failed.append(pkg)
                     continue
-                elif pkg.startswith('http://') or pkg.startswith('https://') or pkg.startswith('ftp://'):
+                elif (
+                    pkg.startswith("http://")
+                    or pkg.startswith("https://")
+                    or pkg.startswith("ftp://")
+                ):
                     url = pkg
                     try:
-                        log.info('Fetching %s', url)
+                        log.info("Fetching %s", url)
                         r = requests.get(url)
                         # pylint: disable=no-member
                         if r.status_code == requests.codes.ok:
-                            fn = urlsplit(r.url).path.rsplit('/', 1)[1]
-                            if 'content-disposition' in r.headers:
-                                _, params = cgi.parse_header(r.headers['content-disposition'])
-                                if 'filename' in params and params['filename']:
-                                    fn = params['filename']
-                            pkg = download_dir + '/' + fn
-                            with open(pkg, 'wb') as fd:
+                            fn = urlsplit(r.url).path.rsplit("/", 1)[1]
+                            if "content-disposition" in r.headers:
+                                _, params = cgi.parse_header(
+                                    r.headers["content-disposition"]
+                                )
+                                if "filename" in params and params["filename"]:
+                                    fn = params["filename"]
+                            pkg = download_dir + "/" + fn
+                            with open(pkg, "wb") as fd:
                                 for chunk in r.iter_content(4096):
                                     fd.write(chunk)
                     except Exception as e:
-                        log.error('Downloading %s: %s', url, str(e))
+                        log.error("Downloading %s: %s", url, str(e))
                         failed.append(url)
                         continue
                     else:
@@ -472,12 +556,12 @@ class Commands(object):
                 build_ret_code = 0
                 try:
                     s_pkg = os.path.basename(pkg)
-                    pdn = s_pkg.replace('.src.rpm', '')
-                    resultdir = os.path.join(self.config['local_repo_dir'], pdn)
+                    pdn = s_pkg.replace(".src.rpm", "")
+                    resultdir = os.path.join(self.config["local_repo_dir"], pdn)
                     self.buildroot.resultdir = resultdir
                     self.buildroot._resetLogging(force=True)
                     util.mkdirIfAbsent(resultdir)
-                    success_file = os.path.join(resultdir, 'success')
+                    success_file = os.path.join(resultdir, "success")
                     build_ret_code = 0
                     try:
                         if os.path.exists(success_file):
@@ -500,16 +584,20 @@ class Commands(object):
                         failed.append(pkg)
                         log.info("Error building %s.", os.path.basename(pkg))
                         if options.recurse:
-                            log.info("Will try to build again (if some other package will succeed).")
+                            log.info(
+                                "Will try to build again (if some other package will succeed)."
+                            )
                         else:
-                            log.info("See logs/results in %s", self.config['local_repo_dir'])
-                            util.touch(os.path.join(resultdir, 'fail'))
+                            log.info(
+                                "See logs/results in %s", self.config["local_repo_dir"]
+                            )
+                            util.touch(os.path.join(resultdir, "fail"))
                     elif build_ret_code == 0:
                         log.info("Success building %s", os.path.basename(pkg))
                         built_pkgs.append(pkg)
                         util.touch(success_file)
                         # createrepo with the new pkgs
-                        util.createrepo(self.config, self.config['local_repo_dir'])
+                        util.createrepo(self.config, self.config["local_repo_dir"])
                     elif build_ret_code == 2:
                         log.info("Skipping already built pkg %s", os.path.basename(pkg))
                         skipped_pkgs.append(pkg)
@@ -518,10 +606,16 @@ class Commands(object):
                 if len(failed) != len(to_be_built):
                     to_be_built = failed
                     try_again = True
-                    log.info('Some package succeeded, some failed.')
-                    log.info('Trying to rebuild %s failed pkgs, because --recurse is set.', len(failed))
+                    log.info("Some package succeeded, some failed.")
+                    log.info(
+                        "Trying to rebuild %s failed pkgs, because --recurse is set.",
+                        len(failed),
+                    )
                 else:
-                    log.info("Tried %s times - following pkgs could not be successfully built:", num_of_tries)
+                    log.info(
+                        "Tried %s times - following pkgs could not be successfully built:",
+                        num_of_tries,
+                    )
                     for pkg in failed:
                         msg = downloaded_pkgs.get(pkg, pkg)
                         log.info(msg)
@@ -535,7 +629,7 @@ class Commands(object):
         # cleaning up our download dir
         shutil.rmtree(download_dir, ignore_errors=True)
 
-        log.info("Results out to: %s", self.config['local_repo_dir'])
+        log.info("Results out to: %s", self.config["local_repo_dir"])
         if skipped_pkgs:
             log.info("Packages skipped: %s", len(skipped_pkgs))
             for pkg in skipped_pkgs:
@@ -561,30 +655,49 @@ class Commands(object):
         """build an srpm, capture log"""
 
         # tell caching we are building
-        self.plugins.call_hooks('earlyprebuild')
+        self.plugins.call_hooks("earlyprebuild")
         # intentionally we do not call bootstrap hook here - it does not have sense
 
         try:
-            self.uid_manager.becomeUser(self.buildroot.chrootuid, self.buildroot.chrootgid)
+            self.uid_manager.becomeUser(
+                self.buildroot.chrootuid, self.buildroot.chrootgid
+            )
             self.state.start("buildsrpm")
 
             # copy spec/sources
-            shutil.copy(spec, self.buildroot.make_chroot_path(self.buildroot.builddir, "SPECS"))
+            shutil.copy(
+                spec, self.buildroot.make_chroot_path(self.buildroot.builddir, "SPECS")
+            )
 
             if sources:
                 # Resolve any symlinks
                 sources = os.path.realpath(sources)
                 if os.path.isdir(sources):
-                    util.rmtree(self.buildroot.make_chroot_path(self.buildroot.builddir, "SOURCES"))
-                    shutil.copytree(sources,
-                                    self.buildroot.make_chroot_path(self.buildroot.builddir, "SOURCES"),
-                                    symlinks=(not follow_links))
+                    util.rmtree(
+                        self.buildroot.make_chroot_path(
+                            self.buildroot.builddir, "SOURCES"
+                        )
+                    )
+                    shutil.copytree(
+                        sources,
+                        self.buildroot.make_chroot_path(
+                            self.buildroot.builddir, "SOURCES"
+                        ),
+                        symlinks=(not follow_links),
+                    )
                 else:
-                    shutil.copy(sources, self.buildroot.make_chroot_path(self.buildroot.builddir, "SOURCES"))
+                    shutil.copy(
+                        sources,
+                        self.buildroot.make_chroot_path(
+                            self.buildroot.builddir, "SOURCES"
+                        ),
+                    )
 
-            spec = self.buildroot.make_chroot_path(self.buildroot.builddir, "SPECS", os.path.basename(spec))
+            spec = self.buildroot.make_chroot_path(
+                self.buildroot.builddir, "SPECS", os.path.basename(spec)
+            )
             # get rid of rootdir prefix
-            chrootspec = spec.replace(self.buildroot.make_chroot_path(), '')
+            chrootspec = spec.replace(self.buildroot.make_chroot_path(), "")
 
             self.state.start("rpmbuild -bs")
             try:
@@ -603,7 +716,7 @@ class Commands(object):
             self.uid_manager.restorePrivs()
 
             # tell caching we are done building
-            self.plugins.call_hooks('postbuild')
+            self.plugins.call_hooks("postbuild")
             # intentionally we do not call bootstrap hook here - it does not have sense
             self.state.finish("buildsrpm")
 
@@ -614,61 +727,82 @@ class Commands(object):
     @traceLog()
     def copy_srpm_into_chroot(self, srpm_path):
         srpmFilename = os.path.basename(srpm_path)
-        dest = self.buildroot.make_chroot_path(self.buildroot.builddir, 'originals')
+        dest = self.buildroot.make_chroot_path(self.buildroot.builddir, "originals")
         shutil.copyfile(srpm_path, os.path.join(dest, srpmFilename))
-        return os.path.join(self.buildroot.builddir, 'originals', srpmFilename)
+        return os.path.join(self.buildroot.builddir, "originals", srpmFilename)
 
     @traceLog()
     def copy_spec_into_chroot(self, spec_path):
         specFilename = os.path.basename(spec_path)
-        dest = self.buildroot.make_chroot_path(self.buildroot.builddir, 'originals')
+        dest = self.buildroot.make_chroot_path(self.buildroot.builddir, "originals")
         shutil.copy2(spec_path, os.path.join(dest, specFilename))
-        return os.path.join(self.buildroot.builddir, 'originals', specFilename)
+        return os.path.join(self.buildroot.builddir, "originals", specFilename)
 
     @traceLog()
     def get_specfile_name(self, srpm_path):
-        files = self.buildroot.doChroot([self.config['rpm_command'], "-qpl", srpm_path],
-                                        shell=False, uid=self.buildroot.chrootuid, gid=self.buildroot.chrootgid,
-                                        nspawn_args=self._get_nspawn_args(),
-                                        unshare_net=self.private_network,
-                                        user=self.buildroot.chrootuser,
-                                        returnOutput=True
-                                       )[0]
-        specs = [item.rstrip() for item in files.split('\n') if item.rstrip().endswith('.spec')]
+        files = self.buildroot.doChroot(
+            [self.config["rpm_command"], "-qpl", srpm_path],
+            shell=False,
+            uid=self.buildroot.chrootuid,
+            gid=self.buildroot.chrootgid,
+            nspawn_args=self._get_nspawn_args(),
+            unshare_net=self.private_network,
+            user=self.buildroot.chrootuser,
+            returnOutput=True,
+        )[0]
+        specs = [
+            item.rstrip()
+            for item in files.split("\n")
+            if item.rstrip().endswith(".spec")
+        ]
         if len(specs) < 1:
-            raise PkgError(
-                "No specfile found in srpm: " + os.path.basename(srpm_path))
+            raise PkgError("No specfile found in srpm: " + os.path.basename(srpm_path))
         return specs[0]
 
     @traceLog()
     def install_srpm(self, srpm_path):
-        self.buildroot.doChroot([self.config['rpm_command'], "-Uvh", "--nodeps", srpm_path],
-                                shell=False, uid=self.buildroot.chrootuid, gid=self.buildroot.chrootgid,
-                                user=self.buildroot.chrootuser,
-                                nspawn_args=self._get_nspawn_args(),
-                                unshare_net=self.private_network)
-
-    @traceLog()
-    def rebuild_installed_srpm(self, spec_path, timeout):
-        command = ['{command} -bs --target {0} --nodeps {1}'.format(
-            self.rpmbuild_arch, spec_path,
-            command=self.config['rpmbuild_command'])]
-        command = ["bash", "--login", "-c"] + command
         self.buildroot.doChroot(
-            command,
-            shell=False, logger=self.buildroot.build_log, timeout=timeout,
-            uid=self.buildroot.chrootuid, gid=self.buildroot.chrootgid,
+            [self.config["rpm_command"], "-Uvh", "--nodeps", srpm_path],
+            shell=False,
+            uid=self.buildroot.chrootuid,
+            gid=self.buildroot.chrootgid,
             user=self.buildroot.chrootuser,
             nspawn_args=self._get_nspawn_args(),
             unshare_net=self.private_network,
-            printOutput=self.config['print_main_output']
         )
-        results = glob.glob("%s/%s/SRPMS/*src.rpm" % (self.make_chroot_path(),
-                                                      self.buildroot.builddir))
+
+    @traceLog()
+    def rebuild_installed_srpm(self, spec_path, timeout):
+        command = [
+            "{command} -bs --target {0} --nodeps {1}".format(
+                self.rpmbuild_arch, spec_path, command=self.config["rpmbuild_command"]
+            )
+        ]
+        command = ["bash", "--login", "-c"] + command
+        self.buildroot.doChroot(
+            command,
+            shell=False,
+            logger=self.buildroot.build_log,
+            timeout=timeout,
+            uid=self.buildroot.chrootuid,
+            gid=self.buildroot.chrootgid,
+            user=self.buildroot.chrootuser,
+            nspawn_args=self._get_nspawn_args(),
+            unshare_net=self.private_network,
+            printOutput=self.config["print_main_output"],
+        )
+        results = glob.glob(
+            "%s/%s/SRPMS/*src.rpm" % (self.make_chroot_path(), self.buildroot.builddir)
+        )
         if len(results) != 1:
-            raise PkgError("Expected to find single rebuilt srpm, found %d in %s"
-                           % (len(results), "%s/%s/SRPMS/*src.rpm" % (self.make_chroot_path(),
-                                                                      self.buildroot.builddir)))
+            raise PkgError(
+                "Expected to find single rebuilt srpm, found %d in %s"
+                % (
+                    len(results),
+                    "%s/%s/SRPMS/*src.rpm"
+                    % (self.make_chroot_path(), self.buildroot.builddir),
+                )
+            )
         return results[0]
 
     @traceLog()
@@ -681,29 +815,36 @@ class Commands(object):
             # when EL5/6 targets are not supported, replace it with --nocheck
             check_opt += ["--define", "'__spec_check_template exit 0; '"]
 
-        mode = ['-bb']
-        sc = self.config.get('short_circuit')
+        mode = ["-bb"]
+        sc = self.config.get("short_circuit")
         if sc:
-            mode[0] = {'prep': '-bp',
-                       'install': '-bi',
-                       'build': '-bc',
-                       'binary': '-bb'}[sc]
-            mode += ['--short-circuit']
-        additional_opts = [self.config.get('rpmbuild_opts', '')]
-        if additional_opts == ['']:
+            mode[0] = {
+                "prep": "-bp",
+                "install": "-bi",
+                "build": "-bc",
+                "binary": "-bb",
+            }[sc]
+            mode += ["--short-circuit"]
+        additional_opts = [self.config.get("rpmbuild_opts", "")]
+        if additional_opts == [""]:
             additional_opts = []
 
         def get_command(mode):
-            command = [self.config['rpmbuild_command']] + mode + \
-                      ['--target', self.rpmbuild_arch, '--nodeps'] + \
-                      check_opt + [spec_path] + additional_opts
-            command = ["bash", "--login", "-c"] + [' '.join(command)]
+            command = (
+                [self.config["rpmbuild_command"]]
+                + mode
+                + ["--target", self.rpmbuild_arch, "--nodeps"]
+                + check_opt
+                + [spec_path]
+                + additional_opts
+            )
+            command = ["bash", "--login", "-c"] + [" ".join(command)]
             return command
 
         bd_out = self.make_chroot_path(self.buildroot.builddir)
-        max_loops = int(self.config.get('dynamic_buildrequires_max_loops'))
+        max_loops = int(self.config.get("dynamic_buildrequires_max_loops"))
         success = False
-        if dynamic_buildrequires and self.config.get('dynamic_buildrequires'):
+        if dynamic_buildrequires and self.config.get("dynamic_buildrequires"):
             while not success and max_loops > 0:
                 # run rpmbuild+installSrpmDeps until
                 # * it fails
@@ -711,21 +852,28 @@ class Commands(object):
                 # * or we run out of dynamic_buildrequires_max_loops tries
                 packages_before = self.buildroot.all_chroot_packages()
                 try:
-                    self.buildroot.doChroot(get_command(['-br']),
-                                            shell=False, logger=self.buildroot.build_log, timeout=timeout,
-                                            uid=self.buildroot.chrootuid, gid=self.buildroot.chrootgid,
-                                            user=self.buildroot.chrootuser,
-                                            nspawn_args=self._get_nspawn_args(),
-                                            unshare_net=self.private_network,
-                                            printOutput=self.config['print_main_output'])
+                    self.buildroot.doChroot(
+                        get_command(["-br"]),
+                        shell=False,
+                        logger=self.buildroot.build_log,
+                        timeout=timeout,
+                        uid=self.buildroot.chrootuid,
+                        gid=self.buildroot.chrootgid,
+                        user=self.buildroot.chrootuser,
+                        nspawn_args=self._get_nspawn_args(),
+                        unshare_net=self.private_network,
+                        printOutput=self.config["print_main_output"],
+                    )
                     success = True
                 except Error as e:
                     if e.resultcode != 11:
                         raise e
                     max_loops -= 1
                     self.buildroot.root_log.info("Dynamic buildrequires detected")
-                    self.buildroot.root_log.info("Going to install missing buildrequires")
-                    buildreqs = glob.glob(bd_out + '/SRPMS/*.buildreqs.nosrc.rpm')
+                    self.buildroot.root_log.info(
+                        "Going to install missing buildrequires"
+                    )
+                    buildreqs = glob.glob(bd_out + "/SRPMS/*.buildreqs.nosrc.rpm")
                     self.installSrpmDeps(*buildreqs)
                     packages_after = self.buildroot.all_chroot_packages()
                     if packages_after == packages_before:
@@ -735,19 +883,24 @@ class Commands(object):
                     if not sc:
                         # We want to (re-)write src.rpm with dynamic BuildRequires,
                         # but with short-circuit it doesn't matter
-                        mode = ['-ba']
+                        mode = ["-ba"]
                     # rpmbuild -br already does %prep, so we don't need waste time
                     # on re-doing it
-                    mode += ['--noprep']
-        self.buildroot.doChroot(get_command(mode),
-                                shell=False, logger=self.buildroot.build_log, timeout=timeout,
-                                uid=self.buildroot.chrootuid, gid=self.buildroot.chrootgid,
-                                user=self.buildroot.chrootuser,
-                                nspawn_args=self._get_nspawn_args(),
-                                unshare_net=self.private_network,
-                                printOutput=self.config['print_main_output'])
-        results = glob.glob(bd_out + '/RPMS/*.rpm')
-        results += glob.glob(bd_out + '/SRPMS/*.rpm')
+                    mode += ["--noprep"]
+        self.buildroot.doChroot(
+            get_command(mode),
+            shell=False,
+            logger=self.buildroot.build_log,
+            timeout=timeout,
+            uid=self.buildroot.chrootuid,
+            gid=self.buildroot.chrootgid,
+            user=self.buildroot.chrootuser,
+            nspawn_args=self._get_nspawn_args(),
+            unshare_net=self.private_network,
+            printOutput=self.config["print_main_output"],
+        )
+        results = glob.glob(bd_out + "/RPMS/*.rpm")
+        results += glob.glob(bd_out + "/SRPMS/*.rpm")
         self.buildroot.final_rpm_list = [os.path.basename(result) for result in results]
         return results
 

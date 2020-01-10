@@ -31,6 +31,7 @@ import struct
 import subprocess
 import sys
 import tempfile
+
 # pylint: disable=wrong-import-order
 import termios
 from textwrap import dedent
@@ -46,6 +47,7 @@ from . import exception
 from .trace_decorator import getLog, traceLog
 from .uid import getresuid, setresuid
 from pyroute2 import IPRoute
+
 # pylint: disable=no-name-in-module
 from collections.abc import MutableMapping
 
@@ -70,33 +72,67 @@ CLONE_NEWIPC = 0x08000000
 PER_LINUX32 = 0x0008
 PER_LINUX = 0x0000
 personality_defs = {
-    'x86_64': PER_LINUX, 'ppc64': PER_LINUX, 'sparc64': PER_LINUX,
-    'i386': PER_LINUX32, 'i586': PER_LINUX32, 'i686': PER_LINUX32,
-    'armv7': PER_LINUX32, 'armv7l': PER_LINUX32, 'armv7hl': PER_LINUX32,
-    'armv7hnl': PER_LINUX32, 'armv7hcnl': PER_LINUX32,
-    'armv7b': PER_LINUX32, 'armv7hb': PER_LINUX32,
-    'armv7hnb': PER_LINUX32, 'armv7hcnb': PER_LINUX32,
-    'armv8': PER_LINUX32, 'armv8l': PER_LINUX32, 'armv8hl': PER_LINUX32,
-    'armv8hnl': PER_LINUX32, 'armv8hcnl': PER_LINUX32,
-    'armv8b': PER_LINUX32, 'armv8hb': PER_LINUX32,
-    'armv8hnb': PER_LINUX32, 'armv8hcnb': PER_LINUX32,
-    'ppc': PER_LINUX32, 'sparc': PER_LINUX32, 'sparcv9': PER_LINUX32,
-    'ia64': PER_LINUX, 'alpha': PER_LINUX,
-    's390': PER_LINUX32, 's390x': PER_LINUX,
-    'mips': PER_LINUX32, 'mipsel': PER_LINUX32,
-    'mipsr6': PER_LINUX32, 'mipsr6el': PER_LINUX32,
-    'mips64': PER_LINUX, 'mips64el': PER_LINUX,
-    'mips64r6': PER_LINUX, 'mips64r6el': PER_LINUX,
+    "x86_64": PER_LINUX,
+    "ppc64": PER_LINUX,
+    "sparc64": PER_LINUX,
+    "i386": PER_LINUX32,
+    "i586": PER_LINUX32,
+    "i686": PER_LINUX32,
+    "armv7": PER_LINUX32,
+    "armv7l": PER_LINUX32,
+    "armv7hl": PER_LINUX32,
+    "armv7hnl": PER_LINUX32,
+    "armv7hcnl": PER_LINUX32,
+    "armv7b": PER_LINUX32,
+    "armv7hb": PER_LINUX32,
+    "armv7hnb": PER_LINUX32,
+    "armv7hcnb": PER_LINUX32,
+    "armv8": PER_LINUX32,
+    "armv8l": PER_LINUX32,
+    "armv8hl": PER_LINUX32,
+    "armv8hnl": PER_LINUX32,
+    "armv8hcnl": PER_LINUX32,
+    "armv8b": PER_LINUX32,
+    "armv8hb": PER_LINUX32,
+    "armv8hnb": PER_LINUX32,
+    "armv8hcnb": PER_LINUX32,
+    "ppc": PER_LINUX32,
+    "sparc": PER_LINUX32,
+    "sparcv9": PER_LINUX32,
+    "ia64": PER_LINUX,
+    "alpha": PER_LINUX,
+    "s390": PER_LINUX32,
+    "s390x": PER_LINUX,
+    "mips": PER_LINUX32,
+    "mipsel": PER_LINUX32,
+    "mipsr6": PER_LINUX32,
+    "mipsr6el": PER_LINUX32,
+    "mips64": PER_LINUX,
+    "mips64el": PER_LINUX,
+    "mips64r6": PER_LINUX,
+    "mips64r6el": PER_LINUX,
 }
 
-PLUGIN_LIST = ['tmpfs', 'root_cache', 'yum_cache', 'bind_mount',
-               'ccache', 'selinux', 'package_state', 'chroot_scan',
-               'lvm_root', 'compress_logs', 'sign', 'pm_request',
-               'hw_info', 'procenv']
+PLUGIN_LIST = [
+    "tmpfs",
+    "root_cache",
+    "yum_cache",
+    "bind_mount",
+    "ccache",
+    "selinux",
+    "package_state",
+    "chroot_scan",
+    "lvm_root",
+    "compress_logs",
+    "sign",
+    "pm_request",
+    "hw_info",
+    "procenv",
+]
 
 USE_NSPAWN = False
 
-RHEL_CLONES = ['centos', 'deskos', 'ol', 'rhel', 'scientific']
+RHEL_CLONES = ["centos", "deskos", "ol", "rhel", "scientific"]
 
 _OPS_TIMEOUT = 0
 
@@ -107,35 +143,47 @@ class commandTimeoutExpired(exception.Error):
         self.msg = msg
         self.resultcode = 10
 
+
 # pylint: disable=no-member,unsupported-assignment-operation
 class TemplatedDictionary(MutableMapping):
     """ Dictionary where __getitem__() is run through Jinja2 template """
+
     def __init__(self, *args, **kwargs):
-        '''Use the object dict'''
+        """Use the object dict"""
         self.__dict__.update(*args, **kwargs)
+
     # The next five methods are requirements of the ABC.
     def __setitem__(self, key, value):
         self.__dict__[key] = value
+
     def __getitem__(self, key):
-        if '__jinja_expand' in self.__dict__ and self.__dict__['__jinja_expand']:
+        if "__jinja_expand" in self.__dict__ and self.__dict__["__jinja_expand"]:
             return self.__render_value(self.__dict__[key])
         return self.__dict__[key]
+
     def __delitem__(self, key):
         del self.__dict__[key]
+
     def __iter__(self):
         return iter(self.__dict__)
+
     def __len__(self):
         return len(self.__dict__)
+
     # The final two methods aren't required, but nice to have
     def __str__(self):
-        '''returns simple dict representation of the mapping'''
+        """returns simple dict representation of the mapping"""
         return str(self.__dict__)
+
     def __repr__(self):
-        '''echoes class, id, & reproducible representation in the REPL'''
-        return '{}, TemplatedDictionary({})'.format(super(TemplatedDictionary, self).__repr__(),
-                                                    self.__dict__)
+        """echoes class, id, & reproducible representation in the REPL"""
+        return "{}, TemplatedDictionary({})".format(
+            super(TemplatedDictionary, self).__repr__(), self.__dict__
+        )
+
     def copy(self):
         return TemplatedDictionary(self.__dict__)
+
     def __render_value(self, value):
         if isinstance(value, str):
             return self.__render_string(value)
@@ -143,7 +191,7 @@ class TemplatedDictionary(MutableMapping):
             # we cannot use list comprehension here, as we need to NOT modify the list (pointer to list)
             # and we need to modifiy only individual values in the list
             # If we would create new list, we cannot assign to it, which often happens in configs (e.g. plugins)
-            for i in range(len(value)): # pylint: disable=consider-using-enumerate
+            for i in range(len(value)):  # pylint: disable=consider-using-enumerate
                 value[i] = self.__render_value(value[i])
             return value
         elif isinstance(value, dict):
@@ -153,9 +201,10 @@ class TemplatedDictionary(MutableMapping):
             return value
         else:
             return value
+
     def __render_string(self, value):
         orig = last = value
-        max_recursion = self.__dict__.get('jinja_max_recursion', 5)
+        max_recursion = self.__dict__.get("jinja_max_recursion", 5)
         for _ in range(max_recursion):
             template = jinja2.Template(value)
             value = _to_native(template.render(self.__dict__))
@@ -165,15 +214,16 @@ class TemplatedDictionary(MutableMapping):
         raise ValueError("too deep jinja re-evaluation on '{}'".format(orig))
 
 
-def _to_text(obj, arg_encoding='utf-8', errors='strict', nonstring='strict'):
+def _to_text(obj, arg_encoding="utf-8", errors="strict", nonstring="strict"):
     if isinstance(obj, str):
         return obj
     elif isinstance(obj, bytes):
         return obj.decode(arg_encoding, errors)
     else:
-        if nonstring == 'strict':
-            raise TypeError('First argument must be a string')
+        if nonstring == "strict":
+            raise TypeError("First argument must be a string")
         raise ValueError('nonstring must be one of: ["strict",]')
+
 
 _to_native = _to_text
 
@@ -181,8 +231,8 @@ _to_native = _to_text
 @traceLog()
 def get_proxy_environment(config):
     env = {}
-    for proto in ('http', 'https', 'ftp', 'no'):
-        key = '%s_proxy' % proto
+    for proto in ("http", "https", "ftp", "no"):
+        key = "%s_proxy" % proto
         value = config.get(key)
         if value:
             env[key] = value
@@ -202,13 +252,15 @@ def mkdirIfAbsent(*args):
             except OSError as e:
                 if e.errno != errno.EEXIST:
                     getLog().exception("Could not create dir %s. Error: %s", dirName, e)
-                    raise exception.Error("Could not create dir %s. Error: %s" % (dirName, e))
+                    raise exception.Error(
+                        "Could not create dir %s. Error: %s" % (dirName, e)
+                    )
 
 
 @traceLog()
 def touch(fileName):
     getLog().debug("touching file: %s", fileName)
-    open(fileName, 'a').close()
+    open(fileName, "a").close()
 
 
 @traceLog()
@@ -251,7 +303,9 @@ def rmtree(path, selinux=False, exclude=()):
                 raise
             if e.errno == errno.ENOENT:  # no such file or directory
                 pass
-            elif exclude and e.errno == errno.ENOTEMPTY:  # there's something excluded left
+            elif (
+                exclude and e.errno == errno.ENOTEMPTY
+            ):  # there's something excluded left
                 pass
             elif selinux and (e.errno == errno.EPERM or e.errno == errno.EACCES):
                 try_again = True
@@ -286,19 +340,21 @@ def get_machinectl_uuid(chroot_path):
     # we do not care about exit code, we just want the output
     # RHEL7 does not know --no-legend, so we must filter the legend out
     vm_list = _safe_check_output(["/bin/machinectl", "list", "--no-pager"])
-    if (isinstance(vm_list, bytes)):
+    if isinstance(vm_list, bytes):
         vm_list = vm_list.decode("utf-8")
-    vm_list = '\n'.join(vm_list.split('\n')[1:-2])
+    vm_list = "\n".join(vm_list.split("\n")[1:-2])
     for name in vm_list.split("\n"):
         if len(name) > 0:
             m_uuid = name.split()[0]
             try:
-                vm_root = _safe_check_output(["/bin/machinectl", "show", "-pRootDirectory", m_uuid])
-                if (isinstance(vm_root, bytes)):
+                vm_root = _safe_check_output(
+                    ["/bin/machinectl", "show", "-pRootDirectory", m_uuid]
+                )
+                if isinstance(vm_root, bytes):
                     vm_root = vm_root.decode("utf-8")
             except subprocess.CalledProcessError:
                 continue
-            vm_root = '='.join(vm_root.rstrip().split('=')[1:])
+            vm_root = "=".join(vm_root.rstrip().split("=")[1:])
             if vm_root == chroot_path:
                 return m_uuid
     # we should never get here
@@ -315,7 +371,11 @@ def orphansKill(rootToKill):
                 try:
                     root = os.readlink("/proc/%s/root" % fn)
                     if os.path.realpath(root) == os.path.realpath(rootToKill):
-                        getLog().warning("Process ID %s still running in chroot. Killing with %s...", fn, killsig)
+                        getLog().warning(
+                            "Process ID %s still running in chroot. Killing with %s...",
+                            fn,
+                            killsig,
+                        )
                         pid = int(fn, 10)
                         os.kill(pid, killsig)
                         os.waitpid(pid, 0)
@@ -331,23 +391,22 @@ def orphansKill(rootToKill):
 @traceLog()
 def yieldSrpmHeaders(srpms, plainRpmOk=0):
     import rpm
-    ts = rpm.TransactionSet('/')
+
+    ts = rpm.TransactionSet("/")
     # When RPM > 4.14.90 is common we can use RPMVSF_MASK_NOSIGNATURES, RPMVSF_MASK_NODIGESTS
     # pylint: disable=protected-access
-    flags = (rpm._RPMVSF_NOSIGNATURES | rpm._RPMVSF_NODIGESTS)
+    flags = rpm._RPMVSF_NOSIGNATURES | rpm._RPMVSF_NODIGESTS
     ts.setVSFlags(flags)
     for srpm in srpms:
         srpm = host_file(srpm)
         try:
             fd = os.open(srpm, os.O_RDONLY)
         except OSError as e:
-            raise exception.Error("Cannot find/open srpm: %s. Error: %s"
-                                  % (srpm, e))
+            raise exception.Error("Cannot find/open srpm: %s. Error: %s" % (srpm, e))
         try:
             hdr = ts.hdrFromFdno(fd)
         except rpm.error as e:
-            raise exception.Error(
-                "Cannot find/open srpm: %s. Error: %s" % (srpm, e))
+            raise exception.Error("Cannot find/open srpm: %s. Error: %s" % (srpm, e))
         finally:
             os.close(fd)
 
@@ -366,6 +425,7 @@ def checkSrpmHeaders(srpms, plainRpmOk=0):
 @traceLog()
 def getNEVRA(hdr):
     import rpm
+
     name = hdr[rpm.RPMTAG_NAME]
     ver = hdr[rpm.RPMTAG_VERSION]
     rel = hdr[rpm.RPMTAG_RELEASE]
@@ -379,9 +439,10 @@ def getNEVRA(hdr):
 
 @traceLog()
 def cmpKernelVer(str1, str2):
-    'compare two kernel version strings and return -1, 0, 1 for less, equal, greater'
+    "compare two kernel version strings and return -1, 0, 1 for less, equal, greater"
     import rpm
-    return rpm.labelCompare(('', str1, ''), ('', str2, ''))
+
+    return rpm.labelCompare(("", str1, ""), ("", str2, ""))
 
 
 @traceLog()
@@ -390,9 +451,11 @@ def getAddtlReqs(hdr, conf):
     # pylint: disable=unused-variable
     (name, epoch, ver, rel, arch) = getNEVRA(hdr)
     reqlist = []
-    for this_srpm in ['-'.join([name, ver, rel]),
-                      '-'.join([name, ver]),
-                      '-'.join([name])]:
+    for this_srpm in [
+        "-".join([name, ver, rel]),
+        "-".join([name, ver]),
+        "-".join([name]),
+    ]:
         if this_srpm in conf:
             more_reqs = conf[this_srpm]
             if isinstance(more_reqs, str):
@@ -417,9 +480,9 @@ def unshare(flags):
 
 def sethostname(hostname):
     getLog().info("Setting hostname: %s", hostname)
-    hostname = hostname.encode('utf-8')
+    hostname = hostname.encode("utf-8")
     if _libc.sethostname(hostname, len(hostname)) != 0:
-        raise OSError('Failed to sethostname %s' % hostname)
+        raise OSError("Failed to sethostname %s" % hostname)
 
 
 # these are called in child process, so no logging
@@ -429,7 +492,7 @@ def condChroot(chrootPath):
         setresuid(0, 0, 0)
         os.chdir(chrootPath)
         os.chroot(chrootPath)
-        setresuid(saved['ruid'], saved['euid'])
+        setresuid(saved["ruid"], saved["euid"])
 
 
 def condChdir(cwd):
@@ -445,7 +508,7 @@ def condDropPrivs(uid, gid):
 
 
 def condPersonality(per=None):
-    if per is None or per in ('noarch',):
+    if per is None or per in ("noarch",):
         return
     if personality_defs.get(per, None) is None:
         return
@@ -480,32 +543,43 @@ def condUnshareNet(unshare_net=True):
             # Missing default route may confuse some software, see
             # https://github.com/rpm-software-management/mock/issues/113
             ipr = IPRoute()
-            dev = ipr.link_lookup(ifname='lo')[0]
+            dev = ipr.link_lookup(ifname="lo")[0]
 
-            ipr.link('set', index=dev, state='up')
+            ipr.link("set", index=dev, state="up")
             ipr.route("add", dst="default", gateway="127.0.0.1")
         except exception.UnshareFailed:
             # IPC and UTS ns are supported since the same kernel version. If this
             # fails, there had to be a warning already
             pass
-        except Exception as e: # pylint: disable=broad-except
+        except Exception as e:  # pylint: disable=broad-except
             getLog().warning("network namespace setup failed: %s", e)
 
 
 def process_input(line):
     out = []
-    for char in line.rstrip('\r'):
-        if char == '\r':
+    for char in line.rstrip("\r"):
+        if char == "\r":
             out = []
-        elif char == '\b':
+        elif char == "\b":
             out.pop()
         else:
             out.append(char)
-    return ''.join(out)
+    return "".join(out)
 
 
-def logOutput(fdout, fderr, logger, returnOutput=1, start=0, timeout=0, printOutput=False,
-              child=None, chrootPath=None, pty=False, returnStderr=True):
+def logOutput(
+    fdout,
+    fderr,
+    logger,
+    returnOutput=1,
+    start=0,
+    timeout=0,
+    printOutput=False,
+    child=None,
+    chrootPath=None,
+    pty=False,
+    returnStderr=True,
+):
     output = ""
     done = False
     fds = [fdout, fderr]
@@ -516,7 +590,7 @@ def logOutput(fdout, fderr, logger, returnOutput=1, start=0, timeout=0, printOut
         if not fd.closed:
             fcntl.fcntl(fd, fcntl.F_SETFL, flags | os.O_NONBLOCK)
 
-    mockbuild_logger = logging.getLogger('mockbuild')
+    mockbuild_logger = logging.getLogger("mockbuild")
     stored_propagate = mockbuild_logger.propagate
     if printOutput:
         # prevent output being printed twice when log propagates to stdout
@@ -524,7 +598,7 @@ def logOutput(fdout, fderr, logger, returnOutput=1, start=0, timeout=0, printOut
         sys.stdout.flush()
     try:
         tail = ""
-        ansi_escape = re.compile(r'\x1b\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]\x0f?')
+        ansi_escape = re.compile(r"\x1b\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]\x0f?")
         while not done:
             if (time.time() - start) > timeout and timeout != 0:
                 done = True
@@ -548,18 +622,18 @@ def logOutput(fdout, fderr, logger, returnOutput=1, start=0, timeout=0, printOut
                     done = True
                     break
                 if printOutput:
-                    if hasattr(sys.stdout, 'buffer'):
+                    if hasattr(sys.stdout, "buffer"):
                         # python3 would print binary strings ugly
                         # pylint: disable=no-member
                         sys.stdout.buffer.write(raw)
                     else:
-                        print(raw, end='')
+                        print(raw, end="")
                     sys.stdout.flush()
 
                 if returnStderr is False and s == fderr:
                     continue
 
-                txt_input = raw.decode(encoding, 'replace')
+                txt_input = raw.decode(encoding, "replace")
                 lines = txt_input.split("\n")
                 if tail:
                     lines[0] = tail + lines[0]
@@ -569,16 +643,16 @@ def logOutput(fdout, fderr, logger, returnOutput=1, start=0, timeout=0, printOut
                     continue
                 if pty:
                     lines = [process_input(line) for line in lines]
-                processed_input = '\n'.join(lines) + '\n'
+                processed_input = "\n".join(lines) + "\n"
                 if "_mock_stderr_line_prefix" in dir(mockbuild_logger):
                     _mock_stderr_line_prefix = mockbuild_logger._mock_stderr_line_prefix
                 else:
                     _mock_stderr_line_prefix = ""
                 if logger is not None:
                     for line in lines:
-                        if line != '':
-                            line = ansi_escape.sub('', line)
-                            if fderr is s and not line.startswith('+ '):
+                        if line != "":
+                            line = ansi_escape.sub("", line)
+                            if fderr is s and not line.startswith("+ "):
                                 logger.debug("%s%s", _mock_stderr_line_prefix, line)
                             else:
                                 logger.debug(line)
@@ -589,7 +663,7 @@ def logOutput(fdout, fderr, logger, returnOutput=1, start=0, timeout=0, printOut
 
         if tail:
             if pty:
-                tail = process_input(tail) + '\n'
+                tail = process_input(tail) + "\n"
             if logger is not None:
                 logger.debug(tail)
             if returnOutput:
@@ -625,7 +699,7 @@ def selinuxEnabled():
 
 def resize_pty(pty):
     try:
-        winsize = struct.pack('HHHH', 0, 0, 0, 0)
+        winsize = struct.pack("HHHH", 0, 0, 0, 0)
         winsize = fcntl.ioctl(sys.stdout.fileno(), termios.TIOCGWINSZ, winsize)
         fcntl.ioctl(pty, termios.TIOCSWINSZ, winsize)
     except IOError:
@@ -637,6 +711,7 @@ def do(*args, **kargs):
     """ returns output of the command. Arguments are the same as for do_with_status() """
     return do_with_status(*args, **kargs)[0]
 
+
 # logger =
 # output = [1|0]
 # chrootPath
@@ -645,10 +720,27 @@ def do(*args, **kargs):
 #
 @traceLog()
 # pylint: disable=unused-argument
-def do_with_status(command, shell=False, chrootPath=None, cwd=None, timeout=0, raiseExc=True,
-                   returnOutput=0, uid=None, gid=None, user=None, personality=None,
-                   printOutput=False, env=None, pty=False, nspawn_args=None, unshare_net=False,
-                   returnStderr=True, *_, **kargs):
+def do_with_status(
+    command,
+    shell=False,
+    chrootPath=None,
+    cwd=None,
+    timeout=0,
+    raiseExc=True,
+    returnOutput=0,
+    uid=None,
+    gid=None,
+    user=None,
+    personality=None,
+    printOutput=False,
+    env=None,
+    pty=False,
+    nspawn_args=None,
+    unshare_net=False,
+    returnStderr=True,
+    *_,
+    **kargs
+):
     logger = kargs.get("logger", getLog())
     if timeout == 0:
         timeout = _OPS_TIMEOUT
@@ -657,9 +749,16 @@ def do_with_status(command, shell=False, chrootPath=None, cwd=None, timeout=0, r
     if pty:
         master_pty, slave_pty = os.openpty()
         resize_pty(slave_pty)
-        reader = os.fdopen(master_pty, 'rb')
-    preexec = ChildPreExec(personality, chrootPath, cwd, uid, gid,
-                           unshare_ipc=bool(chrootPath), unshare_net=unshare_net)
+        reader = os.fdopen(master_pty, "rb")
+    preexec = ChildPreExec(
+        personality,
+        chrootPath,
+        cwd,
+        uid,
+        gid,
+        unshare_ipc=bool(chrootPath),
+        unshare_net=unshare_net,
+    )
     if env is None:
         env = clean_env()
     stdout = None
@@ -671,19 +770,23 @@ def do_with_status(command, shell=False, chrootPath=None, cwd=None, timeout=0, r
     try:
         child = None
         if shell and isinstance(command, list):
-            command = ['/bin/sh', '-c'] + command
+            command = ["/bin/sh", "-c"] + command
             shell = False
         if chrootPath and USE_NSPAWN:
             logger.debug("Using nspawn with args %s", nspawn_args)
-            command = _prepare_nspawn_command(chrootPath, user, command,
-                                              nspawn_args=nspawn_args, env=env, cwd=cwd)
-        logger.debug("Executing command: %s with env %s and shell %s", command, env, shell)
+            command = _prepare_nspawn_command(
+                chrootPath, user, command, nspawn_args=nspawn_args, env=env, cwd=cwd
+            )
+        logger.debug(
+            "Executing command: %s with env %s and shell %s", command, env, shell
+        )
         with open(os.devnull, "r") as stdin:
             child = subprocess.Popen(
                 command,
                 shell=shell,
                 env=env,
-                bufsize=0, close_fds=True,
+                bufsize=0,
+                close_fds=True,
                 stdin=stdin,
                 stdout=slave_pty if pty else subprocess.PIPE,
                 stderr=subprocess.PIPE,
@@ -694,10 +797,18 @@ def do_with_status(command, shell=False, chrootPath=None, cwd=None, timeout=0, r
             with child.stderr:
                 # use select() to poll for output so we dont block
                 output = logOutput(
-                    reader if pty else child.stdout, child.stderr,
-                    logger, returnOutput, start, timeout, pty=pty,
-                    printOutput=printOutput, child=child,
-                    chrootPath=chrootPath, returnStderr=returnStderr)
+                    reader if pty else child.stdout,
+                    child.stderr,
+                    logger,
+                    returnOutput,
+                    start,
+                    timeout,
+                    pty=pty,
+                    printOutput=printOutput,
+                    child=child,
+                    chrootPath=chrootPath,
+                    returnStderr=returnStderr,
+                )
     except:
         # kill children if they arent done
         if child is not None and child.returncode is None:
@@ -705,7 +816,7 @@ def do_with_status(command, shell=False, chrootPath=None, cwd=None, timeout=0, r
         try:
             if child is not None:
                 os.waitpid(child.pid, 0)
-        except: # pylint: disable=bare-except
+        except:  # pylint: disable=bare-except
             pass
         raise
     finally:
@@ -727,21 +838,35 @@ def do_with_status(command, shell=False, chrootPath=None, cwd=None, timeout=0, r
 
     # only logging from this point, convert command to string
     if isinstance(command, list):
-        command = ' '.join(command)
+        command = " ".join(command)
 
     if not niceExit:
-        raise commandTimeoutExpired("Timeout(%s) expired for command:\n # %s\n%s" % (timeout, command, output))
+        raise commandTimeoutExpired(
+            "Timeout(%s) expired for command:\n # %s\n%s" % (timeout, command, output)
+        )
 
     logger.debug("Child return code was: %s", child.returncode)
     if raiseExc and child.returncode:
-        raise exception.Error("Command failed: \n # %s\n%s" % (command, output), child.returncode)
+        raise exception.Error(
+            "Command failed: \n # %s\n%s" % (command, output), child.returncode
+        )
 
     return (output, child.returncode)
 
 
 class ChildPreExec(object):
-    def __init__(self, personality, chrootPath, cwd, uid, gid, env=None,
-                 shell=False, unshare_ipc=False, unshare_net=False):
+    def __init__(
+        self,
+        personality,
+        chrootPath,
+        cwd,
+        uid,
+        gid,
+        env=None,
+        shell=False,
+        unshare_ipc=False,
+        unshare_net=False,
+    ):
         self.personality = personality
         self.chrootPath = chrootPath
         self.cwd = cwd
@@ -771,7 +896,8 @@ class ChildPreExec(object):
 
 
 class BindMountedFile(str):
-    'see host_file() doc'
+    "see host_file() doc"
+
     def __new__(cls, value, on_host=None):
         the_string = str.__new__(cls, value)
         the_string.on_host = on_host if on_host else value
@@ -785,7 +911,7 @@ def host_file(file):
     TODO: all the code parts which need this should be fixed so they
     are executed _inside_ bootstrap chroot, not on host.
     """
-    return file.on_host if hasattr(file, 'on_host') else file
+    return file.on_host if hasattr(file, "on_host") else file
 
 
 def reset_sigpipe():
@@ -810,19 +936,28 @@ def _nspawnTempResolvAtExit(path):
             getLog().warning("unable to delete temporary resolv.conf (%s): %s", path, e)
 
 
-def _prepare_nspawn_command(chrootPath, user, cmd, nspawn_args=None, env=None, cwd=None):
+def _prepare_nspawn_command(
+    chrootPath, user, cmd, nspawn_args=None, env=None, cwd=None
+):
     cmd_is_list = isinstance(cmd, list)
     if nspawn_args is None:
         nspawn_args = []
     if user:
         # user can be either id or name
         if cmd_is_list:
-            cmd = ['-u', str(user)] + cmd
+            cmd = ["-u", str(user)] + cmd
         else:
-            raise exception.Error('Internal Error: command must be list or shell=True.')
+            raise exception.Error("Internal Error: command must be list or shell=True.")
     elif not cmd_is_list:
         cmd = [cmd]
-    nspawn_argv = ['/usr/bin/systemd-nspawn', '-q', '-M', uuid.uuid4().hex, '-D', chrootPath]
+    nspawn_argv = [
+        "/usr/bin/systemd-nspawn",
+        "-q",
+        "-M",
+        uuid.uuid4().hex,
+        "-D",
+        chrootPath,
+    ]
     distro_label = distro.linux_distribution(full_distribution_name=False)[0]
     try:
         distro_version = float(distro.version() or 0)
@@ -830,13 +965,13 @@ def _prepare_nspawn_command(chrootPath, user, cmd, nspawn_args=None, env=None, c
         distro_version = 0
     if distro_label not in RHEL_CLONES or distro_version >= 7.5:
         # EL < 7.5 does not support the nspawn -a option. See BZ 1417387
-        nspawn_argv += ['-a']
+        nspawn_argv += ["-a"]
     nspawn_argv.extend(nspawn_args)
     if cwd:
-        nspawn_argv.append('--chdir={0}'.format(cwd))
+        nspawn_argv.append("--chdir={0}".format(cwd))
     if env:
         for k, v in env.items():
-            nspawn_argv.append('--setenv={0}={1}'.format(k, v))
+            nspawn_argv.append("--setenv={0}={1}".format(k, v))
     cmd = nspawn_argv + cmd
     if cmd_is_list:
         return cmd
@@ -844,34 +979,50 @@ def _prepare_nspawn_command(chrootPath, user, cmd, nspawn_args=None, env=None, c
         return " ".join(cmd)
 
 
-def doshell(chrootPath=None, environ=None, uid=None, gid=None, cmd=None,
-            nspawn_args=None,
-            unshare_ipc=True,
-            unshare_net=False):
+def doshell(
+    chrootPath=None,
+    environ=None,
+    uid=None,
+    gid=None,
+    cmd=None,
+    nspawn_args=None,
+    unshare_ipc=True,
+    unshare_net=False,
+):
     log = getLog()
     log.debug("doshell: chrootPath:%s, uid:%d, gid:%d", chrootPath, uid, gid)
     if environ is None:
         environ = clean_env()
-    if 'PROMPT_COMMAND' not in environ:
-        environ['PROMPT_COMMAND'] = r'printf "\033]0;<mock-chroot>\007"'
-    if 'PS1' not in environ:
-        environ['PS1'] = r'<mock-chroot> \s-\v\$ '
-    if 'SHELL' not in environ:
-        environ['SHELL'] = '/bin/sh'
+    if "PROMPT_COMMAND" not in environ:
+        environ["PROMPT_COMMAND"] = r'printf "\033]0;<mock-chroot>\007"'
+    if "PS1" not in environ:
+        environ["PS1"] = r"<mock-chroot> \s-\v\$ "
+    if "SHELL" not in environ:
+        environ["SHELL"] = "/bin/sh"
     log.debug("doshell environment: %s", environ)
     if cmd:
         if not isinstance(cmd, list):
             cmd = [cmd]
-        cmd = ['/bin/sh', '-c'] + [str(x) for x in cmd]
+        cmd = ["/bin/sh", "-c"] + [str(x) for x in cmd]
     else:
         cmd = ["/bin/sh", "-i", "-l"]
     if USE_NSPAWN:
         # nspawn cannot set gid
         log.debug("Using nspawn with args %s", nspawn_args)
-        cmd = _prepare_nspawn_command(chrootPath, uid, cmd, nspawn_args=nspawn_args, env=environ)
-    preexec = ChildPreExec(personality=None, chrootPath=chrootPath, cwd=None,
-                           uid=uid, gid=gid, env=environ, shell=True,
-                           unshare_ipc=unshare_ipc, unshare_net=unshare_net)
+        cmd = _prepare_nspawn_command(
+            chrootPath, uid, cmd, nspawn_args=nspawn_args, env=environ
+        )
+    preexec = ChildPreExec(
+        personality=None,
+        chrootPath=chrootPath,
+        cwd=None,
+        uid=uid,
+        gid=gid,
+        env=environ,
+        shell=True,
+        unshare_ipc=unshare_ipc,
+        unshare_net=unshare_net,
+    )
     log.debug("doshell: command: %s", cmd)
     return subprocess.call(cmd, preexec_fn=preexec, env=environ, shell=False)
 
@@ -884,280 +1035,292 @@ def run(cmd, isShell=True):
 
 def clean_env():
     env = {
-        'TERM': 'vt100',
-        'SHELL': '/bin/sh',
-        'HOME': '/builddir',
-        'HOSTNAME': 'mock',
-        'PATH': '/usr/bin:/bin:/usr/sbin:/sbin',
+        "TERM": "vt100",
+        "SHELL": "/bin/sh",
+        "HOME": "/builddir",
+        "HOSTNAME": "mock",
+        "PATH": "/usr/bin:/bin:/usr/sbin:/sbin",
     }
-    env['LANG'] = os.environ.setdefault('LANG', 'C.UTF-8')
+    env["LANG"] = os.environ.setdefault("LANG", "C.UTF-8")
     return env
 
 
 def get_fs_type(path):
-    cmd = ['/bin/stat', '-f', '-L', '-c', '%T', path]
-    p = subprocess.Popen(cmd, shell=False, stdout=subprocess.PIPE,
-                         universal_newlines=True)
+    cmd = ["/bin/stat", "-f", "-L", "-c", "%T", path]
+    p = subprocess.Popen(
+        cmd, shell=False, stdout=subprocess.PIPE, universal_newlines=True
+    )
     p.wait()
     with p.stdout as f:
         return f.readline().strip()
 
 
 def find_non_nfs_dir():
-    dirs = ('/dev/shm', '/run', '/tmp', '/usr/tmp', '/')
+    dirs = ("/dev/shm", "/run", "/tmp", "/usr/tmp", "/")
     for d in dirs:
-        if not get_fs_type(d).startswith('nfs'):
+        if not get_fs_type(d).startswith("nfs"):
             return d
-    raise exception.Error('Cannot find non-NFS directory in: %s' % dirs)
+    raise exception.Error("Cannot find non-NFS directory in: %s" % dirs)
 
 
 @traceLog()
 def setup_default_config_opts(unprivUid, version, pkgpythondir):
     "sets up default configuration."
     config_opts = TemplatedDictionary()
-    config_opts['config_paths'] = []
-    config_opts['version'] = version
-    config_opts['basedir'] = '/var/lib/mock'  # root name is automatically added to this
-    config_opts['resultdir'] = '{{basedir}}/{{root}}/result'
-    config_opts['cache_topdir'] = '/var/cache/mock'
-    config_opts['clean'] = True
-    config_opts['check'] = True
-    config_opts['post_install'] = False
-    config_opts['chroothome'] = '/builddir'
-    config_opts['log_config_file'] = 'logging.ini'
-    config_opts['rpmbuild_timeout'] = 0
-    config_opts['chrootuid'] = unprivUid
+    config_opts["config_paths"] = []
+    config_opts["version"] = version
+    config_opts["basedir"] = "/var/lib/mock"  # root name is automatically added to this
+    config_opts["resultdir"] = "{{basedir}}/{{root}}/result"
+    config_opts["cache_topdir"] = "/var/cache/mock"
+    config_opts["clean"] = True
+    config_opts["check"] = True
+    config_opts["post_install"] = False
+    config_opts["chroothome"] = "/builddir"
+    config_opts["log_config_file"] = "logging.ini"
+    config_opts["rpmbuild_timeout"] = 0
+    config_opts["chrootuid"] = unprivUid
     try:
-        config_opts['chrootgid'] = grp.getgrnam("mock")[2]
+        config_opts["chrootgid"] = grp.getgrnam("mock")[2]
     except KeyError:
         #  'mock' group doesn't exist, must set in config file
         pass
-    config_opts['chrootgroup'] = 'mock'
-    config_opts['chrootuser'] = 'mockbuild'
-    config_opts['build_log_fmt_name'] = "unadorned"
-    config_opts['root_log_fmt_name'] = "detailed"
-    config_opts['state_log_fmt_name'] = "state"
-    config_opts['online'] = True
-    config_opts['use_nspawn'] = True
-    config_opts['rpmbuild_networking'] = False
-    config_opts['nspawn_args'] = ['--capability=cap_ipc_lock']
-    config_opts['use_container_host_hostname'] = True
-    config_opts['use_bootstrap_container'] = False
+    config_opts["chrootgroup"] = "mock"
+    config_opts["chrootuser"] = "mockbuild"
+    config_opts["build_log_fmt_name"] = "unadorned"
+    config_opts["root_log_fmt_name"] = "detailed"
+    config_opts["state_log_fmt_name"] = "state"
+    config_opts["online"] = True
+    config_opts["use_nspawn"] = True
+    config_opts["rpmbuild_networking"] = False
+    config_opts["nspawn_args"] = ["--capability=cap_ipc_lock"]
+    config_opts["use_container_host_hostname"] = True
+    config_opts["use_bootstrap_container"] = False
 
-    config_opts['use_bootstrap_image'] = False
-    config_opts['bootstrap_image'] = 'fedora:latest'
+    config_opts["use_bootstrap_image"] = False
+    config_opts["bootstrap_image"] = "fedora:latest"
 
-    config_opts['internal_dev_setup'] = True
+    config_opts["internal_dev_setup"] = True
 
     # cleanup_on_* only take effect for separate --resultdir
     # config_opts provides fine-grained control. cmdline only has big hammer
-    config_opts['cleanup_on_success'] = True
-    config_opts['cleanup_on_failure'] = True
+    config_opts["cleanup_on_success"] = True
+    config_opts["cleanup_on_failure"] = True
 
-    config_opts['exclude_from_homedir_cleanup'] = ['build/SOURCES', '.bash_history',
-                                                   '.bashrc']
+    config_opts["exclude_from_homedir_cleanup"] = [
+        "build/SOURCES",
+        ".bash_history",
+        ".bashrc",
+    ]
 
-    config_opts['createrepo_on_rpms'] = False
-    config_opts['createrepo_command'] = '/usr/bin/createrepo_c -d -q -x *.src.rpm'  # default command
+    config_opts["createrepo_on_rpms"] = False
+    config_opts[
+        "createrepo_command"
+    ] = "/usr/bin/createrepo_c -d -q -x *.src.rpm"  # default command
 
-    config_opts['tar'] = "gnutar"
+    config_opts["tar"] = "gnutar"
 
-    config_opts['backup_on_clean'] = False
-    config_opts['backup_base_dir'] = "{{basedir}}/backup"
+    config_opts["backup_on_clean"] = False
+    config_opts["backup_base_dir"] = "{{basedir}}/backup"
 
-    config_opts['redhat_subscription_required'] = False
+    config_opts["redhat_subscription_required"] = False
 
     # (global) plugins and plugin configs.
     # ordering constraings: tmpfs must be first.
     #    root_cache next.
     #    after that, any plugins that must create dirs (yum_cache)
     #    any plugins without preinit hooks should be last.
-    config_opts['plugins'] = PLUGIN_LIST
-    config_opts['plugin_dir'] = os.path.join(pkgpythondir, "plugins")
-    config_opts['plugin_conf'] = {
-        'ccache_enable': False,
-        'ccache_opts': {
-            'max_cache_size': "4G",
-            'compress': None,
-            'dir': "{{cache_topdir}}/{{root}}/ccache/u{{chrootuid}}/"},
-        'yum_cache_enable': True,
-        'yum_cache_opts': {
-            'max_age_days': 30,
-            'max_metadata_age_days': 30,
-            'online': True},
-        'root_cache_enable': True,
-        'root_cache_opts': {
-            'age_check': True,
-            'max_age_days': 15,
-            'dir': "{{cache_topdir}}/{{root}}/root_cache/",
-            'tar': "gnutar",
-            'compress_program': 'pigz',
-            'decompress_program': None,
-            'exclude_dirs': ["./proc", "./sys", "./dev", "./tmp/ccache", "./var/cache/yum", "./var/cache/dnf",
-                             "./var/log"],
-            'extension': '.gz'},
-        'bind_mount_enable': True,
-        'bind_mount_opts': {
-            'dirs': [
+    config_opts["plugins"] = PLUGIN_LIST
+    config_opts["plugin_dir"] = os.path.join(pkgpythondir, "plugins")
+    config_opts["plugin_conf"] = {
+        "ccache_enable": False,
+        "ccache_opts": {
+            "max_cache_size": "4G",
+            "compress": None,
+            "dir": "{{cache_topdir}}/{{root}}/ccache/u{{chrootuid}}/",
+        },
+        "yum_cache_enable": True,
+        "yum_cache_opts": {
+            "max_age_days": 30,
+            "max_metadata_age_days": 30,
+            "online": True,
+        },
+        "root_cache_enable": True,
+        "root_cache_opts": {
+            "age_check": True,
+            "max_age_days": 15,
+            "dir": "{{cache_topdir}}/{{root}}/root_cache/",
+            "tar": "gnutar",
+            "compress_program": "pigz",
+            "decompress_program": None,
+            "exclude_dirs": [
+                "./proc",
+                "./sys",
+                "./dev",
+                "./tmp/ccache",
+                "./var/cache/yum",
+                "./var/cache/dnf",
+                "./var/log",
+            ],
+            "extension": ".gz",
+        },
+        "bind_mount_enable": True,
+        "bind_mount_opts": {
+            "dirs": [
                 # specify like this:
                 # ('/host/path', '/bind/mount/path/in/chroot/' ),
                 # ('/another/host/path', '/another/bind/mount/path/in/chroot/'),
             ],
-            'create_dirs': False},
-        'mount_enable': True,
-        'mount_opts': {'dirs': [
-            # specify like this:
-            # ("/dev/device", "/mount/path/in/chroot/", "vfstype", "mount_options"),
-        ]},
-        'tmpfs_enable': False,
-        'tmpfs_opts': {
-            'required_ram_mb': 900,
-            'max_fs_size': None,
-            'mode': '0755',
-            'keep_mounted': False},
-        'selinux_enable': True,
-        'selinux_opts': {},
-        'package_state_enable': True,
-        'package_state_opts': {
-            'available_pkgs': False,
-            'installed_pkgs': True,
+            "create_dirs": False,
         },
-        'pm_request_enable': False,
-        'pm_request_opts': {},
-        'lvm_root_enable': False,
-        'lvm_root_opts': {
-            'pool_name': 'mockbuild',
+        "mount_enable": True,
+        "mount_opts": {
+            "dirs": [
+                # specify like this:
+                # ("/dev/device", "/mount/path/in/chroot/", "vfstype", "mount_options"),
+            ]
         },
-        'chroot_scan_enable': False,
-        'chroot_scan_opts': {
-            'regexes': [
-                "^[^k]?core(\\.\\d+)?$", "\\.log$",
-            ],
-            'only_failed': True},
-        'sign_enable': False,
-        'sign_opts': {
-            'cmd': 'rpmsign',
-            'opts': '--addsign {{rpms}}',
+        "tmpfs_enable": False,
+        "tmpfs_opts": {
+            "required_ram_mb": 900,
+            "max_fs_size": None,
+            "mode": "0755",
+            "keep_mounted": False,
         },
-        'hw_info_enable': True,
-        'hw_info_opts': {
+        "selinux_enable": True,
+        "selinux_opts": {},
+        "package_state_enable": True,
+        "package_state_opts": {"available_pkgs": False, "installed_pkgs": True,},
+        "pm_request_enable": False,
+        "pm_request_opts": {},
+        "lvm_root_enable": False,
+        "lvm_root_opts": {"pool_name": "mockbuild",},
+        "chroot_scan_enable": False,
+        "chroot_scan_opts": {
+            "regexes": ["^[^k]?core(\\.\\d+)?$", "\\.log$",],
+            "only_failed": True,
         },
-        'procenv_enable': False,
-        'procenv_opts': {
-        },
-        'compress_logs_enable': False,
-        'compress_logs_opts': {
-            'command': 'gzip',
-        },
-
+        "sign_enable": False,
+        "sign_opts": {"cmd": "rpmsign", "opts": "--addsign {{rpms}}",},
+        "hw_info_enable": True,
+        "hw_info_opts": {},
+        "procenv_enable": False,
+        "procenv_opts": {},
+        "compress_logs_enable": False,
+        "compress_logs_opts": {"command": "gzip",},
     }
 
-    config_opts['environment'] = {
-        'TERM': 'vt100',
-        'SHELL': '/bin/bash',
-        'HOME': '/builddir',
-        'HOSTNAME': 'mock',
-        'PATH': '/usr/bin:/bin:/usr/sbin:/sbin',
-        'PROMPT_COMMAND': r'printf "\033]0;<mock-chroot>\007"',
-        'PS1': r'<mock-chroot> \s-\v\$ ',
-        'LANG': os.environ.setdefault('LANG', 'C.UTF-8'),
+    config_opts["environment"] = {
+        "TERM": "vt100",
+        "SHELL": "/bin/bash",
+        "HOME": "/builddir",
+        "HOSTNAME": "mock",
+        "PATH": "/usr/bin:/bin:/usr/sbin:/sbin",
+        "PROMPT_COMMAND": r'printf "\033]0;<mock-chroot>\007"',
+        "PS1": r"<mock-chroot> \s-\v\$ ",
+        "LANG": os.environ.setdefault("LANG", "C.UTF-8"),
     }
 
-    runtime_plugins = [runtime_plugin
-                       for (runtime_plugin, _)
-                       in [os.path.splitext(os.path.basename(tmp_path))
-                           for tmp_path
-                           in glob(config_opts['plugin_dir'] + "/*.py")]
-                       if runtime_plugin not in config_opts['plugins']]
+    runtime_plugins = [
+        runtime_plugin
+        for (runtime_plugin, _) in [
+            os.path.splitext(os.path.basename(tmp_path))
+            for tmp_path in glob(config_opts["plugin_dir"] + "/*.py")
+        ]
+        if runtime_plugin not in config_opts["plugins"]
+    ]
     for runtime_plugin in sorted(runtime_plugins):
-        config_opts['plugins'].append(runtime_plugin)
-        config_opts['plugin_conf'][runtime_plugin + "_enable"] = False
-        config_opts['plugin_conf'][runtime_plugin + "_opts"] = {}
+        config_opts["plugins"].append(runtime_plugin)
+        config_opts["plugin_conf"][runtime_plugin + "_enable"] = False
+        config_opts["plugin_conf"][runtime_plugin + "_opts"] = {}
 
     # SCM defaults
-    config_opts['scm'] = False
-    config_opts['scm_opts'] = {
-        'method': 'git',
-        'cvs_get': 'cvs -d /srv/cvs co SCM_BRN SCM_PKG',
-        'git_get': 'git clone SCM_BRN git://localhost/SCM_PKG.git SCM_PKG',
-        'svn_get': 'svn co file:///srv/svn/SCM_PKG/SCM_BRN SCM_PKG',
-        'distgit_get': 'rpkg clone -a --branch SCM_BRN SCM_PKG SCM_PKG',
-        'distgit_src_get': 'rpkg sources',
-        'spec': 'SCM_PKG.spec',
-        'ext_src_dir': os.devnull,
-        'write_tar': False,
-        'git_timestamps': False,
-        'exclude_vcs': True,
+    config_opts["scm"] = False
+    config_opts["scm_opts"] = {
+        "method": "git",
+        "cvs_get": "cvs -d /srv/cvs co SCM_BRN SCM_PKG",
+        "git_get": "git clone SCM_BRN git://localhost/SCM_PKG.git SCM_PKG",
+        "svn_get": "svn co file:///srv/svn/SCM_PKG/SCM_BRN SCM_PKG",
+        "distgit_get": "rpkg clone -a --branch SCM_BRN SCM_PKG SCM_PKG",
+        "distgit_src_get": "rpkg sources",
+        "spec": "SCM_PKG.spec",
+        "ext_src_dir": os.devnull,
+        "write_tar": False,
+        "git_timestamps": False,
+        "exclude_vcs": True,
     }
 
     # dependent on guest OS
-    config_opts['useradd'] = \
-        '/usr/sbin/useradd -o -m -u {{chrootuid}} -g {{chrootgid}} -d {{chroothome}} -n {{chrootuser}}'
-    config_opts['use_host_resolv'] = False
-    config_opts['chroot_setup_cmd'] = ('groupinstall', 'buildsys-build')
-    config_opts['target_arch'] = 'i386'
-    config_opts['releasever'] = None
-    config_opts['rpmbuild_arch'] = None  # <-- None means set automatically from target_arch
-    config_opts['yum.conf'] = ''
-    config_opts['dnf_vars'] = {}
-    config_opts['yum_builddep_opts'] = []
-    config_opts['yum_common_opts'] = []
-    config_opts['update_before_build'] = True
-    config_opts['priorities.conf'] = '\n[main]\nenabled=0'
-    config_opts['rhnplugin.conf'] = '\n[main]\nenabled=0'
-    config_opts['subscription-manager.conf'] = ''
-    config_opts['more_buildreqs'] = {}
-    config_opts['nosync'] = False
-    config_opts['nosync_force'] = False
-    config_opts['files'] = {}
-    config_opts['macros'] = {
-        '%_topdir': '%s/build' % config_opts['chroothome'],
-        '%_rpmfilename': '%%{NAME}-%%{VERSION}-%%{RELEASE}.%%{ARCH}.rpm',
+    config_opts[
+        "useradd"
+    ] = "/usr/sbin/useradd -o -m -u {{chrootuid}} -g {{chrootgid}} -d {{chroothome}} -n {{chrootuser}}"
+    config_opts["use_host_resolv"] = False
+    config_opts["chroot_setup_cmd"] = ("groupinstall", "buildsys-build")
+    config_opts["target_arch"] = "i386"
+    config_opts["releasever"] = None
+    config_opts[
+        "rpmbuild_arch"
+    ] = None  # <-- None means set automatically from target_arch
+    config_opts["yum.conf"] = ""
+    config_opts["dnf_vars"] = {}
+    config_opts["yum_builddep_opts"] = []
+    config_opts["yum_common_opts"] = []
+    config_opts["update_before_build"] = True
+    config_opts["priorities.conf"] = "\n[main]\nenabled=0"
+    config_opts["rhnplugin.conf"] = "\n[main]\nenabled=0"
+    config_opts["subscription-manager.conf"] = ""
+    config_opts["more_buildreqs"] = {}
+    config_opts["nosync"] = False
+    config_opts["nosync_force"] = False
+    config_opts["files"] = {}
+    config_opts["macros"] = {
+        "%_topdir": "%s/build" % config_opts["chroothome"],
+        "%_rpmfilename": "%%{NAME}-%%{VERSION}-%%{RELEASE}.%%{ARCH}.rpm",
     }
-    config_opts['hostname'] = None
-    config_opts['module_enable'] = []
-    config_opts['module_install'] = []
-    config_opts['forcearch'] = None
+    config_opts["hostname"] = None
+    config_opts["module_enable"] = []
+    config_opts["module_install"] = []
+    config_opts["forcearch"] = None
 
-    config_opts['bootstrap_chroot_additional_packages'] = []
-    config_opts['bootstrap_module_enable'] = []
-    config_opts['bootstrap_module_install'] = []
+    config_opts["bootstrap_chroot_additional_packages"] = []
+    config_opts["bootstrap_module_enable"] = []
+    config_opts["bootstrap_module_install"] = []
 
     # security config
-    config_opts['no_root_shells'] = False
-    config_opts['extra_chroot_dirs'] = []
+    config_opts["no_root_shells"] = False
+    config_opts["extra_chroot_dirs"] = []
 
-    config_opts['package_manager'] = 'dnf'
-    config_opts['package_manager_max_attempts'] = 1
-    config_opts['package_manager_attempt_delay'] = 10
+    config_opts["package_manager"] = "dnf"
+    config_opts["package_manager_max_attempts"] = 1
+    config_opts["package_manager_attempt_delay"] = 10
 
-    config_opts['dynamic_buildrequires'] = True
-    config_opts['dynamic_buildrequires_max_loops'] = 10
+    config_opts["dynamic_buildrequires"] = True
+    config_opts["dynamic_buildrequires_max_loops"] = 10
 
-    config_opts['dev_loop_count'] = 12
+    config_opts["dev_loop_count"] = 12
 
     # configurable commands executables
-    config_opts['yum_command'] = '/usr/bin/yum'
-    config_opts['system_yum_command'] = '/usr/bin/yum'
-    config_opts['yum_install_command'] = 'install yum yum-utils'
-    config_opts['yum_builddep_command'] = '/usr/bin/yum-builddep'
-    config_opts['dnf_command'] = '/usr/bin/dnf'
-    config_opts['system_dnf_command'] = '/usr/bin/dnf'
-    config_opts['dnf_install_command'] = 'install dnf dnf-plugins-core'
-    config_opts['microdnf_command'] = '/usr/bin/microdnf'
+    config_opts["yum_command"] = "/usr/bin/yum"
+    config_opts["system_yum_command"] = "/usr/bin/yum"
+    config_opts["yum_install_command"] = "install yum yum-utils"
+    config_opts["yum_builddep_command"] = "/usr/bin/yum-builddep"
+    config_opts["dnf_command"] = "/usr/bin/dnf"
+    config_opts["system_dnf_command"] = "/usr/bin/dnf"
+    config_opts["dnf_install_command"] = "install dnf dnf-plugins-core"
+    config_opts["microdnf_command"] = "/usr/bin/microdnf"
     # "dnf-install" is special keyword which tells mock to use install but with DNF
-    config_opts['microdnf_install_command'] = \
-        'dnf-install microdnf dnf dnf-plugins-core'
-    config_opts['microdnf_builddep_command'] = '/usr/bin/dnf'
-    config_opts['microdnf_builddep_opts'] = []
-    config_opts['microdnf_common_opts'] = []
-    config_opts['rpm_command'] = '/bin/rpm'
-    config_opts['rpmbuild_command'] = '/usr/bin/rpmbuild'
-    config_opts['dnf_disable_plugins'] = ['local', 'spacewalk']
+    config_opts[
+        "microdnf_install_command"
+    ] = "dnf-install microdnf dnf dnf-plugins-core"
+    config_opts["microdnf_builddep_command"] = "/usr/bin/dnf"
+    config_opts["microdnf_builddep_opts"] = []
+    config_opts["microdnf_common_opts"] = []
+    config_opts["rpm_command"] = "/bin/rpm"
+    config_opts["rpmbuild_command"] = "/usr/bin/rpmbuild"
+    config_opts["dnf_disable_plugins"] = ["local", "spacewalk"]
 
-    config_opts['opstimeout'] = 0
+    config_opts["opstimeout"] = 0
 
-    config_opts['stderr_line_prefix'] = ""
+    config_opts["stderr_line_prefix"] = ""
 
     return config_opts
 
@@ -1170,11 +1333,11 @@ def set_config_opts_per_cmdline(config_opts, options, args):
     for cli_opt in options.cli_config_opts:
         k, v = cli_opt.split("=", 1)
         # convert string to boolean and int if possible
-        if v in ['true', 'True']:
+        if v in ["true", "True"]:
             v = True
-        elif v in ['false', 'False']:
+        elif v in ["false", "False"]:
             v = False
-        elif v in ['none', 'None']:
+        elif v in ["none", "None"]:
             v = None
         else:
             try:
@@ -1186,7 +1349,7 @@ def set_config_opts_per_cmdline(config_opts, options, args):
         elif isinstance(cli_opt_new[k], list):
             cli_opt_new[k].append(v)
         else:
-            if v == '':
+            if v == "":
                 # hack!
                 # specify k twice, second v is empty, this make it list with one value
                 cli_opt_new[k] = [cli_opt_new[k]]
@@ -1194,83 +1357,92 @@ def set_config_opts_per_cmdline(config_opts, options, args):
                 cli_opt_new[k] = [cli_opt_new[k], v]
     config_opts.update(cli_opt_new)
 
-    config_opts['verbose'] = options.verbose
-    if 'print_main_output' not in config_opts or config_opts['print_main_output'] is None:
-        config_opts['print_main_output'] = config_opts['verbose'] > 0 and sys.stderr.isatty()
+    config_opts["verbose"] = options.verbose
+    if (
+        "print_main_output" not in config_opts
+        or config_opts["print_main_output"] is None
+    ):
+        config_opts["print_main_output"] = (
+            config_opts["verbose"] > 0 and sys.stderr.isatty()
+        )
 
     # do some other options and stuff
     if options.arch:
-        config_opts['target_arch'] = options.arch
+        config_opts["target_arch"] = options.arch
     if options.rpmbuild_arch:
-        config_opts['rpmbuild_arch'] = options.rpmbuild_arch
-    elif config_opts['rpmbuild_arch'] is None:
-        config_opts['rpmbuild_arch'] = config_opts['target_arch']
+        config_opts["rpmbuild_arch"] = options.rpmbuild_arch
+    elif config_opts["rpmbuild_arch"] is None:
+        config_opts["rpmbuild_arch"] = config_opts["target_arch"]
     if options.forcearch:
-        config_opts['forcearch'] = options.forcearch
+        config_opts["forcearch"] = options.forcearch
 
     if not options.clean:
-        config_opts['clean'] = options.clean
+        config_opts["clean"] = options.clean
 
     if not options.check:
-        config_opts['check'] = options.check
+        config_opts["check"] = options.check
 
     if options.post_install:
-        config_opts['post_install'] = options.post_install
+        config_opts["post_install"] = options.post_install
 
     for option in options.rpmwith:
-        options.rpmmacros.append("_with_%s --with-%s" %
-                                 (option.replace("-", "_"), option))
+        options.rpmmacros.append(
+            "_with_%s --with-%s" % (option.replace("-", "_"), option)
+        )
 
     for option in options.rpmwithout:
-        options.rpmmacros.append("_without_%s --without-%s" %
-                                 (option.replace("-", "_"), option))
+        options.rpmmacros.append(
+            "_without_%s --without-%s" % (option.replace("-", "_"), option)
+        )
 
     for macro in options.rpmmacros:
         try:
             macro = macro.strip()
             k, v = macro.split(" ", 1)
-            if not k.startswith('%'):
-                k = '%%%s' % k
-            config_opts['macros'].update({k: v})
+            if not k.startswith("%"):
+                k = "%%%s" % k
+            config_opts["macros"].update({k: v})
         except:
             raise exception.BadCmdline(
-                "Bad option for '--define' (%s).  Use --define 'macro expr'"
-                % macro)
+                "Bad option for '--define' (%s).  Use --define 'macro expr'" % macro
+            )
 
     if options.macrofile:
-        config_opts['macrofile'] = os.path.expanduser(options.macrofile)
-        if not os.path.isfile(config_opts['macrofile']):
+        config_opts["macrofile"] = os.path.expanduser(options.macrofile)
+        if not os.path.isfile(config_opts["macrofile"]):
             raise exception.BadCmdline(
-                "Input rpm macros file does not exist: %s"
-                % options.macrofile)
+                "Input rpm macros file does not exist: %s" % options.macrofile
+            )
 
     if options.resultdir:
-        config_opts['resultdir'] = os.path.expanduser(options.resultdir)
+        config_opts["resultdir"] = os.path.expanduser(options.resultdir)
     if options.rootdir:
-        config_opts['rootdir'] = os.path.expanduser(options.rootdir)
+        config_opts["rootdir"] = os.path.expanduser(options.rootdir)
     if options.uniqueext:
-        config_opts['unique-ext'] = options.uniqueext
+        config_opts["unique-ext"] = options.uniqueext
     if options.rpmbuild_timeout is not None:
-        config_opts['rpmbuild_timeout'] = options.rpmbuild_timeout
+        config_opts["rpmbuild_timeout"] = options.rpmbuild_timeout
     if options.bootstrapchroot is not None:
-        config_opts['use_bootstrap_container'] = options.bootstrapchroot
+        config_opts["use_bootstrap_container"] = options.bootstrapchroot
     if options.usebootstrapimage is not None:
-        config_opts['use_bootstrap_image'] = options.usebootstrapimage
+        config_opts["use_bootstrap_image"] = options.usebootstrapimage
         if options.usebootstrapimage:
-            config_opts['use_bootstrap_container'] = True
+            config_opts["use_bootstrap_container"] = True
 
     for i in options.disabled_plugins:
-        if i not in config_opts['plugins']:
+        if i not in config_opts["plugins"]:
             raise exception.BadCmdline(
                 "Bad option for '--disable-plugin=%s'. Expecting one of: %s"
-                % (i, config_opts['plugins']))
-        config_opts['plugin_conf']['%s_enable' % i] = False
+                % (i, config_opts["plugins"])
+            )
+        config_opts["plugin_conf"]["%s_enable" % i] = False
     for i in options.enabled_plugins:
-        if i not in config_opts['plugins']:
+        if i not in config_opts["plugins"]:
             raise exception.BadCmdline(
                 "Bad option for '--enable-plugin=%s'. Expecting one of: %s"
-                % (i, config_opts['plugins']))
-        config_opts['plugin_conf']['%s_enable' % i] = True
+                % (i, config_opts["plugins"])
+            )
+        config_opts["plugin_conf"]["%s_enable" % i] = True
     for option in options.plugin_opts:
         try:
             p, kv = option.split(":", 1)
@@ -1278,124 +1450,138 @@ def set_config_opts_per_cmdline(config_opts, options, args):
         except:
             raise exception.BadCmdline(
                 "Bad option for '--plugin-option' (%s).  Use --plugin-option 'plugin:key=value'"
-                % option)
-        if p not in config_opts['plugins']:
+                % option
+            )
+        if p not in config_opts["plugins"]:
             raise exception.BadCmdline(
                 "Bad option for '--plugin-option' (%s).  No such plugin: %s"
-                % (option, p))
+                % (option, p)
+            )
         try:
             v = literal_eval(v)
-        except: # pylint: disable=bare-except
+        except:  # pylint: disable=bare-except
             pass
-        config_opts['plugin_conf'][p + "_opts"].update({k: v})
+        config_opts["plugin_conf"][p + "_opts"].update({k: v})
 
     global USE_NSPAWN
-    USE_NSPAWN = config_opts['use_nspawn']
+    USE_NSPAWN = config_opts["use_nspawn"]
     log = logging.getLogger()
     if options.old_chroot:
         USE_NSPAWN = False
-        log.error('Option --old-chroot has been deprecated. Use --isolation=simple instead.')
+        log.error(
+            "Option --old-chroot has been deprecated. Use --isolation=simple instead."
+        )
     if options.new_chroot:
         USE_NSPAWN = True
-        log.error('Option --new-chroot has been deprecated. Use --isolation=nspawn instead.')
+        log.error(
+            "Option --new-chroot has been deprecated. Use --isolation=nspawn instead."
+        )
 
     if options.isolation is not None:
-        if options.isolation == 'simple':
+        if options.isolation == "simple":
             USE_NSPAWN = False
-        elif options.isolation == 'nspawn':
+        elif options.isolation == "nspawn":
             USE_NSPAWN = True
         else:
-            raise exception.BadCmdline("Bad option for '--isolation'. Unknown value: %s"
-                                       % (options.isolation))
+            raise exception.BadCmdline(
+                "Bad option for '--isolation'. Unknown value: %s" % (options.isolation)
+            )
 
     if options.enable_network:
-        config_opts['rpmbuild_networking'] = True
-        config_opts['use_host_resolv'] = True
+        config_opts["rpmbuild_networking"] = True
+        config_opts["use_host_resolv"] = True
 
     if options.mode in ("rebuild",) and len(args) > 1 and not options.resultdir:
         raise exception.BadCmdline(
-            "Must specify --resultdir when building multiple RPMS.")
+            "Must specify --resultdir when building multiple RPMS."
+        )
 
     if options.cleanup_after is False:
-        config_opts['cleanup_on_success'] = False
-        config_opts['cleanup_on_failure'] = False
+        config_opts["cleanup_on_success"] = False
+        config_opts["cleanup_on_failure"] = False
 
     if options.cleanup_after is True:
-        config_opts['cleanup_on_success'] = True
-        config_opts['cleanup_on_failure'] = True
+        config_opts["cleanup_on_success"] = True
+        config_opts["cleanup_on_failure"] = True
 
     check_config(config_opts)
     # can't cleanup unless resultdir is separate from the root dir
-    rootdir = os.path.join(config_opts['basedir'], config_opts['root'])
-    if is_in_dir(config_opts['resultdir'] % config_opts, rootdir):
-        config_opts['cleanup_on_success'] = False
-        config_opts['cleanup_on_failure'] = False
+    rootdir = os.path.join(config_opts["basedir"], config_opts["root"])
+    if is_in_dir(config_opts["resultdir"] % config_opts, rootdir):
+        config_opts["cleanup_on_success"] = False
+        config_opts["cleanup_on_failure"] = False
 
-    config_opts['cache_alterations'] = options.cache_alterations
+    config_opts["cache_alterations"] = options.cache_alterations
 
-    config_opts['online'] = options.online
+    config_opts["online"] = options.online
 
     if options.pkg_manager:
-        config_opts['package_manager'] = options.pkg_manager
-    if options.mode == 'yum-cmd':
-        config_opts['package_manager'] = 'yum'
-    if options.mode == 'dnf-cmd':
-        config_opts['package_manager'] = 'dnf'
+        config_opts["package_manager"] = options.pkg_manager
+    if options.mode == "yum-cmd":
+        config_opts["package_manager"] = "yum"
+    if options.mode == "dnf-cmd":
+        config_opts["package_manager"] = "dnf"
 
     if options.short_circuit:
-        config_opts['short_circuit'] = options.short_circuit
-        config_opts['clean'] = False
+        config_opts["short_circuit"] = options.short_circuit
+        config_opts["clean"] = False
 
     if options.rpmbuild_opts:
-        config_opts['rpmbuild_opts'] = options.rpmbuild_opts
+        config_opts["rpmbuild_opts"] = options.rpmbuild_opts
 
-    config_opts['enable_disable_repos'] = options.enable_disable_repos
+    config_opts["enable_disable_repos"] = options.enable_disable_repos
 
     if options.scm:
         try:
             # pylint: disable=unused-variable,unused-import
             from . import scm
         except ImportError as e:
-            raise exception.BadCmdline(
-                "Mock SCM module not installed: %s" % e)
+            raise exception.BadCmdline("Mock SCM module not installed: %s" % e)
 
-        config_opts['scm'] = options.scm
+        config_opts["scm"] = options.scm
         for option in options.scm_opts:
             try:
                 k, v = option.split("=", 1)
-                config_opts['scm_opts'].update({k: v})
+                config_opts["scm_opts"].update({k: v})
             except:
                 raise exception.BadCmdline(
                     "Bad option for '--scm-option' (%s).  Use --scm-option 'key=value'"
-                    % option)
+                    % option
+                )
 
 
 def check_config(config_opts):
-    if 'root' not in config_opts:
-        raise exception.ConfigError("Error in configuration "
-                                    "- option config_opts['root'] must be present in your config.")
+    if "root" not in config_opts:
+        raise exception.ConfigError(
+            "Error in configuration "
+            "- option config_opts['root'] must be present in your config."
+        )
 
 
 @traceLog()
 def include(config_file, config_opts):
     if not os.path.isabs(config_file):
-        config_file = os.path.join(config_opts['config_path'], config_file)
+        config_file = os.path.join(config_opts["config_path"], config_file)
 
     if os.path.exists(config_file):
-        if config_file in config_opts['config_paths']:
+        if config_file in config_opts["config_paths"]:
             getLog().warning("Multiple inclusion of %s, skipping" % config_file)
             return
 
-        config_opts['config_paths'].append(config_file)
+        config_opts["config_paths"].append(config_file)
 
         with open(config_file) as f:
             content = f.read()
-            content = re.sub(r'include\((.*)\)', r'include(\g<1>, config_opts)', content)
-            code = compile(content, config_file, 'exec')
+            content = re.sub(
+                r"include\((.*)\)", r"include(\g<1>, config_opts)", content
+            )
+            code = compile(content, config_file, "exec")
         # pylint: disable=exec-used
         exec(code)
     else:
-        raise exception.ConfigError("Could not find included config file: %s" % config_file)
+        raise exception.ConfigError(
+            "Could not find included config file: %s" % config_file
+        )
 
 
 @traceLog()
@@ -1408,21 +1594,24 @@ def update_config_from_file(config_opts, config_file, uid_manager):
             if uid_manager and not all(getresuid()):
                 uid_manager.dropPrivsForever()
             include(config_file, config_opts)
-            with os.fdopen(w_pipe, 'wb') as writer:
+            with os.fdopen(w_pipe, "wb") as writer:
                 pickle.dump(config_opts, writer)
-        except: # pylint: disable=bare-except
+        except:  # pylint: disable=bare-except
             import traceback
+
             etype, evalue, raw_tb = sys.exc_info()
             tb = traceback.extract_tb(raw_tb)
             tb = [entry for entry in tb if entry[0] == config_file]
-            print('\n'.join(traceback.format_list(tb)), file=sys.stderr)
-            print('\n'.join(traceback.format_exception_only(etype, evalue)),
-                  file=sys.stderr)
+            print("\n".join(traceback.format_list(tb)), file=sys.stderr)
+            print(
+                "\n".join(traceback.format_exception_only(etype, evalue)),
+                file=sys.stderr,
+            )
             sys.exit(1)
         sys.exit(0)
     else:
         os.close(w_pipe)
-        with os.fdopen(r_pipe, 'rb') as reader:
+        with os.fdopen(r_pipe, "rb") as reader:
             while True:
                 try:
                     new_config = reader.read()
@@ -1432,14 +1621,14 @@ def update_config_from_file(config_opts, config_file, uid_manager):
                         raise
             _, ret = os.wait()
             if ret != 0:
-                raise exception.ConfigError('Error in configuration')
+                raise exception.ConfigError("Error in configuration")
             if new_config:
                 config_opts.update(pickle.loads(new_config))
 
 
 def setup_operations_timeout(config_opts):
     global _OPS_TIMEOUT
-    _OPS_TIMEOUT = config_opts.get('opstimeout', 0)
+    _OPS_TIMEOUT = config_opts.get("opstimeout", 0)
 
 
 @traceLog()
@@ -1454,26 +1643,31 @@ def do_update_config(log, config_opts, cfg, uidManager, name, skipError=True):
         if name == "default":
             log.error("  Did you forget to specify the chroot to use with '-r'?")
         if "/" in cfg:
-            log.error("  If you're trying to specify a path, include the .cfg extension, e.g. -r ./target.cfg")
+            log.error(
+                "  If you're trying to specify a path, include the .cfg extension, e.g. -r ./target.cfg"
+            )
         sys.exit(1)
+
 
 @traceLog()
 def setup_host_resolv(config_opts):
-    if not config_opts['use_host_resolv']:
+    if not config_opts["use_host_resolv"]:
         # If we don't copy host's resolv.conf, we at least want to resolve
         # our own hostname.  See commit 28027fc26d.
-        if 'etc/hosts' not in config_opts['files']:
-            config_opts['files']['etc/hosts'] = dedent('''\
+        if "etc/hosts" not in config_opts["files"]:
+            config_opts["files"]["etc/hosts"] = dedent(
+                """\
                 127.0.0.1 localhost localhost.localdomain
                 ::1       localhost localhost.localdomain localhost6 localhost6.localdomain6
-                ''')
+                """
+            )
 
-    if not config_opts['use_nspawn']:
+    if not config_opts["use_nspawn"]:
         # Not using nspawn -> don't touch /etc/resolv.conf; we already have
         # a valid file prepared by Buildroot._init() (if user requested).
         return
 
-    if config_opts['rpmbuild_networking'] and not config_opts['use_host_resolv']:
+    if config_opts["rpmbuild_networking"] and not config_opts["use_host_resolv"]:
         # keep the default systemd-nspawn's /etc/resolv.conf
         return
 
@@ -1487,10 +1681,11 @@ def setup_host_resolv(config_opts):
     # make sure that anyone in container can read resolv.conf file
     os.chmod(resolv_path, 0o644)
 
-    if config_opts['use_host_resolv']:
-        shutil.copyfile('/etc/resolv.conf', resolv_path)
+    if config_opts["use_host_resolv"]:
+        shutil.copyfile("/etc/resolv.conf", resolv_path)
 
-    config_opts['nspawn_args'] += ['--bind={0}:/etc/resolv.conf'.format(resolv_path)]
+    config_opts["nspawn_args"] += ["--bind={0}:/etc/resolv.conf".format(resolv_path)]
+
 
 @traceLog()
 def load_defaults(uidManager, version, pkg_python_dir):
@@ -1500,63 +1695,75 @@ def load_defaults(uidManager, version, pkg_python_dir):
         gid = os.getuid()
     return setup_default_config_opts(gid, version, pkg_python_dir)
 
+
 @traceLog()
 def load_config(config_path, name, uidManager, version, pkg_python_dir):
     log = logging.getLogger()
     config_opts = load_defaults(uidManager, version, pkg_python_dir)
 
     # array to save config paths
-    config_opts['config_path'] = config_path
-    config_opts['chroot_name'] = name
+    config_opts["config_path"] = config_path
+    config_opts["chroot_name"] = name
 
     # Read in the config files: default, and then user specified
-    if name.endswith('.cfg'):
+    if name.endswith(".cfg"):
         # If the .cfg is explicitly specified we take the root arg to
         # specify a path, rather than looking it up in the configdir.
         chroot_cfg_path = name
-        config_opts['chroot_name'] = os.path.splitext(os.path.basename(name))[0]
+        config_opts["chroot_name"] = os.path.splitext(os.path.basename(name))[0]
     else:
         # ~/.config/mock/CHROOTNAME.cfg
-        cfg = os.path.join(os.path.expanduser('~' + pwd.getpwuid(os.getuid())[0]), '.config/mock/{}.cfg'.format(name))
+        cfg = os.path.join(
+            os.path.expanduser("~" + pwd.getpwuid(os.getuid())[0]),
+            ".config/mock/{}.cfg".format(name),
+        )
         if os.path.exists(cfg):
             chroot_cfg_path = cfg
         else:
-            chroot_cfg_path = '%s/%s.cfg' % (config_path, name)
-    config_opts['config_file'] = chroot_cfg_path
+            chroot_cfg_path = "%s/%s.cfg" % (config_path, name)
+    config_opts["config_file"] = chroot_cfg_path
 
-    cfg = os.path.join(config_path, 'site-defaults.cfg')
+    cfg = os.path.join(config_path, "site-defaults.cfg")
     do_update_config(log, config_opts, cfg, uidManager, name)
 
-    do_update_config(log, config_opts, chroot_cfg_path, uidManager, name, skipError=False)
+    do_update_config(
+        log, config_opts, chroot_cfg_path, uidManager, name, skipError=False
+    )
 
     # Read user specific config file
-    cfg = os.path.join(os.path.expanduser(
-        '~' + pwd.getpwuid(os.getuid())[0]), '.mock/user.cfg')
+    cfg = os.path.join(
+        os.path.expanduser("~" + pwd.getpwuid(os.getuid())[0]), ".mock/user.cfg"
+    )
     do_update_config(log, config_opts, cfg, uidManager, name)
-    cfg = os.path.join(os.path.expanduser(
-        '~' + pwd.getpwuid(os.getuid())[0]), '.config/mock.cfg')
+    cfg = os.path.join(
+        os.path.expanduser("~" + pwd.getpwuid(os.getuid())[0]), ".config/mock.cfg"
+    )
     do_update_config(log, config_opts, cfg, uidManager, name)
 
-    if config_opts['use_container_host_hostname'] and '%_buildhost' not in config_opts['macros']:
-        config_opts['macros']['%_buildhost'] = socket.getfqdn()
+    if (
+        config_opts["use_container_host_hostname"]
+        and "%_buildhost" not in config_opts["macros"]
+    ):
+        config_opts["macros"]["%_buildhost"] = socket.getfqdn()
 
     # Now when all options are correctly loaded from config files, turn the
     # jinja templating ON.
-    config_opts['__jinja_expand'] = True
+    config_opts["__jinja_expand"] = True
 
     return config_opts
 
 
 @traceLog()
 def check_macro_definition(config_opts):
-    for k, v in config_opts['macros'].items():
+    for k, v in config_opts["macros"].items():
         if not k or (not v and (v is not None)) or len(k.split()) != 1:
             raise exception.BadCmdline(
-                "Bad macros 'config_opts['macros']['%s'] = ['%s']'" % (k, v))
-        if not k.startswith('%'):
-            del config_opts['macros'][k]
-            k = '%{0}'.format(k)
-            config_opts['macros'].update({k: v})
+                "Bad macros 'config_opts['macros']['%s'] = ['%s']'" % (k, v)
+            )
+        if not k.startswith("%"):
+            del config_opts["macros"][k]
+            k = "%{0}".format(k)
+            config_opts["macros"].update({k: v})
 
 
 @traceLog()
@@ -1589,13 +1796,15 @@ def find_btrfs_in_chroot(mockdir, chroot_path):
     """
 
     try:
-        output = do(["btrfs", "subv", "list", mockdir], returnOutput=1, printOutput=False)
+        output = do(
+            ["btrfs", "subv", "list", mockdir], returnOutput=1, printOutput=False
+        )
     except OSError as e:
         # btrfs utility does not exist, nothing we can do about it
         if e.errno == errno.ENOENT:
             return None
         raise e
-    except Exception as e: # pylint: disable=broad-except
+    except Exception as e:  # pylint: disable=broad-except
         # it is not btrfs volume
         log = getLog()
         log.debug("Please ignore the error above above about btrfs.")
@@ -1612,8 +1821,8 @@ def find_btrfs_in_chroot(mockdir, chroot_path):
 def createrepo(config_opts, path):
     """ Create repository in given path. """
     cmd = shlex.split(config_opts["createrepo_command"])
-    if os.path.exists(os.path.join(path, 'repodata/repomd.xml')):
-        cmd.append('--update')
+    if os.path.exists(os.path.join(path, "repodata/repomd.xml")):
+        cmd.append("--update")
     cmd.append(path)
     return do(cmd)
 
@@ -1624,9 +1833,9 @@ REPOS_ID = []
 @traceLog()
 def generate_repo_id(baseurl):
     """ generate repository id for yum.conf out of baseurl """
-    repoid = "/".join(baseurl.split('//')[1:]).replace('/', '_')
-    repoid = re.sub(r'[^a-zA-Z0-9_]', '', repoid)
-    suffix = ''
+    repoid = "/".join(baseurl.split("//")[1:]).replace("/", "_")
+    repoid = re.sub(r"[^a-zA-Z0-9_]", "", repoid)
+    suffix = ""
     i = 1
     while repoid + suffix in REPOS_ID:
         suffix = str(i)
@@ -1652,29 +1861,32 @@ skip_if_unavailable=0
 metadata_expire=0
 cost=1
 best=1
-""".format(repoid=repoid, baseurl=baseurl)
+""".format(
+        repoid=repoid, baseurl=baseurl
+    )
 
-    config_opts['yum.conf'] += localyumrepo
+    config_opts["yum.conf"] += localyumrepo
 
     if bootstrap is None or not baseurl.startswith("file:///"):
         return
 
     local_dir = baseurl.replace("file://", "", 1)
     mountpoint = bootstrap.make_chroot_path(local_dir)
-    bootstrap.mounts.add(BindMountPoint(srcpath=local_dir,
-                                        bindpath=mountpoint))
+    bootstrap.mounts.add(BindMountPoint(srcpath=local_dir, bindpath=mountpoint))
 
 
 def subscription_redhat_init(opts):
-    if not opts['redhat_subscription_required']:
+    if not opts["redhat_subscription_required"]:
         return
 
-    if 'redhat_subscription_key_id' in opts:
+    if "redhat_subscription_key_id" in opts:
         return
 
-    if not os.path.isdir('/etc/pki/entitlement'):
-        raise exception.ConfigError("/etc/pki/entitlment is not a directory, "
-                                    "is subscription-manager installed?")
+    if not os.path.isdir("/etc/pki/entitlement"):
+        raise exception.ConfigError(
+            "/etc/pki/entitlment is not a directory, "
+            "is subscription-manager installed?"
+        )
 
     keys = glob("/etc/pki/entitlement/*-key.pem")
     if not keys:
@@ -1694,9 +1906,9 @@ def subscription_redhat_init(opts):
 
     # Use the first available key.
     key_file_name = os.path.basename(keys[0])
-    opts['redhat_subscription_key_id'] = key_file_name.split('-')[0]
+    opts["redhat_subscription_key_id"] = key_file_name.split("-")[0]
 
 
 def is_host_rh_family():
     distro_name = distro.linux_distribution(full_distribution_name=False)[0]
-    return distro_name in RHEL_CLONES + ['fedora']
+    return distro_name in RHEL_CLONES + ["fedora"]

@@ -35,6 +35,7 @@ class SELinux(object):
        - fake /sys/fs/selinux directory mount point
        - option '--setopt=tsflags=nocontext' is appended to each 'yum' command
     """
+
     # pylint: disable=too-few-public-methods
 
     @traceLog()
@@ -51,13 +52,17 @@ class SELinux(object):
 
         atexit.register(self._selinuxAtExit)
 
-        self.buildroot.mounts.add(BindMountPoint(srcpath=self.filesystems, bindpath=self.chrootFilesystems))
+        self.buildroot.mounts.add(
+            BindMountPoint(srcpath=self.filesystems, bindpath=self.chrootFilesystems)
+        )
 
         self.buildroot.mounts.essential_mounts.append(
             # essential mounts since we _always_ need to hide it
-            FileSystemMountPoint(filetype='tmpfs',
-                                 device='mock_hide_selinux_fs',
-                                 path=buildroot.make_chroot_path('/sys/fs/selinux'))
+            FileSystemMountPoint(
+                filetype="tmpfs",
+                device="mock_hide_selinux_fs",
+                path=buildroot.make_chroot_path("/sys/fs/selinux"),
+            )
         )
 
         plugins.add_hook("preyum", self._selinuxPreYumHook)
@@ -67,7 +72,7 @@ class SELinux(object):
     @traceLog()
     def _selinuxCreateFauxFilesystems():
         (fd, path) = tempfile.mkstemp(prefix="mock-selinux-plugin.")
-        with os.fdopen(fd, 'w') as out:
+        with os.fdopen(fd, "w") as out:
             with open("/proc/filesystems") as host:
                 for line in host:
                     if "selinuxfs" not in line:
@@ -82,7 +87,9 @@ class SELinux(object):
             try:
                 os.unlink(self.filesystems)
             except OSError as e:
-                getLog().warning("unable to delete selinux filesystems (%s): %s", self.filesystems, e)
+                getLog().warning(
+                    "unable to delete selinux filesystems (%s): %s", self.filesystems, e
+                )
 
     @traceLog()
     def _selinuxPreYumHook(self):

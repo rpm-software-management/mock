@@ -21,6 +21,7 @@ def init(plugins, conf, buildroot):
 class HwInfo(object):
     # pylint: disable=too-few-public-methods
     """caches root environment in a tarball"""
+
     @traceLog()
     def __init__(self, plugins, conf, buildroot):
         self.buildroot = buildroot
@@ -34,8 +35,8 @@ class HwInfo(object):
     @traceLog()
     def _unprivPreInitHook(self):
         getLog().info("enabled HW Info plugin")
-        out_file = self.buildroot.resultdir + '/hw_info.log'
-        out = codecs.open(out_file, 'w', 'utf-8', 'replace')
+        out_file = self.buildroot.resultdir + "/hw_info.log"
+        out = codecs.open(out_file, "w", "utf-8", "replace")
 
         cmd = ["/usr/bin/lscpu"]
         output = mockbuild.util.do(cmd, shell=False, returnOutput=True, raiseExc=False)

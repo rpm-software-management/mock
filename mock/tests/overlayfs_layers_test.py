@@ -38,13 +38,13 @@ import overlayfs
 
 # Dummy classes are used to satisfy plugin's constructor...
 
-class DummyPlugins(object):
 
-    def add_hook(self, _name, _method): #pylint: disable=no-self-use
+class DummyPlugins(object):
+    def add_hook(self, _name, _method):  # pylint: disable=no-self-use
         return
 
-class DummyConf(object):
 
+class DummyConf(object):
     def __init__(self, base_dir):
         self.base_dir = base_dir
 
@@ -52,18 +52,19 @@ class DummyConf(object):
         if name == "base_dir":
             return self.base_dir
 
-class DummyBuildRoot(object): # pylint: disable=too-few-public-methods
 
+class DummyBuildRoot(object):  # pylint: disable=too-few-public-methods
     def __init__(self, rootDir, sharedRootName):
         self.rootdir = rootDir
         self.shared_root_name = sharedRootName
+
 
 ####################
 #    TEST class    #
 ####################
 
-class LayersTest(object):
 
+class LayersTest(object):
     def __init__(self, baseDir, rootDir, configName):
         plugins = DummyPlugins()
         conf = DummyConf(baseDir)

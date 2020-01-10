@@ -25,6 +25,7 @@ def init(plugins, conf, buildroot):
 
 class ChrootScan(object):
     """scan chroot for files of interest, copying to resultdir with relative paths"""
+
     # pylint: disable=too-few-public-methods
     @traceLog()
     def __init__(self, plugins, conf, buildroot):
@@ -39,7 +40,7 @@ class ChrootScan(object):
 
     def _only_failed(self):
         """ Returns boolean value if option 'only_failed' is set. """
-        return str(self.scan_opts['only_failed']) == 'True'
+        return str(self.scan_opts["only_failed"]) == "True"
 
     @traceLog()
     def _scanChroot(self):
@@ -48,7 +49,7 @@ class ChrootScan(object):
             self.__scanChroot()
 
     def __scanChroot(self):
-        regexstr = "|".join(self.scan_opts['regexes'])
+        regexstr = "|".join(self.scan_opts["regexes"])
         regex = re.compile(regexstr)
         chroot = self.buildroot.make_chroot_path()
         mockbuild.util.mkdirIfAbsent(self.resultdir)
@@ -61,7 +62,11 @@ class ChrootScan(object):
                 m = regex.search(f)
                 if m:
                     srcpath = os.path.join(root, f)
-                    subprocess.call("cp --preserve=mode --parents %s %s" % (srcpath, self.resultdir), shell=True)
+                    subprocess.call(
+                        "cp --preserve=mode --parents %s %s"
+                        % (srcpath, self.resultdir),
+                        shell=True,
+                    )
                     count += 1
                     copied.append(srcpath)
         logger.debug("chroot_scan: finished with %d files found", count)
@@ -71,4 +76,4 @@ class ChrootScan(object):
             self.buildroot.uid_manager.changeOwner(self.resultdir, recursive=True)
             # some packages installs 555 perms on dirs,
             # so user can't delete/move chroot_scan's results
-            subprocess.call(['chmod', '-R', 'u+w', self.resultdir])
+            subprocess.call(["chmod", "-R", "u+w", self.resultdir])

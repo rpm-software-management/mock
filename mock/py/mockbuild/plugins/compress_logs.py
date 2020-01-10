@@ -12,6 +12,7 @@ requires_api_version = "1.1"
 
 class CompressLogsPlugin(object):
     """Compress logs in resultdir."""
+
     # pylint: disable=too-few-public-methods
     @traceLog()
     def __init__(self, plugins, conf, buildroot):
@@ -19,15 +20,22 @@ class CompressLogsPlugin(object):
         self.config = buildroot.config
         self.state = buildroot.state
         self.conf = conf
-        self.command = self.conf['command']
+        self.command = self.conf["command"]
         plugins.add_hook("postbuild", self._compress_logs)
         getLog().info("compress_logs: initialized")
 
     @traceLog()
     def _compress_logs(self):
         logger = getLog()
-        for f_name in ('root.log', 'build.log', 'state.log', 'available_pkgs.log',
-                       'installed_pkgs.log', 'hw_info.log', 'procenv.log'):
+        for f_name in (
+            "root.log",
+            "build.log",
+            "state.log",
+            "available_pkgs.log",
+            "installed_pkgs.log",
+            "hw_info.log",
+            "procenv.log",
+        ):
             f_path = os.path.join(self.buildroot.resultdir, f_name)
             if os.path.exists(f_path):
                 command = "{0} {1}".format(self.command, f_path)

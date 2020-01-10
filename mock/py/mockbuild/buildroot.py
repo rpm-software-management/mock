@@ -17,8 +17,13 @@ import uuid
 from . import mounts
 from . import uid
 from . import util
-from .exception import (BuildRootLocked, Error, ResultDirNotAccessible,
-                        RootError, BadCmdline)
+from .exception import (
+    BuildRootLocked,
+    Error,
+    ResultDirNotAccessible,
+    RootError,
+    BadCmdline,
+)
 from .package_manager import package_manager
 from .trace_decorator import getLog, traceLog
 from .podman import Podman
@@ -30,49 +35,59 @@ def noop_in_bootstrap(f):
             getLog().debug("method {} skipped in bootstrap".format(f.__name__))
             return
         return f(self, *args, **kwargs)
+
     return wrapper
 
 
 class Buildroot(object):
     @traceLog()
-    def __init__(self, config, uid_manager, state, plugins, bootstrap_buildroot=None, is_bootstrap=False):
+    def __init__(
+        self,
+        config,
+        uid_manager,
+        state,
+        plugins,
+        bootstrap_buildroot=None,
+        is_bootstrap=False,
+    ):
         self.config = config
         self.uid_manager = uid_manager
         self.state = state
         self.plugins = plugins
         self.bootstrap_buildroot = bootstrap_buildroot
         self.is_bootstrap = is_bootstrap
-        self.shared_root_name = config['root']
-        if 'unique-ext' in config:
-            config['root'] = "%s-%s" % (config['root'], config['unique-ext'])
-        self.root_name = config['root']
-        self.mockdir = config['basedir']
-        self.basedir = os.path.join(config['basedir'], config['root'])
-        if 'rootdir' in config:
-            self.rootdir = config['rootdir']
+        self.shared_root_name = config["root"]
+        if "unique-ext" in config:
+            config["root"] = "%s-%s" % (config["root"], config["unique-ext"])
+        self.root_name = config["root"]
+        self.mockdir = config["basedir"]
+        self.basedir = os.path.join(config["basedir"], config["root"])
+        if "rootdir" in config:
+            self.rootdir = config["rootdir"]
         else:
-            self.rootdir = os.path.join(self.basedir, 'root')
-        self.resultdir = config['resultdir'] % config
-        self.homedir = config['chroothome']
-        self.cache_topdir = config['cache_topdir']
+            self.rootdir = os.path.join(self.basedir, "root")
+        self.resultdir = config["resultdir"] % config
+        self.homedir = config["chroothome"]
+        self.cache_topdir = config["cache_topdir"]
         self.cachedir = os.path.join(self.cache_topdir, self.shared_root_name)
-        self.builddir = os.path.join(self.homedir, 'build')
+        self.builddir = os.path.join(self.homedir, "build")
         self._lock_file = None
-        self.selinux = (not self.config['plugin_conf']['selinux_enable']
-                        and util.selinuxEnabled())
+        self.selinux = (
+            not self.config["plugin_conf"]["selinux_enable"] and util.selinuxEnabled()
+        )
 
-        self.chrootuid = config['chrootuid']
-        self.chrootuser = config['chrootuser']
-        self.chrootgid = config['chrootgid']
-        self.chrootgroup = config['chrootgroup']
-        self.env = config['environment']
-        self.env['HOME'] = self.homedir
+        self.chrootuid = config["chrootuid"]
+        self.chrootuser = config["chrootuser"]
+        self.chrootgid = config["chrootgid"]
+        self.chrootgroup = config["chrootgroup"]
+        self.env = config["environment"]
+        self.env["HOME"] = self.homedir
         proxy_env = util.get_proxy_environment(config)
         self.env.update(proxy_env)
         os.environ.update(proxy_env)
 
-        self.use_bootstrap_image = self.config['use_bootstrap_image']
-        self.bootstrap_image = self.config['bootstrap_image']
+        self.use_bootstrap_image = self.config["use_bootstrap_image"]
+        self.bootstrap_image = self.config["bootstrap_image"]
 
         self.pkg_manager = package_manager(config, self, plugins, bootstrap_buildroot)
         self.mounts = mounts.Mounts(self)
@@ -94,7 +109,7 @@ class Buildroot(object):
     def make_chroot_path(self, *paths):
         new_path = self.rootdir
         for path in paths:
-            if path.startswith('/'):
+            if path.startswith("/"):
                 path = path[1:]
             new_path = os.path.join(new_path, path)
         return new_path
@@ -118,7 +133,7 @@ class Buildroot(object):
 
     @traceLog()
     def chroot_is_initialized(self):
-        return os.path.exists(self.make_chroot_path('.initialized'))
+        return os.path.exists(self.make_chroot_path(".initialized"))
 
     @traceLog()
     def _setup_result_dir(self):
@@ -126,24 +141,26 @@ class Buildroot(object):
             try:
                 util.mkdirIfAbsent(self.resultdir)
             except Error:
-                raise ResultDirNotAccessible(ResultDirNotAccessible.__doc__ % self.resultdir)
+                raise ResultDirNotAccessible(
+                    ResultDirNotAccessible.__doc__ % self.resultdir
+                )
 
     @traceLog()
     def _init(self, prebuild, do_log):
 
         self.state.start("chroot init")
         util.mkdirIfAbsent(self.basedir)
-        mockgid = grp.getgrnam('mock').gr_gid
+        mockgid = grp.getgrnam("mock").gr_gid
         os.chown(self.basedir, os.getuid(), mockgid)
         os.chmod(self.basedir, 0o2775)
         util.mkdirIfAbsent(self.make_chroot_path())
-        self.plugins.call_hooks('mount_root')
+        self.plugins.call_hooks("mount_root")
         # intentionally we do not call bootstrap hook here - it does not have sense
         self._setup_nosync()
         self.chroot_was_initialized = self.chroot_is_initialized()
         self._setup_result_dir()
         getLog().info("calling preinit hooks")
-        self.plugins.call_hooks('preinit')
+        self.plugins.call_hooks("preinit")
         # intentionally we do not call bootstrap hook here - it does not have sense
         self.chroot_was_initialized = self.chroot_is_initialized()
         if self.uses_bootstrap_image and not self.chroot_was_initialized:
@@ -169,8 +186,8 @@ class Buildroot(object):
         self.mounts.mountall_managed()
 
         # write out config details
-        self.root_log.debug('rootdir = %s', self.make_chroot_path())
-        self.root_log.debug('resultdir = %s', self.resultdir)
+        self.root_log.debug("rootdir = %s", self.make_chroot_path())
+        self.root_log.debug("resultdir = %s", self.resultdir)
 
         self.pkg_manager.initialize()
         self._setup_resolver_config()
@@ -184,15 +201,20 @@ class Buildroot(object):
             self._make_build_user()
             self._setup_build_dirs()
         elif prebuild:
-            if 'age_check' in self.config['plugin_conf']['root_cache_opts'] and \
-               not self.config['plugin_conf']['root_cache_opts']['age_check']:
+            if (
+                "age_check" in self.config["plugin_conf"]["root_cache_opts"]
+                and not self.config["plugin_conf"]["root_cache_opts"]["age_check"]
+            ):
                 self._init_pkg_management()
             # Recreates build user to ensure the uid/gid are up to date with config
             # and there's no garbage left by previous build
             self._make_build_user()
             self._setup_build_dirs()
-            if (self.config['online'] and self.config['update_before_build']
-                    and self.config['clean']):
+            if (
+                self.config["online"]
+                and self.config["update_before_build"]
+                and self.config["clean"]
+            ):
                 update_state = "{0} update".format(self.pkg_manager.name)
                 self.state.start(update_state)
                 self.pkg_manager.update()
@@ -206,10 +228,10 @@ class Buildroot(object):
                 self.chown_home_dir()
 
         # mark the buildroot as initialized
-        util.touch(self.make_chroot_path('.initialized'))
+        util.touch(self.make_chroot_path(".initialized"))
 
         # done with init
-        self.plugins.call_hooks('postinit')
+        self.plugins.call_hooks("postinit")
         # intentionally we do not call bootstrap hook here - it does not have sense
 
         self.mounts.mountall_user()
@@ -221,19 +243,20 @@ class Buildroot(object):
         self.nuke_rpm_db()
         env = dict(self.env)
         if nosync and self.nosync_path:
-            env['LD_PRELOAD'] = self.nosync_path
+            env["LD_PRELOAD"] = self.nosync_path
         if util.USE_NSPAWN:
-            if 'uid' not in kargs:
-                kargs['uid'] = uid.getresuid()[1]
-            if 'gid' not in kargs:
-                kargs['gid'] = uid.getresgid()[1]
-            if 'user' not in kargs:
-                kargs['gid'] = pwd.getpwuid(kargs['uid'])[0]
+            if "uid" not in kargs:
+                kargs["uid"] = uid.getresuid()[1]
+            if "gid" not in kargs:
+                kargs["gid"] = uid.getresgid()[1]
+            if "user" not in kargs:
+                kargs["gid"] = pwd.getpwuid(kargs["uid"])[0]
             self.uid_manager.becomeUser(0, 0)
 
         try:
-            result = util.do_with_status(command, chrootPath=self.make_chroot_path(),
-                                         env=env, *args, **kargs)
+            result = util.do_with_status(
+                command, chrootPath=self.make_chroot_path(), env=env, *args, **kargs
+            )
         finally:
             if util.USE_NSPAWN:
                 self.uid_manager.restorePrivs()
@@ -241,43 +264,48 @@ class Buildroot(object):
 
     def all_chroot_packages(self):
         """package set, result of rpm -qa in the buildroot"""
-        out = util.do([self.config['rpm_command'], "-qa",
-                       "--root", self.make_chroot_path()],
-                      returnOutput=True, printOutput=False, shell=False)
+        out = util.do(
+            [self.config["rpm_command"], "-qa", "--root", self.make_chroot_path()],
+            returnOutput=True,
+            printOutput=False,
+            shell=False,
+        )
         return set(out.splitlines())
 
     @traceLog()
     def _copy_config(self, filename):
-        etcdir = self.make_chroot_path('etc')
+        etcdir = self.make_chroot_path("etc")
         conf_file = os.path.join(etcdir, filename)
         if os.path.exists(conf_file):
             os.remove(conf_file)
-        orig_conf_file = os.path.join('/etc', filename)
+        orig_conf_file = os.path.join("/etc", filename)
         if os.path.exists(orig_conf_file):
             shutil.copy2(orig_conf_file, etcdir)
         else:
-            self.root_log.warning("File %s not present. It is not copied into the chroot.", orig_conf_file)
+            self.root_log.warning(
+                "File %s not present. It is not copied into the chroot.", orig_conf_file
+            )
 
     @traceLog()
     def _setup_resolver_config(self):
-        if self.config['use_host_resolv'] and self.config['rpmbuild_networking']:
-            self._copy_config('resolv.conf')
-            self._copy_config('hosts')
+        if self.config["use_host_resolv"] and self.config["rpmbuild_networking"]:
+            self._copy_config("resolv.conf")
+            self._copy_config("hosts")
 
     @traceLog()
     def _setup_dbus_uuid(self):
         machine_uuid = uuid.uuid4().hex
-        dbus_uuid_path = self.make_chroot_path('etc', 'machine-id')
-        symlink_path = self.make_chroot_path('var', 'lib', 'dbus', 'machine-id')
-        with open(dbus_uuid_path, 'w') as uuid_file:
+        dbus_uuid_path = self.make_chroot_path("etc", "machine-id")
+        symlink_path = self.make_chroot_path("var", "lib", "dbus", "machine-id")
+        with open(dbus_uuid_path, "w") as uuid_file:
             uuid_file.write(machine_uuid)
-            uuid_file.write('\n')
+            uuid_file.write("\n")
         if not os.path.exists(symlink_path):
             os.symlink("../../../etc/machine-id", symlink_path)
 
     @traceLog()
     def _setup_timezone(self):
-        self._copy_config('localtime')
+        self._copy_config("localtime")
 
     @traceLog()
     def _init_pkg_management(self):
@@ -287,27 +315,38 @@ class Buildroot(object):
             # modules, isn't usefull in bootstrap)
             return
 
-        update_state = '{0} install'.format(self.pkg_manager.name)
+        update_state = "{0} install".format(self.pkg_manager.name)
         self.state.start(update_state)
-        if 'module_enable' in self.config and self.config['module_enable']:
-            cmd = ['module', 'enable'] + self.config['module_enable']
-            self.pkg_manager.init_install_output += self.pkg_manager.execute(*cmd, returnOutput=1)
-        if 'module_install' in self.config and self.config['module_install']:
-            cmd = ['module', 'install'] + self.config['module_install']
-            self.pkg_manager.init_install_output += self.pkg_manager.execute(*cmd, returnOutput=1)
+        if "module_enable" in self.config and self.config["module_enable"]:
+            cmd = ["module", "enable"] + self.config["module_enable"]
+            self.pkg_manager.init_install_output += self.pkg_manager.execute(
+                *cmd, returnOutput=1
+            )
+        if "module_install" in self.config and self.config["module_install"]:
+            cmd = ["module", "install"] + self.config["module_install"]
+            self.pkg_manager.init_install_output += self.pkg_manager.execute(
+                *cmd, returnOutput=1
+            )
 
-        cmd = self.config['chroot_setup_cmd']
+        cmd = self.config["chroot_setup_cmd"]
         if cmd:
             if isinstance(cmd, str):
                 cmd = cmd.split()
-            self.pkg_manager.init_install_output += self.pkg_manager.execute(*cmd, returnOutput=1)
+            self.pkg_manager.init_install_output += self.pkg_manager.execute(
+                *cmd, returnOutput=1
+            )
 
-        if 'chroot_additional_packages' in self.config and self.config['chroot_additional_packages']:
-            cmd = self.config['chroot_additional_packages']
+        if (
+            "chroot_additional_packages" in self.config
+            and self.config["chroot_additional_packages"]
+        ):
+            cmd = self.config["chroot_additional_packages"]
             if isinstance(cmd, str):
                 cmd = cmd.split()
-            cmd = ['install'] + cmd
-            self.pkg_manager.init_install_output += self.pkg_manager.execute(*cmd, returnOutput=1)
+            cmd = ["install"] + cmd
+            self.pkg_manager.init_install_output += self.pkg_manager.execute(
+                *cmd, returnOutput=1
+            )
 
         self.state.finish(update_state)
 
@@ -316,57 +355,84 @@ class Buildroot(object):
     def _fixup_build_user(self):
         """ensure chrootuser has correct UID"""
         # --non-unique can be removed after 2019-03-31 (EOL of SLES 11)
-        self.doChroot(['/usr/sbin/usermod', '-u', str(self.chrootuid), '--non-unique',
-                       self.chrootuser],
-                      shell=False, nosync=True)
+        self.doChroot(
+            [
+                "/usr/sbin/usermod",
+                "-u",
+                str(self.chrootuid),
+                "--non-unique",
+                self.chrootuser,
+            ],
+            shell=False,
+            nosync=True,
+        )
 
     @traceLog()
     @noop_in_bootstrap
     def _make_build_user(self):
-        if not os.path.exists(self.make_chroot_path('usr/sbin/useradd')):
-            raise RootError("Could not find useradd in chroot, maybe the install failed?")
+        if not os.path.exists(self.make_chroot_path("usr/sbin/useradd")):
+            raise RootError(
+                "Could not find useradd in chroot, maybe the install failed?"
+            )
 
-        excluded = [self.make_chroot_path(self.homedir, path)
-                    for path in self.config['exclude_from_homedir_cleanup']] + \
-            self.mounts.get_mountpoints()
-        util.rmtree(self.make_chroot_path(self.homedir),
-                    selinux=self.selinux, exclude=excluded)
+        excluded = [
+            self.make_chroot_path(self.homedir, path)
+            for path in self.config["exclude_from_homedir_cleanup"]
+        ] + self.mounts.get_mountpoints()
+        util.rmtree(
+            self.make_chroot_path(self.homedir), selinux=self.selinux, exclude=excluded
+        )
 
         # ok for these two to fail
-        if self.config['clean']:
-            self.doChroot(['/usr/sbin/userdel', '-r', '-f', self.chrootuser],
-                          shell=False, raiseExc=False, nosync=True)
+        if self.config["clean"]:
+            self.doChroot(
+                ["/usr/sbin/userdel", "-r", "-f", self.chrootuser],
+                shell=False,
+                raiseExc=False,
+                nosync=True,
+            )
         else:
-            self.doChroot(['/usr/sbin/userdel', '-f', self.chrootuser],
-                          shell=False, raiseExc=False, nosync=True)
-        self.doChroot(['/usr/sbin/groupdel', self.chrootgroup],
-                      shell=False, raiseExc=False, nosync=True)
+            self.doChroot(
+                ["/usr/sbin/userdel", "-f", self.chrootuser],
+                shell=False,
+                raiseExc=False,
+                nosync=True,
+            )
+        self.doChroot(
+            ["/usr/sbin/groupdel", self.chrootgroup],
+            shell=False,
+            raiseExc=False,
+            nosync=True,
+        )
 
         if self.chrootgid:
-            self.doChroot(['/usr/sbin/groupadd', '-g', self.chrootgid, self.chrootgroup],
-                          shell=False, nosync=True)
-        self.doChroot(shlex.split(self.config['useradd']), shell=False, nosync=True)
-        if not self.config['clean']:
+            self.doChroot(
+                ["/usr/sbin/groupadd", "-g", self.chrootgid, self.chrootgroup],
+                shell=False,
+                nosync=True,
+            )
+        self.doChroot(shlex.split(self.config["useradd"]), shell=False, nosync=True)
+        if not self.config["clean"]:
             self.uid_manager.changeOwner(self.make_chroot_path(self.homedir))
         self._enable_chrootuser_account()
 
     @traceLog()
     def _enable_chrootuser_account(self):
-        passwd = self.make_chroot_path('/etc/passwd')
+        passwd = self.make_chroot_path("/etc/passwd")
         with open(passwd) as f:
             lines = f.readlines()
         disabled = False
         newlines = []
         for l in lines:
-            parts = l.strip().split(':')
-            if parts[0] == self.chrootuser and parts[1].startswith('!!'):
+            parts = l.strip().split(":")
+            if parts[0] == self.chrootuser and parts[1].startswith("!!"):
                 disabled = True
                 parts[1] = parts[1][2:]
-            newlines.append(':'.join(parts))
+            newlines.append(":".join(parts))
         if disabled:
             with open(passwd, "w") as f:
                 for l in newlines:
-                    f.write(l + '\n')
+                    f.write(l + "\n")
 
     @traceLog()
     def _resetLogging(self, force=False):
@@ -381,9 +447,10 @@ class Buildroot(object):
             # This happens in addition to anything that
             # is set up in the config file... ie. logs go everywhere
             for (log, filename, fmt_str) in (
-                    (self.state.state_log, "state.log", self.config['state_log_fmt_str']),
-                    (self.build_log, "build.log", self.config['build_log_fmt_str']),
-                    (self.root_log, "root.log", self.config['root_log_fmt_str'])):
+                (self.state.state_log, "state.log", self.config["state_log_fmt_str"]),
+                (self.build_log, "build.log", self.config["build_log_fmt_str"]),
+                (self.root_log, "root.log", self.config["root_log_fmt_str"]),
+            ):
                 # release used FileHandlers if re-initializing to not leak FDs
                 if force:
                     for handler in log.handlers[:]:
@@ -395,23 +462,23 @@ class Buildroot(object):
                 fh.setFormatter(formatter)
                 fh.setLevel(logging.NOTSET)
                 log.addHandler(fh)
-                log.info("Mock Version: %s", self.config['version'])
+                log.info("Mock Version: %s", self.config["version"])
 
     @traceLog()
     def _init_aux_files(self):
-        chroot_file_contents = self.config['files']
+        chroot_file_contents = self.config["files"]
         for key in chroot_file_contents:
             p = self.make_chroot_path(key)
             if not os.path.exists(p):
                 util.mkdirIfAbsent(os.path.dirname(p))
-                with open(p, 'w+') as fo:
+                with open(p, "w+") as fo:
                     fo.write(chroot_file_contents[key])
 
     @traceLog()
     def ensure_rpm_config_home(self):
         """Create a fake home directory with an appropriate .rpmmacros"""
 
-        rpm_config_home = os.path.join(self.basedir, 'rpmconfig')
+        rpm_config_home = os.path.join(self.basedir, "rpmconfig")
         util.mkdirIfAbsent(rpm_config_home)
 
         # Since /proc and /sys are mounted special filesystems when RPM is running
@@ -426,7 +493,7 @@ class Buildroot(object):
     def nuke_rpm_db(self):
         """remove rpm DB lock files from the chroot"""
 
-        dbfiles = glob.glob(self.make_chroot_path('var/lib/rpm/__db*'))
+        dbfiles = glob.glob(self.make_chroot_path("var/lib/rpm/__db*"))
         if not dbfiles:
             return
         self.root_log.debug("removing %d rpm db files", len(dbfiles))
@@ -466,37 +533,47 @@ class Buildroot(object):
 
     @traceLog()
     def _setup_dirs(self):
-        self.root_log.debug('create skeleton dirs')
-        dirs = ['var/lib/rpm',
-                'var/lib/yum',
-                'var/lib/dbus',
-                'var/log',
-                'var/cache/dnf',
-                'var/cache/yum',
-                'etc/rpm',
-                'tmp',
-                'tmp/ccache',
-                'var/tmp',
-                'etc/dnf',
-                'etc/dnf/vars',
-                'etc/yum.repos.d',
-                'etc/yum',
-                'proc',
-                'sys']
-        dirs += self.config['extra_chroot_dirs']
+        self.root_log.debug("create skeleton dirs")
+        dirs = [
+            "var/lib/rpm",
+            "var/lib/yum",
+            "var/lib/dbus",
+            "var/log",
+            "var/cache/dnf",
+            "var/cache/yum",
+            "etc/rpm",
+            "tmp",
+            "tmp/ccache",
+            "var/tmp",
+            "etc/dnf",
+            "etc/dnf/vars",
+            "etc/yum.repos.d",
+            "etc/yum",
+            "proc",
+            "sys",
+        ]
+        dirs += self.config["extra_chroot_dirs"]
         for item in dirs:
             util.mkdirIfAbsent(self.make_chroot_path(item))
 
     @traceLog()
     def chown_home_dir(self):
         """ set ownership of homedir and subdirectories to mockbuild user """
-        self.uid_manager.changeOwner(self.make_chroot_path(self.homedir),
-                                     recursive=True)
+        self.uid_manager.changeOwner(
+            self.make_chroot_path(self.homedir), recursive=True
+        )
 
     @traceLog()
     def _setup_build_dirs(self):
-        build_dirs = ['RPMS', 'SPECS', 'SRPMS', 'SOURCES', 'BUILD', 'BUILDROOT',
-                      'originals']
+        build_dirs = [
+            "RPMS",
+            "SPECS",
+            "SRPMS",
+            "SOURCES",
+            "BUILD",
+            "BUILDROOT",
+            "originals",
+        ]
         util.mkdirIfAbsent(self.make_chroot_path(self.builddir))
         with self.uid_manager:
             self.uid_manager.changeOwner(self.make_chroot_path(self.builddir))
@@ -504,18 +581,18 @@ class Buildroot(object):
                 path = self.make_chroot_path(self.builddir, item)
                 util.mkdirIfAbsent(path)
                 self.uid_manager.changeOwner(path)
-            if self.config['clean']:
+            if self.config["clean"]:
                 self.chown_home_dir()
             # rpmmacros default
             macrofile_out = self.make_chroot_path(self.homedir, ".rpmmacros")
-            with open(macrofile_out, 'w+') as rpmmacros:
+            with open(macrofile_out, "w+") as rpmmacros:
 
                 # user specific from rpm macro file definitions first
-                if 'macrofile' in self.config:
-                    with open(self.config['macrofile'], 'r') as macro_conf:
+                if "macrofile" in self.config:
+                    with open(self.config["macrofile"], "r") as macro_conf:
                         rpmmacros.write("%s\n\n" % macro_conf.read())
 
-                for key, value in list(self.config['macros'].items()):
+                for key, value in list(self.config["macros"].items()):
                     rpmmacros.write("%s %s\n" % (key, value))
 
     @traceLog()
@@ -523,21 +600,25 @@ class Buildroot(object):
         if not util.USE_NSPAWN or self.is_bootstrap:
             return
 
-        self.config['nspawn_args'].append('--bind=/dev/loop-control')
+        self.config["nspawn_args"].append("--bind=/dev/loop-control")
         # for nspawn we create the loop devices directly on host
-        for i in range(self.config['dev_loop_count']):
-            loop_file = '/dev/loop{}'.format(i)
+        for i in range(self.config["dev_loop_count"]):
+            loop_file = "/dev/loop{}".format(i)
             try:
                 os.mknod(loop_file, stat.S_IFBLK | 0o666, os.makedev(7, i))
             except OSError as e:
                 if e.errno != errno.EEXIST:
                     raise
-            self.config['nspawn_args'].append('--bind={0}'.format(loop_file))
+            self.config["nspawn_args"].append("--bind={0}".format(loop_file))
 
     @traceLog()
     def _setup_devices(self):
-        if self.config['internal_dev_setup']:
-            util.rmtree(self.make_chroot_path("dev"), selinux=self.selinux, exclude=self.mounts.get_mountpoints())
+        if self.config["internal_dev_setup"]:
+            util.rmtree(
+                self.make_chroot_path("dev"),
+                selinux=self.selinux,
+                exclude=self.mounts.get_mountpoints(),
+            )
             util.mkdirIfAbsent(self.make_chroot_path("dev", "pts"))
             util.mkdirIfAbsent(self.make_chroot_path("dev", "shm"))
             prevMask = os.umask(0000)
@@ -554,15 +635,21 @@ class Buildroot(object):
                 (stat.S_IFCHR | 0o600, os.makedev(10, 57), "dev/prandom"),
                 (stat.S_IFCHR | 0o600, os.makedev(10, 183), "dev/hwrng"),
             ]
-            for i in range(self.config['dev_loop_count']):
-                devFiles.append((stat.S_IFBLK | 0o666, os.makedev(7, i), "dev/loop{loop_number}".format(loop_number=i)))
+            for i in range(self.config["dev_loop_count"]):
+                devFiles.append(
+                    (
+                        stat.S_IFBLK | 0o666,
+                        os.makedev(7, i),
+                        "dev/loop{loop_number}".format(loop_number=i),
+                    )
+                )
             kver = os.uname()[2]
             self.root_log.debug("kernel version == %s", kver)
             for i in devFiles:
                 src_path = "/" + i[2]
                 chroot_path = self.make_chroot_path(i[2])
 
-                if util.cmpKernelVer(kver, '2.6.18') >= 0 and src_path == '/dev/ptmx':
+                if util.cmpKernelVer(kver, "2.6.18") >= 0 and src_path == "/dev/ptmx":
                     continue
 
                 # create node, but only if it exist on host too
@@ -587,49 +674,58 @@ class Buildroot(object):
                     # set context. (only necessary if host running selinux enabled.)
                     # fails gracefully if chcon not installed.
                     if self.selinux:
-                        util.do(["chcon", "--reference=" + src_path, chroot_path],
-                                raiseExc=0, shell=False, env=self.env)
+                        util.do(
+                            ["chcon", "--reference=" + src_path, chroot_path],
+                            raiseExc=0,
+                            shell=False,
+                            env=self.env,
+                        )
 
-                    if src_path in ('/dev/tty', '/dev/ptmx'):
-                        os.chown(chroot_path, pwd.getpwnam('root')[2], grp.getgrnam('tty')[2])
+                    if src_path in ("/dev/tty", "/dev/ptmx"):
+                        os.chown(
+                            chroot_path, pwd.getpwnam("root")[2], grp.getgrnam("tty")[2]
+                        )
 
             os.symlink("/proc/self/fd/0", self.make_chroot_path("dev/stdin"))
             os.symlink("/proc/self/fd/1", self.make_chroot_path("dev/stdout"))
             os.symlink("/proc/self/fd/2", self.make_chroot_path("dev/stderr"))
 
-            if os.path.isfile(self.make_chroot_path('etc', 'mtab')) or \
-               os.path.islink(self.make_chroot_path('etc', 'mtab')):
-                os.remove(self.make_chroot_path('etc', 'mtab'))
-            os.symlink("../proc/self/mounts", self.make_chroot_path('etc', 'mtab'))
+            if os.path.isfile(self.make_chroot_path("etc", "mtab")) or os.path.islink(
+                self.make_chroot_path("etc", "mtab")
+            ):
+                os.remove(self.make_chroot_path("etc", "mtab"))
+            os.symlink("../proc/self/mounts", self.make_chroot_path("etc", "mtab"))
 
             # symlink /dev/fd in the chroot for everything except RHEL4
-            if util.cmpKernelVer(kver, '2.6.9') > 0:
+            if util.cmpKernelVer(kver, "2.6.9") > 0:
                 os.symlink("/proc/self/fd", self.make_chroot_path("dev/fd"))
 
             os.umask(prevMask)
 
-            os.symlink("pts/ptmx", self.make_chroot_path('/dev/ptmx'))
+            os.symlink("pts/ptmx", self.make_chroot_path("/dev/ptmx"))
 
     @traceLog()
     def _setup_files(self):
         # self.root_log.debug('touch required files')
-        for item in [self.make_chroot_path('etc', 'fstab'),
-                     self.make_chroot_path('etc', 'yum', 'yum.conf'),
-                     self.make_chroot_path('etc', 'dnf', 'dnf.conf'),
-                     self.make_chroot_path('var', 'log', 'yum.log')]:
+        for item in [
+            self.make_chroot_path("etc", "fstab"),
+            self.make_chroot_path("etc", "yum", "yum.conf"),
+            self.make_chroot_path("etc", "dnf", "dnf.conf"),
+            self.make_chroot_path("var", "log", "yum.log"),
+        ]:
             util.touch(item)
-        short_yum_confpath = self.make_chroot_path('etc', 'yum.conf')
+        short_yum_confpath = self.make_chroot_path("etc", "yum.conf")
         if not os.path.exists(short_yum_confpath):
             os.symlink("yum/yum.conf", short_yum_confpath)
 
     @traceLog()
     def _setup_files_postinstall(self):
-        for item in [self.make_chroot_path('etc', 'os-release')]:
+        for item in [self.make_chroot_path("etc", "os-release")]:
             util.touch(item)
 
     @traceLog()
     def _setup_nosync(self):
-        multilib = ('x86_64', 's390x')
+        multilib = ("x86_64", "s390x")
         # ld_preload need to be same as in bootstrap because we call DNF in bootstrap, but
         # but it will load nosync from the final chroot
         if self.bootstrap_buildroot is not None:
@@ -637,15 +733,16 @@ class Buildroot(object):
             if not os.path.isdir(self.tmpdir):
                 os.mkdir(self.tmpdir, 0o700)
         else:
-            self.tmpdir = tempfile.mkdtemp(prefix="tmp.mock.", dir='/var/tmp')
+            self.tmpdir = tempfile.mkdtemp(prefix="tmp.mock.", dir="/var/tmp")
         os.chmod(self.tmpdir, 0o777)
-        tmp_libdir = os.path.join(self.tmpdir, '$LIB')
+        tmp_libdir = os.path.join(self.tmpdir, "$LIB")
         mock_libdir = self.make_chroot_path(tmp_libdir)
-        nosync_unresolved = '/usr/$LIB/nosync/nosync.so'
+        nosync_unresolved = "/usr/$LIB/nosync/nosync.so"
 
         def copy_nosync(lib64=False):
             def resolve(path):
-                return path.replace('$LIB', 'lib64' if lib64 else 'lib')
+                return path.replace("$LIB", "lib64" if lib64 else "lib")
+
             nosync = resolve(nosync_unresolved)
             if not os.path.exists(nosync):
                 return False
@@ -655,20 +752,26 @@ class Buildroot(object):
                 shutil.copy2(nosync, dst)
             return True
 
-        if self.config['nosync']:
-            target_arch = self.config['target_arch']
+        if self.config["nosync"]:
+            target_arch = self.config["target_arch"]
             copied_lib = copy_nosync()
             copied_lib64 = copy_nosync(lib64=True)
             if not copied_lib and not copied_lib64:
-                self.root_log.warning("nosync is enabled but the library "
-                                      "wasn't found on the system")
+                self.root_log.warning(
+                    "nosync is enabled but the library " "wasn't found on the system"
+                )
                 return
-            if (target_arch in multilib and not self.config['nosync_force']
-                    and copied_lib != copied_lib64):
-                self.root_log.warning("For multilib systems, both architectures"
-                                      " of nosync library need to be installed")
+            if (
+                target_arch in multilib
+                and not self.config["nosync_force"]
+                and copied_lib != copied_lib64
+            ):
+                self.root_log.warning(
+                    "For multilib systems, both architectures"
+                    " of nosync library need to be installed"
+                )
                 return
-            self.nosync_path = os.path.join(tmp_libdir, 'nosync.so')
+            self.nosync_path = os.path.join(tmp_libdir, "nosync.so")
 
     @traceLog()
     def finalize(self):
@@ -686,7 +789,7 @@ class Buildroot(object):
                 self._lock_buildroot(exclusive=True)
                 util.orphansKill(self.make_chroot_path())
                 self.mounts.umountall()
-                self.plugins.call_hooks('postumount')
+                self.plugins.call_hooks("postumount")
                 # intentionally we do not call bootstrap hook here - it does not have sense
             except BuildRootLocked:
                 pass
@@ -712,19 +815,18 @@ class Buildroot(object):
 
         basename = os.path.basename(filename)
         if basename in self._homedir_bindmounts:
-            raise BadCmdline("File '{0}' can not be bind-mounted to "
-                             "bootstrap chroot twice".format(basename))
+            raise BadCmdline(
+                "File '{0}' can not be bind-mounted to "
+                "bootstrap chroot twice".format(basename)
+            )
         self._homedir_bindmounts[basename] = 1
 
         host_filename = os.path.abspath(filename)
-        chroot_filename = os.path.join(
-            bootstrap.homedir, basename,
-        )
+        chroot_filename = os.path.join(bootstrap.homedir, basename,)
         bind_path = bootstrap.make_chroot_path(chroot_filename)
-        bootstrap.mounts.add_user_mount(mounts.BindMountPoint(
-            srcpath=filename,
-            bindpath=bind_path,
-        ))
+        bootstrap.mounts.add_user_mount(
+            mounts.BindMountPoint(srcpath=filename, bindpath=bind_path,)
+        )
 
         return util.BindMountedFile(chroot_filename, host_filename)
 
@@ -738,7 +840,7 @@ class Buildroot(object):
             self._lock_buildroot(exclusive=True)
             util.orphansKill(p)
             self.mounts.umountall()
-            self.plugins.call_hooks('umount_root')
+            self.plugins.call_hooks("umount_root")
             # intentionally we do not call bootstrap hook here - it does not have sense
             self._unlock_buildroot()
             subv = util.find_btrfs_in_chroot(self.mockdir, p)
@@ -748,7 +850,7 @@ class Buildroot(object):
                 util.rmtree(self.rootdir, selinux=self.selinux)
             util.rmtree(self.basedir, selinux=self.selinux)
         self.chroot_was_initialized = False
-        self.plugins.call_hooks('postclean')
+        self.plugins.call_hooks("postclean")
         # intentionally we do not call bootstrap hook here - it does not have sense
 
     @property

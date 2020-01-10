@@ -11,7 +11,8 @@ from .trace_decorator import traceLog
 
 
 class MountPoint(object):
-    '''base class for mounts'''
+    """base class for mounts"""
+
     @traceLog()
     def __init__(self, mountsource, mountpath):
         self.mountpath = mountpath
@@ -19,25 +20,27 @@ class MountPoint(object):
 
     @traceLog()
     def ismounted(self):
-        with open('/proc/mounts') as f:
-            if self.mountpath.rstrip('/') in [x.split()[1] for x in f]:
+        with open("/proc/mounts") as f:
+            if self.mountpath.rstrip("/") in [x.split()[1] for x in f]:
                 return True
         return False
 
     def __repr__(self):
         return "<mockbuild.mounts.MountPoint object [mountsource: {0}, mountpath: {1}]>".format(
-            self.mountsource, self.mountpath)
+            self.mountsource, self.mountpath
+        )
 
 
 class FileSystemMountPoint(MountPoint):
-    '''class for managing filesystem mounts in the chroot'''
+    """class for managing filesystem mounts in the chroot"""
+
     @traceLog()
     def __init__(self, path, filetype=None, device=None, options=None):
         if not path:
             raise RuntimeError("no path specified for mountpoint")
         if not filetype:
             raise RuntimeError("no filetype specified for mountpoint")
-        if filetype in ('pts', 'proc', 'sys', 'sysfs', 'tmpfs', 'devpts'):
+        if filetype in ("pts", "proc", "sys", "sysfs", "tmpfs", "devpts"):
             device = filetype
         if not device:
             raise RuntimeError("no device file specified for mountpoint")
@@ -55,9 +58,9 @@ class FileSystemMountPoint(MountPoint):
             return None
 
         util.mkdirIfAbsent(self.path)
-        cmd = ['/bin/mount', '-n', '-t', self.filetype]
+        cmd = ["/bin/mount", "-n", "-t", self.filetype]
         if self.options:
-            cmd += ['-o', self.options]
+            cmd += ["-o", self.options]
         cmd += [self.device, self.path]
         util.do(cmd)
         self.mounted = True
@@ -68,7 +71,7 @@ class FileSystemMountPoint(MountPoint):
     def umount(self, force=False, nowarn=False):
         if not self.mounted:
             return None
-        cmd = ['/bin/umount', '-n', '-l', self.path]
+        cmd = ["/bin/umount", "-n", "-l", self.path]
         try:
             util.do(cmd)
         except exception.Error:
@@ -77,13 +80,17 @@ class FileSystemMountPoint(MountPoint):
         return True
 
     def __repr__(self):
-        return ("<mockbuild.mounts.FileSystemMountPoint object [device: {0}, path: {1}, filetype: {2}, options: {3}, "
-                "mounted: {4}]>".format(
-                    self.device, self.path, self.filetype, self.options, self.mounted))
+        return (
+            "<mockbuild.mounts.FileSystemMountPoint object [device: {0}, path: {1}, filetype: {2}, options: {3}, "
+            "mounted: {4}]>".format(
+                self.device, self.path, self.filetype, self.options, self.mounted
+            )
+        )
 
 
 class BindMountPoint(MountPoint):
-    '''class for managing bind-mounts in the chroot'''
+    """class for managing bind-mounts in the chroot"""
+
     @traceLog()
     def __init__(self, srcpath, bindpath, recursive=False, options=None):
         MountPoint.__init__(self, mountsource=srcpath, mountpath=bindpath)
@@ -100,13 +107,13 @@ class BindMountPoint(MountPoint):
                 util.mkdirIfAbsent(self.bindpath)
             elif not os.path.exists(self.bindpath):
                 util.touch(self.bindpath)
-            cmd = ['/bin/mount', '-n']
+            cmd = ["/bin/mount", "-n"]
             if self.recursive:
-                cmd.append('--rbind')
+                cmd.append("--rbind")
             else:
-                cmd.append('--bind')
+                cmd.append("--bind")
             if self.options:
-                cmd += ['-o', self.options]
+                cmd += ["-o", self.options]
             cmd += [self.srcpath, self.bindpath]
             util.do(cmd)
         self.mounted = True
@@ -116,12 +123,12 @@ class BindMountPoint(MountPoint):
     def umount(self):
         if not self.mounted:
             return None
-        cmd = ['/bin/umount', '-n']
+        cmd = ["/bin/umount", "-n"]
         if self.recursive:
             # The mount is busy because of the submounts - a lazy unmount
             # implies a recursive unmount, so takes care of that.
             # (-R also works, but is implemented in userspace, and thus racy)
-            cmd += ['-l']
+            cmd += ["-l"]
         cmd.append(self.bindpath)
         try:
             util.do(cmd)
@@ -132,14 +139,17 @@ class BindMountPoint(MountPoint):
 
     def __repr__(self):
         return "<mockbuild.mounts.BindMountPoint object [src: {0}, bindpath: {1}, mounted: {2}]>".format(
-            self.srcpath, self.bindpath, self.mounted)
+            self.srcpath, self.bindpath, self.mounted
+        )
+
 
 class Mounts(object):
-    '''class to manage all mountpoints'''
+    """class to manage all mountpoints"""
+
     @traceLog()
     def __init__(self, rootObj):
         self.rootObj = rootObj
-        self.essential_mounts = [] # /proc, /sys ... normally managed by systemd
+        self.essential_mounts = []  # /proc, /sys ... normally managed by systemd
         self.managed_mounts = []  # mounts owned by mock
         self.user_mounts = []  # mounts injected by user
         self.essential_mounts = []
@@ -151,9 +161,9 @@ class Mounts(object):
         # kernel forbids mounts that might reveal parts of the filesystem
         # that a container runtime overmounted to hide from the container
         # (rhbz#1745048).
-        for mount in ['proc', 'sys']:
+        for mount in ["proc", "sys"]:
             mount_point = "/" + mount
-            device = 'mock_hide_{}fs_from_host'.format(mount)
+            device = "mock_hide_{}fs_from_host".format(mount)
             host_path = rootObj.make_chroot_path(mount_point)
 
             self.essential_mounts += [
@@ -173,33 +183,34 @@ class Mounts(object):
                 # stub which we actually never use -- but is private -- and only
                 # then we mount above the actual mount point.  This prevents
                 # from umount events to propagate to host from chroot.
-                FileSystemMountPoint(filetype='tmpfs',
-                                     device=device,
-                                     path=host_path,
-                                     options="rprivate"),
-                BindMountPoint(srcpath=mount_point,
-                               bindpath=host_path,
-                               recursive=True,
-                               options="nodev,noexec,nosuid,readonly,rprivate"),
+                FileSystemMountPoint(
+                    filetype="tmpfs", device=device, path=host_path, options="rprivate"
+                ),
+                BindMountPoint(
+                    srcpath=mount_point,
+                    bindpath=host_path,
+                    recursive=True,
+                    options="nodev,noexec,nosuid,readonly,rprivate",
+                ),
             ]
 
-        if rootObj.config['internal_dev_setup']:
+        if rootObj.config["internal_dev_setup"]:
             self.essential_mounts.append(
                 FileSystemMountPoint(
-                    filetype='tmpfs',
-                    device='mock_chroot_shmfs',
-                    path=rootObj.make_chroot_path('/dev/shm')
+                    filetype="tmpfs",
+                    device="mock_chroot_shmfs",
+                    path=rootObj.make_chroot_path("/dev/shm"),
                 )
             )
-            opts = 'gid=%d,mode=0620,ptmxmode=0666' % grp.getgrnam('tty').gr_gid
-            if util.cmpKernelVer(os.uname()[2], '2.6.29') >= 0:
-                opts += ',newinstance'
+            opts = "gid=%d,mode=0620,ptmxmode=0666" % grp.getgrnam("tty").gr_gid
+            if util.cmpKernelVer(os.uname()[2], "2.6.29") >= 0:
+                opts += ",newinstance"
                 self.essential_mounts.append(
                     FileSystemMountPoint(
-                        filetype='devpts',
-                        device='mock_chroot_devpts',
-                        path=rootObj.make_chroot_path('/dev/pts'),
-                        options=opts
+                        filetype="devpts",
+                        device="mock_chroot_devpts",
+                        path=rootObj.make_chroot_path("/dev/pts"),
+                        options=opts,
                     )
                 )
         self.essential_mounted = all(m.ismounted() for m in self.essential_mounts)
@@ -210,9 +221,9 @@ class Mounts(object):
 
     @traceLog()
     def add_device_bindmount(self, path):
-        mount = BindMountPoint(path,
-                               self.rootObj.make_chroot_path(path),
-                               options="noexec,nosuid,readonly")
+        mount = BindMountPoint(
+            path, self.rootObj.make_chroot_path(path), options="noexec,nosuid,readonly"
+        )
         self.essential_mounts.append(mount)
 
     @traceLog()
@@ -242,7 +253,7 @@ class Mounts(object):
     def umountall(self, force=False, nowarn=False):
         failed_old = 1
         failed_new = 0
-        while (failed_new != failed_old):
+        while failed_new != failed_old:
             # there can be deps, we will try to umount everything several times
             # as long as in every loop at least one umount succeed.
             failed_old = failed_new
@@ -263,8 +274,12 @@ class Mounts(object):
     def get_mountpoints(self):
         # including essentials (no matter if we use nspawn)
         # this is used to exclude path in archiving etc. and we want to do that for essentials too
-        return [m.mountpath for m in self.essential_mounts + self.managed_mounts + self.user_mounts]
+        return [
+            m.mountpath
+            for m in self.essential_mounts + self.managed_mounts + self.user_mounts
+        ]
 
     def __repr__(self):
-        return "<mockbuild.mounts.Mounts object managed: {0}, user: {1}>".format(repr(self.managed_mounts),
-                                                                                 repr(self.user_mounts))
+        return "<mockbuild.mounts.Mounts object managed: {0}, user: {1}>".format(
+            repr(self.managed_mounts), repr(self.user_mounts)
+        )

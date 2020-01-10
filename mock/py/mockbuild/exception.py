@@ -12,6 +12,7 @@
 
 class Error(Exception):
     "base class for our errors."
+
     def __init__(self, msg, status=None):
         Exception.__init__(self)
         self.msg = msg
@@ -46,6 +47,7 @@ class Error(Exception):
 # 129 = the main process get signal SIGHUP, the console was closed
 # 141 = the main process get signal SIGPIPE, the pipe does not exist or was closed
 # 143 = the main process get signal SIGTERM, something tries to kill mock process
+
 
 def get_class_by_code(exit_code):
     if exit_code == 0:
@@ -89,14 +91,22 @@ def get_class_by_code(exit_code):
     elif exit_code == 129:
         return Error("The main process get signal SIGHUP, the console was closed.", 129)
     elif exit_code == 141:
-        return Error("The main process get signal SIGPIPE, the pipe does not exist or was closed.", 141)
+        return Error(
+            "The main process get signal SIGPIPE, the pipe does not exist or was closed.",
+            141,
+        )
     elif exit_code == 143:
-        return Error("The main process get signal SIGTERM, something tries to kill mock process.", 143)
+        return Error(
+            "The main process get signal SIGTERM, something tries to kill mock process.",
+            143,
+        )
     else:
         return Error("Unknow error %{} happened.".format(exit_code), exit_code)
 
+
 class BuildError(Error):
     "rpmbuild failed."
+
     def __init__(self, msg):
         Error.__init__(self, msg)
         self.msg = msg
@@ -105,6 +115,7 @@ class BuildError(Error):
 
 class RootError(Error):
     "failed to set up chroot"
+
     def __init__(self, msg):
         Error.__init__(self, msg)
         self.msg = msg
@@ -113,6 +124,7 @@ class RootError(Error):
 
 class LvmError(Error):
     "LVM manipulation failed."
+
     def __init__(self, msg):
         Error.__init__(self, msg)
         self.msg = msg
@@ -121,6 +133,7 @@ class LvmError(Error):
 
 class YumError(RootError):
     "yum failed."
+
     def __init__(self, msg):
         RootError.__init__(self, msg)
         self.msg = msg
@@ -129,6 +142,7 @@ class YumError(RootError):
 
 class PkgError(Error):
     "error with the srpm given to us."
+
     def __init__(self, msg):
         Error.__init__(self, msg)
         self.msg = msg
@@ -137,6 +151,7 @@ class PkgError(Error):
 
 class BuildRootLocked(Error):
     "build root in use by another process."
+
     def __init__(self, msg):
         Error.__init__(self, msg)
         self.msg = msg
@@ -145,6 +160,7 @@ class BuildRootLocked(Error):
 
 class LvmLocked(Error):
     "LVM thinpool is locked."
+
     def __init__(self, msg):
         Error.__init__(self, msg)
         self.msg = msg
@@ -153,6 +169,7 @@ class LvmLocked(Error):
 
 class BadCmdline(Error):
     "user gave bad/inconsistent command line."
+
     def __init__(self, msg):
         Error.__init__(self, msg)
         self.msg = msg
@@ -161,6 +178,7 @@ class BadCmdline(Error):
 
 class InvalidArchitecture(Error):
     "invalid host/target architecture specified."
+
     def __init__(self, msg):
         Error.__init__(self, msg)
         self.msg = msg
@@ -174,6 +192,7 @@ Could not create output directory for built rpms. The directory specified was:
 
 Try using the --resultdir= option to select another location. Recommended location is --resultdir=~/mock/.
 """
+
     def __init__(self, msg):
         Error.__init__(self, msg)
         self.msg = msg

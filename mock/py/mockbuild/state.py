@@ -32,7 +32,9 @@ class State(object):
             raise StateError("finish called on empty state list")
         current = self._state.pop()
         if state != current:
-            raise StateError("state finish mismatch: current: %s, state: %s" % (current, state))
+            raise StateError(
+                "state finish mismatch: current: %s, state: %s" % (current, state)
+            )
         if self.bootstrap:
             self.state_log.info("Finish(bootstrap): %s", state)
         else:
@@ -40,4 +42,6 @@ class State(object):
 
     def alldone(self):
         if len(self._state) != 0:
-            raise StateError("alldone called with pending states: %s" % ",".join(self._state))
+            raise StateError(
+                "alldone called with pending states: %s" % ",".join(self._state)
+            )

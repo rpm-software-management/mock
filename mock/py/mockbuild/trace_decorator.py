@@ -38,7 +38,7 @@ def doLog(logger, level, *args, **kargs):
         try:
             logger.handle(logger.makeRecord(logger.name, level, *args, **kargs))
         except TypeError:
-            del(kargs["func"])
+            del kargs["func"]
             logger.handle(logger.makeRecord(logger.name, level, *args, **kargs))
 
 
@@ -48,6 +48,7 @@ def safe_repr(arg):
         return repr(arg)
     except AttributeError:
         return str(type(arg))
+
 
 def traceLog(logger=None):
     def noop(func):
@@ -63,48 +64,72 @@ def traceLog(logger=None):
 
             filename = os.path.normcase(inspect.getsourcefile(func))
             func_name = func.__name__
-            if hasattr(func, 'func_code'):
+            if hasattr(func, "func_code"):
                 lineno = func.func_code.co_firstlineno
             else:
                 lineno = func.__code__.co_firstlineno
 
-            l2 = kw.get('logger', logger)
+            l2 = kw.get("logger", logger)
             if l2 is None:
                 l2 = logging.getLogger("trace.%s" % func.__module__)
             if isinstance(l2, str):
                 l2 = logging.getLogger(l2)
 
             message = "ENTER %s("
-            message = message + ', '.join([safe_repr(arg) for arg in args])
+            message = message + ", ".join([safe_repr(arg) for arg in args])
             if args and kw:
-                message += ', '
+                message += ", "
             for k, v in list(kw.items()):
                 message = message + "%s=%s" % (k, safe_repr(v))
             message = message + ")"
 
             frame = inspect.getouterframes(inspect.currentframe())[1][0]
-            doLog(l2, logging.INFO, os.path.normcase(frame.f_code.co_filename),
-                  frame.f_lineno, message, args=[func_name], exc_info=None,
-                  func=frame.f_code.co_name)
+            doLog(
+                l2,
+                logging.INFO,
+                os.path.normcase(frame.f_code.co_filename),
+                frame.f_lineno,
+                message,
+                args=[func_name],
+                exc_info=None,
+                func=frame.f_code.co_name,
+            )
             try:
-                result = "Bad exception raised: Exception was not a derived "\
-                         "class of 'Exception'"
+                result = (
+                    "Bad exception raised: Exception was not a derived "
+                    "class of 'Exception'"
+                )
                 try:
                     result = func(*args, **kw)
                 except (KeyboardInterrupt, Exception) as e:
                     result = "EXCEPTION RAISED"
-                    doLog(l2, logging.INFO, filename, lineno,
-                          "EXCEPTION: %s\n", args=[e],
-                          exc_info=sys.exc_info(), func=func_name)
+                    doLog(
+                        l2,
+                        logging.INFO,
+                        filename,
+                        lineno,
+                        "EXCEPTION: %s\n",
+                        args=[e],
+                        exc_info=sys.exc_info(),
+                        func=func_name,
+                    )
                     raise
             finally:
-                doLog(l2, logging.INFO, filename, lineno,
-                      "LEAVE %s --> %s\n", args=[func_name, result],
-                      exc_info=None, func=func_name)
+                doLog(
+                    l2,
+                    logging.INFO,
+                    filename,
+                    lineno,
+                    "LEAVE %s --> %s\n",
+                    args=[func_name, result],
+                    exc_info=None,
+                    func=func_name,
+                )
 
             return result
+
         return trace
-        #end of trace()
+        # end of trace()
 
     if logging.getLogger("trace").propagate:
         return decorator
@@ -116,7 +141,8 @@ def traceLog(logger=None):
 if __name__ == "__main__":
     logging.basicConfig(
         level=logging.WARNING,
-        format='%(name)s %(levelname)s %(filename)s, %(funcName)s, Line: %(lineno)d:  %(message)s',)
+        format="%(name)s %(levelname)s %(filename)s, %(funcName)s, Line: %(lineno)d:  %(message)s",
+    )
     log = getLog("foobar.bubble")
     root = getLog(name="")
     log.setLevel(logging.WARNING)

@@ -19,8 +19,8 @@ from mockbuild.trace_decorator import traceLog
 
 requires_api_version = "1.1"
 
-RUNDIR = '/var/run/mock'
-SOCKET_NAME = 'pm-request'
+RUNDIR = "/var/run/mock"
+SOCKET_NAME = "pm-request"
 MAX_CONNECTIONS = 10
 
 
@@ -53,9 +53,10 @@ class PMRequestPlugin(object):
     def start_listener(self):
         process = multiprocessing.Process(
             name="pm-request-listener",
-            target=lambda: PMRequestListener(self.config, self.buildroot).listen())
+            target=lambda: PMRequestListener(self.config, self.buildroot).listen(),
+        )
         process.daemon = True
-        self.buildroot.env['PM_REQUEST_SOCKET'] = os.path.join(RUNDIR, SOCKET_NAME)
+        self.buildroot.env["PM_REQUEST_SOCKET"] = os.path.join(RUNDIR, SOCKET_NAME)
         self.buildroot.root_log.info("Enabled pm_request plugin")
         process.start()
 
@@ -65,13 +66,14 @@ class PMRequestPlugin(object):
         sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         try:
             sock.connect(self.buildroot.make_chroot_path(RUNDIR, SOCKET_NAME))
-            sock.sendall(b'!LOG_EXECUTED\n')
+            sock.sendall(b"!LOG_EXECUTED\n")
             executed_commands = sock.makefile().read()
             if executed_commands:
                 self.buildroot.root_log.warning(
                     "The pm_request plugin executed following commands:\n"
                     + executed_commands
-                    + "\nThe build may not be reproducible.\n")
+                    + "\nThe build may not be reproducible.\n"
+                )
         except socket.error:
             pass
         finally:
@@ -129,7 +131,7 @@ class PMRequestListener(object):
                     command = shlex.split(line)
                     # pylint:disable=E1101
                     if command == ["!LOG_EXECUTED"]:
-                        connection.sendall('\n'.join(self.executed_commands).encode())
+                        connection.sendall("\n".join(self.executed_commands).encode())
                     elif command:
                         success, out = self.execute_command(command)
                         connection.sendall(b"ok\n" if success else b"nok\n")
@@ -144,8 +146,13 @@ class PMRequestListener(object):
     def execute_command(self, command):
         try:
             self.buildroot.pkg_manager.execute(
-                *command, printOutput=False, logger=self.log,
-                returnOutput=False, pty=False, raiseExc=True)
+                *command,
+                printOutput=False,
+                logger=self.log,
+                returnOutput=False,
+                pty=False,
+                raiseExc=True
+            )
             success = True
         except Error:
             success = False

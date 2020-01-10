@@ -50,7 +50,8 @@ def parseBuildLog(log_path):
         )?
         (?P<path>/.*)?
         $
-        """, re.VERBOSE,
+        """,
+        re.VERBOSE,
     )
 
     error_type = None
@@ -77,11 +78,15 @@ def main(log_path):
     if error[0] is not None:
         if error[0] == "missing":
             print(
-                "Error type: {0}".format("Build failed because problematic files are in %buildroot but not in %files")
+                "Error type: {0}".format(
+                    "Build failed because problematic files are in %buildroot but not in %files"
+                )
             )
         elif error[0] == "deleted":
             print(
-                "Error type: {0}".format("Build failed because problematic files are in %files but not in %buildroot")
+                "Error type: {0}".format(
+                    "Build failed because problematic files are in %files but not in %buildroot"
+                )
             )
         print("Problematic files: ")
         for files in error[1]:

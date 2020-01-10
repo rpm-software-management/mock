@@ -22,7 +22,7 @@ class UidManager(object):
         self.unprivUid = unprivUid
         self.unprivGid = unprivGid
         self.unprivEnviron = dict(os.environ)
-        self.unprivEnviron['HOME'] = pwd.getpwuid(unprivUid).pw_dir
+        self.unprivEnviron["HOME"] = pwd.getpwuid(unprivUid).pw_dir
 
     @traceLog()
     def __enter__(self):
@@ -56,8 +56,8 @@ class UidManager(object):
         privs = self.privStack.pop()
         os.environ.clear()
         os.environ.update(self.privEnviron.pop())
-        os.setregid(privs['rgid'], privs['egid'])
-        setresuid(privs['ruid'], privs['euid'])
+        os.setregid(privs["rgid"], privs["egid"])
+        setresuid(privs["ruid"], privs["euid"])
 
     @traceLog()
     def dropPrivsForever(self):
@@ -68,12 +68,14 @@ class UidManager(object):
     @traceLog()
     def _push(self):
         # save current ruid, euid, rgid, egid
-        self.privStack.append({
-            "ruid": os.getuid(),
-            "euid": os.geteuid(),
-            "rgid": os.getgid(),
-            "egid": os.getegid(),
-        })
+        self.privStack.append(
+            {
+                "ruid": os.getuid(),
+                "euid": os.geteuid(),
+                "rgid": os.getgid(),
+                "egid": os.getegid(),
+            }
+        )
         self.privEnviron.append(dict(os.environ))
 
     @traceLog()

@@ -15,24 +15,24 @@ class Config(object):
         self.cfg = os.path.basename(self.path)[0:-4]
         self.stanzas = []
         self.map = {}
-        current_key = ''
+        current_key = ""
         with open(self.path) as f:
             for l in f:
                 l = l.strip()
-                if l.startswith('#'):
+                if l.startswith("#"):
                     continue
-                if l.startswith('['):
-                    key = l[1:l.rindex(']')]
+                if l.startswith("["):
+                    key = l[1 : l.rindex("]")]
                     current_key = key
-                    if key == 'main' or key == 'local':
+                    if key == "main" or key == "local":
                         continue
                     self.stanzas.append(current_key)
                     self.map[current_key] = {}
                     continue
-                if 'http://' in l or 'https://' in l:
-                    if current_key == 'main' or current_key == 'local':
+                if "http://" in l or "https://" in l:
+                    if current_key == "main" or current_key == "local":
                         continue
-                    key, url = l.split('=', 1)
+                    key, url = l.split("=", 1)
                     self.map[current_key][key.strip()] = url.strip()
                     continue
 
@@ -44,20 +44,20 @@ class Config(object):
         total_sites = 0
         for s in self.stanzas:
             for k in list(self.map[s].keys()):
-                if k == 'mirrorlist':
+                if k == "mirrorlist":
                     num = self.check_mirrorlist(self.map[s][k])
                     if num == 0:
                         print("\t[%s] Error: no mirror sites\t<-------" % s)
                     else:
                         print("\t[%s] Ok (%d sites)" % (s, num))
                     total_sites += num
-                elif k == 'baseurl':
+                elif k == "baseurl":
                     if self.check_baseurl(self.map[s][k]) == 0:
                         print("\t[%s] Error: no files for baseurl\t<-------" % s)
                     else:
                         print("\t[%s] baseurl Ok" % s)
                         total_sites += 1
-                elif k == 'metalink':
+                elif k == "metalink":
                     print("\t[%s] Warning: metalink check not implemented yet" % s)
                 else:
                     raise RuntimeError("Unknown URL type in %s: %s" % (s, k))
@@ -67,9 +67,12 @@ class Config(object):
     def check_mirrorlist(self, url):
         # print("checking mirrorlist at %s" % url)
         try:
-            lines = [l for l in urllib.request.urlopen(url).readlines()
-                     if not l.startswith(b'#') and len(l.strip()) != 0]
-            if len(lines) == 1 and lines[0].startswith(b'Bad arch'):
+            lines = [
+                l
+                for l in urllib.request.urlopen(url).readlines()
+                if not l.startswith(b"#") and len(l.strip()) != 0
+            ]
+            if len(lines) == 1 and lines[0].startswith(b"Bad arch"):
                 return 0
             return len(lines)
         except urllib.error.URLError:
@@ -87,10 +90,10 @@ class Config(object):
         return len(data)
 
 
-if __name__ == '__main__':
-    configs = glob.glob('etc/mock/*.cfg')
+if __name__ == "__main__":
+    configs = glob.glob("etc/mock/*.cfg")
     configs.sort()
     for c in configs:
-        if os.path.basename(c).startswith('site-defaults'):
+        if os.path.basename(c).startswith("site-defaults"):
             continue
         Config(c).check_urls()

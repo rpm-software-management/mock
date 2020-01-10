@@ -16,7 +16,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-
 # About this plugin:
 #
 # This plugin implements snapshot functionality using overlayfs. From user
@@ -52,7 +51,6 @@
 #
 # plugin's resources asociated with config can be released by:
 #     mock -r <config> scrub all
-
 
 
 # Technical details:
@@ -170,24 +168,25 @@ import re
 
 requires_api_version = "1.1"
 
+
 def init(plugins, conf, buildroot):
     OverlayFsPlugin(plugins, conf, buildroot)
 
-class OverlayFsPlugin(object):
 
+class OverlayFsPlugin(object):
     def __init__(self, plugins, conf, buildroot):
         self.buildroot = buildroot
         self.configName = buildroot.shared_root_name
-        self.pluginBaseDir = conf.get('base_dir')
+        self.pluginBaseDir = conf.get("base_dir")
         if not self.pluginBaseDir:
             raise Exception("base_dir is not configured")
         self.rootDir = buildroot.rootdir
         if not self.rootDir:
             raise Exception("Failed to get root dir")
-        self.traceHooks = conf.get('trace_hooks')
+        self.traceHooks = conf.get("trace_hooks")
         if not self.traceHooks:
             self.traceHooks = False
-        self.touchRpmdbEnabled = conf.get('touch_rpmdb')
+        self.touchRpmdbEnabled = conf.get("touch_rpmdb")
         if not self.touchRpmdbEnabled:
             self.touchRpmdbEnabled = False
         # variables used to correctly handle explicit mounts
@@ -215,7 +214,6 @@ class OverlayFsPlugin(object):
     def getRootDir(self):
         return self.rootDir
 
-
     # directory which contains all data asocied with this plugin
     def getPluginBaseDir(self):
         return self.pluginBaseDir
@@ -224,7 +222,6 @@ class OverlayFsPlugin(object):
     # ( takes mock config name into account )
     def getPluginInstanceDir(self):
         return os.path.join(self.getPluginBaseDir(), self.configName)
-
 
     # directory where layers are stored
     def getLayersDir(self):
@@ -250,7 +247,6 @@ class OverlayFsPlugin(object):
     def getLayerImmutableFlagFile(self, layerId):
         return os.path.join(self.getLayerDir(layerId), "immutable")
 
-
     # directory which holds references (human redable names) for layers
     def getRefsDir(self):
         return os.path.join(self.getPluginInstanceDir(), "refs")
@@ -258,7 +254,6 @@ class OverlayFsPlugin(object):
     # file which contains layerId of layer referenced by name
     def getRefFile(self, name):
         return os.path.join(self.getRefsDir(), name)
-
 
     # directory with lock files
     def getLocksDir(self):
@@ -272,14 +267,12 @@ class OverlayFsPlugin(object):
     def getMountLockFile(self):
         return os.path.join(self.getLocksDir(), "mount.lock")
 
-
     # directory used as workdir for overlayfs
     def getWorkDir(self):
         return os.path.join(self.getPluginInstanceDir(), "workdir")
 
     def rootMountFlagFile(self):
         return os.path.join(self.getPluginInstanceDir(), ".root-mounted")
-
 
     # file operations
 
@@ -293,7 +286,6 @@ class OverlayFsPlugin(object):
     def writeFile(filename, value):
         with open(filename, "w") as fileObj:
             fileObj.write(value)
-
 
     ################
     #    LAYERS    #
@@ -335,7 +327,6 @@ class OverlayFsPlugin(object):
     def isSameLayer(layerId1, layerId2):
         return layerId1 == layerId2
 
-
     def getParentLayer(self, layerId):
         layerDir = self.getLayerDir(layerId)
         parentFile = os.path.join(layerDir, "parent")
@@ -355,7 +346,6 @@ class OverlayFsPlugin(object):
     def isLayerImmutable(self, layerId):
         immutableFile = self.getLayerImmutableFlagFile(layerId)
         return os.path.exists(immutableFile)
-
 
     def createLayer(self, parentLayerId):
         newLayerId = str(uuid.uuid4())
@@ -384,7 +374,6 @@ class OverlayFsPlugin(object):
             self.refLayer(parentLayerId)
         return newLayerId
 
-
     def unrefOrDeleteLayer(self, layerId):
         if not self.layerExists(layerId):
             errMsg = "Layer does not exist: {} !".format(layerId)
@@ -395,7 +384,6 @@ class OverlayFsPlugin(object):
             layerDir = self.getLayerDir(layerId)
             shutil.rmtree(layerDir)
             self.unrefOrDeleteLayer(parentLayerId)
-
 
     ##############
     #    REFS    #
@@ -470,12 +458,11 @@ class OverlayFsPlugin(object):
         if not includeSpecial:
             refsList = []
             for ref in allRefsList:
-                if not ref.startswith( '.' ):
+                if not ref.startswith("."):
                     refsList.append(ref)
         else:
             refsList = allRefsList
         return refsList
-
 
     ###################
     #    SNAPSHOTS    #
@@ -510,7 +497,6 @@ class OverlayFsPlugin(object):
             formatStr = "Invalid snapshot name:  {}, needs to has form of: {} !"
             errMsg = formatStr.format(snapshotName, snapshotNamePattern)
             raise Exception(errMsg)
-
 
     #######################
     #    OTHER INTERNAL   #
@@ -564,14 +550,14 @@ class OverlayFsPlugin(object):
     # (used when mounting it as overlayfs)
     def createLayerList(self, layerId):
         layerList = []
-        self.createLayerList2(layerList,layerId)
+        self.createLayerList2(layerList, layerId)
         return layerList
 
-    def createLayerList2(self, layerList,layerId):
+    def createLayerList2(self, layerList, layerId):
         parentLayerId = self.getParentLayer(layerId)
         layerList.append(layerId)
         if parentLayerId is not None:
-            self.createLayerList2(layerList,parentLayerId)
+            self.createLayerList2(layerList, parentLayerId)
 
     # mount root: upperLayer (+ its parents) using overlayfs
     def mountRoot(self):
@@ -598,9 +584,9 @@ class OverlayFsPlugin(object):
         mountCmds.append("overlay")
         mountCmds.append("overlay")
 
-        optionsArg="-olowerdir="
+        optionsArg = "-olowerdir="
 
-        firstLower=True
+        firstLower = True
         for lowerId in lowerList:
             if not firstLower:
                 optionsArg += ":"
@@ -616,7 +602,6 @@ class OverlayFsPlugin(object):
 
         self.recordRootMounted(True)
 
-
     # unmount root
     def unmountRoot(self):
         if self.isRootMounted():
@@ -630,14 +615,12 @@ class OverlayFsPlugin(object):
             if os.path.exists(workDir):
                 shutil.rmtree(workDir)
 
-
     def recordRootMounted(self, mounted):
         rootMountFlagFile = self.rootMountFlagFile()
         if mounted:
             self.writeFile(rootMountFlagFile, "")
         else:
             os.remove(rootMountFlagFile)
-
 
     def isRootMounted(self):
         rootMountFlagFile = self.rootMountFlagFile()
@@ -758,9 +741,9 @@ class OverlayFsPlugin(object):
             for snapshot in snapshots:
                 snapshotLayer = self.getLayerFromRef(snapshot)
                 if self.isSameLayer(currentLayer, snapshotLayer):
-                    print('* ' + snapshot)
+                    print("* " + snapshot)
                 else:
-                    print('  ' + snapshot)
+                    print("  " + snapshot)
         finally:
             self.snapshotUnlock()
 

@@ -22,6 +22,7 @@ def init(plugins, conf, buildroot):
 
 class CCache(object):
     """enables ccache in buildroot/rpmbuild"""
+
     # pylint: disable=too-few-public-methods
     @traceLog()
     def __init__(self, plugins, conf, buildroot):
@@ -32,13 +33,17 @@ class CCache(object):
         self.state = buildroot.state
         self.ccache_opts = conf
         tmpdict = self.ccache_opts.copy()
-        tmpdict.update({'chrootuid': self.buildroot.chrootuid})
-        self.ccachePath = self.ccache_opts['dir'] % tmpdict
+        tmpdict.update({"chrootuid": self.buildroot.chrootuid})
+        self.ccachePath = self.ccache_opts["dir"] % tmpdict
         buildroot.preexisting_deps.append("ccache")
         plugins.add_hook("prebuild", self._ccacheBuildHook)
         plugins.add_hook("preinit", self._ccachePreInitHook)
         buildroot.mounts.add(
-            BindMountPoint(srcpath=self.ccachePath, bindpath=buildroot.make_chroot_path("/var/tmp/ccache")))
+            BindMountPoint(
+                srcpath=self.ccachePath,
+                bindpath=buildroot.make_chroot_path("/var/tmp/ccache"),
+            )
+        )
 
     # =============
     # 'Private' API
@@ -48,7 +53,9 @@ class CCache(object):
     # find the shared cache.
     @traceLog()
     def _ccacheBuildHook(self):
-        self.buildroot.doChroot(["ccache", "-M", str(self.ccache_opts['max_cache_size'])], shell=False)
+        self.buildroot.doChroot(
+            ["ccache", "-M", str(self.ccache_opts["max_cache_size"])], shell=False
+        )
 
     # set up the ccache dir.
     # we also set a few variables used by ccache to find the shared cache.
@@ -56,10 +63,10 @@ class CCache(object):
     def _ccachePreInitHook(self):
         getLog().info("enabled ccache")
         envupd = {"CCACHE_DIR": "/var/tmp/ccache", "CCACHE_UMASK": "002"}
-        if self.ccache_opts.get('compress') is not None:
-            envupd["CCACHE_COMPRESS"] = str(self.ccache_opts['compress'])
+        if self.ccache_opts.get("compress") is not None:
+            envupd["CCACHE_COMPRESS"] = str(self.ccache_opts["compress"])
         self.buildroot.env.update(envupd)
 
-        mockbuild.util.mkdirIfAbsent(self.buildroot.make_chroot_path('/var/tmp/ccache'))
+        mockbuild.util.mkdirIfAbsent(self.buildroot.make_chroot_path("/var/tmp/ccache"))
         mockbuild.util.mkdirIfAbsent(self.ccachePath)
         self.buildroot.uid_manager.changeOwner(self.ccachePath, recursive=True)

@@ -5,6 +5,7 @@ import subprocess
 from mockbuild.trace_decorator import getLog, traceLog
 from mockbuild import util
 
+
 class Podman:
     """ interacts with podman to create build chroot """
 
@@ -39,11 +40,11 @@ class Podman:
     @traceLog()
     def install_pkgmgmt_packages(self):
         """ make sure the image contains expected packages """
-        pmname = self.buildroot.config['package_manager']
-        binary = self.buildroot.config['{}_command'.format(pmname)]
-        install_command = self.buildroot.config['{}_install_command'.format(pmname)]
+        pmname = self.buildroot.config["package_manager"]
+        binary = self.buildroot.config["{}_command".format(pmname)]
+        install_command = self.buildroot.config["{}_install_command".format(pmname)]
 
-        cmd = [binary, '-y']
+        cmd = [binary, "-y"]
         cmd += install_command.split()
         self.exec(cmd)
 
@@ -55,7 +56,9 @@ class Podman:
         podman = subprocess.Popen(cmd_podman, stdout=subprocess.PIPE)
         cache_file = open(cache_file_name, "w")
         cmd_compressor = [compress_program, "--stdout"]
-        compressor = subprocess.Popen(cmd_compressor, stdin=podman.stdout, stdout=cache_file)
+        compressor = subprocess.Popen(
+            cmd_compressor, stdin=podman.stdout, stdout=cache_file
+        )
         compressor.communicate()
         podman.communicate()
         cache_file.close()

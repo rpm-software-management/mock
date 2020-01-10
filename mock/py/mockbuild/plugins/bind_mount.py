@@ -24,6 +24,7 @@ def init(plugins, conf, buildroot):
 
 class BindMount(object):
     """bind mount dirs from host into chroot"""
+
     # pylint: disable=too-few-public-methods
     @traceLog()
     def __init__(self, plugins, conf, buildroot):
@@ -35,17 +36,16 @@ class BindMount(object):
         if buildroot.is_bootstrap:
             return
         plugins.add_hook("postinit", self._bindMountCreateDirs)
-        for srcdir, destdir in self.bind_opts['dirs']:
+        for srcdir, destdir in self.bind_opts["dirs"]:
             buildroot.mounts.add_user_mount(
                 BindMountPoint(
-                    srcpath=srcdir,
-                    bindpath=buildroot.make_chroot_path(destdir)
+                    srcpath=srcdir, bindpath=buildroot.make_chroot_path(destdir)
                 )
             )
 
     @traceLog()
     def _bindMountCreateDirs(self):
-        for srcdir, destdir in self.bind_opts['dirs']:
+        for srcdir, destdir in self.bind_opts["dirs"]:
             if os.path.isdir(srcdir):
                 mockbuild.util.mkdirIfAbsent(srcdir)
                 mockbuild.util.mkdirIfAbsent(self.buildroot.make_chroot_path(destdir))

@@ -28,14 +28,14 @@ def init(plugins, conf, buildroot):
 class CacheDir:
     def __init__(self, buildroot, pkg_manager):
         self.buildroot = buildroot
-        self.cache_path = os.path.join('/var/cache', pkg_manager)
-        self.host_cache_path = os.path.join(self.buildroot.cachedir,
-                                            pkg_manager + '_cache')
+        self.cache_path = os.path.join("/var/cache", pkg_manager)
+        self.host_cache_path = os.path.join(
+            self.buildroot.cachedir, pkg_manager + "_cache"
+        )
         self.mount_path = self.buildroot.make_chroot_path(self.cache_path)
-        self.buildroot.mounts.add(BindMountPoint(
-            srcpath=self.host_cache_path,
-            bindpath=self.mount_path,
-        ))
+        self.buildroot.mounts.add(
+            BindMountPoint(srcpath=self.host_cache_path, bindpath=self.mount_path,)
+        )
 
         mockbuild.util.mkdirIfAbsent(self.host_cache_path)
 
@@ -46,6 +46,7 @@ class YumCache(object):
     yum/dnf stores the caches below --installroot directory, which is cleaned
     up with --clean or --scrub=chroot.
     """
+
     # pylint: disable=too-few-public-methods
 
     METADATA_EXTS = (".sqlite", ".xml", ".bz2", ".gz", ".xz", ".solv", ".solvx")
@@ -57,17 +58,18 @@ class YumCache(object):
         self.state = buildroot.state
         self.yum_cache_opts = conf
         self.cache_dirs = [
-            CacheDir(buildroot, 'yum'),
-            CacheDir(buildroot, 'dnf'),
+            CacheDir(buildroot, "yum"),
+            CacheDir(buildroot, "dnf"),
         ]
         self.yumSharedCachePath = self.cache_dirs[0].host_cache_path
-        self.online = self.config['online']
+        self.online = self.config["online"]
         plugins.add_hook("preyum", self._yumCachePreYumHook)
         plugins.add_hook("postyum", self._yumCachePostYumHook)
         plugins.add_hook("preinit", self._yumCachePreInitHook)
 
-        self.yumCacheLock = open(os.path.join(buildroot.cachedir, "yumcache.lock"), "a+")
-
+        self.yumCacheLock = open(
+            os.path.join(buildroot.cachedir, "yumcache.lock"), "a+"
+        )
 
     # =============
     # 'Private' API
@@ -99,17 +101,19 @@ class YumCache(object):
                 # prune repodata so yum redownloads.
                 # prevents certain errors where yum gets stuck due to bad metadata
                 for ext in self.METADATA_EXTS:
-                    if filename.endswith(ext) and file_age_days > self.yum_cache_opts['max_metadata_age_days']:
+                    if (
+                        filename.endswith(ext)
+                        and file_age_days > self.yum_cache_opts["max_metadata_age_days"]
+                    ):
                         os.unlink(fullPath)
                         fullPath = None
                         break
 
                 if fullPath is None:
                     continue
-                if file_age_days > self.yum_cache_opts['max_age_days']:
+                if file_age_days > self.yum_cache_opts["max_age_days"]:
                     os.unlink(fullPath)
                     continue
-
 
     @traceLog()
     def _yumCachePreInitHook(self):
@@ -131,9 +135,9 @@ class YumCache(object):
         # yum made an rpmdb cache dir in $cachedir/installed for a while;
         # things can go wrong in a specific mock case if this happened.
         # So - just nuke the dir and all that's in it.
-        if os.path.exists(self.yumSharedCachePath + '/installed'):
-            for fn in glob.glob(self.yumSharedCachePath + '/installed/*'):
+        if os.path.exists(self.yumSharedCachePath + "/installed"):
+            for fn in glob.glob(self.yumSharedCachePath + "/installed/*"):
                 os.unlink(fn)
-            os.rmdir(self.yumSharedCachePath + '/installed')
+            os.rmdir(self.yumSharedCachePath + "/installed")
 
         self._yumCachePostYumHook()

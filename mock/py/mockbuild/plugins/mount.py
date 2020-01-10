@@ -35,6 +35,7 @@ def init(plugins, conf, buildroot):
 
 class Mount(object):
     """mount dirs into chroot"""
+
     # pylint: disable=too-few-public-methods
     @traceLog()
     def __init__(self, plugins, conf, buildroot):
@@ -46,15 +47,18 @@ class Mount(object):
         if buildroot.is_bootstrap:
             return
         plugins.add_hook("postinit", self._mountCreateDirs)
-        for device, dest_dir, vfstype, mount_opts in self.opts['dirs']:
+        for device, dest_dir, vfstype, mount_opts in self.opts["dirs"]:
             buildroot.mounts.add_user_mount(
-                FileSystemMountPoint(buildroot.make_chroot_path(dest_dir),
-                                     filetype=vfstype,
-                                     device=device,
-                                     options=mount_opts))
+                FileSystemMountPoint(
+                    buildroot.make_chroot_path(dest_dir),
+                    filetype=vfstype,
+                    device=device,
+                    options=mount_opts,
+                )
+            )
 
     @traceLog()
     def _mountCreateDirs(self):
         # pylint: disable=unused-variable
-        for device, dest_dir, vfstype, mount_opts in self.opts['dirs']:
+        for device, dest_dir, vfstype, mount_opts in self.opts["dirs"]:
             mockbuild.util.mkdirIfAbsent(self.buildroot.make_chroot_path(dest_dir))
