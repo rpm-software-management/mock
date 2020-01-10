@@ -71,7 +71,9 @@ def do_rebuild(config_opts, commands, buildroot, options, srpms):
             else:
                 commands.init()
                 commands.install_build_results(commands.build_results)
-                commands.clean()
+                if config_opts["cleanup_on_success"]:
+                    log.info("Cleaning up build root ('cleanup_on_success=True')")
+                    commands.clean()
 
         if config_opts["createrepo_on_rpms"]:
             log.info("Running createrepo on binary rpms in resultdir")
