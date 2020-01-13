@@ -1,6 +1,3 @@
-config_opts['root'] = 'mageia-6-x86_64'
-config_opts['target_arch'] = 'x86_64'
-config_opts['legal_host_arches'] = ('x86_64',)
 config_opts['chroot_setup_cmd'] = 'install basesystem-minimal rpm-build rpm-mageia-setup rpm-mageia-setup-build'
 config_opts['dist'] = 'mga6'  # only useful for --resultdir variable subst
 config_opts['extra_chroot_dirs'] = [ '/run/lock', ]
@@ -30,10 +27,10 @@ protected_packages=
 # repos
 
 [mageia]
-name=Mageia $releasever - x86_64
-#baseurl=http://mirrors.kernel.org/mageia/distrib/$releasever/x86_64/media/core/release/
-#metalink=https://mirrors.mageia.org/metalink?distrib=mageia-$releasever&arch=x86_64@&section=core&repo=release
-mirrorlist=https://www.mageia.org/mirrorlist/?release=$releasever&arch=x86_64&section=core&repo=release
+name=Mageia $releasever - {{ target_arch }}
+#baseurl=http://mirrors.kernel.org/mageia/distrib/$releasever/{{ target_arch }}/media/core/release/
+#metalink=https://mirrors.mageia.org/metalink?distrib=mageia-$releasever&arch={{ target_arch }}@&section=core&repo=release
+mirrorlist=https://www.mageia.org/mirrorlist/?release=$releasever&arch={{ target_arch }}&section=core&repo=release
 fastestmirror=1
 gpgcheck=1
 gpgkey=file:///usr/share/distribution-gpg-keys/mageia/RPM-GPG-KEY-Mageia
@@ -41,10 +38,10 @@ enabled=1
 skip_if_unavailable=False
 
 [updates]
-name=Mageia $releasever - x86_64 - Updates
-#baseurl=http://mirrors.kernel.org/mageia/distrib/$releasever/x86_64/media/core/updates/
-#metalink=https://mirrors.mageia.org/metalink?distrib=mageia-$releasever&arch=x86_64@&section=core&repo=updates
-mirrorlist=https://www.mageia.org/mirrorlist/?release=$releasever&arch=x86_64&section=core&repo=updates
+name=Mageia $releasever - {{ target_arch }} - Updates
+#baseurl=http://mirrors.kernel.org/mageia/distrib/$releasever/{{ target_arch }}/media/core/updates/
+#metalink=https://mirrors.mageia.org/metalink?distrib=mageia-$releasever&arch={{ target_arch }}@&section=core&repo=updates
+mirrorlist=https://www.mageia.org/mirrorlist/?release=$releasever&arch={{ target_arch }}&section=core&repo=updates
 fastestmirror=1
 gpgcheck=1
 gpgkey=file:///usr/share/distribution-gpg-keys/mageia/RPM-GPG-KEY-Mageia
@@ -52,10 +49,10 @@ enabled=1
 skip_if_unavailable=False
 
 [mageia-debuginfo]
-name=Mageia $releasever - x86_64 - Debug
-#baseurl=http://mirrors.kernel.org/mageia/distrib/$releasever/x86_64/media/debug/core/release/
-#metalink=https://mirrors.mageia.org/metalink?distrib=mageia-$releasever&arch=x86_64@&section=core&repo=release&debug=true
-mirrorlist=https://www.mageia.org/mirrorlist/?release=$releasever&arch=x86_64&section=core&repo=release&debug=1
+name=Mageia $releasever - {{ target_arch }} - Debug
+#baseurl=http://mirrors.kernel.org/mageia/distrib/$releasever/{{ target_arch }}/media/debug/core/release/
+#metalink=https://mirrors.mageia.org/metalink?distrib=mageia-$releasever&arch={{ target_arch }}@&section=core&repo=release&debug=true
+mirrorlist=https://www.mageia.org/mirrorlist/?release=$releasever&arch={{ target_arch }}&section=core&repo=release&debug=1
 fastestmirror=1
 gpgcheck=1
 gpgkey=file:///usr/share/distribution-gpg-keys/mageia/RPM-GPG-KEY-Mageia
@@ -63,10 +60,10 @@ enabled=0
 skip_if_unavailable=False
 
 [updates-debuginfo]
-name=Mageia $releasever - x86_64 - Updates - Debug
-#baseurl=http://mirrors.kernel.org/mageia/distrib/$releasever/x86_64/media/debug/core/updates/
-#metalink=https://mirrors.mageia.org/metalink?distrib=mageia-$releasever&arch=x86_64@&section=core&repo=updates&debug=true
-mirrorlist=https://www.mageia.org/mirrorlist/?release=$releasever&arch=x86_64&section=core&repo=updates&debug=1
+name=Mageia $releasever - {{ target_arch }} - Updates - Debug
+#baseurl=http://mirrors.kernel.org/mageia/distrib/$releasever/{{ target_arch }}/media/debug/core/updates/
+#metalink=https://mirrors.mageia.org/metalink?distrib=mageia-$releasever&arch={{ target_arch }}@&section=core&repo=updates&debug=true
+mirrorlist=https://www.mageia.org/mirrorlist/?release=$releasever&arch={{ target_arch }}&section=core&repo=updates&debug=1
 fastestmirror=1
 gpgcheck=1
 gpgkey=file:///usr/share/distribution-gpg-keys/mageia/RPM-GPG-KEY-Mageia
