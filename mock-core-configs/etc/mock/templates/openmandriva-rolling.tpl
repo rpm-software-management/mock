@@ -1,6 +1,3 @@
-config_opts['root'] = 'openmandriva-rolling-x86_64'
-config_opts['target_arch'] = 'x86_64'
-config_opts['legal_host_arches'] = ('x86_64',)
 config_opts['chroot_setup_cmd'] = 'install basesystem-minimal rpm-build rpm-openmandriva-setup rpm-openmandriva-setup-build'
 config_opts['dist'] = 'rolling'  # only useful for --resultdir variable subst
 config_opts['extra_chroot_dirs'] = [ '/run/lock', ]
@@ -29,10 +26,10 @@ protected_packages=
 # repos
 
 [openmandriva-rolling]
-name=OpenMandriva Rolling - x86_64
+name=OpenMandriva Rolling - {{ target_arch }}
 # Master repository:
-# baseurl=http://abf-downloads.openmandriva.org/rolling/repository/x86_64/main/release/
-mirrorlist=http://mirrors.openmandriva.org/mirrors.php?platform=rolling&arch=x86_64&repo=main&release=release
+# baseurl=http://abf-downloads.openmandriva.org/rolling/repository/{{ target_arch }}/main/release/
+mirrorlist=http://mirrors.openmandriva.org/mirrors.php?platform=rolling&arch={{ target_arch }}&repo=main&release=release
 fastestmirror=1
 gpgcheck=1
 gpgkey=file:///usr/share/distribution-gpg-keys/openmandriva/RPM-GPG-KEY-OpenMandriva
@@ -40,10 +37,10 @@ enabled=1
 skip_if_unavailable=False
 
 [openmandriva-rolling-debuginfo]
-name=OpenMandriva Rolling - x86_64 - Debug
+name=OpenMandriva Rolling - {{ target_arch }} - Debug
 # Master repository:
-# baseurl=http://abf-downloads.openmandriva.org/rolling/repository/x86_64/debug_main/release/
-mirrorlist=http://mirrors.openmandriva.org/mirrors.php?platform=rolling&arch=x86_64&repo=debug_main&release=release
+# baseurl=http://abf-downloads.openmandriva.org/rolling/repository/{{ target_arch }}/debug_main/release/
+mirrorlist=http://mirrors.openmandriva.org/mirrors.php?platform=rolling&arch={{ target_arch }}&repo=debug_main&release=release
 fastestmirror=1
 gpgcheck=1
 gpgkey=file:///usr/share/distribution-gpg-keys/openmandriva/RPM-GPG-KEY-OpenMandriva
