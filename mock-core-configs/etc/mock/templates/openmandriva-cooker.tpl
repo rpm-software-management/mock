@@ -1,7 +1,7 @@
 config_opts['chroot_setup_cmd'] = 'install basesystem-minimal rpm-build rpm-openmandriva-setup rpm-openmandriva-setup-build'
 config_opts['dist'] = 'cooker'  # only useful for --resultdir variable subst
 config_opts['extra_chroot_dirs'] = [ '/run/lock', ]
-config_opts['useradd'] = '/usr/sbin/useradd -o -m -u %(uid)s -g %(gid)s -d %(home)s %(user)s'
+config_opts['useradd'] = '/usr/sbin/useradd -o -m -u {{chrootuid}} -g {{chrootgid}} -d {{chroothome}} {{chrootuser}}'
 config_opts['releasever'] = '5.0'
 config_opts['macros']['%cross_compiling'] = '0' # Mock should generally be considered native builds
 config_opts['package_manager'] = 'dnf'
