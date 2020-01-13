@@ -50,22 +50,22 @@ gpgkey=file:///usr/share/distribution-gpg-keys/epel/RPM-GPG-KEY-EPEL-6
 gpgcheck=1
 skip_if_unavailable=False
 
-{% if basearch == "x86_64" %}
-    [sclo]
-    name=sclo
-    baseurl=http://mirror.centos.org/centos/6/sclo/$basearch/sclo/
-    gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-SIG-SCLo
-    gpgcheck=1
-    includepkgs=devtoolset*
-    skip_if_unavailable=False
+{% if target_arch == "x86_64" %}
+[sclo]
+name=sclo
+baseurl=http://mirror.centos.org/centos/6/sclo/$basearch/sclo/
+gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-SIG-SCLo
+gpgcheck=1
+includepkgs=devtoolset*
+skip_if_unavailable=False
 
-    [sclo-rh]
-    name=sclo-rh
-    baseurl=http://mirror.centos.org/centos/6/sclo/$basearch/rh/
-    gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-SIG-SCLo
-    gpgcheck=1
-    includepkgs=devtoolset*
-    skip_if_unavailable=False
+[sclo-rh]
+name=sclo-rh
+baseurl=http://mirror.centos.org/centos/6/sclo/$basearch/rh/
+gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-SIG-SCLo
+gpgcheck=1
+includepkgs=devtoolset*
+skip_if_unavailable=False
 {% endif %}
 
 [testing]
