@@ -59,6 +59,7 @@ import shutil
 import sys
 import time
 import copy
+import subprocess
 
 # pylint: disable=import-error
 from functools import partial
@@ -660,6 +661,16 @@ def main():
         uidManager.restorePrivs()
         os.setgroups((mockgid, config_opts['chrootgid']))
         uidManager.dropPrivsTemp()
+
+    if util.USE_NSPAWN and '--pipe' not in config_opts['nspawn_args']:
+        # Detect if host's systemd-nspawn supports --pipe argument and use it.
+        # Before --pipe was implemented in nspawn, the default behavoior was
+        # the same as later with --pipe.
+        output = subprocess.check_output('systemd-nspawn --help || true',
+                                         shell=True)
+        output = output.decode('utf-8', errors='ignore')
+        if '--pipe' in output and '--console' in output:
+            config_opts['nspawn_args'] += ['--pipe']
 
     # verify that our unprivileged uid is in the mock group
     groupcheck(uidManager.unprivGid, config_opts['chrootgid'])
