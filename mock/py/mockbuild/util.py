@@ -1376,6 +1376,8 @@ def check_config(config_opts):
                                     "- option config_opts['root'] must be present in your config.")
 
 
+regexp_include = re.compile(r'^\s*include\((.*)\)', re.MULTILINE)
+
 @traceLog()
 def include(config_file, config_opts):
     if not os.path.isabs(config_file):
@@ -1384,16 +1386,20 @@ def include(config_file, config_opts):
     if os.path.exists(config_file):
         if config_file in config_opts['config_paths']:
             getLog().warning("Multiple inclusion of %s, skipping" % config_file)
-            return
+            return ""
 
         config_opts['config_paths'].append(config_file)
-
-        with open(config_file) as f:
-            content = f.read()
-            content = re.sub(r'include\((.*)\)', r'include(\g<1>, config_opts)', content)
-            code = compile(content, config_file, 'exec')
-        # pylint: disable=exec-used
-        exec(code)
+        content = open(config_file).read()
+        # Search for "include(FILE)" and for each "include(FILE)" replace with
+        # content of the FILE, in a perpective of search for includes and replace with his content.
+        include_arguments = regexp_include.findall(content)
+        if include_arguments is not None:
+            for include_argument in include_arguments:
+                # pylint: disable=eval-used
+                sub_config_file = eval(include_argument)
+                sub_content = include(sub_config_file, config_opts)
+                content = regexp_include.sub(sub_content, content, count=1)
+        return content
     else:
         raise exception.ConfigError("Could not find included config file: %s" % config_file)
 
@@ -1407,7 +1413,9 @@ def update_config_from_file(config_opts, config_file, uid_manager):
             os.close(r_pipe)
             if uid_manager and not all(getresuid()):
                 uid_manager.dropPrivsForever()
-            include(config_file, config_opts)
+            content = include(config_file, config_opts)
+            # pylint: disable=exec-used
+            exec(content)
             with os.fdopen(w_pipe, 'wb') as writer:
                 pickle.dump(config_opts, writer)
         except: # pylint: disable=bare-except
