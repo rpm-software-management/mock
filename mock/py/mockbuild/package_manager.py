@@ -8,12 +8,14 @@ import shutil
 import sys
 import time
 from textwrap import dedent
+from configparser import ConfigParser
 
 from distutils.dir_util import copy_tree
 
 from . import util
 from .exception import BuildError, Error, YumError
 from .trace_decorator import traceLog, getLog
+from .mounts import BindMountPoint
 
 fallbacks = {
     'dnf': ['dnf', 'yum'],
@@ -295,6 +297,34 @@ Error:      Neither dnf-utils nor yum-utils are installed. Dnf-utils or yum-util
             self.copy_distribution_gpg_keys()
         self.initialize_config()
 
+        try:
+            self._bind_mount_repos_to_bootstrap()
+        except Exception as e:
+            getLog().warning(e)
+
+    def _bind_mount_repos_to_bootstrap(self):
+        if not self.buildroot.is_bootstrap:
+            return
+
+        config = ConfigParser(strict=False)
+        config.read_string(self.pkg_manager_config)
+
+        for section in config.sections():
+            if 'baseurl' not in config[section]:
+                continue
+            baseurl = config[section]['baseurl']
+            # triple slash, we only accept absolute pathnames
+            if not baseurl.startswith('file:///'):
+                continue
+            srcdir = baseurl[7:]
+            destdir = self.buildroot.make_chroot_path(srcdir)
+
+            bind_mount_point = BindMountPoint(srcpath=srcdir, bindpath=destdir)
+
+            # we need to use user mounts as essential mounts are used
+            # only for installing into bootstrap chroot
+            self.buildroot.mounts.add_user_mount(bind_mount_point)
+
     def initialize_config(self):
         # there may be configs we get from container image
         util.rmtree(self.buildroot.make_chroot_path('etc', 'yum.repos.d'))
@@ -369,6 +399,7 @@ class Yum(_PackageManager):
                            plugins=1
                            pluginconfpath={0}""".format(pluginconf_dir)))
 
+        self.pkg_manager_config = config_content
         check_yum_config(config_content, self.buildroot.root_log)
 
         # write in yum.conf into chroot
@@ -473,6 +504,7 @@ class Dnf(_PackageManager):
         else:
             config_content = self.config['yum.conf']
 
+        self.pkg_manager_config = config_content
         check_yum_config(config_content, self.buildroot.root_log)
         util.mkdirIfAbsent(self.buildroot.make_chroot_path('etc', 'dnf'))
         dnfconf_path = self.buildroot.make_chroot_path('etc', 'dnf', 'dnf.conf')
