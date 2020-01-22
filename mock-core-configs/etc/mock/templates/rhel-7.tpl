@@ -30,7 +30,11 @@ protected_packages=
 
 [rhel]
 name = Red Hat Enterprise Linux
-baseurl = https://cdn.redhat.com/content/dist/rhel/server/7/$releasever/$basearch/os
+{% if target_arch == 'aarch64' %}
+baseurl = https://cdn.redhat.com/content/dist/rhel-alt/{{ rhel_product }}/7/$releasever/armv8-a/$basearch/os
+{% else %}
+baseurl = https://cdn.redhat.com/content/dist/rhel/{{ rhel_product }}/7/$releasever/$basearch/os
+{% endif %}
 sslverify = 1
 sslcacert = /etc/rhsm/ca/redhat-uep.pem
 sslclientkey = /etc/pki/entitlement/{{ redhat_subscription_key_id }}-key.pem
@@ -38,9 +42,14 @@ sslclientcert = /etc/pki/entitlement/{{ redhat_subscription_key_id }}.pem
 gpgkey=file:///usr/share/distribution-gpg-keys/redhat/RPM-GPG-KEY-redhat7-release
 skip_if_unavailable=False
 
+
 [rhel-optional]
 name = Red Hat Enterprise Linux - Optional
-baseurl = https://cdn.redhat.com/content/dist/rhel/server/7/$releasever/$basearch/optional/os
+{% if target_arch == 'aarch64' %}
+baseurl = https://cdn.redhat.com/content/dist/rhel-alt/{{ rhel_product }}/7/$releasever/armv8-a/$basearch/optional/os
+{% else %}
+baseurl = https://cdn.redhat.com/content/dist/rhel/{{ rhel_product }}/7/$releasever/$basearch/optional/os
+{% endif %}
 sslverify = 1
 sslcacert = /etc/rhsm/ca/redhat-uep.pem
 sslclientkey = /etc/pki/entitlement/{{ redhat_subscription_key_id }}-key.pem
@@ -50,7 +59,11 @@ skip_if_unavailable=False
 
 [rhel-extras]
 name = Red Hat Enterprise Linux - Extras
-baseurl = https://cdn.redhat.com/content/dist/rhel/server/7/7Server/$basearch/extras/os
+{% if target_arch == 'aarch64' %}
+baseurl = https://cdn.redhat.com/content/dist/rhel-alt/{{ rhel_product }}/7/$releasever/armv8-a/$basearch/extras/os
+{% else %}
+baseurl = https://cdn.redhat.com/content/dist/rhel/{{ rhel_product }}/7/7Server/$basearch/extras/os
+{% endif %}
 enabled=0
 sslverify = 1
 sslcacert = /etc/rhsm/ca/redhat-uep.pem
