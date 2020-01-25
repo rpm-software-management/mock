@@ -96,6 +96,8 @@ PLUGIN_LIST = ['tmpfs', 'root_cache', 'yum_cache', 'bind_mount',
 
 USE_NSPAWN = False
 
+_NSPAWN_HAS_CONSOLE_OPTION = None
+
 RHEL_CLONES = ['centos', 'deskos', 'ol', 'rhel', 'scientific']
 
 _OPS_TIMEOUT = 0
@@ -810,7 +812,29 @@ def _nspawnTempResolvAtExit(path):
             getLog().warning("unable to delete temporary resolv.conf (%s): %s", path, e)
 
 
-def _prepare_nspawn_command(chrootPath, user, cmd, nspawn_args=None, env=None, cwd=None):
+def _check_nspawn_pipe_option():
+    """
+    Detect whether host's systemd-nspawn supports --pipe argument and if we can
+    use it for non-interactive commands.  Before --pipe was implemented in
+    nspawn the default behavior was to detect tty => and use 'interactive' vs.
+    'pipe'.  Later the default was changed to 'interactive' vs. 'read-only'
+    (systemd commit de40a3037).
+    """
+    global _NSPAWN_HAS_CONSOLE_OPTION
+    if _NSPAWN_HAS_CONSOLE_OPTION is not None:
+        return _NSPAWN_HAS_CONSOLE_OPTION
+
+    output = subprocess.check_output('systemd-nspawn --help || true',
+                                     shell=True)
+    output = output.decode('utf-8', errors='ignore')
+    _NSPAWN_HAS_CONSOLE_OPTION = \
+        '--pipe' in output and '--console' in output
+
+    return _NSPAWN_HAS_CONSOLE_OPTION
+
+
+def _prepare_nspawn_command(chrootPath, user, cmd, nspawn_args=None, env=None,
+                            cwd=None, interactive=False):
     cmd_is_list = isinstance(cmd, list)
     if nspawn_args is None:
         nspawn_args = []
@@ -832,6 +856,11 @@ def _prepare_nspawn_command(chrootPath, user, cmd, nspawn_args=None, env=None, c
         # EL < 7.5 does not support the nspawn -a option. See BZ 1417387
         nspawn_argv += ['-a']
     nspawn_argv.extend(nspawn_args)
+
+    if _check_nspawn_pipe_option():
+        if not interactive or not (sys.stdin.isatty() and sys.stdout.isatty()):
+            nspawn_argv += ['--console=pipe']
+
     if cwd:
         nspawn_argv.append('--chdir={0}'.format(cwd))
     if env:
@@ -868,7 +897,8 @@ def doshell(chrootPath=None, environ=None, uid=None, gid=None, cmd=None,
     if USE_NSPAWN:
         # nspawn cannot set gid
         log.debug("Using nspawn with args %s", nspawn_args)
-        cmd = _prepare_nspawn_command(chrootPath, uid, cmd, nspawn_args=nspawn_args, env=environ)
+        cmd = _prepare_nspawn_command(chrootPath, uid, cmd, nspawn_args=nspawn_args, env=environ,
+                                      interactive=True)
     preexec = ChildPreExec(personality=None, chrootPath=chrootPath, cwd=None,
                            uid=uid, gid=gid, env=environ, shell=True,
                            unshare_ipc=unshare_ipc, unshare_net=unshare_net)
