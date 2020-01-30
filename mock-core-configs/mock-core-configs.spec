@@ -49,7 +49,22 @@ Config files which allow you to create chroots for:
 
 
 %build
-# nothing to do here
+cd etc/host-overrides
+HOST=none
+%if 0%{?fedora}
+HOST="fedora-%{fedora}"
+%endif
+%if 0%{?rhel}
+HOST="rhel-%{rhel}"
+%endif
+
+if [ -d "$HOST" ]; then
+  pushd "$HOST"
+  for i in *.cfg; do
+    cat "$i" >> "../../mock/$i"
+  done
+  popd
+fi
 
 
 %install
