@@ -972,7 +972,7 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
     config_opts['rpmbuild_networking'] = False
     config_opts['nspawn_args'] = ['--capability=cap_ipc_lock']
     config_opts['use_container_host_hostname'] = True
-    config_opts['use_bootstrap_container'] = False
+    config_opts['use_bootstrap_container'] = True
 
     config_opts['use_bootstrap_image'] = False
     config_opts['bootstrap_image'] = 'fedora:latest'
