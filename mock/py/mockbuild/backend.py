@@ -646,7 +646,8 @@ class Commands(object):
                                 shell=False, uid=self.buildroot.chrootuid, gid=self.buildroot.chrootgid,
                                 user=self.buildroot.chrootuser,
                                 nspawn_args=self._get_nspawn_args(),
-                                unshare_net=self.private_network)
+                                unshare_net=self.private_network,
+                                returnOutput=True)
 
     @traceLog()
     def rebuild_installed_srpm(self, spec_path, timeout):
