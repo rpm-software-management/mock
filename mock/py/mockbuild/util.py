@@ -972,8 +972,8 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
     config_opts['rpmbuild_networking'] = False
     config_opts['nspawn_args'] = ['--capability=cap_ipc_lock']
     config_opts['use_container_host_hostname'] = True
-    config_opts['use_bootstrap_container'] = True
 
+    config_opts['use_bootstrap'] = True
     config_opts['use_bootstrap_image'] = False
     config_opts['bootstrap_image'] = 'fedora:latest'
 
@@ -1283,11 +1283,11 @@ def set_config_opts_per_cmdline(config_opts, options, args):
     if options.rpmbuild_timeout is not None:
         config_opts['rpmbuild_timeout'] = options.rpmbuild_timeout
     if options.bootstrapchroot is not None:
-        config_opts['use_bootstrap_container'] = options.bootstrapchroot
+        config_opts['use_bootstrap'] = options.bootstrapchroot
     if options.usebootstrapimage is not None:
         config_opts['use_bootstrap_image'] = options.usebootstrapimage
         if options.usebootstrapimage:
-            config_opts['use_bootstrap_container'] = True
+            config_opts['use_bootstrap'] = True
 
     for i in options.disabled_plugins:
         if i not in config_opts['plugins']:
@@ -1581,6 +1581,12 @@ def load_config(config_path, name, uidManager, version, pkg_python_dir):
     # Now when all options are correctly loaded from config files, turn the
     # jinja templating ON.
     config_opts['__jinja_expand'] = True
+
+    # use_bootstrap_container is deprecated option
+    if 'use_bootstrap_container' in config_opts:
+        log.warning("config_opts['use_bootstrap_container'] is deprecated, "
+                    "please use config_opts['use_bootstrap'] instead")
+        config_opts['use_bootstrap'] = config_opts['use_bootstrap_container']
 
     return config_opts
 
