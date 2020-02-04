@@ -30,13 +30,6 @@ protected_packages=
 
 # repos
 
-[local]
-name=local
-baseurl=https://kojipkgs.fedoraproject.org/repos/f31-build/latest/$basearch/
-cost=2000
-enabled=0
-skip_if_unavailable=False
-
 [fedora]
 name=fedora
 metalink=https://mirrors.fedoraproject.org/metalink?repo=fedora-$releasever&arch=$basearch
@@ -57,6 +50,13 @@ metalink=https://mirrors.fedoraproject.org/metalink?repo=updates-testing-f$relea
 enabled=0
 gpgkey=file:///usr/share/distribution-gpg-keys/fedora/RPM-GPG-KEY-fedora-31-primary
 gpgcheck=1
+skip_if_unavailable=False
+
+[local]
+name=local
+baseurl=https://kojipkgs.fedoraproject.org/repos/f31-build/latest/$basearch/
+cost=2000
+enabled=0
 skip_if_unavailable=False
 
 [fedora-debuginfo]
