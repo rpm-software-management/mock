@@ -5,7 +5,7 @@ config_opts['package_manager'] = 'dnf'
 config_opts['module_enable'] = []
 config_opts['module_install'] = []
 # DNF may not be available in this chroot
-config_opts['use_bootstrap_container'] = False
+config_opts['use_bootstrap'] = False
 
 config_opts['dnf.conf'] = """
 [main]

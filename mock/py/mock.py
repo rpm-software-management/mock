@@ -687,11 +687,11 @@ def main():
 
     # When scrubbing all, we also want to scrub a bootstrap chroot
     if options.scrub:
-        config_opts['use_bootstrap_container'] = True
+        config_opts['use_bootstrap'] = True
 
     # outer buildroot to bootstrap the installation - based on main config with some differences
     bootstrap_buildroot = None
-    if config_opts['use_bootstrap_container']:
+    if config_opts['use_bootstrap']:
         # first take a copy of the config so we can make some modifications
         bootstrap_buildroot_config = config_opts.copy()
         # copy plugins configuration so we get a separate deep copy
@@ -753,7 +753,7 @@ def main():
     log.info("Signal handler active")
     commands = Commands(config_opts, uidManager, plugins, state, buildroot, bootstrap_buildroot)
 
-    if config_opts['use_bootstrap_container']:
+    if config_opts['use_bootstrap']:
         bootstrap_buildroot.config['chroot_setup_cmd'] = buildroot.pkg_manager.install_command
 
     state.start("run")
