@@ -26,8 +26,15 @@ syslog_device=
 install_weak_deps=0
 metadata_expire=0
 best=1
-module_platform_id=platform:f33
+module_platform_id=platform:f{{ releasever }}
 protected_packages=
+
+{%- macro rawhide_gpg_keys() -%}
+file:///usr/share/distribution-gpg-keys/fedora/RPM-GPG-KEY-fedora-$releasever-primary
+{%- for version in [releasever|int, releasever|int - 1]
+%} file:///usr/share/distribution-gpg-keys/fedora/RPM-GPG-KEY-fedora-{{ version }}-primary
+{%- endfor %}
+{%- endmacro %}
 
 # repos
 
@@ -48,7 +55,7 @@ skip_if_unavailable=False
 [fedora]
 name=fedora
 metalink=https://mirrors.fedoraproject.org/metalink?repo=rawhide&arch=$basearch
-gpgkey=file:///usr/share/distribution-gpg-keys/fedora/RPM-GPG-KEY-fedora-$releasever-primary file:///usr/share/distribution-gpg-keys/fedora/RPM-GPG-KEY-fedora-33-primary file:///usr/share/distribution-gpg-keys/fedora/RPM-GPG-KEY-fedora-32-primary file:///usr/share/distribution-gpg-keys/fedora/RPM-GPG-KEY-fedora-31-primary
+gpgkey={{ rawhide_gpg_keys() }}
 gpgcheck=1
 skip_if_unavailable=False
 
@@ -56,14 +63,14 @@ skip_if_unavailable=False
 name=Fedora Rawhide - Debug
 metalink=https://mirrors.fedoraproject.org/metalink?repo=rawhide-debug&arch=$basearch
 enabled=0
-gpgkey=file:///usr/share/distribution-gpg-keys/fedora/RPM-GPG-KEY-fedora-$releasever-primary file:///usr/share/distribution-gpg-keys/fedora/RPM-GPG-KEY-fedora-33-primary file:///usr/share/distribution-gpg-keys/fedora/RPM-GPG-KEY-fedora-32-primary file:///usr/share/distribution-gpg-keys/fedora/RPM-GPG-KEY-fedora-31-primary
+gpgkey={{ rawhide_gpg_keys() }}
 gpgcheck=1
 skip_if_unavailable=False
 
 [fedora-source]
 name=fedora-source
 metalink=https://mirrors.fedoraproject.org/metalink?repo=rawhide-source&arch=$basearch
-gpgkey=file:///usr/share/distribution-gpg-keys/fedora/RPM-GPG-KEY-fedora-$releasever-primary file:///usr/share/distribution-gpg-keys/fedora/RPM-GPG-KEY-fedora-33-primary file:///usr/share/distribution-gpg-keys/fedora/RPM-GPG-KEY-fedora-32-primary file:///usr/share/distribution-gpg-keys/fedora/RPM-GPG-KEY-fedora-31-primary
+gpgkey={{ rawhide_gpg_keys() }}
 gpgcheck=1
 enabled=0
 skip_if_unavailable=False
@@ -77,7 +84,7 @@ metalink=https://mirrors.fedoraproject.org/metalink?repo=rawhide-modular&arch=$b
 # see https://bugzilla.redhat.com/show_bug.cgi?id=1673851
 enabled=0
 gpgcheck=1
-gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-fedora-$releasever-$basearch file:///usr/share/distribution-gpg-keys/fedora/RPM-GPG-KEY-fedora-33-primary file:///usr/share/distribution-gpg-keys/fedora/RPM-GPG-KEY-fedora-32-primary file:///usr/share/distribution-gpg-keys/fedora/RPM-GPG-KEY-fedora-31-primary
+gpgkey={{ rawhide_gpg_keys() }}
 skip_if_unavailable=False
 
 [rawhide-modular-debuginfo]
@@ -85,7 +92,7 @@ name=Fedora - Modular Rawhide - Debug
 metalink=https://mirrors.fedoraproject.org/metalink?repo=rawhide-modular-debug&arch=$basearch
 enabled=0
 gpgcheck=1
-gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-fedora-$releasever-$basearch file:///usr/share/distribution-gpg-keys/fedora/RPM-GPG-KEY-fedora-33-primary file:///usr/share/distribution-gpg-keys/fedora/RPM-GPG-KEY-fedora-32-primary file:///usr/share/distribution-gpg-keys/fedora/RPM-GPG-KEY-fedora-31-primary
+gpgkey={{ rawhide_gpg_keys() }}
 skip_if_unavailable=False
 
 [rawhide-modular-source]
@@ -93,6 +100,6 @@ name=Fedora - Modular Rawhide - Source
 metalink=https://mirrors.fedoraproject.org/metalink?repo=rawhide-modular-source&arch=$basearch
 enabled=0
 gpgcheck=1
-gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-fedora-$releasever-$basearch file:///usr/share/distribution-gpg-keys/fedora/RPM-GPG-KEY-fedora-33-primary file:///usr/share/distribution-gpg-keys/fedora/RPM-GPG-KEY-fedora-32-primary file:///usr/share/distribution-gpg-keys/fedora/RPM-GPG-KEY-fedora-31-primary
+gpgkey={{ rawhide_gpg_keys() }}
 skip_if_unavailable=False
 """

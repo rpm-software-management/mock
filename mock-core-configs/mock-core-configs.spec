@@ -17,7 +17,7 @@ Source:     https://github.com/rpm-software-management/mock/releases/download/%{
 BuildArch:  noarch
 
 # distribution-gpg-keys contains GPG keys used by mock configs
-Requires:   distribution-gpg-keys >= 1.29
+Requires:   distribution-gpg-keys >= 1.36
 
 Requires(post): coreutils
 %if 0%{?fedora} || 0%{?mageia} || 0%{?rhel} > 7
