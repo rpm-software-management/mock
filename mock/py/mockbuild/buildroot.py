@@ -17,9 +17,20 @@ import uuid
 from . import mounts
 from . import uid
 from . import util
-from .exception import BuildRootLocked, Error, ResultDirNotAccessible, RootError
+from .exception import (BuildRootLocked, Error, ResultDirNotAccessible,
+                        RootError, BadCmdline)
 from .package_manager import package_manager
 from .trace_decorator import getLog, traceLog
+from .podman import Podman
+
+
+def noop_in_bootstrap(f):
+    def wrapper(self, *args, **kwargs):
+        if self.is_bootstrap:
+            getLog().debug("method {} skipped in bootstrap".format(f.__name__))
+            return
+        return f(self, *args, **kwargs)
+    return wrapper
 
 
 class Buildroot(object):
@@ -75,6 +86,9 @@ class Buildroot(object):
         self.tmpdir = None
         self.nosync_path = None
         self.final_rpm_list = None
+
+        self._homedir_bindmounts = {}
+        self._setup_nspawn_loop_devices()
 
     @traceLog()
     def make_chroot_path(self, *paths):
@@ -132,6 +146,17 @@ class Buildroot(object):
         self.plugins.call_hooks('preinit')
         # intentionally we do not call bootstrap hook here - it does not have sense
         self.chroot_was_initialized = self.chroot_is_initialized()
+        if self.uses_bootstrap_image and not self.chroot_was_initialized:
+            podman = Podman(self, self.bootstrap_image)
+            podman.pull_image()
+            podman.get_container_id()
+            if self.config["tar"] == "bsdtar":
+                __tar_cmd = "bsdtar"
+            else:
+                __tar_cmd = "gtar"
+            podman.install_pkgmgmt_packages()
+            podman.cp(self.make_chroot_path(), __tar_cmd)
+            podman.remove()
 
         self._setup_dirs()
         if do_log:
@@ -205,10 +230,13 @@ class Buildroot(object):
             if 'user' not in kargs:
                 kargs['gid'] = pwd.getpwuid(kargs['uid'])[0]
             self.uid_manager.becomeUser(0, 0)
-        result = util.do_with_status(command, chrootPath=self.make_chroot_path(),
-                                     env=env, *args, **kargs)
-        if util.USE_NSPAWN:
-            self.uid_manager.restorePrivs()
+
+        try:
+            result = util.do_with_status(command, chrootPath=self.make_chroot_path(),
+                                         env=env, *args, **kargs)
+        finally:
+            if util.USE_NSPAWN:
+                self.uid_manager.restorePrivs()
         return result
 
     def all_chroot_packages(self):
@@ -253,9 +281,12 @@ class Buildroot(object):
 
     @traceLog()
     def _init_pkg_management(self):
-        if self.is_bootstrap and self.use_bootstrap_image:
-            getLog().debug("Skipping package management init in the bootstrap chroot due to using bootstrap image")
+        if self.uses_bootstrap_image:
+            # we already 'Podman.install_pkgmgmt_packages' to have working
+            # pkg management stack in bootstrap (the rest of this method, like
+            # modules, isn't usefull in bootstrap)
             return
+
         update_state = '{0} install'.format(self.pkg_manager.name)
         self.state.start(update_state)
         if 'module_enable' in self.config and self.config['module_enable']:
@@ -267,13 +298,13 @@ class Buildroot(object):
 
         cmd = self.config['chroot_setup_cmd']
         if cmd:
-            if isinstance(cmd, util.basestring):
+            if isinstance(cmd, str):
                 cmd = cmd.split()
             self.pkg_manager.init_install_output += self.pkg_manager.execute(*cmd, returnOutput=1)
 
         if 'chroot_additional_packages' in self.config and self.config['chroot_additional_packages']:
             cmd = self.config['chroot_additional_packages']
-            if isinstance(cmd, util.basestring):
+            if isinstance(cmd, str):
                 cmd = cmd.split()
             cmd = ['install'] + cmd
             self.pkg_manager.init_install_output += self.pkg_manager.execute(*cmd, returnOutput=1)
@@ -281,6 +312,7 @@ class Buildroot(object):
         self.state.finish(update_state)
 
     @traceLog()
+    @noop_in_bootstrap
     def _fixup_build_user(self):
         """ensure chrootuser has correct UID"""
         # --non-unique can be removed after 2019-03-31 (EOL of SLES 11)
@@ -289,12 +321,10 @@ class Buildroot(object):
                       shell=False, nosync=True)
 
     @traceLog()
+    @noop_in_bootstrap
     def _make_build_user(self):
         if not os.path.exists(self.make_chroot_path('usr/sbin/useradd')):
             raise RootError("Could not find useradd in chroot, maybe the install failed?")
-
-        dets = {'uid': str(self.chrootuid), 'gid': str(self.chrootgid),
-                'user': self.chrootuser, 'group': self.chrootgroup, 'home': self.homedir}
 
         excluded = [self.make_chroot_path(self.homedir, path)
                     for path in self.config['exclude_from_homedir_cleanup']] + \
@@ -304,18 +334,18 @@ class Buildroot(object):
 
         # ok for these two to fail
         if self.config['clean']:
-            self.doChroot(['/usr/sbin/userdel', '-r', '-f', dets['user']],
+            self.doChroot(['/usr/sbin/userdel', '-r', '-f', self.chrootuser],
                           shell=False, raiseExc=False, nosync=True)
         else:
-            self.doChroot(['/usr/sbin/userdel', '-f', dets['user']],
+            self.doChroot(['/usr/sbin/userdel', '-f', self.chrootuser],
                           shell=False, raiseExc=False, nosync=True)
-        self.doChroot(['/usr/sbin/groupdel', dets['group']],
+        self.doChroot(['/usr/sbin/groupdel', self.chrootgroup],
                       shell=False, raiseExc=False, nosync=True)
 
-        if self.chrootgid != 0:
-            self.doChroot(['/usr/sbin/groupadd', '-g', dets['gid'], dets['group']],
+        if self.chrootgid:
+            self.doChroot(['/usr/sbin/groupadd', '-g', self.chrootgid, self.chrootgroup],
                           shell=False, nosync=True)
-        self.doChroot(shlex.split(self.config['useradd'] % dets), shell=False, nosync=True)
+        self.doChroot(shlex.split(self.config['useradd']), shell=False, nosync=True)
         if not self.config['clean']:
             self.uid_manager.changeOwner(self.make_chroot_path(self.homedir))
         self._enable_chrootuser_account()
@@ -354,6 +384,11 @@ class Buildroot(object):
                     (self.state.state_log, "state.log", self.config['state_log_fmt_str']),
                     (self.build_log, "build.log", self.config['build_log_fmt_str']),
                     (self.root_log, "root.log", self.config['root_log_fmt_str'])):
+                # release used FileHandlers if re-initializing to not leak FDs
+                if force:
+                    for handler in log.handlers[:]:
+                        handler.close()
+                        log.removeHandler(handler)
                 fullPath = os.path.join(self.resultdir, filename)
                 fh = logging.FileHandler(fullPath, "a+")
                 formatter = logging.Formatter(fmt_str)
@@ -436,12 +471,14 @@ class Buildroot(object):
                 'var/lib/yum',
                 'var/lib/dbus',
                 'var/log',
+                'var/cache/dnf',
                 'var/cache/yum',
                 'etc/rpm',
                 'tmp',
                 'tmp/ccache',
                 'var/tmp',
                 'etc/dnf',
+                'etc/dnf/vars',
                 'etc/yum.repos.d',
                 'etc/yum',
                 'proc',
@@ -460,6 +497,7 @@ class Buildroot(object):
     def _setup_build_dirs(self):
         build_dirs = ['RPMS', 'SPECS', 'SRPMS', 'SOURCES', 'BUILD', 'BUILDROOT',
                       'originals']
+        util.mkdirIfAbsent(self.make_chroot_path(self.builddir))
         with self.uid_manager:
             self.uid_manager.changeOwner(self.make_chroot_path(self.builddir))
             for item in build_dirs:
@@ -479,6 +517,22 @@ class Buildroot(object):
 
                 for key, value in list(self.config['macros'].items()):
                     rpmmacros.write("%s %s\n" % (key, value))
+
+    @traceLog()
+    def _setup_nspawn_loop_devices(self):
+        if not util.USE_NSPAWN or self.is_bootstrap:
+            return
+
+        self.config['nspawn_args'].append('--bind=/dev/loop-control')
+        # for nspawn we create the loop devices directly on host
+        for i in range(self.config['dev_loop_count']):
+            loop_file = '/dev/loop{}'.format(i)
+            try:
+                os.mknod(loop_file, stat.S_IFBLK | 0o666, os.makedev(7, i))
+            except OSError as e:
+                if e.errno != errno.EEXIST:
+                    raise
+            self.config['nspawn_args'].append('--bind={0}'.format(loop_file))
 
     @traceLog()
     def _setup_devices(self):
@@ -640,6 +694,41 @@ class Buildroot(object):
                 self._unlock_buildroot()
 
     @traceLog()
+    def file_on_cmdline(self, filename):
+        """
+        If the bootstrap chroot feature is enabled, and the FILENAME represents
+        a filename (file exists on host), bind-mount it into the bootstrap
+        chroot automatically and return its modified filename (relatively to
+        bootstrap chroot).  But on some places, we still need to access the
+        host's file so we use BindMountedFile() wrapper.
+        """
+        bootstrap = self.bootstrap_buildroot
+        if not bootstrap:
+            return filename
+
+        if not os.path.exists(filename):
+            # probably just '--install pkgname'
+            return filename
+
+        basename = os.path.basename(filename)
+        if basename in self._homedir_bindmounts:
+            raise BadCmdline("File '{0}' can not be bind-mounted to "
+                             "bootstrap chroot twice".format(basename))
+        self._homedir_bindmounts[basename] = 1
+
+        host_filename = os.path.abspath(filename)
+        chroot_filename = os.path.join(
+            bootstrap.homedir, basename,
+        )
+        bind_path = bootstrap.make_chroot_path(chroot_filename)
+        bootstrap.mounts.add_user_mount(mounts.BindMountPoint(
+            srcpath=filename,
+            bindpath=bind_path,
+        ))
+
+        return util.BindMountedFile(chroot_filename, host_filename)
+
+    @traceLog()
     def delete(self):
         """
         Deletes the buildroot contents.
@@ -661,3 +750,7 @@ class Buildroot(object):
         self.chroot_was_initialized = False
         self.plugins.call_hooks('postclean')
         # intentionally we do not call bootstrap hook here - it does not have sense
+
+    @property
+    def uses_bootstrap_image(self):
+        return self.is_bootstrap and self.use_bootstrap_image

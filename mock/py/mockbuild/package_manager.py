@@ -8,51 +8,111 @@ import shutil
 import sys
 import time
 from textwrap import dedent
+from configparser import ConfigParser
 
-import distro
-import six
-# pylint: disable=redefined-builtin
-from six.moves import input
+from distutils.dir_util import copy_tree
 
 from . import util
 from .exception import BuildError, Error, YumError
-from .trace_decorator import traceLog
+from .trace_decorator import traceLog, getLog
+from .mounts import BindMountPoint
 
-if six.PY2:
-    FileNotFoundError = IOError
+fallbacks = {
+    'dnf': ['dnf', 'yum'],
+    'yum': ['yum', 'dnf'],
+    'microdnf': ['microdnf', 'dnf', 'yum'],
+}
 
-def package_manager(config_opts, buildroot, plugins, bootstrap_buildroot=None):
-    pm = config_opts.get('package_manager', 'yum')
-    if pm == 'yum':
-        return Yum(config_opts, buildroot, plugins, bootstrap_buildroot)
-    elif pm == 'dnf':
-        if os.path.isfile(config_opts['dnf_command']) or bootstrap_buildroot is not None:
-            return Dnf(config_opts, buildroot, plugins, bootstrap_buildroot)
-        # RHEL without DNF and without bootstrap buildroot
-        (distribution, version) = distro.linux_distribution(full_distribution_name=False)[0:2]
-        if distribution in util.RHEL_CLONES:
-            version = int(version.split('.')[0])
-            if version < 8:
-                if ('dnf_warning' not in config_opts or config_opts['dnf_warning']) and \
-                        not config_opts['use_bootstrap_container']:
-                    print("""WARNING! WARNING! WARNING!
-You are building package for distribution which use DNF. However your system
-does not support DNF. You can continue with YUM, which will likely succeed,
-but the result may be little different.
+
+def package_manager_from_string(name):
+    if name == 'yum':
+        return Yum
+    if name == 'dnf':
+        return Dnf
+    if name == 'microdnf':
+        return MicroDnf
+    raise Exception('Unrecognized package manager "{}"'.format(name))
+
+
+def package_manager_exists_on_host(name, config_opts):
+    option = '{}_command'.format(name)
+    pathname = config_opts[option]
+    if not os.path.isfile(pathname):
+        if pathname == '/usr/bin/yum':
+            # only _exact_ match here, with custom config like
+            # /usr/local/bin/yum user must know where yum is
+            if os.path.isfile('/usr/bin/yum-deprecated'):
+                return True
+        return False
+    real_pathname = os.path.realpath(pathname)
+    # resolve symlinks, and detect that e.g. /bin/yum doesn't point to /bin/dnf
+    if name not in real_pathname:
+        getLog().warning("Not using '%s', it is symlink to '%s'", pathname,
+                         real_pathname)
+        return False
+    return True
+
+
+def package_manager_class_fallback(desired, config_opts, bootstrap):
+    getLog().debug("search for '%s' package manager", desired)
+    if desired not in fallbacks:
+        raise Exception('Unexpected package manager "{}"'.format(desired))
+
+    for manager in fallbacks[desired]:
+        if package_manager_exists_on_host(manager, config_opts):
+            ret_val = package_manager_from_string(manager)
+            if desired == manager:
+                return ret_val
+
+            getLog().info("Using '%s' instead of '%s'%s", manager, desired,
+                          " for bootstrap chroot" if bootstrap else "")
+
+            if 'dnf_warning' in config_opts and not config_opts['dnf_warning']:
+                return ret_val
+
+            if not bootstrap:
+                print("""WARNING! WARNING! WARNING!
+You are building package for distribution which uses {0}. However your system
+does not support {0}. You can continue with {1}, which will likely succeed,
+but the installed chroot may look a little different.
+  1. Please consider --bootstrap-chroot option, or
+  2. install {0} on your host system.
 You can suppress this warning when you put
   config_opts['dnf_warning'] = False
-in Mock config.""")
-                    input("Press Enter to continue.")
-                return Yum(config_opts, buildroot, plugins, bootstrap_buildroot)
-        # something else then EL, and no dnf_command exist
-        # This will likely mean some error later.
-        # Either user is smart or let him shot in his foot.
-        return Dnf(config_opts, buildroot, plugins, bootstrap_buildroot)
-    elif pm == 'microdnf':
-        return MicroDnf(config_opts, buildroot, plugins, bootstrap_buildroot)
-    else:
-        # TODO specific exception type
-        raise Exception('Unrecognized package manager')
+in Mock config.""".format(desired.upper(), manager.upper()))
+                input("Press Enter to continue.")
+
+            return ret_val
+
+    raise Exception("No package from {} found".format(fallbacks[desired]))
+
+
+def package_manager_class(config_opts, buildroot, bootstrap_buildroot=None):
+    pm = config_opts['package_manager']
+
+    if buildroot.is_bootstrap:
+        # pkgmanager _to install_ bootstrap.  we don't care about the package
+        # manager too much, so we tolerate cross-pkgmanager installation here
+        return package_manager_class_fallback(pm, config_opts, True)
+
+    if bootstrap_buildroot:
+        # Installing from bootstrap to destination buildroot, we expect that the
+        # desired pkg manager is installed and there's need to warn and do
+        # fallbacks.
+        return package_manager_from_string(pm)
+
+    # installing from host directly to destination buildroot, this may fail
+    # miserably (especially if pm=dnf, and only yum is available).
+    return package_manager_class_fallback(pm, config_opts, False)
+
+
+def package_manager(config_opts, buildroot, plugins, bootstrap_buildroot=None):
+    is_bootstrap_image = False
+    if buildroot.is_bootstrap and buildroot.use_bootstrap_image:
+        is_bootstrap_image = True
+    cls = package_manager_class(config_opts, buildroot, bootstrap_buildroot)
+    return cls(config_opts, buildroot, plugins, bootstrap_buildroot,
+               is_bootstrap_image)
 
 
 class _PackageManager(object):
@@ -66,12 +126,13 @@ class _PackageManager(object):
     support_installroot = True
 
     @traceLog()
-    def __init__(self, config, buildroot, plugins, bootstrap_buildroot):
+    def __init__(self, config, buildroot, plugins, bootstrap_buildroot, is_bootstrap_image):
         self.config = config
         self.plugins = plugins
         self.buildroot = buildroot
         self.init_install_output = ""
         self.bootstrap_buildroot = bootstrap_buildroot
+        self.is_bootstrap_image = is_bootstrap_image
 
     @traceLog()
     def build_invocation(self, *args):
@@ -140,7 +201,9 @@ class _PackageManager(object):
                 time.sleep(sleep_seconds)
 
             try:
-                if not self.support_installroot:
+                # either it does not support --installroot (microdnf) or
+                # it is bootstrap image made by container with incomaptible dnf/rpm
+                if not self.support_installroot or self.is_bootstrap_image:
                     out = util.do(invocation, env=env,
                                   chrootPath=self.buildroot.make_chroot_path(),
                                   **kwargs)
@@ -203,25 +266,68 @@ Error:      Neither dnf-utils nor yum-utils are installed. Dnf-utils or yum-util
         return result
 
     @traceLog()
+    def copy_distribution_gpg_keys(self):
+        # Copy the files from the host to avoid invoking package manager
+        # or rebuilding the cached bootstrap chroot.
+        keys_path = "/usr/share/distribution-gpg-keys"
+        dest_path = os.path.dirname(keys_path)
+        chroot_path = self.buildroot.make_chroot_path(dest_path)
+        util.mkdirIfAbsent(chroot_path)
+        self.buildroot.root_log.debug("Copying %s to the bootstrap chroot" % keys_path)
+        cmd = ["cp", "-a", keys_path, chroot_path]
+        util.do(cmd)
+
+    @traceLog()
     def copy_gpg_keys(self):
         pki_dir = self.buildroot.make_chroot_path('etc', 'pki', 'mock')
         util.mkdirIfAbsent(pki_dir)
         for pki_file in glob.glob("/etc/pki/mock/RPM-GPG-KEY-*"):
             shutil.copy(pki_file, pki_dir)
 
+    @traceLog()
+    def copy_certs(self):
+        cert_path = "/etc/pki/ca-trust/extracted"
+        pki_dir = self.buildroot.make_chroot_path(cert_path)
+        copy_tree(cert_path, pki_dir)
+
     def initialize(self):
         self.copy_gpg_keys()
+        self.copy_certs()
+        if self.buildroot.is_bootstrap:
+            self.copy_distribution_gpg_keys()
         self.initialize_config()
 
-    def initialize_config(self):
-        raise NotImplementedError()
+        try:
+            self._bind_mount_repos_to_bootstrap()
+        except Exception as e:
+            getLog().warning(e)
 
-    def replace_in_config(self, config_content):
-        """ expand resultdir in the yum.conf segment of the mock
-        configuration file.
-        """
-        return config_content.replace(
-            "%(resultdir)s", self.config['resultdir'] % self.config)
+    def _bind_mount_repos_to_bootstrap(self):
+        if not self.buildroot.is_bootstrap:
+            return
+
+        config = ConfigParser(strict=False)
+        config.read_string(self.pkg_manager_config)
+
+        for section in config.sections():
+            if 'baseurl' not in config[section]:
+                continue
+            baseurl = config[section]['baseurl']
+            # triple slash, we only accept absolute pathnames
+            if not baseurl.startswith('file:///'):
+                continue
+            srcdir = baseurl[7:]
+            destdir = self.buildroot.make_chroot_path(srcdir)
+
+            bind_mount_point = BindMountPoint(srcpath=srcdir, bindpath=destdir)
+
+            # we need to use user mounts as essential mounts are used
+            # only for installing into bootstrap chroot
+            self.buildroot.mounts.add_user_mount(bind_mount_point)
+
+    def initialize_config(self):
+        # there may be configs we get from container image
+        util.rmtree(self.buildroot.make_chroot_path('etc', 'yum.repos.d'))
 
     def _check_command(self):
         """ Check if main command exists """
@@ -244,15 +350,12 @@ class Yum(_PackageManager):
     name = 'yum'
     support_installroot = True
 
-    def __init__(self, config, buildroot, plugins, bootstrap_buildroot):
-        super(Yum, self).__init__(config, buildroot, plugins, bootstrap_buildroot)
+    def __init__(self, config, buildroot, plugins, bootstrap_buildroot, is_bootstrap_image):
+        super(Yum, self).__init__(config, buildroot, plugins, bootstrap_buildroot, is_bootstrap_image)
         self.pm = config['package_manager']
         self.command = config['yum_command']
         self.install_command = config['yum_install_command']
         self.builddep_command = [config['yum_builddep_command']]
-        # the command in bootstrap may not exists yet
-        if bootstrap_buildroot is None:
-            self._check_command()
         if bootstrap_buildroot is not None:
             # we are in bootstrap so use old names
             self.command = '/usr/bin/yum'
@@ -274,6 +377,9 @@ class Yum(_PackageManager):
                     '--config', self.buildroot.make_chroot_path('etc', 'yum', 'yum.conf')]
             if os.path.exists(yum_builddep_deprecated_path):
                 self.builddep_command = ['/usr/bin/yum-builddep-deprecated']
+        # the command in bootstrap may not exists yet
+        if bootstrap_buildroot is None:
+            self._check_command()
 
     @traceLog()
     def _write_plugin_conf(self, name):
@@ -284,6 +390,7 @@ class Yum(_PackageManager):
 
     @traceLog()
     def initialize_config(self):
+        super(Yum, self).initialize_config()
         # use yum plugin conf from chroot as needed
         pluginconf_dir = self.buildroot.make_chroot_path('etc', 'yum', 'pluginconf.d')
         util.mkdirIfAbsent(pluginconf_dir)
@@ -291,8 +398,8 @@ class Yum(_PackageManager):
             "plugins=1", dedent("""\
                            plugins=1
                            pluginconfpath={0}""".format(pluginconf_dir)))
-        config_content = self.replace_in_config(config_content)
 
+        self.pkg_manager_config = config_content
         check_yum_config(config_content, self.buildroot.root_log)
 
         # write in yum.conf into chroot
@@ -351,8 +458,8 @@ class Dnf(_PackageManager):
     name = 'dnf'
     support_installroot = True
 
-    def __init__(self, config, buildroot, plugins, bootstrap_buildroot):
-        super(Dnf, self).__init__(config, buildroot, plugins, bootstrap_buildroot)
+    def __init__(self, config, buildroot, plugins, bootstrap_buildroot, is_bootstrap_image):
+        super(Dnf, self).__init__(config, buildroot, plugins, bootstrap_buildroot, is_bootstrap_image)
         self.pm = config['package_manager']
         self.command = config['dnf_command']
         self.install_command = config['dnf_install_command']
@@ -361,6 +468,13 @@ class Dnf(_PackageManager):
         if bootstrap_buildroot is None:
             self._check_command()
         self.resolvedep_command = [self.command, 'repoquery', '--resolve', '--requires']
+
+    def initialize_vars(self):
+        self.buildroot.root_log.debug('configure DNF vars')
+        var_path = self.buildroot.make_chroot_path('etc/dnf/vars/')
+        for key in self.config['dnf_vars'].keys():
+            with open(os.path.join(var_path, key), 'w+') as conf_file:
+                conf_file.write(self.config['dnf_vars'][key])
 
     def _get_disabled_plugins(self):
         if 'dnf_disable_plugins' in self.config:
@@ -384,17 +498,19 @@ class Dnf(_PackageManager):
 
     @traceLog()
     def initialize_config(self):
+        super(Dnf, self).initialize_config()
         if 'dnf.conf' in self.config:
             config_content = self.config['dnf.conf']
         else:
             config_content = self.config['yum.conf']
-        config_content = self.replace_in_config(config_content)
 
+        self.pkg_manager_config = config_content
         check_yum_config(config_content, self.buildroot.root_log)
         util.mkdirIfAbsent(self.buildroot.make_chroot_path('etc', 'dnf'))
         dnfconf_path = self.buildroot.make_chroot_path('etc', 'dnf', 'dnf.conf')
         with open(dnfconf_path, 'w+') as dnfconf_file:
             dnfconf_file.write(config_content)
+        self.initialize_vars()
 
     def builddep(self, *pkgs, **kwargs):
         try:
@@ -411,8 +527,8 @@ class MicroDnf(Dnf):
     name = 'microdnf'
     support_installroot = False
 
-    def __init__(self, config, buildroot, plugins, bootstrap_buildroot):
-        super(MicroDnf, self).__init__(config, buildroot, plugins, bootstrap_buildroot)
+    def __init__(self, config, buildroot, plugins, bootstrap_buildroot, is_bootstrap_image):
+        super(MicroDnf, self).__init__(config, buildroot, plugins, bootstrap_buildroot, is_bootstrap_image)
         self.command = config['microdnf_command']
         self.install_command = config['microdnf_install_command']
         self.builddep_command = [config['microdnf_builddep_command'], 'builddep']

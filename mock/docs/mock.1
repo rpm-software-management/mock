@@ -166,7 +166,7 @@ package and branch can be defined with \fB\-\-scm\-option\fP arguments,
 see site\-defaults.cfg for more information.
 .TP
 \fB\-\-scrub\fR=\fITYPE\fP
-Completely remove the specified chroot or cache dir or all of the chroot and cache.  \fITYPE\fR is one of all, chroot, cache, root\-cache, c\-cache, yum\-cache or dnf\-cache. In fact, dnf\-cache is just alias for yum\-cache, and both remove Dnf and Yum cache.
+Completely remove the specified chroot or cache dir or all of the chroot and cache.  \fITYPE\fR is one of all, chroot, bootstrap, cache, root\-cache, c\-cache, yum\-cache or dnf\-cache. In fact, dnf\-cache is just alias for yum\-cache, and both remove Dnf and Yum cache.
 .TP
 \fB\-\-shell\fP [\fICOMMAND [\fIARGS...]\fR]
 Run the specified command interactively within the chroot (no 'clean' is performed). If no command specified, /bin/sh is run. Note that COMMAND is shell expanded using the shell in chroot. Note that this command does not produce logs.
@@ -206,6 +206,8 @@ Note: While you can specify more commands on a command line, only one can be exe
 Add this repo baseurl to the yumconfig for the chroot. This can be specified
 multiple times. Let's you point to multiple paths beyond the default to pull
 build deps from.
+
+This has effect only for \fV\-\-chain\fP command
 .TP
 \fB\-\-arch\fR=\fIARCH\fP
 Calls the Linux personality() syscall to tell the kernel to emulate a secondary architecture. For example, building i386 packages on an x86_64 buildhost.
@@ -244,7 +246,7 @@ Pass \fB\-\-disablerepo\fR option to package manager to disable a repository.
 It can be specified multiple times.
 .TP
 \fB\-\-dnf\fR
-Use DNF as the current package manager. You should have DNF (and dnf-plugins-core) installed on your system.
+Use DNF as the current package manager. You should have DNF (and dnf-plugins-core) installed on your system. This is the default.
 .TP
 \fB\-\-enable\-plugin\fR=\fIPLUGIN\fP
 Enable the specified plugin.  This option may be used multiple times.
@@ -257,10 +259,12 @@ It can be specified multiple times.
 Enable networking. If you want to have reproducible builds then your builds should run without a network.
 This option overrides config_opts['rpmbuild_networking'] and config_opts['use_host_resolv'], setting both True.
 .TP
+\fB\-\-isolation\fR=\fILEVEL\fR\fR
+What should be used for isolation of chroot. The valid options are 'simple' and 'nspawn'. The 'simple' method uses chroot() call. The 'nspawn' method utilize systemd-nspawn(1) and run the chroot inside that container. The default is 'nspawn'.
+.TP
 \fB\-\-localrepo\fR=\fIREPO\fR\fR
-Set the path to put the results/repo in. This path needs to be somewhere
-accessible to users other than you for reading as the mock process doesn't run
-as you. Will make a tempdir if not set.
+Set the path to put the results/repo in (works only in \fB\-\-chain\fR mode).
+Will make a tempdir if not set.
 .TP
 \fB\-h\fR, \fB\-\-help\fR
 Show usage information and exit.
@@ -269,7 +273,7 @@ Show usage information and exit.
 Use pre\-defined rpm macro file. Macros passed to '\-\-define' override macros of the same name from FILE.
 .TP
 \fB\-\-new\-chroot\fR
-Use new chroot (systemd\-nspawn). This is the default.
+Deprecated. Use \fV\-\-isolation=nspawn\fP.
 .TP
 \fB\-n\fR, \fB\-\-no\-clean\fR
 Do not clean chroot before building a package.
@@ -284,7 +288,7 @@ Don't clean chroot after building. If automatic cleanup is enabled, use this to 
 Run in an 'offline' mode where we tell 'yum' to run completely from the local cache. Also, disables cache expiry for the mock yum cache.
 .TP
 \fB\-\-old\-chroot\fR
-use old chroot instead of systemd\-nspawn.
+Deprecated. Use \fV\-\-isolation=simple\fP.
 .TP
 \fB\-\-plugin\-option \fR\fIPLUGIN\fR\fB:\fR\fIKEY\fR\fB=\fR\fIVALUE\fP
 Set plugin specific parameter. This option may be used multiple times.
@@ -315,7 +319,7 @@ config linked to by /etc/mock/default.cfg.
 \fB\-\-resultdir\fR=\fIRESULTDIR\fP
 Change directory where resulting files (RPMs and build logs) are written. Resultdir can contain python\-string substitutions for any variable in the chroot config. For example:
 
-\fB\-\-resultdir=./my/"%(dist)s"/"%(target_arch)s"/\fR
+\fB\-\-resultdir=./my/"{{dist}}"/"{{target_arch}}"/\fR
 
 This option enables automatic cleanup, this can be changed in config file (by cleanup_on_success, cleanup_on_failure configuration options) or overridden by \-\-no\-cleanup\-after/\-\-cleanup\-after arguments.
 
@@ -374,7 +378,7 @@ Disable configure OPTION for the build.  This option may be used multiple times.
 \fB\-\-without=anchovies\fR
 .TP
 \fB\-\-yum\fR
-Use yum as the current package manager. This is the default.
+Use yum as the current package manager.
 
 .TP
 \fB\-\-bootstrap-chroot\fR
@@ -388,7 +392,7 @@ build in a single stage, using system rpm for creating the build chroot
 Instead of creating a bootstrap chroot from scrath, use podman image specified in
 \fBconfig_opts['bootstrap_image']\fR, extract it, and use it as a cache for the bootstrap chroot.
 This is useful when host \fBrpm\fR version is not compatible with the target system, or when using mock
-on non-RPM distributions.
+on non-RPM distributions.  This option turns \fB\-\-bootstrap\-chroot\fR on.
 
 .TP
 \fB\-\-no-bootstrap-image\fR

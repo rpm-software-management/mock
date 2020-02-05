@@ -41,6 +41,7 @@ usage:
 """
 
 # library imports
+import configparser
 import errno
 import glob
 import grp
@@ -57,10 +58,11 @@ import pwd
 import shutil
 import sys
 import time
+import copy
+import subprocess
 
 # pylint: disable=import-error
 from functools import partial
-from six.moves import configparser
 from mockbuild import util
 from mockbuild.mounts import BindMountPoint
 
@@ -147,7 +149,7 @@ def command_parse():
                       dest="mode",
                       help="completely remove the specified chroot")
     scrub_choices = ('chroot', 'cache', 'root-cache', 'c-cache', 'yum-cache',
-                     'dnf-cache', 'lvm', 'overlayfs', 'all')
+                     'dnf-cache', 'lvm', 'overlayfs', 'bootstrap', 'all')
     scrub_metavar = "[all|chroot|cache|root-cache|c-cache|yum-cache|dnf-cache]"
     parser.add_option("--scrub", action="callback", type="choice", default=[],
                       choices=scrub_choices, metavar=scrub_metavar,
@@ -212,7 +214,8 @@ def command_parse():
                                         "mounted from separate device (LVM/overlayfs)")
     # chain
     parser.add_option('--localrepo', default=None,
-                      help="local path for the local repo, defaults to making its own")
+                      help=("local path for the local repo, defaults to making "
+                            "its own (--chain mode only)"))
     parser.add_option('-c', '--continue', default=False, action='store_true',
                       dest='cont',
                       help="if a pkg fails to build, continue to the next one")
@@ -315,10 +318,12 @@ def command_parse():
                       callback=repo_callback)
     parser.add_option("--old-chroot", action="store_true", dest="old_chroot",
                       default=False,
-                      help="use old chroot instead of systemd-nspawn.")
+                      help="Obsoleted. Use --isolation=simple")
     parser.add_option("--new-chroot", action="store_true", dest="new_chroot",
                       default=False,
-                      help="use new chroot (systemd-nspawn).")
+                      help="Obsoleted. Use --isolation=nspawn")
+    parser.add_option("--isolation", action="store", dest="isolation",
+                      help="what level of isolation to use. Valid option: simple, nspawn")
     parser.add_option("--enable-network", action="store_true", dest="enable_network",
                       default=False,
                       help="enable networking.")
@@ -378,7 +383,8 @@ def command_parse():
                       help="build in a single stage, using system rpm for creating the build chroot")
 
     parser.add_option('--use-bootstrap-image', dest='usebootstrapimage', action='store_true',
-                      help="create bootstrap chroot from container image")
+                      help="create bootstrap chroot from container image (turns "
+                           "--bootstrap-chroot on)")
     parser.add_option('--no-bootstrap-image', dest='usebootstrapimage', action='store_false',
                       help="don't create bootstrap chroot from container image")
 
@@ -399,10 +405,15 @@ def command_parse():
             raise mockbuild.exception.BadCmdline("--target option accepts only "
                                                  "one arch. Invalid: %s" % options.rpmbuild_arch)
 
-    if options.mode == 'buildsrpm' and not (options.spec and options.sources):
+    if options.mode == 'buildsrpm' and not (options.spec):
         if not options.scm:
             raise mockbuild.exception.BadCmdline("Must specify both --spec and "
                                                  "--sources with --buildsrpm")
+
+    if options.localrepo and options.mode != 'chain':
+        raise mockbuild.exception.BadCmdline(
+            "The --localrepo option works only with --chain")
+
     if options.spec:
         options.spec = os.path.expanduser(options.spec)
     if options.sources:
@@ -514,12 +525,35 @@ def check_arch_combination(target_arch, config_opts):
                  target_arch, host_arch)
         config_opts['forcearch'] = target_arch
 
+    if config_opts['forcearch']:
+        binary = '/usr/bin/qemu-x86_64-static'
+        if not os.path.exists(binary):
+            # qemu-user-static is required, but seems to be missing
+            if util.is_host_rh_family():
+                # fail asap on RH systems
+                raise RuntimeError('the --forcearch feature requires the '
+                                   'qemu-user-static.rpm package to be installed')
+            # on other systems we are not sure where the qemu-user-static
+            # binaries are installed.  Notify the user verbosely, but do our
+            # best and continue!
+            log.warning("missing %s mock will likely fail ...", binary)
+            time.sleep(5)
 
 @traceLog()
-def do_debugconfig(config_opts):
+def do_debugconfig(config_opts, uidManager):
+    jinja_expand = config_opts['__jinja_expand']
+    defaults = util.load_defaults(uidManager, __VERSION__, PKGPYTHONDIR)
+    defaults['__jinja_expand'] = False
+    config_opts['__jinja_expand'] = False
     for key in sorted(config_opts):
-        print("config_opts['{}'] = {}".format(key, pformat(config_opts[key])))
-
+        if key == '__jinja_expand':
+            value = jinja_expand
+        else:
+            value = config_opts[key]
+        if (key in defaults) and (key in config_opts) and (config_opts[key] != defaults[key]) or \
+           (key not in defaults):
+            print("config_opts['{}'] = {}".format(key, pformat(value)))
+    config_opts['__jinja_expand'] = jinja_expand
 
 @traceLog()
 def rootcheck():
@@ -616,17 +650,11 @@ def main():
         config_path = options.configdir
 
     config_opts = util.load_config(config_path, options.chroot, uidManager, __VERSION__, PKGPYTHONDIR)
-    config_opts['config_path'] = config_path
 
     # cmdline options override config options
     util.set_config_opts_per_cmdline(config_opts, options, args)
 
-    # setup 'redhat_subscription_key_id' option before enabling jinja
     util.subscription_redhat_init(config_opts)
-
-    # Now when all options are correctly loaded from config files and program
-    # options, turn the jinja templating ON.
-    config_opts['__jinja_expand'] = True
 
     # allow a different mock group to be specified
     if config_opts['chrootgid'] != mockgid:
@@ -657,18 +685,23 @@ def main():
     state = State()
     plugins = Plugins(config_opts, state)
 
+    # When scrubbing all, we also want to scrub a bootstrap chroot
+    if options.scrub:
+        config_opts['use_bootstrap'] = True
+
     # outer buildroot to bootstrap the installation - based on main config with some differences
     bootstrap_buildroot = None
-    if config_opts['use_bootstrap_container']:
+    if config_opts['use_bootstrap']:
         # first take a copy of the config so we can make some modifications
         bootstrap_buildroot_config = config_opts.copy()
         # copy plugins configuration so we get a separate deep copy
-        bootstrap_buildroot_config['plugin_conf'] = config_opts['plugin_conf'].copy() # pylint: disable=no-member
+        bootstrap_buildroot_config['plugin_conf'] = \
+            copy.deepcopy(config_opts['plugin_conf'])  # pylint: disable=no-member
         # add '-bootstrap' to the end of the root name
         bootstrap_buildroot_config['root'] = bootstrap_buildroot_config['root'] + '-bootstrap'
-        # share a yum cache to save downloading everything twice
-        bootstrap_buildroot_config['plugin_conf']['yum_cache_opts']['dir'] = \
-            "%(cache_topdir)s/" + config_opts['root'] + "/%(package_manager)s_cache/"
+        # don't share root cache tarball
+        bootstrap_buildroot_config['plugin_conf']['root_cache_opts']['dir'] = \
+            "{{cache_topdir}}/" + bootstrap_buildroot_config['root'] + "/root_cache/"
         # we don't want to affect the bootstrap.config['nspawn_args'] array, deep copy
         bootstrap_buildroot_config['nspawn_args'] = config_opts.get('nspawn_args', []).copy()
 
@@ -713,10 +746,14 @@ def main():
     signal.signal(signal.SIGPIPE, partial(handle_signals, buildroot))
     signal.signal(signal.SIGHUP, partial(handle_signals, buildroot))
 
+    # postprocess option arguments for bootstrap
+    if options.mode in ['installdeps', 'install']:
+        args = [buildroot.file_on_cmdline(arg) for arg in args]
+
     log.info("Signal handler active")
     commands = Commands(config_opts, uidManager, plugins, state, buildroot, bootstrap_buildroot)
 
-    if config_opts['use_bootstrap_container']:
+    if config_opts['use_bootstrap']:
         bootstrap_buildroot.config['chroot_setup_cmd'] = buildroot.pkg_manager.install_command
 
     state.start("run")
@@ -752,11 +789,9 @@ def main():
     try:
         result = run_command(options, args, config_opts, commands, buildroot, state)
     finally:
-        buildroot.uid_manager.becomeUser(0, 0)
         buildroot.finalize()
         if bootstrap_buildroot is not None:
             bootstrap_buildroot.finalize()
-        buildroot.uid_manager.restorePrivs()
     return result
 
 
@@ -860,7 +895,7 @@ def run_command(options, args, config_opts, commands, buildroot, state):
         mockbuild.rebuild.do_buildsrpm(config_opts, commands, buildroot, options, args)
 
     elif options.mode == 'debugconfig':
-        do_debugconfig(config_opts)
+        do_debugconfig(config_opts, buildroot.uid_manager)
 
     elif options.mode == 'orphanskill':
         util.orphansKill(buildroot.make_chroot_path())

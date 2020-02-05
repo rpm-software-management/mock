@@ -1,26 +1,17 @@
 %bcond_with tests
 
-%if 0%{?fedora} || 0%{?mageia} || 0%{?rhel} >= 7
-%global use_python3 1
-%global use_python2 0
 %global __python %{__python3}
 %global python_sitelib %{python3_sitelib}
-%else
-%global use_python3 0
-%global use_python2 1
-%global __python %{__python2}
-%global python_sitelib %{python2_sitelib}
-%endif
 
 Summary: Builds packages inside chroots
 Name: mock
-Version: 1.4.20
+Version: 1.5.0
 Release: 1%{?dist}
 License: GPLv2+
 # Source is created by
 # git clone https://github.com/rpm-software-management/mock.git
 # cd mock
-# git reset --hard %{name}-%{version}
+# git reset --hard %%{name}-%%{version}
 # tito build --tgz
 Source: %{name}-%{version}.tar.gz
 URL: https://github.com/rpm-software-management/mock/
@@ -34,9 +25,6 @@ Requires: usermode
 %endif
 Requires: createrepo_c
 Requires: mock-core-configs >= 27.4
-%if 0%{?use_python2}
-Requires: pyliblzma
-%endif
 Requires: systemd
 %if 0%{?fedora} || 0%{?rhel} >= 8
 Requires: systemd-container
@@ -49,27 +37,14 @@ Suggests: iproute
 Suggests: iproute2
 %endif
 BuildRequires: bash-completion
-%if %{use_python3}
 Requires: python%{python3_pkgversion}-distro
 Requires: python%{python3_pkgversion}-jinja2
-Requires: python%{python3_pkgversion}-six >= 1.4.0
 Requires: python%{python3_pkgversion}-requests
 Requires: python%{python3_pkgversion}-rpm
 Requires: python%{python3_pkgversion}-pyroute2
 BuildRequires: python%{python3_pkgversion}-devel
 %if %{with tests}
 BuildRequires: python%{python3_pkgversion}-pylint
-%endif
-%else
-Requires: python-ctypes
-Requires: python2-distro
-Requires: python-jinja2
-Requires: python-six >= 1.4.0
-Requires: python-requests
-Requires: python2-pyroute2
-Requires: python >= 2.7
-Requires: rpm-python
-BuildRequires: python2-devel
 %endif
 %if 0%{?fedora} || 0%{?mageia} || 0%{?rhel} >= 8
 Requires: dnf
@@ -228,15 +203,11 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 
 %files scm
 %{python_sitelib}/mockbuild/scm.py*
-%if %{use_python3}
 %{python3_sitelib}/mockbuild/__pycache__/scm.*.py*
-%endif
 
 %files lvm
 %{python_sitelib}/mockbuild/plugins/lvm_root.*
-%if %{use_python3}
 %{python3_sitelib}/mockbuild/plugins/__pycache__/lvm_root.*.py*
-%endif
 
 %changelog
 * Fri Oct 04 2019 Miroslav Suchý <msuchy@redhat.com> 1.4.20-1

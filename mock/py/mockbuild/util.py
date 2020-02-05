@@ -39,7 +39,6 @@ import uuid
 
 import distro
 import jinja2
-import six
 
 from mockbuild.mounts import BindMountPoint
 
@@ -47,19 +46,10 @@ from . import exception
 from .trace_decorator import getLog, traceLog
 from .uid import getresuid, setresuid
 from pyroute2 import IPRoute
-# pylint: disable=useless-import-alias,no-name-in-module
-if six.PY2:
-    from collections import MutableMapping as MutableMapping
-else:
-    from collections.abc import MutableMapping as MutableMapping
+# pylint: disable=no-name-in-module
+from collections.abc import MutableMapping
 
 encoding = locale.getpreferredencoding()
-
-try:
-    # pylint: disable=used-before-assignment
-    basestring = basestring
-except NameError:
-    basestring = str
 
 _libc = ctypes.cdll.LoadLibrary(None)
 _libc.personality.argtypes = [ctypes.c_ulong]
@@ -106,6 +96,8 @@ PLUGIN_LIST = ['tmpfs', 'root_cache', 'yum_cache', 'bind_mount',
 
 USE_NSPAWN = False
 
+_NSPAWN_HAS_CONSOLE_OPTION = None
+
 RHEL_CLONES = ['centos', 'deskos', 'ol', 'rhel', 'scientific']
 
 _OPS_TIMEOUT = 0
@@ -127,7 +119,7 @@ class TemplatedDictionary(MutableMapping):
     def __setitem__(self, key, value):
         self.__dict__[key] = value
     def __getitem__(self, key):
-        if '__jinja_expand' in self.__dict__:
+        if '__jinja_expand' in self.__dict__ and self.__dict__['__jinja_expand']:
             return self.__render_value(self.__dict__[key])
         return self.__dict__[key]
     def __delitem__(self, key):
@@ -147,7 +139,7 @@ class TemplatedDictionary(MutableMapping):
     def copy(self):
         return TemplatedDictionary(self.__dict__)
     def __render_value(self, value):
-        if isinstance(value, basestring):
+        if isinstance(value, str):
             return self.__render_string(value)
         elif isinstance(value, list):
             # we cannot use list comprehension here, as we need to NOT modify the list (pointer to list)
@@ -164,36 +156,28 @@ class TemplatedDictionary(MutableMapping):
         else:
             return value
     def __render_string(self, value):
-        template = jinja2.Template(value)
-        return _to_native(template.render(self.__dict__))
-
-
-def _to_bytes(obj, arg_encoding='utf-8', errors='strict', nonstring='strict'):
-    if isinstance(obj, six.binary_type):
-        return obj
-    elif isinstance(obj, six.text_type):
-        return obj.encode(arg_encoding, errors)
-    else:
-        if nonstring == 'strict':
-            raise TypeError('First argument must be a string')
-        raise ValueError('nonstring must be one of: ["strict",]')
+        orig = last = value
+        max_recursion = self.__dict__.get('jinja_max_recursion', 5)
+        for _ in range(max_recursion):
+            template = jinja2.Template(value)
+            value = _to_native(template.render(self.__dict__))
+            if value == last:
+                return value
+            last = value
+        raise ValueError("too deep jinja re-evaluation on '{}'".format(orig))
 
 
 def _to_text(obj, arg_encoding='utf-8', errors='strict', nonstring='strict'):
-    if isinstance(obj, six.text_type):
+    if isinstance(obj, str):
         return obj
-    elif isinstance(obj, six.binary_type):
+    elif isinstance(obj, bytes):
         return obj.decode(arg_encoding, errors)
     else:
         if nonstring == 'strict':
             raise TypeError('First argument must be a string')
         raise ValueError('nonstring must be one of: ["strict",]')
 
-
-if six.PY2:
-    _to_native = _to_bytes
-else:
-    _to_native = _to_text
+_to_native = _to_text
 
 
 @traceLog()
@@ -355,6 +339,7 @@ def yieldSrpmHeaders(srpms, plainRpmOk=0):
     flags = (rpm._RPMVSF_NOSIGNATURES | rpm._RPMVSF_NODIGESTS)
     ts.setVSFlags(flags)
     for srpm in srpms:
+        srpm = host_file(srpm)
         try:
             fd = os.open(srpm, os.O_RDONLY)
         except OSError as e:
@@ -412,7 +397,7 @@ def getAddtlReqs(hdr, conf):
                       '-'.join([name])]:
         if this_srpm in conf:
             more_reqs = conf[this_srpm]
-            if isinstance(more_reqs, basestring):
+            if isinstance(more_reqs, str):
                 reqlist.append(more_reqs)
             else:
                 reqlist.extend(more_reqs)
@@ -522,7 +507,7 @@ def process_input(line):
 
 
 def logOutput(fdout, fderr, logger, returnOutput=1, start=0, timeout=0, printOutput=False,
-              child=None, chrootPath=None, pty=False):
+              child=None, chrootPath=None, pty=False, returnStderr=True):
     output = ""
     done = False
     fds = [fdout, fderr]
@@ -572,6 +557,10 @@ def logOutput(fdout, fderr, logger, returnOutput=1, start=0, timeout=0, printOut
                     else:
                         print(raw, end='')
                     sys.stdout.flush()
+
+                if returnStderr is False and s == fderr:
+                    continue
+
                 txt_input = raw.decode(encoding, 'replace')
                 lines = txt_input.split("\n")
                 if tail:
@@ -661,7 +650,7 @@ def do(*args, **kargs):
 def do_with_status(command, shell=False, chrootPath=None, cwd=None, timeout=0, raiseExc=True,
                    returnOutput=0, uid=None, gid=None, user=None, personality=None,
                    printOutput=False, env=None, pty=False, nspawn_args=None, unshare_net=False,
-                   *_, **kargs):
+                   returnStderr=True, *_, **kargs):
     logger = kargs.get("logger", getLog())
     if timeout == 0:
         timeout = _OPS_TIMEOUT
@@ -676,6 +665,11 @@ def do_with_status(command, shell=False, chrootPath=None, cwd=None, timeout=0, r
     if env is None:
         env = clean_env()
     stdout = None
+
+    if isinstance(command, list):
+        # convert int args to strings
+        command = [str(x) for x in command]
+
     try:
         child = None
         if shell and isinstance(command, list):
@@ -705,7 +699,7 @@ def do_with_status(command, shell=False, chrootPath=None, cwd=None, timeout=0, r
                     reader if pty else child.stdout, child.stderr,
                     logger, returnOutput, start, timeout, pty=pty,
                     printOutput=printOutput, child=child,
-                    chrootPath=chrootPath)
+                    chrootPath=chrootPath, returnStderr=returnStderr)
     except:
         # kill children if they arent done
         if child is not None and child.returncode is None:
@@ -778,6 +772,24 @@ class ChildPreExec(object):
         reset_sigpipe()
 
 
+class BindMountedFile(str):
+    'see host_file() doc'
+    def __new__(cls, value, on_host=None):
+        the_string = str.__new__(cls, value)
+        the_string.on_host = on_host if on_host else value
+        return the_string
+
+
+def host_file(file):
+    """
+    Some functions accept arguments which may be either str() or
+    BindMountedFile();  we use this helper to work with those transparently.
+    TODO: all the code parts which need this should be fixed so they
+    are executed _inside_ bootstrap chroot, not on host.
+    """
+    return file.on_host if hasattr(file, 'on_host') else file
+
+
 def reset_sigpipe():
     signal.signal(signal.SIGPIPE, signal.SIG_DFL)
 
@@ -800,7 +812,29 @@ def _nspawnTempResolvAtExit(path):
             getLog().warning("unable to delete temporary resolv.conf (%s): %s", path, e)
 
 
-def _prepare_nspawn_command(chrootPath, user, cmd, nspawn_args=None, env=None, cwd=None):
+def _check_nspawn_pipe_option():
+    """
+    Detect whether host's systemd-nspawn supports --pipe argument and if we can
+    use it for non-interactive commands.  Before --pipe was implemented in
+    nspawn the default behavior was to detect tty => and use 'interactive' vs.
+    'pipe'.  Later the default was changed to 'interactive' vs. 'read-only'
+    (systemd commit de40a3037).
+    """
+    global _NSPAWN_HAS_CONSOLE_OPTION
+    if _NSPAWN_HAS_CONSOLE_OPTION is not None:
+        return _NSPAWN_HAS_CONSOLE_OPTION
+
+    output = subprocess.check_output('systemd-nspawn --help || true',
+                                     shell=True)
+    output = output.decode('utf-8', errors='ignore')
+    _NSPAWN_HAS_CONSOLE_OPTION = \
+        '--pipe' in output and '--console' in output
+
+    return _NSPAWN_HAS_CONSOLE_OPTION
+
+
+def _prepare_nspawn_command(chrootPath, user, cmd, nspawn_args=None, env=None,
+                            cwd=None, interactive=False):
     cmd_is_list = isinstance(cmd, list)
     if nspawn_args is None:
         nspawn_args = []
@@ -822,6 +856,11 @@ def _prepare_nspawn_command(chrootPath, user, cmd, nspawn_args=None, env=None, c
         # EL < 7.5 does not support the nspawn -a option. See BZ 1417387
         nspawn_argv += ['-a']
     nspawn_argv.extend(nspawn_args)
+
+    if _check_nspawn_pipe_option():
+        if not interactive or not (sys.stdin.isatty() and sys.stdout.isatty()):
+            nspawn_argv += ['--console=pipe']
+
     if cwd:
         nspawn_argv.append('--chdir={0}'.format(cwd))
     if env:
@@ -852,13 +891,14 @@ def doshell(chrootPath=None, environ=None, uid=None, gid=None, cmd=None,
     if cmd:
         if not isinstance(cmd, list):
             cmd = [cmd]
-        cmd = ['/bin/sh', '-c'] + cmd
+        cmd = ['/bin/sh', '-c'] + [str(x) for x in cmd]
     else:
         cmd = ["/bin/sh", "-i", "-l"]
     if USE_NSPAWN:
         # nspawn cannot set gid
         log.debug("Using nspawn with args %s", nspawn_args)
-        cmd = _prepare_nspawn_command(chrootPath, uid, cmd, nspawn_args=nspawn_args, env=environ)
+        cmd = _prepare_nspawn_command(chrootPath, uid, cmd, nspawn_args=nspawn_args, env=environ,
+                                      interactive=True)
     preexec = ChildPreExec(personality=None, chrootPath=chrootPath, cwd=None,
                            uid=uid, gid=gid, env=environ, shell=True,
                            unshare_ipc=unshare_ipc, unshare_net=unshare_net)
@@ -905,9 +945,10 @@ def find_non_nfs_dir():
 def setup_default_config_opts(unprivUid, version, pkgpythondir):
     "sets up default configuration."
     config_opts = TemplatedDictionary()
+    config_opts['config_paths'] = []
     config_opts['version'] = version
     config_opts['basedir'] = '/var/lib/mock'  # root name is automatically added to this
-    config_opts['resultdir'] = '%(basedir)s/%(root)s/result'
+    config_opts['resultdir'] = '{{basedir}}/{{root}}/result'
     config_opts['cache_topdir'] = '/var/cache/mock'
     config_opts['clean'] = True
     config_opts['check'] = True
@@ -931,8 +972,8 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
     config_opts['rpmbuild_networking'] = False
     config_opts['nspawn_args'] = ['--capability=cap_ipc_lock']
     config_opts['use_container_host_hostname'] = True
-    config_opts['use_bootstrap_container'] = False
 
+    config_opts['use_bootstrap'] = True
     config_opts['use_bootstrap_image'] = False
     config_opts['bootstrap_image'] = 'fedora:latest'
 
@@ -952,7 +993,7 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
     config_opts['tar'] = "gnutar"
 
     config_opts['backup_on_clean'] = False
-    config_opts['backup_base_dir'] = os.path.join(config_opts['basedir'], "backup")
+    config_opts['backup_base_dir'] = "{{basedir}}/backup"
 
     config_opts['redhat_subscription_required'] = False
 
@@ -968,19 +1009,17 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
         'ccache_opts': {
             'max_cache_size': "4G",
             'compress': None,
-            'dir': "%(cache_topdir)s/%(root)s/ccache/u%(chrootuid)s/"},
+            'dir': "{{cache_topdir}}/{{root}}/ccache/u{{chrootuid}}/"},
         'yum_cache_enable': True,
         'yum_cache_opts': {
             'max_age_days': 30,
             'max_metadata_age_days': 30,
-            'dir': "%(cache_topdir)s/%(root)s/%(package_manager)s_cache/",
-            'target_dir': "/var/cache/%(package_manager)s/",
             'online': True},
         'root_cache_enable': True,
         'root_cache_opts': {
             'age_check': True,
             'max_age_days': 15,
-            'dir': "%(cache_topdir)s/%(root)s/root_cache/",
+            'dir': "{{cache_topdir}}/{{root}}/root_cache/",
             'tar': "gnutar",
             'compress_program': 'pigz',
             'decompress_program': None,
@@ -1028,7 +1067,7 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
         'sign_enable': False,
         'sign_opts': {
             'cmd': 'rpmsign',
-            'opts': '--addsign %(rpms)s',
+            'opts': '--addsign {{rpms}}',
         },
         'hw_info_enable': True,
         'hw_info_opts': {
@@ -1036,6 +1075,11 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
         'procenv_enable': False,
         'procenv_opts': {
         },
+        'compress_logs_enable': False,
+        'compress_logs_opts': {
+            'command': 'gzip',
+        },
+
     }
 
     config_opts['environment'] = {
@@ -1078,13 +1122,14 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
 
     # dependent on guest OS
     config_opts['useradd'] = \
-        '/usr/sbin/useradd -o -m -u %(uid)s -g %(gid)s -d %(home)s -n %(user)s'
+        '/usr/sbin/useradd -o -m -u {{chrootuid}} -g {{chrootgid}} -d {{chroothome}} -n {{chrootuser}}'
     config_opts['use_host_resolv'] = False
     config_opts['chroot_setup_cmd'] = ('groupinstall', 'buildsys-build')
     config_opts['target_arch'] = 'i386'
     config_opts['releasever'] = None
     config_opts['rpmbuild_arch'] = None  # <-- None means set automatically from target_arch
     config_opts['yum.conf'] = ''
+    config_opts['dnf_vars'] = {}
     config_opts['yum_builddep_opts'] = []
     config_opts['yum_common_opts'] = []
     config_opts['update_before_build'] = True
@@ -1112,7 +1157,7 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
     config_opts['no_root_shells'] = False
     config_opts['extra_chroot_dirs'] = []
 
-    config_opts['package_manager'] = 'yum'
+    config_opts['package_manager'] = 'dnf'
     config_opts['package_manager_max_attempts'] = 1
     config_opts['package_manager_attempt_delay'] = 10
 
@@ -1124,15 +1169,15 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
     # configurable commands executables
     config_opts['yum_command'] = '/usr/bin/yum'
     config_opts['system_yum_command'] = '/usr/bin/yum'
-    config_opts['yum_install_command'] = 'install yum yum-utils shadow-utils distribution-gpg-keys'
+    config_opts['yum_install_command'] = 'install yum yum-utils'
     config_opts['yum_builddep_command'] = '/usr/bin/yum-builddep'
     config_opts['dnf_command'] = '/usr/bin/dnf'
     config_opts['system_dnf_command'] = '/usr/bin/dnf'
-    config_opts['dnf_install_command'] = 'install dnf dnf-plugins-core shadow-utils distribution-gpg-keys'
+    config_opts['dnf_install_command'] = 'install dnf dnf-plugins-core'
     config_opts['microdnf_command'] = '/usr/bin/microdnf'
     # "dnf-install" is special keyword which tells mock to use install but with DNF
     config_opts['microdnf_install_command'] = \
-        'dnf-install microdnf dnf dnf-plugins-core shadow-utils distribution-gpg-keys'
+        'dnf-install microdnf dnf dnf-plugins-core'
     config_opts['microdnf_builddep_command'] = '/usr/bin/dnf'
     config_opts['microdnf_builddep_opts'] = []
     config_opts['microdnf_common_opts'] = []
@@ -1238,9 +1283,11 @@ def set_config_opts_per_cmdline(config_opts, options, args):
     if options.rpmbuild_timeout is not None:
         config_opts['rpmbuild_timeout'] = options.rpmbuild_timeout
     if options.bootstrapchroot is not None:
-        config_opts['use_bootstrap_container'] = options.bootstrapchroot
+        config_opts['use_bootstrap'] = options.bootstrapchroot
     if options.usebootstrapimage is not None:
         config_opts['use_bootstrap_image'] = options.usebootstrapimage
+        if options.usebootstrapimage:
+            config_opts['use_bootstrap'] = True
 
     for i in options.disabled_plugins:
         if i not in config_opts['plugins']:
@@ -1274,10 +1321,22 @@ def set_config_opts_per_cmdline(config_opts, options, args):
 
     global USE_NSPAWN
     USE_NSPAWN = config_opts['use_nspawn']
+    log = logging.getLogger()
     if options.old_chroot:
         USE_NSPAWN = False
+        log.error('Option --old-chroot has been deprecated. Use --isolation=simple instead.')
     if options.new_chroot:
         USE_NSPAWN = True
+        log.error('Option --new-chroot has been deprecated. Use --isolation=nspawn instead.')
+
+    if options.isolation is not None:
+        if options.isolation == 'simple':
+            USE_NSPAWN = False
+        elif options.isolation == 'nspawn':
+            USE_NSPAWN = True
+        else:
+            raise exception.BadCmdline("Bad option for '--isolation'. Unknown value: %s"
+                                       % (options.isolation))
 
     if options.enable_network:
         config_opts['rpmbuild_networking'] = True
@@ -1347,21 +1406,30 @@ def check_config(config_opts):
                                     "- option config_opts['root'] must be present in your config.")
 
 
+regexp_include = re.compile(r'^\s*include\((.*)\)', re.MULTILINE)
+
 @traceLog()
-def include(config_file, config_opts, is_statement=False):
+def include(config_file, config_opts):
+    if not os.path.isabs(config_file):
+        config_file = os.path.join(config_opts['config_path'], config_file)
+
     if os.path.exists(config_file):
-        if is_statement and config_file in config_opts['config_paths']:
+        if config_file in config_opts['config_paths']:
             getLog().warning("Multiple inclusion of %s, skipping" % config_file)
-            return
+            return ""
 
         config_opts['config_paths'].append(config_file)
-
-        with open(config_file) as f:
-            content = f.read()
-            content = re.sub(r'include\((.*)\)', r'include(\g<1>, config_opts, True)', content)
-            code = compile(content, config_file, 'exec')
-        # pylint: disable=exec-used
-        exec(code)
+        content = open(config_file).read()
+        # Search for "include(FILE)" and for each "include(FILE)" replace with
+        # content of the FILE, in a perpective of search for includes and replace with his content.
+        include_arguments = regexp_include.findall(content)
+        if include_arguments is not None:
+            for include_argument in include_arguments:
+                # pylint: disable=eval-used
+                sub_config_file = eval(include_argument)
+                sub_content = include(sub_config_file, config_opts)
+                content = regexp_include.sub(sub_content, content, count=1)
+        return content
     else:
         raise exception.ConfigError("Could not find included config file: %s" % config_file)
 
@@ -1375,7 +1443,9 @@ def update_config_from_file(config_opts, config_file, uid_manager):
             os.close(r_pipe)
             if uid_manager and not all(getresuid()):
                 uid_manager.dropPrivsForever()
-            include(config_file, config_opts)
+            content = include(config_file, config_opts)
+            # pylint: disable=exec-used
+            exec(content)
             with os.fdopen(w_pipe, 'wb') as writer:
                 pickle.dump(config_opts, writer)
         except: # pylint: disable=bare-except
@@ -1414,7 +1484,6 @@ def setup_operations_timeout(config_opts):
 def do_update_config(log, config_opts, cfg, uidManager, name, skipError=True):
     if os.path.exists(cfg):
         log.info("Reading configuration from %s", cfg)
-        config_opts['config_paths'].append(cfg)
         update_config_from_file(config_opts, cfg, uidManager)
         setup_operations_timeout(config_opts)
         check_macro_definition(config_opts)
@@ -1462,16 +1531,20 @@ def setup_host_resolv(config_opts):
     config_opts['nspawn_args'] += ['--bind={0}:/etc/resolv.conf'.format(resolv_path)]
 
 @traceLog()
-def load_config(config_path, name, uidManager, version, pkg_python_dir):
-    log = logging.getLogger()
+def load_defaults(uidManager, version, pkg_python_dir):
     if uidManager:
         gid = uidManager.unprivUid
     else:
         gid = os.getuid()
-    config_opts = setup_default_config_opts(gid, version, pkg_python_dir)
+    return setup_default_config_opts(gid, version, pkg_python_dir)
+
+@traceLog()
+def load_config(config_path, name, uidManager, version, pkg_python_dir):
+    log = logging.getLogger()
+    config_opts = load_defaults(uidManager, version, pkg_python_dir)
 
     # array to save config paths
-    config_opts['config_paths'] = []
+    config_opts['config_path'] = config_path
     config_opts['chroot_name'] = name
 
     # Read in the config files: default, and then user specified
@@ -1504,6 +1577,17 @@ def load_config(config_path, name, uidManager, version, pkg_python_dir):
 
     if config_opts['use_container_host_hostname'] and '%_buildhost' not in config_opts['macros']:
         config_opts['macros']['%_buildhost'] = socket.getfqdn()
+
+    # Now when all options are correctly loaded from config files, turn the
+    # jinja templating ON.
+    config_opts['__jinja_expand'] = True
+
+    # use_bootstrap_container is deprecated option
+    if 'use_bootstrap_container' in config_opts:
+        log.warning("config_opts['use_bootstrap_container'] is deprecated, "
+                    "please use config_opts['use_bootstrap'] instead")
+        config_opts['use_bootstrap'] = config_opts['use_bootstrap_container']
+
     return config_opts
 
 
@@ -1655,3 +1739,8 @@ def subscription_redhat_init(opts):
     # Use the first available key.
     key_file_name = os.path.basename(keys[0])
     opts['redhat_subscription_key_id'] = key_file_name.split('-')[0]
+
+
+def is_host_rh_family():
+    distro_name = distro.linux_distribution(full_distribution_name=False)[0]
+    return distro_name in RHEL_CLONES + ['fedora']

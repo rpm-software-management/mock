@@ -17,7 +17,8 @@ requires_api_version = "1.1"
 def lvm_do(*args, **kwargs):
     env = os.environ.copy()
     env['LC_ALL'] = 'C.UTF-8'
-    output = util.do(*args, returnOutput=True, env=env, **kwargs)
+    output = util.do(*args, returnOutput=True, env=env,
+                     returnStderr=False, **kwargs)
     return output
 
 
@@ -85,7 +86,7 @@ class LvmPlugin(object):
         self.basepath = buildroot.mockdir
         self.snap_info = os.path.join(self.basepath, snapinfo_name)
         self.lock = self.create_lock('lvm')
-        self.pool_lock = self.create_lock('lmv-pool')
+        self.pool_lock = self.create_lock('lvm-pool')
         self.mount = None
 
         prefix = 'hook_'

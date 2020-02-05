@@ -71,7 +71,9 @@ def do_rebuild(config_opts, commands, buildroot, options, srpms):
             else:
                 commands.init()
                 commands.install_build_results(commands.build_results)
-                commands.clean()
+                if config_opts["cleanup_on_success"]:
+                    log.info("Cleaning up build root ('cleanup_on_success=True')")
+                    commands.clean()
 
         if config_opts["createrepo_on_rpms"]:
             log.info("Running createrepo on binary rpms in resultdir")
@@ -88,7 +90,7 @@ def do_buildsrpm(config_opts, commands, buildroot, options, args):
     # verify the input command line arguments actually exist
     if not os.path.isfile(options.spec):
         raise BadCmdline("Input specfile does not exist: %s" % options.spec)
-    if not os.path.isdir(options.sources) and not os.path.isfile(options.sources):
+    if options.sources and not os.path.isdir(options.sources) and not os.path.isfile(options.sources):
         raise BadCmdline("Input sources directory or file does not exist: %s" % options.sources)
     clean = config_opts['clean']
 

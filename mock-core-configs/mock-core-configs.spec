@@ -2,7 +2,7 @@
 %global mockgid 135
 
 Name:       mock-core-configs
-Version:    31.6
+Version:    31.7
 Release:    1%{?dist}
 Summary:    Mock core config files basic chroots
 
@@ -17,7 +17,7 @@ Source:     https://github.com/rpm-software-management/mock/releases/download/%{
 BuildArch:  noarch
 
 # distribution-gpg-keys contains GPG keys used by mock configs
-Requires:   distribution-gpg-keys >= 1.29
+Requires:   distribution-gpg-keys >= 1.36
 
 Requires(post): coreutils
 %if 0%{?fedora} || 0%{?mageia} || 0%{?rhel} > 7
@@ -55,11 +55,12 @@ Config files which allow you to create chroots for:
 %install
 mkdir -p %{buildroot}%{_sysusersdir}
 
-mkdir -p %{buildroot}%{_sysconfdir}/mock/eol
+mkdir -p %{buildroot}%{_sysconfdir}/mock/eol/templates
 mkdir -p %{buildroot}%{_sysconfdir}/mock/templates
 cp -a etc/mock/*.cfg %{buildroot}%{_sysconfdir}/mock
 cp -a etc/mock/templates/*.tpl %{buildroot}%{_sysconfdir}/mock/templates
 cp -a etc/mock/eol/*cfg %{buildroot}%{_sysconfdir}/mock/eol
+cp -a etc/mock/eol/templates/*.tpl %{buildroot}%{_sysconfdir}/mock/eol/templates
 
 # generate files section with config - there is many of them
 echo "%defattr(0644, root, mock)" > %{name}.cfgs
@@ -127,6 +128,11 @@ fi
 %ghost %config(noreplace,missingok) %{_sysconfdir}/mock/default.cfg
 
 %changelog
+* Fri Nov 01 2019 Miroslav Suchý <msuchy@redhat.com> 31.7-1
+- Add configs for epel8-playground (mmathesi@redhat.com)
+- add 3 base packages to epel-playground buildroot [RHBZ#1764445]
+- add 3 base packages to epel buildroot [RHBZ#1764445]
+
 * Fri Oct 04 2019 Miroslav Suchý <msuchy@redhat.com> 31.6-1
 - disable modular repo for f29
 - configure podman containers for Fedora, EPEL and Mageia (frostyx@email.cz)

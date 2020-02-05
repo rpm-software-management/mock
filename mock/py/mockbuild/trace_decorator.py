@@ -10,11 +10,6 @@ import logging
 import os
 import sys
 
-try:
-    basestring
-except NameError:
-    basestring = str
-
 
 # defaults to module verbose log
 # does a late binding on log. Forwards all attributes to logger.
@@ -55,6 +50,9 @@ def safe_repr(arg):
         return str(type(arg))
 
 def traceLog(logger=None):
+    def noop(func):
+        return func
+
     def decorator(func):
         @functools.wraps(func)
         def trace(*args, **kw):
@@ -73,7 +71,7 @@ def traceLog(logger=None):
             l2 = kw.get('logger', logger)
             if l2 is None:
                 l2 = logging.getLogger("trace.%s" % func.__module__)
-            if isinstance(l2, basestring):
+            if isinstance(l2, str):
                 l2 = logging.getLogger(l2)
 
             message = "ENTER %s("
@@ -106,7 +104,12 @@ def traceLog(logger=None):
 
             return result
         return trace
-    return decorator
+        #end of trace()
+
+    if logging.getLogger("trace").propagate:
+        return decorator
+    else:
+        return noop
 
 
 # unit tests...

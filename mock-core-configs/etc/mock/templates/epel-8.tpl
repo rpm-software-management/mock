@@ -1,3 +1,5 @@
+config_opts['chroot_setup_cmd'] += " epel-release epel-rpm-macros fedpkg-minimal"
+
 config_opts['yum.conf'] += """
 
 [epel]
@@ -25,6 +27,34 @@ skip_if_unavailable=False
 [epel-debuginfo]
 name=epel-debug
 mirrorlist=http://mirrors.fedoraproject.org/mirrorlist?repo=epel-debug-8&arch=$basearch
+failovermethod=priority
+enabled=0
+skip_if_unavailable=False
+
+[epel-source]
+name=epel-source
+mirrorlist=http://mirrors.fedoraproject.org/mirrorlist?repo=epel-source-8&arch=$basearch
+failovermethod=priority
+enabled=0
+skip_if_unavailable=False
+
+[epel-modular]
+name=epel-modular
+mirrorlist=http://mirrors.fedoraproject.org/mirrorlist?repo=epel-modular-8&arch=$basearch
+failovermethod=priority
+enabled=0
+skip_if_unavailable=False
+
+[epel-modular-debuginfo]
+name=epel-modular-debug
+mirrorlist=http://mirrors.fedoraproject.org/mirrorlist?repo=epel-modular-debug-8&arch=$basearch
+failovermethod=priority
+enabled=0
+skip_if_unavailable=False
+
+[epel-modular-source]
+name=epel-modular-source
+mirrorlist=http://mirrors.fedoraproject.org/mirrorlist?repo=epel-modular-source-8&arch=$basearch
 failovermethod=priority
 enabled=0
 skip_if_unavailable=False

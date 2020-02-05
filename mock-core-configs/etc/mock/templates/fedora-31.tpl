@@ -10,7 +10,7 @@ config_opts['releasever'] = '31'
 config_opts['package_manager'] = 'dnf'
 config_opts['bootstrap_image'] = 'fedora:31'
 
-config_opts['yum.conf'] = """
+config_opts['dnf.conf'] = """
 [main]
 keepcache=1
 debuglevel=2
@@ -29,13 +29,6 @@ module_platform_id=platform:f31
 protected_packages=
 
 # repos
-
-[local]
-name=local
-baseurl=https://kojipkgs.fedoraproject.org/repos/f31-build/latest/$basearch/
-cost=2000
-enabled=0
-skip_if_unavailable=False
 
 [fedora]
 name=fedora
@@ -57,6 +50,13 @@ metalink=https://mirrors.fedoraproject.org/metalink?repo=updates-testing-f$relea
 enabled=0
 gpgkey=file:///usr/share/distribution-gpg-keys/fedora/RPM-GPG-KEY-fedora-31-primary
 gpgcheck=1
+skip_if_unavailable=False
+
+[local]
+name=local
+baseurl=https://kojipkgs.fedoraproject.org/repos/f31-build/latest/$basearch/
+cost=2000
+enabled=0
 skip_if_unavailable=False
 
 [fedora-debuginfo]

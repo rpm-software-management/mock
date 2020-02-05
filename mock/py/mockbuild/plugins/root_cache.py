@@ -7,7 +7,6 @@
 # python library imports
 import fcntl
 import os
-import subprocess
 import time
 
 # our imports
@@ -128,40 +127,6 @@ class RootCache(object):
         if self.rootCacheLock is None:
             self.rootCacheLock = open(os.path.join(self.rootSharedCachePath, "rootcache.lock"), "a+")
 
-        if self.buildroot.is_bootstrap and self.buildroot.use_bootstrap_image \
-                and not os.path.exists(self.rootCacheFile):
-            getLog().info("Using bootstrap image: %s", self.buildroot.bootstrap_image)
-
-            # pull the latest image
-            getLog().info("Pulling image: %s", self.buildroot.bootstrap_image)
-            cmd = ["podman", "pull", self.buildroot.bootstrap_image]
-            mockbuild.util.do(cmd, printOutput=True)
-
-            # start a container and detach immediately
-            cmd = ["podman", "run", "-it", "--detach", self.buildroot.bootstrap_image, "/bin/bash"]
-            container_id = mockbuild.util.do(cmd, returnOutput=True)
-            container_id = container_id.strip()
-
-            # make sure the image contains expected packages
-            cmd = ["podman", "exec", container_id, self.buildroot.pkg_manager.command, "-y"]
-            cmd += self.buildroot.pkg_manager.install_command.split()
-            mockbuild.util.do(cmd, printOutput=True)
-
-            # export container and compress it
-            getLog().info("Exporting container: %s as %s", self.buildroot.bootstrap_image, self.rootCacheFile)
-            cmd_podman = ["podman", "export", container_id]
-            podman = subprocess.Popen(cmd_podman, stdout=subprocess.PIPE)
-            cache_file = open(self.rootCacheFile, "w")
-            cmd_compressor = [self.compressProgram, "--stdout"]
-            compressor = subprocess.Popen(cmd_compressor, stdin=podman.stdout, stdout=cache_file)
-            compressor.communicate()
-            podman.communicate()
-            cache_file.close()
-
-            # remove the container
-            cmd = ["podman", "rm", "-f", container_id]
-            mockbuild.util.do(cmd)
-
         # optimization: don't unpack root cache if chroot was not cleaned (unless we are using tmpfs)
         if os.path.exists(self.rootCacheFile):
             if (not self.buildroot.chroot_was_initialized or self._haveVolatileRoot()):
@@ -185,16 +150,6 @@ class RootCache(object):
                 )
                 for item in self.exclude_dirs:
                     mockbuild.util.mkdirIfAbsent(self.buildroot.make_chroot_path(item))
-
-                if self.buildroot.is_bootstrap and self.buildroot.use_bootstrap_image:
-                    # The bootstrap image frequently lacks distribution-gpg-keys.
-                    # Copy the files from the host to avoid invoking package manager
-                    # or rebuilding the cached bootstrap chroot.
-                    keys_path = "/usr/share/distribution-gpg-keys"
-                    dest_path = os.path.dirname(keys_path)
-                    getLog().debug("Copying %s to the bootstrap chroot" % keys_path)
-                    cmd = ["cp", "-a", keys_path, self.buildroot.make_chroot_path(dest_path)]
-                    mockbuild.util.do(cmd)
 
                 self._rootCacheUnlock()
                 self.buildroot.chrootWasCached = True
