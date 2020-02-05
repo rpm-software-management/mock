@@ -5,8 +5,7 @@ A note on mock versions:
   There are now two main branches to be aware of:
     - mock-1.0 (pre-F13 and EPEL5)
     - mock-1.3 (EPEL6)
-    - master (for releasing F-13+ and EPEL7+)
-    - devel (for development of future versions)
+    - master (for releasing and development, F-13+ and EPEL7+)
   Please be careful when
   updating the various distro to use the correct branch and version
   number when generating tarfiles for RPM generation.
@@ -19,27 +18,22 @@ Release checklist overview:
    $ git checkout master
 1) fetch git remotes and fast-forward your local master
    $ git pull --rebase master
-2) merge any remote updates for specific fixes
-   $ git merge origin/devel
-3) install snapshot version
+2) install snapshot version
    $ tito build --rpm -i
-4) run 'make check' and fix any reported failures until it passes
+3) run 'make check' and fix any reported failures until it passes
    $ make check 1>/tmp/test-output.txt  2>&1
-5) tag the git tree:
+4) tag the git tree:
    $ tito tag
-6) push to main git repo (only from master branch):
+5) push to main git repo (only from master branch):
    $ git push
    $ git push --tags
-7) merge changes back to devel branch
-   $ git checkout devel
-   $ git merge origin/master
-8) release for EPEL and Fedora
+6) release for EPEL and Fedora
    $ git checkout master
    # make sure that .tito/releasers.conf is up to date
    $ tito release fedora-git-all
    $ tito release epel-git-all
    $ tito release @copr # this can be usually skipped as it is done automatically by Copr
-9) publish tgz
+7) publish tgz
    $ tito build --tgz
    Go to:
    https://github.com/rpm-software-management/mock/releases
@@ -47,7 +41,7 @@ Release checklist overview:
    Choose existing tag. E.g., mock-1.4.9-1 @ master
    Enter the same tag as release title.
    Attach the binary.
-10) Prepare release notes. And add list of contributed authors:
+8) Prepare release notes. And add list of contributed authors:
    git log mock-1.4.8-1.. --format="%aN" | sort |uniq
 
 Once the builds finish (successfully) you should push the just built
