@@ -2,7 +2,7 @@
 %global mockgid 135
 
 Name:       mock-core-configs
-Version:    31.7
+Version:    32.0
 Release:    1%{?dist}
 Summary:    Mock core config files basic chroots
 
@@ -143,6 +143,29 @@ fi
 %ghost %config(noreplace,missingok) %{_sysconfdir}/mock/default.cfg
 
 %changelog
+* Thu Feb 06 2020 Pavel Raiskup <praiskup@redhat.com> 32.0-1
+- add F32 configs and move rawhide to F33
+- make compatibility changes with mock 2.0
+- allow host overrides (build-time for now)
+- use jinja for gpgkey= in rawhide template
+- add rhel-{7,8}-s390x configs
+- drop rhel-8-ppc64, it was never supported
+- fix rhel-7 configs
+- update epel-8 config template to include modular repos as well as missing
+  non-modular source repo (mmathesi@redhat.com)
+- drop for a long time useless epel-6-ppc64 config
+- use template for opensuse, openmandriva, mageia, epel, custom ...
+- fix epel-6.tpl config bug
+- set default podman image for centos-stream
+- remove aarch64 string from repo name in template [RHBZ#1780977]
+- EOL F29 configs
+- fix rhelepel configs
+- allow including configs and templates from relative path (frostyx@email.cz)
+- configs: drop cost=2000 from fedora-31+-i386
+- add missing metadata_expire=0 to epel configs
+- change default of 'package_manager' to 'dnf', and use 'dnf.conf'
+- remove rhelbeta-8-*
+
 * Fri Nov 01 2019 Miroslav Suchý <msuchy@redhat.com> 31.7-1
 - Add configs for epel8-playground (mmathesi@redhat.com)
 - add 3 base packages to epel-playground buildroot [RHBZ#1764445]
