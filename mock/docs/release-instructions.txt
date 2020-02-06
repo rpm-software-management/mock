@@ -24,6 +24,10 @@ Release checklist overview:
    $ make check 1>/tmp/test-output.txt  2>&1
 4) tag the git tree:
    $ tito tag
+   When you release both mock and mock-core-configs together, you
+   likely want to (a) first tag 'mock-core-configs' package, (b) bump
+   'Requires: mock-core-configs >= ??' dependency and (c) then tag
+   new mock version.
 5) push to main git repo (only from master branch):
    $ git push
    $ git push --tags
