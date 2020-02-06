@@ -5,7 +5,7 @@
 
 Summary: Builds packages inside chroots
 Name: mock
-Version: 1.5.0
+Version: 2.0
 Release: 1%{?dist}
 License: GPLv2+
 # Source is created by
@@ -210,6 +210,53 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 %{python3_sitelib}/mockbuild/plugins/__pycache__/lvm_root.*.py*
 
 %changelog
+* Thu Feb 06 2020 Pavel Raiskup <praiskup@redhat.com> 2.0-1
+- log reasons why src.rpm can not be installed into chroot
+- nspawn: non-interactive commands in chroot are executed with --pipe
+- bind mount local repos to bootstrap chroot (dturecek@redhat.com)
+- expand the generated config (includes) completely before passing it
+  to eval() (sergio@serjux.com)
+- do not ignore cleanup_on_success when post_install is True
+  (logans@cottsay.net)
+- fix fd resource-leak in 'mock --chain' (jcajka@redhat.com)
+- the --debug-config option only shows the differences from the mock's default
+  configuration
+- do not expand jinja for --debug-config
+- don't use chroot.pkg_manager in podman case, we need to install from within
+  the container
+- --use-bootstrap-image implies --bootstrap-chroot
+- drop python2 support from spec file, and code too
+- ammend man page and state that --dnf is the default now
+- rename --{old,new}-chroot to --isolation
+- turn ON the jinja rendering a bit earlier
+- pre-populate loop devices in nspawn chroot as with --isolation=chroot
+- deepcopy the plugin_conf options from chroot to bootstrap_chroot
+- simplified implementation of include() config option, accept relative files
+  (jkadlcik@redhat.com, sergio@serjux.com)
+- pass proxy environment to exec of Podman (RHBZ#1772598)
+- lvm_root: fix volume removal in --scrub
+- bootstrap: don't install shadow-utils, and distribution-gpg-keys
+- make --sources optional for --buildsrpm mode (sisi.chlupova@gmail.com)
+- bootstrap: bind-mount normal chroot into bootstrap chroot recursively
+- add --scrub=bootstrap parameter (frostyx@email.cz)
+- don't clean bootstrap with --clean
+- do not call traceLog decorator when no tracing
+- pre-create builddir before changing it's owner, and when we have proper
+  process privileges
+- copy /etc/pki/ca-trust/extracted into chroot [GH#397]
+- change default of 'package_manager' to 'dnf'
+- always copy distribution-gpg-keys into chroot [GH#308]
+- support DNF vars added [GH#346]
+- use jinja macros instead of python variable expansion
+- get the text representation of error code
+- --scrub=all also does --scrub=bootstrap (jkadlcik@redhat.com)
+- success/fail aren't created root-owned
+- compress_logs: setup defaults to 'gzip'
+- raise error for --localrepo without --chain
+- detect that forcearch can not work, and raise obvious error
+- drop unnecessary privilege escalations which only make unnecessary
+  root-owned files
+
 * Fri Oct 04 2019 Miroslav Suchý <msuchy@redhat.com> 1.4.20-1
 - /bin/mockchain wrapper around 'mock --chain' (praiskup@redhat.com)
 - mock: options for retrying packager managers' actions (praiskup@redhat.com)
