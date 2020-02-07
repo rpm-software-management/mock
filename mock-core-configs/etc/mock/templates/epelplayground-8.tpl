@@ -2,7 +2,7 @@ config_opts['chroot_setup_cmd'] += " epel-release epel-rpm-macros fedpkg-minimal
 
 config_opts['dnf.conf'] += """
 
-[epel-playground]                                                                                                     
+[epel-playground]
 name=Extra Packages for Enterprise Linux $releasever - Playground - $basearch
 #baseurl=https://download.fedoraproject.org/pub/epel/playground/$releasever/Everything/$basearch
 metalink=https://mirrors.fedoraproject.org/metalink?repo=playground-epel$releasever&arch=$basearch&infra=$infra&content=centos
