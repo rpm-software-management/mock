@@ -154,19 +154,8 @@ class Commands(object):
     def init(self, **kwargs):
         try:
             if self.bootstrap_buildroot is not None:
-                # add the extra bind mount to the outer chroot
-                inner_mount = self.bootstrap_buildroot.make_chroot_path(self.buildroot.make_chroot_path())
                 util.mkdirIfAbsent(self.buildroot.make_chroot_path())
                 self.bootstrap_buildroot.initialize(**kwargs)
-                # Hide re-mounted chroot from host by rprivate tmpfs.
-                self.buildroot.mounts.managed_mounts.append(
-                    FileSystemMountPoint(filetype='tmpfs',
-                                         device='hide_root_in_bootstrap',
-                                         path=inner_mount,
-                                         options="rprivate"))
-                self.buildroot.mounts.managed_mounts.append(
-                    BindMountPoint(self.buildroot.make_chroot_path(), inner_mount,
-                                   recursive=True))
             self.buildroot.initialize(**kwargs)
             if not self.buildroot.chroot_was_initialized:
                 self._show_installed_packages()

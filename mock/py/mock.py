@@ -64,7 +64,7 @@ import subprocess
 # pylint: disable=import-error
 from functools import partial
 from mockbuild import util
-from mockbuild.mounts import BindMountPoint
+from mockbuild.mounts import BindMountPoint, FileSystemMountPoint
 
 # all of the variables below are substituted by the build system
 __VERSION__ = "unreleased_version"
@@ -742,6 +742,21 @@ def main():
     util.setup_host_resolv(config_opts)
 
     buildroot = Buildroot(config_opts, uidManager, state, plugins, bootstrap_buildroot)
+
+    if bootstrap_buildroot is not None:
+        # add the extra bind mount to the outer chroot
+        inner_mount = bootstrap_buildroot.make_chroot_path(buildroot.make_chroot_path())
+
+        # Hide re-mounted chroot from host by rprivate tmpfs.
+        buildroot.mounts.managed_mounts.append(
+            FileSystemMountPoint(filetype='tmpfs',
+                                 device='hide_root_in_bootstrap',
+                                 path=inner_mount,
+                                 options="rprivate"))
+        buildroot.mounts.managed_mounts.append(
+            BindMountPoint(buildroot.make_chroot_path(), inner_mount,
+                           recursive=True))
+
     signal.signal(signal.SIGTERM, partial(handle_signals, buildroot))
     signal.signal(signal.SIGPIPE, partial(handle_signals, buildroot))
     signal.signal(signal.SIGHUP, partial(handle_signals, buildroot))
