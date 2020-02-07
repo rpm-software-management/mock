@@ -6,7 +6,7 @@
 Summary: Builds packages inside chroots
 Name: mock
 Version: 2.0
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2+
 # Source is created by
 # git clone https://github.com/rpm-software-management/mock.git
@@ -210,6 +210,11 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 %{python3_sitelib}/mockbuild/plugins/__pycache__/lvm_root.*.py*
 
 %changelog
+* Fri Feb 07 2020 Pavel Raiskup <praiskup@redhat.com> 2.0-2
+- solve yum.conf vs. dnf.conf inconsistency in code and config
+- fix mockchain with --bootstrap-chroot (issue/469)
+- document 'mock --chain -c' in man page
+
 * Thu Feb 06 2020 Pavel Raiskup <praiskup@redhat.com> 2.0-1
 - log reasons why src.rpm can not be installed into chroot
 - nspawn: non-interactive commands in chroot are executed with --pipe
