@@ -1,15 +1,14 @@
 config_opts['root'] = 'fedora-rawhide-{{ target_arch }}'
 # config_opts['module_enable'] = ['list', 'of', 'modules']
 # config_opts['module_install'] = ['module1/profile', 'module2/profile']
+
 config_opts['chroot_setup_cmd'] = 'install @buildsys-build'
+
 config_opts['dist'] = 'rawhide'  # only useful for --resultdir variable subst
 config_opts['extra_chroot_dirs'] = [ '/run/lock', ]
 config_opts['releasever'] = '33'
-
 config_opts['package_manager'] = 'dnf'
-
 config_opts['bootstrap_image'] = 'fedora:rawhide'
-
 
 config_opts['dnf.conf'] = """
 [main]
