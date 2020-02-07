@@ -1128,7 +1128,6 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
     config_opts['target_arch'] = 'i386'
     config_opts['releasever'] = None
     config_opts['rpmbuild_arch'] = None  # <-- None means set automatically from target_arch
-    config_opts['yum.conf'] = ''
     config_opts['dnf_vars'] = {}
     config_opts['yum_builddep_opts'] = []
     config_opts['yum_common_opts'] = []
@@ -1588,6 +1587,9 @@ def load_config(config_path, name, uidManager, version, pkg_python_dir):
                     "please use config_opts['use_bootstrap'] instead")
         config_opts['use_bootstrap'] = config_opts['use_bootstrap_container']
 
+    if ('dnf.conf' in config_opts) == ('yum.conf' in config_opts):
+        raise ValueError("mock config requires either 'dnf.conf' or 'yum.conf', not both")
+
     return config_opts
 
 
@@ -1698,7 +1700,7 @@ cost=1
 best=1
 """.format(repoid=repoid, baseurl=baseurl)
 
-    config_opts['yum.conf'] += localyumrepo
+    config_opts['{0}.conf'.format(config_opts['package_manager'])] += localyumrepo
 
     if bootstrap is None or not baseurl.startswith("file:///"):
         return

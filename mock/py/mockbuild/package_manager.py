@@ -167,6 +167,13 @@ class _PackageManager(object):
         return invocation
 
     @traceLog()
+    def get_pkg_manager_config(self):
+        if 'dnf.conf' in self.config:
+            return self.config['dnf.conf']
+        else:
+            return self.config['yum.conf']
+
+    @traceLog()
     def execute(self, *args, **kwargs):
         self.plugins.call_hooks("preyum")
         pm_umount = False
@@ -394,7 +401,7 @@ class Yum(_PackageManager):
         # use yum plugin conf from chroot as needed
         pluginconf_dir = self.buildroot.make_chroot_path('etc', 'yum', 'pluginconf.d')
         util.mkdirIfAbsent(pluginconf_dir)
-        config_content = self.config['yum.conf'].replace(
+        config_content = self.get_pkg_manager_config().replace(
             "plugins=1", dedent("""\
                            plugins=1
                            pluginconfpath={0}""".format(pluginconf_dir)))
@@ -499,11 +506,7 @@ class Dnf(_PackageManager):
     @traceLog()
     def initialize_config(self):
         super(Dnf, self).initialize_config()
-        if 'dnf.conf' in self.config:
-            config_content = self.config['dnf.conf']
-        else:
-            config_content = self.config['yum.conf']
-
+        config_content = self.get_pkg_manager_config()
         self.pkg_manager_config = config_content
         check_yum_config(config_content, self.buildroot.root_log)
         util.mkdirIfAbsent(self.buildroot.make_chroot_path('etc', 'dnf'))

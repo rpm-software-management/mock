@@ -1,6 +1,6 @@
 config_opts['chroot_setup_cmd'] += " epel-release epel-rpm-macros fedpkg-minimal"
 
-config_opts['yum.conf'] += """                                                                                                   
+config_opts['dnf.conf'] += """
 
 [epel-playground]                                                                                                     
 name=Extra Packages for Enterprise Linux $releasever - Playground - $basearch
