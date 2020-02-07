@@ -12,7 +12,7 @@ config_opts['root'] = 'rhel-8-{{ target_arch }}'
 
 config_opts['redhat_subscription_required'] = True
 
-config_opts['yum.conf'] = """
+config_opts['dnf.conf'] = """
 [main]
 keepcache=1
 debuglevel=2
