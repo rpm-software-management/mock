@@ -6,7 +6,7 @@ config_opts['extra_chroot_dirs'] = [ '/run/lock', ]
 config_opts['bootstrap_image'] = 'centos:8'
 
 
-config_opts['yum.conf'] = """
+config_opts['dnf.conf'] = """
 [main]
 keepcache=1
 debuglevel=2

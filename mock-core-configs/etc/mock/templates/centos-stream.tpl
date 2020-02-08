@@ -8,7 +8,7 @@ config_opts['dnf_vars'] = { 'stream': '8-stream',
                             'contentdir': 'centos',
                           }
 
-config_opts['yum.conf'] = """
+config_opts['dnf.conf'] = """
 [main]
 keepcache=1
 debuglevel=2
