@@ -2,8 +2,8 @@
 %global mockgid 135
 
 Name:       mock-core-configs
-Version:    32.0
-Release:    2%{?dist}
+Version:    32.1
+Release:    1%{?dist}
 Summary:    Mock core config files basic chroots
 
 License:    GPLv2+
@@ -143,6 +143,9 @@ fi
 %ghost %config(noreplace,missingok) %{_sysconfdir}/mock/default.cfg
 
 %changelog
+* Sat Feb 08 2020 Pavel Raiskup <praiskup@redhat.com> 32.1-1
+- centos-8 and centos-stream to use dnf.conf
+
 * Fri Feb 07 2020 Pavel Raiskup <praiskup@redhat.com> 32.0-2
 - solve yum.conf vs. dnf.conf inconsistency in config and code
 
