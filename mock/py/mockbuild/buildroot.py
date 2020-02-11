@@ -706,8 +706,11 @@ class Buildroot(object):
         if not bootstrap:
             return filename
 
-        if not os.path.exists(filename):
+        # optimized of
+        # not os.path.exists(filename) or not filename.lower().endswith('.rpm')
+        if not (os.path.exists(filename) and filename.lower().endswith('.rpm')):
             # probably just '--install pkgname'
+            # or '--install /usr/bin/time'
             return filename
 
         basename = os.path.basename(filename)
