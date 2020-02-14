@@ -34,7 +34,7 @@ def package_manager_from_string(name):
     raise Exception('Unrecognized package manager "{}"'.format(name))
 
 
-def package_manager_exists_on_host(name, config_opts):
+def package_manager_exists_on_host(name, config_opts, bootstrap=False):
     option = '{}_command'.format(name)
     pathname = config_opts[option]
     if not os.path.isfile(pathname):
@@ -47,8 +47,9 @@ def package_manager_exists_on_host(name, config_opts):
     real_pathname = os.path.realpath(pathname)
     # resolve symlinks, and detect that e.g. /bin/yum doesn't point to /bin/dnf
     if name not in real_pathname:
-        getLog().warning("Not using '%s', it is symlink to '%s'", pathname,
-                         real_pathname)
+        if not bootstrap:
+            getLog().warning("Not using '%s', it is symlink to '%s'", pathname,
+                             real_pathname)
         return False
     return True
 
@@ -59,7 +60,7 @@ def package_manager_class_fallback(desired, config_opts, bootstrap):
         raise Exception('Unexpected package manager "{}"'.format(desired))
 
     for manager in fallbacks[desired]:
-        if package_manager_exists_on_host(manager, config_opts):
+        if package_manager_exists_on_host(manager, config_opts, bootstrap):
             ret_val = package_manager_from_string(manager)
             if desired == manager:
                 return ret_val
