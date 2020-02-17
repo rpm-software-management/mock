@@ -2,13 +2,16 @@ config_opts['root'] = 'fedora-31-{{ target_arch }}'
 # config_opts['module_enable'] = ['list', 'of', 'modules']
 # config_opts['module_install'] = ['module1/profile', 'module2/profile']
 
-config_opts['chroot_setup_cmd'] = 'install @buildsys-build'
+# fedora 31+ isn't mirrored, we need to run from koji
+config_opts['mirrored'] = config_opts['target_arch'] != 'i686'
+
+config_opts['chroot_setup_cmd'] = 'install @{% if mirrored %}buildsys-{% endif %}build'
 
 config_opts['dist'] = 'fc31'  # only useful for --resultdir variable subst
 config_opts['extra_chroot_dirs'] = [ '/run/lock', ]
 config_opts['releasever'] = '31'
 config_opts['package_manager'] = 'dnf'
-config_opts['bootstrap_image'] = 'fedora:31'
+config_opts['bootstrap_image'] = 'fedora:{{ releasever }}'
 
 config_opts['dnf.conf'] = """
 [main]
@@ -25,11 +28,19 @@ syslog_device=
 install_weak_deps=0
 metadata_expire=0
 best=1
-module_platform_id=platform:f31
+module_platform_id=platform:f{{ releasever }}
 protected_packages=
 
 # repos
 
+[local]
+name=local
+baseurl=https://kojipkgs.fedoraproject.org/repos/f{{ releasever }}-build/latest/$basearch/
+cost=2000
+enabled={{ not mirrored }}
+skip_if_unavailable=False
+
+{% if mirrored %}
 [fedora]
 name=fedora
 metalink=https://mirrors.fedoraproject.org/metalink?repo=fedora-$releasever&arch=$basearch
@@ -50,13 +61,6 @@ metalink=https://mirrors.fedoraproject.org/metalink?repo=updates-testing-f$relea
 enabled=0
 gpgkey=file:///usr/share/distribution-gpg-keys/fedora/RPM-GPG-KEY-fedora-31-primary
 gpgcheck=1
-skip_if_unavailable=False
-
-[local]
-name=local
-baseurl=https://kojipkgs.fedoraproject.org/repos/f31-build/latest/$basearch/
-cost=2000
-enabled=0
 skip_if_unavailable=False
 
 [fedora-debuginfo]
@@ -165,4 +169,5 @@ type=rpm
 gpgcheck=1
 gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-fedora-$releasever-$basearch
 skip_if_unavailable=False
+{% endif %}
 """
