@@ -2,7 +2,10 @@ config_opts['root'] = 'fedora-rawhide-{{ target_arch }}'
 # config_opts['module_enable'] = ['list', 'of', 'modules']
 # config_opts['module_install'] = ['module1/profile', 'module2/profile']
 
-config_opts['chroot_setup_cmd'] = 'install @buildsys-build'
+# fedora 31+ isn't mirrored, we need to run from koji
+config_opts['mirrored'] = config_opts['target_arch'] != 'i686'
+
+config_opts['chroot_setup_cmd'] = 'install @{% if mirrored %}buildsys-{% endif %}build'
 
 config_opts['dist'] = 'rawhide'  # only useful for --resultdir variable subst
 config_opts['extra_chroot_dirs'] = [ '/run/lock', ]
@@ -41,7 +44,7 @@ file:///usr/share/distribution-gpg-keys/fedora/RPM-GPG-KEY-fedora-$releasever-pr
 name=local
 baseurl=https://kojipkgs.fedoraproject.org/repos/rawhide/latest/$basearch/
 cost=2000
-enabled=0
+enabled={{ not mirrored }}
 skip_if_unavailable=False
 
 [local-source]
@@ -51,6 +54,7 @@ cost=2000
 enabled=0
 skip_if_unavailable=False
 
+{% if mirrored %}
 [fedora]
 name=fedora
 metalink=https://mirrors.fedoraproject.org/metalink?repo=rawhide&arch=$basearch
@@ -101,4 +105,5 @@ enabled=0
 gpgcheck=1
 gpgkey={{ rawhide_gpg_keys() }}
 skip_if_unavailable=False
+{% endif %}
 """
