@@ -1,4 +1,4 @@
-config_opts['root'] = 'fedora-32-{{ target_arch }}'
+config_opts['root'] = 'fedora-{{ releasever }}-{{ target_arch }}'
 # config_opts['module_enable'] = ['list', 'of', 'modules']
 # config_opts['module_install'] = ['module1/profile', 'module2/profile']
 
@@ -7,9 +7,8 @@ config_opts['mirrored'] = config_opts['target_arch'] != 'i686'
 
 config_opts['chroot_setup_cmd'] = 'install @{% if mirrored %}buildsys-{% endif %}build'
 
-config_opts['dist'] = 'fc32'  # only useful for --resultdir variable subst
+config_opts['dist'] = 'fc{{ releasever }}'  # only useful for --resultdir variable subst
 config_opts['extra_chroot_dirs'] = [ '/run/lock', ]
-config_opts['releasever'] = '32'
 config_opts['package_manager'] = 'dnf'
 config_opts['bootstrap_image'] = 'fedora:{{ releasever }}'
 
@@ -44,14 +43,14 @@ skip_if_unavailable=False
 [fedora]
 name=fedora
 metalink=https://mirrors.fedoraproject.org/metalink?repo=fedora-$releasever&arch=$basearch
-gpgkey=file:///usr/share/distribution-gpg-keys/fedora/RPM-GPG-KEY-fedora-32-primary
+gpgkey=file:///usr/share/distribution-gpg-keys/fedora/RPM-GPG-KEY-fedora-{{ releasever }}-primary
 gpgcheck=1
 skip_if_unavailable=False
 
 [updates]
 name=updates
 metalink=https://mirrors.fedoraproject.org/metalink?repo=updates-released-f$releasever&arch=$basearch
-gpgkey=file:///usr/share/distribution-gpg-keys/fedora/RPM-GPG-KEY-fedora-32-primary
+gpgkey=file:///usr/share/distribution-gpg-keys/fedora/RPM-GPG-KEY-fedora-{{ releasever }}-primary
 gpgcheck=1
 skip_if_unavailable=False
 
@@ -59,7 +58,7 @@ skip_if_unavailable=False
 name=updates-testing
 metalink=https://mirrors.fedoraproject.org/metalink?repo=updates-testing-f$releasever&arch=$basearch
 enabled=0
-gpgkey=file:///usr/share/distribution-gpg-keys/fedora/RPM-GPG-KEY-fedora-32-primary
+gpgkey=file:///usr/share/distribution-gpg-keys/fedora/RPM-GPG-KEY-fedora-{{ releasever }}-primary
 gpgcheck=1
 skip_if_unavailable=False
 
@@ -67,7 +66,7 @@ skip_if_unavailable=False
 name=fedora-debuginfo
 metalink=https://mirrors.fedoraproject.org/metalink?repo=fedora-debug-$releasever&arch=$basearch
 enabled=0
-gpgkey=file:///usr/share/distribution-gpg-keys/fedora/RPM-GPG-KEY-fedora-32-primary
+gpgkey=file:///usr/share/distribution-gpg-keys/fedora/RPM-GPG-KEY-fedora-{{ releasever }}-primary
 gpgcheck=1
 skip_if_unavailable=False
 
@@ -75,7 +74,7 @@ skip_if_unavailable=False
 name=updates-debuginfo
 metalink=https://mirrors.fedoraproject.org/metalink?repo=updates-released-debug-f$releasever&arch=$basearch
 enabled=0
-gpgkey=file:///usr/share/distribution-gpg-keys/fedora/RPM-GPG-KEY-fedora-32-primary
+gpgkey=file:///usr/share/distribution-gpg-keys/fedora/RPM-GPG-KEY-fedora-{{ releasever }}-primary
 gpgcheck=1
 skip_if_unavailable=False
 
@@ -83,14 +82,14 @@ skip_if_unavailable=False
 name=updates-testing-debuginfo
 metalink=https://mirrors.fedoraproject.org/metalink?repo=updates-testing-debug-f$releasever&arch=$basearch
 enabled=0
-gpgkey=file:///usr/share/distribution-gpg-keys/fedora/RPM-GPG-KEY-fedora-32-primary
+gpgkey=file:///usr/share/distribution-gpg-keys/fedora/RPM-GPG-KEY-fedora-{{ releasever }}-primary
 gpgcheck=1
 skip_if_unavailable=False
 
 [fedora-source]
 name=fedora-source
 metalink=https://mirrors.fedoraproject.org/metalink?repo=fedora-source-$releasever&arch=$basearch
-gpgkey=file:///usr/share/distribution-gpg-keys/fedora/RPM-GPG-KEY-fedora-32-primary
+gpgkey=file:///usr/share/distribution-gpg-keys/fedora/RPM-GPG-KEY-fedora-{{ releasever }}-primary
 gpgcheck=1
 enabled=0
 skip_if_unavailable=False
@@ -98,7 +97,7 @@ skip_if_unavailable=False
 [updates-source]
 name=updates-source
 metalink=https://mirrors.fedoraproject.org/metalink?repo=updates-released-source-f$releasever&arch=$basearch
-gpgkey=file:///usr/share/distribution-gpg-keys/fedora/RPM-GPG-KEY-fedora-32-primary
+gpgkey=file:///usr/share/distribution-gpg-keys/fedora/RPM-GPG-KEY-fedora-{{ releasever }}-primary
 gpgcheck=1
 enabled=0
 skip_if_unavailable=False
