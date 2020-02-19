@@ -6,7 +6,7 @@ config_opts['releasever'] = '4.0'
 config_opts['macros']['%cross_compiling'] = '0' # Mock should generally be considered native builds
 config_opts['package_manager'] = 'dnf'
 
-config_opts['yum.conf'] = """
+config_opts['dnf.conf'] = """
 [main]
 keepcache=1
 debuglevel=2
