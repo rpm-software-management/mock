@@ -6,7 +6,7 @@ config_opts['releasever'] = '8'
 config_opts['macros']['%distro_section'] = 'core'
 config_opts['package_manager'] = 'dnf'
 
-config_opts['yum.conf'] = """
+config_opts['dnf.conf'] = """
 [main]
 keepcache=1
 debuglevel=2

@@ -6,7 +6,7 @@ config_opts['releasever'] = '0'
 config_opts['macros']['%dist'] = '.suse.tw%(sh -c ". /etc/os-release; echo \$VERSION_ID")'
 config_opts['package_manager'] = 'dnf'
 
-config_opts['yum.conf'] = """
+config_opts['dnf.conf'] = """
 [main]
 keepcache=1
 debuglevel=2

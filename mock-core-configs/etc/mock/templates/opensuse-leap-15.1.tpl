@@ -9,7 +9,7 @@ config_opts['releasever'] = '15.1'
 config_opts['macros']['%dist'] = '.suse.lp151'
 config_opts['package_manager'] = 'dnf'
 
-config_opts['yum.conf'] = """
+config_opts['dnf.conf'] = """
 [main]
 keepcache=1
 debuglevel=2
