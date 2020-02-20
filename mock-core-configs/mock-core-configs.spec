@@ -2,7 +2,7 @@
 %global mockgid 135
 
 Name:       mock-core-configs
-Version:    32.1
+Version:    32.2
 Release:    1%{?dist}
 Summary:    Mock core config files basic chroots
 
@@ -143,6 +143,11 @@ fi
 %ghost %config(noreplace,missingok) %{_sysconfdir}/mock/default.cfg
 
 %changelog
+* Thu Feb 20 2020 Pavel Raiskup <praiskup@redhat.com> 32.2-1
+- use one template for branched fedoras
+- templatize F31+ i386
+- use 'dnf.conf' in mageia, opensuse and openmandriva configs
+
 * Sat Feb 08 2020 Pavel Raiskup <praiskup@redhat.com> 32.1-1
 - centos-8 and centos-stream to use dnf.conf
 
