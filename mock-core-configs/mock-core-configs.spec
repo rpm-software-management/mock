@@ -3,7 +3,7 @@
 
 Name:       mock-core-configs
 Version:    32.3
-Release:    1%{?dist}
+Release:    2%{?dist}
 Summary:    Mock core config files basic chroots
 
 License:    GPLv2+
@@ -143,6 +143,9 @@ fi
 %ghost %config(noreplace,missingok) %{_sysconfdir}/mock/default.cfg
 
 %changelog
+* Fri Feb 21 2020 Pavel Raiskup <praiskup@redhat.com> 32.3-2
+- bump version for lost git tag
+
 * Fri Feb 21 2020 Pavel Raiskup <praiskup@redhat.com> 32.3-1
 - put back the opensuse-leap-15.1-x86_64 config
 
