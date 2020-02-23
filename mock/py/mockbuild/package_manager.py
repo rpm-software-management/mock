@@ -320,11 +320,19 @@ Error:      Neither dnf-utils nor yum-utils are installed. Dnf-utils or yum-util
         for section in config.sections():
             if 'baseurl' not in config[section]:
                 continue
-            baseurl = config[section]['baseurl']
+            baseurl = config[section]['baseurl'].strip()
+
             # triple slash, we only accept absolute pathnames
-            if not baseurl.startswith('file:///'):
+            if baseurl.startswith('file:///'):
+                srcdir = baseurl[7:]
+            elif baseurl.startswith('/'):
+                srcdir = baseurl
+            else:
                 continue
-            srcdir = baseurl[7:]
+
+            if not os.path.isdir(srcdir):
+                continue
+
             destdir = self.buildroot.make_chroot_path(srcdir)
 
             bind_mount_point = BindMountPoint(srcpath=srcdir, bindpath=destdir)
