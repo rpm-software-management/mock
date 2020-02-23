@@ -112,13 +112,29 @@ class commandTimeoutExpired(exception.Error):
 # pylint: disable=no-member,unsupported-assignment-operation
 class TemplatedDictionary(MutableMapping):
     """ Dictionary where __getitem__() is run through Jinja2 template """
-    def __init__(self, *args, **kwargs):
-        '''Use the object dict'''
+    def __init__(self, *args, alias_spec=None, **kwargs):
+        '''
+        Use the object dict.
+
+        Optional parameter 'alias_spec' is dictionary of form:
+        {'aliased_to': ['alias_one', 'alias_two', ...], ...}
+        When specified, and one of the aliases is accessed - the
+        'aliased_to' config option is returned.
+        '''
         self.__dict__.update(*args, **kwargs)
+
+        self._aliases = {}
+        if alias_spec:
+            for aliased_to, aliases in alias_spec.items():
+                for alias in aliases:
+                    self._aliases[alias] = aliased_to
+
     # The next five methods are requirements of the ABC.
     def __setitem__(self, key, value):
+        key = self._aliases.get(key, key)
         self.__dict__[key] = value
     def __getitem__(self, key):
+        key = self._aliases.get(key, key)
         if '__jinja_expand' in self.__dict__ and self.__dict__['__jinja_expand']:
             return self.__render_value(self.__dict__[key])
         return self.__dict__[key]
@@ -944,7 +960,7 @@ def find_non_nfs_dir():
 @traceLog()
 def setup_default_config_opts(unprivUid, version, pkgpythondir):
     "sets up default configuration."
-    config_opts = TemplatedDictionary()
+    config_opts = TemplatedDictionary(alias_spec={'dnf.conf': ['yum.conf']})
     config_opts['config_paths'] = []
     config_opts['version'] = version
     config_opts['basedir'] = '/var/lib/mock'  # root name is automatically added to this
@@ -1586,9 +1602,6 @@ def load_config(config_path, name, uidManager, version, pkg_python_dir):
         log.warning("config_opts['use_bootstrap_container'] is deprecated, "
                     "please use config_opts['use_bootstrap'] instead")
         config_opts['use_bootstrap'] = config_opts['use_bootstrap_container']
-
-    if ('dnf.conf' in config_opts) == ('yum.conf' in config_opts):
-        raise ValueError("mock config requires either 'dnf.conf' or 'yum.conf', not both")
 
     return config_opts
 
