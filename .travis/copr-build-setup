@@ -1,0 +1,25 @@
+#! /bin/bash
+
+# Helper script (used by praiskup atm) to update CI scripting on Copr side.
+
+script=$(readlink -f "$(dirname "$0")")/copr-custom-script
+
+workdir=$(dirname "$script")
+
+PROJECT=@mock/mock-pull-requests
+
+build_deps=(
+    bsdtar
+    tito
+)
+
+copr_cmd=(
+    copr edit-package-custom "$PROJECT" \
+        --webhook-rebuild on \
+        --script "$script" \
+        --script-chroot "fedora-rawhide-x86_64" \
+        --script-builddeps "${build_deps[*]}"
+)
+
+"${copr_cmd[@]}" --name mock               --script-resultdir results/mock
+"${copr_cmd[@]}" --name mock-core-configs  --script-resultdir results/mock-core-configs

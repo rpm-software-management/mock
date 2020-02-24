@@ -7,6 +7,10 @@ matrix:
     - python: "3.7"
     - python: "3.8"
       dist: xenial
+    - python: "3.7"
+      script: PACKAGE=mock .travis/copr-build
+    - python: "3.7"
+      script: PACKAGE=mock-core-configs .travis/copr-build
 
 install:
   - "pip install -r mock/requirements.txt"
