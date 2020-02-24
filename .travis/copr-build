@@ -2,6 +2,10 @@
 
 set -e
 
+# we run this only for pull-requests, pushes are tested separately
+# by copr(tito) webhooks
+test "$TRAVIS_PULL_REQUEST" = false && exit 0
+
 # download up2date travis trigger
 curl -o copr-build https://raw.githubusercontent.com/praiskup/copr-ci-tooling/master/copr-travis-submit
 
