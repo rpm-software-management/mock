@@ -20,7 +20,8 @@ Release checklist overview:
    $ git pull --rebase master
 2) install snapshot version
    $ tito build --rpm -i
-3) run 'make check' and fix any reported failures until it passes
+3) run 'make check' in ./integration-tests directory and fix any reported
+   failures until it passes
    $ make check 1>/tmp/test-output.txt  2>&1
 4) tag the git tree:
    $ tito tag
