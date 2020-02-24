@@ -1,4 +1,5 @@
-%bcond_with tests
+%bcond_with lint
+%bcond_without tests
 
 %global __python %{__python3}
 %global python_sitelib %{python3_sitelib}
@@ -43,7 +44,7 @@ Requires: python%{python3_pkgversion}-requests
 Requires: python%{python3_pkgversion}-rpm
 Requires: python%{python3_pkgversion}-pyroute2
 BuildRequires: python%{python3_pkgversion}-devel
-%if %{with tests}
+%if %{with lint}
 BuildRequires: python%{python3_pkgversion}-pylint
 %endif
 %if 0%{?fedora} || 0%{?mageia} || 0%{?rhel} >= 8
@@ -61,6 +62,14 @@ Requires: btrfs-progs
 Requires: yum >= 2.4
 Requires: yum-utils
 %endif
+%endif
+
+%if %{with tests}
+BuildRequires: python%{python3_pkgversion}-distro
+BuildRequires: python%{python3_pkgversion}-jinja2
+BuildRequires: python%{python3_pkgversion}-pyroute2
+BuildRequires: python%{python3_pkgversion}-pytest
+BuildRequires: python%{python3_pkgversion}-pytest-cov
 %endif
 
 %if 0%{?fedora} || 0%{?rhel} >= 8
@@ -158,10 +167,15 @@ install -d %{buildroot}/var/lib/mock
 install -d %{buildroot}/var/cache/mock
 
 %check
-%if %{with tests}
+%if %{with lint}
 # ignore the errors for now, just print them and hopefully somebody will fix it one day
 pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 %endif
+
+%if %{with tests}
+./run-tests.sh
+%endif
+
 
 %files
 %defattr(0644, root, mock)
