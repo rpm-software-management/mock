@@ -52,3 +52,42 @@ def test_that_access_doesnt_affect_value():
     # a.b stays empty.
     config['b'] = 'b'
     assert 'b' == config['a']['b']
+
+
+def test_not_detected_recursion():
+    config = TemplatedDictionary()
+    config['a'] = '{{ a }}'
+    config['b'] = '{{ a }}'
+    config['__jinja_expand'] = True
+
+    # TODO: should this throw exception?  We might hypotetically use this
+    # "problem" to assure that some values are unexpanded.
+    assert config['a'] == '{{ a }}'
+    assert config['b'] == '{{ a }}'
+
+
+def too_deep_recursion():
+    config = TemplatedDictionary()
+    config['a'] = '{{ b }}'
+    config['b'] = '[ {{ a }} ]'
+    config['__jinja_expand'] = True
+    with pytest.raises(ValueError):
+        # infinite recursion
+        config['a']
+
+    config = TemplatedDictionary()
+    config['a'] = '{{ b }}'
+    config['b'] = '{{ c }}'
+    config['c'] = '{{ d }}'
+    config['d'] = '{{ e }}'
+    config['e'] = '{{ f }}'
+    config['f'] = 'f'
+    config['g'] = 11
+    config['__jinja_expand'] = True
+
+    # this is not yet too deep
+    assert config['b'] == 'f'
+
+    # but this is too deep
+    with pytest.raises(ValueError):
+        config['a']
