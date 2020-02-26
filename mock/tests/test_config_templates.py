@@ -1,3 +1,4 @@
+import pytest
 from mockbuild.util import TemplatedDictionary
 
 
@@ -34,3 +35,20 @@ def test_aliases():
     config['package_manager.conf'] += " {{ variable }}"
 
     assert config['dnf.conf'] == config['yum.conf'] == 'replaced content'
+
+
+@pytest.mark.xfail
+def test_that_access_doesnt_affect_value():
+    config = TemplatedDictionary()
+    config['a'] = {}
+    config['a']['b'] = '{{ b }}'
+    config['__jinja_expand'] = True
+
+    # access it, and and destroy 'a' (shouldn't happen)
+    assert '' == config['a']['b']
+
+    # we set b, but it is not propagated to a.b because a.b was already
+    # accessed - and that rewrote a.b to ''.  So even after setting b properly,
+    # a.b stays empty.
+    config['b'] = 'b'
+    assert 'b' == config['a']['b']
