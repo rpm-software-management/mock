@@ -109,6 +109,16 @@ class commandTimeoutExpired(exception.Error):
         self.msg = msg
         self.resultcode = 10
 
+class RenderedString(str):
+    def __new__(cls, rendered_value, original_value=None):
+        the_string = str.__new__(cls, rendered_value)
+        the_string._original_value = original_value
+        return the_string
+
+    @property
+    def raw(self):
+        return self._original_value
+
 # pylint: disable=no-member,unsupported-assignment-operation
 class TemplatedDictionary(MutableMapping):
     """ Dictionary where __getitem__() is run through Jinja2 template """
@@ -155,8 +165,18 @@ class TemplatedDictionary(MutableMapping):
     def copy(self):
         return TemplatedDictionary(self.__dict__)
     def __render_value(self, value):
-        if isinstance(value, str):
-            return self.__render_string(value)
+        if isinstance(value, RenderedString):
+            # re-render the rendered value, but keep original
+            value = RenderedString(
+                self.__render_string(value),
+                value.raw,  # inherit raw value
+            )
+            return value
+        elif isinstance(value, str):
+            return RenderedString(
+                self.__render_string(value),
+                value,
+            )
         elif isinstance(value, list):
             # we cannot use list comprehension here, as we need to NOT modify the list (pointer to list)
             # and we need to modifiy only individual values in the list
