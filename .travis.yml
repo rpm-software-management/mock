@@ -2,14 +2,16 @@ language: python
 
 matrix:
   include:
-    - python: "3.5"
-    - python: "3.6"
-    - python: "3.7"
-    - python: "3.8"
-      dist: xenial
+    - python: "3.6"     # because RHEL 7
+    - python: "3.7"     # because stable Fedora, RHEL 8
+    - python: "3.8"     # because Fedora Rawhide
+    - python: "3.9-dev" # soon to be in Rawhide
+
+    # copr builds follow, only for PRs
     - python: "3.7"
       script: PACKAGE=mock .travis/copr-build
       if: type = pull_request
+
     - python: "3.7"
       script: PACKAGE=mock-core-configs .travis/copr-build
       if: type = pull_request
@@ -17,4 +19,4 @@ matrix:
 install:
   - "pip install -r mock/requirements.txt"
 
-script: PYTHON=python$TRAVIS_PYTHON_VERSION ./mock/run-tests.sh
+script: PYTHON=python${TRAVIS_PYTHON_VERSION%%-dev} ./mock/run-tests.sh
