@@ -66,7 +66,7 @@ def test_not_detected_recursion():
     assert config['b'] == '{{ a }}'
 
 
-def too_deep_recursion():
+def test_too_deep_recursion():
     config = TemplatedDictionary()
     config['a'] = '{{ b }}'
     config['b'] = '[ {{ a }} ]'
