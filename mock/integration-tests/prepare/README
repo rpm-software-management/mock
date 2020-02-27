@@ -1,0 +1,16 @@
+============================================
+Prepare (destructively) box for mock testing
+============================================
+
+WARNING:  Scripts in this directory modify your machine!  Always execute on
+          machine which will be disposed.
+
+Scripts
+-------
+
+'prepare-user.sh' - This script is meant to be executed right after creating
+        a new separate user for testing mock.  Typically:
+            useradd testuser
+            usermod -a -G mock testuser
+            su - testuser
+            $ ./prepare-user.sh

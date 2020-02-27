@@ -15,3 +15,4 @@ runcmd() {
     return $ret
 }
 
+die () { echo >&2 "ERROR: $*" ; exit 1 ; }
