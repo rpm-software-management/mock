@@ -175,7 +175,7 @@ class TemplatedDictionary(MutableMapping):
         orig = last = value
         max_recursion = self.__dict__.get('jinja_max_recursion', 5)
         for _ in range(max_recursion):
-            template = jinja2.Template(value)
+            template = jinja2.Template(value, keep_trailing_newline=True)
             value = _to_native(template.render(self.__dict__))
             if value == last:
                 return value
