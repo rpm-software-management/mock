@@ -91,3 +91,12 @@ def too_deep_recursion():
     # but this is too deep
     with pytest.raises(ValueError):
         config['a']
+
+
+def test_many_newlines():
+    # rhbz#1806482
+    config = TemplatedDictionary()
+    string = "\n\n\n\n\n\na\n\n\n\n\n\n"
+    config['a'] = string
+    config['__jinja_expand'] = True
+    assert config['a'] == string
