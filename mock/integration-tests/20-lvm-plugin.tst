@@ -48,4 +48,7 @@ runcmd "$MOCKCMD --scrub=all" || die "mock scrub failed"
 # repeated run should succeed as well, rhbz#1805179
 runcmd "$MOCKCMD --scrub=all" || die "mock scrub failed"
 
+test "$(find /var/lib/mock -maxdepth 1 -name '*.lock' | wc -l)" -eq 0 || \
+    die "there are lock files leftovers"
+
 exit 0
