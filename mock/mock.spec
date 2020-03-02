@@ -194,7 +194,9 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 # python stuff
 %{python_sitelib}/*
 %exclude %{python_sitelib}/mockbuild/scm.*
+%exclude %{python_sitelib}/mockbuild/__pycache__/scm.*
 %exclude %{python_sitelib}/mockbuild/plugins/lvm_root.*
+%exclude %{python_sitelib}/mockbuild/plugins/__pycache__/lvm_root.*
 
 # config files
 %config(noreplace) %{_sysconfdir}/%{name}/*.ini
