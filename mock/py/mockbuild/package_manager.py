@@ -11,6 +11,7 @@ from textwrap import dedent
 from configparser import ConfigParser
 
 from distutils.dir_util import copy_tree
+from distutils.errors import DistutilsFileError
 
 from . import util
 from .exception import BuildError, Error, YumError
@@ -296,7 +297,11 @@ Error:      Neither dnf-utils nor yum-utils are installed. Dnf-utils or yum-util
     def copy_certs(self):
         cert_path = "/etc/pki/ca-trust/extracted"
         pki_dir = self.buildroot.make_chroot_path(cert_path)
-        copy_tree(cert_path, pki_dir)
+        try:
+            copy_tree(cert_path, pki_dir)
+        except DistutilsFileError:
+            warning = "Couldn't copy certs from host, %s doesn't exist or is not readable"
+            self.buildroot.root_log.debug(warning, cert_path)
 
     def initialize(self):
         self.copy_gpg_keys()
