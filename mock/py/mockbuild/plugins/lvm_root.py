@@ -255,14 +255,6 @@ class LvmPlugin(object):
                         self.force_umount_root()
             self.mount = mounts.FileSystemMountPoint(self.root_path, self.fs_type,
                                                      lv_path, options=mount_options)
-        # If there is a bind mount of the root into bootstrap buildroot,
-        # replace it with mount of the actual filesystem. This is necessary to
-        # prevent shared mount propagation from unmounting it later on
-        for i, mount in enumerate(self.buildroot.mounts.managed_mounts):
-            if mount.mountsource == self.root_path:
-                newmount = mounts.FileSystemMountPoint(mount.mountpath, self.fs_type,
-                                                       lv_path, options=mount_options)
-                self.buildroot.mounts.managed_mounts[i] = newmount
 
     def umount(self):
         if not self.mount:

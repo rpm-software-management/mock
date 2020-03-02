@@ -14,3 +14,7 @@ Scripts
             usermod -a -G mock testuser
             su - testuser
             $ ./prepare-user.sh
+
+'prepare-lvm.sh' - The script creates /test-lvm-disk file and loop device from
+        that file to be used as lvm storage.  You'll need this to execute this
+        as root before running 20-lvm-plugin.tst.
