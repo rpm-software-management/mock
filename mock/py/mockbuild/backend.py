@@ -475,10 +475,6 @@ class Commands(object):
                             do_rebuild(self.config, self, buildroot, options, [pkg])
                     except Error:
                         build_ret_code = 1
-                    finally:
-                        buildroot.finalize()
-                        if buildroot.bootstrap_buildroot is not None:
-                            buildroot.bootstrap_buildroot.finalize()
                 except (RootError,) as e:
                     log.warning(e.msg)
                     failed.append(pkg)
