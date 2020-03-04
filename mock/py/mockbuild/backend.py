@@ -706,8 +706,10 @@ class Commands(object):
                                             printOutput=self.config['print_main_output'])
                     success = True
                 except Error as e:
+                    # we ignore exit status 11 and go to finally block, see issue#434
                     if e.resultcode != 11:
                         raise e
+                finally:
                     max_loops -= 1
                     self.buildroot.root_log.info("Dynamic buildrequires detected")
                     self.buildroot.root_log.info("Going to install missing buildrequires")
