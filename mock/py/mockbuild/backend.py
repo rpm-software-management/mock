@@ -708,6 +708,7 @@ class Commands(object):
                 except Error as e:
                     if e.resultcode != 11:
                         raise e
+                finally:
                     max_loops -= 1
                     self.buildroot.root_log.info("Dynamic buildrequires detected")
                     self.buildroot.root_log.info("Going to install missing buildrequires")
