@@ -17,9 +17,9 @@ log = logging.getLogger()
 def rebuild_generic(items, commands, buildroot, config_opts, cmd, post=None, clean=True):
     start = time.time()
     try:
-        for item in items:
+        for i, item in enumerate(items):
             log.info("Start(%s)  Config(%s)", item, buildroot.shared_root_name)
-            if clean:
+            if clean and i == 0:
                 commands.clean()
             commands.init(prebuild=not config_opts.get('short_circuit'))
             ret = cmd(item)

@@ -472,7 +472,9 @@ class Commands(object):
                         if os.path.exists(success_file):
                             build_ret_code = 2
                         else:
-                            do_rebuild(self.config, self, buildroot, options, [pkg])
+                            config_opts = self.config.copy()
+                            config_opts["clean"] = False
+                            do_rebuild(config_opts, self, buildroot, options, [pkg])
                     except Error:
                         build_ret_code = 1
                     finally:
