@@ -303,6 +303,23 @@ Error:      Neither dnf-utils nor yum-utils are installed. Dnf-utils or yum-util
             warning = "Couldn't copy certs from host, %s doesn't exist or is not readable"
             self.buildroot.root_log.debug(warning, cert_path)
 
+        bundle_path = self.config['ssl_ca_bundle_path']
+        if bundle_path:
+            self.buildroot.root_log.debug('copying CA bundle into chroot')
+            host_bundle = os.path.realpath('/etc/pki/tls/certs/ca-bundle.crt')
+            chroot_bundle_path = self.buildroot.make_chroot_path(bundle_path)
+            chroot_bundle_dir = os.path.dirname(chroot_bundle_path)
+            try:
+                os.makedirs(chroot_bundle_dir)
+            except FileExistsError:
+                pass  # for repeated attempts
+
+            try:
+                shutil.copy(host_bundle, chroot_bundle_path)
+            except FileNotFoundError:
+                # when mock is not run on Fedora or EL
+                self.buildroot.root_log.debug("ca bundle not found on host")
+
     def initialize(self):
         self.copy_gpg_keys()
         self.copy_certs()

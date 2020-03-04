@@ -5,6 +5,7 @@ config_opts['useradd'] = '/usr/sbin/useradd -o -m -u {{chrootuid}} -g {{chrootgi
 config_opts['releasever'] = '0'
 config_opts['macros']['%dist'] = '.suse.tw%(sh -c ". /etc/os-release; echo \$VERSION_ID")'
 config_opts['package_manager'] = 'dnf'
+config_opts['ssl_ca_bundle_path'] = '/var/lib/ca-certificates/ca-bundle.pem'
 
 config_opts['dnf.conf'] = """
 [main]
