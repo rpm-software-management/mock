@@ -1013,6 +1013,8 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
 
     config_opts['redhat_subscription_required'] = False
 
+    config_opts['ssl_ca_bundle_path'] = None
+
     # (global) plugins and plugin configs.
     # ordering constraings: tmpfs must be first.
     #    root_cache next.
