@@ -755,7 +755,7 @@ def main():
                                  options="rprivate"))
         buildroot.mounts.managed_mounts.append(
             BindMountPoint(buildroot.make_chroot_path(), inner_mount,
-                           recursive=True))
+                           recursive=True, options="rprivate"))
 
     signal.signal(signal.SIGTERM, partial(handle_signals, buildroot))
     signal.signal(signal.SIGPIPE, partial(handle_signals, buildroot))
