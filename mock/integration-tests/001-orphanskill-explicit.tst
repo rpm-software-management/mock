@@ -7,7 +7,7 @@
 #
 header "Test orphanskill feature (explicit)"
 runcmd "$MOCKCMD --offline --init"
-runcmd "$MOCKCMD --offline --disable-plugin=tmpfs --copyin tests/daemontest.c /tmp"
+runcmd "$MOCKCMD --offline --disable-plugin=tmpfs --copyin integration-tests/daemontest.c /tmp"
 runcmd "$MOCKCMD --offline --disable-plugin=tmpfs --chroot -- gcc -Wall -o /tmp/daemontest /tmp/daemontest.c"
 # ask for sudo password, so later we do not need to wait for password, because the second sudo need to be
 # executed within 10 seconds

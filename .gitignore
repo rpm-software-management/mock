@@ -21,5 +21,5 @@ bugzillas
 tags
 TAGS
 test-suite.log
-tests/runtests.sh.log
-tests/runtests.sh.trs
+integration-tests/runtests.sh.log
+integration-tests/runtests.sh.trs

@@ -11,7 +11,7 @@ if pgrep daemontest; then
     exit 1
 fi
 runcmd "$MOCKCMD --offline --init"
-runcmd "$MOCKCMD --offline --copyin tests/daemontest.c /tmp"
+runcmd "$MOCKCMD --offline --copyin integration-tests/daemontest.c /tmp"
 runcmd "$MOCKCMD --offline --chroot -- gcc -Wall -o /tmp/daemontest /tmp/daemontest.c"
 runcmd "$MOCKCMD --offline --chroot -- /tmp/daemontest"
 if pgrep daemontest; then
