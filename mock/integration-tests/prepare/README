@@ -8,6 +8,11 @@ WARNING:  Scripts in this directory modify your machine!  Always execute on
 Scripts
 -------
 
+'setup-box.sh' - This script is meant to prepare everything for successful
+        testsuite run.  It installs `mockbuilder` user, adds it into the
+        'mock' group, installs necessary packages etc.  On top of that, it
+        executes the scripts in this directory.
+
 'prepare-user.sh' - This script is meant to be executed right after creating
         a new separate user for testing mock.  Typically:
             useradd testuser

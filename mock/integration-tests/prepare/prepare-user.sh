@@ -12,9 +12,10 @@ ask_yes() {
 die()  { echo >&2 "$*"    ; exit 1 ; }
 info() { echo >&2 " * $*" ; }
 
-test "$(id -u -n)" != root || die "don't run this as root"
+user=$(id -u -n)
+test "$user" != root || die "don't run this as root"
 
-ask_yes "This is going to DESTRUCTIVELY configure this user account." \
+ask_yes "This is going to DESTRUCTIVELY configure '$user' account." \
         "Do you want to continue?" || die "-> stopped"
 
 # re-create workdir
