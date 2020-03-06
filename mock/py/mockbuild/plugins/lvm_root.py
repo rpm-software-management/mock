@@ -33,8 +33,8 @@ def current_mounts():
 class Lock(object):
     def __init__(self, path, name, sleep_time):
         lock_name = '.{0}.lock'.format(name)
-        self.lock_path = os.path.join(path, lock_name)
-        self.lock_file = open(self.lock_path, 'a+')
+        lock_path = os.path.join(path, lock_name)
+        self.lock_file = open(lock_path, 'a+')
         self.sleep_time = sleep_time
 
     def lock(self, exclusive, block=False):
@@ -63,11 +63,6 @@ class Lock(object):
         if unsatisfied_fn:
             unsatisfied_fn()
 
-    def scrub(self):
-        try:
-            os.unlink(self.lock_path)
-        except FileNotFoundError:
-            pass
 
 class LvmPlugin(object):
     postinit_name = 'postinit'
@@ -345,7 +340,7 @@ class LvmPlugin(object):
         # Relock as shared for following operations, noop if shared already
         self.lock.lock(exclusive=False)
 
-    def scrub(self, what):
+    def hook_scrub(self, what):
         if what not in ('lvm', 'all') or not self.lv_exists(self.pool_name):
             return
         self.pool_lock.lock(exclusive=True)
@@ -362,11 +357,6 @@ class LvmPlugin(object):
             lvm_do(['lvremove', '-f', self.vg_name + '/' + self.pool_name])
             self.buildroot.root_log.info("deleted LVM cache thinpool")
         self.unset_current_snapshot()
-
-    def hook_scrub(self, what):
-        self.scrub(what)
-        self.lock.scrub()
-        self.pool_lock.scrub()
 
     def hook_list_snapshots(self):
         current = self.get_current_snapshot()
