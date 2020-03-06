@@ -6,7 +6,6 @@ fi
 
 . ${TESTDIR}/functions
 
-: "${MOCKCMD=mock}"
 : "${MOCKCHAIN=mockchain}"
 
 header "online mockchain, tmpfs.keep_mounted=True, nosync and one package having generated BuildRequires"
@@ -18,8 +17,7 @@ mkdir -p "$confdir"
 local_config=$confdir/mock.cfg
 
 # cleanup potentially mounted stuff we'll overmount by tmpfs
-runcmd "$MOCKCMD --scrub=chroot"
-runcmd "$MOCKCMD --scrub=bootstrap"
+runcmd "$MOCKCHAIN --scrub=all"
 
 test -f "$local_config" && die "please remove $local_config first"
 
@@ -40,3 +38,6 @@ packages="
 
 eval 'set -- $packages'
 runcmd "$MOCKCHAIN $*" || die "mockchain build failed"
+
+# cleanup the tmpfs stuff before we de-configure tmpfs
+runcmd "$MOCKCHAIN --scrub=all" || die "scrub failed"
