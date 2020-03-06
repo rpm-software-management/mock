@@ -27,7 +27,7 @@ header "testing all supported configurations"
 for i in $configs; do
     name=$(basename $i .cfg)
     header "testing config $name.cfg with tmpfs plugin"
-    runcmd "$MOCKCMD --enable-plugin=tmpfs --rebuild $MOCKSRPM "
+    runcmd "$MOCKCMD -r $name --enable-plugin=tmpfs --rebuild $MOCKSRPM "
     if [ $? != 0 ]; then
         echo "FAILED!"
         fails=$(($fails+1))
@@ -36,7 +36,7 @@ for i in $configs; do
     fi
     sudo python ${TESTDIR}/dropcache.py
     header "testing config $name.cfg *without* tmpfs plugin"
-    runcmd "$MOCKCMD --disable-plugin=tmpfs --rebuild $MOCKSRPM"
+    runcmd "$MOCKCMD -r $name --disable-plugin=tmpfs --rebuild $MOCKSRPM"
     if [ $? != 0 ]; then
 	echo "FAILED!"
 	fails=$(($fails+1))
