@@ -395,10 +395,9 @@ class Yum(_PackageManager):
         self.install_command = config['yum_install_command']
         self.builddep_command = [config['yum_builddep_command']]
         if bootstrap_buildroot is not None:
-            # we are in bootstrap so use old names
-            self.command = '/usr/bin/yum'
-            yum_deprecated_path = '/usr/bin/yum'
-            yum_builddep_deprecated_path = '/usr/bin/yum-builddep'
+            # we are in bootstrap so use configured names
+            yum_deprecated_path = config['yum_command']
+            yum_builddep_deprecated_path = config['yum_builddep_command']
             yum_deprecated_path = bootstrap_buildroot.make_chroot_path(yum_deprecated_path)
             yum_builddep_deprecated_path = bootstrap_buildroot.make_chroot_path(yum_builddep_deprecated_path)
         else:
