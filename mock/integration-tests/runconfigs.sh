@@ -35,19 +35,19 @@ for i in $configs; do
     header "testing config $name.cfg with tmpfs plugin"
     runcmd "$MOCKCMD -r $name --enable-plugin=tmpfs --rebuild $MOCKSRPM "
     if [ $? != 0 ]; then
-        echo "FAILED!"
+        echo "FAILED: $i (tmpfs)"
         fails=$(($fails+1))
     else
-        echo "PASSED!"
+        echo "PASSED: $i (tmpfs)"
     fi
     sudo python ${TESTDIR}/dropcache.py
     header "testing config $name.cfg *without* tmpfs plugin"
     runcmd "$MOCKCMD -r $name --disable-plugin=tmpfs --rebuild $MOCKSRPM"
     if [ $? != 0 ]; then
-	echo "FAILED!"
+	echo "FAILED $i"
 	fails=$(($fails+1))
     else
-	echo "PASSED!"
+	echo "PASSED $i"
     fi
 
     runcmd "$MOCKCMD -r $name --scrub=all"  || die "can not scrub"
