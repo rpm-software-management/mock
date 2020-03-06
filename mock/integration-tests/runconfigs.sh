@@ -16,7 +16,13 @@ else
     configs=$(ls ../mock-core-configs/etc/mock | grep .cfg | grep -v default | egrep -v 'arm|ppc|s390|sparc|aarch')
 fi
 
-trap '$MOCKCMD --clean; exit 1' INT HUP QUIT TERM
+cleanup()
+{
+    $MOCKCMD --clean
+    $MOCKCMD --scrub bootstrap
+    exit 1
+}
+trap cleanup INT HUP QUIT TERM
 
 fails=0
 
@@ -43,6 +49,8 @@ for i in $configs; do
     else
 	echo "PASSED!"
     fi
+
+    runcmd "$MOCKCMD -r $name --scrub=all"  || die "can not scrub"
 done
 
 msg=$(printf "%d configuration failures\n" $fails)
