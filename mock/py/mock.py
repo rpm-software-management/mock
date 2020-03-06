@@ -717,6 +717,11 @@ def main():
         # disable updating bootstrap chroot
         bootstrap_buildroot_config['update_before_build'] = False
 
+        # check if a different package manager is wanted for the bootstrap buildroot
+        if 'bootstrap_package_manager' in bootstrap_buildroot_config:
+            bootstrap_buildroot_config['package_manager'] = \
+                bootstrap_buildroot_config['bootstrap_package_manager']
+
         bootstrap_buildroot_state = State(bootstrap=True)
         bootstrap_plugins = Plugins(bootstrap_buildroot_config, bootstrap_buildroot_state)
         bootstrap_buildroot = Buildroot(bootstrap_buildroot_config,
