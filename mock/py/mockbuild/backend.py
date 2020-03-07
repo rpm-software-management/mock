@@ -559,6 +559,7 @@ class Commands(object):
         try:
             self.uid_manager.becomeUser(self.buildroot.chrootuid, self.buildroot.chrootgid)
             self.state.start("buildsrpm")
+            host_chroot_sources = None
 
             # copy spec/sources
             shutil.copy(spec, self.buildroot.make_chroot_path(self.buildroot.builddir, "SPECS"))
@@ -567,14 +568,24 @@ class Commands(object):
                 # Resolve any symlinks
                 sources = os.path.realpath(sources)
                 if os.path.isdir(sources):
-                    file_util.rmtree(self.buildroot.make_chroot_path(self.buildroot.builddir, "SOURCES"))
+                    host_chroot_sources = self.buildroot.make_chroot_path(
+                        self.buildroot.builddir, "SOURCES")
+                    file_util.rmtree(host_chroot_sources)
+
                     shutil.copytree(sources,
-                                    self.buildroot.make_chroot_path(self.buildroot.builddir, "SOURCES"),
+                                    host_chroot_sources,
                                     symlinks=(not follow_links))
                 else:
-                    shutil.copy(sources, self.buildroot.make_chroot_path(self.buildroot.builddir, "SOURCES"))
+                    host_chroot_sources = self.buildroot.make_chroot_path(
+                        self.buildroot.builddir, "SOURCES", os.path.basename(sources))
+                    shutil.copy(sources, host_chroot_sources)
 
             spec = self.buildroot.make_chroot_path(self.buildroot.builddir, "SPECS", os.path.basename(spec))
+
+            self.plugins.call_hooks('pre_srpm_build',
+                                    spec,
+                                    host_chroot_sources)
+
             # get rid of rootdir prefix
             chrootspec = spec.replace(self.buildroot.make_chroot_path(), '')
 

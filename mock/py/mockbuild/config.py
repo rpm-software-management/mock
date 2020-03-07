@@ -28,7 +28,7 @@ from .util import USE_NSPAWN, setup_operations_timeout
 PLUGIN_LIST = ['tmpfs', 'root_cache', 'yum_cache', 'mount', 'bind_mount',
                'ccache', 'selinux', 'package_state', 'chroot_scan',
                'lvm_root', 'compress_logs', 'sign', 'pm_request',
-               'hw_info', 'procenv', 'showrc']
+               'hw_info', 'procenv', 'showrc', 'rpkg_preprocessor']
 
 
 def nspawn_supported():
@@ -191,7 +191,11 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
         'compress_logs_opts': {
             'command': 'gzip',
         },
-
+        'rpkg_preprocessor_enable': False,
+        'rpkg_preprocessor_opts': {
+            'requires': ['preproc-rpmspec'],
+            'cmd': '/usr/bin/preproc-rpmspec %(source_spec)s --output %(target_spec)s',
+        },
     }
 
     config_opts['environment'] = {
