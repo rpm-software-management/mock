@@ -44,10 +44,10 @@ for i in $configs; do
     header "testing config $name.cfg *without* tmpfs plugin"
     runcmd "$MOCKCMD -r $name --disable-plugin=tmpfs --rebuild $MOCKSRPM"
     if [ $? != 0 ]; then
-	echo "FAILED $i"
+	echo "FAILED: $i"
 	fails=$(($fails+1))
     else
-	echo "PASSED $i"
+	echo "PASSED: $i"
     fi
 
     runcmd "$MOCKCMD -r $name --scrub=all"  || die "can not scrub"
