@@ -6,8 +6,8 @@
 
 Summary: Builds packages inside chroots
 Name: mock
-Version: 2.0
-Release: 2%{?dist}
+Version: 2.1
+Release: 1%{?dist}
 License: GPLv2+
 # Source is created by
 # git clone https://github.com/rpm-software-management/mock.git
@@ -226,6 +226,23 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 %{python3_sitelib}/mockbuild/plugins/__pycache__/lvm_root.*.py*
 
 %changelog
+* Wed Mar 11 2020 Pavel Raiskup <praiskup@redhat.com> 2.1-1
+- depend on mock-core-configs >= 32.4
+- new build-time testsuite
+- accept return code 0 from rpmbuild -br (thrnciar@redhat.com)
+- bootstrap: bind-mount the inner root mount with rprivate
+- new ssl_ca_bundle_path option
+- chain: don't run buildroot.finalize() for each package
+- don't fail when /etc/pki certs are not found (frostyx@email.cz)
+- lvm_root: fix --scrub=all
+- exclude plugin compiled stuff packaged in sub-packages
+- keep trailing newlines in jinja expand
+- sign-plugin: use %%(rpms) variable expansion again
+- bootstrap: bind-mount also baseurl=/absolute/dir repos
+- 'dnf.conf' config is now equivalent to 'yum.conf'
+- don't emit unneeded warning for missing yum (remi@remirepo.net)
+- allow --install /usr/bin/time [GH#474] (miroslav@suchy.cz)
+
 * Fri Feb 07 2020 Pavel Raiskup <praiskup@redhat.com> 2.0-2
 - solve yum.conf vs. dnf.conf inconsistency in code and config
 - fix mockchain with --bootstrap-chroot (issue/469)
