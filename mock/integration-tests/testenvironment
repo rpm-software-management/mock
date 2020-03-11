@@ -1,6 +1,7 @@
 TESTDIR=$(cd $(dirname $0); pwd; cd ..)
 TOPDIR=$(dirname $TESTDIR)
 MOCKSRPM=$( (cd $TOPDIR; tito build --srpm --offline |grep Wrote | grep src.rpm | awk '{ print $2}' ))
+SIMPLESRPM=$TESTDIR/test-C-1.1-0.src.rpm
 
 #VERBOSE=
 VERBOSE=--verbose
@@ -17,4 +18,4 @@ MOCKCMD="mock $VERBOSE --resultdir=$outdir --uniqueext=$uniqueext --configdir=$c
 MOCKCHAIN="mock $VERBOSE --chain --configdir=$cfgdir -r $testConfig $MOCK_EXTRA_ARGS"
 CHROOT=/var/lib/mock/${testConfig}-$uniqueext/root
 
-export MOCKSRPM TOPDIR TESTDIR testConfig uniqueext outdir MOCKCMD CHROOT VERBOSE MOCKCHAIN
+export MOCKSRPM TOPDIR TESTDIR testConfig uniqueext outdir MOCKCMD CHROOT VERBOSE MOCKCHAIN SIMPLESRPM

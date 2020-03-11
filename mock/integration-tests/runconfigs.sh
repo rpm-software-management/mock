@@ -13,7 +13,7 @@ cd $TOPDIR
 if [ "$1" != "" ]; then
     configs=$1
 else
-    configs=$(ls ../mock-core-configs/etc/mock | grep .cfg | grep -v default | egrep -v 'arm|ppc|s390|sparc|aarch')
+    configs=$(ls ../mock-core-configs/etc/mock | grep .cfg | grep -v -e default -e custom | egrep -v 'arm|ppc|s390|sparc|aarch')
 fi
 
 cleanup()
@@ -31,9 +31,17 @@ fails=0
 #
 header "testing all supported configurations"
 for i in $configs; do
+    srpm=$SIMPLESRPM
+    case $i in
+    fedora*|epel-[78]*|rhel-[78]*)
+        # we support building mock there, so test it instead
+        srpm=$MOCKSRPM
+        ;;
+    esac
+
     name=$(basename $i .cfg)
     header "testing config $name.cfg with tmpfs plugin"
-    runcmd "$MOCKCMD -r $name --enable-plugin=tmpfs --rebuild $MOCKSRPM "
+    runcmd "$MOCKCMD -r $name --enable-plugin=tmpfs --rebuild $srpm "
     if [ $? != 0 ]; then
         echo "FAILED: $i (tmpfs)"
         fails=$(($fails+1))
@@ -42,7 +50,7 @@ for i in $configs; do
     fi
     sudo python ${TESTDIR}/dropcache.py
     header "testing config $name.cfg *without* tmpfs plugin"
-    runcmd "$MOCKCMD -r $name --disable-plugin=tmpfs --rebuild $MOCKSRPM"
+    runcmd "$MOCKCMD -r $name --disable-plugin=tmpfs --rebuild $srpm "
     if [ $? != 0 ]; then
 	echo "FAILED: $i"
 	fails=$(($fails+1))
