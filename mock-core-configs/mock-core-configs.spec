@@ -2,8 +2,8 @@
 %global mockgid 135
 
 Name:       mock-core-configs
-Version:    32.3
-Release:    2%{?dist}
+Version:    32.4
+Release:    1%{?dist}
 Summary:    Mock core config files basic chroots
 
 License:    GPLv2+
@@ -143,6 +143,11 @@ fi
 %ghost %config(noreplace,missingok) %{_sysconfdir}/mock/default.cfg
 
 %changelog
+* Wed Mar 11 2020 Pavel Raiskup <praiskup@redhat.com> 32.4-1
+- disable package_state plugin for openmandriva 4.0/Cooker
+- Mageia 6 is EOL
+- opensuse: copy ssl ca bundle to correct path
+
 * Fri Feb 21 2020 Pavel Raiskup <praiskup@redhat.com> 32.3-2
 - bump version for lost git tag
 
