@@ -181,16 +181,38 @@ class Commands(object):
         self.buildroot.root_log.info(output)
 
     @traceLog()
+    def getPreconfiguredDeps(self, srpms):
+        """
+        First check that some plugin didn't request installation of additional
+        packages into buildroot.
+
+        Second, introspect the given array of SRPMs and check whether user did
+        not want to install additional packages for them
+        (config['more_buildreqs']).
+
+        Return the list of additional requirements that should be installed.
+        """
+        deps = list(self.buildroot.preexisting_deps)
+
+        if not self.more_buildreqs:
+            # no need to analyze the src.rpm headers for NVR match
+            return deps
+
+        # Check whether the N/NV/NVR isn't configured to have additional
+        # explicit BuildRequires.
+        for hdr in util.yieldSrpmHeaders(srpms, plainRpmOk=1):
+            # get text buildreqs
+            deps.extend(util.getAddtlReqs(hdr, self.more_buildreqs))
+
+        return deps
+
+    @traceLog()
     def installSrpmDeps(self, *srpms):
         """Figure out deps from srpm. Call package manager to install them"""
         try:
             self.uid_manager.becomeUser(0, 0)
 
-            # first, install pre-existing deps and configured additional ones
-            deps = list(self.buildroot.preexisting_deps)
-            for hdr in util.yieldSrpmHeaders(srpms, plainRpmOk=1):
-                # get text buildreqs
-                deps.extend(util.getAddtlReqs(hdr, self.more_buildreqs))
+            deps = self.getPreconfiguredDeps(srpms)
             if deps:
                 self.buildroot.pkg_manager.install(*deps, check=True)
 
