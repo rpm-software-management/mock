@@ -64,12 +64,19 @@ class PackageState(object):
 
     @traceLog()
     def _installedPreBuildHook(self):
-        if not self.inst_done and self.installed_pkgs_enabled:
-            self.state.start("Outputting list of installed packages")
-            out_file = self.buildroot.resultdir + '/installed_pkgs.log'
-            cmd = "rpm -qa --root '%s' --qf '%%{nevra} %%{buildtime} %%{size} %%{pkgid} installed\\n' > %s" % (
-                self.buildroot.make_chroot_path(), out_file)
+        if self.inst_done or not self.installed_pkgs_enabled:
+            return
+
+        out_file = self.buildroot.resultdir + '/installed_pkgs.log'
+        self.state.start("Outputting list of installed packages")
+
+        try:
+            cmd = "rpm -qa --root '%s' --qf '%%{nevra} %%{buildtime} %%{size} %%{pkgid} installed\\n'" % (
+                self.buildroot.make_chroot_path())
             with self.buildroot.uid_manager:
-                mockbuild.util.do(cmd, shell=True, env=self.buildroot.env)
+                output, _ = self.buildroot.doOutChroot(cmd, returnOutput=1, shell=True)
+                with open(out_file, 'w') as out_fd:
+                    out_fd.write(output)
+        finally:
             self.inst_done = True
             self.state.finish("Outputting list of installed packages")
