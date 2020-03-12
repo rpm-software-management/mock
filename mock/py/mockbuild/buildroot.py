@@ -233,6 +233,15 @@ class Buildroot(object):
 
         self.state.finish("chroot init")
 
+    def doOutChroot(self, command, *args, **kwargs):
+        """
+        Execute the command in bootstrap chroot (when bootstrap is enabled) or
+        on host.  Return (output, exit_status) tuple.
+        """
+        if self.bootstrap_buildroot:
+            return self.bootstrap_buildroot.doChroot(command, *args, **kwargs)
+        return util.do_with_status(command, *args, **kwargs)
+
     def doChroot(self, command, nosync=False, *args, **kargs):
         """Execute given command in root. Returns (output, child.returncode)"""
         self.nuke_rpm_db()
