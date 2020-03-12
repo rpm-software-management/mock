@@ -709,13 +709,12 @@ def do_with_status(command, shell=False, chrootPath=None, cwd=None, timeout=0, r
 
     try:
         child = None
-        if shell and isinstance(command, list):
-            command = ['/bin/sh', '-c'] + command
-            shell = False
         if chrootPath and USE_NSPAWN:
             logger.debug("Using nspawn with args %s", nspawn_args)
             command = _prepare_nspawn_command(chrootPath, user, command,
-                                              nspawn_args=nspawn_args, env=env, cwd=cwd)
+                                              nspawn_args=nspawn_args,
+                                              env=env, cwd=cwd, shell=shell)
+            shell = False
         logger.debug("Executing command: %s with env %s and shell %s", command, env, shell)
         with open(os.devnull, "r") as stdin:
             child = subprocess.Popen(
@@ -871,18 +870,7 @@ def _check_nspawn_pipe_option():
 
 
 def _prepare_nspawn_command(chrootPath, user, cmd, nspawn_args=None, env=None,
-                            cwd=None, interactive=False):
-    cmd_is_list = isinstance(cmd, list)
-    if nspawn_args is None:
-        nspawn_args = []
-    if user:
-        # user can be either id or name
-        if cmd_is_list:
-            cmd = ['-u', str(user)] + cmd
-        else:
-            raise exception.Error('Internal Error: command must be list or shell=True.')
-    elif not cmd_is_list:
-        cmd = [cmd]
+                            cwd=None, interactive=False, shell=False):
     nspawn_argv = ['/usr/bin/systemd-nspawn', '-q', '-M', uuid.uuid4().hex, '-D', chrootPath]
     distro_label = distro.linux_distribution(full_distribution_name=False)[0]
     try:
@@ -892,7 +880,13 @@ def _prepare_nspawn_command(chrootPath, user, cmd, nspawn_args=None, env=None,
     if distro_label not in RHEL_CLONES or distro_version >= 7.5:
         # EL < 7.5 does not support the nspawn -a option. See BZ 1417387
         nspawn_argv += ['-a']
-    nspawn_argv.extend(nspawn_args)
+
+    if user:
+        # user can be either id or name
+        nspawn_argv += ['-u', str(user)]
+
+    if nspawn_args:
+        nspawn_argv.extend(nspawn_args)
 
     if _check_nspawn_pipe_option():
         if not interactive or not (sys.stdin.isatty() and sys.stdout.isatty()):
@@ -903,12 +897,20 @@ def _prepare_nspawn_command(chrootPath, user, cmd, nspawn_args=None, env=None,
     if env:
         for k, v in env.items():
             nspawn_argv.append('--setenv={0}={1}'.format(k, v))
-    cmd = nspawn_argv + cmd
-    if cmd_is_list:
-        return cmd
-    else:
-        return " ".join(cmd)
 
+    # The '/bin/sh -c' wrapper is explicitly requested (--shell).  In this case
+    # we shrink the list of arguments into one shell command, so the command is
+    # completely shell-expanded.
+    if shell and isinstance(cmd, list):
+        cmd = ' '.join(cmd)
+
+    # HACK!  No matter if --shell/--chroot is used, we have documented that we
+    # shell-expand the CMD if there are no ARGS.  This is historical
+    # requirement that other people probably depend on.
+    if isinstance(cmd, str):
+        cmd = ['/bin/sh', '-c', cmd]
+
+    return nspawn_argv + cmd
 
 def doshell(chrootPath=None, environ=None, uid=None, gid=None, cmd=None,
             nspawn_args=None,
@@ -925,22 +927,27 @@ def doshell(chrootPath=None, environ=None, uid=None, gid=None, cmd=None,
     if 'SHELL' not in environ:
         environ['SHELL'] = '/bin/sh'
     log.debug("doshell environment: %s", environ)
-    if cmd:
-        if not isinstance(cmd, list):
-            cmd = [cmd]
-        cmd = ['/bin/sh', '-c'] + [str(x) for x in cmd]
-    else:
+
+    shell = True
+    if not cmd:
         cmd = ["/bin/sh", "-i", "-l"]
+        shell = False
+    elif isinstance(cmd, list):
+        cmd = ' '.join(cmd)
+
+    preexec = ChildPreExec(personality=None, chrootPath=chrootPath, cwd=None,
+                           uid=uid, gid=gid, env=environ, shell=shell,
+                           unshare_ipc=unshare_ipc, unshare_net=unshare_net)
+
     if USE_NSPAWN:
         # nspawn cannot set gid
         log.debug("Using nspawn with args %s", nspawn_args)
         cmd = _prepare_nspawn_command(chrootPath, uid, cmd, nspawn_args=nspawn_args, env=environ,
                                       interactive=True)
-    preexec = ChildPreExec(personality=None, chrootPath=chrootPath, cwd=None,
-                           uid=uid, gid=gid, env=environ, shell=True,
-                           unshare_ipc=unshare_ipc, unshare_net=unshare_net)
+        shell = False
+
     log.debug("doshell: command: %s", cmd)
-    return subprocess.call(cmd, preexec_fn=preexec, env=environ, shell=False)
+    return subprocess.call(cmd, preexec_fn=preexec, env=environ, shell=shell)
 
 
 def run(cmd, isShell=True):
