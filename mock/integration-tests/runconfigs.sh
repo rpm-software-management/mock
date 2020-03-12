@@ -33,7 +33,7 @@ header "testing all supported configurations"
 for i in $configs; do
     srpm=$SIMPLESRPM
     case $i in
-    fedora*|epel-[78]*|rhel-[78]*)
+    fedora*|epel-[78]*|rhelepel-[78]*)
         # we support building mock there, so test it instead
         srpm=$MOCKSRPM
         ;;
