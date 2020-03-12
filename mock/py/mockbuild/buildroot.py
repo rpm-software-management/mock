@@ -270,9 +270,10 @@ class Buildroot(object):
     def all_chroot_packages(self):
         """package set, result of rpm -qa in the buildroot"""
         self.nuke_rpm_db()
-        out = util.do([self.config['rpm_command'], "-qa",
-                       "--root", self.make_chroot_path()],
-                      returnOutput=True, printOutput=False, shell=False)
+        command = [self.config['rpm_command'], "-qa",
+                   "--root", self.make_chroot_path()]
+        out, _ = self.doOutChroot(command, returnOutput=True, printOutput=False,
+                                  shell=False)
         return set(out.splitlines())
 
     @traceLog()
