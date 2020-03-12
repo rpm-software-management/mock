@@ -104,8 +104,18 @@ the specified destination path.
 Copies the source paths (files or directory trees) from the chroot to
 the specified destination path.
 .TP
-\fB\-\-chroot\fP \fICOMMAND [\fIARGS...\fR]
-Run the specified command non\-interactively within the chroot (no 'clean' is performed). Command output will be sent to the log files. Note that COMMAND is shell expanded only if there are no ARGS. Otherwise, there is no shell expansion.
+\fB\-\-chroot\fP [\fI\-\-\fR] \fICOMMAND [\fIARGS...\fR]
+Run the specified command non\-interactively within the chroot (no
+\fB\-\-clean\fR is performed).
+
+This mode is similar to \fishell\fR mode, except that the output \fBis logged\fR
+and the \fICOMMAND\fR and \fIARGS\fR are not shell expanded in chroot when
+the variant with \fIARGS\fR is used, see the difference:
+    \fI$ \fBmock --quiet --chroot -- echo '*'\fR
+    *
+    \fI$ \fBmock --quiet --chroot -- 'echo *'\fR
+    bin boot builddir dev etc home lib lib64 media mnt opt ...
+See also \fB\-\-shell\fR.
 .TP
 \fB\-\-debug-config\fP
 Print all options in config_opts.
@@ -168,8 +178,26 @@ see site\-defaults.cfg for more information.
 \fB\-\-scrub\fR=\fITYPE\fP
 Completely remove the specified chroot or cache dir or all of the chroot and cache.  \fITYPE\fR is one of all, chroot, bootstrap, cache, root\-cache, c\-cache, yum\-cache or dnf\-cache. In fact, dnf\-cache is just alias for yum\-cache, and both remove Dnf and Yum cache.
 .TP
-\fB\-\-shell\fP [\fICOMMAND [\fIARGS...]\fR]
-Run the specified command interactively within the chroot (no 'clean' is performed). If no command specified, /bin/sh is run. Note that COMMAND is shell expanded using the shell in chroot. Note that this command does not produce logs.
+\fB\-\-shell\fP [\fI\-\-\fR] [\fICOMMAND [\fIARGS...]\fR]
+Shell mode.  Run the specified command interactively within the chroot (no
+\fB\-\-clean\fR is performed).  If no command specified, \fB/bin/sh\fR is run
+and prompt is provided.
+
+Be aware that mock first parses all the command-line arguments, so the
+\fIARGS\fR could be mistakenly evaluated as mock's option.  Thats why you almost
+always want to use \fI\-\-\fR separator.
+
+This mode does not produce logs (nothing is appended to \fBroot.log\fR in
+\fB\-\-resultdir\fR).
+
+The \fICOMMAND\fR and \fIARGS\fR are shell expanded using the shell in chroot
+(unless it mistakenly expands in terminal shell).  The following two
+commands are equivalent:
+    \fBmock \-\-shell \-\- ls \-l '*'\fR
+    \fBmock \-\-shell 'ls \-l *'\fR
+.br
+But the following is something entierly different:
+    \fBmock \-\-shell \-\- ls \-l *\fR
 .TP
 \fB\-\-sources\fR=\fISOURCES\fP
 Specifies sources (either a single file or a directory of files) to use to build an SRPM (used only with \-\-buildsrpm).
