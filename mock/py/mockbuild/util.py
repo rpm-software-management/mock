@@ -324,10 +324,18 @@ def get_machinectl_uuid(chroot_path):
 
 
 @traceLog()
-def orphansKill(rootToKill):
-    """kill off anything that is still chrooted."""
+def orphansKill(rootToKill, manual_forced=False):
+    """
+    Kill off anything that is still chrooted.
+
+    When USE_NSPAWN==False, this method manually detects the running processes
+    in chroot by reading the /proc file-system.  When USE_NSPAWN==True, it just
+    relies on '/bin/machinectl terminate' call.
+
+    When manual_forced==True, the manual kill based on /proc is enforced.
+    """
     getLog().debug("kill orphans")
-    if USE_NSPAWN is False:
+    if USE_NSPAWN is False or manual_forced:
         for killsig in [signal.SIGTERM, signal.SIGKILL]:
             for fn in [d for d in os.listdir("/proc") if d.isdigit()]:
                 try:
