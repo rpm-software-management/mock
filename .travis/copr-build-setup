@@ -17,7 +17,7 @@ copr_cmd=(
     copr edit-package-custom "$PROJECT" \
         --webhook-rebuild on \
         --script "$script" \
-        --script-chroot "fedora-rawhide-x86_64" \
+        --script-chroot "fedora-latest-x86_64" \
         --script-builddeps "${build_deps[*]}"
 )
 
