@@ -75,6 +75,13 @@ gpgcheck=1
 enabled=1
 gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
 
+[Stream-Devel]
+name=CentOS-Stream - Devel WARNING! FOR BUILDROOT USE ONLY!
+baseurl=http://mirror.centos.org/centos/8-stream/Devel/$basearch/os/
+gpgcheck=1
+enabled=0
+gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
+
 [Stream-BaseOS-source]
 name=CentOS-Stream - BaseOS Sources
 baseurl=http://vault.centos.org/centos/8-stream/BaseOS/Source/
