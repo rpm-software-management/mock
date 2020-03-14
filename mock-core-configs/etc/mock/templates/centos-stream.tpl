@@ -89,6 +89,13 @@ gpgcheck=1
 enabled=0
 gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
 
+[Stream-PowerTools-source]
+name=CentOS-Stream - PowerTools Sources
+baseurl=http://vault.centos.org/centos/8-stream/PowerTools/Source/
+gpgcheck=1
+enabled=0
+gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
+
 [Stream-extras-source]
 name=CentOS-Stream - Extras Sources
 baseurl=http://vault.centos.org/centos/8-stream/extras/Source/
