@@ -37,6 +37,7 @@ for i in $configs; do
         # we support building mock there, so test it instead
         srpm=$MOCKSRPM
         ;;
+    amazonlinux*) continue;;
     esac
 
     name=$(basename $i .cfg)
