@@ -323,6 +323,18 @@ def get_machinectl_uuid(chroot_path):
     return None
 
 
+def compare_two_paths_cached(path1, path2, path_cache):
+    """ compare two files on dev/ino pairs """
+    def file_dev_ino(path):
+        """ Return dev/ino pair for path, and cache results """
+        if path in path_cache:
+            return path_cache[path]
+        stat_val = os.stat(os.path.realpath(path))
+        ret = path_cache[path] = stat_val.st_dev, stat_val.st_ino
+        return ret
+    return file_dev_ino(path1) == file_dev_ino(path2)
+
+
 @traceLog()
 def orphansKill(rootToKill, manual_forced=False):
     """
@@ -336,11 +348,12 @@ def orphansKill(rootToKill, manual_forced=False):
     """
     getLog().debug("kill orphans")
     if USE_NSPAWN is False or manual_forced:
+        path_cache = {}
         for killsig in [signal.SIGTERM, signal.SIGKILL]:
             for fn in [d for d in os.listdir("/proc") if d.isdigit()]:
                 try:
                     root = os.readlink("/proc/%s/root" % fn)
-                    if os.path.realpath(root) == os.path.realpath(rootToKill):
+                    if compare_two_paths_cached(root, rootToKill, path_cache):
                         getLog().warning("Process ID %s still running in chroot. Killing with %s...", fn, killsig)
                         pid = int(fn, 10)
                         os.kill(pid, killsig)
