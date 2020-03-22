@@ -68,7 +68,9 @@ void daemonize()
 {
 int i,lfp;
 char str[10];
-    if(getppid()==1) return; /* already a daemon */
+    /* nspawn implies pid = 1, and to test --isolation=nspawn we need to drop
+       session leader status even there */
+    /* if(getppid()==1) return; */ /* already a daemon */
     i=fork();
     if (i<0) exit(1); /* fork error */
     if (i>0) exit(0); /* parent exits */
