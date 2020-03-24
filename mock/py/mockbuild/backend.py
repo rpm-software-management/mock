@@ -418,8 +418,8 @@ class Commands(object):
 
         with self.uid_manager:
             util.createrepo(self.config, self.config['local_repo_dir'])
+            download_dir = tempfile.mkdtemp()
 
-        download_dir = tempfile.mkdtemp()
         downloaded_pkgs = {}
         built_pkgs = []
         skipped_pkgs = []

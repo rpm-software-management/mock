@@ -13,9 +13,7 @@ fi
 
 daemon_package=https://github.com/rpm-software-management/mock-test-data/raw/master/daemontest-1-0.src.rpm
 
-for isolation in nspawn; do
-# https://github.com/rpm-software-management/mock/issues/542
-#for isolation in nspawn simple; do
+for isolation in nspawn simple; do
     for bootstrap in --bootstrap-chroot --no-bootstrap-chroot; do
         selector="--isolation=$isolation $bootstrap"
         mock="$MOCKCMD $selector"
