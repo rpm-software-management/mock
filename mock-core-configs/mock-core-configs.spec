@@ -16,6 +16,10 @@ URL:        https://github.com/rpm-software-management/mock/
 Source:     https://github.com/rpm-software-management/mock/releases/download/%{name}-%{version}-1/%{name}-%{version}.tar.gz
 BuildArch:  noarch
 
+# The mock.rpm requires this.  Other packages may provide this if they tend to
+# replace the mock-core-configs.rpm functionality.
+Provides: mock-configs
+
 # distribution-gpg-keys contains GPG keys used by mock configs
 Requires:   distribution-gpg-keys >= 1.36
 
