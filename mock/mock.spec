@@ -25,7 +25,14 @@ Requires: usermode-consoleonly
 Requires: usermode
 %endif
 Requires: createrepo_c
-Requires: mock-core-configs >= 32.4
+
+# We know that the current version of mock isn't compatible with older variants,
+# and we want to enforce automatic upgrades.
+Conflicts: mock-core-configs < 32.4
+
+# Requires 'mock-core-configs', or replacement (GitHub PR#544).
+Requires: mock-configs
+
 Requires: systemd
 %if 0%{?fedora} || 0%{?rhel} >= 8
 Requires: systemd-container
