@@ -2,7 +2,7 @@
 %global mockgid 135
 
 Name:       mock-core-configs
-Version:    32.4
+Version:    32.5
 Release:    1%{?dist}
 Summary:    Mock core config files basic chroots
 
@@ -143,6 +143,17 @@ fi
 %ghost %config(noreplace,missingok) %{_sysconfdir}/mock/default.cfg
 
 %changelog
+* Thu Mar 26 2020 Pavel Raiskup <praiskup@redhat.com> 32.5-1
+- Add Devel repo to CentOS 8 and CentOS Stream (ngompa13@gmail.com)
+- Add PowerTools sources repo entry to CentOS 8 and CentOS Stream
+  (ngompa13@gmail.com)
+- Fix openSUSE Leap 15.1 aarch64 update repo & package filters
+  (ngompa13@gmail.com)
+- Add openSUSE Leap 15.2 (ngompa13@gmail.com)
+- openSUSE Leap 15.0 is EOL (ngompa13@gmail.com)
+- Add OpenMandriva Lx 4.1 (ngompa13@gmail.com)
+- OpenMandriva Lx 4.0 is EOL (ngompa13@gmail.com)
+
 * Wed Mar 11 2020 Pavel Raiskup <praiskup@redhat.com> 32.4-1
 - disable package_state plugin for openmandriva 4.0/Cooker
 - Mageia 6 is EOL
