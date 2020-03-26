@@ -53,6 +53,23 @@ class Buildroot(object):
         else:
             self.rootdir = os.path.join(self.basedir, 'root')
         self.resultdir = config['resultdir'] % config
+
+        # In bootstrap buildroot, resultdir _should_ be basically unused (nobody
+        # looks there anyways).  But it is actually used on many fronts -- e.g.
+        # by plugins, bootstrap logging, etc.
+        #
+        # By default, bootstrap buildroot has different resultdir from the
+        # normal buildroot, as it is set to `{{basedir}}/{{root}}/result'`.  But
+        # things start to be much more complicated if user sets `--resuldir
+        # /static/dir` (or `config_opts["resultdir'`) and both buildroots start
+        # to fight against each other.
+        #
+        # Let's work-around this, and always set predictable resultdir for
+        # bootstrap.  We intentionally pick a directory which we can create (and
+        # write into) under non-privileged user.
+        if is_bootstrap:
+            self.resultdir = os.path.join(self.basedir, 'results')
+
         self.homedir = config['chroothome']
         self.cache_topdir = config['cache_topdir']
         self.cachedir = os.path.join(self.cache_topdir, self.shared_root_name)
@@ -371,6 +388,18 @@ class Buildroot(object):
 
     @traceLog()
     def _resetLogging(self, force=False):
+        # TODOs:
+        # - we should put all bootstrap logs to - say - bootstrap.log
+        # - _resetLogging() actually needs to be called only once - only for
+        #   target chroot (or ideally on global level, through
+        #   'logging.getLogger()' and not through `self.*log` reference)
+        # - we should **not** drop _all_ handlers here when force=True, but only
+        #   those that are intended to be replaced
+        # - 'Mock Version' message should only go to log file, not to stderr
+        # - we need to call this method much, much sooner, ideally before
+        #   bootstrap_chroot.initialize() is called;  otherwise at least
+        #   root.log is far from incomplete
+
         # ensure we dont attach the handlers multiple times.
         if self.logging_initialized and not force:
             return
