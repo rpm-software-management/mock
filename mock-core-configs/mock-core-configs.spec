@@ -11,7 +11,7 @@ URL:        https://github.com/rpm-software-management/mock/
 # Source is created by
 # git clone https://github.com/rpm-software-management/mock.git
 # cd mock/mock-core-configs
-# git reset --hard %{name}-%{version}
+# git reset --hard %%{name}-%%{version}
 # tito build --tgz
 Source:     https://github.com/rpm-software-management/mock/releases/download/%{name}-%{version}-1/%{name}-%{version}.tar.gz
 BuildArch:  noarch
