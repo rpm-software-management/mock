@@ -950,15 +950,14 @@ def run(cmd, isShell=True):
 
 
 def clean_env():
-    env = {
+    return {
         'TERM': 'vt100',
         'SHELL': '/bin/sh',
         'HOME': '/builddir',
         'HOSTNAME': 'mock',
         'PATH': '/usr/bin:/bin:/usr/sbin:/sbin',
+        'LANG': 'C.UTF-8',
     }
-    env['LANG'] = os.environ.setdefault('LANG', 'C.UTF-8')
-    return env
 
 
 def get_fs_type(path):
@@ -1129,7 +1128,7 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
         'PATH': '/usr/bin:/bin:/usr/sbin:/sbin',
         'PROMPT_COMMAND': r'printf "\033]0;<mock-chroot>\007"',
         'PS1': r'<mock-chroot> \s-\v\$ ',
-        'LANG': os.environ.setdefault('LANG', 'C.UTF-8'),
+        'LANG': 'C.UTF-8',
     }
 
     runtime_plugins = [runtime_plugin
