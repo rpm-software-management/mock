@@ -10,10 +10,12 @@ matrix:
     # copr builds follow, only for PRs
     - python: "3.7"
       script: PACKAGE=mock .travis/copr-build
+      name: mock.rpm build in Copr
       if: type = pull_request
 
     - python: "3.7"
       script: PACKAGE=mock-core-configs .travis/copr-build
+      name: mock-core-configs.rpm build in Copr
       if: type = pull_request
 
 install:
