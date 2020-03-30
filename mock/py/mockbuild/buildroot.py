@@ -192,6 +192,7 @@ class Buildroot(object):
         self.pkg_manager.initialize()
         self._setup_resolver_config()
         if not self.chroot_was_initialized:
+            self._prepare_rpm_macros()
             self._setup_dbus_uuid()
             self._init_aux_files()
             if not util.USE_NSPAWN:
@@ -201,6 +202,7 @@ class Buildroot(object):
             self._make_build_user()
             self._setup_build_dirs()
         elif prebuild:
+            self._prepare_rpm_macros()
             if 'age_check' in self.config['plugin_conf']['root_cache_opts'] and \
                not self.config['plugin_conf']['root_cache_opts']['age_check']:
                 self._init_pkg_management()
@@ -438,21 +440,6 @@ class Buildroot(object):
                     fo.write(chroot_file_contents[key])
 
     @traceLog()
-    def ensure_rpm_config_home(self):
-        """Create a fake home directory with an appropriate .rpmmacros"""
-
-        rpm_config_home = os.path.join(self.basedir, 'rpmconfig')
-        util.mkdirIfAbsent(rpm_config_home)
-
-        # Since /proc and /sys are mounted special filesystems when RPM is running
-        # to install the buildroot, it doesn't make sense for RPM to try and
-        # set the permissions on them - and that might fail with permission errors.
-        with open(os.path.join(rpm_config_home, ".rpmmacros"), "w") as f:
-            f.write("%_netsharedpath /proc:/sys\n")
-
-        return rpm_config_home
-
-    @traceLog()
     def nuke_rpm_db(self):
         """remove rpm DB lock files from the chroot"""
 
@@ -524,6 +511,27 @@ class Buildroot(object):
                                      recursive=True)
 
     @traceLog()
+    def _prepare_rpm_macros(self):
+        """
+        Install /builddir/.rpmmacros file used by rpmbuild and `rpm --root -i`.
+        To let use this, mock needs to set $HOME to /builddir.  Note that the
+        `rpm --root` command reads this from $HOME on host - not from
+        <root>/$HOME.
+        """
+        macro_dir = self.make_chroot_path(self.homedir)
+        util.mkdirIfAbsent(macro_dir)
+        macrofile_out = os.path.join(macro_dir, ".rpmmacros")
+        with open(macrofile_out, 'w+') as rpmmacros:
+
+            # user specific from rpm macro file definitions first
+            if 'macrofile' in self.config:
+                with open(self.config['macrofile'], 'r') as macro_conf:
+                    rpmmacros.write("%s\n\n" % macro_conf.read())
+
+            for key, value in list(self.config['macros'].items()):
+                rpmmacros.write("%s %s\n" % (key, value))
+
+    @traceLog()
     def _setup_build_dirs(self):
         build_dirs = ['RPMS', 'SPECS', 'SRPMS', 'SOURCES', 'BUILD', 'BUILDROOT',
                       'originals']
@@ -536,17 +544,7 @@ class Buildroot(object):
                 self.uid_manager.changeOwner(path)
             if self.config['clean']:
                 self.chown_home_dir()
-            # rpmmacros default
-            macrofile_out = self.make_chroot_path(self.homedir, ".rpmmacros")
-            with open(macrofile_out, 'w+') as rpmmacros:
-
-                # user specific from rpm macro file definitions first
-                if 'macrofile' in self.config:
-                    with open(self.config['macrofile'], 'r') as macro_conf:
-                        rpmmacros.write("%s\n\n" % macro_conf.read())
-
-                for key, value in list(self.config['macros'].items()):
-                    rpmmacros.write("%s %s\n" % (key, value))
+            self._prepare_rpm_macros()
 
     @traceLog()
     def _setup_nspawn_loop_devices(self):
