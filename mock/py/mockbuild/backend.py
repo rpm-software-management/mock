@@ -12,6 +12,7 @@ import os
 import shutil
 import sys
 import tempfile
+import getpass
 from urllib.parse import urlsplit
 
 # 3rd party imports
@@ -387,8 +388,8 @@ class Commands(object):
         log = getLog()
         if not options.tmp_prefix:
             try:
-                options.tmp_prefix = os.getlogin()
-            except OSError as e:
+                options.tmp_prefix = getpass.getuser()
+            except Exception:  # pylint: disable=broad-except
                 log.error("Could not find login name for tmp dir prefix add --tmp_prefix")
                 sys.exit(1)
         pid = os.getpid()
