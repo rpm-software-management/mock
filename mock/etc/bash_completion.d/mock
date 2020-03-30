@@ -96,7 +96,7 @@ _mock()
             return
             ;;
         --isolation)
-            COMPREPLY=( $( compgen -W "simple nspawn" -- "$cur" ) )
+            COMPREPLY=( $( compgen -W "auto simple nspawn" -- "$cur" ) )
             return
             ;;
         --remove|remove)
