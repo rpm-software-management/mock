@@ -185,8 +185,8 @@ class _PackageManager(object):
         # intentionally we do not call bootstrap hook here - it does not have sense
         env = self.config['environment'].copy()
         env.update(util.get_proxy_environment(self.config))
-        # use a special home directory with only our desired RPM configuration
-        env['HOME'] = self.buildroot.ensure_rpm_config_home()
+        # use our predefined $HOME/.rpmmacros with desired RPM configuration
+        env['HOME'] = self.buildroot.make_chroot_path(self.buildroot.homedir)
         env['LC_MESSAGES'] = 'C.UTF-8'
         if self.buildroot.nosync_path:
             env['LD_PRELOAD'] = self.buildroot.nosync_path
