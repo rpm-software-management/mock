@@ -259,8 +259,12 @@ It can be specified multiple times.
 Enable networking. If you want to have reproducible builds then your builds should run without a network.
 This option overrides config_opts['rpmbuild_networking'] and config_opts['use_host_resolv'], setting both True.
 .TP
-\fB\-\-isolation\fR=\fILEVEL\fR\fR
-What should be used for isolation of chroot. The valid options are 'simple' and 'nspawn'. The 'simple' method uses chroot() call. The 'nspawn' method utilize systemd-nspawn(1) and run the chroot inside that container. The default is 'nspawn'.
+\fB\-\-isolation\fR={\fIauto\fR|\fInspawn\fR|\fIsimple\fR}
+What should be used for isolation of chroot.  The \fIsimple\fR method uses
+chroot() call.  The \fInspawn\fR  method utilizes systemd-nspawn(1) and runs the
+commands inside container.  The \fIauto\fR tries to use \fInspawn\fR, and falls
+back to \fIsimple\fR if system-nspawn can not be used (e.g. if mock is run in
+container).  The default is \fIauto\fR.
 .TP
 \fB\-\-localrepo\fR=\fIREPO\fR\fR
 Set the path to put the results/repo in (works only in \fB\-\-chain\fR mode).

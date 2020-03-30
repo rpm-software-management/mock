@@ -2,7 +2,7 @@ config_opts['chroot_setup_cmd'] = 'install @buildsys-build'
 config_opts['dist'] = 'el6'  # only useful for --resultdir variable subst
 # beware RHEL uses 6Server or 6Client
 config_opts['releasever'] = '6'
-config_opts['use_nspawn'] = False
+config_opts['isolation'] = 'simple'
 config_opts['bootstrap_image'] = 'centos:6'
 config_opts['package_manager'] = 'yum'
 

@@ -992,15 +992,6 @@ def nspawn_supported():
         # isn't running on the system: systemd-nspawn won't work.
         return os.path.basename(argv0) == b'systemd'
 
-
-def check_for_nspawn_support():
-    global USE_NSPAWN
-
-    if USE_NSPAWN and not nspawn_supported():
-        getLog().info("systemd-nspawn not supported, disabling")
-        USE_NSPAWN = False
-
-
 @traceLog()
 def setup_default_config_opts(unprivUid, version, pkgpythondir):
     "sets up default configuration."
@@ -1028,7 +1019,8 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
     config_opts['root_log_fmt_name'] = "detailed"
     config_opts['state_log_fmt_name'] = "state"
     config_opts['online'] = True
-    config_opts['use_nspawn'] = True
+    config_opts['isolation'] = None
+    config_opts['use_nspawn'] = None
     config_opts['rpmbuild_networking'] = False
     config_opts['nspawn_args'] = ['--capability=cap_ipc_lock']
     config_opts['use_container_host_hostname'] = True
@@ -1382,8 +1374,19 @@ def set_config_opts_per_cmdline(config_opts, options, args):
         config_opts['plugin_conf'][p + "_opts"].update({k: v})
 
     global USE_NSPAWN
-    USE_NSPAWN = config_opts['use_nspawn']
+    USE_NSPAWN = None  # auto-detect by default
+
     log = logging.getLogger()
+
+    if config_opts['use_nspawn'] in [True, False]:
+        log.info("Use of obsoleted configuration option 'use_nspawn'.")
+        USE_NSPAWN = config_opts['use_nspawn']
+
+    if config_opts['isolation'] in ['nspawn', 'simple']:
+        USE_NSPAWN = config_opts['isolation'] == 'nspawn'
+    elif config_opts['isolation'] == 'auto':
+        USE_NSPAWN = None  # set auto detection, overrides use_nspawn
+
     if options.old_chroot:
         USE_NSPAWN = False
         log.error('Option --old-chroot has been deprecated. Use --isolation=simple instead.')
@@ -1391,14 +1394,16 @@ def set_config_opts_per_cmdline(config_opts, options, args):
         USE_NSPAWN = True
         log.error('Option --new-chroot has been deprecated. Use --isolation=nspawn instead.')
 
-    if options.isolation is not None:
-        if options.isolation == 'simple':
-            USE_NSPAWN = False
-        elif options.isolation == 'nspawn':
-            USE_NSPAWN = True
-        else:
-            raise exception.BadCmdline("Bad option for '--isolation'. Unknown value: %s"
-                                       % (options.isolation))
+    if options.isolation in ['simple', 'nspawn']:
+        USE_NSPAWN = options.isolation == 'nspawn'
+    elif options.isolation == 'auto':
+        USE_NSPAWN = None  # re-set auto detection
+    elif options.isolation is not None:
+        raise exception.BadCmdline("Bad option for '--isolation'. Unknown "
+                                   "value: %s" % (options.isolation))
+    if USE_NSPAWN is None:
+        USE_NSPAWN = nspawn_supported()
+        getLog().info("systemd-nspawn auto-detected: %s", USE_NSPAWN)
 
     if options.enable_network:
         config_opts['rpmbuild_networking'] = True
@@ -1568,7 +1573,7 @@ def setup_host_resolv(config_opts):
                 ::1       localhost localhost.localdomain localhost6 localhost6.localdomain6
                 ''')
 
-    if not config_opts['use_nspawn']:
+    if config_opts['isolation'] == 'simple':
         # Not using nspawn -> don't touch /etc/resolv.conf; we already have
         # a valid file prepared by Buildroot._init() (if user requested).
         return
