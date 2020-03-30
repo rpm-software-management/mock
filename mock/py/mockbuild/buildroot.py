@@ -593,6 +593,12 @@ class Buildroot(object):
                 if util.cmpKernelVer(kver, '2.6.18') >= 0 and src_path == '/dev/ptmx':
                     continue
 
+                if os.path.ismount(chroot_path):
+                    # repeated call of bootstrap._init() in chain() in container
+                    # where we can not mknod so we bindmount instead
+                    self.root_log.debug("file %s is already mounted", chroot_path)
+                    continue
+
                 # create node, but only if it exist on host too
                 # except for loop devices, which only show up on the host after they are first used
                 if os.path.exists(src_path) or "loop" in src_path:
