@@ -714,6 +714,7 @@ def do_with_status(command, shell=False, chrootPath=None, cwd=None, timeout=0, r
             command = _prepare_nspawn_command(chrootPath, user, command,
                                               nspawn_args=nspawn_args,
                                               env=env, cwd=cwd, shell=shell)
+            env['SYSTEMD_NSPAWN_TMPFS_TMP'] = '0'
             shell = False
         logger.debug("Executing command: %s with env %s and shell %s", command, env, shell)
         with open(os.devnull, "r") as stdin:
@@ -944,6 +945,7 @@ def doshell(chrootPath=None, environ=None, uid=None, gid=None, cmd=None,
         log.debug("Using nspawn with args %s", nspawn_args)
         cmd = _prepare_nspawn_command(chrootPath, uid, cmd, nspawn_args=nspawn_args, env=environ,
                                       interactive=True)
+        environ['SYSTEMD_NSPAWN_TMPFS_TMP'] = '0'
         shell = False
 
     log.debug("doshell: command: %s", cmd)
