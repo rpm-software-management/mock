@@ -27,6 +27,9 @@ class TestPackageManager:
         self.config_opts['chroothome'] = '/builddir'
         self.config_opts['chrootgid'] = '135'
         self.config_opts['package_manager'] = 'dnf'
+        self.config_opts['releasever'] = '1'
+        self.config_opts['target_arch'] = 'fakearch'
+        self.config_opts['dnf_vars'] = {'test': 'testval'}
 
         with mock.patch('mockbuild.buildroot.package_manager'):
             with mock.patch('mockbuild.util.cmpKernelVer') as kv:
@@ -167,3 +170,19 @@ class TestPackageManager:
             os.path.join(self.workdir, 'alt2'),
             os.path.join(self.workdir, 'alt3'),
         ])
+
+    def test_bindmount_expand_vars(self):
+        repo_directory = os.path.join(self.workdir,
+                                      self.config_opts['target_arch'],
+                                      self.config_opts['releasever'],
+                                      self.config_opts['dnf_vars']['test'])
+        os.makedirs(repo_directory)
+        config = (
+            "[main]\n"
+            "baseurl = file://{0}/$basearch/$releasever/$test\n"
+        ).format(self.workdir)
+
+        mounts = self.get_user_bind_mounts_from_config(config)
+        assert len(mounts) == 1
+        mount = mounts[0]
+        assert mount.srcpath == repo_directory
