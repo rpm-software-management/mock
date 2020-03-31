@@ -338,6 +338,26 @@ Error:      Neither dnf-utils nor yum-utils are installed. Dnf-utils or yum-util
         except Exception as e:
             getLog().warning(e)
 
+    def expand_url_vars(self, string):
+        """
+        Expand DNF variables like $baseurl to proper values in string, and
+        return it.
+        """
+        expand = {
+            "basearch": self.config["target_arch"] or '<undef>',
+            "releasever": self.config["releasever"] or '<undef>',
+        }
+
+        if 'dnf_vars' in self.config:
+            for key in self.config['dnf_vars']:
+                expand[key] = self.config['dnf_vars'][key]
+
+        for key, value in expand.items():
+            key = "$" + key
+            string = string.replace(key, value)
+
+        return string
+
     def _bind_mount_repos_to_bootstrap(self):
         if not self.buildroot.is_bootstrap:
             return
@@ -377,6 +397,8 @@ Error:      Neither dnf-utils nor yum-utils are installed. Dnf-utils or yum-util
                         srcpath = value
                     else:
                         continue
+
+                    srcpath = self.expand_url_vars(srcpath)
 
                     if srcpath in tried:
                         continue
