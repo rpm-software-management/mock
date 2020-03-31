@@ -7,6 +7,7 @@ import os.path
 import shutil
 import sys
 import time
+import re
 from textwrap import dedent
 from configparser import ConfigParser
 
@@ -341,32 +342,60 @@ Error:      Neither dnf-utils nor yum-utils are installed. Dnf-utils or yum-util
         if not self.buildroot.is_bootstrap:
             return
 
+        parse = {
+            "baseurl": (True, re.compile("[ \t\n,]")),
+            "mirrorlist": (False, None),
+            "metalink": (False, None),
+        }
+
+        # in dnf, the last occurence of the same option beats the previous
         config = ConfigParser(strict=False)
         config.read_string(self.pkg_manager_config)
 
+        # don't bindmount the same paths multiple times
+        tried = set()
+
         for section in config.sections():
-            if 'baseurl' not in config[section]:
-                continue
-            baseurl = config[section]['baseurl'].strip()
+            for option in parse:
+                directory, split_re = parse[option]
 
-            # triple slash, we only accept absolute pathnames
-            if baseurl.startswith('file:///'):
-                srcdir = baseurl[7:]
-            elif baseurl.startswith('/'):
-                srcdir = baseurl
-            else:
-                continue
+                if option not in config[section]:
+                    continue
 
-            if not os.path.isdir(srcdir):
-                continue
+                raw = config[section][option]
+                items = split_re.split(raw) if split_re else [raw]
 
-            destdir = self.buildroot.make_chroot_path(srcdir)
+                for value in items:
+                    value = value.strip()
+                    if not value:
+                        continue
 
-            bind_mount_point = BindMountPoint(srcpath=srcdir, bindpath=destdir)
+                    # triple slash, we only accept absolute pathnames
+                    if value.startswith('file:///'):
+                        srcpath = value[7:]
+                    elif value.startswith('/'):
+                        srcpath = value
+                    else:
+                        continue
 
-            # we need to use user mounts as essential mounts are used
-            # only for installing into bootstrap chroot
-            self.buildroot.mounts.add_user_mount(bind_mount_point)
+                    if srcpath in tried:
+                        continue
+
+                    tried.add(srcpath)
+
+                    if directory and not os.path.isdir(srcpath):
+                        continue
+
+                    if not os.path.exists(srcpath):
+                        continue
+
+                    bindpath = self.buildroot.make_chroot_path(srcpath)
+                    bind_mount_point = BindMountPoint(srcpath=srcpath,
+                                                      bindpath=bindpath)
+
+                    # we need to use user mounts as essential mounts are used
+                    # only for installing into bootstrap chroot
+                    self.buildroot.mounts.add_user_mount(bind_mount_point)
 
     def initialize_config(self):
         # there may be configs we get from container image

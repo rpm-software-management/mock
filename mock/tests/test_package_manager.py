@@ -2,6 +2,7 @@ import os
 import tempfile
 import shutil
 
+import pytest
 from unittest import mock
 from unittest.mock import MagicMock
 
@@ -120,3 +121,49 @@ class TestPackageManager:
         """.format(repo_directory)
         mounts = self.get_user_bind_mounts_from_config(config)
         assert len(mounts) == 0
+
+    @pytest.mark.parametrize('option', ['metalink', 'mirrorlist'])
+    @pytest.mark.parametrize('exists', [True, False])
+    def test_local_metalink_mirrorlist(self, option, exists):
+        repo_directory = os.path.join(self.workdir, 'repo')
+        os.mkdir(repo_directory)
+        path = os.path.join(repo_directory, 'testfile')
+
+        if exists:
+            with open(path, 'w') as f:
+                f.write("line\n")
+
+        config = """
+        [main]
+        metalink = file://{}
+        """.format(path)
+        mounts = self.get_user_bind_mounts_from_config(config)
+
+        if not exists:
+            assert len(mounts) == 0
+            return
+
+        assert len(mounts) == 1
+        assert mounts[0].srcpath == path
+        assert mounts[0].bindpath.startswith(self.workdir)
+        assert mounts[0].bindpath.endswith(path)
+
+    def test_bindmount_baseurl_list_with_dupes(self):
+        for repo in ['alt1', 'alt2', 'alt3']:
+            repo_directory = os.path.join(self.workdir, repo)
+            os.mkdir(repo_directory)
+
+        config = (
+            "[main]\n"
+            "baseurl = file://{0}/alt2, {0}/alt1\n"
+            "          file://{0}/alt3\n"
+            "          file://{0}/alt2\n"  # 2nd time
+        ).format(self.workdir)
+
+        mounts = self.get_user_bind_mounts_from_config(config)
+        assert len(mounts) == 3
+        assert {x.srcpath for x in mounts} == set([
+            os.path.join(self.workdir, 'alt1'),
+            os.path.join(self.workdir, 'alt2'),
+            os.path.join(self.workdir, 'alt3'),
+        ])
