@@ -180,6 +180,9 @@ cp -a docs/mock.cheat %{buildroot}%{_datadir}/cheat/mock
 install -d %{buildroot}/var/lib/mock
 install -d %{buildroot}/var/cache/mock
 
+mkdir -p %{buildroot}%{_pkgdocdir}
+install -p -m 0644 docs/site-defaults.cfg %{buildroot}%{_pkgdocdir}
+
 %check
 %if %{with lint}
 # ignore the errors for now, just print them and hopefully somebody will fix it one day
@@ -193,7 +196,7 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 
 %files
 %defattr(0644, root, mock)
-%config(noreplace) %{_sysconfdir}/mock/site-defaults.cfg
+%doc %{_pkgdocdir}/site-defaults.cfg
 %{_datadir}/bash-completion/completions/mock
 %{_datadir}/bash-completion/completions/mock-parse-buildlog
 
