@@ -22,6 +22,8 @@ Provides: mock-configs
 
 # distribution-gpg-keys contains GPG keys used by mock configs
 Requires:   distribution-gpg-keys >= 1.36
+# specify minimal compatible version of mock
+Requires:   mock >= 2.0
 
 Requires(post): coreutils
 %if 0%{?fedora} || 0%{?mageia} || 0%{?rhel} > 7
