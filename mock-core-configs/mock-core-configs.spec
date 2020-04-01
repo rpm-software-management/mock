@@ -97,6 +97,10 @@ elif [ -d %{buildroot}%{_sysconfdir}/bash_completion.d ]; then
     echo %{_sysconfdir}/bash_completion.d/mock >> %{name}.cfgs
 fi
 
+# reference valid mock.rpm's docdir with example site-defaults.cfg
+mock_docs=%{_pkgdocdir}
+mock_docs=${mock_docs//mock-core-configs/mock}
+sed -i "s~@MOCK_DOCS@~$mock_docs~" %{buildroot}%{_sysconfdir}/mock/site-defaults.cfg
 
 %pre
 # check for existence of mock group, create it if not found
