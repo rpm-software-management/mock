@@ -9,7 +9,7 @@
 
 Summary: Builds packages inside chroots
 Name: mock
-Version: 2.1
+Version: 2.2
 Release: 1%{?dist}
 License: GPLv2+
 # Source is created by
@@ -31,7 +31,7 @@ Requires: createrepo_c
 
 # We know that the current version of mock isn't compatible with older variants,
 # and we want to enforce automatic upgrades.
-Conflicts: mock-core-configs < 32.4
+Conflicts: mock-core-configs < 32.6
 
 # Requires 'mock-core-configs', or replacement (GitHub PR#544).
 Requires: mock-configs
@@ -243,6 +243,37 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 %{python3_sitelib}/mockbuild/plugins/__pycache__/lvm_root.*.py*
 
 %changelog
+* Wed Apr 01 2020 Pavel Raiskup <praiskup@redhat.com> 2.2-1
+- depend on mock-configs, not mock-core-configs so users can pick an alternative
+  package with configuration
+- bind-mounting stuff below /tmp into bootstrap is fixed with nspawn (GH#502)
+- don't do util.getAddtlReqs when 'more_buildreqs' not specified
+- implement doOutChroot() abstraction which runs commands either in bootstrap
+  or on host, depending on isolation={nspawn|simple}
+- use doOutChroot() for package_state plugin (GH#525)
+- fix for "mock --chroot -- cmd arg1 arg2" use-case
+- site-defaults.cfg moved from /etc to %%doc, and the config file is now
+  provided by mock-core-configs (GH#555)
+- bootstrap: expand dnf vars in local repo bind-mounts (rhbz#1815703)
+- bootstrap: bindmount local metalink/mirrorlist (rhbz#1816696)
+- config_opts['isolation'] option invented, replaces 'use_nspawn'
+- 'isolation' is now set to 'auto' (means 'nspawn' with fallback to 'simple',
+  (GH#337, otaylor@fishsoup.net)
+- Fedora Toolbox && bootstrap - don't re-bind-mount dev files, and fix
+  installation of filesystem.rpm from bootstrap to normal chroot (GH#550)
+- re-define %%python3_pkgversion on el7 (GH#545)
+- docker use-case: use getpass.getuser() instead of os.getlogin() (GH#551)
+- set LANG to C.UTF-8 by default, even if host has different value (GH#451)
+- bootstrap: use configured yum commands (GH#518, paul@city-fan.org)
+- fixup doubled-logs by predictable bootstrap resultdir (GH#539, rhbz#1805631)
+- fix --chain --isolation=simple with external URLs (GH#542)
+- option --orphanskill fixed for --isolation=simple --bootstrap-chroot
+- orphan processes are now also killed "postyum", right after the installation
+  trasactions are executed to also kill daemons started from scriptlets (GH#183)
+- EL7 fix - use 'private' mount option for <bootsrap_root>/<root>, not 'rprivate'
+- ceanup rpmdb before checking installed packages (fixes builds against target
+  chroots that have different rpmdb backend, e.g. SQLite on F33+)
+
 * Wed Mar 11 2020 Pavel Raiskup <praiskup@redhat.com> 2.1-1
 - depend on mock-core-configs >= 32.4
 - new build-time testsuite
