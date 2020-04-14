@@ -48,10 +48,12 @@ class Buildroot(object):
         self.root_name = config['root']
         self.mockdir = config['basedir']
         self.basedir = os.path.join(config['basedir'], config['root'])
-        if 'rootdir' in config:
-            self.rootdir = config['rootdir']
-        else:
+        self.rootdir = config['rootdir']
+
+        # don't mixup bootstrap && normal chroot root dirs
+        if is_bootstrap:
             self.rootdir = os.path.join(self.basedir, 'root')
+
         self.resultdir = config['resultdir'] % config
 
         # In bootstrap buildroot, resultdir _should_ be basically unused (nobody
