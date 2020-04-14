@@ -1008,6 +1008,7 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
     config_opts['version'] = version
     config_opts['basedir'] = '/var/lib/mock'  # root name is automatically added to this
     config_opts['resultdir'] = '{{basedir}}/{{root}}/result'
+    config_opts['rootdir'] = '{{basedir}}/{{root}}/root'
     config_opts['cache_topdir'] = '/var/cache/mock'
     config_opts['clean'] = True
     config_opts['check'] = True
@@ -1431,8 +1432,8 @@ def set_config_opts_per_cmdline(config_opts, options, args):
 
     check_config(config_opts)
     # can't cleanup unless resultdir is separate from the root dir
-    rootdir = os.path.join(config_opts['basedir'], config_opts['root'])
-    if is_in_dir(config_opts['resultdir'] % config_opts, rootdir):
+    basechrootdir = os.path.join(config_opts['basedir'], config_opts['root'])
+    if is_in_dir(config_opts['resultdir'] % config_opts, basechrootdir):
         config_opts['cleanup_on_success'] = False
         config_opts['cleanup_on_failure'] = False
 
