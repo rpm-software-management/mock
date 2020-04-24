@@ -238,18 +238,9 @@ class Commands(object):
     @traceLog()
     def _show_installed_packages(self):
         '''report the installed packages in the chroot to the root log'''
+        pkgs = self.buildroot.all_chroot_packages()
         self.buildroot.root_log.info("Installed packages:")
-        self.buildroot.nuke_rpm_db()
-        util.do(
-            "%s --root %s -qa" % (self.config['rpm_command'],
-                                  self.buildroot.make_chroot_path()),
-            raiseExc=False,
-            shell=True,
-            env=self.buildroot.env,
-            uid=self.buildroot.chrootuid,
-            user=self.buildroot.chrootuser,
-            gid=self.buildroot.chrootgid,
-        )
+        self.buildroot.root_log.info('\n'.join(pkgs))
 
     #
     # UNPRIVILEGED:
