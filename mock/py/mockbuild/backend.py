@@ -240,15 +240,13 @@ class Commands(object):
         '''report the installed packages in the chroot to the root log'''
         self.buildroot.root_log.info("Installed packages:")
         self.buildroot.nuke_rpm_db()
-        util.do(
-            "%s --root %s -qa" % (self.config['rpm_command'],
-                                  self.buildroot.make_chroot_path()),
+        command = [self.config['rpm_command'], "-qa",
+                   "--root", self.make_chroot_path()]
+        self.buildroot.doOutChroot(
+            command,
             raiseExc=False,
+            printOutput=True,
             shell=True,
-            env=self.buildroot.env,
-            uid=self.buildroot.chrootuid,
-            user=self.buildroot.chrootuser,
-            gid=self.buildroot.chrootgid,
         )
 
     #
