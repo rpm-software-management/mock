@@ -248,6 +248,10 @@ class Buildroot(object):
         """Execute given command in root. Returns (output, child.returncode)"""
         self.nuke_rpm_db()
         env = dict(self.env)
+        if 'env' in kargs:
+            # we pass env explicitly below, use & pop it
+            env.update(kargs.pop('env'))
+
         if nosync and self.nosync_path:
             env['LD_PRELOAD'] = self.nosync_path
         if util.USE_NSPAWN:
