@@ -99,6 +99,8 @@ class BindMountPoint(MountPoint):
             if os.path.isdir(self.srcpath):
                 util.mkdirIfAbsent(self.bindpath)
             elif not os.path.exists(self.bindpath):
+                normbindpath = os.path.normpath(self.bindpath)
+                util.mkdirIfAbsent(os.path.dirname(normbindpath))
                 util.touch(self.bindpath)
             cmd = ['/bin/mount', '-n']
             if self.recursive:
