@@ -353,8 +353,10 @@ Error:      Neither dnf-utils nor yum-utils are installed. Dnf-utils or yum-util
                 expand[key] = self.config['dnf_vars'][key]
 
         for key, value in expand.items():
-            key = "$" + key
-            string = string.replace(key, value)
+            # replace both $key and ${key}
+            # dnf allows braced variables
+            string = string.replace('$' + key, value)
+            string = string.replace('${' + key + '}', value)
 
         return string
 

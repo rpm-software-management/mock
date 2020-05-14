@@ -179,7 +179,7 @@ class TestPackageManager:
         os.makedirs(repo_directory)
         config = (
             "[main]\n"
-            "baseurl = file://{0}/$basearch/$releasever/$test\n"
+            "baseurl = file://{0}/$basearch/${{releasever}}/$test\n"
         ).format(self.workdir)
 
         mounts = self.get_user_bind_mounts_from_config(config)
