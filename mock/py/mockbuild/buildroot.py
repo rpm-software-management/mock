@@ -257,11 +257,6 @@ class Buildroot(object):
                 kargs['uid'] = uid.getresuid()[1]
             if 'gid' not in kargs:
                 kargs['gid'] = uid.getresgid()[1]
-            if 'user' not in kargs:
-                try:
-                    kargs['user'] = pwd.getpwuid(kargs['uid'])[0]
-                except KeyError:
-                    pass
             self.uid_manager.becomeUser(0, 0)
 
         try:
