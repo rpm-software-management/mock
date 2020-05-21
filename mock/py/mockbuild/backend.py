@@ -766,9 +766,20 @@ class Commands(object):
     @traceLog()
     def install_build_results(self, results):
         self.buildroot.root_log.info("Installing built packages")
+
+        # Mount resultdir into bootstrap, so we can later install the build
+        # results from there using bootstrap package manager.
+
+        results_bindmount = None
+        if self.bootstrap_buildroot:
+            resultdir = self.buildroot.resultdir
+            bootstrap_resultdir = self.bootstrap_buildroot.make_chroot_path(resultdir)
+            results_bindmount = BindMountPoint(resultdir, bootstrap_resultdir,
+                                               options="private")
         try:
             self.uid_manager.becomeUser(0, 0)
-
+            if results_bindmount:
+                results_bindmount.mount()
             pkgs = [pkg for pkg in results if not pkg.endswith("src.rpm")]
             try:
                 self.install(*pkgs)
@@ -776,4 +787,6 @@ class Commands(object):
             except:
                 self.buildroot.root_log.warning("Failed install built packages")
         finally:
+            if results_bindmount:
+                results_bindmount.umount()
             self.uid_manager.restorePrivs()
