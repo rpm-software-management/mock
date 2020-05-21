@@ -89,7 +89,7 @@ personality_defs = {
     'mips64r6': PER_LINUX, 'mips64r6el': PER_LINUX,
 }
 
-PLUGIN_LIST = ['tmpfs', 'root_cache', 'yum_cache', 'bind_mount',
+PLUGIN_LIST = ['tmpfs', 'root_cache', 'yum_cache', 'mount', 'bind_mount',
                'ccache', 'selinux', 'package_state', 'chroot_scan',
                'lvm_root', 'compress_logs', 'sign', 'pm_request',
                'hw_info', 'procenv']
