@@ -718,29 +718,30 @@ class Commands(object):
                                             nspawn_args=self._get_nspawn_args(),
                                             unshare_net=self.private_network,
                                             printOutput=self.config['print_main_output'])
-                    success = True
                 except Error as e:
-                    # we ignore exit status 11 and go to finally block, see issue#434
+                    # we treat exit status 11 as success, as well as exit
+                    # status 0, see issue#434
                     if e.resultcode != 11:
                         raise e
-                finally:
-                    max_loops -= 1
-                    self.buildroot.root_log.info("Dynamic buildrequires detected")
-                    self.buildroot.root_log.info("Going to install missing buildrequires")
-                    buildreqs = glob.glob(bd_out + '/SRPMS/*.buildreqs.nosrc.rpm')
-                    self.installSrpmDeps(*buildreqs)
-                    packages_after = self.buildroot.all_chroot_packages()
-                    if packages_after == packages_before:
-                        success = True
-                    for f_buildreqs in buildreqs:
-                        os.remove(f_buildreqs)
-                    if not sc:
-                        # We want to (re-)write src.rpm with dynamic BuildRequires,
-                        # but with short-circuit it doesn't matter
-                        mode = ['-ba']
-                    # rpmbuild -br already does %prep, so we don't need waste time
-                    # on re-doing it
-                    mode += ['--noprep']
+
+                max_loops -= 1
+                self.buildroot.root_log.info("Dynamic buildrequires detected")
+                self.buildroot.root_log.info("Going to install missing buildrequires")
+                buildreqs = glob.glob(bd_out + '/SRPMS/*.buildreqs.nosrc.rpm')
+                self.installSrpmDeps(*buildreqs)
+                packages_after = self.buildroot.all_chroot_packages()
+                if packages_after == packages_before:
+                    success = True
+                for f_buildreqs in buildreqs:
+                    os.remove(f_buildreqs)
+                if not sc:
+                    # We want to (re-)write src.rpm with dynamic BuildRequires,
+                    # but with short-circuit it doesn't matter
+                    mode = ['-ba']
+                # rpmbuild -br already does %prep, so we don't need waste time
+                # on re-doing it
+                mode += ['--noprep']
+
         self.buildroot.doChroot(get_command(mode),
                                 shell=False, logger=self.buildroot.build_log, timeout=timeout,
                                 uid=self.buildroot.chrootuid, gid=self.buildroot.chrootgid,
