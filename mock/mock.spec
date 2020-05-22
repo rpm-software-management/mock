@@ -9,7 +9,7 @@
 
 Summary: Builds packages inside chroots
 Name: mock
-Version: 2.2
+Version: 2.3
 Release: 1%{?dist}
 License: GPLv2+
 # Source is created by
@@ -243,6 +243,17 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 %{python3_sitelib}/mockbuild/plugins/__pycache__/lvm_root.*.py*
 
 %changelog
+* Fri May 22 2020 Pavel Raiskup <praiskup@redhat.com> 2.3-1
+- bindmount resultdir to bootstrap chroot so we can --postinstall from
+  bootstrap (issue #564)
+- fix mount.py plugin configuration (issue #578)
+- better error for dynamic_buildrequires %%prep failure (issue #570)
+- mock: pre-create directory for file bind-mounts (rhbz#1816696)
+- fix doChroot() traceback for getresuid() (issue #571)
+- fix --rootdir option with bootstrap (issue #560)
+- avoid using host rpm _show_installed_packages() (pmatilai@redhat.com, PR#568)
+- expand braced dnf variables in repo url (dmarshall@gmail.com, PR#577)
+
 * Wed Apr 01 2020 Pavel Raiskup <praiskup@redhat.com> 2.2-1
 - depend on mock-configs, not mock-core-configs so users can pick an alternative
   package with configuration
