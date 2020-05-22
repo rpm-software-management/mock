@@ -39,14 +39,14 @@ protected_packages=
 [opensuse-tumbleweed-oss]
 name=openSUSE Tumbleweed - {{ target_arch }} - OSS
 {% if target_arch in ['x86_64', 'i586'] %}
-baseurl=http://download.opensuse.org/tumbleweed/repo/oss/
-#metalink=http://download.opensuse.org/tumbleweed/repo/oss/repodata/repomd.xml.metalink
+#baseurl=http://download.opensuse.org/tumbleweed/repo/oss/
+metalink=http://download.opensuse.org/tumbleweed/repo/oss/repodata/repomd.xml.metalink
 {% elif target_arch in ['ppc64le', 'ppc64'] %}
-baseurl=http://download.opensuse.org/ports/ppc/tumbleweed/repo/oss/
-#metalink=http://download.opensuse.org/ports/ppc/tumbleweed/repo/oss/repodata/repomd.xml.metalink
+#baseurl=http://download.opensuse.org/ports/ppc/tumbleweed/repo/oss/
+metalink=http://download.opensuse.org/ports/ppc/tumbleweed/repo/oss/repodata/repomd.xml.metalink
 {% elif target_arch in ['aarch64'] %}
-baseurl=http://download.opensuse.org/ports/aarch64/tumbleweed/repo/oss/
-#metalink=http://download.opensuse.org/ports/aarch64/tumbleweed/repo/oss/repodata/repomd.xml.metalink
+#baseurl=http://download.opensuse.org/ports/aarch64/tumbleweed/repo/oss/
+metalink=http://download.opensuse.org/ports/aarch64/tumbleweed/repo/oss/repodata/repomd.xml.metalink
 {% endif %}
 gpgkey=file:///usr/share/distribution-gpg-keys/opensuse/RPM-GPG-KEY-openSUSE
 gpgcheck=1
