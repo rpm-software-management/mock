@@ -319,11 +319,11 @@ class Buildroot(object):
 
         update_state = '{0} install'.format(self.pkg_manager.name)
         self.state.start(update_state)
-        if 'module_enable' in self.config and self.config['module_enable']:
-            cmd = ['module', 'enable'] + self.config['module_enable']
-            self.pkg_manager.init_install_output += self.pkg_manager.execute(*cmd, returnOutput=1)
         if 'module_disable' in self.config and self.config['module_disable']:
             cmd = ['module', 'disable'] + self.config['module_disable']
+            self.pkg_manager.init_install_output += self.pkg_manager.execute(*cmd, returnOutput=1)
+        if 'module_enable' in self.config and self.config['module_enable']:
+            cmd = ['module', 'enable'] + self.config['module_enable']
             self.pkg_manager.init_install_output += self.pkg_manager.execute(*cmd, returnOutput=1)
         if 'module_install' in self.config and self.config['module_install']:
             cmd = ['module', 'install'] + self.config['module_install']
