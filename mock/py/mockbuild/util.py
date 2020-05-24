@@ -1209,11 +1209,13 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
     }
     config_opts['hostname'] = None
     config_opts['module_enable'] = []
+    config_opts['module_disable'] = []
     config_opts['module_install'] = []
     config_opts['forcearch'] = None
 
     config_opts['bootstrap_chroot_additional_packages'] = []
     config_opts['bootstrap_module_enable'] = []
+    config_opts['bootstrap_module_disable'] = []
     config_opts['bootstrap_module_install'] = []
 
     # security config
