@@ -301,7 +301,7 @@ Error:      Neither dnf-utils nor yum-utils are installed. Dnf-utils or yum-util
 
     @traceLog()
     def copy_certs(self):
-        cert_path = "/etc/pki/ca-trust/extracted"
+        cert_path = "/etc/pki/ca-trust"
         pki_dir = self.buildroot.make_chroot_path(cert_path)
         try:
             copy_tree(cert_path, pki_dir)
