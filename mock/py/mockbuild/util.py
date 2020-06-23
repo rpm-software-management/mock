@@ -1205,7 +1205,6 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
     config_opts['macros'] = {
         '%_topdir': '%s/build' % config_opts['chroothome'],
         '%_rpmfilename': '%%{NAME}-%%{VERSION}-%%{RELEASE}.%%{ARCH}.rpm',
-        '%_netsharedpath': '/proc:/sys',
     }
     config_opts['hostname'] = None
     config_opts['module_enable'] = []
