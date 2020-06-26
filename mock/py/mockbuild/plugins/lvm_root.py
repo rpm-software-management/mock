@@ -334,7 +334,6 @@ class LvmPlugin(object):
         if not self.buildroot.chroot_was_initialized:
             snapshot_name = self.prefix_name(self.postinit_name)
             self.make_snapshot(snapshot_name)
-            self.set_current_snapshot(snapshot_name)
             self.buildroot.root_log.info(
                 "created {name} snapshot".format(name=self.postinit_name))
         # Relock as shared for following operations, noop if shared already
