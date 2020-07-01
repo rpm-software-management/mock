@@ -100,6 +100,7 @@ fi
 # reference valid mock.rpm's docdir with example site-defaults.cfg
 mock_docs=%{_pkgdocdir}
 mock_docs=${mock_docs//mock-core-configs/mock}
+mock_docs=${mock_docs//-%version/-*}
 sed -i "s~@MOCK_DOCS@~$mock_docs~" %{buildroot}%{_sysconfdir}/mock/site-defaults.cfg
 
 %pre
