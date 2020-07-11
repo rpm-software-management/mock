@@ -107,6 +107,7 @@ class Buildroot(object):
         self.final_rpm_list = None
 
         self._homedir_bindmounts = {}
+        self._setup_nspawn_btrfs_device()
         self._setup_nspawn_loop_devices()
 
     @traceLog()
@@ -597,6 +598,13 @@ class Buildroot(object):
             self._prepare_rpm_macros()
 
     @traceLog()
+    def _setup_nspawn_btrfs_device(self):
+        if not util.USE_NSPAWN or self.is_bootstrap:
+            return
+        if os.path.exists('/dev/btrfs-control'):
+            self.config['nspawn_args'].append('--bind=/dev/btrfs-control')
+
+    @traceLog()
     def _setup_nspawn_loop_devices(self):
         if not util.USE_NSPAWN or self.is_bootstrap:
             return
@@ -628,6 +636,7 @@ class Buildroot(object):
                 (stat.S_IFCHR | 0o666, os.makedev(5, 0), "dev/tty"),
                 (stat.S_IFCHR | 0o600, os.makedev(5, 1), "dev/console"),
                 (stat.S_IFCHR | 0o666, os.makedev(5, 2), "dev/ptmx"),
+                (stat.S_IFCHR | 0o660, os.makedev(10, 234), "dev/btrfs-control"),
                 (stat.S_IFCHR | 0o666, os.makedev(10, 237), "dev/loop-control"),
                 (stat.S_IFCHR | 0o600, os.makedev(10, 57), "dev/prandom"),
                 (stat.S_IFCHR | 0o600, os.makedev(10, 183), "dev/hwrng"),
