@@ -1,6 +1,3 @@
-# mock group id allocate for Fedora
-%global mockgid 135
-
 Name:       mock-core-configs
 Version:    32.7
 Release:    1%{?dist}
@@ -24,6 +21,7 @@ Provides: mock-configs
 Requires:   distribution-gpg-keys >= 1.41
 # specify minimal compatible version of mock
 Requires:   mock >= 2.2
+Requires:   mock-filesystem
 
 Requires(post): coreutils
 %if 0%{?fedora} || 0%{?mageia} || 0%{?rhel} > 7
@@ -103,11 +101,6 @@ mock_docs=${mock_docs//mock-core-configs/mock}
 mock_docs=${mock_docs//-%version/-*}
 sed -i "s~@MOCK_DOCS@~$mock_docs~" %{buildroot}%{_sysconfdir}/mock/site-defaults.cfg
 
-%pre
-# check for existence of mock group, create it if not found
-getent group mock > /dev/null || groupadd -f -g %mockgid -r mock
-exit 0
-
 %post
 if [ -s /etc/os-release ]; then
     # fedora and rhel7+
@@ -148,9 +141,6 @@ fi
 
 %files -f %{name}.cfgs
 %license COPYING
-%dir  %{_sysconfdir}/mock
-%dir  %{_sysconfdir}/mock/eol
-%dir  %{_sysconfdir}/mock/templates
 %ghost %config(noreplace,missingok) %{_sysconfdir}/mock/default.cfg
 
 %changelog

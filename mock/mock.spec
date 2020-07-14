@@ -1,6 +1,9 @@
 %bcond_with lint
 %bcond_without tests
 
+# mock group id allocate for Fedora
+%global mockgid 135
+
 %global __python %{__python3}
 %global python_sitelib %{python3_sitelib}
 %if 0%{?rhel} == 7
@@ -35,6 +38,7 @@ Conflicts: mock-core-configs < 32.6
 
 # Requires 'mock-core-configs', or replacement (GitHub PR#544).
 Requires: mock-configs
+Requires: %{name}-filesystem
 %if 0%{?fedora} || 0%{?rhel} >= 8
 # This is still preferred package providing 'mock-configs'
 Suggests: mock-core-configs
@@ -127,6 +131,12 @@ Requires: lvm2
 Mock plugin that enables using LVM as a backend and support creating snapshots
 of the buildroot.
 
+%package filesystem
+Summary:  Mock filesystem layout
+
+%description filesystem
+Filesystem layout and group for Mock.
+
 %prep
 %setup -q
 for file in py/mock.py py/mock-parse-buildlog.py; do
@@ -145,6 +155,10 @@ for i in docs/mock.1 docs/mock-parse-buildlog.1; do
 done
 
 %install
+#base filesystem
+mkdir -p %{buildroot}%{_sysconfdir}/mock/eol/templates
+mkdir -p %{buildroot}%{_sysconfdir}/mock/templates
+
 install -d %{buildroot}%{_bindir}
 install -d %{buildroot}%{_libexecdir}/mock
 install mockchain %{buildroot}%{_bindir}/mockchain
@@ -182,6 +196,11 @@ install -d %{buildroot}/var/cache/mock
 
 mkdir -p %{buildroot}%{_pkgdocdir}
 install -p -m 0644 docs/site-defaults.cfg %{buildroot}%{_pkgdocdir}
+
+%pre filesystem
+# check for existence of mock group, create it if not found
+getent group mock > /dev/null || groupadd -f -g %mockgid -r mock
+exit 0
 
 %check
 %if %{with lint}
@@ -241,6 +260,13 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 %files lvm
 %{python_sitelib}/mockbuild/plugins/lvm_root.*
 %{python3_sitelib}/mockbuild/plugins/__pycache__/lvm_root.*.py*
+
+%files filesystem
+%license COPYING
+%dir  %{_sysconfdir}/mock
+%dir  %{_sysconfdir}/mock/eol
+%dir  %{_sysconfdir}/mock/eol/templates
+%dir  %{_sysconfdir}/mock/templates
 
 %changelog
 * Tue Jul 21 2020 Miroslav Suchý <msuchy@redhat.com> 2.4-1
