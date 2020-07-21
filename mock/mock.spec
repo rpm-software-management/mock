@@ -9,7 +9,7 @@
 
 Summary: Builds packages inside chroots
 Name: mock
-Version: 2.3
+Version: 2.4
 Release: 1%{?dist}
 License: GPLv2+
 # Source is created by
@@ -243,6 +243,14 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 %{python3_sitelib}/mockbuild/plugins/__pycache__/lvm_root.*.py*
 
 %changelog
+* Tue Jul 21 2020 Miroslav Suchý <msuchy@redhat.com> 2.4-1
+- mockbuild/buildroot: Make btrfs-control available if host supports it
+  (ngompa13@gmail.com)
+- Add `module_setup_commands` configuration option (praiskup@redhat.com)
+- Use a different .rpmmacros for install/build time (praiskup@redhat.com)
+- lvm: don't recall set_current_snapshot unnecessarily (praiskup@redhat.com)
+- mock: copy source CA certificates (kdreyer@redhat.com)
+
 * Fri May 22 2020 Pavel Raiskup <praiskup@redhat.com> 2.3-1
 - bindmount resultdir to bootstrap chroot so we can --postinstall from
   bootstrap (issue #564)
