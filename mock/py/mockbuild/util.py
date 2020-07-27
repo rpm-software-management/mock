@@ -1670,7 +1670,8 @@ def load_config(config_path, name, uidManager, version, pkg_python_dir):
 
 @traceLog()
 def check_macro_definition(config_opts):
-    for k, v in config_opts['macros'].items():
+    for k in list(config_opts['macros']):
+        v = config_opts['macros'][k]
         if not k or (not v and (v is not None)) or len(k.split()) != 1:
             raise exception.BadCmdline(
                 "Bad macros 'config_opts['macros']['%s'] = ['%s']'" % (k, v))
