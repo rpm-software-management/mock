@@ -22,6 +22,7 @@ metadata_expire=0
 mdpolicy=group:primary
 best=1
 protected_packages=
+user_agent={{ user_agent }}
 
 # repos
 [base]

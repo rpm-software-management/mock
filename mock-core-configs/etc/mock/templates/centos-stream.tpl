@@ -24,6 +24,7 @@ mdpolicy=group:primary
 best=1
 protected_packages=
 module_platform_id=platform:el8
+user_agent={{ user_agent }}
 
 [Stream-BaseOS]
 name=CentOS-Stream - Base

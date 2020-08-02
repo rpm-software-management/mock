@@ -24,6 +24,7 @@ syslog_device=
 install_weak_deps=0
 metadata_expire=0
 best=1
+user_agent={{ user_agent }}
 
 # TODO
 module_platform_id=platform:eln
