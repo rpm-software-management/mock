@@ -40,6 +40,7 @@ excludepkgs=*.ppc,*.ppc64le
 {% endif %}
 
 protected_packages=
+user_agent={{ user_agent }}
 
 # repos
 

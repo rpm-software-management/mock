@@ -29,6 +29,7 @@ metadata_expire=0
 best=1
 module_platform_id=platform:el8
 protected_packages=
+user_agent={{ user_agent }}
 
 # repos
 [rhel-baseos]

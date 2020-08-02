@@ -23,6 +23,7 @@ install_weak_deps=0
 metadata_expire=0
 best=1
 protected_packages=
+user_agent={{ user_agent }}
 
 # repos
 

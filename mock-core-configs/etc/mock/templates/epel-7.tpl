@@ -21,6 +21,7 @@ metadata_expire=0
 mdpolicy=group:primary
 best=1
 protected_packages=
+user_agent={{ user_agent }}
 
 {% set epel_7_gpg_keys = 'file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-7' %}
 {% if target_arch in ['ppc64le', 'ppc64'] %}
