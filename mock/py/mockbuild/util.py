@@ -92,7 +92,7 @@ personality_defs = {
 PLUGIN_LIST = ['tmpfs', 'root_cache', 'yum_cache', 'mount', 'bind_mount',
                'ccache', 'selinux', 'package_state', 'chroot_scan',
                'lvm_root', 'compress_logs', 'sign', 'pm_request',
-               'hw_info', 'procenv']
+               'hw_info', 'procenv', 'showrc']
 
 USE_NSPAWN = False
 
@@ -1137,6 +1137,9 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
         },
         'procenv_enable': False,
         'procenv_opts': {
+        },
+        'showrc_enable': False,
+        'showrc_opts': {
         },
         'compress_logs_enable': False,
         'compress_logs_opts': {
