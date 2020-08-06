@@ -27,7 +27,8 @@ class CompressLogsPlugin(object):
     def _compress_logs(self):
         logger = getLog()
         for f_name in ('root.log', 'build.log', 'state.log', 'available_pkgs.log',
-                       'installed_pkgs.log', 'hw_info.log', 'procenv.log'):
+                       'installed_pkgs.log', 'hw_info.log', 'procenv.log',
+                       'showrc.log'):
             f_path = os.path.join(self.buildroot.resultdir, f_name)
             if os.path.exists(f_path):
                 command = "{0} {1}".format(self.command, f_path)
