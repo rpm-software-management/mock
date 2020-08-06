@@ -2,7 +2,7 @@
 %global mockgid 135
 
 Name:       mock-core-configs
-Version:    32.6
+Version:    32.7
 Release:    1%{?dist}
 Summary:    Mock core config files basic chroots
 
@@ -154,6 +154,13 @@ fi
 %ghost %config(noreplace,missingok) %{_sysconfdir}/mock/default.cfg
 
 %changelog
+* Thu Aug 06 2020 Pavel Raiskup <praiskup@redhat.com> 32.7-1
+- add branched Fedora 33 configs
+- eol Fedora 30
+- tolerate a 1-minute baseurl outages in OpenSUSE configs
+- fix site-defaults.cfg reference to docs
+- change all openSUSE configs to use the download redirector (baseurl)
+
 * Wed Apr 01 2020 Pavel Raiskup <praiskup@redhat.com> 32.6-1
 - the site-defaults.cfg file moved from mock to mock-core-configs
 - new option config_opts['isolation'], obsoletes 'use_nspawn'
