@@ -59,7 +59,6 @@ import shutil
 import sys
 import time
 import copy
-import subprocess
 
 # pylint: disable=import-error
 from functools import partial
