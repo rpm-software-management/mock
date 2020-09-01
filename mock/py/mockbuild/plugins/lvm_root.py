@@ -381,6 +381,25 @@ class LvmPlugin(object):
         lvm_do(['lvremove', '-f', self.vg_name + '/' + lv_name])
         self.buildroot.root_log.info("deleted {name} snapshot".format(name=name))
 
+    def update_snapshot_name(self, name):
+        # If the previous snapshot was already updated, remove
+        # the _updated_<date> postfix from its name.
+        name = re.sub(r"_updated_[\-\_0-9]{16}$", "", name)
+
+        timestamp = time.localtime(time.time())
+        name = name + "_updated_{y}-{mo:02d}-{d:02d}_{h:02d}-{m:02d}".format(
+            y=timestamp.tm_year, mo=timestamp.tm_mon, d=timestamp.tm_mday,
+            h=timestamp.tm_hour, m=timestamp.tm_min
+        )
+
+        return name
+
+    def hook_postupdate(self):
+        name = self.update_snapshot_name(self.get_current_snapshot())
+        self.make_snapshot(name)
+        self.buildroot.root_log.info("created updated snapshot {name}".format(
+            name=self.remove_prefix(name)))
+
 
 def init(plugins, lvm_conf, buildroot):
     LvmPlugin(plugins, lvm_conf, buildroot)

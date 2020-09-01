@@ -43,6 +43,27 @@ runcmd "$MOCKCMD --rebuild ${TESTDIR}/test-C-1.1-0.src.rpm --resultdir $TMPDIR" 
 
 runcmd "$MOCKCMD --shell '/bin/true'" || die "mock shell failed"
 
+mkdir $TMPDIR/repodir || die "can't create repodir inside tmpdir"
+curl https://kojipkgs.fedoraproject.org//packages/python-copr-common/0.6/1.fc32/noarch/python3-copr-common-0.6-1.fc32.noarch.rpm \
+    --output $TMPDIR/repodir/python3-copr-common-0.6-1.fc32.noarch.rpm || die "failed to download old rpm package"
+
+runcmd "createrepo_c $TMPDIR/repodir" || die "failed to run createrepo"
+
+cat >> "$local_config" <<EOF
+config_opts['root'] = 'testrepo'
+config_opts['chroot_setup_cmd'] = 'install python3-copr-common'
+
+config_opts['yum.conf'] += """
+
+[testrepo]
+name=testrepo
+baseurl=file://$TMPDIR/repodir
+"""
+EOF
+
+runcmd "$MOCKCMD --rebuild ${TESTDIR}/test-C-1.1-0.src.rpm --resultdir $TMPDIR" \
+    | grep "created updated snapshot" || die "creating updated snapshot failed"
+
 runcmd "$MOCKCMD --scrub=all" || die "mock scrub failed"
 
 # repeated run should succeed as well, rhbz#1805179

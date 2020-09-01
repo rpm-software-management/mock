@@ -57,6 +57,7 @@ class RootCache(object):
         plugins.add_hook("postshell", self._rootCachePostShellHook)
         plugins.add_hook("postchroot", self._rootCachePostShellHook)
         plugins.add_hook("postyum", self._rootCachePostShellHook)
+        plugins.add_hook("postupdate", self._rootCachePostUpdateHook)
         self.exclude_dirs = self.root_cache_opts['exclude_dirs']
         self.exclude_tar_cmds = []
         for ex_dir in self.exclude_dirs:
@@ -185,7 +186,7 @@ class RootCache(object):
         self._rebuild_root_cache()
 
     @traceLog()
-    def _rebuild_root_cache(self):
+    def _rebuild_root_cache(self, after_update=False):
         try:
             self._rootCacheLock(shared=0)
             # nuke any rpmdb tmp files
@@ -200,7 +201,7 @@ class RootCache(object):
                     pass
 
             # never rebuild cache unless it was a clean build, or we are explicitly caching alterations
-            if not self.buildroot.chroot_was_initialized or self.config['cache_alterations']:
+            if not self.buildroot.chroot_was_initialized or self.config['cache_alterations'] or after_update:
                 mockbuild.util.do(["sync"], shell=False)
                 self._root_cache_handle_mounts()
                 self.state.start("creating root cache")
@@ -232,3 +233,7 @@ class RootCache(object):
     def _rootCachePostShellHook(self):
         if self._haveVolatileRoot() and self.config['cache_alterations']:
             self._rebuild_root_cache()
+
+    @traceLog()
+    def _rootCachePostUpdateHook(self):
+        self._rebuild_root_cache(after_update=True)
