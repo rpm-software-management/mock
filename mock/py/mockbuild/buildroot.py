@@ -216,7 +216,12 @@ class Buildroot(object):
                     and self.config['clean']):
                 update_state = "{0} update".format(self.pkg_manager.name)
                 self.state.start(update_state)
+                packages_before = self.all_chroot_packages()
                 self.pkg_manager.update()
+                packages_after = self.all_chroot_packages()
+                if packages_before != packages_after:
+                    self.plugins.call_hooks('postupdate')
+                    self.bootstrap_buildroot.plugins.call_hooks('postupdate')
                 self.state.finish(update_state)
         else:
             self._fixup_build_user()
