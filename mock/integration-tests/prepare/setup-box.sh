@@ -26,3 +26,5 @@ sudo usermod -a -G mock "$user"
 "$PREPAREDIR/prepare-user.sh"
 
 sudo "$PREPAREDIR/prepare-lvm.sh"
+
+"$PREPAREDIR/prepare-subscription.sh"
