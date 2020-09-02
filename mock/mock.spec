@@ -13,7 +13,7 @@
 Summary: Builds packages inside chroots
 Name: mock
 Version: 2.5
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2+
 # Source is created by
 # git clone https://github.com/rpm-software-management/mock.git
@@ -34,7 +34,7 @@ Requires: createrepo_c
 
 # We know that the current version of mock isn't compatible with older variants,
 # and we want to enforce automatic upgrades.
-Conflicts: mock-core-configs < 32.6
+Conflicts: mock-core-configs < 33
 
 # Requires 'mock-core-configs', or replacement (GitHub PR#544).
 Requires: mock-configs
@@ -269,6 +269,10 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 %dir  %{_sysconfdir}/mock/templates
 
 %changelog
+* Thu Sep 03 2020 Pavel Raiskup <praiskup@redhat.com> 2.5-2
+- because of the mock-filesystem change, we need to enforce upgrade
+  of the old mock-core-configs package
+
 * Thu Sep 03 2020 Pavel Raiskup <praiskup@redhat.com> 2.5-1
 - set the DNF user_agent in dnf.conf (msuchy@redhat.com)
 - introduce mock-filesystem subpackage (msuchy@redhat.com)
