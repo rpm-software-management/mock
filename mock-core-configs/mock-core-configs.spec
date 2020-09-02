@@ -1,5 +1,5 @@
 Name:       mock-core-configs
-Version:    32.8
+Version:    33
 Release:    1%{?dist}
 Summary:    Mock core config files basic chroots
 
@@ -20,7 +20,7 @@ Provides: mock-configs
 # distribution-gpg-keys contains GPG keys used by mock configs
 Requires:   distribution-gpg-keys >= 1.41
 # specify minimal compatible version of mock
-Requires:   mock >= 2.2
+Requires:   mock >= 2.5
 Requires:   mock-filesystem
 
 Requires(post): coreutils
@@ -144,6 +144,10 @@ fi
 %ghost %config(noreplace,missingok) %{_sysconfdir}/mock/default.cfg
 
 %changelog
+* Thu Sep 03 2020 Pavel Raiskup <praiskup@redhat.com> 33-1
+- bump version to 33, as we already ship F33 configs
+- because of the mock-filesystem change, depend on mock 2.5
+
 * Thu Sep 03 2020 Pavel Raiskup <praiskup@redhat.com> 32.8-1
 - set the DNF user_agent in dnf.conf (msuchy@redhat.com)
 - add Fedora ELN configs
