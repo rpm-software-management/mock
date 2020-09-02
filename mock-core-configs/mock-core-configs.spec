@@ -1,5 +1,5 @@
 Name:       mock-core-configs
-Version:    32.7
+Version:    32.8
 Release:    1%{?dist}
 Summary:    Mock core config files basic chroots
 
@@ -144,6 +144,11 @@ fi
 %ghost %config(noreplace,missingok) %{_sysconfdir}/mock/default.cfg
 
 %changelog
+* Thu Sep 03 2020 Pavel Raiskup <praiskup@redhat.com> 32.8-1
+- set the DNF user_agent in dnf.conf (msuchy@redhat.com)
+- add Fedora ELN configs
+- introduce mock-filesystem subpackage (msuchy@redhat.com)
+
 * Thu Aug 06 2020 Pavel Raiskup <praiskup@redhat.com> 32.7-1
 - add branched Fedora 33 configs
 - eol Fedora 30
