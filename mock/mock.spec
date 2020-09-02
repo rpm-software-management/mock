@@ -12,7 +12,7 @@
 
 Summary: Builds packages inside chroots
 Name: mock
-Version: 2.4
+Version: 2.5
 Release: 1%{?dist}
 License: GPLv2+
 # Source is created by
@@ -269,6 +269,14 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 %dir  %{_sysconfdir}/mock/templates
 
 %changelog
+* Thu Sep 03 2020 Pavel Raiskup <praiskup@redhat.com> 2.5-1
+- set the DNF user_agent in dnf.conf (msuchy@redhat.com)
+- introduce mock-filesystem subpackage (msuchy@redhat.com)
+- add showrc plugin to record the output of rpm --showrc (riehecky@fnal.gov)
+- document which packages we need in buildroot (msuchy@redhat.com)
+- macros without leading '%' like config_opts['macros']['macroname'] work
+  fine again (issue#605)
+
 * Tue Jul 21 2020 Miroslav Suchý <msuchy@redhat.com> 2.4-1
 - mockbuild/buildroot: Make btrfs-control available if host supports it
   (ngompa13@gmail.com)
