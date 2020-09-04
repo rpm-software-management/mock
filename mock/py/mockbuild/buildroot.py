@@ -672,8 +672,7 @@ class Buildroot(object):
                             if os.path.exists(src_path):
                                 self.mounts.add_device_bindmount(src_path)
                             continue
-                        else:
-                            raise
+                        raise
 
                     # Further adjustments if we created a new node instead of bind-mounting
                     # an existing one:
