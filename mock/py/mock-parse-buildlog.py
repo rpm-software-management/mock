@@ -1,6 +1,7 @@
 #!/usr/bin/python3 -tt
 # -*- coding: utf-8 -*-
 # vim:expandtab:autoindent:tabstop=4:shiftwidth=4:filetype=python:textwidth=0:
+# pylint: disable=invalid-name
 
 import argparse
 import logging
