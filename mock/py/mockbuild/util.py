@@ -612,16 +612,16 @@ def logOutput(fdout, fderr, logger, returnOutput=1, start=0, timeout=0, printOut
                 if pty:
                     lines = [process_input(line) for line in lines]
                 processed_input = '\n'.join(lines) + '\n'
-                if "_mock_stderr_line_prefix" in dir(mockbuild_logger):
-                    _mock_stderr_line_prefix = mockbuild_logger._mock_stderr_line_prefix
+                if "mock_stderr_line_prefix" in dir(mockbuild_logger):
+                    mock_stderr_line_prefix = mockbuild_logger.mock_stderr_line_prefix
                 else:
-                    _mock_stderr_line_prefix = ""
+                    mock_stderr_line_prefix = ""
                 if logger is not None:
                     for line in lines:
                         if line != '':
                             line = ansi_escape.sub('', line)
                             if fderr is s and not line.startswith('+ '):
-                                logger.debug("%s%s", _mock_stderr_line_prefix, line)
+                                logger.debug("%s%s", mock_stderr_line_prefix, line)
                             else:
                                 logger.debug(line)
                     for h in logger.handlers:
