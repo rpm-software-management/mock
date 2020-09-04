@@ -449,7 +449,7 @@ class Commands(object):
                     log.error("%s doesn't appear to be an rpm - skipping", pkg)
                     failed.append(pkg)
                     continue
-                elif pkg.startswith('http://') or pkg.startswith('https://') or pkg.startswith('ftp://'):
+                if pkg.startswith('http://') or pkg.startswith('https://') or pkg.startswith('ftp://'):
                     url = pkg
                     try:
                         log.info('Fetching %s', url)
