@@ -641,12 +641,15 @@ class Commands(object):
 
     @traceLog()
     def install_srpm(self, srpm_path):
-        self.buildroot.doChroot([self.config['rpm_command'], "-Uvh", "--nodeps", srpm_path],
-                                shell=False, uid=self.buildroot.chrootuid, gid=self.buildroot.chrootgid,
-                                user=self.buildroot.chrootuser,
-                                nspawn_args=self._get_nspawn_args(),
-                                unshare_net=self.private_network,
-                                returnOutput=True)
+        command = [self.config['rpm_command'], "-Uvh", "--nodeps", srpm_path]
+        output, return_code = self.buildroot.doChroot(
+            command, shell=False, uid=self.buildroot.chrootuid,
+            gid=self.buildroot.chrootgid, user=self.buildroot.chrootuser,
+            nspawn_args=self._get_nspawn_args(),
+            unshare_net=self.private_network, returnOutput=True,
+            returnStderr=True, raiseExc=False)
+        if return_code:
+            raise PkgError("Source RPM is not installable:\n{0}".format(output))
 
     @traceLog()
     def rebuild_installed_srpm(self, spec_path, timeout):
