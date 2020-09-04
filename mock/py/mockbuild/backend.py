@@ -487,7 +487,8 @@ class Commands(object):
                             build_ret_code = 2
                         else:
                             do_rebuild(self.config, self, buildroot, options, [pkg])
-                    except Error:
+                    except Error as err:
+                        log.error(str(err))
                         build_ret_code = 1
                 except (RootError,) as e:
                     log.warning(e.msg)
