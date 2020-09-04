@@ -25,6 +25,7 @@ from .podman import Podman
 
 
 def noop_in_bootstrap(f):
+    # pylint: disable=inconsistent-return-statements
     def wrapper(self, *args, **kwargs):
         if self.is_bootstrap:
             getLog().debug("method {} skipped in bootstrap".format(f.__name__))
