@@ -127,6 +127,7 @@ class scmWorker(object):
     @traceLog()
     def prepare_sources(self):
         # import rpm after setarch
+        # pylint: disable=import-outside-toplevel
         import rpm
         self.log.debug("Preparing SCM sources")
 

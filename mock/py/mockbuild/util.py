@@ -369,6 +369,7 @@ def orphansKill(rootToKill, manual_forced=False):
 
 @traceLog()
 def yieldSrpmHeaders(srpms, plainRpmOk=0):
+    # pylint: disable=import-outside-toplevel
     import rpm
     ts = rpm.TransactionSet('/')
     # When RPM > 4.14.90 is common we can use RPMVSF_MASK_NOSIGNATURES, RPMVSF_MASK_NODIGESTS
@@ -404,6 +405,7 @@ def checkSrpmHeaders(srpms, plainRpmOk=0):
 
 @traceLog()
 def getNEVRA(hdr):
+    # pylint: disable=import-outside-toplevel
     import rpm
     name = hdr[rpm.RPMTAG_NAME]
     ver = hdr[rpm.RPMTAG_VERSION]
@@ -419,6 +421,7 @@ def getNEVRA(hdr):
 @traceLog()
 def cmpKernelVer(str1, str2):
     'compare two kernel version strings and return -1, 0, 1 for less, equal, greater'
+    # pylint: disable=import-outside-toplevel
     import rpm
     return rpm.labelCompare(('', str1, ''), ('', str2, ''))
 
