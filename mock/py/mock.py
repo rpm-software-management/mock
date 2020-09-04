@@ -816,6 +816,7 @@ def run_command(options, args, config_opts, commands, buildroot, state):
     # Fetch and prepare sources from SCM
     if config_opts['scm']:
         try:
+            # pylint: disable=import-outside-toplevel
             from mockbuild import scm
         except ImportError as e:
             raise mockbuild.exception.BadCmdline(
