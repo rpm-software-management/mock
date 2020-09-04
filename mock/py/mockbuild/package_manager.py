@@ -136,6 +136,7 @@ class _PackageManager(object):
         self.init_install_output = ""
         self.bootstrap_buildroot = bootstrap_buildroot
         self.is_bootstrap_image = is_bootstrap_image
+        self.pkg_manager_config = ""
 
     @traceLog()
     def build_invocation(self, *args):
