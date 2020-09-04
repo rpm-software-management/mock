@@ -18,7 +18,7 @@ from urllib.parse import urlsplit
 # 3rd party imports
 import requests
 import rpm
-from mockbuild.mounts import BindMountPoint, FileSystemMountPoint
+from mockbuild.mounts import BindMountPoint
 
 from . import util
 from .exception import PkgError, Error, RootError
