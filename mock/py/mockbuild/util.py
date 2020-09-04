@@ -1532,6 +1532,7 @@ def update_config_from_file(config_opts, config_file, uid_manager):
             with os.fdopen(w_pipe, 'wb') as writer:
                 pickle.dump(config_opts, writer)
         except: # pylint: disable=bare-except
+            # pylint: disable=import-outside-toplevel
             import traceback
             etype, evalue, raw_tb = sys.exc_info()
             tb = traceback.extract_tb(raw_tb)
