@@ -96,7 +96,7 @@ PLUGIN_LIST = ['tmpfs', 'root_cache', 'yum_cache', 'mount', 'bind_mount',
 
 USE_NSPAWN = False
 
-_NSPAWN_HAS_CONSOLE_OPTION = None
+_NSPAWN_HELP_OUTPUT = None
 
 RHEL_CLONES = ['centos', 'deskos', 'ol', 'rhel', 'scientific']
 
@@ -852,6 +852,19 @@ def _nspawnTempResolvAtExit(path):
             getLog().warning("unable to delete temporary resolv.conf (%s): %s", path, e)
 
 
+def systemd_nspawn_help_output():
+    """ Get (cached, so we don't re-run) systemd-nspawn --help output. """
+    global _NSPAWN_HELP_OUTPUT  # pylint: disable=global-statement
+    if _NSPAWN_HELP_OUTPUT is not None:
+        return _NSPAWN_HELP_OUTPUT
+
+    _NSPAWN_HELP_OUTPUT = subprocess.check_output(
+        'systemd-nspawn --help || true',
+        shell=True)
+    _NSPAWN_HELP_OUTPUT = _NSPAWN_HELP_OUTPUT.decode('utf-8', errors='ignore')
+    return _NSPAWN_HELP_OUTPUT
+
+
 def _check_nspawn_pipe_option():
     """
     Detect whether host's systemd-nspawn supports --pipe argument and if we can
@@ -860,17 +873,17 @@ def _check_nspawn_pipe_option():
     'pipe'.  Later the default was changed to 'interactive' vs. 'read-only'
     (systemd commit de40a3037).
     """
-    global _NSPAWN_HAS_CONSOLE_OPTION
-    if _NSPAWN_HAS_CONSOLE_OPTION is not None:
-        return _NSPAWN_HAS_CONSOLE_OPTION
+    output = systemd_nspawn_help_output()
+    return '--pipe' in output and '--console' in output
 
-    output = subprocess.check_output('systemd-nspawn --help || true',
-                                     shell=True)
-    output = output.decode('utf-8', errors='ignore')
-    _NSPAWN_HAS_CONSOLE_OPTION = \
-        '--pipe' in output and '--console' in output
 
-    return _NSPAWN_HAS_CONSOLE_OPTION
+def _check_nspawn_resolv_conf():
+    """
+    Detect that --resolv-conf= option is supported in systemd-nspawn, and if
+    yes - switch the default value 'auto' to 'off' so nspawn doesn't override
+    our pre-generated resolv.conf file.
+    """
+    return '--resolv-conf' in systemd_nspawn_help_output()
 
 
 def _prepare_nspawn_command(chrootPath, user, cmd, nspawn_args=None, env=None,
@@ -901,6 +914,9 @@ def _prepare_nspawn_command(chrootPath, user, cmd, nspawn_args=None, env=None,
     if env:
         for k, v in env.items():
             nspawn_argv.append('--setenv={0}={1}'.format(k, v))
+
+    if _check_nspawn_resolv_conf():
+        nspawn_argv.append("--resolv-conf=off")
 
     # The '/bin/sh -c' wrapper is explicitly requested (--shell).  In this case
     # we shrink the list of arguments into one shell command, so the command is
