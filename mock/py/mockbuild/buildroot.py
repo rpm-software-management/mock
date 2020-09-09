@@ -277,14 +277,23 @@ class Buildroot(object):
         return set(out.splitlines())
 
     @traceLog()
-    def _copy_config(self, filename):
+    def _copy_config(self, filename, symlink=False):
         etcdir = self.make_chroot_path('etc')
         conf_file = os.path.join(etcdir, filename)
         if os.path.exists(conf_file):
             os.remove(conf_file)
         orig_conf_file = os.path.join('/etc', filename)
         if os.path.exists(orig_conf_file):
-            shutil.copy2(orig_conf_file, etcdir)
+            if symlink and os.path.islink(orig_conf_file):
+                linkto = os.readlink(orig_conf_file)
+                dst = self.make_chroot_path(orig_conf_file)
+                try:
+                    os.symlink(linkto, dst)
+                except FileExistsError:
+                    os.unlink(dst)
+                    os.symlink(linkto, dst)
+            else:
+                shutil.copy2(orig_conf_file, etcdir)
         else:
             self.root_log.warning("File %s not present. It is not copied into the chroot.", orig_conf_file)
 
@@ -307,7 +316,7 @@ class Buildroot(object):
 
     @traceLog()
     def _setup_timezone(self):
-        self._copy_config('localtime')
+        self._copy_config('localtime', symlink=True)
 
     @staticmethod
     def _module_commands_from_config(config):
