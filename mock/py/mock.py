@@ -1024,9 +1024,9 @@ if __name__ == '__main__':
 
     exitStatus = 0
 
-    (opts, packages) = command_parse()
 
     try:
+        (opts, packages) = command_parse()
         exitStatus = main()
 
     except (SystemExit,):
