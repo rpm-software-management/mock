@@ -742,6 +742,10 @@ def main():
 
     buildroot = Buildroot(config_opts, uidManager, state, plugins, bootstrap_buildroot)
 
+    for baseurl in options.repos:
+        util.add_local_repo(config_opts, baseurl,
+                            bootstrap=bootstrap_buildroot)
+
     if bootstrap_buildroot is not None:
         # add the extra bind mount to the outer chroot
         inner_mount = bootstrap_buildroot.make_chroot_path(buildroot.make_chroot_path())
