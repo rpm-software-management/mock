@@ -1776,7 +1776,16 @@ REPOS_ID = []
 @traceLog()
 def generate_repo_id(baseurl):
     """ generate repository id for yum.conf out of baseurl """
-    repoid = "/".join(baseurl.split('//')[1:]).replace('/', '_')
+    repoid = baseurl
+
+    # drop proto:// suffix
+    proto_split = baseurl.split('://')
+    if len(proto_split) > 1:
+        repoid = "/".join(proto_split[1:])
+    else:
+        repoid = baseurl
+
+    repoid = repoid.replace('/', '_')
     repoid = re.sub(r'[^a-zA-Z0-9_]', '', repoid)
     suffix = ''
     i = 1
@@ -1808,7 +1817,10 @@ best=1
 
     config_opts['{0}.conf'.format(config_opts['package_manager'])] += localyumrepo
 
-    if bootstrap is None or not baseurl.startswith("file:///"):
+    if bootstrap is None:
+        return
+
+    if not baseurl.startswith("file:///") and not baseurl.startswith("/"):
         return
 
     local_dir = baseurl.replace("file://", "", 1)
