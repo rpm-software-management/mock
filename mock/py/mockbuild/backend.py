@@ -426,9 +426,6 @@ class Commands(object):
         # modify with localrepo
         util.add_local_repo(self.config, local_baseurl, 'local_build_repo',
                             bootstrap=buildroot.bootstrap_buildroot)
-        for baseurl in options.repos:
-            util.add_local_repo(self.config, baseurl,
-                                bootstrap=buildroot.bootstrap_buildroot)
 
         with self.uid_manager:
             util.createrepo(self.config, self.config['local_repo_dir'])
