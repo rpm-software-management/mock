@@ -1452,6 +1452,10 @@ def set_config_opts_per_cmdline(config_opts, options, args):
         raise exception.BadCmdline(
             "Must specify --resultdir when building multiple RPMS.")
 
+    if options.mode == "chain" and options.resultdir:
+        raise exception.BadCmdline(
+            "The --chain mode doesn't support --resultdir, use --localrepo instead")
+
     if options.cleanup_after is False:
         config_opts['cleanup_on_success'] = False
         config_opts['cleanup_on_failure'] = False
