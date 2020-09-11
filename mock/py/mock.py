@@ -908,7 +908,19 @@ def run_command(options, args, config_opts, commands, buildroot, state):
                 options.sources = None
             else:
                 config_opts['clean'] = False
-        mockbuild.rebuild.do_rebuild(config_opts, commands, buildroot, options, args)
+
+        try:
+            srpms = []
+            for srpm_location in args:
+                with buildroot.uid_manager:
+                    srpm = util.FileDownloader.get(srpm_location)
+                if not srpm:
+                    raise mockbuild.exception.BadCmdline(
+                        "Invalid {} source RPM".format(srpm_location))
+                srpms.append(srpm)
+            mockbuild.rebuild.do_rebuild(config_opts, commands, buildroot, options, srpms)
+        finally:
+            util.FileDownloader.cleanup()
 
     elif options.mode == 'buildsrpm':
         mockbuild.rebuild.do_buildsrpm(config_opts, commands, buildroot, options, args)
