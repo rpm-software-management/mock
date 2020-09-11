@@ -19,6 +19,7 @@ import logging
 import os
 import os.path
 import pickle
+import pipes
 import pwd
 import re
 import select
@@ -101,6 +102,12 @@ _NSPAWN_HELP_OUTPUT = None
 RHEL_CLONES = ['centos', 'deskos', 'ol', 'rhel', 'scientific']
 
 _OPS_TIMEOUT = 0
+
+
+def cmd_pretty(cmd):
+    if isinstance(cmd, list):
+        return ' '.join(pipes.quote(arg) for arg in cmd)
+    return cmd
 
 
 class commandTimeoutExpired(exception.Error):
@@ -967,13 +974,13 @@ def doshell(chrootPath=None, environ=None, uid=None, gid=None, cmd=None,
         environ['SYSTEMD_NSPAWN_TMPFS_TMP'] = '0'
         shell = False
 
-    log.debug("doshell: command: %s", cmd)
+    log.debug("doshell: command: %s", cmd_pretty(cmd))
     return subprocess.call(cmd, preexec_fn=preexec, env=environ, shell=shell)
 
 
 def run(cmd, isShell=True):
     log = getLog()
-    log.debug("run: cmd = %s\n", cmd)
+    log.debug("run: cmd = %s", cmd_pretty(cmd))
     return subprocess.call(cmd, shell=isShell)
 
 
