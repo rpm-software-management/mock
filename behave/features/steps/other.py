@@ -97,3 +97,9 @@ def step_impl(context, expected_message):
     err = context.last_cmd[2].splitlines()
     assert_that(err, has_length(1))
     assert_that(err[0], contains_string(expected_message))
+
+
+@when('an online source RPM is rebuilt')
+def step_impl(context):
+    url = context.test_storage + "mock-test-bump-version-1-0.src.rpm"
+    context.mock.rebuild([url])

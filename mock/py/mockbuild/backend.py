@@ -6,21 +6,19 @@
 # Major reorganization and adaptation by Michael Brown
 # Copyright (C) 2007 Michael E Brown <mebrown@michaels-house.net>
 
-import cgi
 import glob
 import os
 import shutil
 import sys
 import tempfile
 import getpass
-from urllib.parse import urlsplit
 
 # 3rd party imports
-import requests
 import rpm
 from mockbuild.mounts import BindMountPoint
 
 from . import util
+from .util import FileDownloader
 from .exception import PkgError, Error, RootError
 from .trace_decorator import getLog, traceLog
 from .rebuild import do_rebuild
@@ -429,7 +427,6 @@ class Commands(object):
 
         with self.uid_manager:
             util.createrepo(self.config, self.config['local_repo_dir'])
-            download_dir = tempfile.mkdtemp()
 
         downloaded_pkgs = {}
         built_pkgs = []
@@ -446,29 +443,16 @@ class Commands(object):
                     log.error("%s doesn't appear to be an rpm - skipping", pkg)
                     failed.append(pkg)
                     continue
-                if pkg.startswith('http://') or pkg.startswith('https://') or pkg.startswith('ftp://'):
-                    url = pkg
-                    try:
-                        log.info('Fetching %s', url)
-                        r = requests.get(url)
-                        # pylint: disable=no-member
-                        if r.status_code == requests.codes.ok:
-                            fn = urlsplit(r.url).path.rsplit('/', 1)[1]
-                            if 'content-disposition' in r.headers:
-                                _, params = cgi.parse_header(r.headers['content-disposition'])
-                                if 'filename' in params and params['filename']:
-                                    fn = params['filename']
-                            pkg = download_dir + '/' + fn
-                            with open(pkg, 'wb') as fd:
-                                for chunk in r.iter_content(4096):
-                                    fd.write(chunk)
-                    except Exception as e:
-                        log.error('Downloading %s: %s', url, str(e))
-                        failed.append(url)
-                        continue
-                    else:
-                        downloaded_pkgs[pkg] = url
-                log.info("Start chain build: %s", pkg)
+
+                with self.uid_manager:
+                    pkg_location = pkg
+                    pkg = FileDownloader.get(pkg_location)
+
+                if not pkg:
+                    failed.append(pkg_location)
+                    continue
+
+                log.info("Start chain build: %s", pkg_location)
                 build_ret_code = 0
                 try:
                     s_pkg = os.path.basename(pkg)
@@ -490,7 +474,7 @@ class Commands(object):
                 except (RootError,) as e:
                     log.warning(e.msg)
                     failed.append(pkg)
-                log.info("End chain build: %s", pkg)
+                log.info("End chain build: %s", pkg_location)
 
                 with self.uid_manager:
                     if build_ret_code == 1:
@@ -520,7 +504,7 @@ class Commands(object):
                 else:
                     log.info("Tried %s times - following pkgs could not be successfully built:", num_of_tries)
                     for pkg in failed:
-                        msg = downloaded_pkgs.get(pkg, pkg)
+                        msg = FileDownloader.original_name(pkg)
                         log.info(msg)
                     try_again = False
                     return_code = 4
@@ -529,8 +513,7 @@ class Commands(object):
                 if failed:
                     return_code = 4
 
-        # cleaning up our download dir
-        shutil.rmtree(download_dir, ignore_errors=True)
+        FileDownloader.cleanup()
 
         log.info("Results out to: %s", self.config['local_repo_dir'])
         if skipped_pkgs:

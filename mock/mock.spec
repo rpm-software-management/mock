@@ -88,6 +88,7 @@ BuildRequires: python%{python3_pkgversion}-jinja2
 BuildRequires: python%{python3_pkgversion}-pyroute2
 BuildRequires: python%{python3_pkgversion}-pytest
 BuildRequires: python%{python3_pkgversion}-pytest-cov
+BuildRequires: python%{python3_pkgversion}-requests
 %endif
 
 %if 0%{?fedora} || 0%{?rhel} >= 8
