@@ -14,8 +14,9 @@ uniqueext="$$-$RANDOM"
 outdir=${TOPDIR}/mock-unit-test
 cfgdir=${TOPDIR}/../mock-core-configs/etc/mock
 #MOCKCMD="sudo ./py/mock.py $VERBOSE --resultdir=$outdir --uniqueext=$uniqueext --configdir=$cfgdir -r $testConfig --plugin-option=root_cache:age_check=False $MOCK_EXTRA_ARGS"
-MOCKCMD="mock $VERBOSE --resultdir=$outdir --uniqueext=$uniqueext --configdir=$cfgdir -r $testConfig $MOCK_EXTRA_ARGS"
+MOCKCMD_NO_RESULTDIR="mock $VERBOSE --uniqueext=$uniqueext --configdir=$cfgdir -r $testConfig $MOCK_EXTRA_ARGS"
+MOCKCMD="$MOCKCMD_NO_RESULTDIR --resultdir=$outdir"
 MOCKCHAIN="mock $VERBOSE --chain --configdir=$cfgdir -r $testConfig $MOCK_EXTRA_ARGS"
 CHROOT=/var/lib/mock/${testConfig}-$uniqueext/root
 
-export MOCKSRPM TOPDIR TESTDIR testConfig uniqueext outdir MOCKCMD CHROOT VERBOSE MOCKCHAIN SIMPLESRPM
+export MOCKSRPM TOPDIR TESTDIR testConfig uniqueext outdir MOCKCMD MOCKCMD_NO_RESULTDIR CHROOT VERBOSE MOCKCHAIN SIMPLESRPM
