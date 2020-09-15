@@ -438,6 +438,12 @@ class Commands(object):
             num_of_tries += 1
             failed = []
             for pkg in to_be_built:
+                if failed and not options.cont:
+                    log.error("Stopping the --chain build because --continue "
+                              "isn't specified and the package '%s' failed "
+                              "to build", failed[0])
+                    break
+
                 if not pkg.endswith('.rpm'):
                     log.error("%s doesn't appear to be an rpm - skipping", pkg)
                     failed.append(pkg)
