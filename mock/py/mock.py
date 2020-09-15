@@ -409,6 +409,10 @@ def command_parse():
             raise mockbuild.exception.BadCmdline("Must specify both --spec and "
                                                  "--sources with --buildsrpm")
 
+    if options.recurse:
+        # --recurse implies --continue
+        options.cont = True
+
     if options.localrepo and options.mode != 'chain':
         raise mockbuild.exception.BadCmdline(
             "The --localrepo option works only with --chain")
