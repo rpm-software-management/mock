@@ -12,8 +12,8 @@
 
 Summary: Builds packages inside chroots
 Name: mock
-Version: 2.5
-Release: 2%{?dist}
+Version: 2.6
+Release: 1%{?dist}
 License: GPLv2+
 # Source is created by
 # git clone https://github.com/rpm-software-management/mock.git
@@ -270,6 +270,21 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 %dir  %{_sysconfdir}/mock/templates
 
 %changelog
+* Tue Sep 15 2020 Pavel Raiskup <praiskup@redhat.com> 2.6-1
+- the --recurse option implies --continue
+- fix --chain --continue option
+- fail when --continue/--recurse is used without --chain
+- fix _copy_config() for broken symlinks in dst= (rhbz#1878924)
+- auto-download the source RPMs from web with --rebuild
+- handle exceptions from command_parse() method
+- fail verbosely for --chain & --resultdir combination
+- allow using -a|--addrepo with /absolute/path/argument
+- add support for -a/--addrepo in normal --rebuild mode
+- use systemd-nspawn --resolv-conf=off
+- create /etc/localtime as symlink even with isolation=simple (msuchy@redhat.com)
+- dump the reason for particular package build fail in --chain
+- raise PkgError when the source RPM can not be installed
+
 * Thu Sep 03 2020 Pavel Raiskup <praiskup@redhat.com> 2.5-2
 - because of the mock-filesystem change, we need to enforce upgrade
   of the old mock-core-configs package
