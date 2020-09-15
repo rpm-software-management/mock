@@ -413,6 +413,14 @@ def command_parse():
         raise mockbuild.exception.BadCmdline(
             "The --localrepo option works only with --chain")
 
+    if options.recurse and options.mode != 'chain':
+        raise mockbuild.exception.BadCmdline(
+            "Only --chain mode supports --recurse build algorithm")
+
+    if options.cont and options.mode != 'chain':
+        raise mockbuild.exception.BadCmdline(
+            "Only --chain mode supports --continue build algorithm")
+
     if options.spec:
         options.spec = os.path.expanduser(options.spec)
     if options.sources:
