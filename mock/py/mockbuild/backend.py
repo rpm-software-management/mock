@@ -428,7 +428,6 @@ class Commands(object):
         with self.uid_manager:
             util.createrepo(self.config, self.config['local_repo_dir'])
 
-        downloaded_pkgs = {}
         built_pkgs = []
         skipped_pkgs = []
         try_again = True
