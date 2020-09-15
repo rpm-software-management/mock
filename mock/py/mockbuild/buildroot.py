@@ -278,21 +278,20 @@ class Buildroot(object):
 
     @traceLog()
     def _copy_config(self, filename, symlink=False):
-        etcdir = self.make_chroot_path('etc')
-        conf_file = os.path.join(etcdir, filename)
+        orig_conf_file = os.path.join('/etc', filename)
+        conf_file = self.make_chroot_path(orig_conf_file)
+
         try:
             os.remove(conf_file)
         except FileNotFoundError:
             pass
-        orig_conf_file = os.path.join('/etc', filename)
 
         if os.path.exists(orig_conf_file):
             if symlink and os.path.islink(orig_conf_file):
                 linkto = os.readlink(orig_conf_file)
-                dst = self.make_chroot_path(orig_conf_file)
-                os.symlink(linkto, dst)
+                os.symlink(linkto, conf_file)
             else:
-                shutil.copy2(orig_conf_file, etcdir)
+                shutil.copy2(orig_conf_file, conf_file)
         else:
             self.root_log.warning("File %s not present. It is not copied into the chroot.", orig_conf_file)
 
