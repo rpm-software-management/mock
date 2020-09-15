@@ -256,6 +256,8 @@ Override configuration option. Can be used multiple times. When used multiple ti
 .TP
 \fB\-\-continue\fR
 If a pkg fails to build, continue to the next one, default is to stop.
+
+Works only with \fB\-\-chain\fR.
 .TP
 \fB\-\-cwd\fR=\fIDIR\fP
 Change to the specified directory (relative to the chroot) before running command when using \-\-chroot
@@ -341,7 +343,7 @@ Be quiet.
 \fB\-\-recurse\fR
 Build all pkgs, record the failures and try to rebuild them again and again
 until everything gets built (or until the set of pkgs failing to build are the
-same over) sets --continue.
+same over) sets \fB\-\-continue\fR.  Works only with \fB\-\-chain\fR.
 .TP
 \fB\-r\fR \fICONFIG\fP, \fB\-\-root\fR=\fICONFIG\fP
 Uses specified chroot configuration as defined in
