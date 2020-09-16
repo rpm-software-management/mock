@@ -3,15 +3,15 @@ config_opts['chroot_setup_cmd'] += " epel-release epel-rpm-macros fedpkg-minimal
 config_opts['dnf.conf'] += """
 
 [epel]
-name=epel
+name=Extra Packages for Enterprise Linux $releasever - $basearch
 mirrorlist=http://mirrors.fedoraproject.org/mirrorlist?repo=epel-8&arch=$basearch
 failovermethod=priority
 gpgkey=file:///usr/share/distribution-gpg-keys/epel/RPM-GPG-KEY-EPEL-8
 gpgcheck=1
 skip_if_unavailable=False
 
-[testing]
-name=epel-testing
+[epel-testing]
+name=Extra Packages for Enterprise Linux $releasever - Testing - $basearch
 enabled=0
 mirrorlist=http://mirrors.fedoraproject.org/mirrorlist?repo=testing-epel8&arch=$basearch
 failovermethod=priority
@@ -25,35 +25,35 @@ enabled=0
 skip_if_unavailable=False
 
 [epel-debuginfo]
-name=epel-debug
+name=Extra Packages for Enterprise Linux $releasever - $basearch - Debug
 mirrorlist=http://mirrors.fedoraproject.org/mirrorlist?repo=epel-debug-8&arch=$basearch
 failovermethod=priority
 enabled=0
 skip_if_unavailable=False
 
 [epel-source]
-name=epel-source
+name=Extra Packages for Enterprise Linux $releasever - $basearch - Source
 mirrorlist=http://mirrors.fedoraproject.org/mirrorlist?repo=epel-source-8&arch=$basearch
 failovermethod=priority
 enabled=0
 skip_if_unavailable=False
 
 [epel-modular]
-name=epel-modular
+name=Extra Packages for Enterprise Linux Modular $releasever - $basearch
 mirrorlist=http://mirrors.fedoraproject.org/mirrorlist?repo=epel-modular-8&arch=$basearch
 failovermethod=priority
 enabled=0
 skip_if_unavailable=False
 
 [epel-modular-debuginfo]
-name=epel-modular-debug
+name=Extra Packages for Enterprise Linux Modular $releasever - $basearch - Debug
 mirrorlist=http://mirrors.fedoraproject.org/mirrorlist?repo=epel-modular-debug-8&arch=$basearch
 failovermethod=priority
 enabled=0
 skip_if_unavailable=False
 
 [epel-modular-source]
-name=epel-modular-source
+name=Extra Packages for Enterprise Linux Modular $releasever - $basearch - Source
 mirrorlist=http://mirrors.fedoraproject.org/mirrorlist?repo=epel-modular-source-8&arch=$basearch
 failovermethod=priority
 enabled=0
