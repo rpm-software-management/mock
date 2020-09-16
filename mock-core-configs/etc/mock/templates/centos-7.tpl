@@ -61,6 +61,23 @@ gpgkey={{ centos_7_gpg_keys }}
 gpgcheck=1
 skip_if_unavailable=False
 
+[fastrack]
+name=CentOS-$releasever - fasttrack
+mirrorlist=http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=fasttrack
+failovermethod=priority
+gpgkey={{ centos_7_gpg_keys }}
+gpgcheck=1
+skip_if_unavailable=False
+enabled=0
+
+[centosplus]
+name=CentOS-$releasever - Plus
+mirrorlist=http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=centosplus
+#baseurl=http://mirror.centos.org/centos/$releasever/centosplus/$basearch/
+gpgkey={{ centos_7_gpg_keys }}
+gpgcheck=1
+enabled=0
+
 {% if target_arch == 'x86_64' %}
 [centos-sclo-sclo]
 name=CentOS-$releasever - SCLo sclo
