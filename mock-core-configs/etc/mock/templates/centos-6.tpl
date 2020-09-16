@@ -9,6 +9,8 @@ config_opts['isolation'] = 'simple'
 config_opts['bootstrap_image'] = 'centos:6'
 config_opts['package_manager'] = 'yum'
 
+config_opts['yum_install_command'] += "{% if target_arch in ['x86_64'] %} --disablerepo=centos-sclo*{% endif %}"
+
 config_opts['yum.conf'] = """
 [main]
 keepcache=1
