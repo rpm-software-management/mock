@@ -1,4 +1,4 @@
-config_opts['chroot_setup_cmd'] += " epel-release epel-rpm-macros fedpkg-minimal"
+include('templates/epel-8.tpl')
 
 config_opts['dnf.conf'] += """
 
