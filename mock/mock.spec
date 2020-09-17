@@ -198,6 +198,9 @@ install -d %{buildroot}/var/cache/mock
 mkdir -p %{buildroot}%{_pkgdocdir}
 install -p -m 0644 docs/site-defaults.cfg %{buildroot}%{_pkgdocdir}
 
+sed -i 's/^_MOCK_NVR = None$/_MOCK_NVR = "%name-%version-%release"/' \
+    %{buildroot}%{_libexecdir}/mock/mock
+
 %pre filesystem
 # check for existence of mock group, create it if not found
 getent group mock > /dev/null || groupadd -f -g %mockgid -r mock

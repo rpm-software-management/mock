@@ -99,6 +99,8 @@ signal_names = {1: "SIGHUP",
                 15: "SIGTERM"
                 }
 
+# This line is replaced by spec file %install section.
+_MOCK_NVR = None
 
 # pylint: disable=unused-argument
 def scrub_callback(option, opt, value, parser):
@@ -691,8 +693,9 @@ def main():
 
     # do whatever we're here to do
     py_version = '{0}.{1}.{2}'.format(*sys.version_info[:3])
-    log.info("mock.py version %s starting (python version = %s)...",
-             __VERSION__, py_version)
+    log.info("mock.py version %s starting (python version = %s%s)...",
+             __VERSION__, py_version,
+             "" if not _MOCK_NVR else ", NVR = " + _MOCK_NVR)
     state = State()
     plugins = Plugins(config_opts, state)
 
