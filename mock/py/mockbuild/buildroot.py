@@ -220,6 +220,10 @@ class Buildroot(object):
                 self.pkg_manager.update()
                 packages_after = self.all_chroot_packages()
                 if packages_before != packages_after:
+                    new_packages = "\n".join(packages_after - packages_before)
+                    self.root_log.info("Calling postupdate hooks because there "
+                                       "are new/updated packages:\n%s",
+                                       new_packages)
                     self.plugins.call_hooks('postupdate')
                 self.state.finish(update_state)
         else:
