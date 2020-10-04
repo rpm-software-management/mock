@@ -113,6 +113,18 @@ def cmd_pretty(cmd):
     return cmd
 
 
+def compat_expand_string(string, conf_dict):
+    """
+    Expand %(uid)s, etc., only if needed - and warn the user
+    that Jinja should be used instead.
+    """
+    if '%(' not in string:
+        return string
+    getLog().warning("Obsoleted %(foo) config expansion in '{}', "
+                     "use Jinja alternative {{foo}}".format(string))
+    return string % conf_dict
+
+
 # pylint: disable=no-member,unsupported-assignment-operation
 class TemplatedDictionary(MutableMapping):
     """ Dictionary where __getitem__() is run through Jinja2 template """
@@ -1465,7 +1477,8 @@ def set_config_opts_per_cmdline(config_opts, options, args):
     check_config(config_opts)
     # can't cleanup unless resultdir is separate from the root dir
     basechrootdir = os.path.join(config_opts['basedir'], config_opts['root'])
-    if is_in_dir(config_opts['resultdir'] % config_opts, basechrootdir):
+    config_resultdir = compat_expand_string(config_opts['resultdir'], config_opts)
+    if is_in_dir(config_resultdir, basechrootdir):
         config_opts['cleanup_on_success'] = False
         config_opts['cleanup_on_failure'] = False
 

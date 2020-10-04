@@ -55,7 +55,7 @@ class Buildroot(object):
         if is_bootstrap:
             self.rootdir = os.path.join(self.basedir, 'root')
 
-        self.resultdir = config['resultdir'] % config
+        self.resultdir = util.compat_expand_string(config['resultdir'], config)
 
         # In bootstrap buildroot, resultdir _should_ be basically unused (nobody
         # looks there anyways).  But it is actually used on many fronts -- e.g.
