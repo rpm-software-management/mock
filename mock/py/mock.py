@@ -63,6 +63,7 @@ import copy
 # pylint: disable=import-error
 from functools import partial
 from mockbuild import util
+from mockbuild.file_downloader import FileDownloader
 from mockbuild.mounts import BindMountPoint, FileSystemMountPoint
 
 # all of the variables below are substituted by the build system
@@ -928,14 +929,14 @@ def run_command(options, args, config_opts, commands, buildroot, state):
             srpms = []
             for srpm_location in args:
                 with buildroot.uid_manager:
-                    srpm = util.FileDownloader.get(srpm_location)
+                    srpm = FileDownloader.get(srpm_location)
                 if not srpm:
                     raise mockbuild.exception.BadCmdline(
                         "Invalid {} source RPM".format(srpm_location))
                 srpms.append(srpm)
             mockbuild.rebuild.do_rebuild(config_opts, commands, buildroot, options, srpms)
         finally:
-            util.FileDownloader.cleanup()
+            FileDownloader.cleanup()
 
     elif options.mode == 'buildsrpm':
         mockbuild.rebuild.do_buildsrpm(config_opts, commands, buildroot, options, args)
