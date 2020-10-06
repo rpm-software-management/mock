@@ -32,6 +32,7 @@ class Error(Exception):
 # 5 = cmdline processing error
 # 6 = invalid architecture
 # 10 = problem building the package
+# 11 = command timeouted
 # 20 = error in the chroot of some kind
 # 25 = LVM manipulation error
 # 30 = Yum emitted an error of some sort
@@ -64,6 +65,8 @@ def get_class_by_code(exit_code):
         return InvalidArchitecture("Invalid architecture.")
     elif exit_code == 10:
         return BuildError("Error during rpmbuild phase. Check the build.log.")
+    elif exit_code == 11:
+        return commandTimeoutExpired("Command timeout expired.")
     elif exit_code == 20:
         return RootError("Error in the chroot. Check the root.log.")
     elif exit_code == 25:
@@ -102,6 +105,12 @@ class BuildError(Error):
         self.msg = msg
         self.resultcode = 10
 
+
+class commandTimeoutExpired(Error):
+    def __init__(self, msg):
+        Error.__init__(self, msg)
+        self.msg = msg
+        self.resultcode = 11
 
 class RootError(Error):
     "failed to set up chroot"
