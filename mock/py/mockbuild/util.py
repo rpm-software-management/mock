@@ -113,12 +113,6 @@ def cmd_pretty(cmd):
     return cmd
 
 
-class commandTimeoutExpired(exception.Error):
-    def __init__(self, msg):
-        exception.Error.__init__(self, msg)
-        self.msg = msg
-        self.resultcode = 10
-
 # pylint: disable=no-member,unsupported-assignment-operation
 class TemplatedDictionary(MutableMapping):
     """ Dictionary where __getitem__() is run through Jinja2 template """
@@ -782,7 +776,8 @@ def do_with_status(command, shell=False, chrootPath=None, cwd=None, timeout=0, r
         command = ' '.join(command)
 
     if not niceExit:
-        raise commandTimeoutExpired("Timeout(%s) expired for command:\n # %s\n%s" % (timeout, command, output))
+        raise exception.commandTimeoutExpired("Timeout(%s) expired for command:\n # %s\n%s" %
+                                              (timeout, command, output))
 
     logger.debug("Child return code was: %s", child.returncode)
     if raiseExc and child.returncode:
