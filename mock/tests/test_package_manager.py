@@ -6,7 +6,8 @@ import pytest
 from unittest import mock
 from unittest.mock import MagicMock
 
-from mockbuild.util import TemplatedDictionary, load_defaults
+from mockbuild.text import TemplatedDictionary
+from mockbuild.util import load_defaults
 from mockbuild.buildroot import Buildroot
 from mockbuild.package_manager import _PackageManager, Dnf
 

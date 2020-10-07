@@ -17,6 +17,7 @@ import getpass
 import rpm
 from mockbuild.mounts import BindMountPoint
 
+from . import text
 from . import util
 from .util import FileDownloader
 from .exception import PkgError, Error, RootError
@@ -284,7 +285,7 @@ class Commands(object):
             # Check if we will have dynamic BuildRequires, but do not allow it
             hdr = next(util.yieldSrpmHeaders((rebuilt_srpm,)))
             # pylint: disable=no-member
-            requires = {util._to_text(req) for req in hdr[rpm.RPMTAG_REQUIRES]}
+            requires = {text._to_text(req) for req in hdr[rpm.RPMTAG_REQUIRES]}
             dynamic_buildreqs = 'rpmlib(DynamicBuildRequires)' in requires
 
             if dynamic_buildreqs and not self.config.get('dynamic_buildrequires'):
