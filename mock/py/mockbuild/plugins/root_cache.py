@@ -12,6 +12,7 @@ import time
 # our imports
 from mockbuild.trace_decorator import getLog, traceLog
 import mockbuild.util
+import mockbuild.text
 
 requires_api_version = "1.1"
 
@@ -224,7 +225,7 @@ class RootCache(object):
                     raise
                 # now create the cache log file
                 with open(os.path.join(self.rootSharedCachePath, "cache.log"), "wb") as cache_log:
-                    cache_log.write(self.buildroot.pkg_manager.init_install_output.encode(mockbuild.util.encoding))
+                    cache_log.write(self.buildroot.pkg_manager.init_install_output.encode(mockbuild.text.encoding))
                 self.state.finish("creating root cache")
         finally:
             self._rootCacheUnlock()

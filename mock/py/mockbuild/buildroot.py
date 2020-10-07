@@ -15,6 +15,7 @@ import tempfile
 import uuid
 
 from . import mounts
+from . import text
 from . import uid
 from . import util
 from .exception import (BuildRootLocked, Error, ResultDirNotAccessible,
@@ -55,7 +56,7 @@ class Buildroot(object):
         if is_bootstrap:
             self.rootdir = os.path.join(self.basedir, 'root')
 
-        self.resultdir = util.compat_expand_string(config['resultdir'], config)
+        self.resultdir = text.compat_expand_string(config['resultdir'], config)
 
         # In bootstrap buildroot, resultdir _should_ be basically unused (nobody
         # looks there anyways).  But it is actually used on many fronts -- e.g.
