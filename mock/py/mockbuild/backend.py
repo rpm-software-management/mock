@@ -19,7 +19,7 @@ from mockbuild.mounts import BindMountPoint
 
 from . import text
 from . import util
-from .util import FileDownloader
+from .file_downloader import FileDownloader
 from .exception import PkgError, Error, RootError
 from .trace_decorator import getLog, traceLog
 from .rebuild import do_rebuild
