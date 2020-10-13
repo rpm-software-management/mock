@@ -271,6 +271,7 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 %dir  %{_sysconfdir}/mock/eol
 %dir  %{_sysconfdir}/mock/eol/templates
 %dir  %{_sysconfdir}/mock/templates
+%dir  %{_datadir}/cheat
 
 %changelog
 * Tue Sep 15 2020 Pavel Raiskup <praiskup@redhat.com> 2.6-1
