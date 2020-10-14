@@ -14,6 +14,7 @@ from configparser import ConfigParser
 from distutils.dir_util import copy_tree
 from distutils.errors import DistutilsFileError
 
+from . import file_util
 from . import util
 from .exception import BuildError, Error, YumError
 from .trace_decorator import traceLog, getLog
@@ -288,7 +289,7 @@ Error:      Neither dnf-utils nor yum-utils are installed. Dnf-utils or yum-util
         keys_path = "/usr/share/distribution-gpg-keys"
         dest_path = os.path.dirname(keys_path)
         chroot_path = self.buildroot.make_chroot_path(dest_path)
-        util.mkdirIfAbsent(chroot_path)
+        file_util.mkdirIfAbsent(chroot_path)
         self.buildroot.root_log.debug("Copying %s to the bootstrap chroot" % keys_path)
         cmd = ["cp", "-a", keys_path, chroot_path]
         util.do(cmd)
@@ -296,7 +297,7 @@ Error:      Neither dnf-utils nor yum-utils are installed. Dnf-utils or yum-util
     @traceLog()
     def copy_gpg_keys(self):
         pki_dir = self.buildroot.make_chroot_path('etc', 'pki', 'mock')
-        util.mkdirIfAbsent(pki_dir)
+        file_util.mkdirIfAbsent(pki_dir)
         for pki_file in glob.glob("/etc/pki/mock/RPM-GPG-KEY-*"):
             shutil.copy(pki_file, pki_dir)
 
@@ -489,7 +490,7 @@ class Yum(_PackageManager):
         super(Yum, self).initialize_config()
         # use yum plugin conf from chroot as needed
         pluginconf_dir = self.buildroot.make_chroot_path('etc', 'yum', 'pluginconf.d')
-        util.mkdirIfAbsent(pluginconf_dir)
+        file_util.mkdirIfAbsent(pluginconf_dir)
         config_content = self.get_pkg_manager_config().replace(
             "plugins=1", dedent("""\
                            plugins=1
@@ -520,11 +521,11 @@ class Yum(_PackageManager):
             self.buildroot.root_log.debug('configure RHSM rhnplugin')
             self._write_plugin_conf('subscription-manager.conf')
             pem_dir = self.buildroot.make_chroot_path('etc', 'pki', 'entitlement')
-            util.mkdirIfAbsent(pem_dir)
+            file_util.mkdirIfAbsent(pem_dir)
             for pem_file in glob.glob("/etc/pki/entitlement/*.pem"):
                 shutil.copy(pem_file, pem_dir)
             consumer_dir = self.buildroot.make_chroot_path('etc', 'pki', 'consumer')
-            util.mkdirIfAbsent(consumer_dir)
+            file_util.mkdirIfAbsent(consumer_dir)
             for consumer_file in glob.glob("/etc/pki/consumer/*.pem"):
                 shutil.copy(consumer_file, consumer_dir)
             shutil.copy('/etc/rhsm/rhsm.conf',
@@ -598,7 +599,7 @@ class Dnf(_PackageManager):
         config_content = self.get_pkg_manager_config()
         self.pkg_manager_config = config_content
         check_yum_config(config_content, self.buildroot.root_log)
-        util.mkdirIfAbsent(self.buildroot.make_chroot_path('etc', 'dnf'))
+        file_util.mkdirIfAbsent(self.buildroot.make_chroot_path('etc', 'dnf'))
         dnfconf_path = self.buildroot.make_chroot_path('etc', 'dnf', 'dnf.conf')
         with open(dnfconf_path, 'w+') as dnfconf_file:
             dnfconf_file.write(config_content)

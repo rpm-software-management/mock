@@ -22,7 +22,7 @@ config_opts['plugin_conf']['mount_opts']['dirs'].append(
 
 from mockbuild.mounts import FileSystemMountPoint
 from mockbuild.trace_decorator import traceLog
-import mockbuild.util
+from mockbuild import file_util
 
 requires_api_version = "1.1"
 
@@ -57,4 +57,4 @@ class Mount(object):
     def _mountCreateDirs(self):
         # pylint: disable=unused-variable
         for device, dest_dir, vfstype, mount_opts in self.opts['dirs']:
-            mockbuild.util.mkdirIfAbsent(self.buildroot.make_chroot_path(dest_dir))
+            file_util.mkdirIfAbsent(self.buildroot.make_chroot_path(dest_dir))
