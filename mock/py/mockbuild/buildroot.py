@@ -237,7 +237,7 @@ class Buildroot(object):
                 self.chown_home_dir()
 
         # mark the buildroot as initialized
-        util.touch(self.make_chroot_path('.initialized'))
+        file_util.touch(self.make_chroot_path('.initialized'))
 
         # done with init
         self.plugins.call_hooks('postinit')
@@ -727,7 +727,7 @@ class Buildroot(object):
                      self.make_chroot_path('etc', 'yum', 'yum.conf'),
                      self.make_chroot_path('etc', 'dnf', 'dnf.conf'),
                      self.make_chroot_path('var', 'log', 'yum.log')]:
-            util.touch(item)
+            file_util.touch(item)
         short_yum_confpath = self.make_chroot_path('etc', 'yum.conf')
         if not os.path.exists(short_yum_confpath):
             os.symlink("yum/yum.conf", short_yum_confpath)
@@ -735,7 +735,7 @@ class Buildroot(object):
     @traceLog()
     def _setup_files_postinstall(self):
         for item in [self.make_chroot_path('etc', 'os-release')]:
-            util.touch(item)
+            file_util.touch(item)
 
     @traceLog()
     def _setup_nosync(self):

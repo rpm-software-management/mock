@@ -11,7 +11,6 @@
 import os.path
 from mockbuild.mounts import BindMountPoint
 from mockbuild.trace_decorator import traceLog
-import mockbuild.util
 from mockbuild import file_util
 
 requires_api_version = "1.1"
@@ -51,4 +50,4 @@ class BindMount(object):
                 file_util.mkdirIfAbsent(srcdir)
                 file_util.mkdirIfAbsent(self.buildroot.make_chroot_path(destdir))
             else:
-                mockbuild.util.touch(self.buildroot.make_chroot_path(destdir))
+                file_util.touch(self.buildroot.make_chroot_path(destdir))

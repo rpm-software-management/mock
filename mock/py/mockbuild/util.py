@@ -109,12 +109,6 @@ def get_proxy_environment(config):
 
 
 @traceLog()
-def touch(fileName):
-    getLog().debug("touching file: %s", fileName)
-    open(fileName, 'a').close()
-
-
-@traceLog()
 def rmtree(path, selinux=False, exclude=()):
     """Version of shutil.rmtree that ignores no-such-file-or-directory errors,
        tries harder if it finds immutable files and supports excluding paths"""

@@ -491,11 +491,11 @@ class Commands(object):
                             log.info("Will try to build again (if some other package will succeed).")
                         else:
                             log.info("See logs/results in %s", self.config['local_repo_dir'])
-                            util.touch(os.path.join(resultdir, 'fail'))
+                            file_util.touch(os.path.join(resultdir, 'fail'))
                     elif build_ret_code == 0:
                         log.info("Success building %s", os.path.basename(pkg))
                         built_pkgs.append(pkg)
-                        util.touch(success_file)
+                        file_util.touch(success_file)
                         # createrepo with the new pkgs
                         util.createrepo(self.config, self.config['local_repo_dir'])
                     elif build_ret_code == 2:
