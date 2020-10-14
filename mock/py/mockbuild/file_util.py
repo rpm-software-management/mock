@@ -21,3 +21,7 @@ def mkdirIfAbsent(*args):
                     raise exception.Error("Could not create dir %s. Error: %s" % (dirName, e))
 
 
+@traceLog()                                                                        
+def touch(fileName):
+    getLog().debug("touching file: %s", fileName)
+    open(fileName, 'a').close()
