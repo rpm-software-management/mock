@@ -425,7 +425,7 @@ Error:      Neither dnf-utils nor yum-utils are installed. Dnf-utils or yum-util
 
     def initialize_config(self):
         # there may be configs we get from container image
-        util.rmtree(self.buildroot.make_chroot_path('etc', 'yum.repos.d'))
+        file_util.rmtree(self.buildroot.make_chroot_path('etc', 'yum.repos.d'))
 
     def _check_command(self):
         """ Check if main command exists """

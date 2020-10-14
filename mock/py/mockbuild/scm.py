@@ -214,4 +214,4 @@ class scmWorker(object):
     @traceLog()
     def clean(self):
         self.log.debug("Clean SCM checkout directory")
-        util.rmtree(self.wrk_dir)
+        file_util.rmtree(self.wrk_dir)
