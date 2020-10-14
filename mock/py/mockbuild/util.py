@@ -804,23 +804,6 @@ def clean_env():
     }
 
 
-def get_fs_type(path):
-    cmd = ['/bin/stat', '-f', '-L', '-c', '%T', path]
-    p = subprocess.Popen(cmd, shell=False, stdout=subprocess.PIPE,
-                         universal_newlines=True)
-    p.wait()
-    with p.stdout as f:
-        return f.readline().strip()
-
-
-def find_non_nfs_dir():
-    dirs = ('/dev/shm', '/run', '/tmp', '/usr/tmp', '/')
-    for d in dirs:
-        if not get_fs_type(d).startswith('nfs'):
-            return d
-    raise exception.Error('Cannot find non-NFS directory in: %s' % dirs)
-
-
 @traceLog()
 def setup_host_resolv(config_opts):
     if not config_opts['use_host_resolv']:
