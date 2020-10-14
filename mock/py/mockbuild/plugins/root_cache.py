@@ -124,7 +124,7 @@ class RootCache(object):
         except OSError:
             pass
 
-        mockbuild.util.mkdirIfAbsent(self.rootSharedCachePath)
+        mockbuild.file_util.mkdirIfAbsent(self.rootSharedCachePath)
         # lock so others dont accidentally use root cache while we operate on it.
         if self.rootCacheLock is None:
             self.rootCacheLock = open(os.path.join(self.rootSharedCachePath, "rootcache.lock"), "a+")
@@ -140,7 +140,7 @@ class RootCache(object):
                 if mockbuild.util.get_fs_type(cwd).startswith('nfs'):
                     prev_cwd = os.getcwd()
                     os.chdir(mockbuild.util.find_non_nfs_dir())
-                mockbuild.util.mkdirIfAbsent(self.buildroot.make_chroot_path())
+                mockbuild.file_util.mkdirIfAbsent(self.buildroot.make_chroot_path())
                 if self.config["tar"] == "bsdtar":
                     __tar_cmd = "bsdtar"
                 else:
@@ -151,7 +151,7 @@ class RootCache(object):
                     shell=False, printOutput=True
                 )
                 for item in self.exclude_dirs:
-                    mockbuild.util.mkdirIfAbsent(self.buildroot.make_chroot_path(item))
+                    mockbuild.file_util.mkdirIfAbsent(self.buildroot.make_chroot_path(item))
 
                 self._rootCacheUnlock()
                 self.buildroot.chrootWasCached = True

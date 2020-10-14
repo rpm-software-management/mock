@@ -12,7 +12,7 @@ import subprocess
 
 # our imports
 from mockbuild.trace_decorator import getLog, traceLog
-import mockbuild.util
+from mockbuild import file_util
 
 requires_api_version = "1.1"
 
@@ -51,7 +51,7 @@ class ChrootScan(object):
         regexstr = "|".join(self.scan_opts['regexes'])
         regex = re.compile(regexstr)
         chroot = self.buildroot.make_chroot_path()
-        mockbuild.util.mkdirIfAbsent(self.resultdir)
+        file_util.mkdirIfAbsent(self.resultdir)
         count = 0
         logger = getLog()
         logger.debug("chroot_scan: Starting scan of %s", chroot)

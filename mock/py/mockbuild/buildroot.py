@@ -14,6 +14,7 @@ import stat
 import tempfile
 import uuid
 
+from . import file_util
 from . import mounts
 from . import text
 from . import uid
@@ -146,7 +147,7 @@ class Buildroot(object):
     def _setup_result_dir(self):
         with self.uid_manager:
             try:
-                util.mkdirIfAbsent(self.resultdir)
+                file_util.mkdirIfAbsent(self.resultdir)
             except Error:
                 raise ResultDirNotAccessible(ResultDirNotAccessible.__doc__ % self.resultdir)
 
@@ -154,11 +155,11 @@ class Buildroot(object):
     def _init(self, prebuild, do_log):
 
         self.state.start("chroot init")
-        util.mkdirIfAbsent(self.basedir)
+        file_util.mkdirIfAbsent(self.basedir)
         mockgid = grp.getgrnam('mock').gr_gid
         os.chown(self.basedir, os.getuid(), mockgid)
         os.chmod(self.basedir, 0o2775)
-        util.mkdirIfAbsent(self.make_chroot_path())
+        file_util.mkdirIfAbsent(self.make_chroot_path())
         self.plugins.call_hooks('mount_root')
         # intentionally we do not call bootstrap hook here - it does not have sense
         self._setup_nosync()
@@ -458,7 +459,7 @@ class Buildroot(object):
         self.logging_initialized = True
 
         with self.uid_manager:
-            util.mkdirIfAbsent(self.resultdir)
+            file_util.mkdirIfAbsent(self.resultdir)
             # attach logs to log files.
             # This happens in addition to anything that
             # is set up in the config file... ie. logs go everywhere
@@ -485,7 +486,7 @@ class Buildroot(object):
         for key in chroot_file_contents:
             p = self.make_chroot_path(key)
             if not os.path.exists(p):
-                util.mkdirIfAbsent(os.path.dirname(p))
+                file_util.mkdirIfAbsent(os.path.dirname(p))
                 with open(p, 'w+') as fo:
                     fo.write(chroot_file_contents[key])
 
@@ -512,7 +513,7 @@ class Buildroot(object):
 
     @traceLog()
     def _open_lock(self):
-        util.mkdirIfAbsent(self.basedir)
+        file_util.mkdirIfAbsent(self.basedir)
         self._lock_file = open(os.path.join(self.basedir, "buildroot.lock"), "a+")
 
     @traceLog()
@@ -552,7 +553,7 @@ class Buildroot(object):
                 'sys']
         dirs += self.config['extra_chroot_dirs']
         for item in dirs:
-            util.mkdirIfAbsent(self.make_chroot_path(item))
+            file_util.mkdirIfAbsent(self.make_chroot_path(item))
 
     @traceLog()
     def chown_home_dir(self):
@@ -565,7 +566,7 @@ class Buildroot(object):
         """ Create a fake home directory with an appropriate .rpmmacros. """
 
         rpm_config_home = os.path.join(self.rootdir, "installation-homedir")
-        util.mkdirIfAbsent(rpm_config_home)
+        file_util.mkdirIfAbsent(rpm_config_home)
 
         # Since /proc and /sys are mounted special filesystems when RPM is running
         # to install the buildroot, it doesn't make sense for RPM to try and
@@ -587,7 +588,7 @@ class Buildroot(object):
         time.
         """
         macro_dir = self.make_chroot_path(self.homedir)
-        util.mkdirIfAbsent(macro_dir)
+        file_util.mkdirIfAbsent(macro_dir)
         macrofile_out = os.path.join(macro_dir, ".rpmmacros")
         with open(macrofile_out, 'w+') as rpmmacros:
 
@@ -603,12 +604,12 @@ class Buildroot(object):
     def _setup_build_dirs(self):
         build_dirs = ['RPMS', 'SPECS', 'SRPMS', 'SOURCES', 'BUILD', 'BUILDROOT',
                       'originals']
-        util.mkdirIfAbsent(self.make_chroot_path(self.builddir))
+        file_util.mkdirIfAbsent(self.make_chroot_path(self.builddir))
         with self.uid_manager:
             self.uid_manager.changeOwner(self.make_chroot_path(self.builddir))
             for item in build_dirs:
                 path = self.make_chroot_path(self.builddir, item)
-                util.mkdirIfAbsent(path)
+                file_util.mkdirIfAbsent(path)
                 self.uid_manager.changeOwner(path)
             if self.config['clean']:
                 self.chown_home_dir()
@@ -641,8 +642,8 @@ class Buildroot(object):
     def _setup_devices(self):
         if self.config['internal_dev_setup']:
             util.rmtree(self.make_chroot_path("dev"), selinux=self.selinux, exclude=self.mounts.get_mountpoints())
-            util.mkdirIfAbsent(self.make_chroot_path("dev", "pts"))
-            util.mkdirIfAbsent(self.make_chroot_path("dev", "shm"))
+            file_util.mkdirIfAbsent(self.make_chroot_path("dev", "pts"))
+            file_util.mkdirIfAbsent(self.make_chroot_path("dev", "shm"))
             prevMask = os.umask(0000)
             devFiles = [
                 (stat.S_IFCHR | 0o666, os.makedev(1, 3), "dev/null"),
@@ -760,7 +761,7 @@ class Buildroot(object):
                 return False
             for dst_unresolved in (tmp_libdir, mock_libdir):
                 dst = resolve(dst_unresolved)
-                util.mkdirIfAbsent(dst)
+                file_util.mkdirIfAbsent(dst)
                 shutil.copy2(nosync, dst)
             return True
 

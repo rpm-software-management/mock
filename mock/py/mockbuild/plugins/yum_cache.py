@@ -37,7 +37,7 @@ class CacheDir:
             bindpath=self.mount_path,
         ))
 
-        mockbuild.util.mkdirIfAbsent(self.host_cache_path)
+        mockbuild.file_util.mkdirIfAbsent(self.host_cache_path)
 
 
 class YumCache(object):
@@ -116,7 +116,7 @@ class YumCache(object):
         getLog().info("enabled package manager cache")
 
         for cdir in self.cache_dirs:
-            mockbuild.util.mkdirIfAbsent(cdir.host_cache_path)
+            mockbuild.file_util.mkdirIfAbsent(cdir.host_cache_path)
 
         # lock so others dont accidentally use yum cache while we operate on it.
         self._yumCachePreYumHook()

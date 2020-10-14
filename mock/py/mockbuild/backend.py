@@ -17,6 +17,7 @@ import getpass
 import rpm
 from mockbuild.mounts import BindMountPoint
 
+from . import file_util
 from . import text
 from . import util
 from .file_downloader import FileDownloader
@@ -77,7 +78,7 @@ class Commands(object):
         if not os.path.exists(srcdir):
             return
         dstdir = os.path.join(self.backup_base_dir, self.config['root'])
-        util.mkdirIfAbsent(dstdir)
+        file_util.mkdirIfAbsent(dstdir)
         rpms = glob.glob(os.path.join(srcdir, "*rpm"))
         if len(rpms) == 0:
             return
@@ -154,7 +155,7 @@ class Commands(object):
     def init(self, **kwargs):
         try:
             if self.bootstrap_buildroot is not None:
-                util.mkdirIfAbsent(self.buildroot.make_chroot_path())
+                file_util.mkdirIfAbsent(self.buildroot.make_chroot_path())
                 self.bootstrap_buildroot.initialize(**kwargs)
             self.buildroot.initialize(**kwargs)
             if not self.buildroot.chroot_was_initialized:
@@ -418,7 +419,7 @@ class Commands(object):
         with self.uid_manager:
             self.config['local_repo_dir'] = os.path.normpath(
                 local_tmp_dir + '/results/' + self.config['chroot_name'] + '/')
-            util.mkdirIfAbsent(self.config['local_repo_dir'])
+            file_util.mkdirIfAbsent(self.config['local_repo_dir'])
 
         local_baseurl = "file://{0}".format(self.config['local_repo_dir'])
         log.info("results dir: %s", self.config['local_repo_dir'])
@@ -466,7 +467,7 @@ class Commands(object):
                     resultdir = os.path.join(self.config['local_repo_dir'], pdn)
                     self.buildroot.resultdir = resultdir
                     self.buildroot._resetLogging(force=True)
-                    util.mkdirIfAbsent(resultdir)
+                    file_util.mkdirIfAbsent(resultdir)
                     success_file = os.path.join(resultdir, 'success')
                     build_ret_code = 0
                     try:

@@ -13,7 +13,7 @@ import sys
 
 from io import StringIO
 
-from mockbuild import util
+from mockbuild import file_util
 from mockbuild.exception import Error
 from mockbuild.trace_decorator import traceLog
 
@@ -109,7 +109,7 @@ class PMRequestListener(object):
             # there's another process listening
             sys.exit(0)
 
-        util.mkdirIfAbsent(self.rundir)
+        file_util.mkdirIfAbsent(self.rundir)
         # Don't allow regular users to access the socket as they may not be in
         # the mock group
         os.chown(self.rundir, self.buildroot.chrootuid, self.buildroot.chrootgid)

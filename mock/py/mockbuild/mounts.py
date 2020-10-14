@@ -5,6 +5,7 @@ import grp
 import os
 import os.path
 
+from . import file_util
 from . import exception
 from . import util
 from .trace_decorator import traceLog
@@ -54,7 +55,7 @@ class FileSystemMountPoint(MountPoint):
         if self.mounted:
             return None
 
-        util.mkdirIfAbsent(self.path)
+        file_util.mkdirIfAbsent(self.path)
         cmd = ['/bin/mount', '-n', '-t', self.filetype]
         if self.options:
             cmd += ['-o', self.options]
@@ -97,10 +98,10 @@ class BindMountPoint(MountPoint):
     def mount(self):
         if not self.mounted:
             if os.path.isdir(self.srcpath):
-                util.mkdirIfAbsent(self.bindpath)
+                file_util.mkdirIfAbsent(self.bindpath)
             elif not os.path.exists(self.bindpath):
                 normbindpath = os.path.normpath(self.bindpath)
-                util.mkdirIfAbsent(os.path.dirname(normbindpath))
+                file_util.mkdirIfAbsent(os.path.dirname(normbindpath))
                 util.touch(self.bindpath)
             cmd = ['/bin/mount', '-n']
             if self.recursive:

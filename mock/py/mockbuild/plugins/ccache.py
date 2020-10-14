@@ -10,6 +10,7 @@
 from mockbuild.mounts import BindMountPoint
 from mockbuild.trace_decorator import getLog, traceLog
 import mockbuild.util
+from mockbuild import file_util
 
 requires_api_version = "1.1"
 
@@ -60,6 +61,6 @@ class CCache(object):
             envupd["CCACHE_COMPRESS"] = str(self.ccache_opts['compress'])
         self.buildroot.env.update(envupd)
 
-        mockbuild.util.mkdirIfAbsent(self.buildroot.make_chroot_path('/var/tmp/ccache'))
-        mockbuild.util.mkdirIfAbsent(self.ccachePath)
+        file_util.mkdirIfAbsent(self.buildroot.make_chroot_path('/var/tmp/ccache'))
+        file_util.mkdirIfAbsent(self.ccachePath)
         self.buildroot.uid_manager.changeOwner(self.ccachePath, recursive=True)
