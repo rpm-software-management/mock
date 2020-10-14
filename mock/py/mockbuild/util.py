@@ -659,15 +659,6 @@ def reset_sigpipe():
     signal.signal(signal.SIGPIPE, signal.SIG_DFL)
 
 
-def is_in_dir(path, directory):
-    """Tests whether `path` is inside `directory`."""
-    # use realpath to expand symlinks
-    path = os.path.realpath(path)
-    directory = os.path.realpath(directory)
-
-    return os.path.commonprefix([path, directory]) == directory
-
-
 def _nspawnTempResolvAtExit(path):
     """Remove nspawn temporary resolv.conf from host."""
     try:
