@@ -62,6 +62,7 @@ import copy
 
 # pylint: disable=import-error
 from functools import partial
+from mockbuild import config
 from mockbuild import util
 from mockbuild.file_downloader import FileDownloader
 from mockbuild.mounts import BindMountPoint, FileSystemMountPoint
@@ -123,7 +124,7 @@ def repo_callback(optobj, opt, value, parser):
 
 def command_parse():
     """return options and args from parsing the command line"""
-    plugins = util.PLUGIN_LIST
+    plugins = config.PLUGIN_LIST
     parser = OptionParser(usage=__doc__, version=__VERSION__)
 
     # modes (basic commands)
@@ -556,7 +557,7 @@ def check_arch_combination(target_arch, config_opts):
 @traceLog()
 def do_debugconfig(config_opts, uidManager):
     jinja_expand = config_opts['__jinja_expand']
-    defaults = util.load_defaults(uidManager, __VERSION__, PKGPYTHONDIR)
+    defaults = config.load_defaults(uidManager, __VERSION__, PKGPYTHONDIR)
     defaults['__jinja_expand'] = False
     config_opts['__jinja_expand'] = False
     for key in sorted(config_opts):
@@ -663,10 +664,10 @@ def main():
     if options.configdir:
         config_path = options.configdir
 
-    config_opts = util.load_config(config_path, options.chroot, uidManager, __VERSION__, PKGPYTHONDIR)
+    config_opts = config.load_config(config_path, options.chroot, uidManager, __VERSION__, PKGPYTHONDIR)
 
     # cmdline options override config options
-    util.set_config_opts_per_cmdline(config_opts, options, args)
+    config.set_config_opts_per_cmdline(config_opts, options, args)
 
     util.subscription_redhat_init(config_opts)
 
