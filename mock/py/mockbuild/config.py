@@ -20,9 +20,10 @@ import sys
 
 from . import exception
 from . import text
+from .file_util import is_in_dir
 from .trace_decorator import getLog, traceLog
 from .uid import getresuid
-from .util import USE_NSPAWN, is_in_dir, setup_operations_timeout
+from .util import USE_NSPAWN, setup_operations_timeout
 
 PLUGIN_LIST = ['tmpfs', 'root_cache', 'yum_cache', 'mount', 'bind_mount',
                'ccache', 'selinux', 'package_state', 'chroot_scan',

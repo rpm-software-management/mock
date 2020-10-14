@@ -87,3 +87,12 @@ def rmtree(path, selinux=False, exclude=()):
                 time.sleep(2)
             else:
                 raise
+
+
+def is_in_dir(path, directory):
+    """Tests whether `path` is inside `directory`."""
+    # use realpath to expand symlinks
+    path = os.path.realpath(path)
+    directory = os.path.realpath(directory)
+
+    return os.path.commonprefix([path, directory]) == directory
