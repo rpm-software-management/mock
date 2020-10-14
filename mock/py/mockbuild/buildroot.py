@@ -400,7 +400,7 @@ class Buildroot(object):
         excluded = [self.make_chroot_path(self.homedir, path)
                     for path in self.config['exclude_from_homedir_cleanup']] + \
             self.mounts.get_mountpoints()
-        util.rmtree(self.make_chroot_path(self.homedir),
+        file_util.rmtree(self.make_chroot_path(self.homedir),
                     selinux=self.selinux, exclude=excluded)
 
         # ok for these two to fail
@@ -641,7 +641,7 @@ class Buildroot(object):
     @traceLog()
     def _setup_devices(self):
         if self.config['internal_dev_setup']:
-            util.rmtree(self.make_chroot_path("dev"), selinux=self.selinux, exclude=self.mounts.get_mountpoints())
+            file_util.rmtree(self.make_chroot_path("dev"), selinux=self.selinux, exclude=self.mounts.get_mountpoints())
             file_util.mkdirIfAbsent(self.make_chroot_path("dev", "pts"))
             file_util.mkdirIfAbsent(self.make_chroot_path("dev", "shm"))
             prevMask = os.umask(0000)
@@ -858,8 +858,8 @@ class Buildroot(object):
             if subv:
                 util.do(["btrfs", "subv", "delete", "/" + subv])
             if not self.rootdir.startswith(self.basedir):
-                util.rmtree(self.rootdir, selinux=self.selinux)
-            util.rmtree(self.basedir, selinux=self.selinux)
+                file_util.rmtree(self.rootdir, selinux=self.selinux)
+            file_util.rmtree(self.basedir, selinux=self.selinux)
         self.chroot_was_initialized = False
         self.plugins.call_hooks('postclean')
         # intentionally we do not call bootstrap hook here - it does not have sense
