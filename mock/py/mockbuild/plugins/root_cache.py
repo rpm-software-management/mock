@@ -137,9 +137,9 @@ class RootCache(object):
                 # deal with NFS homedir and root_squash
                 prev_cwd = None
                 cwd = mockbuild.util.pretty_getcwd()
-                if mockbuild.util.get_fs_type(cwd).startswith('nfs'):
+                if mockbuild.file_util.get_fs_type(cwd).startswith('nfs'):
                     prev_cwd = os.getcwd()
-                    os.chdir(mockbuild.util.find_non_nfs_dir())
+                    os.chdir(mockbuild.file_util.find_non_nfs_dir())
                 mockbuild.file_util.mkdirIfAbsent(self.buildroot.make_chroot_path())
                 if self.config["tar"] == "bsdtar":
                     __tar_cmd = "bsdtar"
