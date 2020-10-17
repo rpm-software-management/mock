@@ -953,6 +953,9 @@ best=1
         return
 
     local_dir = baseurl.replace("file://", "", 1)
+    if not local_dir or not os.path.isdir(local_dir):
+        return
+
     mountpoint = bootstrap.make_chroot_path(local_dir)
     bootstrap.mounts.add(BindMountPoint(srcpath=local_dir,
                                         bindpath=mountpoint))
