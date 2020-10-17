@@ -20,8 +20,9 @@ from mockbuild.mounts import BindMountPoint
 from . import file_util
 from . import text
 from . import util
+from .external import ExternalDeps
 from .file_downloader import FileDownloader
-from .exception import PkgError, Error, RootError, BuildError
+from .exception import PkgError, Error, RootError, BuildError, ExternalDepsError
 from .trace_decorator import getLog, traceLog
 from .rebuild import do_rebuild
 
@@ -37,6 +38,7 @@ class Commands(object):
         self.state = state
         self.plugins = plugins
         self.config = config
+        self.external = ExternalDeps(buildroot, bootstrap_buildroot, uid_manager)
 
         self.rpmbuild_arch = config['rpmbuild_arch']
         self.clean_the_chroot = config['clean']
@@ -282,6 +284,14 @@ class Commands(object):
             if dynamic_buildreqs and not self.config.get('dynamic_buildrequires'):
                 raise Error('DynamicBuildRequires are found but support is disabled.'
                             ' See "dynamic_buildrequires" in config_opts.')
+
+            external_deps = self.external.extract_external_deps(requires)
+            if external_deps:
+                if self.config.get('external_buildrequires'):
+                    self.external.install_external_deps(external_deps)
+                else:
+                    raise Error('ExternalBuildRequires are found but support is disabled.'
+                                ' See "external_buildrequires" in config_opts.')
 
             self.installSrpmDeps(rebuilt_srpm)
             self.state.finish(buildsetup)

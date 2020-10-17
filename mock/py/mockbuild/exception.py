@@ -36,6 +36,7 @@ class Error(Exception):
 # 20 = error in the chroot of some kind
 # 25 = LVM manipulation error
 # 30 = Yum emitted an error of some sort
+# 31 = Unknow external dependency
 # 40 = some error in the pkg we're building
 # 50 = error in mock command (varies for each command)
 # 60 = buildroot locked
@@ -73,6 +74,8 @@ def get_class_by_code(exit_code):
         return LvmError("LVM manipulation failed.")
     elif exit_code == 30:
         return YumError("Package manager emitted an error of some sort.")
+    elif exit_code == 31:
+        return ExternalDepsError("Unknown external dependency")
     elif exit_code == 40:
         return PkgError("Error with the srpm given to us.")
     elif exit_code == 50:
@@ -135,6 +138,13 @@ class YumError(RootError):
         self.msg = msg
         self.resultcode = 30
 
+
+class ExternalDepsError(RootError):
+    "Unknown external dependency."
+    def __init__(self, msg):
+        RootError.__init__(self, msg)
+        self.msg = msg
+        self.resultcode = 31
 
 class PkgError(Error):
     "error with the srpm given to us."

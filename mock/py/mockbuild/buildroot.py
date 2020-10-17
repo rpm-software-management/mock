@@ -869,7 +869,7 @@ class Buildroot(object):
 
     @traceLog()
     def install_as_root(self, *deps):
-        """Figure out deps from srpm. Call package manager to install them"""
+        """ Becomes root user and calls self.install() """
         try:
             self.uid_manager.becomeUser(0, 0)
             self.install(*deps)

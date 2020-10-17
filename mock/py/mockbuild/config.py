@@ -277,6 +277,8 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
     config_opts['dynamic_buildrequires'] = True
     config_opts['dynamic_buildrequires_max_loops'] = 10
 
+    config_opts['external_buildrequires'] = False
+
     config_opts['dev_loop_count'] = 12
 
     # configurable commands executables
