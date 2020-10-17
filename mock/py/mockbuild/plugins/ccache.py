@@ -9,7 +9,6 @@
 # our imports
 from mockbuild.mounts import BindMountPoint
 from mockbuild.trace_decorator import getLog, traceLog
-import mockbuild.util
 from mockbuild import file_util
 
 requires_api_version = "1.1"
