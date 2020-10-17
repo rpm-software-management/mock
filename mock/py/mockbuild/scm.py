@@ -12,6 +12,7 @@ import sys
 import tempfile
 
 from . import util
+from . import file_util
 from .trace_decorator import traceLog
 
 
