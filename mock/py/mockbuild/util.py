@@ -36,6 +36,7 @@ import distro
 from mockbuild.mounts import BindMountPoint
 
 from . import exception
+from . import file_util
 from . import text
 from .trace_decorator import getLog, traceLog
 from .uid import setresuid
@@ -848,7 +849,7 @@ def pretty_getcwd():
         if ORIGINAL_CWD is not None:
             return ORIGINAL_CWD
         else:
-            return find_non_nfs_dir()
+            return file_util.find_non_nfs_dir()
 
 
 ORIGINAL_CWD = None
