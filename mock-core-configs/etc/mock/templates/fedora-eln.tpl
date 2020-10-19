@@ -2,7 +2,7 @@ config_opts['releasever'] = 'eln'
 
 config_opts['root'] = 'fedora-eln-{{ target_arch }}'
 
-config_opts['chroot_setup_cmd'] = 'install @buildsys-build'
+config_opts['chroot_setup_cmd'] = 'install bash bzip2 coreutils cpio diffutils fedora-release-eln findutils gawk glibc-minimal-langpack grep gzip info make patch redhat-rpm-config rpm-build sed shadow-utils tar unzip util-linux which xz'
 
 config_opts['dist'] = 'eln'  # only useful for --resultdir variable subst
 config_opts['extra_chroot_dirs'] = [ '/run/lock', ]
@@ -38,10 +38,10 @@ cost=2000
 enabled=0
 skip_if_unavailable=False
 
-[eln]
-name=Fedora ELN - Developmental modular packages for the next Enterprise Linux release
+[eln-baseos]
+name=Fedora - ELN BaseOS - Developmental packages for the next Enterprise Linux release
+baseurl=https://odcs.fedoraproject.org/composes/production/latest-Fedora-ELN/compose/BaseOS/$basearch/os/
 #metalink=https://mirrors.fedoraproject.org/metalink?repo=eln&arch=$basearch
-baseurl=https://odcs.fedoraproject.org/composes/production/latest-Fedora-ELN/compose/Everything/$basearch/os/
 enabled=1
 repo_gpgcheck=0
 type=rpm
@@ -49,10 +49,10 @@ gpgcheck=1
 gpgkey=file:///usr/share/distribution-gpg-keys/fedora/RPM-GPG-KEY-fedora-rawhide-primary
 skip_if_unavailable=False
 
-[eln-debuginfo]
-name=Fedora ELN - Debug
-metalink=https://mirrors.fedoraproject.org/metalink?repo=eln-debug&arch=$basearch
-#baseurl=https://odcs.fedoraproject.org/composes/production/latest-Fedora-ELN/compose/Everything/$basearch/debug/tree
+[eln-baseos-debuginfo]
+name=Fedora - ELN BaseOS - Debug
+baseurl=https://odcs.fedoraproject.org/composes/production/latest-Fedora-ELN/compose/BaseOS/$basearch/debug/tree
+#metalink=https://mirrors.fedoraproject.org/metalink?repo=eln-debug&arch=$basearch
 enabled=0
 repo_gpgcheck=0
 type=rpm
@@ -60,10 +60,45 @@ gpgcheck=1
 gpgkey=file:///usr/share/distribution-gpg-keys/fedora/RPM-GPG-KEY-fedora-rawhide-primary
 skip_if_unavailable=False
 
-[eln-source]
-name=Fedora ELN - Source
-metalink=https://mirrors.fedoraproject.org/metalink?repo=eln-source&arch=$basearch
-#baseurl=https://odcs.fedoraproject.org/composes/production/latest-Fedora-ELN/compose/Everything/source/tree/
+[eln-baseos-source]
+name=Fedora - ELN BaseOS - Source
+baseurl=https://odcs.fedoraproject.org/composes/production/latest-Fedora-ELN/compose/BaseOS/source/tree/
+#metalink=https://mirrors.fedoraproject.org/metalink?repo=eln-source&arch=$basearch
+enabled=0
+repo_gpgcheck=0
+type=rpm
+gpgcheck=1
+gpgkey=file:///usr/share/distribution-gpg-keys/fedora/RPM-GPG-KEY-fedora-rawhide-primary
+skip_if_unavailable=False
+
+
+
+[eln-appstream]
+name=Fedora - ELN AppStream - Developmental packages for the next Enterprise Linux release
+baseurl=https://odcs.fedoraproject.org/composes/production/latest-Fedora-ELN/compose/AppStream/$basearch/os/
+#metalink=https://mirrors.fedoraproject.org/metalink?repo=eln&arch=$basearch
+enabled=1
+repo_gpgcheck=0
+type=rpm
+gpgcheck=1
+gpgkey=file:///usr/share/distribution-gpg-keys/fedora/RPM-GPG-KEY-fedora-rawhide-primary
+skip_if_unavailable=False
+
+[eln-appstream-debuginfo]
+name=Fedora - ELN AppStream - Debug
+baseurl=https://odcs.fedoraproject.org/composes/production/latest-Fedora-ELN/compose/AppStream/$basearch/debug/tree
+#metalink=https://mirrors.fedoraproject.org/metalink?repo=eln-debug&arch=$basearch
+enabled=0
+repo_gpgcheck=0
+type=rpm
+gpgcheck=1
+gpgkey=file:///usr/share/distribution-gpg-keys/fedora/RPM-GPG-KEY-fedora-rawhide-primary
+skip_if_unavailable=False
+
+[eln-appstream-source]
+name=Fedora - ELN AppStream - Source
+baseurl=https://odcs.fedoraproject.org/composes/production/latest-Fedora-ELN/compose/AppStream/source/tree/
+#metalink=https://mirrors.fedoraproject.org/metalink?repo=eln-source&arch=$basearch
 enabled=0
 repo_gpgcheck=0
 type=rpm
