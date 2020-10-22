@@ -720,8 +720,9 @@ class Commands(object):
                     # status 0, see issue#434
                     raise BuildError("Command failed: \n # %s\n%s" % (command, output))
                 max_loops -= 1
-                self.buildroot.root_log.info("Dynamic buildrequires detected")
-                self.buildroot.root_log.info("Going to install missing buildrequires")
+                self.buildroot.build_log.info("Dynamic buildrequires detected")
+                self.buildroot.build_log.info("Going to install missing buildrequires. See root.log for details.")
+                self.buildroot.root_log.info("Going to install missing dynamic buildrequires")
                 buildreqs = glob.glob(bd_out + '/SRPMS/*.buildreqs.nosrc.rpm')
                 self.installSrpmDeps(*buildreqs)
                 packages_after = self.buildroot.all_chroot_packages()
