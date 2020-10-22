@@ -21,7 +21,7 @@ from . import file_util
 from . import text
 from . import util
 from .file_downloader import FileDownloader
-from .exception import PkgError, Error, RootError
+from .exception import PkgError, Error, RootError, BuildError
 from .trace_decorator import getLog, traceLog
 from .rebuild import do_rebuild
 
@@ -706,20 +706,19 @@ class Commands(object):
                 # * installSrpmDeps does nothing
                 # * or we run out of dynamic_buildrequires_max_loops tries
                 packages_before = self.buildroot.all_chroot_packages()
-                try:
-                    self.buildroot.doChroot(get_command(['-br']),
+                command = get_command(['-br'])
+                (output, returncode) = \
+                    self.buildroot.doChroot(command,
                                             shell=False, logger=self.buildroot.build_log, timeout=timeout,
                                             uid=self.buildroot.chrootuid, gid=self.buildroot.chrootgid,
                                             user=self.buildroot.chrootuser,
                                             nspawn_args=self._get_nspawn_args(),
-                                            unshare_net=self.private_network,
+                                            unshare_net=self.private_network, raiseExc=False,
                                             printOutput=self.config['print_main_output'])
-                except Error as e:
+                if returncode > 0 and returncode != 11:
                     # we treat exit status 11 as success, as well as exit
                     # status 0, see issue#434
-                    if e.resultcode != 11:
-                        raise e
-
+                    raise BuildError("Command failed: \n # %s\n%s" % (command, output))
                 max_loops -= 1
                 self.buildroot.root_log.info("Dynamic buildrequires detected")
                 self.buildroot.root_log.info("Going to install missing buildrequires")
