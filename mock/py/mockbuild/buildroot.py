@@ -386,8 +386,7 @@ class Buildroot(object):
     @noop_in_bootstrap
     def _fixup_build_user(self):
         """ensure chrootuser has correct UID"""
-        # --non-unique can be removed after 2019-03-31 (EOL of SLES 11)
-        self.doChroot(['/usr/sbin/usermod', '-u', str(self.chrootuid), '--non-unique',
+        self.doChroot(['/usr/sbin/usermod', '-u', str(self.chrootuid),
                        self.chrootuser],
                       shell=False, nosync=True)
 
