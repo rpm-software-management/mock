@@ -171,21 +171,6 @@ class Commands(object):
             raise
 
     @traceLog()
-    def install(self, *rpms):
-        """Call package manager to install the input rpms into the chroot"""
-        # pass build reqs (as strings) to installer
-        self.buildroot.root_log.info("installing package(s): %s", " ".join(rpms))
-        output = self.buildroot.pkg_manager.install(*rpms, returnOutput=1)
-        self.buildroot.root_log.info(output)
-
-    @traceLog()
-    def remove(self, *rpms):
-        """Call package manager to remove the input rpms from the chroot"""
-        self.buildroot.root_log.info("removing package(s): %s", " ".join(rpms))
-        output = self.buildroot.pkg_manager.remove(*rpms, returnOutput=1)
-        self.buildroot.root_log.info(output)
-
-    @traceLog()
     def getPreconfiguredDeps(self, srpms):
         """
         First check that some plugin didn't request installation of additional
@@ -789,7 +774,7 @@ class Commands(object):
                 results_bindmount.mount()
             pkgs = [pkg for pkg in results if not pkg.endswith("src.rpm")]
             try:
-                self.install(*pkgs)
+                self.buildroot.install(*pkgs)
             # pylint: disable=bare-except
             except:
                 self.buildroot.root_log.warning("Failed install built packages")
