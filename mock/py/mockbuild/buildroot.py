@@ -866,3 +866,27 @@ class Buildroot(object):
     @property
     def uses_bootstrap_image(self):
         return self.is_bootstrap and self.use_bootstrap_image
+
+    @traceLog()
+    def install_as_root(self, *deps):
+        """Figure out deps from srpm. Call package manager to install them"""
+        try:
+            self.uid_manager.becomeUser(0, 0)
+            self.install(*deps)
+        finally:
+            self.uid_manager.restorePrivs()
+
+    @traceLog()
+    def install(self, *rpms):
+        """Call package manager to install the input rpms into the chroot"""
+        # pass build reqs (as strings) to installer
+        self.root_log.info("installing package(s): %s", " ".join(rpms))
+        output = self.pkg_manager.install(*rpms, returnOutput=1)
+        self.root_log.info(output)
+
+    @traceLog()
+    def remove(self, *rpms):
+        """Call package manager to remove the input rpms from the chroot"""
+        self.root_log.info("removing package(s): %s", " ".join(rpms))
+        output = self.pkg_manager.remove(*rpms, returnOutput=1)
+        self.root_log.info(output)
