@@ -617,20 +617,24 @@ class ChildPreExec(object):
         getLog().debug("child environment: %s", env)
 
     def __call__(self, *args, **kargs):
-        if not self.shell:
-            os.setsid()
-        os.umask(0o02)
-        condUnshareNet(self.unshare_net)
-        condPersonality(self.personality)
-        condEnvironment(self.env)
-        # Even if nspawn is allowed to be used, it won't be used unless there
-        # is a chrootPath set
-        if not USE_NSPAWN or not self.chrootPath:
-            condChroot(self.chrootPath)
-            condDropPrivs(self.uid, self.gid)
-            condChdir(self.cwd)
-        condUnshareIPC(self.unshare_ipc)
-        reset_sigpipe()
+        try:
+            if not self.shell:
+                os.setsid()
+            os.umask(0o02)
+            condUnshareNet(self.unshare_net)
+            condPersonality(self.personality)
+            condEnvironment(self.env)
+            # Even if nspawn is allowed to be used, it won't be used unless there
+            # is a chrootPath set
+            if not USE_NSPAWN or not self.chrootPath:
+                condChroot(self.chrootPath)
+                condDropPrivs(self.uid, self.gid)
+                condChdir(self.cwd)
+            condUnshareIPC(self.unshare_ipc)
+            reset_sigpipe()
+        except:  # pylint: disable=bare-except
+            getLog().exception("Exception raised in ChildPreExec")
+            raise
 
 
 def setup_operations_timeout(config_opts):
