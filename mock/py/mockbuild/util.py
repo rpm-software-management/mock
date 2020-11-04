@@ -268,7 +268,7 @@ def getAddtlReqs(hdr, conf):
 
 @traceLog()
 def unshare(flags):
-    getLog().debug("Unsharing. Flags: %s", flags)
+    #getLog().debug("Unsharing. Flags: %s", flags)
     try:
         res = _libc.unshare(flags)
         if res:
