@@ -604,7 +604,13 @@ def do_with_status(command, shell=False, chrootPath=None, cwd=None, timeout=0, r
 
 class ChildPreExec(object):
     def __init__(self, personality, chrootPath, cwd, uid, gid, env=None,
-                 shell=False, unshare_ipc=False, unshare_net=False):
+                 shell=False, unshare_ipc=False, unshare_net=False,
+                 no_setsid=False):
+        """
+        Params:
+        - no_setsid - assure we don't call os.setsid(), as the process we run
+            calls that itself
+        """
         self.personality = personality
         self.chrootPath = chrootPath
         self.cwd = cwd
@@ -614,10 +620,11 @@ class ChildPreExec(object):
         self.shell = shell
         self.unshare_ipc = unshare_ipc
         self.unshare_net = unshare_net
+        self.no_setsid = no_setsid
         getLog().debug("child environment: %s", env)
 
     def __call__(self, *args, **kargs):
-        if not self.shell:
+        if not self.shell and not self.no_setsid:
             os.setsid()
         os.umask(0o02)
         condUnshareNet(self.unshare_net)
@@ -765,16 +772,19 @@ def doshell(chrootPath=None, environ=None, uid=None, gid=None, cmd=None,
         environ['SHELL'] = '/bin/sh'
     log.debug("doshell environment: %s", environ)
 
+    no_setsid = False
     shell = True
     if not cmd:
         cmd = ["/bin/sh", "-i", "-l"]
         shell = False
+        no_setsid = True
     elif isinstance(cmd, list):
         cmd = ' '.join(cmd)
 
     preexec = ChildPreExec(personality=None, chrootPath=chrootPath, cwd=None,
                            uid=uid, gid=gid, env=environ, shell=shell,
-                           unshare_ipc=unshare_ipc, unshare_net=unshare_net)
+                           unshare_ipc=unshare_ipc, unshare_net=unshare_net,
+                           no_setsid=no_setsid)
 
     if USE_NSPAWN:
         # nspawn cannot set gid
