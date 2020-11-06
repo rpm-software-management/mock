@@ -40,4 +40,4 @@ class Sign(object):
                 cmd = "{0} {1}".format(self.conf['cmd'], opts)
                 getLog().info("Executing %s", cmd)
                 with self.buildroot.uid_manager:
-                    subprocess.call(cmd, shell=True, env=os.environ)
+                    subprocess.check_call(cmd, shell=True, env=os.environ)
