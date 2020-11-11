@@ -1,5 +1,5 @@
 Name:       mock-core-configs
-Version:    33.1
+Version:    33.2
 Release:    1%{?dist}
 Summary:    Mock core config files basic chroots
 
@@ -144,6 +144,9 @@ fi
 %ghost %config(noreplace,missingok) %{_sysconfdir}/mock/default.cfg
 
 %changelog
+* Wed Nov 11 2020 Pavel Raiskup <praiskup@redhat.com> 33.2-1
+- Add missing CRB repository (jkonecny@redhat.com)
+
 * Wed Nov 11 2020 Pavel Raiskup <praiskup@redhat.com> 33.1-1
 - ELN fixups (mmathesi@redhat.com)
 - EPEL: fix repo-id and name=
