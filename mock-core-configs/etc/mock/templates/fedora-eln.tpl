@@ -105,4 +105,38 @@ type=rpm
 gpgcheck=1
 gpgkey=file:///usr/share/distribution-gpg-keys/fedora/RPM-GPG-KEY-fedora-rawhide-primary
 skip_if_unavailable=False
+
+
+[eln-crb]
+name=Fedora - ELN CodeReady Linux Builders - Build packages for the next Enterprise Linux release
+baseurl=https://odcs.fedoraproject.org/composes/production/latest-Fedora-ELN/compose/CRB/$basearch/os/
+#metalink=https://mirrors.fedoraproject.org/metalink?repo=eln&arch=$basearch
+enabled=1
+repo_gpgcheck=0
+type=rpm
+gpgcheck=1
+gpgkey=file:///usr/share/distribution-gpg-keys/fedora/RPM-GPG-KEY-fedora-rawhide-primary
+skip_if_unavailable=False
+
+[eln-crb-debuginfo]
+name=Fedora - ELN CodeReady Linux Builders - Debug
+baseurl=https://odcs.fedoraproject.org/composes/production/latest-Fedora-ELN/compose/CRB/$basearch/debug/tree
+#metalink=https://mirrors.fedoraproject.org/metalink?repo=eln-debug&arch=$basearch
+enabled=0
+repo_gpgcheck=0
+type=rpm
+gpgcheck=1
+gpgkey=file:///usr/share/distribution-gpg-keys/fedora/RPM-GPG-KEY-fedora-rawhide-primary
+skip_if_unavailable=False
+
+[eln-crb-source]
+name=Fedora - ELN CodeReady Linux Builders - Source
+baseurl=https://odcs.fedoraproject.org/composes/production/latest-Fedora-ELN/compose/CRB/source/tree/
+#metalink=https://mirrors.fedoraproject.org/metalink?repo=eln-source&arch=$basearch
+enabled=0
+repo_gpgcheck=0
+type=rpm
+gpgcheck=1
+gpgkey=file:///usr/share/distribution-gpg-keys/fedora/RPM-GPG-KEY-fedora-rawhide-primary
+skip_if_unavailable=False
 """
