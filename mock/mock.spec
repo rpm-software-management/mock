@@ -71,6 +71,7 @@ Suggests: yum
 Requires: dnf-plugins-core
 Recommends: btrfs-progs
 Recommends: dnf-utils
+Suggests: create-fake-rpm
 Suggests: qemu-user-static
 Suggests: procenv
 Suggests: podman
