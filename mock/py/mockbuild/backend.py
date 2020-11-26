@@ -287,6 +287,8 @@ class Commands(object):
 
             external_deps = self.external.extract_external_deps(requires)
             if external_deps:
+                if not self.config.get('use_bootstrap'):
+                    raise Error('ExternalBuildRequires requires `use_bootstrap` to be set on.')
                 if self.config.get('external_buildrequires'):
                     self.external.install_external_deps(external_deps)
                 else:
