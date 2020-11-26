@@ -901,7 +901,7 @@ def run_command(options, args, config_opts, commands, buildroot, state):
             return 50
 
         commands.init()
-        commands.install(*args)
+        buildroot.install(*args)
 
     elif options.mode == 'update':
         commands.init()
@@ -912,7 +912,7 @@ def run_command(options, args, config_opts, commands, buildroot, state):
             log.critical("You must specify a package list to remove.")
             return 50
         commands.init()
-        commands.remove(*args)
+        buildroot.remove(*args)
 
     elif options.mode == 'rebuild':
         if config_opts['scm'] or (options.spec and options.sources):
