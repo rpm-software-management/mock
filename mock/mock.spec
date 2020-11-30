@@ -12,7 +12,7 @@
 
 Summary: Builds packages inside chroots
 Name: mock
-Version: 2.6
+Version: 2.7
 Release: 1%{?dist}
 License: GPLv2+
 # Source is created by
@@ -274,6 +274,22 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 %dir  %{_datadir}/cheat
 
 %changelog
+* Mon Nov 30 2020 Pavel Raiskup <praiskup@redhat.com> 2.7-1
+- bootstrap: copy-in katello CA pem file if exists
+- early error when bootstrap is off and external buildrequires are detected (msuchy@redhat.com)
+- hotfix preexec_fn traceback on RHEL 8 s390x (issue 653)
+- introduce external buildrequires (msuchy@redhat.com)
+- add rpkg spec preprocessing capability (clime@fedoraproject.org)
+- sign plugin: don't ignore signing command failure
+- don't setsid() twice with --shell
+- better logging when dynamic BR detected (msuchy@redhat.com)
+- do not TB if rpmbuild fails with exit code 11 (msuchy@redhat.com)
+- fix addrepo when repo is missing (markus.linnala@gmail.com)
+- own the cheat directory
+- Allow percent-sign in config_opts['resultdir']
+- add a new "postupdate" hook (dturecek@redhat.com)
+- log mock's NVR
+
 * Tue Sep 15 2020 Pavel Raiskup <praiskup@redhat.com> 2.6-1
 - the --recurse option implies --continue
 - fix --chain --continue option
