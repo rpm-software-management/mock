@@ -197,6 +197,7 @@ class Buildroot(object):
 
         self.pkg_manager.initialize()
         self._setup_resolver_config()
+        self._setup_katello_ca()
         if not self.chroot_was_initialized:
             self._setup_dbus_uuid()
             self._init_aux_files()
@@ -287,7 +288,7 @@ class Buildroot(object):
         return set(out.splitlines())
 
     @traceLog()
-    def _copy_config(self, filename, symlink=False):
+    def _copy_config(self, filename, symlink=False, warn=True):
         orig_conf_file = os.path.join('/etc', filename)
         conf_file = self.make_chroot_path(orig_conf_file)
 
@@ -302,7 +303,7 @@ class Buildroot(object):
                 os.symlink(linkto, conf_file)
             else:
                 shutil.copy2(orig_conf_file, conf_file)
-        else:
+        elif warn:
             self.root_log.warning("File %s not present. It is not copied into the chroot.", orig_conf_file)
 
     @traceLog()
@@ -310,6 +311,13 @@ class Buildroot(object):
         if self.config['use_host_resolv'] and self.config['rpmbuild_networking']:
             self._copy_config('resolv.conf')
             self._copy_config('hosts')
+
+    @traceLog()
+    def _setup_katello_ca(self):
+        if not all([self.is_bootstrap,
+                    self.config["redhat_subscription_required"]]):
+            return
+        self._copy_config('rhsm/ca/katello-server-ca.pem', warn=False)
 
     @traceLog()
     def _setup_dbus_uuid(self):
