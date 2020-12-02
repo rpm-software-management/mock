@@ -1,4 +1,4 @@
-include('templates/centos-6.tpl')
+include('eol/templates/centos-6.tpl')
 
 config_opts['chroot_setup_cmd'] = 'install @buildsys-build'
 
