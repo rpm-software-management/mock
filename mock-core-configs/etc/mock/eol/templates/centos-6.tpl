@@ -33,7 +33,7 @@ user_agent={{ user_agent }}
 [base]
 name=CentOS-$releasever - Base
 enabled=1
-mirrorlist=http://mirrorlist.centos.org/?release=6&arch=$basearch&repo=os
+baseurl=https://vault.centos.org/6.10/os/$basearch/
 failovermethod=priority
 gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-6
 gpgcheck=1
@@ -41,8 +41,8 @@ skip_if_unavailable=False
 
 [updates]
 name=CentOS-$releasever - Updates
-enabled=1
-mirrorlist=http://mirrorlist.centos.org/?release=6&arch=$basearch&repo=updates
+enabled=0
+baseurl=https://vault.centos.org/6.10/updates/$basearch/
 failovermethod=priority
 gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-6
 gpgcheck=1
@@ -50,8 +50,7 @@ skip_if_unavailable=False
 
 [extras]
 name=CentOS-$releasever - Extras
-mirrorlist=http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=extras
-#baseurl=http://mirror.centos.org/centos/$releasever/extras/$basearch/os/
+baseurl=https://vault.centos.org/6.10/extras/$basearch/
 failovermethod=priority
 gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-6
 gpgcheck=1
@@ -59,7 +58,7 @@ skip_if_unavailable=False
 
 [fastrack]
 name=CentOS-$releasever - fasttrack
-mirrorlist=http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=fasttrack
+baseurl=https://vault.centos.org/6.10/fasttrack/$basearch/
 failovermethod=priority
 gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-6
 gpgcheck=1
@@ -68,8 +67,7 @@ enabled=0
 
 [centosplus]
 name=CentOS-$releasever - Plus
-mirrorlist=http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=centosplus
-#baseurl=http://mirror.centos.org/centos/$releasever/centosplus/$basearch/
+baseurl=https://vault.centos.org/6.10/centosplus/$basearch/
 gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-6
 gpgcheck=1
 enabled=0
@@ -77,7 +75,7 @@ enabled=0
 {% if target_arch == "x86_64" %}
 [centos-sclo-sclo]
 name=CentOS-$releasever - SCLo sclo
-baseurl=http://mirror.centos.org/centos/6/sclo/$basearch/sclo/
+baseurl=https://vault.centos.org/6.10/sclo/$basearch/sclo/
 gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-SIG-SCLo
 gpgcheck=1
 includepkgs=devtoolset*
@@ -85,7 +83,7 @@ skip_if_unavailable=False
 
 [centos-sclo-rh]
 name=CentOS-$releasever - SCLo rh
-baseurl=http://mirror.centos.org/centos/6/sclo/$basearch/rh/
+baseurl=https://vault.centos.org/6.10/sclo/$basearch/rh/
 gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-SIG-SCLo
 gpgcheck=1
 includepkgs=devtoolset*
