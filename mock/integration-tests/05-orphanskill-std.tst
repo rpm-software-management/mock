@@ -11,7 +11,7 @@ if pgrep daemontest; then
     exit 1
 fi
 
-daemon_package=https://github.com/rpm-software-management/mock-test-data/raw/master/daemontest-1-0.src.rpm
+daemon_package=https://github.com/rpm-software-management/mock-test-data/raw/main/daemontest-1-0.src.rpm
 
 for isolation in nspawn simple; do
     for bootstrap in --bootstrap-chroot --no-bootstrap-chroot; do
