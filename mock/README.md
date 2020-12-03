@@ -14,12 +14,12 @@ Mock source tarballs: https://github.com/rpm-software-management/mock/releases
 
 ## Mock Branches
 
-Mock currently has one active branch plus master.
+Mock currently has one active branch plus `main`.
 
  * `mock-1.0` - This branch was used for EL-5 and there will be no changes.
  * `mock-1.3` - This branch is in security-fixes-only mode and is used for EL-6.
  * `mock-1.4` - This branch is in bug-fixes-only mode.
- * `master` - This is currently mock 2.x and is used for releasing and
+ * `main` - This is currently mock 2.x and is used for releasing and
    development.  If you want to send patches, you probably want this branch.
 
 ## Communication
@@ -40,7 +40,7 @@ The latest release for all supported platforms can be found in this [Copr reposi
 
 ## Nightly
 
-Package from the latest commit in the master branch can be obtained from https://copr.fedorainfracloud.org/coprs/g/mock/mock/
+Package from the latest commit in the `main` branch can be obtained from https://copr.fedorainfracloud.org/coprs/g/mock/mock/
 
 Latest status: [![build status](https://copr.fedorainfracloud.org/coprs/g/mock/mock/package/mock/status_image/last_build.png)](https://copr.fedorainfracloud.org/coprs/g/mock/mock/package/mock/)
 
