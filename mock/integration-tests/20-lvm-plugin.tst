@@ -1,6 +1,6 @@
 #!/bin/bash
 
-storage=https://raw.githubusercontent.com/rpm-software-management/mock-test-data/master
+storage=https://raw.githubusercontent.com/rpm-software-management/mock-test-data/main
 srpm_version1=$storage/mock-test-bump-version-1-0.src.rpm
 srpm_version2=$storage/mock-test-bump-version-2-0.src.rpm
 

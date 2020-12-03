@@ -42,7 +42,7 @@ def step_impl(context):
 def step_impl(context):
     context.add_repos.append(
         "https://raw.githubusercontent.com/rpm-software-management/"
-        "mock-test-data/master/repo/"
+        "mock-test-data/main/repo/"
     )
 
 
