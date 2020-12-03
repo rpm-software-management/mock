@@ -517,9 +517,9 @@ def do_with_status(command, shell=False, chrootPath=None, cwd=None, timeout=0, r
     output = ""
     start = time.time()
     if pty:
-        master_pty, slave_pty = os.openpty()
-        resize_pty(slave_pty)
-        reader = os.fdopen(master_pty, 'rb')
+        lead_pty, sub_pty = os.openpty()
+        resize_pty(sub_pty)
+        reader = os.fdopen(lead_pty, 'rb')
     preexec = ChildPreExec(personality, chrootPath, cwd, uid, gid,
                            unshare_ipc=bool(chrootPath), unshare_net=unshare_net)
     if env is None:
@@ -547,7 +547,7 @@ def do_with_status(command, shell=False, chrootPath=None, cwd=None, timeout=0, r
                 env=env,
                 bufsize=0, close_fds=True,
                 stdin=stdin,
-                stdout=slave_pty if pty else subprocess.PIPE,
+                stdout=sub_pty if pty else subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 preexec_fn=preexec,
             )
@@ -572,7 +572,7 @@ def do_with_status(command, shell=False, chrootPath=None, cwd=None, timeout=0, r
         raise
     finally:
         if pty:
-            os.close(slave_pty)
+            os.close(sub_pty)
             reader.close()
         if stdout:
             stdout.close()
