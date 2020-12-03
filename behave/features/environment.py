@@ -49,7 +49,7 @@ def before_all(context):
     context.add_repos = []
     context.test_storage = (
         "https://github.com/"
-        "rpm-software-management/mock-test-data/raw/master/")
+        "rpm-software-management/mock-test-data/raw/main/")
     context.mock = Mock(context)
     context.download = lambda url: _download(context, url)
     context.download_rpm = lambda rpm: _download_rpm(context, rpm)

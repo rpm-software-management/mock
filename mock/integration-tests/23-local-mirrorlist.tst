@@ -20,7 +20,7 @@ config=$TMPDIR/rawhide.cfg
 
 mkdir "$(dirname "$mirrorlist")"
 cat > "$mirrorlist" <<EOF
-https://raw.githubusercontent.com/rpm-software-management/mock-test-data/master/repo/
+https://raw.githubusercontent.com/rpm-software-management/mock-test-data/main/repo/
 EOF
 
 # "local" mirror list pointing to external repository hosted on GitHub.

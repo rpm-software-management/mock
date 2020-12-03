@@ -32,8 +32,8 @@ cleanup() {
 trap cleanup EXIT
 
 packages="
-    https://github.com/rpm-software-management/mock-test-data/raw/master/python-copr-999-1.src.rpm
-    https://github.com/rpm-software-management/mock-test-data/raw/master/dep-on-python-copr-999-1-0.src.rpm
+    https://github.com/rpm-software-management/mock-test-data/raw/main/python-copr-999-1.src.rpm
+    https://github.com/rpm-software-management/mock-test-data/raw/main/dep-on-python-copr-999-1-0.src.rpm
 "
 
 eval 'set -- $packages'
