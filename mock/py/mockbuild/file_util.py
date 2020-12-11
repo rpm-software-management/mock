@@ -36,7 +36,7 @@ def rmtree(path, selinux=False, exclude=()):
     """Version of shutil.rmtree that ignores no-such-file-or-directory errors,
        tries harder if it finds immutable files and supports excluding paths"""
     if os.path.islink(path):
-        raise OSError("Cannot call rmtree on a symbolic link")
+        raise OSError("Cannot call rmtree on a symbolic link: %s" % path)
     try_again = True
     retries = 0
     failed_to_handle = False
