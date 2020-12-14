@@ -23,7 +23,7 @@ from . import text
 from .file_util import is_in_dir
 from .trace_decorator import getLog, traceLog
 from .uid import getresuid
-from .util import USE_NSPAWN, setup_operations_timeout
+from .util import set_use_nspawn, setup_operations_timeout
 
 PLUGIN_LIST = ['tmpfs', 'root_cache', 'yum_cache', 'mount', 'bind_mount',
                'ccache', 'selinux', 'package_state', 'chroot_scan',
@@ -443,37 +443,38 @@ def set_config_opts_per_cmdline(config_opts, options, args):
             pass
         config_opts['plugin_conf'][p + "_opts"].update({k: v})
 
-    global USE_NSPAWN
-    USE_NSPAWN = None  # auto-detect by default
+    use_nspawn = None  # auto-detect by default
 
     log = logging.getLogger()
 
     if config_opts['use_nspawn'] in [True, False]:
         log.info("Use of obsoleted configuration option 'use_nspawn'.")
-        USE_NSPAWN = config_opts['use_nspawn']
+        use_nspawn = config_opts['use_nspawn']
 
     if config_opts['isolation'] in ['nspawn', 'simple']:
-        USE_NSPAWN = config_opts['isolation'] == 'nspawn'
+        use_nspawn = config_opts['isolation'] == 'nspawn'
     elif config_opts['isolation'] == 'auto':
-        USE_NSPAWN = None  # set auto detection, overrides use_nspawn
+        use_nspawn = None  # set auto detection, overrides use_nspawn
 
     if options.old_chroot:
-        USE_NSPAWN = False
+        use_nspawn = False
         log.error('Option --old-chroot has been deprecated. Use --isolation=simple instead.')
     if options.new_chroot:
-        USE_NSPAWN = True
+        use_nspawn = True
         log.error('Option --new-chroot has been deprecated. Use --isolation=nspawn instead.')
 
     if options.isolation in ['simple', 'nspawn']:
-        USE_NSPAWN = options.isolation == 'nspawn'
+        use_nspawn = options.isolation == 'nspawn'
     elif options.isolation == 'auto':
-        USE_NSPAWN = None  # re-set auto detection
+        use_nspawn = None  # re-set auto detection
     elif options.isolation is not None:
         raise exception.BadCmdline("Bad option for '--isolation'. Unknown "
                                    "value: %s" % (options.isolation))
-    if USE_NSPAWN is None:
-        USE_NSPAWN = nspawn_supported()
-        getLog().info("systemd-nspawn auto-detected: %s", USE_NSPAWN)
+    if use_nspawn is None:
+        use_nspawn = nspawn_supported()
+        getLog().info("systemd-nspawn auto-detected: %s", use_nspawn)
+
+    set_use_nspawn(use_nspawn)
 
     if options.enable_network:
         config_opts['rpmbuild_networking'] = True
