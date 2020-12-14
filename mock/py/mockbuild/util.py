@@ -645,6 +645,11 @@ def setup_operations_timeout(config_opts):
     _OPS_TIMEOUT = config_opts.get('opstimeout', 0)
 
 
+def set_use_nspawn(value):
+    global USE_NSPAWN
+    USE_NSPAWN = value
+
+
 class BindMountedFile(str):
     'see host_file() doc'
     def __new__(cls, value, on_host=None):
