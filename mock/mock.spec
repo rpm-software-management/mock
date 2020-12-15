@@ -12,7 +12,7 @@
 
 Summary: Builds packages inside chroots
 Name: mock
-Version: 2.7
+Version: 2.8
 Release: 1%{?dist}
 License: GPLv2+
 # Source is created by
@@ -274,6 +274,10 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 %dir  %{_datadir}/cheat
 
 %changelog
+* Tue Dec 15 2020 Pavel Raiskup <praiskup@redhat.com> 2.8-1
+- fix use of nspawn (#678) (awilliam@redhat.com)
+- file_util: Improve an error message (tbaeder@redhat.com)
+
 * Mon Nov 30 2020 Pavel Raiskup <praiskup@redhat.com> 2.7-1
 - bootstrap: copy-in katello CA pem file if exists
 - early error when bootstrap is off and external buildrequires are detected (msuchy@redhat.com)
