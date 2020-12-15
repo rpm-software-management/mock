@@ -61,6 +61,7 @@ Requires: python%{python3_pkgversion}-jinja2
 Requires: python%{python3_pkgversion}-requests
 Requires: python%{python3_pkgversion}-rpm
 Requires: python%{python3_pkgversion}-pyroute2
+Requires: python%{python3_pkgversion}-templated-dictionary
 BuildRequires: python%{python3_pkgversion}-devel
 %if %{with lint}
 BuildRequires: python%{python3_pkgversion}-pylint
@@ -89,6 +90,7 @@ BuildRequires: python%{python3_pkgversion}-pyroute2
 BuildRequires: python%{python3_pkgversion}-pytest
 BuildRequires: python%{python3_pkgversion}-pytest-cov
 BuildRequires: python%{python3_pkgversion}-requests
+BuildRequires: python%{python3_pkgversion}-templated-dictionary
 %endif
 
 %if 0%{?fedora} || 0%{?rhel} >= 8
