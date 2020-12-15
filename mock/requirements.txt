@@ -3,3 +3,4 @@ jinja2
 pyroute2
 pytest-cov
 requests
+templated-dictionary

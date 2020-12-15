@@ -17,7 +17,7 @@ import re
 import socket
 import sys
 
-
+from templated_dictionary import TemplatedDictionary
 from . import exception
 from . import text
 from .file_util import is_in_dir
@@ -49,7 +49,7 @@ def nspawn_supported():
 @traceLog()
 def setup_default_config_opts(unprivUid, version, pkgpythondir):
     "sets up default configuration."
-    config_opts = text.TemplatedDictionary(alias_spec={'dnf.conf': ['yum.conf']})
+    config_opts = TemplatedDictionary(alias_spec={'dnf.conf': ['yum.conf']})
     config_opts['config_paths'] = []
     config_opts['version'] = version
     config_opts['basedir'] = '/var/lib/mock'  # root name is automatically added to this

@@ -1,5 +1,5 @@
 import pytest
-from mockbuild.text import TemplatedDictionary
+from templated_dictionary import TemplatedDictionary
 
 
 def test_transitive_expand():
