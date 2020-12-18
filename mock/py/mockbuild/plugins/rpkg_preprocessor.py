@@ -59,31 +59,33 @@ class RpkgPreprocessor(object):
     @traceLog()
     def _preprocess(self, host_chroot_spec, host_chroot_sources):
         rpkg_conf_path = os.path.join(host_chroot_sources, 'rpkg.conf')
+        force_enable = self.opts.get('force_enable', False)
 
-        if not os.path.isfile(rpkg_conf_path):
-            self.log.info("rpkg.conf not found. "
-                          "Skipping rpkg preprocessing step.")
-            return
+        if not force_enable:
+            if not os.path.isfile(rpkg_conf_path):
+                self.log.info("rpkg.conf not found. "
+                              "Skipping rpkg preprocessing step.")
+                return
 
-        parser = configparser.ConfigParser(
-            interpolation=configparser.ExtendedInterpolation())
+            parser = configparser.ConfigParser(
+                interpolation=configparser.ExtendedInterpolation())
 
-        try:
-            parser.read(rpkg_conf_path)
-        except configparser.ParsingError as e:
-            raise PkgError("Parsing of %s failed with error: %s" % (rpkg_conf_path, repr(e)))
+            try:
+                parser.read(rpkg_conf_path)
+            except configparser.ParsingError as e:
+                raise PkgError("Parsing of %s failed with error: %s" % (rpkg_conf_path, repr(e)))
 
-        try:
-            preprocess_spec = parser.getboolean('rpkg', 'preprocess_spec')
-        except (configparser.Error, ValueError):
-            self.log.warning(
-                "Could not get boolean value of rpkg.preprocess_spec option from rpkg.conf.")
-            preprocess_spec = False
+            try:
+                preprocess_spec = parser.getboolean('rpkg', 'preprocess_spec')
+            except (configparser.Error, ValueError):
+                self.log.warning(
+                    "Could not get boolean value of rpkg.preprocess_spec option from rpkg.conf.")
+                preprocess_spec = False
 
-        if not preprocess_spec:
-            self.log.info("preprocess_spec not enabled in rpkg.conf. "
-                          "Skipping rpkg preprocessing step.")
-            return
+            if not preprocess_spec:
+                self.log.info("preprocess_spec not enabled in rpkg.conf. "
+                              "Skipping rpkg preprocessing step.")
+                return
 
         # try to locate spec file in SOURCES, which will be our input
         host_chroot_sources_spec = os.path.join(host_chroot_sources,
