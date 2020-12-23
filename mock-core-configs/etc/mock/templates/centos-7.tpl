@@ -4,7 +4,7 @@ config_opts['chroot_setup_cmd'] = 'install bash bzip2 coreutils cpio diffutils f
 
 config_opts['dist'] = 'el7'  # only useful for --resultdir variable subst
 config_opts['releasever'] = '7'
-config_opts['bootstrap_image'] = 'centos:7'
+config_opts['bootstrap_image'] = 'registry.centos.org/centos:7'
 config_opts['package_manager'] = 'yum'
 
 config_opts['yum_install_command'] += "{% if target_arch in ['x86_64', 'ppc64le', 'aarch64'] %} --disablerepo=centos-sclo*{% endif %}"

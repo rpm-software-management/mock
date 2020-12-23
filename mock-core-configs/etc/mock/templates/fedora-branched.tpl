@@ -10,7 +10,7 @@ config_opts['chroot_setup_cmd'] = 'install @{% if mirrored %}buildsys-{% endif %
 config_opts['dist'] = 'fc{{ releasever }}'  # only useful for --resultdir variable subst
 config_opts['extra_chroot_dirs'] = [ '/run/lock', ]
 config_opts['package_manager'] = 'dnf'
-config_opts['bootstrap_image'] = 'fedora:{{ releasever }}'
+config_opts['bootstrap_image'] = 'registry.fedoraproject.org/fedora:{{ releasever }}'
 
 config_opts['dnf.conf'] = """
 [main]
