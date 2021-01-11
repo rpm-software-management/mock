@@ -1,9 +1,0 @@
-directories in this folder should be named:
-  rhel-%{rhel}
-  fedora-%{fedora}
-  ...
-and are in SPEC files appended to config. E.g
-  host-override/fedora-%{fedora}/fedora-31-x86_64.cfg
-is appended to
-  mock/fedora-31-x86_64.cfg
-if we are building for fedora-%{fedora}
