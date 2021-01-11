@@ -53,7 +53,6 @@ Config files which allow you to create chroots for:
 
 
 %build
-cd etc/host-overrides
 HOST=none
 %if 0%{?fedora}
 HOST="fedora-%{fedora}"
@@ -62,13 +61,20 @@ HOST="fedora-%{fedora}"
 HOST="rhel-%{rhel}"
 %endif
 
-if [ -d "$HOST" ]; then
-  pushd "$HOST"
-  for i in *.cfg; do
-    cat "$i" >> "../../mock/$i"
-  done
-  popd
-fi
+# host overrides
+case $HOST in
+  rhel-7)
+    # RPM on EL7 doesn't link against libzstd, and newer Fedora is compressed
+    # using ZSTD.  We need to enable bootstrap image here to be able to
+    # initialize the Fedora bootstrap chroot.
+    for config in etc/fedora-*-*.cfg; do
+        version=$(echo "$config" | cut -d- -f2)
+        if test $version = rawhide || test $version -ge 31; then
+            echo "config_opts['use_bootstrap_image'] = True" >> "$config"
+        fi
+    done
+    ;;
+esac
 
 
 %install
