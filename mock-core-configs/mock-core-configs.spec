@@ -1,5 +1,5 @@
 Name:       mock-core-configs
-Version:    33.3
+Version:    33.4
 Release:    1%{?dist}
 Summary:    Mock core config files basic chroots
 
@@ -150,6 +150,14 @@ fi
 %ghost %config(noreplace,missingok) %{_sysconfdir}/mock/default.cfg
 
 %changelog
+* Mon Jan 18 2021 Pavel Raiskup <praiskup@redhat.com> 33.4-1
+- fix bootstrapping of newer Fedora on EL7
+- efine a bootstrap image for openSUSE Tumbleweed (ngompa13@gmail.com)
+- use fully qualified paths for Fedora/CentOS/RHEL images (ngompa13@gmail.com)
+- rename repoid for centos8 (msuchy@redhat.com)
+- EOL CentOS 6 (msuchy@redhat.com)
+- EOL Fedora 31 (msuchy@redhat.com)
+
 * Fri Nov 20 2020 Pavel Raiskup <praiskup@redhat.com> 33.3-1
 - ELN should use for build Everything repository (jkonecny@redhat.com)
 
