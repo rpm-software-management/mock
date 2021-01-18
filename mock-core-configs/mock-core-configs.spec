@@ -1,5 +1,5 @@
 Name:       mock-core-configs
-Version:    33.4
+Version:    33.5
 Release:    1%{?dist}
 Summary:    Mock core config files basic chroots
 
@@ -150,6 +150,9 @@ fi
 %ghost %config(noreplace,missingok) %{_sysconfdir}/mock/default.cfg
 
 %changelog
+* Mon Jan 18 2021 Pavel Raiskup <praiskup@redhat.com> 33.5-1
+- fix typo in host-specific config generater
+
 * Mon Jan 18 2021 Pavel Raiskup <praiskup@redhat.com> 33.4-1
 - fix bootstrapping of newer Fedora on EL7
 - efine a bootstrap image for openSUSE Tumbleweed (ngompa13@gmail.com)
