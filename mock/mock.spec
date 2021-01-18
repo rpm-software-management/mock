@@ -12,7 +12,7 @@
 
 Summary: Builds packages inside chroots
 Name: mock
-Version: 2.8
+Version: 2.9
 Release: 1%{?dist}
 License: GPLv2+
 # Source is created by
@@ -276,6 +276,10 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 %dir  %{_datadir}/cheat
 
 %changelog
+* Mon Jan 18 2021 Pavel Raiskup <praiskup@redhat.com> 2.9-1
+- rpkg_preprocessor: Add a force_enable option (tstellar@redhat.com)
+- use TemplatedDictionary as standalone module (msuchy@redhat.com)
+
 * Tue Dec 15 2020 Pavel Raiskup <praiskup@redhat.com> 2.8-1
 - fix use of nspawn (#678) (awilliam@redhat.com)
 - file_util: Improve an error message (tbaeder@redhat.com)
