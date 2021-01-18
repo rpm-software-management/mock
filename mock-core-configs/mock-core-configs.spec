@@ -67,7 +67,7 @@ case $HOST in
     # RPM on EL7 doesn't link against libzstd, and newer Fedora is compressed
     # using ZSTD.  We need to enable bootstrap image here to be able to
     # initialize the Fedora bootstrap chroot.
-    for config in etc/fedora-*-*.cfg; do
+    for config in etc/mock/fedora-*-*.cfg; do
         version=$(echo "$config" | cut -d- -f2)
         if test $version = rawhide || test $version -ge 31; then
             echo "config_opts['use_bootstrap_image'] = True" >> "$config"
