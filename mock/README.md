@@ -26,6 +26,8 @@ Mock currently has one active branch plus `main`.
 
 Do you have a patch, an idea, or just a question? You can write to [buildsys mailing list](https://lists.fedoraproject.org/admin/lists/buildsys%40lists.fedoraproject.org/) or try [#fedora-buildsys](http://webchat.freenode.net/?channels=fedora-builsys) on [Freenode](https://freenode.net/). We prefer email though.
 
+If you hate mailing lists for some reason (we still prefer it) - you can use [Discussions](https://github.com/rpm-software-management/mock/discussions).
+
 ## Getting and compiling mock
 
     git clone https://github.com/rpm-software-management/mock.git
