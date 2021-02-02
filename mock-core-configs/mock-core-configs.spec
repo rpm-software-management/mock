@@ -1,5 +1,5 @@
 Name:       mock-core-configs
-Version:    33.5
+Version:    33.6
 Release:    1%{?dist}
 Summary:    Mock core config files basic chroots
 
@@ -150,6 +150,11 @@ fi
 %ghost %config(noreplace,missingok) %{_sysconfdir}/mock/default.cfg
 
 %changelog
+* Tue Feb 02 2021 Pavel Raiskup <praiskup@redhat.com> 33.6-1
+- Add Mageia 8 stable release configs (ngompa13@gmail.com)
+- Update Mageia Cauldron configuration for Mageia 9 (ngompa13@gmail.com)
+- add RHEL 6 x86_64 configuration
+
 * Mon Jan 18 2021 Pavel Raiskup <praiskup@redhat.com> 33.5-1
 - fix typo in host-specific config generater
 
