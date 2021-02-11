@@ -1,5 +1,9 @@
 # Work in progress...
 
+When you plan to release a new mock-core-configs for a new Fedora version being
+branched from Rawhide, there's a script in releng/rawhide-branching.sh that
+helps you to setup a correct configuration layout.
+
 A note on mock versions: 
 
   There are now two main branches to be aware of:
