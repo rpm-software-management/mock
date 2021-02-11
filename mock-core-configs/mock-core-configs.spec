@@ -1,5 +1,5 @@
 Name:       mock-core-configs
-Version:    34
+Version:    34.1
 Release:    1%{?dist}
 Summary:    Mock core config files basic chroots
 
@@ -150,6 +150,9 @@ fi
 %ghost %config(noreplace,missingok) %{_sysconfdir}/mock/default.cfg
 
 %changelog
+* Thu Feb 11 2021 Pavel Raiskup <praiskup@redhat.com> 34.1-1
+- fix rawhide config after branching
+
 * Mon Feb 08 2021 Pavel Raiskup <praiskup@redhat.com> 34-1
 - add fedora 34 configs (msuchy@redhat.com)
 - require distribution-gpg-keys with F35 keys (msuchy@redhat.com)
