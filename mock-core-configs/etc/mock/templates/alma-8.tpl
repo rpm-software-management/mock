@@ -3,6 +3,7 @@ config_opts['dist'] = 'el8'  # only useful for --resultdir variable subst
 config_opts['releasever'] = '8'
 config_opts['package_manager'] = 'dnf'
 config_opts['extra_chroot_dirs'] = [ '/run/lock', ]
+config_opts['root'] = 'alma-8-{{ target_arch }}'
 config_opts['bootstrap_image'] = 'alma:8'
 
 
@@ -14,7 +15,7 @@ reposdir=/dev/null
 logfile=/var/log/yum.log
 retries=20
 obsoletes=1
-gpgcheck=0
+gpgcheck=1
 assumeyes=1
 syslog_ident=mock
 syslog_device=
@@ -36,29 +37,29 @@ user_agent={{ user_agent }}
 name=AlmaLinux 8.3 - BaseOS
 baseurl=https://repo.almalinux.org/almalinux/8/BaseOS/$basearch/os/
 enabled=1
-gpgcheck=0
-gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-AlmaLinux
+gpgcheck=1
+gpgkey=file:///usr/share/distribution-gpg-keys/alma/RPM-GPG-KEY-AlmaLinux
 
 [appstream]
 name=AlmaLinux 8.3 - AppStream
 baseurl=https://repo.almalinux.org/almalinux/8/AppStream/$basearch/os/
 enabled=1
-gpgcheck=0
-gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-AlmaLinux
+gpgcheck=1
+gpgkey=file:///usr/share/distribution-gpg-keys/alma/RPM-GPG-KEY-AlmaLinux
 
 [powertools]
 name=AlmaLinux 8.3 - PowerTools
 baseurl=https://repo.almalinux.org/almalinux/8/PowerTools/$basearch/os/
 enabled=1
-gpgcheck=0
-gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-AlmaLinux
+gpgcheck=1
+gpgkey=file:///usr/share/distribution-gpg-keys/alma/RPM-GPG-KEY-AlmaLinux
 
 [extras]
 name=AlmaLinux 8.3 - Extras
 baseurl=https://repo.almalinux.org/almalinux/8/extras/$basearch/os/
 enabled=1
-gpgcheck=0
-gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-AlmaLinux
+gpgcheck=1
+gpgkey=file:///usr/share/distribution-gpg-keys/alma/RPM-GPG-KEY-AlmaLinux
 
 ## Sources
 [baseos-source]
@@ -66,54 +67,54 @@ name=AlmaLinux 8.3 - BaseOS Source
 baseurl=https://repo.almalinux.org/almalinux/8/BaseOS/Source/
 enabled=0
 gpgcheck=1
-gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-AlmaLinux
+gpgkey=file:///usr/share/distribution-gpg-keys/alma/RPM-GPG-KEY-AlmaLinux
 
 [appstream-source]
 name=AlmaLinux 8.3 - AppStream Source
 baseurl=https://repo.almalinux.org/almalinux/8/AppStream/Source/
 enabled=0
 gpgcheck=1
-gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-AlmaLinux
+gpgkey=file:///usr/share/distribution-gpg-keys/alma/RPM-GPG-KEY-AlmaLinux
 
 [powertools-source]
 name=AlmaLinux 8.3 - PowerTools Source
 baseurl=https://repo.almalinux.org/almalinux/8/PowerTools/Source/
 enabled=0
 gpgcheck=1
-gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-AlmaLinux
+gpgkey=file:///usr/share/distribution-gpg-keys/alma/RPM-GPG-KEY-AlmaLinux
 
 [extras-source]
 name=AlmaLinux 8.3 - Extras Source
 baseurl=https://repo.almalinux.org/almalinux/8/extras/Source/
 enabled=0
 gpgcheck=1
-gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-AlmaLinux
+gpgkey=file:///usr/share/distribution-gpg-keys/alma/RPM-GPG-KEY-AlmaLinux
 ## Debuginfo
 [baseos-debuginfo]
 name=AlmaLinux 8.3 - BaseOS debuginfo
 baseurl=https://repo.almalinux.org/almalinux/8/BaseOS/debug/$basearch/
 enabled=0
 gpgcheck=1
-gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-AlmaLinux
+gpgkey=file:///usr/share/distribution-gpg-keys/alma/RPM-GPG-KEY-AlmaLinux
 
 [appstream-debuginfo]
 name=AlmaLinux 8.3 - AppStream debuginfo
 baseurl=https://repo.almalinux.org/almalinux/8/AppStream/debug/$basearch/
 enabled=0
 gpgcheck=1
-gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-AlmaLinux
+gpgkey=file:///usr/share/distribution-gpg-keys/alma/RPM-GPG-KEY-AlmaLinux
 
 [powertools-debuginfo]
 name=AlmaLinux 8.3 - PowerTools debuginfo
 baseurl=https://repo.almalinux.org/almalinux/8/PowerTools/debug/$basearch/
 enabled=0
 gpgcheck=1
-gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-AlmaLinux
+gpgkey=file:///usr/share/distribution-gpg-keys/alma/RPM-GPG-KEY-AlmaLinux
 
 [extras-debuginfo]
 name=AlmaLinux 8.3 - Extras debuginfo
 baseurl=https://repo.almalinux.org/almalinux/8/extras/debug/$basearch/
 enabled=0
 gpgcheck=1
-gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-AlmaLinux
+gpgkey=file:///usr/share/distribution-gpg-keys/alma/RPM-GPG-KEY-AlmaLinux
 """
