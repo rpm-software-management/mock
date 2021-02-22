@@ -41,6 +41,7 @@ done
 # updated GPG keys (of $next_version and $versiono).
 
 sed -i "s|'$version'|'$next_version'|" templates/fedora-rawhide.tpl
+sed -i "s|'$version'|'$next_version'|" templates/fedora-eln.tpl
 git add templates/fedora-rawhide.tpl
 
 echo "WARNING: Make sure Fedora Copr maintainers are informed that"

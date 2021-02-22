@@ -1,4 +1,5 @@
 config_opts['releasever'] = 'eln'
+config_opts['eln_rawhide_releasever'] = '35'
 
 config_opts['root'] = 'fedora-eln-{{ target_arch }}'
 
@@ -30,6 +31,13 @@ user_agent={{ user_agent }}
 module_platform_id=platform:eln
 protected_packages=
 
+{%- macro rawhide_gpg_keys() -%}
+file:///usr/share/distribution-gpg-keys/fedora/RPM-GPG-KEY-fedora-rawhide-primary
+{%- for version in [eln_rawhide_releasever|int, eln_rawhide_releasever|int - 1]
+%} file:///usr/share/distribution-gpg-keys/fedora/RPM-GPG-KEY-fedora-{{ version }}-primary
+{%- endfor %}
+{%- endmacro %}
+
 # repos
 # The Everything repository have to be enabled to get all of the packages because
 # some of them are not present anywhere else. Also the AppStream repository
@@ -49,7 +57,7 @@ enabled=1
 repo_gpgcheck=0
 type=rpm
 gpgcheck=1
-gpgkey=file:///usr/share/distribution-gpg-keys/fedora/RPM-GPG-KEY-fedora-rawhide-primary
+gpgkey={{ rawhide_gpg_keys() }}
 skip_if_unavailable=False
 
 [eln-debuginfo]
@@ -60,7 +68,7 @@ enabled=0
 repo_gpgcheck=0
 type=rpm
 gpgcheck=1
-gpgkey=file:///usr/share/distribution-gpg-keys/fedora/RPM-GPG-KEY-fedora-rawhide-primary
+gpgkey={{ rawhide_gpg_keys() }}
 skip_if_unavailable=False
 
 [eln-source]
@@ -71,7 +79,7 @@ enabled=0
 repo_gpgcheck=0
 type=rpm
 gpgcheck=1
-gpgkey=file:///usr/share/distribution-gpg-keys/fedora/RPM-GPG-KEY-fedora-rawhide-primary
+gpgkey={{ rawhide_gpg_keys() }}
 skip_if_unavailable=False
 
 
@@ -83,7 +91,7 @@ enabled=0
 repo_gpgcheck=0
 type=rpm
 gpgcheck=1
-gpgkey=file:///usr/share/distribution-gpg-keys/fedora/RPM-GPG-KEY-fedora-rawhide-primary
+gpgkey={{ rawhide_gpg_keys() }}
 skip_if_unavailable=False
 
 [eln-baseos-debuginfo]
@@ -94,7 +102,7 @@ enabled=0
 repo_gpgcheck=0
 type=rpm
 gpgcheck=1
-gpgkey=file:///usr/share/distribution-gpg-keys/fedora/RPM-GPG-KEY-fedora-rawhide-primary
+gpgkey={{ rawhide_gpg_keys() }}
 skip_if_unavailable=False
 
 [eln-baseos-source]
@@ -105,7 +113,7 @@ enabled=0
 repo_gpgcheck=0
 type=rpm
 gpgcheck=1
-gpgkey=file:///usr/share/distribution-gpg-keys/fedora/RPM-GPG-KEY-fedora-rawhide-primary
+gpgkey={{ rawhide_gpg_keys() }}
 skip_if_unavailable=False
 
 
@@ -117,7 +125,7 @@ enabled=1
 repo_gpgcheck=0
 type=rpm
 gpgcheck=1
-gpgkey=file:///usr/share/distribution-gpg-keys/fedora/RPM-GPG-KEY-fedora-rawhide-primary
+gpgkey={{ rawhide_gpg_keys() }}
 skip_if_unavailable=False
 
 [eln-appstream-debuginfo]
@@ -128,7 +136,7 @@ enabled=0
 repo_gpgcheck=0
 type=rpm
 gpgcheck=1
-gpgkey=file:///usr/share/distribution-gpg-keys/fedora/RPM-GPG-KEY-fedora-rawhide-primary
+gpgkey={{ rawhide_gpg_keys() }}
 skip_if_unavailable=False
 
 [eln-appstream-source]
@@ -139,7 +147,7 @@ enabled=0
 repo_gpgcheck=0
 type=rpm
 gpgcheck=1
-gpgkey=file:///usr/share/distribution-gpg-keys/fedora/RPM-GPG-KEY-fedora-rawhide-primary
+gpgkey={{ rawhide_gpg_keys() }}
 skip_if_unavailable=False
 
 
@@ -151,7 +159,7 @@ enabled=0
 repo_gpgcheck=0
 type=rpm
 gpgcheck=1
-gpgkey=file:///usr/share/distribution-gpg-keys/fedora/RPM-GPG-KEY-fedora-rawhide-primary
+gpgkey={{ rawhide_gpg_keys() }}
 skip_if_unavailable=False
 
 [eln-crb-debuginfo]
@@ -162,7 +170,7 @@ enabled=0
 repo_gpgcheck=0
 type=rpm
 gpgcheck=1
-gpgkey=file:///usr/share/distribution-gpg-keys/fedora/RPM-GPG-KEY-fedora-rawhide-primary
+gpgkey={{ rawhide_gpg_keys() }}
 skip_if_unavailable=False
 
 [eln-crb-source]
@@ -173,6 +181,6 @@ enabled=0
 repo_gpgcheck=0
 type=rpm
 gpgcheck=1
-gpgkey=file:///usr/share/distribution-gpg-keys/fedora/RPM-GPG-KEY-fedora-rawhide-primary
+gpgkey={{ rawhide_gpg_keys() }}
 skip_if_unavailable=False
 """
