@@ -1,5 +1,5 @@
 Name:       mock-core-configs
-Version:    34.1
+Version:    34.2
 Release:    1%{?dist}
 Summary:    Mock core config files basic chroots
 
@@ -150,6 +150,9 @@ fi
 %ghost %config(noreplace,missingok) %{_sysconfdir}/mock/default.cfg
 
 %changelog
+* Mon Feb 22 2021 Pavel Raiskup <praiskup@redhat.com> 34.2-1
+- configs: use Fedora N-1 gpg keys for ELN (praiskup@redhat.com)
+
 * Thu Feb 11 2021 Pavel Raiskup <praiskup@redhat.com> 34.1-1
 - fix rawhide config after branching
 
