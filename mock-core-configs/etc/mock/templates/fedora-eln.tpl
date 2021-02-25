@@ -3,7 +3,7 @@ config_opts['eln_rawhide_releasever'] = '35'
 
 config_opts['root'] = 'fedora-eln-{{ target_arch }}'
 
-config_opts['chroot_setup_cmd'] = 'install bash bzip2 coreutils cpio diffutils fedora-release-eln findutils gawk glibc-minimal-langpack grep gzip info make patch redhat-rpm-config rpm-build sed shadow-utils tar unzip util-linux which xz'
+config_opts['chroot_setup_cmd'] = 'install bash bzip2 coreutils cpio diffutils fedora-release-eln findutils gawk glibc-minimal-langpack grep gzip info patch redhat-rpm-config rpm-build sed shadow-utils tar unzip util-linux which xz'
 
 config_opts['dist'] = 'eln'  # only useful for --resultdir variable subst
 config_opts['extra_chroot_dirs'] = [ '/run/lock', ]
