@@ -297,6 +297,9 @@ class Buildroot(object):
         except FileNotFoundError:
             pass
 
+        # for /etc sub-directories
+        file_util.mkdirIfAbsent(os.path.dirname(conf_file))
+
         if os.path.exists(orig_conf_file):
             if symlink and os.path.islink(orig_conf_file):
                 linkto = os.readlink(orig_conf_file)
