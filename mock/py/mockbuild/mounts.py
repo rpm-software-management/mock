@@ -96,23 +96,24 @@ class BindMountPoint(MountPoint):
 
     @traceLog()
     def mount(self):
-        if not self.mounted:
-            if os.path.isdir(self.srcpath):
-                file_util.mkdirIfAbsent(self.bindpath)
-            elif not os.path.exists(self.bindpath):
-                normbindpath = os.path.normpath(self.bindpath)
-                file_util.mkdirIfAbsent(os.path.dirname(normbindpath))
-                file_util.touch(self.bindpath)
-            cmd = ['/bin/mount', '-n']
-            if self.recursive:
-                cmd.append('--rbind')
-            else:
-                cmd.append('--bind')
-            if self.options:
-                cmd += ['-o', self.options]
-            cmd += [self.srcpath, self.bindpath]
-            util.do(cmd)
+        if self.mounted:
+            return None
+        if os.path.isdir(self.srcpath):
+            file_util.mkdirIfAbsent(self.bindpath)
+        elif not os.path.exists(self.bindpath):
+            normbindpath = os.path.normpath(self.bindpath)
+            file_util.mkdirIfAbsent(os.path.dirname(normbindpath))
+            file_util.touch(self.bindpath)
+        bind_option = 'rbind' if self.recursive else 'bind'
+        util.do(['/bin/mount', '-n', '-o', bind_option, self.srcpath,
+                 self.bindpath])
         self.mounted = True
+        # Remount the new bind-mount to set specified options (rhbz#1584443).
+        # Userspace must implement this as separate system calls anyway.
+        if self.options:
+            options = ','.join(['remount', self.options, bind_option])
+            util.do(['/bin/mount', '-n', '-o', options, self.srcpath,
+                     self.bindpath])
         return True
 
     @traceLog()
