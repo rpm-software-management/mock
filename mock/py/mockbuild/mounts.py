@@ -145,7 +145,6 @@ class Mounts(object):
         self.essential_mounts = [] # /proc, /sys ... normally managed by systemd
         self.managed_mounts = []  # mounts owned by mock
         self.user_mounts = []  # mounts injected by user
-        self.essential_mounts = []
 
         # Instead of mounting a fresh procfs and sysfs, we bind mount /proc
         # and /sys. This avoids problems with kernel restrictions if running
@@ -224,9 +223,9 @@ class Mounts(object):
 
     @traceLog()
     def mountall_essential(self):
+        self.essential_mounted = True
         for m in self.essential_mounts:
             m.mount()
-        self.essential_mounted = True
 
     @traceLog()
     def mountall_managed(self):
