@@ -13,7 +13,7 @@
 Summary: Builds packages inside chroots
 Name: mock
 Version: 2.9
-Release: 1%{?dist}
+Release: 2%{?dist}
 License: GPLv2+
 # Source is created by
 # git clone https://github.com/rpm-software-management/mock.git
