@@ -56,6 +56,9 @@ baseurl=http://download.opensuse.org/ports/ppc/tumbleweed/repo/oss/
 {% elif target_arch in ['aarch64'] %}
 baseurl=http://download.opensuse.org/ports/aarch64/tumbleweed/repo/oss/
 #metalink=http://download.opensuse.org/ports/aarch64/tumbleweed/repo/oss/repodata/repomd.xml.metalink
+{% elif target_arch in ['s390x'] %}
+baseurl=http://download.opensuse.org/ports/zsystems/tumbleweed/repo/oss/
+#metalink=http://download.opensuse.org/ports/zsystems/tumbleweed/repo/oss/repodata/repomd.xml.metalink
 {% endif %}
 gpgkey=file:///usr/share/distribution-gpg-keys/opensuse/RPM-GPG-KEY-openSUSE
 gpgcheck=1
