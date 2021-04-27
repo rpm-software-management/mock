@@ -1,5 +1,5 @@
 Name:       mock-core-configs
-Version:    34.2
+Version:    34.3
 Release:    1%{?dist}
 Summary:    Mock core config files basic chroots
 
@@ -150,6 +150,15 @@ fi
 %ghost %config(noreplace,missingok) %{_sysconfdir}/mock/default.cfg
 
 %changelog
+* Tue Apr 27 2021 Pavel Raiskup <praiskup@redhat.com> 34.3-1
+- Add Oracle Linux 8 (ngompa13@gmail.com)
+- Add Oracle Linux 7 (ngompa13@gmail.com)
+- Add openSUSE Leap 15.3 (ngompa13@gmail.com)
+- openSUSE Leap 15.1 is EOL (ngompa13@gmail.com)
+- Add openSUSE Tumbleweed s390x config (ngompa13@gmail.com)
+- Add AlmaLinux 8 configs (ngompa13@gmail.com)
+- Remove make from default ELN buildroot (miro@hroncok.cz)
+
 * Mon Feb 22 2021 Pavel Raiskup <praiskup@redhat.com> 34.2-1
 - configs: use Fedora N-1 gpg keys for ELN (praiskup@redhat.com)
 
