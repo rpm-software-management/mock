@@ -12,8 +12,8 @@
 
 Summary: Builds packages inside chroots
 Name: mock
-Version: 2.9
-Release: 2%{?dist}
+Version: 2.10
+Release: 1%{?dist}
 License: GPLv2+
 # Source is created by
 # git clone https://github.com/rpm-software-management/mock.git
@@ -276,6 +276,12 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 %dir  %{_datadir}/cheat
 
 %changelog
+* Tue Apr 27 2021 Pavel Raiskup <praiskup@redhat.com> 2.10-1
+- do not allocate tty for podman (msuchy@redhat.com)
+- work-around bug setting propagation for recursive bind-mounts (david.ward@ll.mit.edu)
+- fix handling of essential mountpoints (david.ward@ll.mit.edu)
+- pre-create the dest directory in _copy_config
+
 * Mon Jan 18 2021 Pavel Raiskup <praiskup@redhat.com> 2.9-1
 - rpkg_preprocessor: Add a force_enable option (tstellar@redhat.com)
 - use TemplatedDictionary as standalone module (msuchy@redhat.com)
