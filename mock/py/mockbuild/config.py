@@ -258,6 +258,8 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
     config_opts['macros'] = {
         '%_topdir': '%s/build' % config_opts['chroothome'],
         '%_rpmfilename': '%%{NAME}-%%{VERSION}-%%{RELEASE}.%%{ARCH}.rpm',
+        # This is actually set in check_arch_combination()
+        # '%_platform_multiplier': 1,
     }
     config_opts['hostname'] = None
     config_opts['module_enable'] = []
@@ -310,6 +312,13 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
 
     return config_opts
 
+
+def multiply_platform_multiplier(config_opts):
+    """ Define '%_platform_multiplier' macro based on forcearch.
+        But respect possible overrides in config.
+    """
+    if '%_platform_multiplier' not in config_opts["macros"]:
+        config_opts["macros"]["%_platform_multiplier"] = 10 if config_opts["forcearch"] else 1
 
 @traceLog()
 def set_config_opts_per_cmdline(config_opts, options, args):
