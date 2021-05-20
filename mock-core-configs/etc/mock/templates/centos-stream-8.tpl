@@ -26,19 +26,28 @@ protected_packages=
 module_platform_id=platform:el8
 user_agent={{ user_agent }}
 
-[Stream-BaseOS]
-name=CentOS-Stream - Base
-baseurl=http://mirror.centos.org/centos/8-stream/BaseOS/$basearch/os/
+[baseos]
+name=CentOS Stream $releasever - BaseOS
+mirrorlist=http://mirrorlist.centos.org/?release=$stream&arch=$basearch&repo=BaseOS&infra=$infra
+#baseurl=http://mirror.centos.org/$contentdir/$stream/BaseOS/$basearch/os/
 failovermethod=priority
 gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
 gpgcheck=1
 skip_if_unavailable=False
 
-[Stream-AppStream]
-name=CentOS-Stream - AppStream
-baseurl=http://mirror.centos.org/centos/8-stream/AppStream/$basearch/os/
+[appstream]
+name=CentOS Stream $releasever - AppStream
+mirrorlist=http://mirrorlist.centos.org/?release=$stream&arch=$basearch&repo=AppStream&infra=$infra
+#baseurl=http://mirror.centos.org/$contentdir/$stream/AppStream/$basearch/os/
 gpgcheck=1
 enabled=1
+gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
+
+[debuginfo]
+name=CentOS Stream $releasever - Debuginfo
+baseurl=http://debuginfo.centos.org/$stream/$basearch/
+gpgcheck=1
+enabled=0
 gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
 
 [Stream-centosplus]
@@ -62,18 +71,36 @@ gpgcheck=1
 enabled=0
 gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
 
-[Stream-extras]
-name=CentOS-Stream - Extras
-baseurl=http://mirror.centos.org/centos/8-stream/extras/$basearch/os/
+[extras]
+name=CentOS Stream $releasever - Extras
+mirrorlist=http://mirrorlist.centos.org/?release=$stream&arch=$basearch&repo=extras&infra=$infra
+#baseurl=http://mirror.centos.org/$contentdir/$stream/extras/$basearch/os/
 gpgcheck=1
 enabled=1
 gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
 
-[Stream-PowerTools]
-name=CentOS-Stream - PowerTools
-baseurl=http://mirror.centos.org/centos/8-stream/PowerTools/$basearch/os/
+[powertools]
+name=CentOS Stream $releasever - PowerTools
+mirrorlist=http://mirrorlist.centos.org/?release=$stream&arch=$basearch&repo=PowerTools&infra=$infra
+#baseurl=http://mirror.centos.org/$contentdir/$stream/PowerTools/$basearch/os/
 gpgcheck=1
 enabled=1
+gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
+
+[rt]
+name=CentOS Stream $releasever - RealTime
+mirrorlist=http://mirrorlist.centos.org/?release=$stream&arch=$basearch&repo=RT&infra=$infra
+#baseurl=http://mirror.centos.org/$contentdir/$stream/RT/$basearch/os/
+gpgcheck=1
+enabled=0
+gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
+
+[ha]
+name=CentOS Stream $releasever - HighAvailability
+mirrorlist=http://mirrorlist.centos.org/?release=$stream&arch=$basearch&repo=HighAvailability&infra=$infra
+#baseurl=http://mirror.centos.org/$contentdir/$stream/HighAvailability/$basearch/os/
+gpgcheck=1
+enabled=0
 gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
 
 [Stream-Devel]
