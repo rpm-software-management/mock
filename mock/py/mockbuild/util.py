@@ -762,6 +762,7 @@ def _prepare_nspawn_command(chrootPath, user, cmd, nspawn_args=None, env=None,
     return nspawn_argv + cmd
 
 def doshell(chrootPath=None, environ=None, uid=None, gid=None, cmd=None,
+            cwd=None,
             nspawn_args=None,
             unshare_ipc=True,
             unshare_net=False):
@@ -786,7 +787,7 @@ def doshell(chrootPath=None, environ=None, uid=None, gid=None, cmd=None,
     elif isinstance(cmd, list):
         cmd = ' '.join(cmd)
 
-    preexec = ChildPreExec(personality=None, chrootPath=chrootPath, cwd=None,
+    preexec = ChildPreExec(personality=None, chrootPath=chrootPath, cwd=cwd,
                            uid=uid, gid=gid, env=environ, shell=shell,
                            unshare_ipc=unshare_ipc, unshare_net=unshare_net,
                            no_setsid=no_setsid)
@@ -795,7 +796,7 @@ def doshell(chrootPath=None, environ=None, uid=None, gid=None, cmd=None,
         # nspawn cannot set gid
         log.debug("Using nspawn with args %s", nspawn_args)
         cmd = _prepare_nspawn_command(chrootPath, uid, cmd, nspawn_args=nspawn_args, env=environ,
-                                      interactive=True)
+                                      interactive=True, cwd=cwd)
         environ['SYSTEMD_NSPAWN_TMPFS_TMP'] = '0'
         shell = False
 

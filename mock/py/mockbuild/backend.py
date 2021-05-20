@@ -350,11 +350,15 @@ class Commands(object):
         else:
             uid = 0
             gid = 0
+        cwd = options.cwd
+        if not cwd:
+            cwd = self.config['chroothome']
 
         try:
             self.state.start("shell")
             ret = util.doshell(chrootPath=self.buildroot.make_chroot_path(),
                                environ=self.buildroot.env, uid=uid, gid=gid,
+                               cwd=cwd,
                                nspawn_args=self._get_nspawn_args(),
                                unshare_net=self.private_network,
                                cmd=cmd)
