@@ -540,6 +540,7 @@ def check_arch_combination(target_arch, config_opts):
                  target_arch, host_arch)
         config_opts['forcearch'] = target_arch
 
+    config.multiply_platform_multiplier(config_opts)
     if config_opts['forcearch']:
         binary = '/usr/bin/qemu-x86_64-static'
         if not os.path.exists(binary):
