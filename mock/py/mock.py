@@ -901,6 +901,7 @@ def run_command(options, args, config_opts, commands, buildroot, state):
             return 50
 
         commands.init()
+        commands.install_external(args)
         buildroot.install(*args)
 
     elif options.mode == 'update':
