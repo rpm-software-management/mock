@@ -234,6 +234,20 @@ class Commands(object):
         self.buildroot.root_log.info("Installed packages:")
         self.buildroot.root_log.info('\n'.join(pkgs))
 
+    @traceLog()
+    def install_external(self, requires):
+        """ requires is list of packages to be install.
+        This function extract any external:* and install them.
+        """
+        external_deps = self.external.extract_external_deps(requires)
+        if external_deps:
+            if not self.config.get('use_bootstrap'):
+                raise Error('ExternalBuildRequires requires `use_bootstrap` to be set on.')
+            if self.config.get('external_buildrequires'):
+                self.external.install_external_deps(external_deps)
+            else:
+                raise Error('ExternalBuildRequires are found but support is disabled.'
+                            ' See "external_buildrequires" in config_opts.')
     #
     # UNPRIVILEGED:
     #   Everything in this function runs as the build user
@@ -285,16 +299,7 @@ class Commands(object):
                 raise Error('DynamicBuildRequires are found but support is disabled.'
                             ' See "dynamic_buildrequires" in config_opts.')
 
-            external_deps = self.external.extract_external_deps(requires)
-            if external_deps:
-                if not self.config.get('use_bootstrap'):
-                    raise Error('ExternalBuildRequires requires `use_bootstrap` to be set on.')
-                if self.config.get('external_buildrequires'):
-                    self.external.install_external_deps(external_deps)
-                else:
-                    raise Error('ExternalBuildRequires are found but support is disabled.'
-                                ' See "external_buildrequires" in config_opts.')
-
+            self.install_external(requires)
             self.installSrpmDeps(rebuilt_srpm)
             self.state.finish(buildsetup)
             buildsetup_finished = True
