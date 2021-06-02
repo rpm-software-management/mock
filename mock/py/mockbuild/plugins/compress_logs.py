@@ -20,7 +20,7 @@ class CompressLogsPlugin(object):
         self.state = buildroot.state
         self.conf = conf
         self.command = self.conf['command']
-        plugins.add_hook("postbuild", self._compress_logs)
+        plugins.add_hook("process_logs", self._compress_logs)
         getLog().info("compress_logs: initialized")
 
     @traceLog()
