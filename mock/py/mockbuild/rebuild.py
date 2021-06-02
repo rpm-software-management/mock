@@ -27,6 +27,7 @@ def rebuild_generic(items, commands, buildroot, config_opts, cmd, post=None, cle
             log.info("Done(%s) Config(%s) %d minutes %d seconds",
                      item, config_opts['chroot_name'], elapsed // 60, elapsed % 60)
             log.info("Results and/or logs in: %s", buildroot.resultdir)
+            commands.plugins.call_hooks("process_logs")
 
         if config_opts["cleanup_on_success"]:
             log.info("Cleaning up build root ('cleanup_on_success=True')")
@@ -40,6 +41,7 @@ def rebuild_generic(items, commands, buildroot, config_opts, cmd, post=None, cle
         log.error("Exception(%s) Config(%s) %d minutes %d seconds",
                   item, buildroot.shared_root_name, elapsed // 60, elapsed % 60)
         log.info("Results and/or logs in: %s", buildroot.resultdir)
+        commands.plugins.call_hooks("process_logs")
         if config_opts["cleanup_on_failure"]:
             log.info("Cleaning up build root ('cleanup_on_failure=True')")
             commands.clean()
