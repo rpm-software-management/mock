@@ -53,6 +53,8 @@ baseurl=http://download.opensuse.org/distribution/leap/$releasever/repo/oss/
 #metalink=http://download.opensuse.org/distribution/leap/$releasever/repo/oss/repodata/repomd.xml.metalink
 enabled=1
 gpgkey=file:///usr/share/distribution-gpg-keys/opensuse/RPM-GPG-KEY-openSUSE
+        file:///usr/share/distribution-gpg-keys/opensuse/RPM-GPG-KEY-openSUSE-Backports
+        file:///usr/share/distribution-gpg-keys/suse/RPM-GPG-KEY-SuSE-SLE-15
 gpgcheck=1
 
 [opensuse-leap-oss-update]
@@ -61,6 +63,22 @@ baseurl=http://download.opensuse.org/update/leap/$releasever/oss/
 #metalink=http://download.opensuse.org/update/leap/$releasever/oss/repodata/repomd.xml.metalink
 enabled=1
 gpgkey=file:///usr/share/distribution-gpg-keys/opensuse/RPM-GPG-KEY-openSUSE
+gpgcheck=1
+
+[opensuse-leap-sle-update]
+name=openSUSE Leap $releasever - {{ target_arch }} - Updates from SUSE Linux Enterprise
+baseurl=http://download.opensuse.org/update/leap/$releasever/sle/
+#metalink=http://download.opensuse.org/update/leap/$releasever/sle/repodata/repomd.xml.metalink
+enabled=1
+gpgkey=file:///usr/share/distribution-gpg-keys/opensuse/RPM-GPG-KEY-SuSE-SLE-15
+gpgcheck=1
+
+[opensuse-leap-sle-backports-update]
+name=openSUSE Leap $releasever - {{ target_arch }} - Updates from Backports for SUSE Linux Enterprise
+baseurl=http://download.opensuse.org/update/leap/$releasever/backports/
+#metalink=http://download.opensuse.org/update/leap/$releasever/backports/repodata/repomd.xml.metalink
+enabled=1
+gpgkey=file:///usr/share/distribution-gpg-keys/opensuse/RPM-GPG-KEY-openSUSE-Backports
 gpgcheck=1
 
 """
