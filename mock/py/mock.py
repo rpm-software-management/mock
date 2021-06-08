@@ -41,14 +41,13 @@
 from __future__ import print_function
 
 # library imports
+import argparse
 import configparser
 import errno
 import glob
 import grp
 import logging
 import logging.config
-# pylint: disable=deprecated-module
-from optparse import OptionParser
 
 from pprint import pformat
 import os
@@ -104,28 +103,25 @@ signal_names = {1: "SIGHUP",
 # This line is replaced by spec file %install section.
 _MOCK_NVR = None
 
-# pylint: disable=unused-argument
-def scrub_callback(option, opt, value, parser):
-    parser.values.scrub.append(value)
-    parser.values.mode = "clean"
 
-
-# pylint: disable=unused-argument
-def repo_callback(optobj, opt, value, parser):
-    '''Callback for the enablerepo and disablerepo option.
-
-    Combines the values given for these options while preserving order
-    from command line.
-    '''
-    # pylint: disable=eval-used
-    dest = eval('parser.values.%s' % optobj.dest)
-    dest.extend((opt, value))
+class RepoCallback(argparse.Action):
+    """ Parse --enablerepo/--disablerepo options """
+    def __call__(self, parser, namespace, value, option_string=None):
+        if not hasattr(namespace, self.dest):
+            setattr(namespace, self.dest, [])
+        options = getattr(namespace, self.dest)
+        options += [(option_string, value)]
 
 
 def command_parse():
     """return options and args from parsing the command line"""
     plugins = config.PLUGIN_LIST
-    parser = OptionParser(usage=__doc__, version=__VERSION__)
+    parser = argparse.ArgumentParser(usage=__doc__)
+
+    parser.add_argument('--version', action='version', version=__VERSION__)
+
+    # hack from optparse=>argparse migration time, use add_argument if possible
+    parser.add_option = parser.add_argument
 
     # modes (basic commands)
     parser.add_option("--rebuild", action="store_const", const="rebuild",
@@ -157,9 +153,8 @@ def command_parse():
     scrub_choices = ('chroot', 'cache', 'root-cache', 'c-cache', 'yum-cache',
                      'dnf-cache', 'lvm', 'overlayfs', 'bootstrap', 'all')
     scrub_metavar = "[all|chroot|cache|root-cache|c-cache|yum-cache|dnf-cache]"
-    parser.add_option("--scrub", action="callback", type="choice", default=[],
-                      choices=scrub_choices, metavar=scrub_metavar,
-                      callback=scrub_callback,
+    parser.add_option("--scrub", action='append', choices=scrub_choices, default=[],
+                      metavar=scrub_metavar,
                       help="completely remove the specified chroot "
                            "or cache dir or all of the chroot and cache")
     parser.add_option("--init", action="store_const", const="init", dest="mode",
@@ -233,9 +228,9 @@ def command_parse():
     parser.add_option('--tmp_prefix', default=None, dest='tmp_prefix',
                       help="tmp dir prefix - will default to username-pid if not specified")
     # options
-    parser.add_option("-r", "--root", action="store", type="string", dest="chroot",
+    parser.add_option("-r", "--root", action="store", type=str, dest="chroot",
                       help="chroot config file name or path. Taken as a path if it ends "
-                           "in .cfg, otherwise looked up in the configdir. default: %default",
+                           "in .cfg, otherwise looked up in the configdir.  default: %%default",
                       metavar="CONFIG",
                       default='default')
 
@@ -266,21 +261,21 @@ def command_parse():
     parser.add_option("--target", action="store", dest="rpmbuild_arch",
                       default=None, help="passed to rpmbuild as --target")
     parser.add_option("-D", "--define", action="append", dest="rpmmacros",
-                      default=[], type="string", metavar="'MACRO EXPR'",
+                      default=[], type=str, metavar="'MACRO EXPR'",
                       help="define an rpm macro (may be used more than once)")
-    parser.add_option("--macro-file", action="store", type="string", dest="macrofile",
+    parser.add_option("--macro-file", action="store", type=str, dest="macrofile",
                       default=[], help="Use pre-defined rpm macro file")
     parser.add_option("--with", action="append", dest="rpmwith",
-                      default=[], type="string", metavar="option",
+                      default=[], type=str, metavar="option",
                       help="enable configure option for build (may be used more than once)")
     parser.add_option("--without", action="append", dest="rpmwithout",
-                      default=[], type="string", metavar="option",
+                      default=[], type=str, metavar="option",
                       help="disable configure option for build (may be used more than once)")
-    parser.add_option("--resultdir", action="store", type="string",
+    parser.add_option("--resultdir", action="store", type=str,
                       default=None, help="path for resulting files to be put")
-    parser.add_option("--rootdir", action="store", type="string",
+    parser.add_option("--rootdir", action="store", type=str,
                       default=None, help="Path for where the chroot should be built")
-    parser.add_option("--uniqueext", action="store", type="string",
+    parser.add_option("--uniqueext", action="store", type=str,
                       default=None,
                       help="Arbitrary, unique extension to append to buildroot"
                            " directory name")
@@ -290,7 +285,7 @@ def command_parse():
     parser.add_option("--config-opts", action="append", dest="cli_config_opts",
                       default=[], help="Override configuration option.")
     parser.add_option("--rpmbuild_timeout", action="store",
-                      dest="rpmbuild_timeout", type="int", default=None,
+                      dest="rpmbuild_timeout", type=int, default=None,
                       help="Fail build if rpmbuild takes longer than 'timeout'"
                            " seconds ")
     parser.add_option("--unpriv", action="store_true", default=False,
@@ -307,21 +302,20 @@ def command_parse():
                            "to use to build an SRPM (used only with --buildsrpm)")
     parser.add_option("--symlink-dereference", action="store_true", dest="symlink_dereference",
                       default=False, help="Follow symlinks in sources (used only with --buildsrpm)")
-    parser.add_option("--short-circuit", action="store", type='choice',
+
+    parser.add_option("--short-circuit",
                       choices=['prep', 'install', 'build', 'binary'],
                       help="Pass short-circuit option to rpmbuild to skip already "
                            "complete stages. Warning: produced packages are unusable. "
                            "Implies --no-clean. Valid options: build, install, binary")
     parser.add_option("--rpmbuild-opts", action="store",
                       help="Pass additional options to rpmbuild")
-    parser.add_option("--enablerepo", action="callback", type="string",
+    parser.add_option("--enablerepo", action=RepoCallback, type=str,
                       dest="enable_disable_repos", default=[],
-                      help="Pass enablerepo option to yum/dnf", metavar='[repo]',
-                      callback=repo_callback)
-    parser.add_option("--disablerepo", action="callback", type="string",
+                      help="Pass enablerepo option to yum/dnf", metavar='[repo]')
+    parser.add_option("--disablerepo", action=RepoCallback, type=str,
                       dest="enable_disable_repos", default=[],
-                      help="Pass disablerepo option to yum/dnf", metavar='[repo]',
-                      callback=repo_callback)
+                      help="Pass disablerepo option to yum/dnf", metavar='[repo]')
     parser.add_option("--old-chroot", action="store_true", dest="old_chroot",
                       default=False,
                       help="Obsoleted. Use --isolation=simple")
@@ -347,15 +341,15 @@ def command_parse():
 
     # plugins
     parser.add_option("--enable-plugin", action="append",
-                      dest="enabled_plugins", type="string", default=[],
+                      dest="enabled_plugins", type=str, default=[],
                       help="Enable plugin. Currently-available plugins: %s"
                       % repr(plugins))
     parser.add_option("--disable-plugin", action="append",
-                      dest="disabled_plugins", type="string", default=[],
+                      dest="disabled_plugins", type=str, default=[],
                       help="Disable plugin. Currently-available plugins: %s"
                       % repr(plugins))
     parser.add_option("--plugin-option", action="append", dest="plugin_opts",
-                      default=[], type="string",
+                      default=[], type=str,
                       metavar="PLUGIN:KEY=VALUE",
                       help="define an plugin option (may be used more than once)")
 
@@ -373,7 +367,7 @@ def command_parse():
                       dest="scm", action="store_true",
                       default=None)
     parser.add_option("--scm-option", action="append", dest="scm_opts",
-                      default=[], type="string",
+                      default=[], type=str,
                       help="define an SCM option (may be used more than once)")
 
     # Package management options
@@ -384,17 +378,26 @@ def command_parse():
 
     # Bootstrap options
     parser.add_option('--bootstrap-chroot', dest='bootstrapchroot', action='store_true',
-                      help="build in two stages, using chroot rpm for creating the build chroot")
+                      help="build in two stages, using chroot rpm for creating the build chroot",
+                      default=None)
     parser.add_option('--no-bootstrap-chroot', dest='bootstrapchroot', action='store_false',
-                      help="build in a single stage, using system rpm for creating the build chroot")
+                      help="build in a single stage, using system rpm for creating the build chroot",
+                      default=None)
 
     parser.add_option('--use-bootstrap-image', dest='usebootstrapimage', action='store_true',
                       help="create bootstrap chroot from container image (turns "
-                           "--bootstrap-chroot on)")
+                           "--bootstrap-chroot on)", default=None)
     parser.add_option('--no-bootstrap-image', dest='usebootstrapimage', action='store_false',
-                      help="don't create bootstrap chroot from container image")
+                      help="don't create bootstrap chroot from container image", default=None)
 
-    (options, args) = parser.parse_args()
+    (options, args) = parser.parse_known_args()
+
+    # Optparse.parse_args() eats '--' argument, while argparse doesn't.  Do it manually.
+    if args and args[0] == '--':
+        args = args[1:]
+
+    if options.scrub:
+        options.mode = 'clean'
 
     if options.mode == '__default__':
         # handle old-style commands
