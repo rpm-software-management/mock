@@ -12,7 +12,7 @@
 
 Summary: Builds packages inside chroots
 Name: mock
-Version: 2.10
+Version: 2.11
 Release: 1%{?dist}
 License: GPLv2+
 # Source is created by
@@ -276,6 +276,15 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 %dir  %{_datadir}/cheat
 
 %changelog
+* Tue Jun 08 2021 Pavel Raiskup <praiskup@redhat.com> 2.11-1
+- mock: fix broken --help output
+- compress_logs: compress also after repo failures
+- move to libera.chat (msuchy@redhat.com)
+- Define _platform_multiplier macro (msuchy@redhat.com)
+- allow to --install external:* (msuchy@redhat.com)
+- move installation of external:* to separate function (msuchy@redhat.com)
+- honor --cwd for --shell (msuchy@redhat.com)
+
 * Tue Apr 27 2021 Pavel Raiskup <praiskup@redhat.com> 2.10-1
 - do not allocate tty for podman (msuchy@redhat.com)
 - work-around bug setting propagation for recursive bind-mounts (david.ward@ll.mit.edu)
