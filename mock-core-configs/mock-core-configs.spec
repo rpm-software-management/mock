@@ -1,5 +1,5 @@
 Name:       mock-core-configs
-Version:    34.3
+Version:    34.4
 Release:    1%{?dist}
 Summary:    Mock core config files basic chroots
 
@@ -150,6 +150,11 @@ fi
 %ghost %config(noreplace,missingok) %{_sysconfdir}/mock/default.cfg
 
 %changelog
+* Tue Jun 08 2021 Pavel Raiskup <praiskup@redhat.com> 34.4-1
+- Add GPG keys and RPM repositories for openSUSE Leap 15.3 (ngompa13@gmail.com)
+- EOL Fedora 32 (msuchy@redhat.com)
+- sync centos-stream-8 with centos-stream-repos (msuchy@redhat.com)
+
 * Tue Apr 27 2021 Pavel Raiskup <praiskup@redhat.com> 34.3-1
 - Add Oracle Linux 8 (ngompa13@gmail.com)
 - Add Oracle Linux 7 (ngompa13@gmail.com)
