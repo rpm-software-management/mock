@@ -32,7 +32,6 @@ Requires(post): system-release
 Requires(post): python3
 Requires(post): sed
 %endif
-Requires(pre):  shadow-utils
 %if 0%{?rhel} && 0%{?rhel} <= 7
 # to detect correct default.cfg
 Requires(post): python

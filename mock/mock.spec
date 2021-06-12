@@ -136,6 +136,7 @@ of the buildroot.
 
 %package filesystem
 Summary:  Mock filesystem layout
+Requires(pre):  shadow-utils
 
 %description filesystem
 Filesystem layout and group for Mock.
