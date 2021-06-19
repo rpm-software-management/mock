@@ -70,7 +70,7 @@ name=openSUSE Leap $releasever - {{ target_arch }} - Updates from SUSE Linux Ent
 baseurl=http://download.opensuse.org/update/leap/$releasever/sle/
 #metalink=http://download.opensuse.org/update/leap/$releasever/sle/repodata/repomd.xml.metalink
 enabled=1
-gpgkey=file:///usr/share/distribution-gpg-keys/opensuse/RPM-GPG-KEY-SuSE-SLE-15
+gpgkey=file:///usr/share/distribution-gpg-keys/suse/RPM-GPG-KEY-SuSE-SLE-15
 gpgcheck=1
 
 [opensuse-leap-sle-backports-update]
