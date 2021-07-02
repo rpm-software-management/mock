@@ -304,7 +304,7 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
     config_opts['microdnf_common_opts'] = []
     config_opts['rpm_command'] = '/bin/rpm'
     config_opts['rpmbuild_command'] = '/usr/bin/rpmbuild'
-    config_opts['dnf_disable_plugins'] = ['local', 'spacewalk']
+    config_opts['dnf_disable_plugins'] = ['local', 'spacewalk', 'versionlock']
     config_opts['user_agent'] = "Mock ({{ root }}; {{ target_arch }})"
     config_opts['opstimeout'] = 0
 
