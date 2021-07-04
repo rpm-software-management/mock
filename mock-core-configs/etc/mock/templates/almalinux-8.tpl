@@ -63,6 +63,15 @@ gpgcheck=1
 gpgkey=file:///usr/share/distribution-gpg-keys/alma/RPM-GPG-KEY-AlmaLinux
 fastestmirror=1
 
+[devel]
+name=AlmaLinux $releasever - Devel (WARNING: UNSUPPORTED - FOR BUILDROOT USE ONLY!)
+mirrorlist=https://mirrors.almalinux.org/mirrorlist/$releasever/devel
+# baseurl=https://repo.almalinux.org/almalinux/$releasever/devel/$basearch/os/
+enabled=0
+gpgcheck=1
+gpgkey=file:///usr/share/distribution-gpg-keys/alma/RPM-GPG-KEY-AlmaLinux
+fastestmirror=1
+
 [baseos-debuginfo]
 name=AlmaLinux $releasever - BaseOS debuginfo
 mirrorlist=https://mirrors.almalinux.org/mirrorlist/$releasever/baseos-debuginfo
@@ -99,6 +108,15 @@ gpgcheck=1
 gpgkey=file:///usr/share/distribution-gpg-keys/alma/RPM-GPG-KEY-AlmaLinux
 fastestmirror=1
 
+[devel-debuginfo]
+name=AlmaLinux $releasever - Devel debuginfo
+mirrorlist=https://mirrors.almalinux.org/mirrorlist/$releasever/devel-debuginfo
+# baseurl=https://repo.almalinux.org/almalinux/$releasever/devel/debug/$basearch/
+enabled=0
+gpgcheck=1
+gpgkey=file:///usr/share/distribution-gpg-keys/alma/RPM-GPG-KEY-AlmaLinux
+fastestmirror=1
+
 [baseos-source]
 name=AlmaLinux $releasever - BaseOS Source
 mirrorlist=https://mirrors.almalinux.org/mirrorlist/$releasever/baseos-source
@@ -130,6 +148,15 @@ fastestmirror=1
 name=AlmaLinux $releasever - Extras Source
 mirrorlist=https://mirrors.almalinux.org/mirrorlist/$releasever/extras-source
 # baseurl=https://repo.almalinux.org/almalinux/$releasever/extras/Source/
+enabled=0
+gpgcheck=1
+gpgkey=file:///usr/share/distribution-gpg-keys/alma/RPM-GPG-KEY-AlmaLinux
+fastestmirror=1
+
+[devel-source]
+name=AlmaLinux $releasever - Devel Source
+mirrorlist=https://mirrors.almalinux.org/mirrorlist/$releasever/devel-source
+# baseurl=https://repo.almalinux.org/almalinux/$releasever/devel/Source/
 enabled=0
 gpgcheck=1
 gpgkey=file:///usr/share/distribution-gpg-keys/alma/RPM-GPG-KEY-AlmaLinux
