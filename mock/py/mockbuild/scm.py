@@ -150,7 +150,7 @@ class scmWorker(object):
         # Add passed RPM macros before parsing spec file
         for macro, expression in list(self.macros.items()):
             # pylint: disable=no-member
-            rpm.addMacro(macro.lstrip('%'), expression)
+            rpm.addMacro(macro.lstrip('%'), str(expression))
 
         # Dig out some basic information from the spec file
         self.sources = []
