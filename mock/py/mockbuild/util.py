@@ -715,6 +715,14 @@ def _check_nspawn_resolv_conf():
     return '--resolv-conf' in systemd_nspawn_help_output()
 
 
+def check_nspawn_has_chdir_option():
+    """
+    Older systemd-nspawn versions don't have --chdir option, and sometimes we
+    need to know we work with such version.
+    """
+    return '--chdir' in systemd_nspawn_help_output()
+
+
 def _prepare_nspawn_command(chrootPath, user, cmd, nspawn_args=None, env=None,
                             cwd=None, interactive=False, shell=False):
     nspawn_argv = ['/usr/bin/systemd-nspawn', '-q', '-M', uuid.uuid4().hex, '-D', chrootPath]
