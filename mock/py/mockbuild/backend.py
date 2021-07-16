@@ -357,7 +357,12 @@ class Commands(object):
             gid = 0
         cwd = options.cwd
         if not cwd:
-            cwd = self.config['chroothome']
+            # Hack!  We don't set the cwd here because we know that we work
+            # with old systemd-nspawn without --chdir option.  Still, users
+            # might use --chdir explicitly and such situation would still
+            # result in failure.  rhbz#1976702
+            if not util.USE_NSPAWN or util.check_nspawn_has_chdir_option():
+                cwd = self.config['chroothome']
 
         try:
             self.state.start("shell")
