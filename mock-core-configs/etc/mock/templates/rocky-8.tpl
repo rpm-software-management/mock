@@ -87,7 +87,7 @@ name=Rocky Linux $releasever - Devel WARNING! FOR BUILDROOT AND KOJI USE
 mirrorlist=https://mirrors.rockylinux.org/mirrorlist?arch=$basearch&repo=Devel-$releasever
 #baseurl=http://dl.rockylinux.org/pub/rocky/$releasever/Devel/$basearch/os/
 gpgcheck=1
-enabled=1
+enabled=0
 gpgkey=file:///usr/share/distribution-gpg-keys/rocky/RPM-GPG-KEY-rockyofficial
 
 # Debuginfo
