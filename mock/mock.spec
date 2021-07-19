@@ -12,7 +12,7 @@
 
 Summary: Builds packages inside chroots
 Name: mock
-Version: 2.11
+Version: 2.12
 Release: 1%{?dist}
 License: GPLv2+
 # Source is created by
@@ -277,6 +277,13 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 %dir  %{_datadir}/cheat
 
 %changelog
+* Mon Jul 19 2021 Pavel Raiskup <praiskup@redhat.com> 2.12-1
+- don't set --cwd for --shell when we know it will fail (el7)
+- explicitly convert macro values to str (logans@cottsay.net)
+- disable versionlock DNF plugin by default (igor.raits@gmail.com)
+- move Requires of shadow-utils from mock-core-configs to mock-filesystem
+  (msuchy@redhat.com)
+
 * Tue Jun 08 2021 Pavel Raiskup <praiskup@redhat.com> 2.11-1
 - mock: fix broken --help output
 - compress_logs: compress also after repo failures
