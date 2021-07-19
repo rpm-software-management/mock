@@ -281,7 +281,7 @@ class LvmPlugin(object):
         if size_metadata and size_metadata > 75:
             self.buildroot.root_log.warning(
                 "LVM Thin pool metadata are nearly filled up ({0}%). You may experience weird errors. "
-                "Consider growing up your thin pool.".format(size_data))
+                "Consider growing up your thin pool.".format(size_metadata))
         if size_data and size_data > 75:
             self.buildroot.root_log.warning(
                 "LVM Thin pool is nearly filled up ({0}%). You may experience weird errors. "
