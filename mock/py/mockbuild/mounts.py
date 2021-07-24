@@ -112,7 +112,7 @@ class BindMountPoint(MountPoint):
         # Userspace must implement this as separate system calls anyway.
         if self.options:
             options = ','.join(['remount', self.options, bind_option])
-            util.do(['/bin/mount', '-n', '-o', options, self.srcpath,
+            util.do(['/bin/mount', '-n', '-o', options, "--target",
                      self.bindpath])
         return True
 
