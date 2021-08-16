@@ -1,5 +1,5 @@
 Name:       mock-core-configs
-Version:    34.6
+Version:    35
 Release:    1%{?dist}
 Summary:    Mock core config files basic chroots
 
@@ -149,6 +149,9 @@ fi
 %ghost %config(noreplace,missingok) %{_sysconfdir}/mock/default.cfg
 
 %changelog
+* Mon Aug 16 2021 Pavel Raiskup <praiskup@redhat.com> 35-1
+- config: add Fedora 35 configs
+
 * Mon Jul 19 2021 Pavel Raiskup <praiskup@redhat.com> 34.6-1
 - Disable Rocky Linux "Devel" repo by default (ngompa13@gmail.com)
 - Fix URL for Rocky Linux repos in commented out "baseurl" lines
