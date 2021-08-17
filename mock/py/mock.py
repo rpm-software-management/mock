@@ -141,6 +141,9 @@ def command_parse():
     parser.add_option("--debug-config", action="store_const", const="debugconfig",
                       dest="mode",
                       help="Prints all options in config_opts")
+    parser.add_option("--debug-config-expanded", action="store_const", const="debugconfigexpand",
+                      dest="mode",
+                      help="Prints all options in config_opts with jinja template values already expanded")
     parser.add_option("--shell", action="store_const",
                       const="shell", dest="mode",
                       help="run the specified command interactively within the chroot."
@@ -556,11 +559,11 @@ def check_arch_combination(target_arch, config_opts):
             time.sleep(5)
 
 @traceLog()
-def do_debugconfig(config_opts, uidManager):
+def do_debugconfig(config_opts, uidManager, expand=False):
     jinja_expand = config_opts['__jinja_expand']
     defaults = config.load_defaults(uidManager, __VERSION__, PKGPYTHONDIR)
-    defaults['__jinja_expand'] = False
-    config_opts['__jinja_expand'] = False
+    defaults['__jinja_expand'] = expand
+    config_opts['__jinja_expand'] = expand
     for key in sorted(config_opts):
         if key == '__jinja_expand':
             value = jinja_expand
@@ -946,6 +949,9 @@ def run_command(options, args, config_opts, commands, buildroot, state):
 
     elif options.mode == 'debugconfig':
         do_debugconfig(config_opts, buildroot.uid_manager)
+
+    elif options.mode == 'debugconfigexpand':
+        do_debugconfig(config_opts, buildroot.uid_manager, True)
 
     elif options.mode == 'orphanskill':
         util.orphansKill(buildroot.make_chroot_path())
