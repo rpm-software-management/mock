@@ -726,7 +726,7 @@ def check_nspawn_has_chdir_option():
 def _prepare_nspawn_command(chrootPath, user, cmd, nspawn_args=None, env=None,
                             cwd=None, interactive=False, shell=False):
     nspawn_argv = ['/usr/bin/systemd-nspawn', '-q', '-M', uuid.uuid4().hex, '-D', chrootPath]
-    distro_label = distro.linux_distribution(full_distribution_name=False)[0]
+    distro_label = distro.id()
     try:
         distro_version = float(distro.version() or 0)
     except ValueError:
@@ -1019,5 +1019,5 @@ def subscription_redhat_init(opts):
 
 
 def is_host_rh_family():
-    distro_name = distro.linux_distribution(full_distribution_name=False)[0]
+    distro_name = distro.id()
     return distro_name in RHEL_CLONES + ['fedora']
