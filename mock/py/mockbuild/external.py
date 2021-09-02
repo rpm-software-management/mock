@@ -48,7 +48,11 @@ class ExternalDeps(object):
     def install_external_deps_pypi(self, deps):
         """ deps is list of python modules. Without the prefix. """
         self.bootstrap_buildroot.install_as_root('/usr/bin/pip3', 'python3-setuptools')
-        command = ['pip3', "install", "--root", self.buildroot.make_chroot_path()] + deps
+        command = [
+            'pip3', "install",
+            "--root", self.buildroot.make_chroot_path(),
+            "--prefix", "/usr",
+        ] + deps
         try:
             self.uid_manager.becomeUser(0, 0)
             self.buildroot.doOutChroot(command, shell=False, printOutput=True)
