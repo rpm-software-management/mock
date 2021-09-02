@@ -29,21 +29,18 @@ user_agent={{ user_agent }}
 name=CentOS Stream $releasever - BaseOS (pre-release)
 baseurl=https://composes.stream.centos.org/production/latest-CentOS-Stream/compose/BaseOS/$basearch/os/
 failovermethod=priority
-#gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
-gpgcheck=0
+gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
 skip_if_unavailable=False
 
 [appstream-pre-release]
 name=CentOS Stream $releasever - AppStream (pre-release)
 baseurl=https://composes.stream.centos.org/production/latest-CentOS-Stream/compose/AppStream/$basearch/os/
 enabled=1
-#gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
-gpgcheck=0
+gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
 
 [crb-pre-release]
 name=CentOS Stream $releasever - CRB (pre-release)
 baseurl=https://composes.stream.centos.org/production/latest-CentOS-Stream/compose/CRB/$basearch/os/
 enabled=1
-#gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
-gpgcheck=0
+gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
 """
