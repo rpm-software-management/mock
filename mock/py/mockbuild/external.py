@@ -51,7 +51,7 @@ class ExternalDeps(object):
         command = ['pip3', "install", "--root", self.buildroot.make_chroot_path()] + deps
         try:
             self.uid_manager.becomeUser(0, 0)
-            self.bootstrap_buildroot.doOutChroot(command, shell=False, printOutput=True)
+            self.buildroot.doOutChroot(command, shell=False, printOutput=True)
         except:  # pylint: disable=bare-except
             raise ExternalDepsError('Pip3 install failed')
         finally:
@@ -65,7 +65,7 @@ class ExternalDeps(object):
         command = ['cargo', "install", "--root", self.buildroot.make_chroot_path()] + deps
         try:
             self.uid_manager.becomeUser(0, 0)
-            self.bootstrap_buildroot.doOutChroot(command, shell=False, printOutput=True)
+            self.buildroot.doOutChroot(command, shell=False, printOutput=True)
         except:  # pylint: disable=bare-except
             raise ExternalDepsError('Cargo install failed')
         finally:
