@@ -22,6 +22,7 @@ syslog_ident=mock
 syslog_device=
 mdpolicy=group:primary
 best=1
+install_weak_deps=0
 protected_packages=
 module_platform_id=platform:el8
 user_agent={{ user_agent }}
