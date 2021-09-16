@@ -1,5 +1,5 @@
 Name:       mock-core-configs
-Version:    35
+Version:    36
 Release:    1%{?dist}
 Summary:    Mock core config files basic chroots
 
@@ -149,6 +149,16 @@ fi
 %ghost %config(noreplace,missingok) %{_sysconfdir}/mock/default.cfg
 
 %changelog
+* Thu Sep 16 2021 Miroslav Suchý <msuchy@redhat.com> 36-1
+- config: Align CentOS Stream 9 with the production configuration
+  (ngompa13@gmail.com)
+- config: Disable installing weak dependencies on RHEL rebuilds
+  (ngompa13@gmail.com)
+- config: Disable installing weak dependencies on CentOS Stream
+  (ngompa13@gmail.com)
+- config: Validate GPG signatures for CentOS Stream 9 (ngompa13@gmail.com)
+- Add eurolinux-8 x86_64 and i686 buildroots (alex@euro-linux.com)
+
 * Mon Aug 16 2021 Pavel Raiskup <praiskup@redhat.com> 35-1
 - config: add Fedora 35 configs
 
