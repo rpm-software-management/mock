@@ -242,6 +242,11 @@ build deps from.
 \fB\-\-arch\fR=\fIARCH\fP
 Calls the Linux personality() syscall to tell the kernel to emulate a secondary architecture. For example, building i386 packages on an x86_64 buildhost.
 .TP
+\fB\-\-additional\-package\fR=\fIPACKAGE\fP
+An additional package (on top of in-package specified BuildRequires) to be
+installed into the buildroot before the build is done.  Can be specified
+multiple times.  Works only with \fB\-\-rebuild\fR.
+.TP
 \fB\-\-forcearch\fR=\fIARCH\fP
 Pass \-\-forcearch to DNF. This will enable to install packages for different architecture. Works only for DNF and you have to have package qemu-user-static installed.
 .TP

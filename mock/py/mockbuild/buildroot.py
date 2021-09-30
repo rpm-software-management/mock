@@ -103,7 +103,13 @@ class Buildroot(object):
         self.build_log = getLog("mockbuild.Root.build")
         self.logging_initialized = False
         self.chroot_was_initialized = False
-        self.preexisting_deps = []
+
+        additional_packages = config["additional_packages"] or []
+        if is_bootstrap:
+            self.preexisting_deps = []
+        else:
+            self.preexisting_deps = additional_packages
+
         self.plugins.init_plugins(self)
         self.tmpdir = None
         self.nosync_path = None
