@@ -309,6 +309,7 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
     config_opts['opstimeout'] = 0
 
     config_opts['stderr_line_prefix'] = ""
+    config_opts['additional_packages'] = None
 
     return config_opts
 
@@ -552,6 +553,10 @@ def set_config_opts_per_cmdline(config_opts, options, args):
                 raise exception.BadCmdline(
                     "Bad option for '--scm-option' (%s).  Use --scm-option 'key=value'"
                     % option)
+
+    # This option is command-line only (contrary to chroot_additional_packages,
+    # which though affects root_cache).
+    config_opts["additional_packages"] = options.additional_packages
 
 
 def check_config(config_opts):

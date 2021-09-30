@@ -390,6 +390,11 @@ def command_parse():
     parser.add_option('--no-bootstrap-image', dest='usebootstrapimage', action='store_false',
                       help="don't create bootstrap chroot from container image", default=None)
 
+    parser.add_option('--additional-package', action='append', default=[],
+                      type=str, dest="additional_packages",
+                      help=("Additional package to install into the buildroot before "
+                            "the build is done.  Can be specified multiple times."))
+
     (options, args) = parser.parse_known_args()
 
     # Optparse.parse_args() eats '--' argument, while argparse doesn't.  Do it manually.
@@ -439,6 +444,10 @@ def command_parse():
         options.spec = os.path.expanduser(options.spec)
     if options.sources:
         options.sources = os.path.expanduser(options.sources)
+
+    if options.additional_packages and options.mode != 'rebuild':
+        raise mockbuild.exception.BadCmdline(
+            "The --additional-package option requires the --rebuild mode")
 
     return (options, args)
 
