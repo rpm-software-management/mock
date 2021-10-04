@@ -1,5 +1,9 @@
 language: python
 
+# The default xenial (16.04) doesn't seem to read the Let's Encrypt certificates
+# used for https:// in Fedora Copr.
+dist: focal
+
 matrix:
   include:
     - python: "3.6"      # because RHEL 7
