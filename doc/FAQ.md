@@ -1,8 +1,13 @@
+---
+layout: default
+title: FAQ
+---
+
 ## FAQ
 
 ### How to preserve environment variable in chroot
 
-Q: I put 
+Q: I put
 
     config_opts['environment']['VAR'] = os.environ['VAR']
 

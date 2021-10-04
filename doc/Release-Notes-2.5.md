@@ -1,3 +1,8 @@
+---
+layout: default
+title: Release Notes 2.5
+---
+
 Released on - 2020-09-03.
 
 ## Mock 2.5 features:

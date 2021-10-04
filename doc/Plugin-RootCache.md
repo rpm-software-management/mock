@@ -1,3 +1,8 @@
+---
+layout: default
+title: Plugin RootCache
+---
+
 This plugin caches your buildroots. It creates archive of your buildroot and puts it in `config_opts['plugin_conf']['root_cache_opts']['dir']`, which is be default `/var/cache/mock/NAME_OF_CHROOT/root_cache/cache.tar.gz`. It is enabled by default.
 
 

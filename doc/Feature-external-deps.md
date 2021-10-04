@@ -1,10 +1,14 @@
+---
+layout: default
+title: Feature external dependencies
+---
 ## External dependencies
 
 It can happen that you need some library that is not packaged. PyPI has ten times more modules than Fedora has packages. The same for Rubygems.org, Crates.io...
 
 External dependencies allow you to install a package using the native package manager. I.e. not dnf or rpm, but rather using `pip`, `gem`, etc.
 
-Right now it is possible to do that only for BuildRequires. Run-time requires will need more co-operation with DNF and rpm. 
+Right now it is possible to do that only for BuildRequires. Run-time requires will need more co-operation with DNF and rpm.
 
 This feature is by default disabled. It can be enabled using:
 

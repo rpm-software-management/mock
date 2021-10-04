@@ -1,3 +1,8 @@
+---
+layout: default
+title: Feature bootstrap
+---
+
 ## Bootstrap chroot
 
 Mock is calling `dnf --installroot` to install packages for target architecture into the target directory. This works. Mostly. The only problem that use host DNF and rpm to install packages. But this can cause a problem when a new RPM feature is introduced. Like Soft dependencies or Rich dependencies. When you have EL6 host and try to install Fedora rawhide package with Rich dependency then rpm will fail and you cannot do anything about it. You can upgrade your build machine to Fedora rawhide, but that is often not possible when it is part of critical infrastructure.
@@ -22,4 +27,4 @@ This has been added in Mock 1.4.1.
 
 ### Using bootstrap with local repositories
 
-It is possible to use `file://` local repositories with boostrap chroot. However, you should not bind mount repositories located in `/tmp`, `/dev`, etc., as they might be over-mounted by systemd-nspawn. 
+It is possible to use `file://` local repositories with boostrap chroot. However, you should not bind mount repositories located in `/tmp`, `/dev`, etc., as they might be over-mounted by systemd-nspawn.

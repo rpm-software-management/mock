@@ -1,9 +1,14 @@
+---
+layout: default
+title: Release Notes 2.6
+---
+
 Released on - 2020-09-15.
 
 ## Mock 2.6 new features:
 
  * The default `--rebuild` mode now supports `-a|--addrepo` option, as
-   well as the `--chain` did before, 
+   well as the `--chain` did before,
    [rhbz#1857918](bugzilla.redhat.com/1857918).
 
  * The default `--rebuild` mode now also accepts URLs pointing at source

@@ -1,3 +1,8 @@
+---
+layout: default
+title: Plugin Mount
+---
+
 This plugin allows you to mount directories into chroot. The mount plugin is enabled by default, but has no configured directories to mount.
 
 ## Configuration

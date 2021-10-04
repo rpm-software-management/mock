@@ -1,3 +1,8 @@
+---
+layout: default
+title: Release Notes 1.3.2
+---
+
 This is a release with big changes. Prior to this release there have been version 1.3.1, but it was never actually released. It was just tagged commit and was intended just for developers for testing. This is first public release after big internal changes.
 
 There are those changes:

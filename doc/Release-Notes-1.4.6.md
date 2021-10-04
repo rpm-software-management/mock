@@ -1,3 +1,8 @@
+---
+layout: default
+title: Release Notes 1.4.6
+---
+
 Released on 2017-09-15.
 
 This is mostly a bugfix release, but there are some features too:

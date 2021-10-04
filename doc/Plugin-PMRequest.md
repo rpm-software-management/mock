@@ -1,3 +1,8 @@
+---
+layout: default
+title: Plugin PM Request
+---
+
 This plugin listens to requests for package management commands from within the buildroot, using unix socket. It can be used by buildsystems, that have support for communicating with this plugin, to automatically install missing packages if they're available. It's not advised to enable it globally as it affects build reproducibility, instead, it's better to enable it per-build using `--enable-plugin pm_request`. If the plugin was used during the build, it emits a warning at the end that summarizes the commands that were executed.
 
 Currently, automatic installation of build dependencies using this plugin is supported by Java packaging tooling when building with Maven, Gradle or Ivy.

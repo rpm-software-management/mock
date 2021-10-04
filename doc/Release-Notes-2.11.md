@@ -1,6 +1,11 @@
+---
+layout: default
+title: Release Notes 2.11
+---
+
 Released on - 2021-06-09
 
-                                                                                 
+
 ## Mock 2.11 features:
 
  * You can use `--cwd` together with `--shell` now. [[PR 732][PR#732]]

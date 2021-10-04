@@ -1,3 +1,7 @@
+---
+layout: default
+title: Feature DNF
+---
 ## DNF
 
 This is default package manager for mock. You can enforce it (e.g. in older Mock) using>

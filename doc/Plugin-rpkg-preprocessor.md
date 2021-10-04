@@ -1,8 +1,13 @@
+---
+layout: default
+title: Plugin rpkg preprocessor
+---
+
 This plugin allows you to run preprocessing on an input spec file just before srpm build is started.
 
-Preprocessing is implemented by a simple `preproc` language which allows you to place: <code>{{{&nbsp;<bash_code>&nbsp;}}}</code> tags into any text file. When you run such text file through `preproc` command-line utility, a "rendered" text file is output where all the <code>{{{&nbsp;<bash_code>&nbsp;}}}</code> tags are now replaced by standard output of the executed `<bash_code>` that was inside the <code>{{{&nbsp;}}}</code> tags.
+Preprocessing is implemented by a simple `preproc` language which allows you to place: `{% raw %}{{{ bash_code }}}{% endraw %}` tags into any text file. When you run such text file through `preproc` command-line utility, a "rendered" text file is output where all the `{% raw %}{{{ bash_code }}}{% endraw %}` tags are now replaced by standard output of the executed `bash_code` that was inside the `{% raw %}{{{ }}}{% endraw %}` tags.
 
-`preproc` also allows you to load a certain library of macros (by `-s` switch on its command-line) which are essentially just bash functions that you can afterward use from any <code>{{{&nbsp;}}}</code> tag in the input text file.
+`preproc` also allows you to load a certain library of macros (by `-s` switch on its command-line) which are essentially just bash functions that you can afterward use from any `{% raw %}{{{&nbsp;}}}{% endraw %}` tag in the input text file.
 
 One such library is called `rpkg-macros` and its macros are documented [here](https://docs.pagure.org/rpkg-util/v3/macro_reference.html). These macros are specialized to render rpm spec file's dynamically based on surrounding git metadata. They need the spec file you are building srpm from to be placed in a git repository.
 

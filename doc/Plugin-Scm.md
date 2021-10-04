@@ -1,3 +1,8 @@
+---
+layout: default
+title: Plugin SCM
+---
+
 This plugin provides integration to Scm systems (Git, Svn...).
 
 This module does not use the plugin infrastructure of Mock, it is provided as a standalone package instead, mock-scm, so we dare to call it plugin.
@@ -32,7 +37,7 @@ Extension and compression method is chosen automatically according your Source l
 
     Source: http://foo.com/%{name}-%{version}.tar.xz
 
-then mock will create tar file with .tar.xz extension and compressed by xz. Similarly if you choose .tar.gz or .tar.bz2 or any other known extension. 
+then mock will create tar file with .tar.xz extension and compressed by xz. Similarly if you choose .tar.gz or .tar.bz2 or any other known extension.
 
 ### git_timestamps
 

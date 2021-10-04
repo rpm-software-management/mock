@@ -1,3 +1,8 @@
+---
+layout: default
+title: Plugin LVM Root
+---
+
 Mock can use LVM as a backend for caching buildroots which is a bit faster than using root_cache and enables efficient snapshotting (copy-on-write). This feature is intended to be used by people who maintain a lot packages and find themselves waiting for mock to install the same set of BuildRequires over and over again.
 Mock uses LVM thin provisioning which means that one logical volume (called
 thinpool) can hold all thin logical volumes and snapshots used by all

@@ -1,3 +1,8 @@
+---
+layout: default
+title: Release Notes 2.3
+---
+
 Released on 2020-05-22.
 
 ## Mock 2.3 bugfixes:

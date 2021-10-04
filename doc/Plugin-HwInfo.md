@@ -1,3 +1,8 @@
+---
+layout: default
+title: Plugin HwInfo
+---
+
 This plugin allows prints your basic hardware information, which may help identify problems or reproduced the build.
 
 It print information about CPU, memory (including swap) and storage (only of volume where chroot will be stored).

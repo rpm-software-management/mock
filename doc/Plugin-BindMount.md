@@ -1,4 +1,9 @@
-This plugin enables setting up bind mountpoints inside the chroot. It is enabled by default but has no paths setup for bind mounts. 
+---
+layout: default
+title: Plugin BindMount
+---
+
+This plugin enables setting up bind mountpoints inside the chroot. It is enabled by default but has no paths setup for bind mounts.
 
 
 ## Configuration
@@ -8,7 +13,7 @@ In your config file insert the following lines:
     config_opts['plugin_conf']['bind_mount_enable'] = True
     config_opts['plugin_conf']['bind_mount_opts']['dirs'].append(('/host/path', '/bind/mount/path/in/chroot/' ))
 
-The `/host/path` is the path to a directory on the host that will be the source of a bind-mount, while the `/bind/mount/path/in/chroot` is the path where it will be mounted inside the chroot. 
+The `/host/path` is the path to a directory on the host that will be the source of a bind-mount, while the `/bind/mount/path/in/chroot` is the path where it will be mounted inside the chroot.
 
 If you want the bind mounts to be available to all configurations, edit [the configuration file](Home#generate-custom-config-file).
 

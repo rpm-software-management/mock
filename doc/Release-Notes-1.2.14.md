@@ -1,3 +1,8 @@
+---
+layout: default
+title: Release Notes 1.2.14
+---
+
 mock-1.2.14 is bugfix release, but some bugfix may be interesting for you:
 
 * --new-chroot now works on rhel7

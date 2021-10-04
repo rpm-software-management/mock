@@ -1,4 +1,9 @@
-mock-1.2.16 has been released to get rid of annoying errors due selinux [RHBZ#1312820](http://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=1312820). 
+---
+layout: default
+title: Release Notes 1.2.16
+---
+
+mock-1.2.16 has been released to get rid of annoying errors due selinux [RHBZ#1312820](http://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=1312820).
 
 Additionally mock-1.2.16 introduces these changes:
 

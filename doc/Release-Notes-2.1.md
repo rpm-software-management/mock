@@ -1,10 +1,15 @@
+---
+layout: default
+title: Release Notes 2.1
+---
+
 Released on 2020-03-11.
 
 ## Mock 2.1 bugfixes:
 
  * Fixed `mock --install <sth>` request when `<sth>` is a file or directory
    in CWD, or an absolute path on host (#474).
- 
+
  * We do not emit the warning `WARNING: Not using '/usr/bin/yum', it is symlink
    to '/usr/bin/dnf-3'` anymore for installing bootstrap chroot (#477,
    rhbz#1802930).
@@ -27,7 +32,7 @@ Released on 2020-03-11.
    (#492).
 
  * Traceback fix for `mock --chain` with tmpfs `keep_mounted` enabled (#479).
- 
+
  * Dnf caches aren't cleaned for consecutive builds with `mock --chain` (#483).
 
 ## Mock 2.1 new features:
@@ -45,9 +50,9 @@ Released on 2020-03-11.
 ## Mock-core-configs 32.4
 
  * Specify CA bundle path for OpenSUSE chroots (#500).
- 
+
  * EOL Mageia 6 configs.
- 
+
  * Temporarily disable package_state plugin for openmandriva 4.0 and Cooker (#525).
 
 Following contributors contributed to this release:

@@ -1,3 +1,8 @@
+---
+layout: default
+title: Release Notes 1.4.4
+---
+
 This is bug fix release, we fixed following issues:
 
 * Fedora 27 configs have been added.

@@ -1,3 +1,8 @@
+---
+layout: default
+title: Release Notes 1.2.19
+---
+
 Mock version 1.2.19 has those changes:
 
 * plugin [PackageState](Plugin/PackageState) is now enabled by default and it has new options. By default this plugin now generate list of installed packages. List of available packages is disabled by default.

@@ -1,3 +1,8 @@
+---
+layout: default
+title: Release Notes 1.4.7
+---
+
 Released on 2017-10-31.
 
 Features:
@@ -30,4 +35,4 @@ Following contributors contributed to this release:
 * Mark D Horn
 * Michal Sekletar
 * Neal Gompa
-* Ricardo Arguello  
+* Ricardo Arguello

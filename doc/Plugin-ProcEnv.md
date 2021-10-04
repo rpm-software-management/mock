@@ -1,3 +1,8 @@
+---
+layout: default
+title: Plugin ProcEnv
+---
+
 This plugin allows prints your build time environment, which may help identify problems or reproduced the build.
 
 It prints information about the entire software build environment, any capabilities, and much more.

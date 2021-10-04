@@ -1,1 +1,15 @@
+title: Mock
+description: A 'simple' chroot build environment manager for building RPMs.
+show_downloads: true
+google_analytics:
 theme: jekyll-theme-slate
+
+show_downloads: false
+github:
+  is_project_page: true
+  repository_url: https://github.com/rpm-software-management/mock/
+  owner_name: Red Hat
+  owner_url: https://www.redhat.com
+
+plugins:
+  - jemoji

@@ -1,3 +1,8 @@
+---
+layout: default
+title: Release Notes 1.4.10
+---
+
 Released on 2018-05-10.
 
 Features:

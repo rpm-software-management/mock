@@ -1,3 +1,8 @@
+---
+layout: default
+title: Release Notes 2.2
+---
+
 Released on 2020-04-02.
 
 ## Mock 2.2 new features:
