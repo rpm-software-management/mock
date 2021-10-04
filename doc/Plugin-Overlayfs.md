@@ -1,3 +1,8 @@
+---
+layout: default
+title: Plugin OverlayFS
+---
+
 This plugin implements mock's snapshot functionality using overlayfs. From a user perspective, it works similar to LVM plugin, but unlike LVM plugin, it only needs a directory (not a volume group) for its data (snapshots). Plugin has no additional dependencies, it only requires a kernel with overlayfs support, but this is the case for both current Fedora and RHEL-7.
 
 ## Configuration

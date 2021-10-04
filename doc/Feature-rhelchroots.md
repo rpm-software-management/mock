@@ -1,3 +1,7 @@
+---
+layout: default
+title: Feature RHEL chroots
+---
 ## Build package for RHEL
 
 Previously, when you had to build a package for RHEL you had to use `epel-7-x86_64` chroot (or similar). This chroot is made of CentOS plus EPEL. This causes a problem when you want to use real RHEL for some reason. E.g., when new RHEL is out, but CentOS not yet.

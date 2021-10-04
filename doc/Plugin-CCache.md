@@ -1,3 +1,7 @@
+---
+layout: default
+title: Plugin CCache
+---
 
 The ccache plugin is a compiler cache plugin. It is disabled by default and has an upper limit of 4GB of ccache data.
 

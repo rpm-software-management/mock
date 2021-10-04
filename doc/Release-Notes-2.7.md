@@ -1,3 +1,8 @@
+---
+layout: default
+title: Release Notes 2.7
+---
+
 Released on - 2020-12-01.
 
 ## Mock 2.7 new features:

@@ -1,3 +1,8 @@
+---
+layout: default
+title: Plugin SELinux
+---
+
 On SELinux enabled box, this plugin will pretend, that SELinux is disabled in build environment.
 
 * fake /proc/filesystems is mounted into build environment, excluding selinuxfs

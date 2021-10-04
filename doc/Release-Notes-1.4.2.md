@@ -1,3 +1,8 @@
+---
+layout: default
+title: Release Notes 1.4.2
+---
+
 There are new features:
 
 * The bootstrap feature is now disabled by default. There were too many issues with it. You can enable it locally with `--bootstrap-chroot`, but first see knows [bugs](https://bugzilla.redhat.com/buglist.cgi?bug_status=NEW&bug_status=ASSIGNED&component=mock&known_name=mock-all&list_id=7491839&product=Fedora&product=Fedora%20EPEL&query_based_on=mock-all&query_format=advanced) and [issues](https://github.com/rpm-software-management/mock/issues).

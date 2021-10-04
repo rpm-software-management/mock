@@ -1,3 +1,8 @@
+---
+layout: default
+title: Release Notes 1.2.13
+---
+
 mock-1.2.13 is bugfix release, but some bugfix may be interesting for you:
 
 * Fedora 23 configs are reverted back to use yum again. To be on pair

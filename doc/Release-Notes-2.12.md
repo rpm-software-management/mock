@@ -1,3 +1,8 @@
+---
+layout: default
+title: Release Notes 2.12
+---
+
 Released on - 2021-07-19
 
 

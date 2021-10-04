@@ -1,3 +1,8 @@
+---
+layout: default
+title: Release Notes 1.4.17
+---
+
 Released on 2019-08-08.
 
 ## Mock-core-configs new features:
@@ -24,7 +29,7 @@ Released on 2019-08-08.
  * Added support for [Cheat](https://github.com/cheat/cheat) - try running `cheat mock`.
  * There is a new tool `mock-parse-buildlog --path FILE` which tries to parse build.log file and give you nice
    human friendly description, why the build failed. Right now, it support just two use cases. Feel free to
-   send pull request to enhance it. 
+   send pull request to enhance it.
  * Secondary groups are now loaded [[RHBZ#1264005]](https://bugzilla.redhat.com/show_bug.cgi?id=1264005).
  * When installing dependencies, Mock pass --allowerasing to DNF now. [[GH#251]](https://github.com/rpm-software-management/mock/pull/251).
  * make include() functional for --chain [[GH#263]](https://github.com/rpm-software-management/mock/pull/263).

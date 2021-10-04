@@ -1,3 +1,8 @@
+---
+layout: default
+title: Plugin TmpFS
+---
+
 The tmpfs plugin allows you to mount a tmpfs on the chroot dir. This plugin is disabled by default.
 
 ## Configuration

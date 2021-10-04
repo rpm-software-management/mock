@@ -1,3 +1,8 @@
+---
+layout: default
+title: Release Notes 1.4.3
+---
+
 This is bug fix release, we fixed following issues:
 
 * `--nocheck` macro was not properly escaped [[RHBZ#1473359](https://bugzilla.redhat.com/show_bug.cgi?id=1473359)].

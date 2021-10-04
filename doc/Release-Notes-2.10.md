@@ -1,3 +1,8 @@
+---
+layout: default
+title: Release Notes 2.10
+---
+
 Released on - 2021-04-27.
 
 ## Mock 2.10 bugfixes:

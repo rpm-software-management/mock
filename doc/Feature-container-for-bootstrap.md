@@ -1,3 +1,8 @@
+---
+layout: default
+title: Feature container for bootstrap
+---
+
 ## Container image for bootstrap
 
 In past, we had some incompatibilities between host and build target. They were, in fact, small. Like using a different package manager. Some were big. Like, the introduction of Weak and Rich dependencies. For this reason, we introduced [bootstrap](Feature-bootstrap). But then comes [zstd payload](https://fedoraproject.org/wiki/Changes/Switch_RPMs_to_zstd_compression). This is a new type of payload. And to install packages with this payload, you need rpm binary, which supports this payload. This is true for all current Fedoras. Unfortunately, neither RHEL 8 nor RHEL 7 supports this payload. So even bootstrap will not help you to build Fedora packages on RHEL 8.

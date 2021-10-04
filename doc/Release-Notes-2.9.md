@@ -1,3 +1,8 @@
+---
+layout: default
+title: Release Notes 2.9
+---
+
 Released on - 2021-01-18.
 
 ## Mock 2.9 new features:

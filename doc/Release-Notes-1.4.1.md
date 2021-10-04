@@ -1,3 +1,8 @@
+---
+layout: default
+title: Release Notes 1.4.1
+---
+
 There are new features:
 
 * Mock previously used chroot technology. Few past releases Mock offered systemd-nspawn which is modern container technology for better isolation. This release use systemd-nspawn as default. If you want to preserve previous behaviour you can use `--old-chroot` option. *NOTE*: network is disabled inside container by default now; take a look into `site-defaults.cfg` for desired options (like `rpmbuild_networking`).

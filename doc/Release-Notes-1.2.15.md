@@ -1,3 +1,8 @@
+---
+layout: default
+title: Release Notes 1.2.15
+---
+
 mock-1.2.15 introduce these changes:
 
 * Fedora 24 chroot configs (and Fedora 21 was removed).

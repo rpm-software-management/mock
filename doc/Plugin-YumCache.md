@@ -1,3 +1,8 @@
+---
+layout: default
+title: Plugin YumCache
+---
+
 This plugin pre-mounts `/var/cache/{yum,dnf}` directories inside chroot, so the package manager's metadata don't have to be re-downloaded between subsequent mock commands (the caches survive `mock --clean` for example).  This plugin is needed because dnf (or yum) `--installroot DIRECTORY` commands store caches below the `DIRECTORY`.
 
 It mounts directories `/var/cache/mock/<chroot>/{dnf,yum}_cache` as `/var/cache/{dnf,yum}` in chroot.

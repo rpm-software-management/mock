@@ -1,3 +1,8 @@
+---
+layout: default
+title: Release Notes 1.3.4
+---
+
 There are new features:
 
 * [scm plugin](Plugin-Scm) now supports [DistGit](https://github.com/release-engineering/dist-git/) (or DistSVN etc.) .

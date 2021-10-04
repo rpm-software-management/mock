@@ -1,3 +1,8 @@
+---
+layout: default
+title: Plugin Compress Logs
+---
+
 This plugin compress logs created by mock (build.log, root.log and state.log). This plugin is disabled by default.
 
 ## Configuration

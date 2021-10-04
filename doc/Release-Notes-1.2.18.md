@@ -1,3 +1,8 @@
+---
+layout: default
+title: Release Notes 1.2.18
+---
+
 mock-1.2.18 has several bugfixes:
 
 * copy just content of SRPM not the attributes ([RHBZ#1301985](http://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=1301985))

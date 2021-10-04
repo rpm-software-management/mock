@@ -1,4 +1,8 @@
-  
+---
+layout: default
+---
+
+
 - [[Home]]
 - [[Release Notes|Home#release-notes]]
 - [[FAQs|FAQ]]

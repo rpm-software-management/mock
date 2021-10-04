@@ -1,3 +1,7 @@
+---
+layout: default
+title: Feature forcearch
+---
 ## Forcearch
 
 Previously you were able to only build for compatible architectures. I.e., you can build `i386` package on `x86_64` architecture. When you tried to build for incompatible architecture, you get this error:
@@ -14,7 +18,7 @@ $ sudo dnf install qemu-user-static
 $ mock -r fedora-28-ppc64le --forcearch ppc64le shell
 ```
 
-and you get the prompt in PPC64LE Fedora. You can do this for any architecture supported by QEMU. 
+and you get the prompt in PPC64LE Fedora. You can do this for any architecture supported by QEMU.
 You got just `INFO` in the log stating:
 
 ```

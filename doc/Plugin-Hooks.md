@@ -1,3 +1,8 @@
+---
+layout: default
+title: Plugin Hooks
+---
+
 When you develop a new plugin, you can register your hook with:
 
     plugins.add_hook("HOOK_NAME", self.your_method)

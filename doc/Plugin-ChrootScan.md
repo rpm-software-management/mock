@@ -1,4 +1,9 @@
-The chroot_scan plugin is used to grab files of interest after a build attempt and copy them to the 'result directory' before the chroot is cleaned and data lost. 
+---
+layout: default
+title: Plugin Chroot Scan
+---
+
+The chroot_scan plugin is used to grab files of interest after a build attempt and copy them to the 'result directory' before the chroot is cleaned and data lost.
 
 ## Configuration
 

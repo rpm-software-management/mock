@@ -1,3 +1,8 @@
+---
+layout: default
+title: Release Notes 1.2.21
+---
+
 Mock version 1.2.21 is security release. It fixes:
 
 * CVE-2016-6299 - privilige escalation via mock-scm [RHBZ#1375493](https://bugzilla.redhat.com/show_bug.cgi?id=1375493)

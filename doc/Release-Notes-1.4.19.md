@@ -1,3 +1,8 @@
+---
+layout: default
+title: Release Notes 1.4.19
+---
+
 Released on 2019-09-10.
 
 ## Mock bugfixes:

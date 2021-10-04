@@ -1,3 +1,8 @@
+---
+layout: default
+title: Release Notes 2.0
+---
+
 Released on 2020-02-07.
 
 ## Mock 2.0 highlights:

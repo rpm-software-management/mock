@@ -1,11 +1,16 @@
+---
+layout: default
+title: Release Notes 2.4
+---
+
 Released on - 2020-07-21.
 
 ## Mock 2.4 features:
 
- * The file `/dev/btrfs-control` is now available in chroot if host supports it. 
+ * The file `/dev/btrfs-control` is now available in chroot if host supports it.
    This allows to create btrfs-based image builds. [[fedora-infra#9138](https://pagure.io/fedora-infrastructure/issue/9138)].
 
- * Copy source CA certificates -     
+ * Copy source CA certificates -
    Prior to this change, we would only copy the "extracted" SSL CA
    certificates into the chroot. If anything ran "update-ca-trust" inside
    the chroot, this would delete our custom SSL certificates from the
@@ -20,10 +25,10 @@ Released on - 2020-07-21.
    obsoletes `module_enable` and `module_install` configuration options (but
    those are still supported), and allows users to also configure "disable",
    "remove" and other commands.
-    
+
    Each command can be specified multiple times, and mock respects the
    order of the commands when executing them.
-    
+
    Artificial example: (1) Disable any potentially enabled postgresql module
    stream, (2) enable _specific_ postgresql and ruby module streams,
    (3) install the development nodejs profile and (4) disable it immediately.

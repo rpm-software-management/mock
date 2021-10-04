@@ -1,3 +1,8 @@
+---
+layout: default
+title: Plugin Sign
+---
+
 The Sign plugin can call command (from the host) on the produced rpms.
 
 It was primary created for signing packages, but can call anything you want to.

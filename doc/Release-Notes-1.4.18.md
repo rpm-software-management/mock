@@ -1,3 +1,8 @@
+---
+layout: default
+title: Release Notes 1.4.18
+---
+
 Released on 2019-08-27.
 
 ## Mock-core-configs new features:

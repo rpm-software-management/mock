@@ -1,3 +1,8 @@
+---
+layout: default
+title: Release Notes 1.3.3
+---
+
 There are new features:
 
 * All chroot (but rawhide) configs now contains `best=1`. This way DNF will always try to install latest package.
