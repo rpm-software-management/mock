@@ -1,5 +1,5 @@
 Name:       mock-core-configs
-Version:    36
+Version:    36.1
 Release:    1%{?dist}
 Summary:    Mock core config files basic chroots
 
@@ -149,6 +149,10 @@ fi
 %ghost %config(noreplace,missingok) %{_sysconfdir}/mock/default.cfg
 
 %changelog
+* Fri Oct 08 2021 Pavel Raiskup <praiskup@redhat.com> 36.1-1
+- Finalize CentOS Stream 9 configuration (ngompa13@gmail.com)
+- Update Oraclelinux 7/8 configs and add Oraclelinux EPEL 7/8 configs (darren.archibald@oracle.com)
+
 * Thu Sep 16 2021 Miroslav Suchý <msuchy@redhat.com> 36-1
 - config: Align CentOS Stream 9 with the production configuration
   (ngompa13@gmail.com)
