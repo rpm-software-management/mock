@@ -965,6 +965,7 @@ baseurl={baseurl}
 enabled=1
 skip_if_unavailable=0
 metadata_expire=0
+gpgcheck=0
 cost=1
 best=1
 """.format(repoid=repoid, baseurl=baseurl)
