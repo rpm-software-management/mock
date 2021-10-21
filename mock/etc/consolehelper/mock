@@ -3,4 +3,4 @@ PROGRAM=/usr/libexec/mock/mock
 SESSION=false
 FALLBACK=false
 KEEP_ENV_VARS=COLUMNS,SSH_AUTH_SOCK,http_proxy,ftp_proxy,https_proxy,no_proxy,MOCK_TRACE_LOG
-BANNER=You are not in the `mock` group. See https://github.com/rpm-software-management/mock/wiki#setup
+BANNER=You are not in the `mock` group. See https://rpm-software-management.github.io/mock/#setup

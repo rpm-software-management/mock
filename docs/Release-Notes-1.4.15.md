@@ -9,7 +9,7 @@ Released on 2019-04-22.
 
 - Mock supports [Dynamic Build Requires](https://fedoraproject.org/wiki/Changes/DynamicBuildRequires). There is still ongoing work in `rpmbuild`; therefore you cannot use it yet. Once the new rpmbuild lands in Fedora you can immediately use it with Mock. [[GH#245](https://github.com/rpm-software-management/mock/issues/245)]
 
-- I have seen people who do not know about [setup](https://github.com/rpm-software-management/mock/wiki#setup). Now, when you are not in the `mock` group, and Mock asks you via `consolehelper` for root password, it prints this banner: `You are not in the `mock` group. See https://github.com/rpm-software-management/mock/wiki#setup` [[GH#244](https://github.com/rpm-software-management/mock/issues/228)]
+- I have seen people who do not know about [setup](https://rpm-software-management.github.io/mock/#setup). Now, when you are not in the `mock` group, and Mock asks you via `consolehelper` for root password, it prints this banner: `You are not in the `mock` group. See https://github.com/rpm-software-management/mock/wiki#setup` [[GH#244](https://github.com/rpm-software-management/mock/issues/228)]
 
 - Previously when Mock executed DNF, then Mock disabled DNF plugin `local`. Now the list of plugins which will be disabled can be configured via:
 

@@ -52,7 +52,7 @@ alternatively, you can remove everything from current configuration:
 
     mock --scrub all
 
-You can also see more examples of snapshot commands usage in [LVM plugin wiki page](https://github.com/rpm-software-management/mock/wiki/Plugin-LvmRoot)
+You can also see more examples of snapshot commands usage in [LVM plugin wiki page](https://rpm-software-management.github.io/mock/Plugin-LvmRoot)
 ( Difference is, that LVM plugin keeps root mounted, while overlayfs not. )
 
 ## Shortly about overlayfs filesystem

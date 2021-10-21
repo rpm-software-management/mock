@@ -20,7 +20,7 @@ Released on - 2020-09-03.
    for better download statistics (e.g.normal end-user package downloads
    vs. build-system downloads).
 
- * A new [showrc plugin](https://github.com/rpm-software-management/mock/wiki/Plugin-Showrc) was added.  It puts the output of the command
+ * A new [showrc plugin](https://rpm-software-management.github.io/mock//Plugin-Showrc) was added.  It puts the output of the command
    `rpm --showrc` into a separate log file in result directory so users may
    e.g. use this info during debugging the macro definition peculiarities.
 
