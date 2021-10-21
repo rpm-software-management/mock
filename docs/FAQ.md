@@ -26,7 +26,7 @@ Q: I am on RHEL 7 and when I run `mock -r fedora-28-x86_64 --init` (similarly fo
 
 A: This is not Mock error. This is because redhat-rpm-config in Fedora 28 (& RHEL 8 Beta) contains rich dependency: `Requires: (annobin if gcc)`. This is a new rpm's feature and is not recognized by RHEL7's rpm. When you are installing the fedora-28 chroot, mock is using host's rpm. And RHEL7 rpm cannot install this package, because of the new feature, which does not recognize.
 
-The solution is to use mock's [bootstrap feature](https://github.com/rpm-software-management/mock/wiki/Release-Notes-1.4.1#bootstrap-chroot). It is not enabled by default, because there are still some [unresolved issues](https://github.com/rpm-software-management/mock/labels/bootstrap), but generally it works. Try:
+The solution is to use mock's [bootstrap feature](https://rpm-software-management.github.io/mock/Release-Notes-1.4.1#bootstrap-chroot). It is not enabled by default, because there are still some [unresolved issues](https://github.com/rpm-software-management/mock/labels/bootstrap), but generally it works. Try:
 
     mock -r fedora-28-x86_64 --init --bootstrap-chroot
 

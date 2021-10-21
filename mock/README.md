@@ -6,7 +6,7 @@ Mock is used by the Fedora Build system to populate a chroot environment, which 
 
 ## User documentation
 
-This is an area for developers. You may be looking for [user documentation](https://github.com/rpm-software-management/mock/wiki).
+This is an area for developers. You may be looking for [user documentation](https://rpm-software-management.github.io/mock/).
 
 ## Sources
 
