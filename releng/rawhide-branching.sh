@@ -40,9 +40,10 @@ done
 # Use updated relasever in rawhide template, because we need to reference
 # updated GPG keys (of $next_version and $versiono).
 
-sed -i "s|'$version'|'$next_version'|" templates/fedora-rawhide.tpl
-sed -i "s|'$version'|'$next_version'|" templates/fedora-eln.tpl
-git add templates/fedora-rawhide.tpl
+for file in templates/fedora-rawhide.tpl templates/fedora-eln.tpl; do
+  sed -i "s|'$version'|'$next_version'|" "$file"
+  git add "$file"
+done
 
 echo "WARNING: Make sure Fedora Copr maintainers are informed that"
 echo "WARNING: they should run 'copr-frontend branch-fedora $version'".
