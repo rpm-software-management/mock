@@ -62,7 +62,7 @@ skip_if_unavailable=True
 # is set to true
 [rs-all]
 name=EuroLinux 8 PowerTools All
-baseurl=https://fbi.cdn.euro-linux.com/dist/eurolinux/server/8/$basearch/certify-ResilientStorage/
+baseurl=https://fbi.cdn.euro-linux.com/dist/eurolinux/server/8/$basearch/certify-ResilientStorage/all/
 gpgcheck=1
 enabled=1
 gpgkey=file:///usr/share/distribution-gpg-keys/eurolinux/RPM-GPG-KEY-eurolinux8
