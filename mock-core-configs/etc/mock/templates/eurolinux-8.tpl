@@ -48,23 +48,20 @@ gpgcheck=1
 enabled=1
 gpgkey=file:///usr/share/distribution-gpg-keys/eurolinux/RPM-GPG-KEY-eurolinux8
 
-# There is no HA for i686 and aarch64 (it is not officially supported) thats why skip_if_unavailable
-# is set to true
+# There is no HA and RS for i686 or aarch64
+{% if target_arch == 'x86_64' %}
 [ha-all]
 name=EuroLinux 8 HighAvailability All
 baseurl=https://fbi.cdn.euro-linux.com/dist/eurolinux/server/8/$basearch/certify-HighAvailability/all/
 gpgcheck=1
 enabled=1
 gpgkey=file:///usr/share/distribution-gpg-keys/eurolinux/RPM-GPG-KEY-eurolinux8
-skip_if_unavailable=True
 
-# There is no RS for i686 and aarch64 (it is not officially supported) thats why skip_if_unavailable
-# is set to true
 [rs-all]
 name=EuroLinux 8 PowerTools All
 baseurl=https://fbi.cdn.euro-linux.com/dist/eurolinux/server/8/$basearch/certify-ResilientStorage/all/
 gpgcheck=1
 enabled=1
 gpgkey=file:///usr/share/distribution-gpg-keys/eurolinux/RPM-GPG-KEY-eurolinux8
-skip_if_unavailable=True
+{% endif %}
 """
