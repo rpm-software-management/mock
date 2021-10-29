@@ -1,5 +1,5 @@
 Name:       mock-core-configs
-Version:    36.2
+Version:    36.3
 Release:    1%{?dist}
 Summary:    Mock core config files basic chroots
 
@@ -149,6 +149,11 @@ fi
 %ghost %config(noreplace,missingok) %{_sysconfdir}/mock/default.cfg
 
 %changelog
+* Fri Oct 29 2021 Pavel Raiskup <praiskup@redhat.com> 36.3-1
+- add EuroLinux 8 aarch64 (alex@euro-linux.com)
+- add HA and RS configs to EuroLinux configs (alex@euro-linux.com)
+- Add epel9-next configs (carl@george.computer)
+
 * Tue Oct 26 2021 Pavel Raiskup <praiskup@redhat.com> 36.2-1
 - bump eln to F36 (praiskup@redhat.com)
 
