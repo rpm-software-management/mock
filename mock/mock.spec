@@ -12,7 +12,7 @@
 
 Summary: Builds packages inside chroots
 Name: mock
-Version: 2.12
+Version: 2.13
 Release: 1%{?dist}
 License: GPLv2+
 # Source is created by
@@ -277,6 +277,17 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 %dir  %{_datadir}/cheat
 
 %changelog
+* Mon Nov 01 2021 Pavel Raiskup <praiskup@redhat.com> 2.13-1
+- local repositories to use gpgcheck=0 by default
+- A new option --additional-package (for --rebuild)
+- external-deps: install pip packages to /usr
+- Install external deps into build chroot, not bootstrap
+- Migrate from optparse to argparse
+- mock: don't specify SOURCE when remounting bind-mounts
+- mock: add option --debug-config-expanded (sergio@serjux.com)
+- Fix use of deprecated function (xfgusta@gmail.com)
+- lvm_root: fix copy/paste error in a warning message (kdudka@redhat.com)
+
 * Mon Jul 19 2021 Pavel Raiskup <praiskup@redhat.com> 2.12-1
 - don't set --cwd for --shell when we know it will fail (el7)
 - explicitly convert macro values to str (logans@cottsay.net)
