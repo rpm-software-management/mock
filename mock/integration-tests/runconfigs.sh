@@ -33,12 +33,12 @@ header "testing all supported configurations"
 for i in $configs; do
     srpm=$SIMPLESRPM
     case $i in
-    fedora-eln*) continue ;;
-    amazonlinux*) continue;;
+    fedora-eln*) ;; # keep the SIMPLESRPM
     fedora*|epel-[78]*|rhelepel-[78]*)
         # we support building mock there, so test it instead
         srpm=$MOCKSRPM
         ;;
+    amazonlinux*) continue;;
     esac
 
     name=$(basename $i .cfg)
