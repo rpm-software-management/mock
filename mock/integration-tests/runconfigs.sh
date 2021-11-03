@@ -42,15 +42,17 @@ for i in $configs; do
     esac
 
     # For branched Fedoras, try also updates-testing.
+    target_config=$(basename "$(readlink -f "../mock-core-configs/etc/mock/$i")")
     enablerepo=
-    case $i in
-    fedora-eln*|fedora-rawhide*) ;;
-    fedora*) enablerepo=" --enablerepo updates-testing " ;;
+    case $target_config in
+    fedora-eln*|fedora-rawhide*|fedora*i*86*) ;;
+    fedora*)
+        enablerepo=" --enablerepo updates-testing " ;;
     esac
 
     name=$(basename $i .cfg)
     header "testing config $name.cfg with tmpfs plugin"
-    runcmd "$MOCKCMD -r $name --enable-plugin=tmpfs --rebuild $srpm "
+    runcmd "$MOCKCMD -r $name --enable-plugin=tmpfs --rebuild $srpm $enablerepo"
     if [ $? != 0 ]; then
         echo "FAILED: $i (tmpfs)"
         fails=$(($fails+1))
