@@ -110,7 +110,7 @@ class RepoCallback(argparse.Action):
         if not hasattr(namespace, self.dest):
             setattr(namespace, self.dest, [])
         options = getattr(namespace, self.dest)
-        options += [(option_string, value)]
+        options.extend((option_string, value))
 
 
 def command_parse():

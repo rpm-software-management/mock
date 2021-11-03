@@ -41,6 +41,13 @@ for i in $configs; do
     amazonlinux*) continue;;
     esac
 
+    # For branched Fedoras, try also updates-testing.
+    enablerepo=
+    case $i in
+    fedora-eln*|fedora-rawhide*) ;;
+    fedora*) enablerepo=" --enablerepo updates-testing " ;;
+    esac
+
     name=$(basename $i .cfg)
     header "testing config $name.cfg with tmpfs plugin"
     runcmd "$MOCKCMD -r $name --enable-plugin=tmpfs --rebuild $srpm "
@@ -52,7 +59,7 @@ for i in $configs; do
     fi
     sudo python ${TESTDIR}/dropcache.py
     header "testing config $name.cfg *without* tmpfs plugin"
-    runcmd "$MOCKCMD -r $name --disable-plugin=tmpfs --rebuild $srpm "
+    runcmd "$MOCKCMD -r $name --disable-plugin=tmpfs --rebuild $srpm $enablerepo"
     if [ $? != 0 ]; then
 	echo "FAILED: $i"
 	fails=$(($fails+1))
