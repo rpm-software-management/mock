@@ -1,5 +1,3 @@
-config_opts['chroot_setup_cmd'] += " epel-next-release"
-
 config_opts['dnf.conf'] += """
 
 [epel-next]
