@@ -12,7 +12,7 @@
 
 Summary: Builds packages inside chroots
 Name: mock
-Version: 2.13
+Version: 2.14
 Release: 1%{?dist}
 License: GPLv2+
 # Source is created by
@@ -277,6 +277,9 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 %dir  %{_datadir}/cheat
 
 %changelog
+* Thu Nov 04 2021 Pavel Raiskup <praiskup@redhat.com> 2.14-1
+- fixed broken --enablerepo/--disablerepo options
+
 * Mon Nov 01 2021 Pavel Raiskup <praiskup@redhat.com> 2.13-1
 - local repositories to use gpgcheck=0 by default
 - A new option --additional-package (for --rebuild)
