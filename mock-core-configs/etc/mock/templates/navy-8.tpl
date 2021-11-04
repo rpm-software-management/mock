@@ -28,56 +28,56 @@ name=Navy Linux Enterprise OS Repository - el$releasever
 baseurl=https://cdn.navylinux.org/navylinux/releases/$releaseversion/x86_64/os/
 enabled=1
 gpgcheck=1
-gpgkey=https://cdn.navylinux.org/RPM-GPG-KEY-navy-linux-official
+gpgkey=file:///usr/share/distribution-gpg-keys/navy/RPM-GPG-KEY-navy-linux-official
 
 [nl-every]
 name=Navy Linux Enterprise Every Repository - el$releasever
 baseurl=https://cdn.navylinux.org/navylinux/releases/$releaseversion/x86_64/everything/
 enabled=1
 gpgcheck=1
-gpgkey=https://cdn.navylinux.org/RPM-GPG-KEY-navy-linux-official
+gpgkey=file:///usr/share/distribution-gpg-keys/navy/RPM-GPG-KEY-navy-linux-official
 
 [nl-powertools]
 name=Navy Linux Enterprise Power Repository - el$releasever
 baseurl=https://cdn.navylinux.org/navylinux/releases/$releaseversion/x86_64/powertools/
 enabled=1
 gpgcheck=1
-gpgkey=https://cdn.navylinux.org/RPM-GPG-KEY-navy-linux-official
+gpgkey=file:///usr/share/distribution-gpg-keys/navy/RPM-GPG-KEY-navy-linux-official
 
 [nl-kernel]
 name=Navy Linux Enterprise Kernel  Repository - el$releasever
 baseurl=https://cdn.navylinux.org/navylinux/releases/$releaseversion/x86_64/kernel/
 enabled=1
 gpgcheck=1
-gpgkey=https://cdn.navylinux.org/RPM-GPG-KEY-navy-linux-official
+gpgkey=file:///usr/share/distribution-gpg-keys/navy/RPM-GPG-KEY-navy-linux-official
 
 [nl-extra]
 name=Navy Linux Enterprise Extra  Repository - el$releasever
 baseurl=https://cdn.navylinux.org/navylinux/releases/$releaseversion/x86_64/extra/
 enabled=0
 gpgcheck=1
-gpgkey=https://cdn.navylinux.org/RPM-GPG-KEY-navy-linux-official
+gpgkey=file:///usr/share/distribution-gpg-keys/navy/RPM-GPG-KEY-navy-linux-official
 
 [nl-devel]
 name=Navy Linux Devel Repository - el$releasever
 baseurl=https://cdn.navylinux.org/navylinux/releases/$releaseversion/x86_64/devel/
 enabled=0
 gpgcheck=1
-gpgkey=https://cdn.navylinux.org/RPM-GPG-KEY-navy-linux-official
+gpgkey=file:///usr/share/distribution-gpg-keys/navy/RPM-GPG-KEY-navy-linux-official
 
 [nl-debug]
 name=Navy Linux Debug Repository - el$releasever
 baseurl=https://cdn.navylinux.org/navylinux/releases/$releaseversion/x86_64/debug/
 enabled=0
 gpgcheck=1
-gpgkey=https://cdn.navylinux.org/RPM-GPG-KEY-navy-linux-official
+gpgkey=file:///usr/share/distribution-gpg-keys/navy/RPM-GPG-KEY-navy-linux-official
 
 [nl-source]
 name=Navy Linux Source Repository - el$releasever
 baseurl=https://cdn.navylinux.org/navylinux/releases/$releaseversion/x86_64/source/
 enabled=0
 gpgcheck=1
-gpgkey=https://cdn.navylinux.org/RPM-GPG-KEY-navy-linux-official
+gpgkey=file:///usr/share/distribution-gpg-keys/navy/RPM-GPG-KEY-navy-linux-official
 
 [epel]
 name=Extra Packages for Enterprise Linux $releasever 
