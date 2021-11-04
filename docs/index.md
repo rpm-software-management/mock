@@ -174,6 +174,7 @@ Every plugin has a corresponding wiki page with docs.
 * [modularity](Feature-modularity) - support for Fedora Modularity.
 * [package managers](Feature-package-managers) - supported package managers
 * [rhel chroots](Feature-rhelchroots) - builds for RHEL
+* [GPG keys and SSL](feature-gpg-and-ssl) - how to get your GPG keys and SSL certificates to buildroot
 
 ## Using Mock outside your git sandbox
 
