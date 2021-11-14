@@ -4,7 +4,7 @@ config_opts['plugin_conf']['ccache_enable'] = False
 config_opts['package_manager'] = 'yum'
 config_opts['releasever'] = '2'
 
-config_opts['bootstrap_image'] = 'amazonlinux:2'
+config_opts['bootstrap_image'] = 'docker.io/library/amazonlinux:2'
 
 config_opts['yum.conf'] = """
 [main]
