@@ -27,6 +27,13 @@ protected_packages=
 module_platform_id=platform:el8
 user_agent={{ user_agent }}
 
+[local]
+name=CentOS-Stream - Koji Local WARNING! FOR BUILDROOT USE ONLY!
+baseurl=https://koji.mbox.centos.org/kojifiles/repos/dist-c{{ releasever }}-stream-build/latest/$basearch/
+cost=2000
+enabled=0
+skip_if_unavailable=False
+
 [baseos]
 name=CentOS Stream $releasever - BaseOS
 mirrorlist=http://mirrorlist.centos.org/?release=$stream&arch=$basearch&repo=BaseOS&infra=$infra
