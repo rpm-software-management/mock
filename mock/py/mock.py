@@ -397,13 +397,6 @@ def command_parse():
 
     (options, args) = parser.parse_known_args()
 
-    # Optparse.parse_args() eats '--' argument, while argparse doesn't.  Do it manually.
-    if args and args[0] == '--':
-        args = args[1:]
-
-    if options.scrub:
-        options.mode = 'clean'
-
     if options.mode == '__default__':
         # handle old-style commands
         if len(args) and args[0] in ('chroot', 'shell', 'rebuild', 'install',
@@ -412,6 +405,13 @@ def command_parse():
             args = args[1:]
         else:
             options.mode = 'rebuild'
+
+    # Optparse.parse_args() eats '--' argument, while argparse doesn't.  Do it manually.
+    if args and args[0] == '--':
+        args = args[1:]
+
+    if options.scrub:
+        options.mode = 'clean'
 
     # explicitly disallow multiple targets in --target argument
     if options.rpmbuild_arch:
