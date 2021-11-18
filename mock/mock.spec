@@ -12,7 +12,7 @@
 
 Summary: Builds packages inside chroots
 Name: mock
-Version: 2.14
+Version: 2.15
 Release: 1%{?dist}
 License: GPLv2+
 # Source is created by
@@ -277,6 +277,10 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 %dir  %{_datadir}/cheat
 
 %changelog
+* Thu Nov 18 2021 Pavel Raiskup <praiskup@redhat.com> 2.15-1
+- argparse: handle old-style commands *before* ignoring "--" (awilliam@redhat.com)
+- Update mock.1 (cheese@nosuchhost.net)
+
 * Thu Nov 04 2021 Pavel Raiskup <praiskup@redhat.com> 2.14-1
 - fixed broken --enablerepo/--disablerepo options
 
