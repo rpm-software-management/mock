@@ -1,16 +1,15 @@
 config_opts['chroot_setup_cmd'] = 'install tar gcc-c++ redhat-rpm-config system-release which xz sed make bzip2 gzip gcc coreutils unzip shadow-utils diffutils cpio bash gawk rpm-build info patch util-linux findutils grep'
 config_opts['dist'] = 'el8'  # only useful for --resultdir variable subst
 config_opts['releasever'] = '8'
-config_opts['package_manager'] = 'yum'
+config_opts['package_manager'] = 'dnf'
 config_opts['extra_chroot_dirs'] = [ '/run/lock', ]
-config_opts['releaseversion'] = '8.4r1'
 
 config_opts['dnf.conf'] = """
 [main]
 keepcache=1
 debuglevel=2
 reposdir=/dev/null
-logfile=/var/log/yum.log
+logfile=/var/log/dnf.log
 retries=20
 obsoletes=1
 gpgcheck=0
