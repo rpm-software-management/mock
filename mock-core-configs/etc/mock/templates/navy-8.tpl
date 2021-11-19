@@ -78,13 +78,5 @@ enabled=0
 gpgcheck=1
 gpgkey=file:///usr/share/distribution-gpg-keys/navy/RPM-GPG-KEY-navy-linux-official
 
-[epel]
-name=Extra Packages for Enterprise Linux $releasever 
-baseurl=https://dl.fedoraproject.org/pub/epel/$releasever/Everything/x86_64/
-failovermethod=priority
-gpgkey=file:///usr/share/distribution-gpg-keys/epel/RPM-GPG-KEY-EPEL-8
-gpgcheck=1
-skip_if_unavailable=False
-
 """
 
