@@ -328,11 +328,29 @@ Error:      Neither dnf-utils nor yum-utils are installed. Dnf-utils or yum-util
                 # when mock is not run on Fedora or EL
                 self.buildroot.root_log.debug("ca bundle not found on host")
 
+    @traceLog()
+    def copy_extra_certs(self):
+        extra_certs = self.config['ssl_extra_certs']
+        if extra_certs:
+            self.buildroot.root_log.debug('copying extra certificates into chroot')
+            for cert_src, cert_dest in zip(extra_certs[::2], extra_certs[1::2]):
+                host_cert_src = os.path.realpath(cert_src)
+                chroot_cert_dest = self.buildroot.make_chroot_path(cert_dest)
+                chroot_cert_dir = os.path.dirname(chroot_cert_dest)
+                file_util.mkdirIfAbsent(chroot_cert_dir)
+                try:
+                    shutil.copy(host_cert_src, chroot_cert_dest)
+                except FileNotFoundError:
+                    # when mock is not run on Fedora or EL
+                    self.buildroot.root_log.debug("extra certificates not found on host")
+
+
     def initialize(self):
         self.copy_gpg_keys()
         self.copy_certs()
         if self.buildroot.is_bootstrap:
             self.copy_distribution_gpg_keys()
+            self.copy_extra_certs()
         self.initialize_config()
 
         try:

@@ -106,6 +106,8 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
 
     config_opts['ssl_ca_bundle_path'] = None
 
+    config_opts['ssl_extra_certs'] = None
+
     # (global) plugins and plugin configs.
     # ordering constraings: tmpfs must be first.
     #    root_cache next.
