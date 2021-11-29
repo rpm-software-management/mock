@@ -40,6 +40,14 @@ If you hate mailing lists for some reason (we still prefer it) - you can use [Di
 
 The latest release for all supported platforms can be found in this [Copr repository](https://copr.fedorainfracloud.org/coprs/g/mock/mock-stable/).
 
+## Packaging status
+
+<table border="0"><tr><td valign="top">
+<img src="https://repology.org/badge/vertical-allrepos/mock.svg?exclude_unsupported=1&header=mock" alt="mock versions" />
+</td><td  valign="top">
+<img src="https://repology.org/badge/vertical-allrepos/mock-core-configs.svg?exclude_unsupported=1&header=mock-core-configs" alt="mock-core-configs versions" />
+</td></tr></table>
+
 ## Nightly
 
 Package from the latest commit in the `main` branch can be obtained from https://copr.fedorainfracloud.org/coprs/g/mock/mock/
