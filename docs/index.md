@@ -43,6 +43,15 @@ Mock is capable of building SRPMs from source configuration management if the `m
 
 Mock is currently being used for all Fedora builds. It is called by [Koji](https://fedoraproject.org/wiki/Koji) and [Copr](https://copr.fedorainfracloud.org) to build chroots and packages.
 
+Versions in Linux distributions:
+
+<table border="0"><tr><td valign="top">
+<img src="https://repology.org/badge/vertical-allrepos/mock.svg?exclude_unsupported=1&header=mock" alt="mock versions" />
+</td><td  valign="top">
+<img src="https://repology.org/badge/vertical-allrepos/mock-core-configs.svg?exclude_unsupported=1&header=mock-core-configs" alt="mock-core-configs versions" />
+</td></tr></table>
+
+
 ## Release Notes
 * [2.15](Release-Notes-2.15) (2021-11-18) - Fix for old-style `mock shell -- commands` variant.
 * [2.14](Release-Notes-2.14) (2021-11-04) - Fix for broken `--enablerepo` and `--disablerepo` options.
