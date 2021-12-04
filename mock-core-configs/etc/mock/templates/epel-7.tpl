@@ -1,5 +1,3 @@
-include('templates/centos-7.tpl')
-
 config_opts['chroot_setup_cmd'] = 'install @buildsys-build'
 
 config_opts['yum.conf'] += """
