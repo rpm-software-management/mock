@@ -12,6 +12,7 @@ import logging
 import os
 import os.path
 import pickle
+import pipes
 import pwd
 import re
 import socket
@@ -312,6 +313,8 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
 
     config_opts['stderr_line_prefix'] = ""
     config_opts['additional_packages'] = None
+
+    config_opts["no-config"] = {}
 
     return config_opts
 
@@ -639,19 +642,81 @@ def update_config_from_file(config_opts, config_file, uid_manager):
 
 
 @traceLog()
+def nice_root_alias_error(name, alias_name, arch, no_configs, log):
+    """
+    The epel-8 configs (and others in future) will be replaced with more
+    specific alternatives.  This is the way to inform user about alternatives.
+    """
+    any_alternative = False
+
+    if alias_name not in no_configs:
+        return any_alternative
+
+    arg_name = "{}-{}".format(alias_name, arch)
+
+    aliases = no_configs[alias_name]["alternatives"]
+    order = 0
+
+    for alias_base, alias in aliases.items():
+        short_name = "{}-{}".format(alias_base, arch)
+        filename = "{}.cfg".format(short_name)
+        cfg_path = os.path.join("/etc/mock", filename)
+        if not os.path.exists(cfg_path):
+            continue
+        if not any_alternative:
+            log.error("There are those alternatives:")
+            any_alternative = True
+        order += 1
+        pfx = "    "
+        log.error("")
+        log.error("[{}] {}".format(order, short_name))
+
+        alt_cmd = ['mock'] + [short_name if a == arg_name else pipes.quote(a)
+                              for a in sys.argv[1:]]
+
+        log.error("%sUse instead: %s ", pfx, ' '.join(alt_cmd))
+        for line in alias["description"]:
+            log.error(pfx + line)
+
+        log.error("%sEnable permanently by:", pfx)
+        homeconfig = os.path.join(os.path.expanduser('~'), '.config', 'mock')
+        if not os.path.exists(homeconfig):
+            log.error("%s$ mkdir -p %s", pfx, homeconfig)
+
+        log.error("%s$ ln -s %s %s/%s-%s.cfg", pfx, cfg_path,
+                  homeconfig, alias_name, arch)
+
+    return any_alternative
+
+
+@traceLog()
 def do_update_config(log, config_opts, cfg, uidManager, name, skipError=True):
     if os.path.exists(cfg):
         log.info("Reading configuration from %s", cfg)
         update_config_from_file(config_opts, cfg, uidManager)
         setup_operations_timeout(config_opts)
         check_macro_definition(config_opts)
-    elif not skipError:
-        log.error("Could not find required config file: %s", cfg)
-        if name == "default":
-            log.error("  Did you forget to specify the chroot to use with '-r'?")
-        if "/" in cfg:
-            log.error("  If you're trying to specify a path, include the .cfg extension, e.g. -r ./target.cfg")
-        sys.exit(1)
+        return
+
+    if skipError:
+        return
+
+    log.error("Could not find required config file: %s", cfg)
+
+    match = re.match(r"^([\w-]+)-(\w+)-(\w+)$", name)
+    no_configs = config_opts.get("no-config")
+
+    if match and no_configs:
+        alias = "-".join([match[1], match[2]])
+        if nice_root_alias_error(name, alias, match[3], no_configs, log):
+            sys.exit(1)
+
+    if name == "default":
+        log.error("  Did you forget to specify the chroot to use with '-r'?")
+    if "/" in cfg:
+        log.error("  If you're trying to specify a path, include the .cfg extension, e.g. -r ./target.cfg")
+
+    sys.exit(1)
 
 
 @traceLog()
@@ -687,9 +752,14 @@ def load_config(config_path, name, uidManager, version, pkg_python_dir):
             chroot_cfg_path = '%s/%s.cfg' % (config_path, name)
     config_opts['config_file'] = chroot_cfg_path
 
-    cfg = os.path.join(config_path, 'site-defaults.cfg')
-    do_update_config(log, config_opts, cfg, uidManager, name)
+    # load the global config files
+    for cfg_file in [
+        os.path.join(config_path, "site-defaults.cfg"),
+        os.path.join(config_path, "chroot-aliases.cfg"),
+    ]:
+        do_update_config(log, config_opts, cfg_file, uidManager, name)
 
+    # load the "chroot" specific config (-r option)
     do_update_config(log, config_opts, chroot_cfg_path, uidManager, name, skipError=False)
 
     # Read user specific config file
