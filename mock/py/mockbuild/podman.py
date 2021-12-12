@@ -66,7 +66,7 @@ class Podman:
         getLog().info("Copy content of container %s to %s", self.image, destination)
         cmd_podman = ["podman", "export", self.container_id]
         podman = subprocess.Popen(cmd_podman, stdout=subprocess.PIPE)
-        cmd_tar = [tar_cmd, "-xC", destination]
+        cmd_tar = [tar_cmd, "-xC", destination, "-f", "-"]
         tar = subprocess.Popen(cmd_tar, stdin=podman.stdout)
         tar.communicate()
         podman.communicate()
