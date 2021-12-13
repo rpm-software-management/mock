@@ -50,8 +50,8 @@ gpgcheck=1
 gpgkey=file:///usr/share/distribution-gpg-keys/epel/RPM-GPG-KEY-EPEL-$releasever
 skip_if_unavailable=False
 
-[local]
-name=local
+[local-epel]
+name=local-epel
 baseurl=https://kojipkgs.fedoraproject.org/repos/epel$releasever-build/latest/$basearch/
 cost=2000
 enabled=0

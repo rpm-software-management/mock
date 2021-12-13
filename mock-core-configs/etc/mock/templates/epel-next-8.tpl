@@ -48,8 +48,8 @@ gpgkey=file:///usr/share/distribution-gpg-keys/epel/RPM-GPG-KEY-EPEL-8
 gpgcheck=1
 skip_if_unavailable=False
 
-[local]
-name=local
+[local-epel-next]
+name=local-epel-next
 baseurl=https://kojipkgs.fedoraproject.org/repos/epel8-next-build/latest/$basearch/
 cost=2000
 enabled=0

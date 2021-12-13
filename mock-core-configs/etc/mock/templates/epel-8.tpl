@@ -15,13 +15,6 @@ enabled=0
 mirrorlist=http://mirrors.fedoraproject.org/mirrorlist?repo=testing-epel8&arch=$basearch
 skip_if_unavailable=False
 
-[local]
-name=local
-baseurl=https://kojipkgs.fedoraproject.org/repos/epel8-build/latest/$basearch/
-cost=2000
-enabled=0
-skip_if_unavailable=False
-
 [epel-debuginfo]
 name=Extra Packages for Enterprise Linux $releasever - $basearch - Debug
 mirrorlist=http://mirrors.fedoraproject.org/mirrorlist?repo=epel-debug-8&arch=$basearch
@@ -49,6 +42,13 @@ skip_if_unavailable=False
 [epel-modular-source]
 name=Extra Packages for Enterprise Linux Modular $releasever - $basearch - Source
 mirrorlist=http://mirrors.fedoraproject.org/mirrorlist?repo=epel-modular-source-8&arch=$basearch
+enabled=0
+skip_if_unavailable=False
+
+[local-epel]
+name=local-epel
+baseurl=https://kojipkgs.fedoraproject.org/repos/epel8-build/latest/$basearch/
+cost=2000
 enabled=0
 skip_if_unavailable=False
 """
