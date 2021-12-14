@@ -1,0 +1,146 @@
+---
+- name: install mock and other needed packages
+  package: name={{ packages }} state=latest
+  vars:
+    packages:
+      - git
+      - make
+      - mock
+      - mock-lvm
+      - nosync.x86_64
+      - nosync.i686
+      - podman
+      - python3-behave
+      - python3-hamcrest
+      - rpm-sign
+      - subscription-manager
+      - tito
+      - tmux
+  tags: packages
+
+# https://bugzilla.redhat.com/show_bug.cgi?id=1995465
+- name: update subscription manager on F35
+  dnf:
+    name:
+      - https://kojipkgs.fedoraproject.org//packages/subscription-manager/1.29.21/1.fc35/x86_64/python3-subscription-manager-rhsm-1.29.21-1.fc35.x86_64.rpm
+      - https://kojipkgs.fedoraproject.org//packages/subscription-manager/1.29.21/1.fc35/x86_64/python3-cloud-what-1.29.21-1.fc35.x86_64.rpm
+      - https://kojipkgs.fedoraproject.org//packages/subscription-manager/1.29.21/1.fc35/x86_64/subscription-manager-rhsm-certificates-1.29.21-1.fc35.x86_64.rpm
+      - https://kojipkgs.fedoraproject.org//packages/subscription-manager/1.29.21/1.fc35/x86_64/subscription-manager-1.29.21-1.fc35.x86_64.rpm
+      - https://kojipkgs.fedoraproject.org//packages/subscription-manager/1.29.21/1.fc35/x86_64/libdnf-plugin-subscription-manager-1.29.21-1.fc35.x86_64.rpm
+    state: present
+    disable_gpg_check: true
+  vars:
+    packages:
+  when:
+    - ansible_distribution == 'Fedora'
+    - ansible_distribution_version == '35'
+  tags: packages
+
+- name: update all packages
+  package: name='*' state=latest
+  tags: packages
+
+- name: create the testing user
+  user:
+    name: "{{ mock_test_username }}"
+    groups:
+      - mock
+      - wheel
+
+- name: create gpg directory
+  file:
+    state: directory
+    path: "{{ item }}"
+    owner: "{{ mock_test_username }}"
+    mode: 0700
+  with_items:
+    - "{{ mock_gpg_dir }}"
+    - "{{ mock_test_workdir }}"
+
+- name: install gpg-create rule
+  copy:
+    content: |
+      %echo Generating a basic OpenPGP key
+      %no-protection
+      Key-Type: RSA
+      Key-Length: 4096
+      Name-Real: John Doe
+      Name-Email: jdoe@foo.com
+      Expire-Date: 0
+      Passphrase: redhat
+      %commit
+      %echo done
+    dest: "{{ mock_test_workdir }}/gpg-batch"
+
+- name: install the gpg wrapper
+  template:
+    src: gpg-mock.j2
+    dest: "{{ mock_gpg_wrapper }}"
+    mode: 0700
+    owner: "{{ mock_test_username }}"
+    group: "{{ mock_test_username }}"
+  register: gpg_script_generated
+  tags: doit
+
+- name: generate the GPG key
+  shell: >
+    runuser -u {{ mock_test_username }} --
+    {{ mock_gpg_wrapper }} --batch
+    --generate-key {{ mock_test_workdir }}/gpg-batch
+  when: gpg_script_generated.changed
+
+- name: install rpm macros file
+  copy:
+    content: |
+      # GENERATED AUTOMATICALLY by $0
+      # from man(8) rpmsign
+      %_gpg_name John Doe <jdoe@foo.com>
+      %__gpg {{ mock_gpg_wrapper }}
+    dest: "{{ mock_test_rpmmacros }}"
+    owner: "{{ mock_test_username }}"
+    group: "{{ mock_test_username }}"
+    mode: 0644
+
+- name: check volume exists
+  stat:
+    path: "{{ mock_lvm_volume }}"
+  register: volume_stat
+
+- name: create 8GB LVM volume
+  shell: dd if=/dev/zero of={{ mock_lvm_volume }} bs=1M count=8000
+  when: not volume_stat.stat.exists
+
+- name: check if lvs exists
+  shell:
+    cmd: vgs | grep mock
+  changed_when: lvs_check.rc != 0
+  failed_when: false
+  register: lvs_check
+
+- name: create the volume group
+  shell: |
+    device=`losetup -f {{ mock_lvm_volume }} --show`
+    pvcreate -y -ff $device
+    vgcreate mock $device
+  when: lvs_check.changed
+
+- name: Red Hat subscription
+  redhat_subscription:
+    state: present
+    username: "{{ mock_rhn_user }}"
+    password: "{{ mock_rhn_pass }}"
+    pool: "Red Hat Enterprise Linux for Virtual Datacenters, Standard"
+
+- name: Clone Mock repo
+  git:
+    repo: https://github.com/rpm-software-management/mock.git
+    dest: "{{ mock_clone }}"
+    version: main
+  become: true
+  become_user: "{{ mock_test_username }}"
+
+# TODO: drop sudo usage from our testsuite
+- name: don't require sudo password from the testing user
+  lineinfile:
+    path: /etc/sudoers
+    line: "{{ mock_test_username }}	ALL=(ALL)	NOPASSWD: ALL"

@@ -1,0 +1,29 @@
+#! /bin/sh
+
+directory=$(dirname "$(readlink -f "$0")")/setup-playbook
+cd "$directory" || exit 1
+
+echo >2 "Running in directory: $directory"
+
+inventory=$directory/inventory
+test -f "$inventory" || {
+    cat >&2 <<EOF
+Please provide inventory file
+
+  $inventory
+
+with content similar to:
+
+  [testing_mock_machines]
+  <IP_ADDRESS>
+
+  [testing_mock_machines:vars]
+  mock_rhn_user=<your Red Hat account username>
+  mock_rhn_pass=<your Red Hat account password>
+
+... and then re-run this script.
+EOF
+    exit 1
+}
+
+ansible-playbook -i inventory setup-playbook.yml "$@"
