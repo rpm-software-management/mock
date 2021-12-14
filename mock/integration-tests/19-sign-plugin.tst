@@ -15,7 +15,7 @@ mkdir -p "$confdir"
 
 case $(rpm --eval "%__gpg") in
     *gpg-mock) ;;
-    *) die "you need to run prepare-user.sh first" ;;
+    *) die "this system is not prepared (run setup-box from remote location)" ;;
 esac
 
 

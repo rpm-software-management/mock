@@ -1,0 +1,4 @@
+[submodule "mock/integration-tests/setup-playbook/roles/fix-root-ssh"]
+	path = mock/integration-tests/setup-playbook/roles/fix-root-ssh
+	url = https://github.com/praiskup/ansible-role-fix-root-ssh.git
+	branch = main

@@ -1,0 +1,12 @@
+#! /bin/bash
+
+echo -n >&2 "running: $0 "
+
+for arg
+do
+    echo -n >&2 "$(printf %q "$arg") "
+done
+echo
+
+
+exec /usr/bin/gpg --homedir "{{ mock_gpg_dir }}" "$@"

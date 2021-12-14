@@ -1,0 +1,23 @@
+---
+- name: prepare for root connection
+  hosts: testing_mock_machines
+  gather_facts: false
+  roles:
+    - roles/fix-root-ssh
+
+- name: remote tasks
+  hosts: testing_mock_machines
+  user: "root"
+
+  vars:
+    mock_test_username: mockbuild
+    mock_test_workdir: /home/mock/mock-testing
+    mock_gpg_dir: "/home/mockbuild/gpg"
+    mock_gpg_wrapper: "/home/mockbuild/gpg-mock"
+    mock_test_rpmmacros: /home/mockbuild/.rpmmacros
+    mock_lvm_volume: /test-lvm-disk
+    mock_clone: /home/mockbuild/mock
+
+  tasks:
+    - include_tasks: tasks/main.yml
+      tags: always

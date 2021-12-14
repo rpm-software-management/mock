@@ -24,13 +24,18 @@ Release checklist overview:
    $ git pull --rebase main
 2) install snapshot version
    $ tito build --rpm -i
-3) run 'make check' in ./integration-tests directory and fix any reported
-   failures until it passes, you need to configure the box by ./setup-box.sh
-   first (don't run this on your box ideally, but temporarily allocated VM):
-   $ ./integration-tests/prepare/setup-box.sh
-   $ make check 1>/tmp/test-output.txt  2>&1
-   Run the behave tests in <gitroot>/behave directory:
-   $ behave
+3) run the testsuite, and fix any reported failures
+   It's strongly discouraged to run the testsuite locally, because certain
+   system configuration is needed.  Please allocate some disposable VM, and run
+   the testsuite there.  The system can be preconfigured using the Ansible
+   playbook provided here.  Play it like `./integration-tests/setup-box`.
+   Then just:
+      $ ssh root@<IP_ADDRESS_OF_TESTED_MACHINE>
+      # su - mockbuild
+      $ cd mock/behave
+      $ behave # new testsuite
+      $ cd ../mock # old testsuite
+      $ make check 1>/tmp/test-output.txt  2>&1
 4) tag the git tree:
    $ tito tag
    When you release both mock and mock-core-configs together, you
