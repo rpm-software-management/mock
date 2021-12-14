@@ -29,6 +29,7 @@ user_agent={{ user_agent }}
 [baseos]
 name=CentOS-$releasever - Base
 mirrorlist=http://mirrorlist.centos.org/?release=8&arch=$basearch&repo=BaseOS&infra=$infra
+failovermethod=priority
 gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
 gpgcheck=1
 skip_if_unavailable=False
