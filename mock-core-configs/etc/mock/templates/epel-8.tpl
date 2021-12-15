@@ -17,7 +17,11 @@ mirrorlist=http://mirrors.fedoraproject.org/mirrorlist?repo=testing-epel8&arch=$
 failovermethod=priority
 skip_if_unavailable=False
 
+{% if koji_primary_repo != None and koji_primary_repo != "epel" %}
+[local-epel]
+{% else %}
 [local]
+{% endif %}
 name=local
 baseurl=https://kojipkgs.fedoraproject.org/repos/epel8-build/latest/$basearch/
 cost=2000

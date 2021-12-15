@@ -48,7 +48,11 @@ gpgcheck=1
 gpgkey=file:///usr/share/distribution-gpg-keys/epel/RPM-GPG-KEY-EPEL-$releasever
 skip_if_unavailable=False
 
+{% if koji_primary_repo != None and koji_primary_repo != "epel-next" %}
+[local-epel-next]
+{% else %}
 [local]
+{% endif %}
 name=local
 baseurl=https://kojipkgs.fedoraproject.org/repos/epel$releasever-next-build/latest/$basearch/
 cost=2000

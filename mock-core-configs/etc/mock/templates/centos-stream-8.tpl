@@ -27,7 +27,11 @@ protected_packages=
 module_platform_id=platform:el8
 user_agent={{ user_agent }}
 
+{% if koji_primary_repo != None and koji_primary_repo != "centos-stream" %}
+[local-centos-stream]
+{% else %}
 [local]
+{% endif %}
 name=CentOS-Stream - Koji Local WARNING! FOR BUILDROOT USE ONLY!
 baseurl=https://koji.mbox.centos.org/kojifiles/repos/dist-c{{ releasever }}-stream-build/latest/$basearch/
 cost=2000

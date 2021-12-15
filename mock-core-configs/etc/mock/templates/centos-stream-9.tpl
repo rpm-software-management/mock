@@ -24,7 +24,11 @@ protected_packages=
 module_platform_id=platform:el9
 user_agent={{ user_agent }}
 
+{% if koji_primary_repo != None and koji_primary_repo != "centos-stream" %}
+[local-centos-stream]
+{% else %}
 [local]
+{% endif %}
 name=CentOS Stream $releasever - Koji Local WARNING! FOR BUILDROOT USE ONLY!
 baseurl=https://kojihub.stream.centos.org/kojifiles/repos/c{{ releasever }}s-build/latest/$basearch/
 cost=2000
