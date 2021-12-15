@@ -53,7 +53,7 @@ skip_if_unavailable=False
 {% else %}
 [local]
 {% endif %}
-name=local
+name=Extra Packages for Enterprise Linux $releasever - Next - Koji Local - BUILDROOT ONLY!
 baseurl=https://kojipkgs.fedoraproject.org/repos/epel8-next-build/latest/$basearch/
 cost=2000
 enabled=0

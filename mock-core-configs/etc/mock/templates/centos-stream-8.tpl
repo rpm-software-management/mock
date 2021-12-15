@@ -32,7 +32,7 @@ user_agent={{ user_agent }}
 {% else %}
 [local]
 {% endif %}
-name=CentOS-Stream - Koji Local WARNING! FOR BUILDROOT USE ONLY!
+name=CentOS Stream $releasever - Koji Local - BUILDROOT ONLY!
 baseurl=https://koji.mbox.centos.org/kojifiles/repos/dist-c{{ releasever }}-stream-build/latest/$basearch/
 cost=2000
 enabled=0
@@ -116,7 +116,7 @@ enabled=0
 gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
 
 [Stream-Devel]
-name=CentOS-Stream - Devel WARNING! FOR BUILDROOT USE ONLY!
+name=CentOS-Stream - Devel (WARNING: UNSUPPORTED - FOR BUILDROOT USE ONLY!)
 baseurl=http://mirror.centos.org/centos/$releasever-stream/Devel/$basearch/os/
 gpgcheck=1
 enabled=0
