@@ -29,7 +29,7 @@ user_agent={{ user_agent }}
 {% else %}
 [local]
 {% endif %}
-name=CentOS Stream $releasever - Koji Local WARNING! FOR BUILDROOT USE ONLY!
+name=CentOS Stream $releasever - Koji Local - BUILDROOT ONLY!
 baseurl=https://kojihub.stream.centos.org/kojifiles/repos/c{{ releasever }}s-build/latest/$basearch/
 cost=2000
 enabled=0
