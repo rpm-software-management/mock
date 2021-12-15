@@ -13,7 +13,9 @@ cd $TOPDIR
 if [ "$1" != "" ]; then
     configs=$1
 else
-    configs=$(ls ../mock-core-configs/etc/mock | grep .cfg | grep -v -e default -e custom | egrep -v 'arm|ppc|s390|sparc|aarch')
+    configs=$(ls ../mock-core-configs/etc/mock | grep .cfg \
+                | grep -v -e default -e custom -e chroot-aliases \
+                | grep -E -v 'arm|ppc|s390|sparc|aarch')
 fi
 
 cleanup()
@@ -34,7 +36,7 @@ for i in $configs; do
     srpm=$SIMPLESRPM
     case $i in
     fedora-eln*) ;; # keep the SIMPLESRPM
-    fedora*|epel-[78]*|rhelepel-[78]*)
+    fedora*|*+epel*-[78]*)
         # we support building mock there, so test it instead
         srpm=$MOCKSRPM
         ;;
