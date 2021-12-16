@@ -35,11 +35,18 @@ header "testing all supported configurations"
 for i in $configs; do
     srpm=$SIMPLESRPM
     case $i in
-    fedora-eln*) ;; # keep the SIMPLESRPM
+    # Keep building the SIMPLESRPM
+    # - oraclelinux+epel can't work with mock.spec, as %rhel is not defined
+    # - fedora-eln doesn't provide all the EPEL packages needed by mock.spec
+    oraclelinux+epel-7*) ;;
+    fedora-eln*) ;;
+    # For EPEL/Fedora try to build Mock.
     fedora*|*+epel*-[78]*)
         # we support building mock there, so test it instead
         srpm=$MOCKSRPM
         ;;
+    # Skip tests for those chroots.
+    # - amazonlinux - see #522
     amazonlinux*) continue;;
     esac
 
