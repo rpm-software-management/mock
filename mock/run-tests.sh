@@ -1,4 +1,4 @@
-#!/bin/sh
+#! /bin/bash
 
 script=$(readlink -f "$0")
 testdir=$(dirname "$script")/tests
@@ -20,4 +20,19 @@ debug "testdir:    $testdir"
 debug "PYTHON:     $PYTHON"
 debug "PYTHONPATH: $PYTHONPATH"
 
-"$PYTHON" -B -m pytest --cov-report term-missing --cov "$sourcedir" "$testdir" "$@"
+args=()
+cov=true
+for arg; do
+    case $arg in
+    --no-cov) cov=false ;;
+    *) args+=( "$arg" ) ;;
+    esac
+done
+
+cov_args=()
+if $cov; then
+    cov_args=( --cov-report term-missing --cov "$sourcedir" )
+fi
+
+set -x
+"$PYTHON" -B -m pytest "${cov_args[@]}" "$testdir" "${args[@]}"

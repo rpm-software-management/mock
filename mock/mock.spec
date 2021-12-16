@@ -88,7 +88,6 @@ BuildRequires: python%{python3_pkgversion}-distro
 BuildRequires: python%{python3_pkgversion}-jinja2
 BuildRequires: python%{python3_pkgversion}-pyroute2
 BuildRequires: python%{python3_pkgversion}-pytest
-BuildRequires: python%{python3_pkgversion}-pytest-cov
 BuildRequires: python%{python3_pkgversion}-requests
 BuildRequires: python%{python3_pkgversion}-templated-dictionary
 %endif
@@ -216,7 +215,7 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 %endif
 
 %if %{with tests}
-./run-tests.sh
+./run-tests.sh --no-cov
 %endif
 
 
