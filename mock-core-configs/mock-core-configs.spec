@@ -1,5 +1,5 @@
 Name:       mock-core-configs
-Version:    36.3
+Version:    36.4
 Release:    1%{?dist}
 Summary:    Mock core config files basic chroots
 
@@ -152,6 +152,30 @@ fi
 %ghost %config(noreplace,missingok) %{_sysconfdir}/mock/default.cfg
 
 %changelog
+* Thu Dec 16 2021 Pavel Raiskup <praiskup@redhat.com> 36.4-1
+- add CentOS Stream 9 + EPEL Next 9 (ngompa13@gmail.com)
+- add compatibility symlinks for EPEL 7 to centos+epel-7-* (ngompa13@gmail.com)
+- EPEL 7 for AArch64 and PPC64 are EOL (ngompa13@gmail.com)
+- resolve the multiple "local" repo collision (from multiple templates)
+- configure the alternative help for missing 'epel-8-*' configs
+- Fedora 33 is EOL
+- rhelepel moved to rhel+epel
+- EOL the EPEL Playground configs (ngompa13@gmail.com)
+- Add rocky+epel confs + Disable devel-debug (tucklesepk@gmail.com)
+- Rename epel to centos+epel (ngompa13@gmail.com)
+- fix the root name and remove Next from the EPEL 9 configs (ngompa13@gmail.com)
+- rename 'epel-next' to 'centos-stream+epel-next' (ngompa13@gmail.com)
+- add epel9 repos to epel9 template (carl@george.computer)
+- rhbz#2026571 - expand dnf_vars (msuchy@redhat.com)
+- oraclelinux+epel configs (carl@george.computer)
+- Add AlmaLinux+EPEL configs (ngompa13@gmail.com)
+- add navy-8-x86_64 (adil@linux.com)
+- use quay.io Almalinux image (gotmax@e.email)
+- use fully qualified bootstrap_image name (gotmax@e.email)
+- update almalinux-8.tpl bootstrap_image (gotmax@e.email)
+- add Koji local repos to CentOS Stream configs (ngompa13@gmail.com)
+- reduce packages installed in epel chroots (carl@george.computer)
+
 * Fri Oct 29 2021 Pavel Raiskup <praiskup@redhat.com> 36.3-1
 - add EuroLinux 8 aarch64 (alex@euro-linux.com)
 - add HA and RS configs to EuroLinux configs (alex@euro-linux.com)
