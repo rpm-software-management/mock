@@ -537,7 +537,6 @@ def do_with_status(command, shell=False, chrootPath=None, cwd=None, timeout=0, r
             command = _prepare_nspawn_command(chrootPath, user, command,
                                               nspawn_args=nspawn_args,
                                               env=env, cwd=cwd, shell=shell)
-            env['SYSTEMD_NSPAWN_TMPFS_TMP'] = '0'
             shell = False
         logger.debug("Executing command: %s with env %s and shell %s", command, env, shell)
         with open(os.devnull, "r") as stdin:
@@ -748,9 +747,16 @@ def _prepare_nspawn_command(chrootPath, user, cmd, nspawn_args=None, env=None,
 
     if cwd:
         nspawn_argv.append('--chdir={0}'.format(cwd))
-    if env:
-        for k, v in env.items():
-            nspawn_argv.append('--setenv={0}={1}'.format(k, v))
+
+    assert env is not None
+
+    # Those variables are expected to be set _inside_ the container
+    for k, v in env.items():
+        nspawn_argv.append('--setenv={0}={1}'.format(k, v))
+
+    # And these need to be set outside the container (processed by nspawn)
+    env['SYSTEMD_NSPAWN_TMPFS_TMP'] = '0'
+    env['SYSTEMD_SECCOMP'] = '0'
 
     if _check_nspawn_resolv_conf():
         nspawn_argv.append("--resolv-conf=off")
@@ -805,7 +811,6 @@ def doshell(chrootPath=None, environ=None, uid=None, gid=None, cmd=None,
         log.debug("Using nspawn with args %s", nspawn_args)
         cmd = _prepare_nspawn_command(chrootPath, uid, cmd, nspawn_args=nspawn_args, env=environ,
                                       interactive=True, cwd=cwd)
-        environ['SYSTEMD_NSPAWN_TMPFS_TMP'] = '0'
         shell = False
 
     log.debug("doshell: command: %s", cmd_pretty(cmd))
