@@ -12,7 +12,7 @@
 
 Summary: Builds packages inside chroots
 Name: mock
-Version: 2.15
+Version: 2.16
 Release: 1%{?dist}
 License: GPLv2+
 # Source is created by
@@ -276,6 +276,13 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 %dir  %{_datadir}/cheat
 
 %changelog
+* Thu Dec 16 2021 Pavel Raiskup <praiskup@redhat.com> 2.16-1
+- disable system call filtering
+- pass env to podman run (dani@lapiole.org)
+- give user alternative help for missing 'epel-8-*' configs
+- podman, explictily specify stdin as tar source (vreeland.justin@gmail.com)
+- add a new 'ssl_extra_certs' option (patrick@laimbock.com)
+
 * Thu Nov 18 2021 Pavel Raiskup <praiskup@redhat.com> 2.15-1
 - argparse: handle old-style commands *before* ignoring "--" (awilliam@redhat.com)
 - Update mock.1 (cheese@nosuchhost.net)
