@@ -24,5 +24,6 @@ matrix:
 
 install:
   - "pip install -r mock/requirements.txt"
+  - "pip install pytest-cov"
 
 script: PYTHON=python${TRAVIS_PYTHON_VERSION%%-dev} ./mock/run-tests.sh
