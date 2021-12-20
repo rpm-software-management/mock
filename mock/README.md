@@ -19,7 +19,8 @@ Mock currently has one active branch plus `main`.
  * `mock-1.0` - This branch was used for EL-5 and there will be no changes.
  * `mock-1.3` - This branch is in security-fixes-only mode and is used for EL-6.
  * `mock-1.4` - This branch is in bug-fixes-only mode.
- * `main` - This is currently mock 2.x and is used for releasing and
+ * `mock-2` - This branch is used for Mock v2.x, for EL-7, bug-fixes-only mode.
+ * `main` - This is currently Mock v3.x and is used for releasing and
    development.  If you want to send patches, you probably want this branch.
 
 ## Communication
