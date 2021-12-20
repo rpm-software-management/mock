@@ -21,9 +21,6 @@ jobs:
     strategy:
       matrix:
         tox_env:
-          # For EL-7
-          - py36
-          # Fedora and EL-8+
           - py37
           - py38
           - py39
