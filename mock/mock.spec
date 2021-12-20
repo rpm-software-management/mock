@@ -63,7 +63,6 @@ BuildRequires: python%{python3_pkgversion}-devel
 %if %{with lint}
 BuildRequires: python%{python3_pkgversion}-pylint
 %endif
-%if 0%{?fedora} || 0%{?mageia} || 0%{?rhel} >= 8
 Requires: dnf
 Suggests: yum
 Requires: dnf-plugins-core
@@ -72,13 +71,6 @@ Recommends: dnf-utils
 Suggests: qemu-user-static
 Suggests: procenv
 Suggests: podman
-%else
-%if 0%{?rhel} == 7
-Requires: btrfs-progs
-Requires: yum >= 2.4
-Requires: yum-utils
-%endif
-%endif
 
 %if %{with tests}
 BuildRequires: python%{python3_pkgversion}-distro
@@ -106,17 +98,10 @@ Mock takes an SRPM and builds it in a chroot.
 %package scm
 Summary: Mock SCM integration module
 Requires: %{name} = %{version}-%{release}
-%if 0%{?rhel} && 0%{?rhel} < 8
-Requires: cvs
-Requires: git
-Requires: subversion
-Requires: tar
-%else
 Recommends: cvs
 Recommends: git
 Recommends: subversion
 Recommends: tar
-%endif
 
 %description scm
 Mock SCM integration module.

@@ -24,20 +24,12 @@ Requires:   mock >= 2.5
 Requires:   mock-filesystem
 
 Requires(post): coreutils
-%if 0%{?fedora} || 0%{?mageia} || 0%{?rhel} > 7
 # to detect correct default.cfg
 Requires(post): python3-dnf
 Requires(post): python3-hawkey
 Requires(post): system-release
 Requires(post): python3
 Requires(post): sed
-%endif
-%if 0%{?rhel} && 0%{?rhel} <= 7
-# to detect correct default.cfg
-Requires(post): python
-Requires(post): yum
-Requires(post): /etc/os-release
-%endif
 
 %description
 Config files which allow you to create chroots for:
@@ -126,15 +118,11 @@ else
     # something obsure, use buildtime version
     ver=%{?rhel}%{?fedora}%{?mageia}
 fi
-%if 0%{?fedora} || 0%{?mageia} || 0%{?rhel} > 7
 if [ -s /etc/mageia-release ]; then
     mock_arch=$(sed -n '/^$/!{$ s/.* \(\w*\)$/\1/p}' /etc/mageia-release)
 else
     mock_arch=$(python3 -c "import dnf.rpm; import hawkey; print(dnf.rpm.basearch(hawkey.detect_arch()))")
 fi
-%else
-mock_arch=$(python -c "import rpmUtils.arch; baseArch = rpmUtils.arch.getBaseArch(); print baseArch")
-%endif
 cfg=%{?fedora:fedora}%{?rhel:epel}%{?mageia:mageia}-$ver-${mock_arch}.cfg
 if [ -e %{_sysconfdir}/mock/$cfg ]; then
     if [ "$(readlink %{_sysconfdir}/mock/default.cfg)" != "$cfg" ]; then
