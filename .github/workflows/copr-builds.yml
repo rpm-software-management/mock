@@ -3,9 +3,9 @@ name: Fedora Copr build
 
 on:
   push:
-    branches: [main]
+    branches: [mock-2]
   pull_request:
-    branches: [main]
+    branches: [mock-2]
   schedule:
     # This always runs against the default branch.  Two runs per month.
     - cron: '0 0 1,16 * *'
@@ -26,8 +26,8 @@ jobs:
 
       - name: Copr build ${{ matrix.package }}
         env:
-          COPR_PR_WEBHOOK: https://copr.fedorainfracloud.org/webhooks/custom/29795/9d6af83d-7f27-4091-8161-c1098ff5a6dc/${{ matrix.package }}/
-          COPR_PUSH_WEBHOOK: ${{ secrets.COPR_PUSH_WEBHOOK }}/${{ matrix.package }}/
+          COPR_PR_WEBHOOK: https://copr.fedorainfracloud.org/webhooks/custom/53447/3f7fbaf0-1f08-4e49-ad07-1e0941101d3d/${{ matrix.package }}/
+          COPR_PUSH_WEBHOOK: ${{ secrets.COPR_PUSH_WEBHOOK_EL7 }}/${{ matrix.package }}/
         run: |
           curl https://raw.githubusercontent.com/praiskup/copr-ci-tooling/main/copr-gh-actions-submit > submit
           bash submit ${{ github.event.pull_request.number }}
