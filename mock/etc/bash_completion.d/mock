@@ -84,7 +84,7 @@ _mock()
             ;;
         --scrub)
             COMPREPLY=( $( compgen -W "all chroot cache root-cache c-cache
-                yum-cache dnf-cache lvm overlayfs" -- "$cur" ) )
+                yum-cache dnf-cache lvm overlayfs bootstrap" -- "$cur" ) )
             return
             ;;
         -i|--install|install)
@@ -104,7 +104,7 @@ _mock()
             return
             ;;
         --short-circuit)
-            COMPREPLY=( $( compgen -W "install binary build" -- "$cur" ) )
+            COMPREPLY=( $( compgen -W "install binary build prep" -- "$cur" ) )
             return
             ;;
     esac
