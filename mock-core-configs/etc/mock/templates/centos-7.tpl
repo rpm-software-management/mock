@@ -1,6 +1,7 @@
 # This list is taken from 'epel-7-x86_64' @buildsys-build group, minus the
 # 'epel-*' specific stuff.
 config_opts['chroot_setup_cmd'] = 'install bash bzip2 coreutils cpio diffutils findutils gawk gcc gcc-c++ grep gzip info make patch redhat-rpm-config rpm-build sed shadow-utils tar unzip util-linux which xz'
+config_opts['chroot_additional_packages'] = 'scl-utils-build'
 
 config_opts['dist'] = 'el7'  # only useful for --resultdir variable subst
 config_opts['releasever'] = '7'
@@ -91,7 +92,7 @@ gpgcheck=1
 skip_if_unavailable=False
 enabled=0
 
-{% if target_arch == 'x86_64' %}
+{% if target_arch in ['x86_64', 'ppc64le', 'aarch64'] %}
 [centos-sclo-sclo]
 name=CentOS-$releasever - SCLo sclo
 mirrorlist=http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=sclo-sclo&infra=$infra
@@ -99,11 +100,8 @@ mirrorlist=http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo
 failovermethod=priority
 gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-SIG-SCLo
 gpgcheck=1
-includepkgs=devtoolset*
 skip_if_unavailable=False
-{% endif %}
 
-{% if target_arch in ['x86_64', 'ppc64le', 'aarch64'] %}
 [centos-sclo-rh]
 name=CentOS-$releasever - SCLo rh
 mirrorlist=http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=sclo-rh&infra=$infra
@@ -111,7 +109,6 @@ mirrorlist=http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo
 failovermethod=priority
 gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-SIG-SCLo
 gpgcheck=1
-includepkgs=devtoolset*
 skip_if_unavailable=False
 {% endif %}
 """
