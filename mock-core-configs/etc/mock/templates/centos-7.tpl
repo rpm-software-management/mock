@@ -61,7 +61,7 @@ gpgkey={{ centos_7_gpg_keys }}
 gpgcheck=1
 skip_if_unavailable=False
 
-[fastrack]
+[fasttrack]
 name=CentOS-$releasever - fasttrack
 mirrorlist=http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=fasttrack
 failovermethod=priority
