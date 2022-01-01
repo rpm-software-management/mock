@@ -51,7 +51,6 @@ skip_if_unavailable=False
 
 [updates]
 name=CentOS-$releasever - Updates
-enabled=1
 mirrorlist=http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=updates&infra=$infra
 #baseurl=http://mirror.centos.org/$contentdir/$releasever/updates/$basearch/
 failovermethod=priority
@@ -85,9 +84,11 @@ enabled=0
 name=CentOS-$releasever - Plus
 mirrorlist=http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=centosplus&infra=$infra
 #baseurl=http://mirror.centos.org/$contentdir/$releasever/centosplus/$basearch/
+failovermethod=priority
 gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-7
        {{- centos_7_arch_gpg_key }}
 gpgcheck=1
+skip_if_unavailable=False
 enabled=0
 
 {% if target_arch == 'x86_64' %}
@@ -95,6 +96,7 @@ enabled=0
 name=CentOS-$releasever - SCLo sclo
 mirrorlist=http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=sclo-sclo&infra=$infra
 #baseurl=http://mirror.centos.org/$contentdir/$releasever/sclo/$basearch/sclo/
+failovermethod=priority
 gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-SIG-SCLo
 gpgcheck=1
 includepkgs=devtoolset*
@@ -106,6 +108,7 @@ skip_if_unavailable=False
 name=CentOS-$releasever - SCLo rh
 mirrorlist=http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=sclo-rh&infra=$infra
 #baseurl=http://mirror.centos.org/$contentdir/$releasever/sclo/$basearch/rh/
+failovermethod=priority
 gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-SIG-SCLo
 gpgcheck=1
 includepkgs=devtoolset*

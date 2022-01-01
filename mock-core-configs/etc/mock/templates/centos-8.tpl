@@ -33,16 +33,16 @@ user_agent={{ user_agent }}
 name=CentOS Linux $releasever - BaseOS
 mirrorlist=http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=BaseOS&infra=$infra
 #baseurl=http://mirror.centos.org/$contentdir/$releasever/BaseOS/$basearch/os/
-failovermethod=priority
-gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
 gpgcheck=1
-skip_if_unavailable=False
+enabled=1
+gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
 
 [appstream]
 name=CentOS Linux $releasever - AppStream
 mirrorlist=http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=AppStream&infra=$infra
 #baseurl=http://mirror.centos.org/$contentdir/$releasever/AppStream/$basearch/os/
 gpgcheck=1
+enabled=1
 gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
 
 [powertools]
@@ -50,6 +50,7 @@ name=CentOS Linux $releasever - PowerTools
 mirrorlist=http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=PowerTools&infra=$infra
 #baseurl=http://mirror.centos.org/$contentdir/$releasever/PowerTools/$basearch/os/
 gpgcheck=1
+enabled=1
 gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
 
 [devel]
