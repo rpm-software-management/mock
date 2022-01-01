@@ -30,12 +30,13 @@ best=1
 protected_packages=
 user_agent={{ user_agent }}
 
-{% set centos_7_gpg_keys = 'file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-7' %}
+{% set centos_7_arch_gpg_key -%}
 {% if target_arch in ['ppc64le', 'ppc64'] %}
-{%   set centos_7_gpg_keys = centos_7_gpg_keys + ',file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-SIG-AltArch-7-' + target_arch %}
-{% elif target_arch in ['aarch64'] %}
-{%   set centos_7_gpg_keys = centos_7_gpg_keys + ',file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-7-aarch64' %}
-{% endif %}
+       file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-SIG-AltArch-7-{{ target_arch }}
+{%- elif target_arch == 'aarch64' %}
+       file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-7-aarch64
+{%- endif -%}
+{% endset -%}
 
 # repos
 [base]
@@ -43,7 +44,8 @@ name=CentOS-$releasever - Base
 mirrorlist=http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=os&infra=$infra
 #baseurl=http://mirror.centos.org/$contentdir/$releasever/os/$basearch/
 failovermethod=priority
-gpgkey={{ centos_7_gpg_keys }}
+gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-7
+       {{- centos_7_arch_gpg_key }}
 gpgcheck=1
 skip_if_unavailable=False
 
@@ -53,7 +55,8 @@ enabled=1
 mirrorlist=http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=updates&infra=$infra
 #baseurl=http://mirror.centos.org/$contentdir/$releasever/updates/$basearch/
 failovermethod=priority
-gpgkey={{ centos_7_gpg_keys }}
+gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-7
+       {{- centos_7_arch_gpg_key }}
 gpgcheck=1
 skip_if_unavailable=False
 
@@ -62,7 +65,8 @@ name=CentOS-$releasever - Extras
 mirrorlist=http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=extras&infra=$infra
 #baseurl=http://mirror.centos.org/$contentdir/$releasever/extras/$basearch/
 failovermethod=priority
-gpgkey={{ centos_7_gpg_keys }}
+gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-7
+       {{- centos_7_arch_gpg_key }}
 gpgcheck=1
 skip_if_unavailable=False
 
@@ -71,7 +75,8 @@ name=CentOS-$releasever - fasttrack
 mirrorlist=http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=fasttrack&infra=$infra
 #baseurl=http://mirror.centos.org/$contentdir/$releasever/fasttrack/$basearch/
 failovermethod=priority
-gpgkey={{ centos_7_gpg_keys }}
+gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-7
+       {{- centos_7_arch_gpg_key }}
 gpgcheck=1
 skip_if_unavailable=False
 enabled=0
@@ -80,7 +85,8 @@ enabled=0
 name=CentOS-$releasever - Plus
 mirrorlist=http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=centosplus&infra=$infra
 #baseurl=http://mirror.centos.org/$contentdir/$releasever/centosplus/$basearch/
-gpgkey={{ centos_7_gpg_keys }}
+gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-7
+       {{- centos_7_arch_gpg_key }}
 gpgcheck=1
 enabled=0
 
