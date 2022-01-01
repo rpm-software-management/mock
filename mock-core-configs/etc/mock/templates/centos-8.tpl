@@ -4,6 +4,9 @@ config_opts['releasever'] = '8'
 config_opts['package_manager'] = 'dnf'
 config_opts['extra_chroot_dirs'] = [ '/run/lock', ]
 config_opts['bootstrap_image'] = 'quay.io/centos/centos:8'
+config_opts['dnf_vars'] = { 'contentdir': "{% if target_arch in ['x86_64'] -%} centos {%- else -%} altarch {%- endif %}",
+                            'infra': 'stock',
+                          }
 
 
 config_opts['dnf.conf'] = """
@@ -28,7 +31,8 @@ user_agent={{ user_agent }}
 
 [baseos]
 name=CentOS Linux $releasever - BaseOS
-mirrorlist=http://mirrorlist.centos.org/?release=8&arch=$basearch&repo=BaseOS&infra=$infra
+mirrorlist=http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=BaseOS&infra=$infra
+#baseurl=http://mirror.centos.org/$contentdir/$releasever/BaseOS/$basearch/os/
 failovermethod=priority
 gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
 gpgcheck=1
@@ -36,15 +40,15 @@ skip_if_unavailable=False
 
 [appstream]
 name=CentOS Linux $releasever - AppStream
-mirrorlist=http://mirrorlist.centos.org/?release=8&arch=$basearch&repo=AppStream&infra=$infra
-#baseurl=http://mirror.centos.org/centos/$releasever/AppStream/$basearch/os/
+mirrorlist=http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=AppStream&infra=$infra
+#baseurl=http://mirror.centos.org/$contentdir/$releasever/AppStream/$basearch/os/
 gpgcheck=1
 gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
 
 [powertools]
 name=CentOS Linux $releasever - PowerTools
-mirrorlist=http://mirrorlist.centos.org/?release=8&arch=$basearch&repo=PowerTools&infra=$infra
-#baseurl=http://mirror.centos.org/centos/$releasever/PowerTools/$basearch/os/
+mirrorlist=http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=PowerTools&infra=$infra
+#baseurl=http://mirror.centos.org/$contentdir/$releasever/PowerTools/$basearch/os/
 gpgcheck=1
 gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
 
@@ -58,73 +62,73 @@ gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Officia
 
 [plus]
 name=CentOS Linux $releasever - Plus
-mirrorlist=http://mirrorlist.centos.org/?release=8&arch=$basearch&repo=centosplus&infra=$infra
-#baseurl=http://mirror.centos.org/centos/$releasever/centosplus/$basearch/os/
+mirrorlist=http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=centosplus&infra=$infra
+#baseurl=http://mirror.centos.org/$contentdir/$releasever/centosplus/$basearch/os/
 gpgcheck=1
 enabled=0
 gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
 
 [cr]
 name=CentOS Linux $releasever - ContinuousRelease
-baseurl=http://mirror.centos.org/centos/8/cr/$basearch/os/
+baseurl=http://mirror.centos.org/$contentdir/$releasever/cr/$basearch/os/
 gpgcheck=1
 enabled=0
 gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
 
 [debuginfo]
 name=CentOS Linux $releasever - Debuginfo
-baseurl=http://debuginfo.centos.org/8/$basearch/
+baseurl=http://debuginfo.centos.org/$releasever/$basearch/
 gpgcheck=1
 enabled=0
 gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
 
 [extras]
 name=CentOS Linux $releasever - Extras
-mirrorlist=http://mirrorlist.centos.org/?release=8&arch=$basearch&repo=extras&infra=$infra
-#baseurl=http://mirror.centos.org/centos/$releasever/extras/$basearch/os/
+mirrorlist=http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=extras&infra=$infra
+#baseurl=http://mirror.centos.org/$contentdir/$releasever/extras/$basearch/os/
 gpgcheck=1
 enabled=1
 gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
 
 [fasttrack]
 name=CentOS Linux $releasever - FastTrack
-mirrorlist=http://mirrorlist.centos.org/?release=8&arch=$basearch&repo=fasttrack&infra=$infra
-#baseurl=http://mirror.centos.org/centos/$releasever/fasttrack/$basearch/os/
+mirrorlist=http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=fasttrack&infra=$infra
+#baseurl=http://mirror.centos.org/$contentdir/$releasever/fasttrack/$basearch/os/
 gpgcheck=1
 enabled=0
 gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
 
 [baseos-source]
 name=CentOS Linux $releasever - BaseOS - Source
-baseurl=http://vault.centos.org/centos/8/BaseOS/Source/
+baseurl=http://vault.centos.org/centos/$releasever/BaseOS/Source/
 gpgcheck=1
 enabled=0
 gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
 
 [appstream-source]
 name=CentOS Linux $releasever - AppStream - Source
-baseurl=http://vault.centos.org/centos/8/AppStream/Source/
+baseurl=http://vault.centos.org/centos/$releasever/AppStream/Source/
 gpgcheck=1
 enabled=0
 gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
 
 [powertools-source]
 name=CentOS Linux $releasever - PowerTools - Source
-baseurl=http://vault.centos.org/centos/8/PowerTools/Source/
+baseurl=http://vault.centos.org/centos/$releasever/PowerTools/Source/
 gpgcheck=1
 enabled=0
 gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
 
 [extras-source]
 name=CentOS Linux $releasever - Extras - Source
-baseurl=http://vault.centos.org/centos/8/extras/Source/
+baseurl=http://vault.centos.org/centos/$releasever/extras/Source/
 gpgcheck=1
 enabled=0
 gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
 
 [plus-source]
 name=CentOS Linux $releasever - Plus - Source
-baseurl=http://vault.centos.org/centos/8/centosplus/Source/
+baseurl=http://vault.centos.org/centos/$releasever/centosplus/Source/
 gpgcheck=1
 enabled=0
 gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
