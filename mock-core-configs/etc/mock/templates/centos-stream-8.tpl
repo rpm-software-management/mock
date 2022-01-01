@@ -94,6 +94,14 @@ gpgcheck=1
 enabled=0
 gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
 
+[resilientstorage]
+name=CentOS Stream $releasever - ResilientStorage
+mirrorlist=http://mirrorlist.centos.org/?release=$stream&arch=$basearch&repo=ResilientStorage&infra=$infra
+#baseurl=http://mirror.centos.org/$contentdir/$stream/ResilientStorage/$basearch/os/
+gpgcheck=1
+enabled=0
+gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
+
 [baseos-source]
 name=CentOS Stream $releasever - BaseOS - Source
 baseurl=http://vault.centos.org/$contentdir/$stream/BaseOS/Source/
@@ -118,6 +126,27 @@ gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Officia
 [extras-source]
 name=CentOS Stream $releasever - Extras - Source
 baseurl=http://vault.centos.org/$contentdir/$stream/extras/Source/
+gpgcheck=1
+enabled=0
+gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
+
+[ha-source]
+name=CentOS Stream $releasever - HighAvailability - Source
+baseurl=http://vault.centos.org/$contentdir/$stream/HighAvailability/Source/
+gpgcheck=1
+enabled=0
+gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
+
+[rt-source]
+name=CentOS Stream $releasever - RT - Source
+baseurl=http://vault.centos.org/$contentdir/$stream/RT/Source/
+gpgcheck=1
+enabled=0
+gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
+
+[resilientstorage-source]
+name=CentOS Stream $releasever - ResilientStorage - Source
+baseurl=http://vault.centos.org/$contentdir/$stream/ResilientStorage/Source/
 gpgcheck=1
 enabled=0
 gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
