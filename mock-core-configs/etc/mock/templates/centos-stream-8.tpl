@@ -43,10 +43,9 @@ skip_if_unavailable=False
 name=CentOS Stream $releasever - BaseOS
 mirrorlist=http://mirrorlist.centos.org/?release=$stream&arch=$basearch&repo=BaseOS&infra=$infra
 #baseurl=http://mirror.centos.org/$contentdir/$stream/BaseOS/$basearch/os/
-failovermethod=priority
-gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
 gpgcheck=1
-skip_if_unavailable=False
+enabled=1
+gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
 
 [appstream]
 name=CentOS Stream $releasever - AppStream
