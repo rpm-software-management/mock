@@ -94,29 +94,29 @@ gpgcheck=1
 enabled=0
 gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
 
-[Stream-BaseOS-source]
-name=CentOS-Stream - BaseOS Sources
+[baseos-source]
+name=CentOS Stream $releasever - BaseOS - Source
 baseurl=http://vault.centos.org/centos/$releasever-stream/BaseOS/Source/
 gpgcheck=1
 enabled=0
 gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
 
-[Stream-AppStream-source]
-name=CentOS-Stream - AppStream Sources
+[appstream-source]
+name=CentOS Stream $releasever - AppStream - Source
 baseurl=http://vault.centos.org/centos/$releasever-stream/AppStream/Source/
 gpgcheck=1
 enabled=0
 gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
 
-[Stream-PowerTools-source]
-name=CentOS-Stream - PowerTools Sources
+[powertools-source]
+name=CentOS Stream $releasever - PowerTools - Source
 baseurl=http://vault.centos.org/centos/$releasever-stream/PowerTools/Source/
 gpgcheck=1
 enabled=0
 gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
 
-[Stream-extras-source]
-name=CentOS-Stream - Extras Sources
+[extras-source]
+name=CentOS Stream $releasever - Extras - Source
 baseurl=http://vault.centos.org/centos/$releasever-stream/extras/Source/
 gpgcheck=1
 enabled=0
