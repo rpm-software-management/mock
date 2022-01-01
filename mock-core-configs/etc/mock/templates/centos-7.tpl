@@ -6,6 +6,9 @@ config_opts['dist'] = 'el7'  # only useful for --resultdir variable subst
 config_opts['releasever'] = '7'
 config_opts['bootstrap_image'] = 'quay.io/centos/centos:7'
 config_opts['package_manager'] = 'yum'
+config_opts['yum_vars'] = { 'contentdir': "{% if target_arch in ['x86_64'] -%} centos {%- else -%} altarch {%- endif %}",
+                            'infra': 'stock',
+                          }
 
 config_opts['yum_install_command'] += "{% if target_arch in ['x86_64', 'ppc64le', 'aarch64'] %} --disablerepo=centos-sclo*{% endif %}"
 
@@ -37,7 +40,8 @@ user_agent={{ user_agent }}
 # repos
 [base]
 name=CentOS-$releasever - Base
-mirrorlist=http://mirrorlist.centos.org/?release=7&arch=$basearch&repo=os
+mirrorlist=http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=os&infra=$infra
+#baseurl=http://mirror.centos.org/$contentdir/$releasever/os/$basearch/
 failovermethod=priority
 gpgkey={{ centos_7_gpg_keys }}
 gpgcheck=1
@@ -46,7 +50,8 @@ skip_if_unavailable=False
 [updates]
 name=CentOS-$releasever - Updates
 enabled=1
-mirrorlist=http://mirrorlist.centos.org/?release=7&arch=$basearch&repo=updates
+mirrorlist=http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=updates&infra=$infra
+#baseurl=http://mirror.centos.org/$contentdir/$releasever/updates/$basearch/
 failovermethod=priority
 gpgkey={{ centos_7_gpg_keys }}
 gpgcheck=1
@@ -54,8 +59,8 @@ skip_if_unavailable=False
 
 [extras]
 name=CentOS-$releasever - Extras
-mirrorlist=http://mirrorlist.centos.org/?release=7&arch=$basearch&repo=extras
-#baseurl=http://mirror.centos.org/centos/$releasever/extras/$basearch/os/
+mirrorlist=http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=extras&infra=$infra
+#baseurl=http://mirror.centos.org/$contentdir/$releasever/extras/$basearch/
 failovermethod=priority
 gpgkey={{ centos_7_gpg_keys }}
 gpgcheck=1
@@ -63,7 +68,8 @@ skip_if_unavailable=False
 
 [fasttrack]
 name=CentOS-$releasever - fasttrack
-mirrorlist=http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=fasttrack
+mirrorlist=http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=fasttrack&infra=$infra
+#baseurl=http://mirror.centos.org/$contentdir/$releasever/fasttrack/$basearch/
 failovermethod=priority
 gpgkey={{ centos_7_gpg_keys }}
 gpgcheck=1
@@ -72,8 +78,8 @@ enabled=0
 
 [centosplus]
 name=CentOS-$releasever - Plus
-mirrorlist=http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=centosplus
-#baseurl=http://mirror.centos.org/centos/$releasever/centosplus/$basearch/
+mirrorlist=http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=centosplus&infra=$infra
+#baseurl=http://mirror.centos.org/$contentdir/$releasever/centosplus/$basearch/
 gpgkey={{ centos_7_gpg_keys }}
 gpgcheck=1
 enabled=0
@@ -81,7 +87,8 @@ enabled=0
 {% if target_arch == 'x86_64' %}
 [centos-sclo-sclo]
 name=CentOS-$releasever - SCLo sclo
-baseurl=http://mirror.centos.org/centos/7/sclo/$basearch/sclo/
+mirrorlist=http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=sclo-sclo&infra=$infra
+#baseurl=http://mirror.centos.org/$contentdir/$releasever/sclo/$basearch/sclo/
 gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-SIG-SCLo
 gpgcheck=1
 includepkgs=devtoolset*
@@ -91,7 +98,8 @@ skip_if_unavailable=False
 {% if target_arch in ['x86_64', 'ppc64le', 'aarch64'] %}
 [centos-sclo-rh]
 name=CentOS-$releasever - SCLo rh
-mirrorlist=http://mirrorlist.centos.org/?release=7&arch=$basearch&repo=sclo-rh
+mirrorlist=http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=sclo-rh&infra=$infra
+#baseurl=http://mirror.centos.org/$contentdir/$releasever/sclo/$basearch/rh/
 gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-SIG-SCLo
 gpgcheck=1
 includepkgs=devtoolset*
