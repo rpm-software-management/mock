@@ -179,6 +179,15 @@ class _PackageManager(object):
             return self.config['yum.conf']
 
     @traceLog()
+    def get_pkg_manager_vars(self):
+        if 'dnf_vars' in self.config:
+            return self.config['dnf_vars']
+        elif 'yum_vars' in self.config:
+            return self.config['yum_vars']
+        else:
+            return None
+
+    @traceLog()
     def execute(self, *args, **kwargs):
         self.plugins.call_hooks("preyum")
         pm_umount = False
@@ -360,7 +369,7 @@ Error:      Neither dnf-utils nor yum-utils are installed. Dnf-utils or yum-util
 
     def expand_url_vars(self, string):
         """
-        Expand DNF variables like $baseurl to proper values in string, and
+        Expand variables (like $basearch or $releasever) in a string, and
         return it.
         """
         expand = {
@@ -368,9 +377,9 @@ Error:      Neither dnf-utils nor yum-utils are installed. Dnf-utils or yum-util
             "releasever": self.config["releasever"] or '<undef>',
         }
 
-        if 'dnf_vars' in self.config:
-            for key in self.config['dnf_vars']:
-                expand[key] = self.config['dnf_vars'][key]
+        pkg_manager_vars = self.get_pkg_manager_vars()
+        if pkg_manager_vars:
+            expand.update(pkg_manager_vars)
 
         for key, value in expand.items():
             # replace both $key and ${key}
@@ -496,6 +505,15 @@ class Yum(_PackageManager):
         if bootstrap_buildroot is None:
             self._check_command()
 
+    def initialize_vars(self):
+        self.buildroot.root_log.debug('configure yum vars')
+        pkg_manager_vars = self.get_pkg_manager_vars()
+        var_path = self.buildroot.make_chroot_path('etc/yum/vars/')
+        if pkg_manager_vars:
+            for key in pkg_manager_vars.keys():
+                with open(os.path.join(var_path, key), 'w+') as conf_file:
+                    conf_file.write(pkg_manager_vars[key])
+
     @traceLog()
     def _write_plugin_conf(self, name):
         """ Write 'name' file into pluginconf.d """
@@ -529,6 +547,7 @@ class Yum(_PackageManager):
                 conf_file.write(config_content)
             if os.path.exists(conf_path):
                 shutil.copystat(conf_path, chroot_conf_path)
+        self.initialize_vars()
 
         # write in yum plugins into chroot
         self.buildroot.root_log.debug('configure yum priorities')
@@ -586,10 +605,12 @@ class Dnf(_PackageManager):
 
     def initialize_vars(self):
         self.buildroot.root_log.debug('configure DNF vars')
+        pkg_manager_vars = self.get_pkg_manager_vars()
         var_path = self.buildroot.make_chroot_path('etc/dnf/vars/')
-        for key in self.config['dnf_vars'].keys():
-            with open(os.path.join(var_path, key), 'w+') as conf_file:
-                conf_file.write(self.config['dnf_vars'][key])
+        if pkg_manager_vars:
+            for key in pkg_manager_vars.keys():
+                with open(os.path.join(var_path, key), 'w+') as conf_file:
+                    conf_file.write(pkg_manager_vars[key])
 
     def _get_disabled_plugins(self):
         if 'dnf_disable_plugins' in self.config:

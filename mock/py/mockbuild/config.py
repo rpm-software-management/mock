@@ -50,7 +50,8 @@ def nspawn_supported():
 @traceLog()
 def setup_default_config_opts(unprivUid, version, pkgpythondir):
     "sets up default configuration."
-    config_opts = TemplatedDictionary(alias_spec={'dnf.conf': ['yum.conf']})
+    config_opts = TemplatedDictionary(alias_spec={'dnf.conf': ['yum.conf'],
+                                                  'dnf_vars': ['yum_vars']})
     config_opts['config_paths'] = []
     config_opts['version'] = version
     config_opts['basedir'] = '/var/lib/mock'  # root name is automatically added to this
@@ -247,7 +248,6 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
     config_opts['target_arch'] = 'i386'
     config_opts['releasever'] = None
     config_opts['rpmbuild_arch'] = None  # <-- None means set automatically from target_arch
-    config_opts['dnf_vars'] = {}
     config_opts['yum_builddep_opts'] = []
     config_opts['yum_common_opts'] = []
     config_opts['update_before_build'] = True
