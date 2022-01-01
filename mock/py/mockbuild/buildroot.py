@@ -565,6 +565,7 @@ class Buildroot(object):
                 'etc/dnf/vars',
                 'etc/yum.repos.d',
                 'etc/yum',
+                'etc/yum/vars',
                 'proc',
                 'sys']
         dirs += self.config['extra_chroot_dirs']
