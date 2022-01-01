@@ -92,6 +92,55 @@ gpgcheck=1
 skip_if_unavailable=False
 enabled=0
 
+[cr]
+name=CentOS-$releasever - cr
+baseurl=http://mirror.centos.org/$contentdir/$releasever/cr/$basearch/
+gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-7
+       {{- centos_7_arch_gpg_key }}
+gpgcheck=1
+skip_if_unavailable=False
+enabled=0
+
+[base-debuginfo]
+name=CentOS-$releasever - Debuginfo
+baseurl=http://debuginfo.centos.org/$releasever/$basearch/
+gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Debug-7
+gpgcheck=1
+skip_if_unavailable=False
+enabled=0
+
+[base-source]
+name=CentOS-$releasever - Base Sources
+baseurl=http://vault.centos.org/centos/$releasever/os/Source/
+gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-7
+gpgcheck=1
+skip_if_unavailable=False
+enabled=0
+
+[updates-source]
+name=CentOS-$releasever - Updates Sources
+baseurl=http://vault.centos.org/centos/$releasever/updates/Source/
+gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-7
+gpgcheck=1
+skip_if_unavailable=False
+enabled=0
+
+[extras-source]
+name=CentOS-$releasever - Extras Sources
+baseurl=http://vault.centos.org/centos/$releasever/extras/Source/
+gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-7
+gpgcheck=1
+skip_if_unavailable=False
+enabled=0
+
+[centosplus-source]
+name=CentOS-$releasever - Plus Sources
+baseurl=http://vault.centos.org/centos/$releasever/centosplus/Source/
+gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-7
+gpgcheck=1
+skip_if_unavailable=False
+enabled=0
+
 {% if target_arch in ['x86_64', 'ppc64le', 'aarch64'] %}
 [centos-sclo-sclo]
 name=CentOS-$releasever - SCLo sclo
