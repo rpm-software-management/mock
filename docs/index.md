@@ -36,7 +36,6 @@ Mock is capable of building SRPMs from source configuration management if the `m
 * [Exit codes](#exit-codes)
 * [Problems](#problems)
 * [Generate custom config file](#generate-custom-config-file)
-* [Using file:// URLs in configs](#using-file-urls-in-configs)
 * [See Also](#see-also)
 
 ## Status
