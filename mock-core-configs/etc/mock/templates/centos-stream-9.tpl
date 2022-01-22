@@ -94,4 +94,13 @@ gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Officia
 gpgcheck=1
 enabled=0
 
+[extras-common]
+name=CentOS Stream $releasever - Extras packages
+#baseurl=http://mirror.stream.centos.org/SIGs/$releasever-stream/extras/$basearch/extras-common/
+metalink=https://mirrors.centos.org/metalink?repo=centos-extras-sig-extras-common-$releasever-stream&arch=$basearch
+gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-SIG-Extras
+gpgcheck=1
+enabled=1
+skip_if_unavailable=False
+
 """
