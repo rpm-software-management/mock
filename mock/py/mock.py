@@ -557,7 +557,7 @@ def check_arch_combination(target_arch, config_opts):
 
     config.multiply_platform_multiplier(config_opts)
     if config_opts['forcearch']:
-        binary = '/usr/bin/qemu-x86_64-static'
+        binary = '/usr/bin/qemu-' + host_arch + '-static'
         if not os.path.exists(binary):
             # qemu-user-static is required, but seems to be missing
             if util.is_host_rh_family():
