@@ -123,7 +123,30 @@ if [ -s /etc/mageia-release ]; then
 else
     mock_arch=$(python3 -c "import dnf.rpm; import hawkey; print(dnf.rpm.basearch(hawkey.detect_arch()))")
 fi
-cfg=%{?fedora:fedora}%{?rhel:epel}%{?mageia:mageia}-$ver-${mock_arch}.cfg
+
+cfg=unknown-distro
+%if 0%{?fedora}
+cfg=fedora-$ver-$mock_arch.cfg
+%endif
+%if 0%{?rhel}
+# Being installed on RHEL, or a RHEL fork.  Detect it.
+distro_id=$(. /etc/os-release; echo $ID)
+case $distro_id in
+centos)
+  # This package is EL8+, and there's only CentOS Stream now.
+  distro_id=centos-stream
+  ;;
+almalinux)
+  # AlmaLinux configs look like 'alma+epel'
+  distro_id=alma
+  ;;
+esac
+cfg=$distro_id+epel-$ver-$mock_arch.cfg
+%endif
+%if 0%{?mageia}
+cfg=mageia-$ver-$mock_arch.cfg
+%endif
+
 if [ -e %{_sysconfdir}/mock/$cfg ]; then
     if [ "$(readlink %{_sysconfdir}/mock/default.cfg)" != "$cfg" ]; then
         ln -s $cfg %{_sysconfdir}/mock/default.cfg 2>/dev/null || ln -s -f $cfg %{_sysconfdir}/mock/default.cfg.rpmnew
