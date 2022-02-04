@@ -1,12 +1,13 @@
 #! /bin/bash
 
-# Helper script (used by praiskup atm) to update CI scripting on Copr side.
+# Helper script to update CI scripting on Copr side
 
 script=$(readlink -f "$(dirname "$0")")/copr-custom-script
 
 workdir=$(dirname "$script")
 
-PROJECT=@mock/mock-pull-requests
+PROJECT_PR=@mock/mock-pull-requests
+PROJECT_PUSH=@mock/mock
 
 build_deps=(
     bsdtar
@@ -14,12 +15,14 @@ build_deps=(
 )
 
 copr_cmd=(
-    copr edit-package-custom "$PROJECT" \
+    copr edit-package-custom \
         --webhook-rebuild on \
         --script "$script" \
         --script-chroot "fedora-latest-x86_64" \
         --script-builddeps "${build_deps[*]}"
 )
 
-"${copr_cmd[@]}" --name mock               --script-resultdir results/mock
-"${copr_cmd[@]}" --name mock-core-configs  --script-resultdir results/mock-core-configs
+"${copr_cmd[@]}" "$PROJECT_PR"   --name mock               --script-resultdir results/mock              --max-builds 15
+"${copr_cmd[@]}" "$PROJECT_PR"   --name mock-core-configs  --script-resultdir results/mock-core-configs --max-builds 15
+"${copr_cmd[@]}" "$PROJECT_PUSH" --name mock               --script-resultdir results/mock
+"${copr_cmd[@]}" "$PROJECT_PUSH" --name mock-core-configs  --script-resultdir results/mock-core-configs
