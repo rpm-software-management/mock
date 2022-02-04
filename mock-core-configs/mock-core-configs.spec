@@ -1,5 +1,5 @@
 Name:       mock-core-configs
-Version:    36.5
+Version:    36.6
 Release:    1%{?dist}
 Summary:    Mock core config files basic chroots
 
@@ -152,6 +152,9 @@ fi
 %ghost %config(noreplace,missingok) %{_sysconfdir}/mock/default.cfg
 
 %changelog
+* Fri Feb 04 2022 Pavel Raiskup <praiskup@redhat.com> 36.6-1
+- Add CentOS Stream 8 + EPEL 8 configs
+
 * Wed Feb 02 2022 Pavel Raiskup <praiskup@redhat.com> 36.5-1
 - move CentOS/EPEL 8 configs to eol/
 - Fedora 36 branching
