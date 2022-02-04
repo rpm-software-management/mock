@@ -1,5 +1,5 @@
 Name:       mock-core-configs
-Version:    37
+Version:    37.1
 Release:    1%{?dist}
 Summary:    Mock core config files basic chroots
 
@@ -141,6 +141,11 @@ fi
 %ghost %config(noreplace,missingok) %{_sysconfdir}/mock/default.cfg
 
 %changelog
+* Fri Feb 04 2022 Pavel Raiskup <praiskup@redhat.com> 37.1-1
+- drop EL7 related %%build hack
+- link default.cfg file to the right EL N config file
+- Add centos-stream+epel-8 configs
+
 * Wed Feb 02 2022 Pavel Raiskup <praiskup@redhat.com> 37-1
 - move CentOS/EPEL 8 configs to eol/
 - Fedora 36 branching, Rawhide == Fedora 37 now
