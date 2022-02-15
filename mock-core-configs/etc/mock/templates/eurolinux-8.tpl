@@ -6,7 +6,7 @@ config_opts['dist'] = 'el8'  # only useful for --resultdir variable subst
 config_opts['releasever'] = '8'
 config_opts['package_manager'] = 'dnf'
 config_opts['extra_chroot_dirs'] = [ '/run/lock', ]
-
+config_opts['description'] = 'EuroLinux 8'
 
 config_opts['dnf.conf'] = """
 [main]

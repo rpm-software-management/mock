@@ -5,6 +5,7 @@ config_opts['useradd'] = '/usr/sbin/useradd -o -m -u {{chrootuid}} -g {{chrootgi
 config_opts['releasever'] = '5.0'
 config_opts['macros']['%cross_compiling'] = '0' # Mock should generally be considered native builds
 config_opts['package_manager'] = 'dnf'
+config_opts['description'] = 'OpenMandriva Rolling'
 
 config_opts['dnf.conf'] = """
 [main]

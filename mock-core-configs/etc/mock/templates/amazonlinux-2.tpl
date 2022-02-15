@@ -3,6 +3,7 @@ config_opts['dist'] = 'amzn2' # only useful for --resultdir variable subst
 config_opts['plugin_conf']['ccache_enable'] = False
 config_opts['package_manager'] = 'yum'
 config_opts['releasever'] = '2'
+config_opts['description'] = 'Amazon Linux 2'
 
 config_opts['bootstrap_image'] = 'docker.io/library/amazonlinux:2'
 
