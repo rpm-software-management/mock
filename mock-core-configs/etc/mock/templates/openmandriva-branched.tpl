@@ -4,6 +4,7 @@ config_opts['extra_chroot_dirs'] = [ '/run/lock', ]
 config_opts['useradd'] = '/usr/sbin/useradd -o -m -u {{chrootuid}} -g {{chrootgid}} -d {{chroothome}} {{chrootuser}}'
 config_opts['macros']['%cross_compiling'] = '0' # Mock should generally be considered native builds
 config_opts['package_manager'] = 'dnf'
+config_opts['description'] = 'OpenMandriva {{ releasever }}'
 
 config_opts['dnf.conf'] = """
 [main]

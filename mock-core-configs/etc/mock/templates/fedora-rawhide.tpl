@@ -12,6 +12,7 @@ config_opts['extra_chroot_dirs'] = [ '/run/lock', ]
 config_opts['releasever'] = '37'
 config_opts['package_manager'] = 'dnf'
 config_opts['bootstrap_image'] = 'registry.fedoraproject.org/fedora:rawhide'
+config_opts['description'] = 'Fedora Rawhide'
 
 config_opts['dnf.conf'] = """
 [main]

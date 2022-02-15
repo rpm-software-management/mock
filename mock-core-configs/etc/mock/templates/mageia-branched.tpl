@@ -6,6 +6,7 @@ config_opts['useradd'] = '/usr/sbin/useradd -o -m -u {{chrootuid}} -g {{chrootgi
 config_opts['macros']['%distro_section'] = 'core'
 config_opts['package_manager'] = 'dnf'
 config_opts['bootstrap_image'] = 'docker.io/library/mageia:{{ releasever }}'
+config_opts['description'] = 'Mageia {{ releasever }}'
 
 config_opts['dnf.conf'] = """
 [main]

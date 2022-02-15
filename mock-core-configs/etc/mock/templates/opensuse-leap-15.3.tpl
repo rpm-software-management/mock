@@ -7,6 +7,7 @@ config_opts['macros']['%dist'] = '.suse.lp153'
 config_opts['package_manager'] = 'dnf'
 config_opts['bootstrap_image'] = 'registry.opensuse.org/opensuse/leap-dnf:15.3'
 config_opts['ssl_ca_bundle_path'] = '/var/lib/ca-certificates/ca-bundle.pem'
+config_opts['description'] = 'openSUSE Leap {{ releasever }}'
 
 # Due to the nature of the OpenSUSE mirroring system, we can not use
 # metalinks easily and also we can not rely on the fact that baseurl's

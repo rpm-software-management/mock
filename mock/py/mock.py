@@ -165,6 +165,9 @@ def command_parse():
     parser.add_option("-i", "--install", action="store_const", const="install",
                       dest="mode",
                       help="install packages using package manager")
+    parser.add_option("--list-chroots", action="store_const", const="listchroots",
+                      dest="mode",
+                      help="List all chroot's configs")
     parser.add_option("--update", action="store_const", const="update",
                       dest="mode",
                       help="update installed packages using package manager")
@@ -586,6 +589,12 @@ def do_debugconfig(config_opts, uidManager, expand=False):
             print("config_opts['{}'] = {}".format(key, pformat(value)))
     config_opts['__jinja_expand'] = jinja_expand
 
+
+@traceLog()
+def do_listchroots(config_opts, uidManager):
+    config.list_configs(config_opts, uidManager, __VERSION__, PKGPYTHONDIR)
+
+
 @traceLog()
 def rootcheck():
     "verify mock was started correctly (either by sudo or consolehelper)"
@@ -964,6 +973,9 @@ def run_command(options, args, config_opts, commands, buildroot, state):
 
     elif options.mode == 'debugconfigexpand':
         do_debugconfig(config_opts, buildroot.uid_manager, True)
+
+    elif options.mode == 'listchroots':
+        do_listchroots(config_opts, buildroot.uid_manager)
 
     elif options.mode == 'orphanskill':
         util.orphansKill(buildroot.make_chroot_path())

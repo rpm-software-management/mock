@@ -4,6 +4,7 @@
 
 from __future__ import print_function
 
+import atexit
 from ast import literal_eval
 import errno
 from glob import glob
@@ -604,6 +605,7 @@ def update_config_from_file(config_opts, config_file, uid_manager):
     config_file = os.path.realpath(config_file)
     r_pipe, w_pipe = os.pipe()
     if os.fork() == 0:
+        atexit._clear()
         try:
             os.close(r_pipe)
             if uid_manager and not all(getresuid()):
@@ -728,6 +730,58 @@ def load_defaults(uidManager, version, pkg_python_dir):
     return setup_default_config_opts(gid, version, pkg_python_dir)
 
 
+def print_description(config_path, config_filename, uidManager, version, pkg_python_dir):
+    basename_without_ext = parse_config_filename(config_filename)[2]
+    try:
+        config_opts = load_config(config_path, config_filename, uidManager, version, pkg_python_dir)
+        description = config_opts.get("description", "")
+    except exception.ConfigError:
+        description = 'error during parsing the config file'
+    print("{} {}".format(basename_without_ext.ljust(34), description))
+
+
+def parse_config_filename(config_filename):
+    """ Accepts filename and returns (dirname, basename, basename_without_ext) """
+    basename = os.path.basename(config_filename)
+    dirname = os.path.dirname(config_filename)
+    basename_without_ext = os.path.splitext(basename)[0]
+    return (basename, dirname, basename_without_ext)
+
+def get_global_configs(config_opts):
+    """ Return filenames of global configs of chroots"""
+    result = []
+    for config_filename in glob("{}/*.cfg".format(config_opts['config_path'])):
+        if config_filename in ["/etc/mock/chroot-aliases.cfg", "/etc/mock/site-defaults.cfg"]:
+            continue
+        result.append(config_filename)
+    return result
+
+
+def get_user_config_files(config_opts, uidManager):
+    """ Return filenames of user configs of chroots """
+    custom_path = os.path.join(os.path.expanduser('~' + pwd.getpwuid(uidManager.unprivUid)[0]), '.config/mock/*.cfg')
+    result = glob(custom_path)
+    return result
+
+
+@traceLog()
+def list_configs(config_opts, uidManager, version, pkg_python_dir):
+    log = logging.getLogger()
+    log.disabled = True
+    # array to save config paths
+    print("{} {}".format("config name".ljust(34), "description"))
+    print("Global configs:")
+    for config_filename in sorted(get_global_configs(config_opts)):
+        print_description(config_opts['config_path'], config_filename, uidManager, version, pkg_python_dir)
+    user_config_files = get_user_config_files(config_opts, uidManager)
+    if user_config_files:
+        print("Custom configs:")
+        # ~/.config/mock/CHROOTNAME.cfg
+        for config_filename in sorted(user_config_files):
+            print_description(config_opts['config_path'], config_filename, uidManager, version, pkg_python_dir)
+        log.disabled = False
+
+
 @traceLog()
 def load_config(config_path, name, uidManager, version, pkg_python_dir):
     log = logging.getLogger()
@@ -745,7 +799,8 @@ def load_config(config_path, name, uidManager, version, pkg_python_dir):
         config_opts['chroot_name'] = os.path.splitext(os.path.basename(name))[0]
     else:
         # ~/.config/mock/CHROOTNAME.cfg
-        cfg = os.path.join(os.path.expanduser('~' + pwd.getpwuid(os.getuid())[0]), '.config/mock/{}.cfg'.format(name))
+        cfg = os.path.join(os.path.expanduser('~' + pwd.getpwuid(uidManager.unprivUid)[0]),
+                           '.config/mock/{}.cfg'.format(name))
         if os.path.exists(cfg):
             chroot_cfg_path = cfg
         else:

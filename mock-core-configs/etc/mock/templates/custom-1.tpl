@@ -4,6 +4,7 @@ config_opts['extra_chroot_dirs'] = [ '/run/lock', ]
 config_opts['package_manager'] = 'dnf'
 config_opts['module_enable'] = []
 config_opts['module_install'] = []
+config_opts['description'] = 'Custom (no repository)'
 # DNF may not be available in this chroot
 config_opts['use_bootstrap'] = False
 

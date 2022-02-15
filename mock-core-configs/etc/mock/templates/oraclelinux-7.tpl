@@ -6,6 +6,7 @@ config_opts['dist'] = 'el7'  # only useful for --resultdir variable subst
 config_opts['releasever'] = '7'
 config_opts['bootstrap_image'] = 'docker.io/library/oraclelinux:7'
 config_opts['package_manager'] = 'yum'
+config_opts['description'] = 'Oracle Linux 7'
 
 config_opts['yum_install_command'] += " --disablerepo=ol7_software_collections"
 
