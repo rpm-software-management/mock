@@ -6,6 +6,22 @@ layout: title
 
 Mock is a tool for building packages. It can build packages for different architectures and different [Fedora](https://getfedora.org/), [RHEL](https://www.redhat.com/en/technologies/linux-platforms/enterprise-linux), and [Mageia](https://www.mageia.org/) versions than the build host have. Mock creates chroots and builds packages in them. Its only task is to reliably populate a chroot and attempt to build a package in that chroot.
 
+```
+$ mock -r fedora-35-x86_64 package.src.rpm
+...
+Finish: rpmbuild packagei-1.98-1.fc35.src.rpm
+Finish: build phase for package-1.98-1.fc35.src.rpm
+INFO: Done(package.src.rpm) Config(fedora-35-x86_64) 2 minutes 14 seconds
+INFO: Results and/or logs in: /var/lib/mock/fedora-35-x86_64/result
+$  ls /var/lib/mock/fedora-35-x86_64/result
+build.log  package-1.98-1.fc35.noarch.rpm  package-1.98-1.fc35.src.rpm  hw_info.log  installed_pkgs.log  root.log  state.log
+
+$ mock -r centos-stream+epel-9-s390x package.src.rpm
+...
+$ mock -r alma+epel-8-x86_64 package.src.rpm
+...
+```
+
 Mock also offers a multi-package command (`--chain`), that can build chains of packages that depend on each other.
 
 Mock is capable of building SRPMs from source configuration management if the `mock-scm` package is present, then building the SRPM into RPMs. See `--scm-enable` in the documentation.
