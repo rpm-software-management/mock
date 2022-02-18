@@ -47,9 +47,9 @@ class HwInfo(object):
         out.write("\n\nMemory:\n")
         out.write(output)
 
-        cmd = ["/bin/df", "-H", self.buildroot.make_chroot_path()]
+        cmd = ["/bin/df", "-H", self.buildroot.make_chroot_path(), self.config["cache_topdir"]]
         output = mockbuild.util.do(cmd, shell=False, returnOutput=True, raiseExc=False)
-        out.write("\n\nStorage:\n")
+        out.write("\n\nStorage (chroot, cache_topdir):\n")
         out.write(output)
 
         out.close()
