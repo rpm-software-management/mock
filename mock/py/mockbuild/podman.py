@@ -25,7 +25,8 @@ class Podman:
     @traceLog()
     def get_container_id(self):
         """ start a container and detach immediately """
-        cmd = ["podman", "run", "--quiet", "-i", "--detach", self.image, "/bin/bash"]
+        cmd = ["podman", "run", "--security-opt", "seccomp=unconfined",
+               "--quiet", "-i", "--detach", self.image, "/bin/bash"]
         container_id = util.do(cmd, returnOutput=True, env=self.buildroot.env)
         self.container_id = container_id.strip()
         return self.container_id
