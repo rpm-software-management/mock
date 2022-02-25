@@ -316,6 +316,8 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
 
     config_opts["no-config"] = {}
 
+    config_opts["seccomp"] = False
+
     return config_opts
 
 
@@ -489,7 +491,7 @@ def set_config_opts_per_cmdline(config_opts, options, args):
         use_nspawn = nspawn_supported()
         getLog().info("systemd-nspawn auto-detected: %s", use_nspawn)
 
-    set_use_nspawn(use_nspawn)
+    set_use_nspawn(use_nspawn, config_opts)
 
     if options.enable_network:
         config_opts['rpmbuild_networking'] = True

@@ -81,6 +81,7 @@ personality_defs = {
 }
 
 USE_NSPAWN = False
+USE_NSPAWN_SECCOMP = False
 
 _NSPAWN_HELP_OUTPUT = None
 
@@ -644,9 +645,11 @@ def setup_operations_timeout(config_opts):
     _OPS_TIMEOUT = config_opts.get('opstimeout', 0)
 
 
-def set_use_nspawn(value):
+def set_use_nspawn(value, config_opts):
     global USE_NSPAWN
+    global USE_NSPAWN_SECCOMP
     USE_NSPAWN = value
+    USE_NSPAWN_SECCOMP = config_opts["seccomp"]
 
 
 class BindMountedFile(str):
@@ -756,7 +759,8 @@ def _prepare_nspawn_command(chrootPath, user, cmd, nspawn_args=None, env=None,
 
     # And these need to be set outside the container (processed by nspawn)
     env['SYSTEMD_NSPAWN_TMPFS_TMP'] = '0'
-    env['SYSTEMD_SECCOMP'] = '0'
+    if not USE_NSPAWN_SECCOMP:
+        env['SYSTEMD_SECCOMP'] = '0'
 
     if _check_nspawn_resolv_conf():
         nspawn_argv.append("--resolv-conf=off")
