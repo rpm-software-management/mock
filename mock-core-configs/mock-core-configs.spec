@@ -1,5 +1,5 @@
 Name:       mock-core-configs
-Version:    37.1
+Version:    37.2
 Release:    1%{?dist}
 Summary:    Mock core config files basic chroots
 
@@ -141,6 +141,12 @@ fi
 %ghost %config(noreplace,missingok) %{_sysconfdir}/mock/default.cfg
 
 %changelog
+* Thu Mar 03 2022 Pavel Raiskup <praiskup@redhat.com> 37.2-1
+- Update CentOS Stream 9 Extras repo to use correct key (ngompa@centosproject.org)
+- Add AlmaLinux+EPEL 8 for POWER (ppc64le) (ngompa13@gmail.com)
+- Add AlmaLinux 8 for POWER (ppc64le) (ngompa13@gmail.com)
+- Delete Fedora 37/Rawhide armhfp configs (miro@hroncok.cz)
+
 * Fri Feb 04 2022 Pavel Raiskup <praiskup@redhat.com> 37.1-1
 - drop EL7 related %%build hack
 - link default.cfg file to the right EL N config file
