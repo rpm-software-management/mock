@@ -48,6 +48,7 @@ Mock is capable of building SRPMs from source configuration management if the `m
 * [Plugins](#plugins)
 * [Features](#features)
 * [Using Mock outside your git sandbox](#using-mock-outside-your-git-sandbox)
+* [Mock inside Podman, Fedora Toolbox or Docker container](#mock-inside-podman-fedora-toolbox-or-docker-container)
 * [FAQ](#faq)
 * [Exit codes](#exit-codes)
 * [Problems](#problems)
