@@ -33,7 +33,7 @@ protected_packages=
 
 {%- macro rawhide_gpg_keys() -%}
 file:///usr/share/distribution-gpg-keys/fedora/RPM-GPG-KEY-fedora-rawhide-primary
-{%- for version in [eln_rawhide_releasever|int, eln_rawhide_releasever|int - 1]
+{%- for version in [eln_rawhide_releasever|int, eln_rawhide_releasever|int - 1, eln_rawhide_releasever|int - 2]
 %} file:///usr/share/distribution-gpg-keys/fedora/RPM-GPG-KEY-fedora-{{ version }}-primary
 {%- endfor %}
 {%- endmacro %}
