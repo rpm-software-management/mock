@@ -524,29 +524,6 @@ def setup_logging(config_path, config_opts, options):
 
 
 @traceLog()
-def setup_uid_manager(mockgid):
-    unprivUid = os.getuid()
-    unprivGid = os.getgid()
-
-    # sudo
-    if os.environ.get("SUDO_UID") is not None:
-        unprivUid = int(os.environ['SUDO_UID'])
-        os.setgroups((mockgid,))
-        unprivGid = int(os.environ['SUDO_GID'])
-
-    # consolehelper
-    if os.environ.get("USERHELPER_UID") is not None:
-        unprivUid = int(os.environ['USERHELPER_UID'])
-        unprivName = pwd.getpwuid(unprivUid).pw_name
-        secondary_groups = [g.gr_gid for g in grp.getgrall() if unprivName in g.gr_mem]
-        os.setgroups([mockgid] + secondary_groups)
-        unprivGid = pwd.getpwuid(unprivUid)[3]
-
-    uidManager = mockbuild.uid.UidManager(unprivUid, unprivGid)
-    return uidManager
-
-
-@traceLog()
 def check_arch_combination(target_arch, config_opts):
     try:
         legal = config_opts['legal_host_arches']
@@ -672,9 +649,8 @@ def main():
     #   setuid wrapper has real uid = unpriv,  effective uid = 0
     #   sudo sets real/effective = 0, and sets env vars
     #   setuid wrapper clears environment, so there wont be any conflict between these two
-
     mockgid = grp.getgrnam('mock').gr_gid
-    uidManager = setup_uid_manager(mockgid)
+    uidManager = mockbuild.uid.setup_uid_manager(mockgid)
 
     # go unpriv only when root to make --help etc work for non-mock users
     if os.geteuid() == 0:
