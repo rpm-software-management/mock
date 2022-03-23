@@ -16,7 +16,8 @@ _libc = ctypes.CDLL(None, use_errno=True)
 
 
 @traceLog()
-def setup_uid_manager(mockgid):
+def setup_uid_manager():
+    mockgid = grp.getgrnam('mock').gr_gid
     unprivUid = os.getuid()
     unprivGid = os.getgid()
 
@@ -46,6 +47,7 @@ class UidManager(object):
         self.unprivGid = unprivGid
         self.unprivEnviron = dict(os.environ)
         self.unprivEnviron['HOME'] = pwd.getpwuid(unprivUid).pw_dir
+        self.mockgid = grp.getgrnam('mock').gr_gid
 
     @traceLog()
     def __enter__(self):
@@ -138,6 +140,17 @@ class UidManager(object):
             else:
                 raise
 
+    @traceLog()
+    def fix_different_chrootgid(self, config_opts):
+        """ Allow a different mock group to be specified.
+            This tries to solve chicken-egg problem. Because the uidManager
+            has to be initialized before reading config, but config_opts['chrootgid']
+            is known only after reading config
+        """
+        if config_opts['chrootgid'] != self.mockgid:
+            self.restorePrivs()
+            os.setgroups((self.mockgid, config_opts['chrootgid']))
+            self.dropPrivsTemp()
 
 def getresuid():
     ruid = ctypes.c_long()

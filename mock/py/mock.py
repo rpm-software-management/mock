@@ -649,8 +649,7 @@ def main():
     #   setuid wrapper has real uid = unpriv,  effective uid = 0
     #   sudo sets real/effective = 0, and sets env vars
     #   setuid wrapper clears environment, so there wont be any conflict between these two
-    mockgid = grp.getgrnam('mock').gr_gid
-    uidManager = mockbuild.uid.setup_uid_manager(mockgid)
+    uidManager = mockbuild.uid.setup_uid_manager()
 
     # go unpriv only when root to make --help etc work for non-mock users
     if os.geteuid() == 0:
@@ -673,10 +672,7 @@ def main():
     util.subscription_redhat_init(config_opts)
 
     # allow a different mock group to be specified
-    if config_opts['chrootgid'] != mockgid:
-        uidManager.restorePrivs()
-        os.setgroups((mockgid, config_opts['chrootgid']))
-        uidManager.dropPrivsTemp()
+    uidManager.fix_different_chrootgid(config_opts)
 
     # verify that our unprivileged uid is in the mock group
     groupcheck(uidManager.unprivGid, config_opts['chrootgid'])
