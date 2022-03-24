@@ -22,16 +22,16 @@ import sys
 from templated_dictionary import TemplatedDictionary
 from . import exception
 from . import text
+from .constants import MOCKCONFDIR, PKGPYTHONDIR, VERSION
 from .file_util import is_in_dir
 from .trace_decorator import getLog, traceLog
-from .uid import getresuid
+from .uid import getresuid, setup_uid_manager
 from .util import set_use_nspawn, setup_operations_timeout
 
 PLUGIN_LIST = ['tmpfs', 'root_cache', 'yum_cache', 'mount', 'bind_mount',
                'ccache', 'selinux', 'package_state', 'chroot_scan',
                'lvm_root', 'compress_logs', 'sign', 'pm_request',
                'hw_info', 'procenv', 'showrc', 'rpkg_preprocessor']
-
 
 def nspawn_supported():
     """Detect some situations where the systemd-nspawn chroot code won't work"""
@@ -780,6 +780,17 @@ def list_configs(config_opts, uidManager, version, pkg_python_dir):
         for config_filename in sorted(user_config_files):
             print_description(config_opts['config_path'], config_filename, uidManager, version, pkg_python_dir)
         log.disabled = False
+
+
+@traceLog()
+def simple_load_config(name, config_path=None, pkg_python_dir=None):
+    """ wrapper around load_config() intended by use 3rd party SW """
+    uidManager = setup_uid_manager()
+    if config_path is None:
+        config_path = MOCKCONFDIR
+    if pkg_python_dir is None:
+        pkg_python_dir = PKGPYTHONDIR
+    return load_config(config_path, name, uidManager, VERSION, pkg_python_dir)
 
 
 @traceLog()

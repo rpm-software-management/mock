@@ -63,16 +63,9 @@ import copy
 from functools import partial
 from mockbuild import config
 from mockbuild import util
+from mockbuild.constants import MOCKCONFDIR, PKGPYTHONDIR, PYTHONDIR, SYSCONFDIR, VERSION
 from mockbuild.file_downloader import FileDownloader
 from mockbuild.mounts import BindMountPoint, FileSystemMountPoint
-
-# all of the variables below are substituted by the build system
-__VERSION__ = "unreleased_version"
-SYSCONFDIR = os.path.join(os.path.dirname(os.path.realpath(sys.argv[0])), "..", "etc")
-PYTHONDIR = os.path.dirname(os.path.realpath(sys.argv[0]))
-PKGPYTHONDIR = os.path.join(os.path.dirname(os.path.realpath(sys.argv[0])), "mockbuild")
-MOCKCONFDIR = os.path.join(SYSCONFDIR, "mock")
-# end build system subs
 
 # import all mockbuild.* modules after this.
 sys.path.insert(0, PYTHONDIR)
@@ -118,7 +111,7 @@ def command_parse():
     plugins = config.PLUGIN_LIST
     parser = argparse.ArgumentParser(usage=__doc__)
 
-    parser.add_argument('--version', action='version', version=__VERSION__)
+    parser.add_argument('--version', action='version', version=VERSION)
 
     # hack from optparse=>argparse migration time, use add_argument if possible
     parser.add_option = parser.add_argument
@@ -553,7 +546,7 @@ def check_arch_combination(target_arch, config_opts):
 @traceLog()
 def do_debugconfig(config_opts, uidManager, expand=False):
     jinja_expand = config_opts['__jinja_expand']
-    defaults = config.load_defaults(uidManager, __VERSION__, PKGPYTHONDIR)
+    defaults = config.load_defaults(uidManager, VERSION, PKGPYTHONDIR)
     defaults['__jinja_expand'] = expand
     config_opts['__jinja_expand'] = expand
     for key in sorted(config_opts):
@@ -569,7 +562,7 @@ def do_debugconfig(config_opts, uidManager, expand=False):
 
 @traceLog()
 def do_listchroots(config_opts, uidManager):
-    config.list_configs(config_opts, uidManager, __VERSION__, PKGPYTHONDIR)
+    config.list_configs(config_opts, uidManager, VERSION, PKGPYTHONDIR)
 
 
 @traceLog()
@@ -664,7 +657,7 @@ def main():
     if options.configdir:
         config_path = options.configdir
 
-    config_opts = config.load_config(config_path, options.chroot, uidManager, __VERSION__, PKGPYTHONDIR)
+    config_opts = config.load_config(config_path, options.chroot, uidManager, VERSION, PKGPYTHONDIR)
 
     # cmdline options override config options
     config.set_config_opts_per_cmdline(config_opts, options, args)
@@ -693,7 +686,7 @@ def main():
     # do whatever we're here to do
     py_version = '{0}.{1}.{2}'.format(*sys.version_info[:3])
     log.info("mock.py version %s starting (python version = %s%s)...",
-             __VERSION__, py_version,
+             VERSION, py_version,
              "" if not _MOCK_NVR else ", NVR = " + _MOCK_NVR)
     state = State()
     plugins = Plugins(config_opts, state)
