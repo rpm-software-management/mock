@@ -129,8 +129,8 @@ for file in py/mock.py py/mock-parse-buildlog.py; do
 done
 
 %build
-for i in py/mock.py py/mock-parse-buildlog.py; do
-    perl -p -i -e 's|^__VERSION__\s*=.*|__VERSION__="%{version}"|' $i
+for i in py/mockbuild/constants.py py/mock-parse-buildlog.py; do
+    perl -p -i -e 's|^VERSION\s*=.*|VERSION="%{version}"|' $i
     perl -p -i -e 's|^SYSCONFDIR\s*=.*|SYSCONFDIR="%{_sysconfdir}"|' $i
     perl -p -i -e 's|^PYTHONDIR\s*=.*|PYTHONDIR="%{python_sitelib}"|' $i
     perl -p -i -e 's|^PKGPYTHONDIR\s*=.*|PKGPYTHONDIR="%{python_sitelib}/mockbuild"|' $i
