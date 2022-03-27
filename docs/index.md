@@ -44,7 +44,7 @@ Mock is capable of building SRPMs from source configuration management if the `m
 * [Tarballs](#tarballs)
 * [Download](#download)
 * [Setup](#setup)
-* [Configs](#configs)
+* [Chroot config files](#chroot-config-files)
 * [Plugins](#plugins)
 * [Features](#features)
 * [Using Mock outside your git sandbox](#using-mock-outside-your-git-sandbox)
@@ -52,7 +52,7 @@ Mock is capable of building SRPMs from source configuration management if the `m
 * [FAQ](#faq)
 * [Exit codes](#exit-codes)
 * [Problems](#problems)
-* [Generate custom config file](#generate-custom-config-file)
+* [Mock configuration](configuration)
 * [See Also](#see-also)
 
 ## Status
@@ -152,13 +152,22 @@ All users that are to use mock must be added to the *mock* group.
 
 :notebook:  To have this change take effect you have to either log out and log back in or run command `newgrp -`
 
-Configuration files are in `/etc/mock`.  Mock caches the downloaded rpm packages (via the `yum_cache` plugin), which speeds up subsequent builds by a considerable margin. Nevertheless, you may wish to change the default configuration to point to local repositories to speed up builds (see [note below](#generate-custom-config-file)).
+Mock caches the downloaded rpm packages (via the `yum_cache` plugin), which
+speeds up subsequent builds by a considerable margin.  Nevertheless, you may
+wish to [change the default configuration](configuration) to point to local
+repositories to speed up builds.
 
 By default, builds are done in `/var/lib/mock`, so be sure you have room there. You can change this via the `basedir` config option.
 
-## Configs
+## Chroot config files
 
-Mock provides `mock-core-configs` with basic configs. Other projects can provide configs. We know of:
+Mock project provides the `mock-core-configs` package which installs the
+default [configuration files](configuration) for various RPM-based Linux
+distributions.  This packages is typically installed with Mock by default
+(runtime dependency).
+
+Other projects can provide their own configuration files in other packages, we
+know of:
 
 * [mock-centos-sig-configs](https://pagure.io/centos-sig-hyperscale/mock-centos-sig-configs)
 
@@ -282,22 +291,6 @@ If you encounter a bug running mock, please file it in [Bugzilla](https://bugzil
 
 If your problem is specific to EPEL, then [file it](https://bugzilla.redhat.com/enter_bug.cgi?product=Fedora%20EPEL&component=mock) against the "Fedora EPEL" product instead ([Open Bugs](https://bugzilla.redhat.com/buglist.cgi?query_format=advanced&product=Fedora%20EPEL&component=mock&bug_status=NEW&bug_status=ASSIGNED&bug_status=MODIFIED&bug_status=ON_DEV&bug_status=ON_QA&bug_status=VERIFIED&bug_status=FAILS_QA&bug_status=RELEASE_PENDING&bug_status=POST)).
 
-## Generate custom config file
-
-Mock main config file is `/etc/mock/site-defaults.cfg`, which contains all defaults setting and all possible variables you can change.
-Then you have `/etc/mock/<buildroot>.cfg` for various buildroots, which contains settings for yum/dnf which are for various distribution different.
-
-When you want to alter the config you may copy one and edit it manually, however, if koji is already using such a config, then you can use  `mock-config --help` for information how to generate one. E.g.:
- `koji mock-config --tag f21-build --arch=aarch64  f21`
-
-You should not alter `site-defaults.cfg` unless you want to change settings for all users. You should put your changes to `~/.mock/user.cfg` or to `~/.config/mock.cfg`.
-
-The order of reading and evaluating configuration files is:
-
-1. `/etc/mock/site-defaults.cfg`
-1. `/etc/mock/<buildroot>.cfg`
-1. `~/.mock/user.cfg`
-1. `~/.config/mock.cfg` (since `mock-1.2.15`)
 
 ## See Also
 
