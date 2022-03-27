@@ -32,12 +32,11 @@ Requires(post): python3
 Requires(post): sed
 
 %description
-Config files which allow you to create chroots for:
- * Fedora
- * Epel
- * Mageia
- * Custom chroot
- * OpenSuse Tumbleweed and Leap
+Mock configuration files which allow you to create chroots for Alma Linux,
+Amazon Linux, CentOS, CentOS Stream, EuroLinux, Fedora, Fedora EPEL, Mageia,
+Navy Linux, OpenMandriva Lx, openSUSE, Oracle Linux, Red Hat Enterprise Linux,
+Rocky Linux and various other specific or combined chroots.
+
 
 %prep
 %setup -q
