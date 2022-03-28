@@ -22,7 +22,7 @@ from . import text
 from . import util
 from .external import ExternalDeps
 from .file_downloader import FileDownloader
-from .exception import PkgError, Error, RootError, BuildError, ExternalDepsError
+from .exception import PkgError, Error, RootError, BuildError
 from .trace_decorator import getLog, traceLog
 from .rebuild import do_rebuild
 
