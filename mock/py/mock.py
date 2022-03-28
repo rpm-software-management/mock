@@ -62,7 +62,7 @@ import copy
 from functools import partial
 from mockbuild import config
 from mockbuild import util
-from mockbuild.constants import MOCKCONFDIR, PKGPYTHONDIR, PYTHONDIR, SYSCONFDIR, VERSION
+from mockbuild.constants import MOCKCONFDIR, PYTHONDIR,  VERSION
 from mockbuild.file_downloader import FileDownloader
 from mockbuild.mounts import BindMountPoint, FileSystemMountPoint
 
