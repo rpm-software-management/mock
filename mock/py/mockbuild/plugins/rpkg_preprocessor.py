@@ -7,13 +7,10 @@
 # python library imports
 import os
 import os.path
-import re
-import subprocess
 import configparser
 import shlex
 
 # our imports
-import mockbuild.util
 from mockbuild.trace_decorator import getLog, traceLog
 from mockbuild.exception import PkgError
 
