@@ -735,7 +735,7 @@ def load_defaults(uidManager):
 def print_description(config_path, config_filename, uidManager, version, pkg_python_dir):
     basename_without_ext = parse_config_filename(config_filename)[2]
     try:
-        config_opts = load_config(config_path, config_filename, uidManager, version, pkg_python_dir)
+        config_opts = load_config(config_path, config_filename, uidManager)
         description = config_opts.get("description", "")
     except exception.ConfigError:
         description = 'error during parsing the config file'
@@ -792,11 +792,11 @@ def simple_load_config(name, config_path=None, pkg_python_dir=None):
         config_path = MOCKCONFDIR
     if pkg_python_dir is None:
         pkg_python_dir = PKGPYTHONDIR
-    return load_config(config_path, name, uidManager, VERSION, pkg_python_dir)
+    return load_config(config_path, name, uidManager)
 
 
 @traceLog()
-def load_config(config_path, name, uidManager, version, pkg_python_dir):
+def load_config(config_path, name, uidManager):
     log = logging.getLogger()
     config_opts = load_defaults(uidManager)
 
