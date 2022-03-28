@@ -49,11 +49,11 @@ def nspawn_supported():
 
 
 @traceLog()
-def setup_default_config_opts(unprivUid, version, pkgpythondir):
+def setup_default_config_opts(unprivUid):
     "sets up default configuration."
     config_opts = TemplatedDictionary(alias_spec={'dnf.conf': ['yum.conf']})
     config_opts['config_paths'] = []
-    config_opts['version'] = version
+    config_opts['version'] = VERSION
     config_opts['basedir'] = '/var/lib/mock'  # root name is automatically added to this
     config_opts['resultdir'] = '{{basedir}}/{{root}}/result'
     config_opts['rootdir'] = '{{basedir}}/{{root}}/root'
@@ -116,7 +116,7 @@ def setup_default_config_opts(unprivUid, version, pkgpythondir):
     #    after that, any plugins that must create dirs (yum_cache)
     #    any plugins without preinit hooks should be last.
     config_opts['plugins'] = PLUGIN_LIST
-    config_opts['plugin_dir'] = os.path.join(pkgpythondir, "plugins")
+    config_opts['plugin_dir'] = os.path.join(PKGPYTHONDIR, "plugins")
     config_opts['plugin_conf'] = {
         'ccache_enable': False,
         'ccache_opts': {
@@ -729,7 +729,7 @@ def load_defaults(uidManager, version, pkg_python_dir):
         gid = uidManager.unprivUid
     else:
         gid = os.getuid()
-    return setup_default_config_opts(gid, version, pkg_python_dir)
+    return setup_default_config_opts(gid)
 
 
 def print_description(config_path, config_filename, uidManager, version, pkg_python_dir):
