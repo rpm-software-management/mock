@@ -785,13 +785,11 @@ def list_configs(config_opts, uidManager, version, pkg_python_dir):
 
 
 @traceLog()
-def simple_load_config(name, config_path=None, pkg_python_dir=None):
+def simple_load_config(name, config_path=None):
     """ wrapper around load_config() intended by use 3rd party SW """
     uidManager = setup_uid_manager()
     if config_path is None:
         config_path = MOCKCONFDIR
-    if pkg_python_dir is None:
-        pkg_python_dir = PKGPYTHONDIR
     return load_config(config_path, name, uidManager)
 
 
