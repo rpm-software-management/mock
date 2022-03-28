@@ -724,7 +724,7 @@ def do_update_config(log, config_opts, cfg, uidManager, name, skipError=True):
 
 
 @traceLog()
-def load_defaults(uidManager, version, pkg_python_dir):
+def load_defaults(uidManager):
     if uidManager:
         gid = uidManager.unprivUid
     else:
@@ -798,7 +798,7 @@ def simple_load_config(name, config_path=None, pkg_python_dir=None):
 @traceLog()
 def load_config(config_path, name, uidManager, version, pkg_python_dir):
     log = logging.getLogger()
-    config_opts = load_defaults(uidManager, version, pkg_python_dir)
+    config_opts = load_defaults(uidManager)
 
     # array to save config paths
     config_opts['config_path'] = config_path

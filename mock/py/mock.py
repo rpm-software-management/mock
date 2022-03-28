@@ -546,7 +546,7 @@ def check_arch_combination(target_arch, config_opts):
 @traceLog()
 def do_debugconfig(config_opts, uidManager, expand=False):
     jinja_expand = config_opts['__jinja_expand']
-    defaults = config.load_defaults(uidManager, VERSION, PKGPYTHONDIR)
+    defaults = config.load_defaults(uidManager)
     defaults['__jinja_expand'] = expand
     config_opts['__jinja_expand'] = expand
     for key in sorted(config_opts):
