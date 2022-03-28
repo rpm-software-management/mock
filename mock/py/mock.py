@@ -53,7 +53,6 @@ from pprint import pformat
 import os
 import os.path
 import signal
-import pwd
 import shutil
 import sys
 import time
