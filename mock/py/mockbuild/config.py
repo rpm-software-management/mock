@@ -767,7 +767,7 @@ def get_user_config_files(config_opts, uidManager):
 
 
 @traceLog()
-def list_configs(config_opts, uidManager, version, pkg_python_dir):
+def list_configs(config_opts, uidManager):
     log = logging.getLogger()
     log.disabled = True
     # array to save config paths

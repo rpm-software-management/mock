@@ -562,7 +562,7 @@ def do_debugconfig(config_opts, uidManager, expand=False):
 
 @traceLog()
 def do_listchroots(config_opts, uidManager):
-    config.list_configs(config_opts, uidManager, VERSION, PKGPYTHONDIR)
+    config.list_configs(config_opts, uidManager)
 
 
 @traceLog()
