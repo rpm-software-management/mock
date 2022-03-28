@@ -732,7 +732,7 @@ def load_defaults(uidManager):
     return setup_default_config_opts(gid)
 
 
-def print_description(config_path, config_filename, uidManager, version, pkg_python_dir):
+def print_description(config_path, config_filename, uidManager):
     basename_without_ext = parse_config_filename(config_filename)[2]
     try:
         config_opts = load_config(config_path, config_filename, uidManager)
@@ -774,13 +774,13 @@ def list_configs(config_opts, uidManager, version, pkg_python_dir):
     print("{} {}".format("config name".ljust(34), "description"))
     print("Global configs:")
     for config_filename in sorted(get_global_configs(config_opts)):
-        print_description(config_opts['config_path'], config_filename, uidManager, version, pkg_python_dir)
+        print_description(config_opts['config_path'], config_filename, uidManager)
     user_config_files = get_user_config_files(config_opts, uidManager)
     if user_config_files:
         print("Custom configs:")
         # ~/.config/mock/CHROOTNAME.cfg
         for config_filename in sorted(user_config_files):
-            print_description(config_opts['config_path'], config_filename, uidManager, version, pkg_python_dir)
+            print_description(config_opts['config_path'], config_filename, uidManager)
         log.disabled = False
 
 
