@@ -8,6 +8,7 @@ from unittest.mock import MagicMock
 
 from templated_dictionary import TemplatedDictionary
 from mockbuild.config import load_defaults
+from mockbuild.constants import PKGPYTHONDIR
 from mockbuild.buildroot import Buildroot
 from mockbuild.package_manager import _PackageManager, Dnf
 
@@ -20,8 +21,9 @@ class TestPackageManager:
         testdir = os.path.dirname(os.path.realpath(__file__))
         plugindir = os.path.join(testdir, '..', 'py', 'mockbuild')
         plugindir = os.path.realpath(plugindir)
+        PKGPYTHONDIR = plugindir
 
-        self.config_opts = load_defaults(None, 'git', plugindir)
+        self.config_opts = load_defaults(None)
         self.config_opts['root'] = 'distro-version-arch'
         self.config_opts['basedir'] = self.workdir
         self.config_opts["resultdir"] = "{{basedir}}/{{root}}/result"
