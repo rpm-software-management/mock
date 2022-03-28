@@ -615,7 +615,7 @@ def unshare_namespace(config_opts):
                   extended_unshare_flags, base_unshare_flags)
         try:
             util.unshare(base_unshare_flags)
-        except mockbuild.exception.UnshareFailed as e:
+        except mockbuild.exception.UnshareFailed as e2:
             log.error("Namespace unshare failed.")
             if running_in_docker() and not ('docker_unshare_warning' in config_opts and
                                             config_opts['docker_unshare_warning']):
@@ -623,7 +623,7 @@ def unshare_namespace(config_opts):
                 log.error("You should *not* run anything but Mock in this container. You have been warned!")
                 time.sleep(5)
             else:
-                sys.exit(e.resultcode)
+                sys.exit(e2.resultcode)
 
 
 @traceLog()
