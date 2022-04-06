@@ -9,7 +9,7 @@
 
 Summary: Builds packages inside chroots
 Name: mock
-Version: 2.16
+Version: 3.0
 Release: 1%{?dist}
 License: GPLv2+
 # Source is created by
@@ -258,6 +258,19 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 %dir  %{_datadir}/cheat
 
 %changelog
+* Wed Apr 06 2022 Pavel Raiskup <praiskup@redhat.com> 3.0-1
+- mock v3 contains several Python 2.7 (EL7) incompatibilites
+  https://github.com/rpm-software-management/mock/issues/755
+- disable SECCOMP for Podman by default
+- opt in for SECCOMP invented
+- create simple_load_config() for use in 3rd party SW (msuchy@redhat.com)
+- implement --list-chroots command (msuchy@redhat.com)
+- add cachedir to output of hw_info plugin (msuchy@redhat.com)
+- mock: copy /usr/share/pki source CA certificates (dereks@lifeofadishwasher.com)
+- add missing args for --scrub and --short-circuit into bash
+  completion (didiksupriadi41@fedoraproject.org)
+- remove el7 specific parts from the spec file (msuchy@redhat.com)
+
 * Thu Dec 16 2021 Pavel Raiskup <praiskup@redhat.com> 2.16-1
 - disable system call filtering
 - pass env to podman run (dani@lapiole.org)
