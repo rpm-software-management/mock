@@ -126,3 +126,13 @@
   lineinfile:
     path: /etc/sudoers
     line: "{{ mock_test_username }}	ALL=(ALL)	NOPASSWD: ALL"
+
+- name: install mock configuration for the testing user
+  copy:
+    content: |
+      # make sure we don't break testsuite for a random connection error
+      config_opts['package_manager_max_attempts'] = 4
+      config_opts['package_manager_attempt_delay'] = 10
+    dest: "/etc/mock/site-defaults.cfg"
+    mode: 0644
+  tags: mock_config
