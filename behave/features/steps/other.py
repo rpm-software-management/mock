@@ -1,6 +1,7 @@
 """ Generic testing steps """
 
 import glob
+import importlib
 import os
 import shutil
 import tempfile
@@ -110,3 +111,17 @@ def step_impl(context, output, text):
     index = 1 if output == "stdout" else 2
     real_output = context.last_cmd[index]
     assert_that(real_output, contains_string(text))
+
+
+@when('{call} method from {module} is called with {args} args')
+def step_impl(context, call, module, args):
+    imp = importlib.import_module(module)
+    method = getattr(imp, call)
+    args = args.split()
+    context.last_method_call_retval = method(*args)
+
+
+@then('the return value contains a field "{field}={value}"')
+def step_impl(context, field, value):
+    assert_that(context.last_method_call_retval[field],
+                equal_to(value))
