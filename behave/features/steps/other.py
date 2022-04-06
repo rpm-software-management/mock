@@ -103,3 +103,10 @@ def step_impl(context, expected_message):
 def step_impl(context):
     url = context.test_storage + "mock-test-bump-version-1-0.src.rpm"
     context.mock.rebuild([url])
+
+
+@then('{output} contains "{text}"')
+def step_impl(context, output, text):
+    index = 1 if output == "stdout" else 2
+    real_output = context.last_cmd[index]
+    assert_that(real_output, contains_string(text))
