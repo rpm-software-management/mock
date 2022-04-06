@@ -69,6 +69,7 @@ Versions in Linux distributions:
 
 
 ## Release Notes
+* [3.0](Release-Notes-3.0) (2022-04-07) - Added --list-chroots command, a new seccomp option, Mock is not installable on EL7, dropped Python 2 compatibility.
 * [2.16](Release-Notes-2.16) (2021-12-16) - EPEL 8 chroots removed, alternatives added.  New `ssl_extra_certs` option.  Bugfixes.
 * [2.15](Release-Notes-2.15) (2021-11-18) - Fix for old-style `mock shell -- commands` variant.
 * [2.14](Release-Notes-2.14) (2021-11-04) - Fix for broken `--enablerepo` and `--disablerepo` options.

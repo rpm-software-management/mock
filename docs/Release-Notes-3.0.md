@@ -1,93 +1,98 @@
 ---
 layout: default
-title: Release Notes 3.0
+title: Release Notes - Mock v3.0
 ---
 
-Released on XXXXX.
+Released on 2022-04-07.
 
-## Mock 3.0 changes:
+## Mock v3.0 changes:
 
-Previus releases supported RHEL7+. This version has minimal requirement RHEL 8+. RHEL 7 will receive only critical fixes as backports.
-This only affects underlaying operating system where Mock is run. **Building packages for RHEL 7 is still possible.**
+- Mock `v2.*` releases of Mock were supported on Enterprise Linux 7+.  Since
+  this version `v3.0`, the prerequisite is Enterprise Linux 8 or newer.  Mock for
+  the Enterprise Linux 7 is still supported in the [mock-2 branch][mock-2]
+  upstream, but it will only receive bug fixes.
 
-The minimal runtime requirement now is Python 3.
+  This only affects the Mock RPM installation, i.e. the **host** EL7 operating
+  system where Mock is run.  **Building** packages for the **target** Enterprise
+  Linux 7 chroots continues to be supported in Mock v3.X.  More info in the
+  [original issue][issue #755].
 
-- Mock has new command `--list-chroots` which will print list of available
-  chroots. It will go through both system-wide configs in `/etc/mock` and
-  users config in `~/.config/mock/`. The output is:
+- The minimal runtime requirement now is **Python 3.6**.
 
-```
-$ mock --list-chroots 
-INFO: mock.py version 2.16 starting (python version = 3.10.2, NVR = mock-2.16-1.git.3339.8f0b45e.fc35)...
-Start(bootstrap): init plugins
-INFO: selinux enabled
-Finish(bootstrap): init plugins
-Start: init plugins
-INFO: selinux enabled
-Finish: init plugins
-INFO: Signal handler active
-Start: run
-config name                        description
-Global configs:
-alma+epel-8-aarch64                AlmaLinux 8 + EPEL
-alma+epel-8-ppc64le                
-alma+epel-8-x86_64                 AlmaLinux 8 + EPEL
-almalinux-8-aarch64                AlmaLinux 8 + EPEL
-almalinux-8-ppc64le                
-almalinux-8-x86_64                 AlmaLinux 8 + EPEL
-amazonlinux-2-aarch64              Amazon Linux 2
-amazonlinux-2-x86_64               Amazon Linux 2
-centos+epel-7-ppc64le              CentOS 7 + EPEL
-centos+epel-7-x86_64               CentOS 7 + EPEL
-centos-7-aarch64                   CentOS 7
-centos-7-ppc64                     CentOS 7
-centos-7-ppc64le                   CentOS 7
-...
-SNIP
-...
-hel-8-s390x                       RHEL 8
-rhel-8-x86_64                      RHEL 8
-rocky+epel-8-aarch64               Rocky Linux 8 + EPEL
-rocky+epel-8-x86_64                Rocky Linux 8 + EPEL
-rocky-8-aarch64                    Rocky Linux 8
-rocky-8-x86_64                     Rocky Linux 8
-Custom configs:
+- Mock has a new command `--list-chroots` which prints the list of available
+  chroots with short descriptions ([PR#869][pull #869]).  It will go through both
+  system-wide configuration files in `/etc/mock` and users' configuration in
+  `~/.config/mock/`.  The output looks like:
 
-mockbuild.exception.ConfigError: Could not find included config file: /etc/mock/foohkhk
+  ```
+  $ mock --list-chroots
+  INFO: mock.py version 2.16 starting (python version = 3.10.2, NVR = mock-2.16-1.git.3339.8f0b45e.fc35)...
+  Start(bootstrap): init plugins
+  INFO: selinux enabled
+  Finish(bootstrap): init plugins
+  Start: init plugins
+  INFO: selinux enabled
+  Finish: init plugins
+  INFO: Signal handler active
+  Start: run
+  config name                        description
+  Global configs:
+  alma+epel-8-aarch64                AlmaLinux 8 + EPEL
+  alma+epel-8-ppc64le                AlmaLinux 8 + EPEL
+  alma+epel-8-x86_64                 AlmaLinux 8 + EPEL
+  [..snip..]
+  rhel-8-x86_64                      RHEL 8
+  rocky+epel-8-aarch64               Rocky Linux 8 + EPEL
+  rocky+epel-8-x86_64                Rocky Linux 8 + EPEL
+  rocky-8-aarch64                    Rocky Linux 8
+  rocky-8-x86_64                     Rocky Linux 8
+  Custom configs:
 
-fedora-50-x86_64                   error during parsing the config file
-fedora-rawhide-python39            Fedora Rawhide
-Finish: run
-```
-  In this example `fedora-50-x86_64` is user's config which has syntax issues.
+  mockbuild.exception.ConfigError: Could not find included config file: /etc/mock/foohkhk
 
-- There is a new function available: `mockbuild.config.simple_load_config(name, config_path=None)`.
-  You should use it if you want to parse mock's configs. The use is as simple as:
+  fedora-50-x86_64                   error during parsing the config file
+  fedora-rawhide-python39            Fedora Rawhide
+  Finish: run
+  ```
+  In this example, the `fedora-50-x86_64` is a user's configuration file which
+  has some syntax issue(s).
 
-```
->>> from mockbuild.config import simple_load_config
->>> config_opts = simple_load_config("fedora-rawhide-x86_64")
->>> config_opts["resultdir"]
-'/var/lib/mock/fedora-rawhide-x86_64/result'
-```
+- There is a new function `mockbuild.config.simple_load_config(name)` available.
+  You should use it if you want to parse Mock's configuration files.  The use is
+  as simple as:
 
-- [hw_info plugin)(Plugin-HwInfo) now reports utilization of volume with `cachedir` directory.
-- Source CA certificates found in `/usr/share/pki/ca-trust-source` are copied to chroot too.
-- bash completation for `--scrub` and `--short-circuit` has been improved.
-- The SECCOMP in Podman is now disabled too. In Systemd-nspawn it was already disabled some time ago.
-  The list of seccomp rules (syscall allow-lists) maintained
-  in those tools is often different across distributions or even versions.
-  Because Mock does cross-distribution builds, "host" distro rules are not
-  often applicable on the "target" distribution.  To not complicate things, and
-  because by design Mock doesn't have to fully isolate, we disable seccomp for
-  those containerization tools by default.
-  If you want to enable it, you can now do it using:
-```
-config_opts["seccomp"] = True
-```
+  ```
+  >>> from mockbuild.config import simple_load_config
+  >>> config_opts = simple_load_config("fedora-rawhide-x86_64")
+  >>> config_opts["resultdir"]
+  '/var/lib/mock/fedora-rawhide-x86_64/result'
+  ```
 
+- the [hw_info plugin](Plugin-HwInfo) now reports utilization of volume with `cachedir` directory.
 
-From the last release of Mock we have released few mock-core-configs:
+- Source CA certificates found in `/usr/share/pki/ca-trust-source` are now
+  automatically copied from host to the target chroot, together with the
+  `/etc/pki/ca-trust` ([PR 864][pull #864]).
+
+- bash completion for `--scrub` and `--short-circuit` has been improved.
+
+- SECCOMP was disabled for `systemd-nspawn` before, and newly we disable it for
+  Podman commands by default, too ([PR 885][pull #885]).
+
+  The SECCOMP rules (syscall allow-lists) maintained in those tools are often
+  different across distributions or even distro versions.  Because Mock does
+  cross-distribution builds, the "host" distro rules are not always applicable
+  on the "target" distribution.  To not complicate things, and because by design
+  Mock doesn't have to fully isolate, we disable SECCOMP for those
+  containerization tools by default.  But if you want to enable it, you can now
+  do it using:
+
+  ```
+  config_opts["seccomp"] = True
+  ```
+
+- Since the last release of Mock we have done a few mock-core-configs releases,
+  see below.
 
 ## mock-core-configs-37-1
 
@@ -116,7 +121,6 @@ From the last release of Mock we have released few mock-core-configs:
 * added new key `description` for `--list-chroots` command
 
 
-
 **Following contributors contributed to this release:**
 
  * Derek Schrock
@@ -130,3 +134,8 @@ From the last release of Mock we have released few mock-core-configs:
 Thank you.
 
 
+[mock-2]: https://github.com/rpm-software-management/mock/tree/mock-2
+[issue #755]: https://github.com/rpm-software-management/mock/issues/755
+[pull #864]: https://github.com/rpm-software-management/mock/pull/864
+[pull #885]: https://github.com/rpm-software-management/mock/pull/885
+[pull #869]: https://github.com/rpm-software-management/mock/pull/869
