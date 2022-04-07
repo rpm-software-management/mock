@@ -12,7 +12,7 @@
 
 Summary: Builds packages inside chroots
 Name: mock
-Version: 2.16
+Version: 2.17
 Release: 1%{?dist}
 License: GPLv2+
 # Source is created by
@@ -276,6 +276,11 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 %dir  %{_datadir}/cheat
 
 %changelog
+* Thu Apr 07 2022 Pavel Raiskup <praiskup@redhat.com> 2.17-1
+- misable SECCOMP in Podman, too, and invent opt-in config
+- mock v3+ is split from v2, while the EL7 stays on v2 (bugfix-only)
+  https://rpm-software-management.github.io/mock/Release-Notes-3.0
+
 * Thu Dec 16 2021 Pavel Raiskup <praiskup@redhat.com> 2.16-1
 - disable system call filtering
 - pass env to podman run (dani@lapiole.org)
