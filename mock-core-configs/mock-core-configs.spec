@@ -1,5 +1,5 @@
 Name:       mock-core-configs
-Version:    36.7
+Version:    36.8
 Release:    1%{?dist}
 Summary:    Mock core config files basic chroots
 
@@ -151,6 +151,11 @@ fi
 %ghost %config(noreplace,missingok) %{_sysconfdir}/mock/default.cfg
 
 %changelog
+* Thu Apr 07 2022 Pavel Raiskup <praiskup@redhat.com> 36.8-1
+- allow n-2 gpg key for Fedora ELN (msuchy@redhat.com)
+- Provide 'epel-9' symlinks for 'fedpkg mockbuild'
+- configs: update the %%description
+
 * Thu Mar 03 2022 Pavel Raiskup <praiskup@redhat.com> 36.7-1
 - Update CentOS Stream 9 Extras repo to use correct key (ngompa@centosproject.org)
 - Add AlmaLinux+EPEL 8 for POWER (ppc64le) (ngompa13@gmail.com)
