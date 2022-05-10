@@ -10,6 +10,9 @@ on:
     # This always runs against the default branch.  Two runs per month.
     - cron: '0 0 1,16 * *'
 
+permissions:
+  contents: read
+
 jobs:
   build:
     runs-on: ubuntu-latest
