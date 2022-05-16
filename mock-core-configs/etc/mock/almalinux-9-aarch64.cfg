@@ -1,0 +1,6 @@
+include('templates/almalinux-9.tpl')
+
+config_opts['root'] = 'almalinux-9-aarch64'
+config_opts['description'] = 'AlmaLinux 9'
+config_opts['target_arch'] = 'aarch64'
+config_opts['legal_host_arches'] = ('aarch64',)
