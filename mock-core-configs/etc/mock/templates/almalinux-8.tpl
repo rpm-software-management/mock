@@ -33,7 +33,7 @@ mirrorlist=https://mirrors.almalinux.org/mirrorlist/$releasever/baseos
 # baseurl=https://repo.almalinux.org/almalinux/$releasever/BaseOS/$basearch/os/
 enabled=1
 gpgcheck=1
-gpgkey=file:///usr/share/distribution-gpg-keys/alma/RPM-GPG-KEY-AlmaLinux
+gpgkey=file:///usr/share/distribution-gpg-keys/alma/RPM-GPG-KEY-AlmaLinux-8
 fastestmirror=1
 skip_if_unavailable=False
 
@@ -43,7 +43,7 @@ mirrorlist=https://mirrors.almalinux.org/mirrorlist/$releasever/appstream
 # baseurl=https://repo.almalinux.org/almalinux/$releasever/AppStream/$basearch/os/
 enabled=1
 gpgcheck=1
-gpgkey=file:///usr/share/distribution-gpg-keys/alma/RPM-GPG-KEY-AlmaLinux
+gpgkey=file:///usr/share/distribution-gpg-keys/alma/RPM-GPG-KEY-AlmaLinux-8
 fastestmirror=1
 
 [powertools]
@@ -52,7 +52,7 @@ mirrorlist=https://mirrors.almalinux.org/mirrorlist/$releasever/powertools
 # baseurl=https://repo.almalinux.org/almalinux/$releasever/PowerTools/$basearch/os/
 enabled=1
 gpgcheck=1
-gpgkey=file:///usr/share/distribution-gpg-keys/alma/RPM-GPG-KEY-AlmaLinux
+gpgkey=file:///usr/share/distribution-gpg-keys/alma/RPM-GPG-KEY-AlmaLinux-8
 fastestmirror=1
 
 [extras]
@@ -61,7 +61,7 @@ mirrorlist=https://mirrors.almalinux.org/mirrorlist/$releasever/extras
 # baseurl=https://repo.almalinux.org/almalinux/$releasever/extras/$basearch/os/
 enabled=1
 gpgcheck=1
-gpgkey=file:///usr/share/distribution-gpg-keys/alma/RPM-GPG-KEY-AlmaLinux
+gpgkey=file:///usr/share/distribution-gpg-keys/alma/RPM-GPG-KEY-AlmaLinux-8
 fastestmirror=1
 
 [devel]
@@ -70,7 +70,7 @@ mirrorlist=https://mirrors.almalinux.org/mirrorlist/$releasever/devel
 # baseurl=https://repo.almalinux.org/almalinux/$releasever/devel/$basearch/os/
 enabled=0
 gpgcheck=1
-gpgkey=file:///usr/share/distribution-gpg-keys/alma/RPM-GPG-KEY-AlmaLinux
+gpgkey=file:///usr/share/distribution-gpg-keys/alma/RPM-GPG-KEY-AlmaLinux-8
 fastestmirror=1
 
 [baseos-debuginfo]
@@ -79,7 +79,7 @@ mirrorlist=https://mirrors.almalinux.org/mirrorlist/$releasever/baseos-debuginfo
 # baseurl=https://repo.almalinux.org/almalinux/$releasever/BaseOS/debug/$basearch/
 enabled=0
 gpgcheck=1
-gpgkey=file:///usr/share/distribution-gpg-keys/alma/RPM-GPG-KEY-AlmaLinux
+gpgkey=file:///usr/share/distribution-gpg-keys/alma/RPM-GPG-KEY-AlmaLinux-8
 fastestmirror=1
 
 [appstream-debuginfo]
@@ -88,7 +88,7 @@ mirrorlist=https://mirrors.almalinux.org/mirrorlist/$releasever/appstream-debugi
 # baseurl=https://repo.almalinux.org/almalinux/$releasever/AppStream/debug/$basearch/
 enabled=0
 gpgcheck=1
-gpgkey=file:///usr/share/distribution-gpg-keys/alma/RPM-GPG-KEY-AlmaLinux
+gpgkey=file:///usr/share/distribution-gpg-keys/alma/RPM-GPG-KEY-AlmaLinux-8
 fastestmirror=1
 
 [powertools-debuginfo]
@@ -97,7 +97,7 @@ mirrorlist=https://mirrors.almalinux.org/mirrorlist/$releasever/powertools-debug
 # baseurl=https://repo.almalinux.org/almalinux/$releasever/PowerTools/debug/$basearch/
 enabled=0
 gpgcheck=1
-gpgkey=file:///usr/share/distribution-gpg-keys/alma/RPM-GPG-KEY-AlmaLinux
+gpgkey=file:///usr/share/distribution-gpg-keys/alma/RPM-GPG-KEY-AlmaLinux-8
 fastestmirror=1
 
 [extras-debuginfo]
@@ -106,7 +106,7 @@ mirrorlist=https://mirrors.almalinux.org/mirrorlist/$releasever/extras-debuginfo
 # baseurl=https://repo.almalinux.org/almalinux/$releasever/extras/debug/$basearch/
 enabled=0
 gpgcheck=1
-gpgkey=file:///usr/share/distribution-gpg-keys/alma/RPM-GPG-KEY-AlmaLinux
+gpgkey=file:///usr/share/distribution-gpg-keys/alma/RPM-GPG-KEY-AlmaLinux-8
 fastestmirror=1
 
 [devel-debuginfo]
@@ -115,7 +115,7 @@ mirrorlist=https://mirrors.almalinux.org/mirrorlist/$releasever/devel-debuginfo
 # baseurl=https://repo.almalinux.org/almalinux/$releasever/devel/debug/$basearch/
 enabled=0
 gpgcheck=1
-gpgkey=file:///usr/share/distribution-gpg-keys/alma/RPM-GPG-KEY-AlmaLinux
+gpgkey=file:///usr/share/distribution-gpg-keys/alma/RPM-GPG-KEY-AlmaLinux-8
 fastestmirror=1
 
 [baseos-source]
@@ -124,7 +124,7 @@ mirrorlist=https://mirrors.almalinux.org/mirrorlist/$releasever/baseos-source
 # baseurl=https://repo.almalinux.org/almalinux/$releasever/BaseOS/Source/
 enabled=0
 gpgcheck=1
-gpgkey=file:///usr/share/distribution-gpg-keys/alma/RPM-GPG-KEY-AlmaLinux
+gpgkey=file:///usr/share/distribution-gpg-keys/alma/RPM-GPG-KEY-AlmaLinux-8
 fastestmirror=1
 
 [appstream-source]
@@ -133,7 +133,7 @@ mirrorlist=https://mirrors.almalinux.org/mirrorlist/$releasever/appstream-source
 # baseurl=https://repo.almalinux.org/almalinux/$releasever/AppStream/Source/
 enabled=0
 gpgcheck=1
-gpgkey=file:///usr/share/distribution-gpg-keys/alma/RPM-GPG-KEY-AlmaLinux
+gpgkey=file:///usr/share/distribution-gpg-keys/alma/RPM-GPG-KEY-AlmaLinux-8
 fastestmirror=1
 
 [powertools-source]
@@ -142,7 +142,7 @@ mirrorlist=https://mirrors.almalinux.org/mirrorlist/$releasever/powertools-sourc
 # baseurl=https://repo.almalinux.org/almalinux/$releasever/PowerTools/Source/
 enabled=0
 gpgcheck=1
-gpgkey=file:///usr/share/distribution-gpg-keys/alma/RPM-GPG-KEY-AlmaLinux
+gpgkey=file:///usr/share/distribution-gpg-keys/alma/RPM-GPG-KEY-AlmaLinux-8
 fastestmirror=1
 
 [extras-source]
@@ -151,7 +151,7 @@ mirrorlist=https://mirrors.almalinux.org/mirrorlist/$releasever/extras-source
 # baseurl=https://repo.almalinux.org/almalinux/$releasever/extras/Source/
 enabled=0
 gpgcheck=1
-gpgkey=file:///usr/share/distribution-gpg-keys/alma/RPM-GPG-KEY-AlmaLinux
+gpgkey=file:///usr/share/distribution-gpg-keys/alma/RPM-GPG-KEY-AlmaLinux-8
 fastestmirror=1
 
 [devel-source]
@@ -160,7 +160,7 @@ mirrorlist=https://mirrors.almalinux.org/mirrorlist/$releasever/devel-source
 # baseurl=https://repo.almalinux.org/almalinux/$releasever/devel/Source/
 enabled=0
 gpgcheck=1
-gpgkey=file:///usr/share/distribution-gpg-keys/alma/RPM-GPG-KEY-AlmaLinux
+gpgkey=file:///usr/share/distribution-gpg-keys/alma/RPM-GPG-KEY-AlmaLinux-8
 fastestmirror=1
 
 """
