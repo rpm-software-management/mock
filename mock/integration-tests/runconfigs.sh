@@ -41,7 +41,7 @@ for i in $configs; do
     oraclelinux+epel-7*) ;;
     fedora-eln*) ;;
     # For EPEL/Fedora try to build Mock.
-    fedora*|*+epel*-[78]*)
+    fedora*|*+epel*-8*)
         # we support building mock there, so test it instead
         srpm=$MOCKSRPM
         ;;
