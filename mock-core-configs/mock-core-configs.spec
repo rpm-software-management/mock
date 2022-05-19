@@ -1,5 +1,5 @@
 Name:       mock-core-configs
-Version:    37.3
+Version:    37.4
 Release:    1%{?dist}
 Summary:    Mock core config files basic chroots
 
@@ -140,6 +140,12 @@ fi
 %ghost %config(noreplace,missingok) %{_sysconfdir}/mock/default.cfg
 
 %changelog
+* Thu May 19 2022 Pavel Raiskup <praiskup@redhat.com> 37.4-1
+- Add AlmaLinux 9 and AlmaLinux 9 + EPEL configs (neal@gompa.dev)
+- Update the AlmaLinux 8 GPG key path (neal@gompa.dev)
+- Fix description typo on AlmaLinux 8 for x86_64 (neal@gompa.dev)
+- Add RHEL9 templates and configs (carl@george.computer)
+
 * Wed Apr 06 2022 Pavel Raiskup <praiskup@redhat.com> 37.3-1
 - updated %%description field
 - provide 'epel-9' symlinks for 'fedpkg mockbuild'
