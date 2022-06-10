@@ -33,7 +33,7 @@ mirrorlist=https://mirrorlist.cclinux.org/mirrorlist?arch=$basearch&repo=BaseOS
 #baseurl=https://mirror.cclinux.org/$contentdir/$releasever/BaseOS/$basearch/os/
 gpgcheck=1
 enabled=1
-gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-circleofficial
+gpgkey=file:///usr/share/distribution-gpg-keys/circle/RPM-GPG-KEY-circleofficial
 
 [appstream]
 name=Circle Linux $releasever - AppStream
@@ -41,7 +41,7 @@ mirrorlist=https://mirrorlist.cclinux.org/mirrorlist?arch=$basearch&repo=AppStre
 #baseurl=https://mirror.cclinux.org/$contentdir/$releasever/AppStream/$basearch/os/
 gpgcheck=1
 enabled=1
-gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-circleofficial
+gpgkey=file:///usr/share/distribution-gpg-keys/circle/RPM-GPG-KEY-circleofficial
 
 [powertools]
 name=Circle Linux $releasever - PowerTools
@@ -49,7 +49,7 @@ mirrorlist=https://mirrorlist.cclinux.org/mirrorlist?arch=$basearch&repo=PowerTo
 #baseurl=https://mirror.cclinux.org/$contentdir/$releasever/PowerTools/$basearch/os/
 gpgcheck=1
 enabled=0
-gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-circleofficial
+gpgkey=file:///usr/share/distribution-gpg-keys/circle/RPM-GPG-KEY-circleofficial
 
 [extras]
 name=Circle Linux $releasever - Extras
@@ -57,7 +57,7 @@ mirrorlist=https://mirrorlist.cclinux.org/mirrorlist?arch=$basearch&repo=extras
 #baseurl=https://mirror.cclinux.org/$contentdir/$releasever/extras/$basearch/os/
 gpgcheck=1
 enabled=1
-gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-circleofficial
+gpgkey=file:///usr/share/distribution-gpg-keys/circle/RPM-GPG-KEY-circleofficial
 
 [devel]
 name=Circle Linux $releasever - Devel WARNING! FOR BUILDROOT USE ONLY!
@@ -65,7 +65,7 @@ mirrorlist=https://mirrorlist.cclinux.org/mirrorlist?arch=$basearch&repo=Devel-$
 #baseurl=https://mirror.cclinux.org/$contentdir/$releasever/Devel/$basearch/os/
 gpgcheck=1
 enabled=0
-gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-circleofficial
+gpgkey=file:///usr/share/distribution-gpg-keys/circle/RPM-GPG-KEY-circleofficial
 
 [baseos-debug]
 name=Circle Linux $releasever - BaseOS  Debug
@@ -73,7 +73,7 @@ mirrorlist=https://mirrorlist.cclinux.org/mirrorlist?arch=$basearch&repo=BaseOS-
 #baseurl=https://mirror.cclinux.org/$contentdir/$releasever/BaseOS/$basearch/debug/tree/
 gpgcheck=1
 enabled=0
-gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-circleofficial
+gpgkey=file:///usr/share/distribution-gpg-keys/circle/RPM-GPG-KEY-circleofficial
 
 [appstream-debug]
 name=Circle Linux $releasever - AppStream  Debug
@@ -81,7 +81,7 @@ mirrorlist=https://mirrorlist.cclinux.org/mirrorlist?arch=$basearch&repo=AppStre
 #baseurl=https://mirror.cclinux.org/$contentdir/$releasever/AppStream/$basearch/debug/tree/
 gpgcheck=1
 enabled=0
-gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-circleofficial
+gpgkey=file:///usr/share/distribution-gpg-keys/circle/RPM-GPG-KEY-circleofficial
 
 [powertools-debug]
 name=Circle Linux $releasever - PowerTools  Debug
@@ -89,7 +89,7 @@ mirrorlist=https://mirrorlist.cclinux.org/mirrorlist?arch=$basearch&repo=PowerTo
 #baseurl=https://mirror.cclinux.org/$contentdir/$releasever/PowerTools/$basearch/debug/tree/
 gpgcheck=1
 enabled=0
-gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-circleofficial
+gpgkey=file:///usr/share/distribution-gpg-keys/circle/RPM-GPG-KEY-circleofficial
 
 [extras-debug]
 name=Circle Linux $releasever - Extras  Debug
@@ -97,7 +97,7 @@ mirrorlist=https://mirrorlist.cclinux.org/mirrorlist?arch=$basearch&repo=extras-
 #baseurl=https://mirror.cclinux.org/$contentdir/$releasever/extras/$basearch/debug/tree
 gpgcheck=1
 enabled=0
-gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-circleofficial
+gpgkey=file:///usr/share/distribution-gpg-keys/circle/RPM-GPG-KEY-circleofficial
 
 [devel-debug]
 name=Circle Linux $releasever - Devel  Debug
@@ -105,7 +105,7 @@ mirrorlist=https://mirrorlist.cclinux.org/mirrorlist?arch=$basearch&repo=Devel-$
 #baseurl=https://mirror.cclinux.org/$contentdir/$releasever/Devel/$basearch/debug/tree
 gpgcheck=1
 enabled=0
-gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-circleofficial
+gpgkey=file:///usr/share/distribution-gpg-keys/circle/RPM-GPG-KEY-circleofficial
 
 [baseos-source]
 name=Circle Linux $releasever - BaseOS  Source
@@ -113,7 +113,7 @@ mirrorlist=https://mirrorlist.cclinux.org/mirrorlist?arch=source&repo=BaseOS
 #baseurl=https://mirror.cclinux.org/$contentdir/$releasever/BaseOS/source/tree/
 gpgcheck=1
 enabled=0
-gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-circleofficial
+gpgkey=file:///usr/share/distribution-gpg-keys/circle/RPM-GPG-KEY-circleofficial
 
 [appstream-source]
 name=Circle Linux $releasever - AppStream  Source
@@ -121,7 +121,7 @@ mirrorlist=https://mirrorlist.cclinux.org/mirrorlist?arch=source&repo=AppStream
 #baseurl=https://mirror.cclinux.org/$contentdir/$releasever/AppStream/source/tree/
 gpgcheck=1
 enabled=0
-gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-circleofficial
+gpgkey=file:///usr/share/distribution-gpg-keys/circle/RPM-GPG-KEY-circleofficial
 
 [extras-source]
 name=Circle Linux $releasever - Extras  Source
@@ -129,7 +129,7 @@ mirrorlist=https://mirrorlist.cclinux.org/mirrorlist?arch=source&repo=extras
 #baseurl=https://mirror.cclinux.org/$contentdir/$releasever/extras/source/tree/
 gpgcheck=1
 enabled=0
-gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-circleofficial
+gpgkey=file:///usr/share/distribution-gpg-keys/circle/RPM-GPG-KEY-circleofficial
 
 [powertools-source]
 name=Circle Linux $releasever - PowerTools  Source
@@ -137,7 +137,7 @@ mirrorlist=https://mirrorlist.cclinux.org/mirrorlist?arch=source&repo=PowerTools
 #baseurl=https://mirror.cclinux.org/$contentdir/$releasever/PowerTools/source/tree/
 gpgcheck=1
 enabled=0
-gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-circleofficial
+gpgkey=file:///usr/share/distribution-gpg-keys/circle/RPM-GPG-KEY-circleofficial
 
 [devel-source]
 name=Circle Linux $releasever - Devel  Source
@@ -145,6 +145,6 @@ mirrorlist=https://mirrorlist.cclinux.org/mirrorlist?arch=source&repo=Devel-$rel
 #baseurl=https://mirror.cclinux.org/$contentdir/$releasever/Devel/source/os/
 gpgcheck=1
 enabled=0
-gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-circleofficial
+gpgkey=file:///usr/share/distribution-gpg-keys/circle/RPM-GPG-KEY-circleofficial
 
 """
