@@ -7,6 +7,8 @@ config_opts['bootstrap_image'] = 'quay.io/centos/centos:stream8'
 config_opts['dnf_vars'] = { 'stream': '8-stream',
                             'contentdir': 'centos',
                           }
+# config_opts['module_enable'] = ['list', 'of', 'modules']
+# config_opts['module_install'] = ['module1/profile', 'module2/profile']
 
 config_opts['dnf.conf'] = """
 [main]
