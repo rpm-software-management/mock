@@ -5,6 +5,8 @@ config_opts['package_manager'] = 'dnf'
 config_opts['extra_chroot_dirs'] = [ '/run/lock', ]
 config_opts['bootstrap_image'] = 'docker.io/library/oraclelinux:8'
 config_opts['description'] = 'Oracle Linux 8'
+# config_opts['module_enable'] = ['list', 'of', 'modules']
+# config_opts['module_install'] = ['module1/profile', 'module2/profile']
 
 config_opts['dnf.conf'] = """
 [main]

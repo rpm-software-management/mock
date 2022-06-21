@@ -6,6 +6,8 @@ config_opts['extra_chroot_dirs'] = [ '/run/lock', ]
 config_opts['description'] = 'CentOS Stream 9'
 
 config_opts['bootstrap_image'] = 'quay.io/centos/centos:stream9'
+# config_opts['module_enable'] = ['list', 'of', 'modules']
+# config_opts['module_install'] = ['module1/profile', 'module2/profile']
 
 config_opts['dnf.conf'] = """
 [main]

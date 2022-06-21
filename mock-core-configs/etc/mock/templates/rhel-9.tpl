@@ -12,6 +12,8 @@ config_opts['yum_install_command'] += ' subscription-manager'
 config_opts['root'] = 'rhel-{{ releasever }}-{{ target_arch }}'
 
 config_opts['redhat_subscription_required'] = True
+# config_opts['module_enable'] = ['list', 'of', 'modules']
+# config_opts['module_install'] = ['module1/profile', 'module2/profile']
 
 config_opts['dnf.conf'] = """
 [main]
