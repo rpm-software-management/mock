@@ -60,7 +60,7 @@ class RootCache(object):
         plugins.add_hook("postyum", self._rootCachePostShellHook)
         plugins.add_hook("postupdate", self._rootCachePostUpdateHook)
         self.exclude_dirs = self.root_cache_opts['exclude_dirs']
-        self.exclude_tar_cmds = []
+        self.exclude_tar_opts = []
         for ex_dir in self.exclude_dirs:
             self._tarExcludeOption(ex_dir)
 
@@ -70,7 +70,7 @@ class RootCache(object):
         else:
             anchor = ''
 
-        self.exclude_tar_cmds.append('--exclude=' + anchor + ex_dir)
+        self.exclude_tar_opts.append('--exclude=' + anchor + ex_dir)
 
     # =============
     # 'Private' API
@@ -141,10 +141,8 @@ class RootCache(object):
                     prev_cwd = os.getcwd()
                     os.chdir(mockbuild.file_util.find_non_nfs_dir())
                 mockbuild.file_util.mkdirIfAbsent(self.buildroot.make_chroot_path())
-                if self.config["tar"] == "bsdtar":
-                    __tar_cmd = "bsdtar"
-                else:
-                    __tar_cmd = "gtar"
+
+                __tar_cmd = self.config["tar_binary"]
                 mockbuild.util.do(
                     [__tar_cmd] + self.decompressArgs + ["-xf", self.rootCacheFile,
                                                          "-C", self.buildroot.make_chroot_path()],
@@ -206,17 +204,13 @@ class RootCache(object):
                 mockbuild.util.do(["sync"], shell=False)
                 self._root_cache_handle_mounts()
                 self.state.start("creating root cache")
-                if self.config['tar'] == 'bsdtar':
-                    __tar_cmd = ["bsdtar", "--one-file-system"] + self.compressArgs + \
-                                ["-cf", self.rootCacheFile,
-                                 "-C", self.buildroot.make_chroot_path()] + \
-                                self.exclude_tar_cmds + ["."]
-                else:
-                    __tar_cmd = ["gtar", "--one-file-system", "--exclude-caches", "--exclude-caches-under"] + \
-                                 self.compressArgs + \
-                                 ["-cf", self.rootCacheFile,
-                                  "-C", self.buildroot.make_chroot_path()] + \
-                                 self.exclude_tar_cmds + ["."]
+                __tar_cmd = [self.config["tar_binary"], "--one-file-system"]
+                if self.config['tar'] == 'gnutar':
+                    __tar_cmd += ["--exclude-caches", "--exclude-caches-under"]
+                __tar_cmd += self.compressArgs + \
+                        ["-cf", self.rootCacheFile,
+                         "-C", self.buildroot.make_chroot_path()] + \
+                        self.exclude_tar_opts+ ["."]
                 try:
                     mockbuild.util.do(__tar_cmd, shell=False)
                 except:
