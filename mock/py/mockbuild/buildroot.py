@@ -179,12 +179,8 @@ class Buildroot(object):
             podman = Podman(self, self.bootstrap_image)
             podman.pull_image()
             podman.get_container_id()
-            if self.config["tar"] == "bsdtar":
-                __tar_cmd = "bsdtar"
-            else:
-                __tar_cmd = "gtar"
             podman.install_pkgmgmt_packages()
-            podman.cp(self.make_chroot_path(), __tar_cmd)
+            podman.cp(self.make_chroot_path(), self.config["tar_binary"])
             podman.remove()
 
         self._setup_dirs()

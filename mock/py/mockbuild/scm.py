@@ -179,13 +179,11 @@ class scmWorker(object):
                 tarball = tardir + ".tar.gz"
             taropts = ""
 
-            if self.config["tar"] == "bsdtar":
-                __tar_cmd = "bsdtar"
-            else:
-                __tar_cmd = "gtar"
+            __tar_cmd = self.config["tar_binary"]
+
             # Always exclude vcs data from tarball unless told not to
-            if str(self.exclude_vcs).lower() == "true" and __tar_cmd == 'gtar':
-                proc = subprocess.Popen(['tar', '--help'], shell=False, stdout=subprocess.PIPE)
+            if str(self.exclude_vcs).lower() == "true" and self.config['tar'] == "gnutar":
+                proc = subprocess.Popen([__tar_cmd, '--help'], shell=False, stdout=subprocess.PIPE)
                 proc_result = proc.communicate()[0]
                 proc_result = proc_result.decode()
                 if "--exclude-vcs" in proc_result:
