@@ -4,45 +4,73 @@ config_opts['dnf.conf'] += """
 
 [epel]
 name=Extra Packages for Enterprise Linux $releasever - $basearch
-mirrorlist=http://mirrors.fedoraproject.org/mirrorlist?repo=epel-8&arch=$basearch
-gpgkey=file:///usr/share/distribution-gpg-keys/epel/RPM-GPG-KEY-EPEL-8
+metalink=https://mirrors.fedoraproject.org/metalink?repo=epel-$releasever&arch=$basearch
 gpgcheck=1
-skip_if_unavailable=False
-
-[epel-testing]
-name=Extra Packages for Enterprise Linux $releasever - Testing - $basearch
-enabled=0
-mirrorlist=http://mirrors.fedoraproject.org/mirrorlist?repo=testing-epel8&arch=$basearch
+gpgkey=file:///usr/share/distribution-gpg-keys/epel/RPM-GPG-KEY-EPEL-$releasever
 skip_if_unavailable=False
 
 [epel-debuginfo]
 name=Extra Packages for Enterprise Linux $releasever - $basearch - Debug
-mirrorlist=http://mirrors.fedoraproject.org/mirrorlist?repo=epel-debug-8&arch=$basearch
+metalink=https://mirrors.fedoraproject.org/metalink?repo=epel-debug-$releasever&arch=$basearch
 enabled=0
+gpgcheck=1
+gpgkey=file:///usr/share/distribution-gpg-keys/epel/RPM-GPG-KEY-EPEL-$releasever
 skip_if_unavailable=False
 
 [epel-source]
 name=Extra Packages for Enterprise Linux $releasever - $basearch - Source
-mirrorlist=http://mirrors.fedoraproject.org/mirrorlist?repo=epel-source-8&arch=$basearch
+metalink=https://mirrors.fedoraproject.org/metalink?repo=epel-source-$releasever&arch=$basearch
 enabled=0
+gpgcheck=1
+gpgkey=file:///usr/share/distribution-gpg-keys/epel/RPM-GPG-KEY-EPEL-$releasever
+skip_if_unavailable=False
+
+[epel-testing]
+name=Extra Packages for Enterprise Linux $releasever - Testing - $basearch
+metalink=https://mirrors.fedoraproject.org/metalink?repo=testing-epel$releasever&arch=$basearch
+enabled=0
+gpgcheck=1
+gpgkey=file:///usr/share/distribution-gpg-keys/epel/RPM-GPG-KEY-EPEL-$releasever
+skip_if_unavailable=False
+
+[epel-testing-debuginfo]
+name=Extra Packages for Enterprise Linux $releasever - Testing - $basearch - Debug
+metalink=https://mirrors.fedoraproject.org/metalink?repo=testing-debug-epel$releasever&arch=$basearch
+enabled=0
+gpgcheck=1
+gpgkey=file:///usr/share/distribution-gpg-keys/epel/RPM-GPG-KEY-EPEL-$releasever
+skip_if_unavailable=False
+
+[epel-testing-source]
+name=Extra Packages for Enterprise Linux $releasever - Testing - $basearch - Source
+metalink=https://mirrors.fedoraproject.org/metalink?repo=testing-source-epel$releasever&arch=$basearch
+enabled=0
+gpgcheck=1
+gpgkey=file:///usr/share/distribution-gpg-keys/epel/RPM-GPG-KEY-EPEL-$releasever
 skip_if_unavailable=False
 
 [epel-modular]
 name=Extra Packages for Enterprise Linux Modular $releasever - $basearch
-mirrorlist=http://mirrors.fedoraproject.org/mirrorlist?repo=epel-modular-8&arch=$basearch
+metalink=https://mirrors.fedoraproject.org/metalink?repo=epel-modular-$releasever&arch=$basearch
 enabled=0
+gpgcheck=1
+gpgkey=file:///usr/share/distribution-gpg-keys/epel/RPM-GPG-KEY-EPEL-$releasever
 skip_if_unavailable=False
 
 [epel-modular-debuginfo]
 name=Extra Packages for Enterprise Linux Modular $releasever - $basearch - Debug
-mirrorlist=http://mirrors.fedoraproject.org/mirrorlist?repo=epel-modular-debug-8&arch=$basearch
+metalink=https://mirrors.fedoraproject.org/metalink?repo=epel-modular-debug-$releasever&arch=$basearch
 enabled=0
+gpgcheck=1
+gpgkey=file:///usr/share/distribution-gpg-keys/epel/RPM-GPG-KEY-EPEL-$releasever
 skip_if_unavailable=False
 
 [epel-modular-source]
 name=Extra Packages for Enterprise Linux Modular $releasever - $basearch - Source
-mirrorlist=http://mirrors.fedoraproject.org/mirrorlist?repo=epel-modular-source-8&arch=$basearch
+metalink=https://mirrors.fedoraproject.org/metalink?repo=epel-modular-source-$releasever&arch=$basearch
 enabled=0
+gpgcheck=1
+gpgkey=file:///usr/share/distribution-gpg-keys/epel/RPM-GPG-KEY-EPEL-$releasever
 skip_if_unavailable=False
 
 {% if koji_primary_repo != None and koji_primary_repo != "epel" %}
