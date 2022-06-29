@@ -292,6 +292,9 @@ If you encounter a bug running mock, please file it in [Bugzilla](https://bugzil
 
 If your problem is specific to EPEL, then [file it](https://bugzilla.redhat.com/enter_bug.cgi?product=Fedora%20EPEL&component=mock) against the "Fedora EPEL" product instead ([Open Bugs](https://bugzilla.redhat.com/buglist.cgi?query_format=advanced&product=Fedora%20EPEL&component=mock&bug_status=NEW&bug_status=ASSIGNED&bug_status=MODIFIED&bug_status=ON_DEV&bug_status=ON_QA&bug_status=VERIFIED&bug_status=FAILS_QA&bug_status=RELEASE_PENDING&bug_status=POST)).
 
+## Users
+
+If you use Mock, we'd love to hear from you and add you to this [wiki page](https://github.com/rpm-software-management/mock/wiki/Users). It will motivate our future work.
 
 ## See Also
 
