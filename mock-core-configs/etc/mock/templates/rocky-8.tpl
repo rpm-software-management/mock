@@ -33,7 +33,7 @@ mirrorlist=https://mirrors.rockylinux.org/mirrorlist?arch=$basearch&repo=BaseOS-
 #baseurl=http://dl.rockylinux.org/pub/rocky/$releasever/BaseOS/$basearch/os/
 gpgcheck=1
 enabled=1
-gpgkey=file:///usr/share/distribution-gpg-keys/rocky/RPM-GPG-KEY-rockyofficial
+gpgkey=file:///usr/share/distribution-gpg-keys/rocky/RPM-GPG-KEY-Rocky-8
 
 [appstream]
 name=Rocky Linux $releasever - AppStream
@@ -41,7 +41,7 @@ mirrorlist=https://mirrors.rockylinux.org/mirrorlist?arch=$basearch&repo=AppStre
 #baseurl=http://dl.rockylinux.org/pub/rocky/$releasever/AppStream/$basearch/os/
 gpgcheck=1
 enabled=1
-gpgkey=file:///usr/share/distribution-gpg-keys/rocky/RPM-GPG-KEY-rockyofficial
+gpgkey=file:///usr/share/distribution-gpg-keys/rocky/RPM-GPG-KEY-Rocky-8
 
 [powertools]
 name=Rocky Linux $releasever - PowerTools
@@ -49,7 +49,7 @@ mirrorlist=https://mirrors.rockylinux.org/mirrorlist?arch=$basearch&repo=PowerTo
 #baseurl=http://dl.rockylinux.org/pub/rocky/$releasever/PowerTools/$basearch/os/
 gpgcheck=1
 enabled=1
-gpgkey=file:///usr/share/distribution-gpg-keys/rocky/RPM-GPG-KEY-rockyofficial
+gpgkey=file:///usr/share/distribution-gpg-keys/rocky/RPM-GPG-KEY-Rocky-8
 
 [extras]
 name=Rocky Linux $releasever - Extras
@@ -57,7 +57,7 @@ mirrorlist=https://mirrors.rockylinux.org/mirrorlist?arch=$basearch&repo=extras-
 #baseurl=http://dl.rockylinux.org/pub/rocky/$releasever/extras/$basearch/os/
 gpgcheck=1
 enabled=1
-gpgkey=file:///usr/share/distribution-gpg-keys/rocky/RPM-GPG-KEY-rockyofficial
+gpgkey=file:///usr/share/distribution-gpg-keys/rocky/RPM-GPG-KEY-Rocky-8
 
 [ha]
 name=Rocky Linux $releasever - HighAvailability
@@ -65,7 +65,7 @@ mirrorlist=https://mirrors.rockylinux.org/mirrorlist?arch=$basearch&repo=HighAva
 #baseurl=http://dl.rockylinux.org/pub/rocky/$releasever/HighAvailability/$basearch/os/
 gpgcheck=1
 enabled=0
-gpgkey=file:///usr/share/distribution-gpg-keys/rocky/RPM-GPG-KEY-rockyofficial
+gpgkey=file:///usr/share/distribution-gpg-keys/rocky/RPM-GPG-KEY-Rocky-8
 
 [resilient-storage]
 name=Rocky Linux $releasever - ResilientStorage
@@ -73,7 +73,7 @@ mirrorlist=https://mirrors.rockylinux.org/mirrorlist?arch=$basearch&repo=Resilie
 #baseurl=http://dl.rockylinux.org/pub/rocky/$releasever/ResilientStorage/$basearch/os/
 gpgcheck=1
 enabled=0
-gpgkey=file:///usr/share/distribution-gpg-keys/rocky/RPM-GPG-KEY-rockyofficial
+gpgkey=file:///usr/share/distribution-gpg-keys/rocky/RPM-GPG-KEY-Rocky-8
 
 [plus]
 name=Rocky Linux $releasever - Plus
@@ -81,7 +81,7 @@ mirrorlist=https://mirrors.rockylinux.org/mirrorlist?arch=$basearch&repo=rockypl
 #baseurl=http://dl.rockylinux.org/pub/rocky/$releasever/plus/$basearch/os/
 gpgcheck=1
 enabled=0
-gpgkey=file:///usr/share/distribution-gpg-keys/rocky/RPM-GPG-KEY-rockyofficial
+gpgkey=file:///usr/share/distribution-gpg-keys/rocky/RPM-GPG-KEY-Rocky-8
 
 [devel]
 name=Rocky Linux $releasever - Devel (WARNING: UNSUPPORTED - FOR BUILDROOT USE ONLY!)
@@ -89,7 +89,7 @@ mirrorlist=https://mirrors.rockylinux.org/mirrorlist?arch=$basearch&repo=Devel-$
 #baseurl=http://dl.rockylinux.org/pub/rocky/$releasever/Devel/$basearch/os/
 gpgcheck=1
 enabled=0
-gpgkey=file:///usr/share/distribution-gpg-keys/rocky/RPM-GPG-KEY-rockyofficial
+gpgkey=file:///usr/share/distribution-gpg-keys/rocky/RPM-GPG-KEY-Rocky-8
 
 # Debuginfo
 [baseos-debug]
@@ -98,7 +98,7 @@ mirrorlist=https://mirrors.rockylinux.org/mirrorlist?arch=$basearch&repo=BaseOS-
 #baseurl=http://dl.rockylinux.org/pub/rocky/$releasever/BaseOS/$basearch/os/
 gpgcheck=1
 enabled=0
-gpgkey=file:///usr/share/distribution-gpg-keys/rocky/RPM-GPG-KEY-rockyofficial
+gpgkey=file:///usr/share/distribution-gpg-keys/rocky/RPM-GPG-KEY-Rocky-8
 
 [appstream-debug]
 name=Rocky Linux $releasever - AppStream - Debuginfo
@@ -106,7 +106,7 @@ mirrorlist=https://mirrors.rockylinux.org/mirrorlist?arch=$basearch&repo=AppStre
 #baseurl=http://dl.rockylinux.org/pub/rocky/$releasever/AppStream/$basearch/os/
 gpgcheck=1
 enabled=0
-gpgkey=file:///usr/share/distribution-gpg-keys/rocky/RPM-GPG-KEY-rockyofficial
+gpgkey=file:///usr/share/distribution-gpg-keys/rocky/RPM-GPG-KEY-Rocky-8
 
 [ha-debug]
 name=Rocky Linux $releasever - High Availability - Debuginfo
@@ -114,7 +114,7 @@ mirrorlist=https://mirrors.rockylinux.org/mirrorlist?arch=$basearch&repo=HighAva
 #baseurl=http://dl.rockylinux.org/pub/rocky/$releasever/HighAvailability/$basearch/debug/tree
 gpgcheck=1
 enabled=0
-gpgkey=file:///usr/share/distribution-gpg-keys/rocky/RPM-GPG-KEY-rockyofficial
+gpgkey=file:///usr/share/distribution-gpg-keys/rocky/RPM-GPG-KEY-Rocky-8
 
 [powertools-debug]
 name=Rocky Linux $releasever - PowerTools - Debuginfo
@@ -122,7 +122,7 @@ mirrorlist=https://mirrors.rockylinux.org/mirrorlist?arch=$basearch&repo=PowerTo
 #baseurl=http://dl.rockylinux.org/pub/rocky/$releasever/PowerTools/$basearch/debug/tree
 gpgcheck=1
 enabled=0
-gpgkey=file:///usr/share/distribution-gpg-keys/rocky/RPM-GPG-KEY-rockyofficial
+gpgkey=file:///usr/share/distribution-gpg-keys/rocky/RPM-GPG-KEY-Rocky-8
 
 [resilient-storage-debug]
 name=Rocky Linux $releasever - Resilient Storage - Debuginfo
@@ -130,7 +130,7 @@ mirrorlist=https://mirrors.rockylinux.org/mirrorlist?arch=$basearch&repo=Resilie
 #baseurl=http://dl.rockylinux.org/pub/rocky/$releasever/ResilientStorage/$basearch/debug/tree
 gpgcheck=1
 enabled=0
-gpgkey=file:///usr/share/distribution-gpg-keys/rocky/RPM-GPG-KEY-rockyofficial
+gpgkey=file:///usr/share/distribution-gpg-keys/rocky/RPM-GPG-KEY-Rocky-8
 
 [devel-debug]
 name=Rocky Linux $releasever - Devel - Debuginfo
@@ -138,7 +138,7 @@ mirrorlist=https://mirrors.rockylinux.org/mirrorlist?arch=$basearch&repo=Devel-$
 #baseurl=http://dl.rockylinux.org/pub/rocky/$releasever/Devel/$basearch/debug/tree
 gpgcheck=1
 enabled=0
-gpgkey=file:///usr/share/distribution-gpg-keys/rocky/RPM-GPG-KEY-rockyofficial
+gpgkey=file:///usr/share/distribution-gpg-keys/rocky/RPM-GPG-KEY-Rocky-8
 
 # Source Repos
 [baseos-source]
@@ -147,7 +147,7 @@ mirrorlist=https://mirrors.rockylinux.org/mirrorlist?arch=source&repo=BaseOS-$re
 #baseurl=http://dl.rockylinux.org/pub/rocky/$releasever/BaseOS/source/tree
 gpgcheck=1
 enabled=0
-gpgkey=file:///usr/share/distribution-gpg-keys/rocky/RPM-GPG-KEY-rockyofficial
+gpgkey=file:///usr/share/distribution-gpg-keys/rocky/RPM-GPG-KEY-Rocky-8
 
 [appstream-source]
 name=Rocky Linux $releasever - AppStream - Source
@@ -155,7 +155,7 @@ mirrorlist=https://mirrors.rockylinux.org/mirrorlist?arch=source&repo=AppStream-
 #baseurl=http://dl.rockylinux.org/pub/rocky/$releasever/AppStream/source/tree
 gpgcheck=1
 enabled=0
-gpgkey=file:///usr/share/distribution-gpg-keys/rocky/RPM-GPG-KEY-rockyofficial
+gpgkey=file:///usr/share/distribution-gpg-keys/rocky/RPM-GPG-KEY-Rocky-8
 
 [ha-source]
 name=Rocky Linux $releasever - High Availability - Source
@@ -163,7 +163,7 @@ mirrorlist=https://mirrors.rockylinux.org/mirrorlist?arch=source&repo=HighAvaila
 #baseurl=http://dl.rockylinux.org/pub/rocky/$releasever/HighAvailability/source/tree
 gpgcheck=1
 enabled=0
-gpgkey=file:///usr/share/distribution-gpg-keys/rocky/RPM-GPG-KEY-rockyofficial
+gpgkey=file:///usr/share/distribution-gpg-keys/rocky/RPM-GPG-KEY-Rocky-8
 
 [powertools-source]
 name=Rocky Linux $releasever - PowerTools - Source
@@ -171,7 +171,7 @@ mirrorlist=https://mirrors.rockylinux.org/mirrorlist?arch=source&repo=PowerTools
 #baseurl=http://dl.rockylinux.org/pub/rocky/$releasever/PowerTools/source/tree
 gpgcheck=1
 enabled=0
-gpgkey=file:///usr/share/distribution-gpg-keys/rocky/RPM-GPG-KEY-rockyofficial
+gpgkey=file:///usr/share/distribution-gpg-keys/rocky/RPM-GPG-KEY-Rocky-8
 
 [resilient-storage-source]
 name=Rocky Linux $releasever - Resilient Storage - Source
@@ -179,7 +179,7 @@ mirrorlist=https://mirrors.rockylinux.org/mirrorlist?arch=source&repo=ResilientS
 #baseurl=http://dl.rockylinux.org/pub/rocky/$releasever/ResilientStorage/source/tree
 gpgcheck=1
 enabled=0
-gpgkey=file:///usr/share/distribution-gpg-keys/rocky/RPM-GPG-KEY-rockyofficial
+gpgkey=file:///usr/share/distribution-gpg-keys/rocky/RPM-GPG-KEY-Rocky-8
 
 [devel-source]
 name=Rocky Linux $releasever - Devel - Source
@@ -187,7 +187,7 @@ mirrorlist=https://mirrors.rockylinux.org/mirrorlist?arch=source&repo=Devel-$rel
 #baseurl=http://dl.rockylinux.org/pub/rocky/$releasever/Devel/source/tree
 gpgcheck=1
 enabled=0
-gpgkey=file:///usr/share/distribution-gpg-keys/rocky/RPM-GPG-KEY-rockyofficial
+gpgkey=file:///usr/share/distribution-gpg-keys/rocky/RPM-GPG-KEY-Rocky-8
 
 
 """
