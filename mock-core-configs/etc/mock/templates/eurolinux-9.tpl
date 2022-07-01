@@ -1,5 +1,4 @@
 # EuroLinux open buildroots
-# Note: perl modules are broken by design
 
 config_opts['chroot_setup_cmd'] = 'install tar gcc-c++ redhat-rpm-config redhat-release which xz sed make bzip2 gzip gcc coreutils unzip shadow-utils diffutils cpio bash gawk rpm-build info patch util-linux findutils grep'
 config_opts['dist'] = 'el9'  # only useful for --resultdir variable subst
@@ -29,21 +28,21 @@ module_platform_id=platform:el9
 
 [baseos-all]
 name=EuroLinux 9 BaseOS All
-baseurl=https://fbi.cdn.euro-linux.com/dist/eurolinux/server/9/$basearch/certify-BaseOS/all/
+baseurl=https://fbi.cdn.euro-linux.com/dist/eurolinux/server/9/$basearch/BaseOS/all/
 gpgcheck=1
 enabled=1
 gpgkey=file:///usr/share/distribution-gpg-keys/eurolinux/RPM-GPG-KEY-eurolinux9
 
 [appstream-all]
 name=EuroLinux 9 AppStream All
-baseurl=https://fbi.cdn.euro-linux.com/dist/eurolinux/server/9/$basearch/certify-AppStream/all/
+baseurl=https://fbi.cdn.euro-linux.com/dist/eurolinux/server/9/$basearch/AppStream/all/
 gpgcheck=1
 enabled=1
 gpgkey=file:///usr/share/distribution-gpg-keys/eurolinux/RPM-GPG-KEY-eurolinux9
 
-[powertools-all]
-name=EuroLinux 9 PowerTools All
-baseurl=https://fbi.cdn.euro-linux.com/dist/eurolinux/server/9/$basearch/certify-PowerTools/all/
+[crb-all]
+name=EuroLinux 9 CodeReady Linux Builder All
+baseurl=https://fbi.cdn.euro-linux.com/dist/eurolinux/server/9/$basearch/CRB/all/
 gpgcheck=1
 enabled=1
 gpgkey=file:///usr/share/distribution-gpg-keys/eurolinux/RPM-GPG-KEY-eurolinux9
@@ -52,14 +51,14 @@ gpgkey=file:///usr/share/distribution-gpg-keys/eurolinux/RPM-GPG-KEY-eurolinux9
 {% if target_arch == 'x86_64' %}
 [ha-all]
 name=EuroLinux 9 HighAvailability All
-baseurl=https://fbi.cdn.euro-linux.com/dist/eurolinux/server/9/$basearch/certify-HighAvailability/all/
+baseurl=https://fbi.cdn.euro-linux.com/dist/eurolinux/server/9/$basearch/HighAvailability/all/
 gpgcheck=1
 enabled=1
 gpgkey=file:///usr/share/distribution-gpg-keys/eurolinux/RPM-GPG-KEY-eurolinux9
 
 [rs-all]
 name=EuroLinux 9 PowerTools All
-baseurl=https://fbi.cdn.euro-linux.com/dist/eurolinux/server/9/$basearch/certify-ResilientStorage/all/
+baseurl=https://fbi.cdn.euro-linux.com/dist/eurolinux/server/9/$basearch/ResilientStorage/all/
 gpgcheck=1
 enabled=1
 gpgkey=file:///usr/share/distribution-gpg-keys/eurolinux/RPM-GPG-KEY-eurolinux9
