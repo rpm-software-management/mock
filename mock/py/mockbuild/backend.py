@@ -668,8 +668,12 @@ class Commands(object):
 
     @traceLog()
     def rebuild_installed_srpm(self, spec_path, timeout):
-        command = ['{command} -bs --target {0} --nodeps {1}'.format(
-            self.rpmbuild_arch, spec_path,
+        if self.config['cleanup_on_success']:
+            noclean = ''
+        else:
+            noclean = '--noclean'
+        command = ['{command} -bs {0} --target {1} --nodeps {2}'.format(
+            noclean, self.rpmbuild_arch, spec_path,
             command=self.config['rpmbuild_command'])]
         command = ["bash", "--login", "-c"] + command
         self.buildroot.doChroot(
@@ -712,7 +716,11 @@ class Commands(object):
             additional_opts = []
 
         def get_command(mode):
-            command = [self.config['rpmbuild_command']] + mode + \
+            if self.config['cleanup_on_success']:
+                noclean = []
+            else:
+                noclean = ['--noclean']
+            command = [self.config['rpmbuild_command']] + mode + noclean + \
                       ['--target', self.rpmbuild_arch, '--nodeps'] + \
                       check_opt + [spec_path] + additional_opts
             command = ["bash", "--login", "-c"] + [' '.join(command)]
