@@ -108,8 +108,6 @@ Versions in Linux distributions:
 * [1.4.1](Release-Notes-1.4.1) (2017-04-26) - introduced systemd-nspawn and `--old-chroot`option; new option `/dev/hwrng`, `/dev/prandom`; added `%distro_section` for Mageia; bugfixing
 * [1.3.5](Release-Notes-1.3.5) (2017-03-02)- only for EL6; change path to the “df” in hw-info plugin
 * [1.3.4](Release-Notes-1.3.4)
-* [1.2.21](Release-Notes-1.2.21)
-* [1.2.20](Release-Notes-1.2.20)
 * [1.3.3](Release-Notes-1.3.3) (2017-01-01) - bugfixing; a new config option for the builder hostname; upgraded temporary directories, chroot contains `best=1`
 * [1.3.2](Release-Notes-1.3.2) (2016-10-17) - move /usr/sbin/mock/ to /usr/libexec/mock/mock; script in /usr/libexec/ are not in $PATH; F22 configs have been removed; --nocheck works; run mock in Docker; a lot of flake8/pep8/pycodestyle clean-ups
 * [1.2.21](Release-Notes-1.2.21) (2016-09-12) - fix privilege escalation via mock-scm; rename of mageia pubkey
