@@ -111,7 +111,7 @@ Versions in Linux distributions:
 * [1.3.3](Release-Notes-1.3.3)
 * [1.3.2](Release-Notes-1.3.2)
 * [1.2.21](Release-Notes-1.2.21)
-* [1.2.20](Release-Notes-1.2.20)
+* [1.2.20](Release-Notes-1.2.20) (2016-08-17) - just a bugfix release, which uses correct gpg keys for epel in epel* configs.
 * [1.2.19](Release-Notes-1.2.19)
 * [1.2.18](Release-Notes-1.2.18)
 * [1.2.17](Release-Notes-1.2.17)
