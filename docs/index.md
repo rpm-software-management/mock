@@ -113,7 +113,7 @@ Versions in Linux distributions:
 * [1.2.21](Release-Notes-1.2.21)
 * [1.2.20](Release-Notes-1.2.20)
 * [1.2.19](Release-Notes-1.2.19)
-* [1.2.18](Release-Notes-1.2.18) - Unconditional setup resolver config and add MPS personalities
+* [1.2.18](Release-Notes-1.2.18) (2016-06-10) - Unconditional setup resolver config, added MPS personalities, requires rpm=pyton, use root name instead config name for backups dir, use DNF for F24 chroot, scm plugging handles better submodes and improve prompt 
 * [1.2.17](Release-Notes-1.2.17)
 * [1.2.16](Release-Notes-1.2.16)
 * [1.2.15](Release-Notes-1.2.15)
