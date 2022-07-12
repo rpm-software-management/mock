@@ -109,7 +109,7 @@ Versions in Linux distributions:
 * [1.3.5](Release-Notes-1.3.5) - only for EL6
 * [1.3.4](Release-Notes-1.3.4)
 * [1.3.3](Release-Notes-1.3.3)
-* [1.3.2](Release-Notes-1.3.2) - move /usr/sbin/mock/ to /usr/libexer/mock/mock; script in /usr/libexer/ are not in $PATH; F22 configs has been removed; --nocheck works; run mock in Docker; a lot of flake8/pep8/pycodestyle clean up of code 
+* [1.3.2](Release-Notes-1.3.2) (2016-10-17)- move /usr/sbin/mock/ to /usr/libexec/mock/mock; script in /usr/libexec/ are not in $PATH; F22 configs have been removed; --nocheck works; run mock in Docker; a lot of flake8/pep8/pycodestyle clean-ups of code 
 * [1.2.21](Release-Notes-1.2.21)
 * [1.2.20](Release-Notes-1.2.20)
 * [1.2.19](Release-Notes-1.2.19)
