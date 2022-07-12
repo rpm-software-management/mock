@@ -12,7 +12,7 @@ Where `HOOK_NAME` is one of:
 * clean
 * earlyprebuild - This is called during the very early stage of building RPM or SRPM. It is called even before SRPM is rebuilt or build dependencies have been installed.
 * initfailed
-* list_snapshots
+* list_snapshots - when `--list-snapshots` option is passed on command line, this hook is being called and then Mock exits.
 * make_snapshot
 * mount_root - This hook is intended for plugins which mount the chroot directory. This is called just before 'preinit' when only chroot directory exists. Result directory does not exist yet.
 * postbuild - This hook is called just after RPM or SRPM have been build (with or without success).
