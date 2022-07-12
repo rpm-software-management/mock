@@ -105,7 +105,7 @@ Versions in Linux distributions:
 * [1.4.4](Release-Notes-1.4.4) (2017-08-22) - rename group inside of chroot from mockbuild to mock
 * [1.4.3](Release-Notes-1.4.3) (2017-08-7)
 * [1.4.2](Release-Notes-1.4.2) (2017-06-20)
-* [1.4.1](Release-Notes-1.4.1) (2017-04-26)
+* [1.4.1](Release-Notes-1.4.1) (2017-04-26) - introduced systemd-nspawn and `--old-chroot`option; new option `/dev/hwrng`, `/dev/prandom`; added `%distro_section` for Mageia; bugfixing
 * [1.3.5](Release-Notes-1.3.5) (2017-03-02)- only for EL6; change path to the “df” in hw-info plugin
 * [1.3.4](Release-Notes-1.3.4)
 * [1.3.3](Release-Notes-1.3.3) (2017-01-01) - bugfixing; a new config option for the builder hostname; upgraded temporary directories, chroot contains `best=1`
