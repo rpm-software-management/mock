@@ -113,7 +113,7 @@ Versions in Linux distributions:
 * [1.2.21](Release-Notes-1.2.21) (2016-09-12) - fix privilege escalation via mock-scm; rename of mageia pubkey
 * [1.2.20](Release-Notes-1.2.20) (2016-08-17) - just a bugfix release, which uses correct gpg keys for epel in epel* configs.
 * [1.2.19](Release-Notes-1.2.19)
-* [1.2.18](Release-Notes-1.2.18)
+* [1.2.18](Release-Notes-1.2.18) (2016-06-10) - Unconditional setup resolver config, added MPS personalities, requires rpm=pyton, use root name instead config name for backups dir, use DNF for F24 chroot, scm plugging handles better submodes and improve prompt
 * [1.2.17](Release-Notes-1.2.17)
 * [1.2.16](Release-Notes-1.2.16)
 * [1.2.15](Release-Notes-1.2.15)
