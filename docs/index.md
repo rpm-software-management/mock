@@ -105,15 +105,17 @@ Versions in Linux distributions:
 * [1.4.4](Release-Notes-1.4.4) (2017-08-22) - rename group inside of chroot from mockbuild to mock
 * [1.4.3](Release-Notes-1.4.3) (2017-08-7)
 * [1.4.2](Release-Notes-1.4.2) (2017-06-20)
-* [1.4.1](Release-Notes-1.4.1) (2017-04-26)
-* [1.3.5](Release-Notes-1.3.5) - only for EL6
+* [1.4.1](Release-Notes-1.4.1) (2017-04-26) - introduced systemd-nspawn and `--old-chroot`option; new option `/dev/hwrng`, `/dev/prandom`; added `%distro_section` for Mageia; bugfixing
+* [1.3.5](Release-Notes-1.3.5) (2017-03-02)- only for EL6; change path to the “df” in hw-info plugin
 * [1.3.4](Release-Notes-1.3.4)
-* [1.3.3](Release-Notes-1.3.3)
-* [1.3.2](Release-Notes-1.3.2) (2016-10-17) - move /usr/sbin/mock/ to /usr/libexec/mock/mock; script in /usr/libexec/ are not in $PATH; F22 configs have been removed; --nocheck works; run mock in Docker; a lot of flake8/pep8/pycodestyle clean-ups
 * [1.2.21](Release-Notes-1.2.21)
 * [1.2.20](Release-Notes-1.2.20)
+* [1.3.3](Release-Notes-1.3.3) (2017-01-01) - bugfixing; a new config option for the builder hostname; upgraded temporary directories, chroot contains `best=1`
+* [1.3.2](Release-Notes-1.3.2) (2016-10-17) - move /usr/sbin/mock/ to /usr/libexec/mock/mock; script in /usr/libexec/ are not in $PATH; F22 configs have been removed; --nocheck works; run mock in Docker; a lot of flake8/pep8/pycodestyle clean-ups
+* [1.2.21](Release-Notes-1.2.21) (2016-09-12) - fix privilege escalation via mock-scm; rename of mageia pubkey
+* [1.2.20](Release-Notes-1.2.20) (2016-08-17) - just a bugfix release, which uses correct gpg keys for epel in epel* configs.
 * [1.2.19](Release-Notes-1.2.19)
-* [1.2.18](Release-Notes-1.2.18)
+* [1.2.18](Release-Notes-1.2.18) (2016-06-10) - Unconditional setup resolver config, added MPS personalities, requires rpm=pyton, use root name instead config name for backups dir, use DNF for F24 chroot, scm plugging handles better submodes and improve prompt
 * [1.2.17](Release-Notes-1.2.17)
 * [1.2.16](Release-Notes-1.2.16)
 * [1.2.15](Release-Notes-1.2.15)
