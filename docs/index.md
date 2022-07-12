@@ -108,7 +108,7 @@ Versions in Linux distributions:
 * [1.4.1](Release-Notes-1.4.1) (2017-04-26)
 * [1.3.5](Release-Notes-1.3.5) - only for EL6
 * [1.3.4](Release-Notes-1.3.4)
-* [1.3.3](Release-Notes-1.3.3)
+* [1.3.3](Release-Notes-1.3.3) (2017-01-01) - bugfixing; a new config option for the builder hostname; upgraded temporary directories, chroot contains `best=1`
 * [1.3.2](Release-Notes-1.3.2)
 * [1.2.21](Release-Notes-1.2.21)
 * [1.2.20](Release-Notes-1.2.20) (2016-08-17) - just a bugfix release, which uses correct gpg keys for epel in epel* configs.
