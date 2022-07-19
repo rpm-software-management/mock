@@ -134,7 +134,6 @@ def setup_default_config_opts(unprivUid):
             'age_check': True,
             'max_age_days': 15,
             'dir': "{{cache_topdir}}/{{root}}/root_cache/",
-            'tar': "gnutar",
             'compress_program': 'pigz',
             'decompress_program': None,
             'exclude_dirs': ["./proc", "./sys", "./dev", "./tmp/ccache", "./var/cache/yum", "./var/cache/dnf",
