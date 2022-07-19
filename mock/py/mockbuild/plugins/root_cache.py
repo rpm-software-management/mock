@@ -39,8 +39,16 @@ class RootCache(object):
         if self.compressProgram == 'pigz' and not os.path.exists('/bin/pigz'):
             getLog().warning("specified 'pigz' as the root cache compress program but not available; using gzip")
             self.compressProgram = 'gzip'
-        # bsdtar use different decompress program
-        self.decompressProgram = self.root_cache_opts['decompress_program'] or self.compressProgram
+
+        self.decompressProgram = self.root_cache_opts.get('decompress_program')
+        if not self.decompressProgram:
+            if self.config['tar'] == 'bsdtar':
+                # Contrary to GNU tar, BSD tar doesn't automatically add the "-d"
+                # option to the compressing utility while decompressing.
+                self.decompressProgram = "{0} {1}".format(self.compressProgram, "-d")
+            else:
+                self.decompressProgram = self.compressProgram
+
         if self.compressProgram:
             self.compressArgs = ['--use-compress-program', self.compressProgram]
             self.rootCacheFile = self.rootCacheFile + self.root_cache_opts['extension']
