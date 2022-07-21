@@ -1001,8 +1001,9 @@ def subscription_redhat_init(opts):
     if 'redhat_subscription_key_id' in opts:
         return
 
-    if not os.path.isdir('/etc/pki/entitlement'):
-        raise exception.ConfigError("/etc/pki/entitlment is not a directory, "
+    ent_path = '/etc/pki/entitlement'
+    if not os.path.isdir(ent_path):
+        raise exception.ConfigError(ent_path + " is not a directory "
                                     "is subscription-manager installed?")
 
     keys = glob("/etc/pki/entitlement/*-key.pem")
