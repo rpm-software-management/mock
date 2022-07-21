@@ -3,6 +3,11 @@ config_opts['eln_rawhide_releasever'] = '37'
 
 config_opts['root'] = 'fedora-eln-{{ target_arch }}'
 
+# Fedora ELN i386 doesn't get composes (isn't mirrored on
+# odcs.fedoraproject.org), we need to build using the Koji buildroot.
+# Note that similar idiom used in fedora-branched.tpl and fedora-rawhide.tpl.
+config_opts['mirrored'] = config_opts['target_arch'] != 'i686'
+
 config_opts['chroot_setup_cmd'] = 'install bash bzip2 coreutils cpio diffutils fedora-release-eln findutils gawk glibc-minimal-langpack grep gzip info patch redhat-rpm-config rpm-build sed shadow-utils tar unzip util-linux which xz'
 
 config_opts['dist'] = 'eln'  # only useful for --resultdir variable subst
@@ -38,6 +43,7 @@ file:///usr/share/distribution-gpg-keys/fedora/RPM-GPG-KEY-fedora-rawhide-primar
 {%- endfor %}
 {%- endmacro %}
 
+{% if mirrored %}
 [eln-baseos]
 name=Fedora - ELN BaseOS - Developmental packages for the next Enterprise Linux release
 baseurl=https://odcs.fedoraproject.org/composes/production/latest-Fedora-ELN/compose/BaseOS/$basearch/os/
@@ -410,5 +416,13 @@ repo_gpgcheck=0
 type=rpm
 gpgcheck=1
 gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-fedora-eln-$basearch
+skip_if_unavailable=False
+{% endif %}
+
+[local]
+name=local
+baseurl=https://kojipkgs.fedoraproject.org/repos/eln-build/latest/$basearch/
+cost=2000
+enabled={{ not mirrored }}
 skip_if_unavailable=False
 """
