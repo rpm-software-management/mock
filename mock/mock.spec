@@ -9,7 +9,7 @@
 
 Summary: Builds packages inside chroots
 Name: mock
-Version: 3.0
+Version: 3.1
 Release: 1%{?dist}
 License: GPLv2+
 # Source is created by
@@ -258,6 +258,12 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 %dir  %{_datadir}/cheat
 
 %changelog
+* Fri Jul 22 2022 Pavel Raiskup <praiskup@redhat.com> 3.1-1
+- let rpmbuild know that it should not clean up after itself (msuchy@redhat.com)
+- typo in the subscription error message
+- root_cache: simplify decompressing with BSD tar
+- switch from /bin/gtar to /bin/tar by default
+
 * Wed Apr 06 2022 Pavel Raiskup <praiskup@redhat.com> 3.0-1
 - mock v3 contains several Python 2.7 (EL7) incompatibilites
   https://github.com/rpm-software-management/mock/issues/755
