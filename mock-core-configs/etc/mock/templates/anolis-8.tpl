@@ -28,20 +28,20 @@ user_agent={{ user_agent }}
 name=AnolisOS-$releasever - BaseOS
 baseurl=http://mirrors.openanolis.cn/anolis/$releasever/BaseOS/$basearch/os
 enabled=1
-gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-ANOLIS
+gpgkey=file:///usr/share/distribution-gpg-keys/anolis/RPM-GPG-KEY-ANOLIS
 gpgcheck=1
 
 [AppStream]
 name=AnolisOS-$releasever - AppStream
 baseurl=http://mirrors.openanolis.cn/anolis/$releasever/AppStream/$basearch/os
 enabled=1
-gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-ANOLIS
+gpgkey=file:///usr/share/distribution-gpg-keys/anolis/RPM-GPG-KEY-ANOLIS
 gpgcheck=1
 
 [PowerTools]
 name=AnolisOS-$releasever - PowerTools
 baseurl=http://mirrors.openanolis.cn/anolis/$releasever/PowerTools/$basearch/os
 enabled=1
-gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-ANOLIS
+gpgkey=file:///usr/share/distribution-gpg-keys/anolis/RPM-GPG-KEY-ANOLIS
 gpgcheck=1
 """

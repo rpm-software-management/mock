@@ -31,20 +31,20 @@ user_agent={{ user_agent }}
 name=AnolisOS-7 - os
 baseurl=http://mirrors.openanolis.cn/anolis/7/os/$basearch/os
 enabled=1
-gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-ANOLIS
+gpgkey=file:///usr/share/distribution-gpg-keys/anolis/RPM-GPG-KEY-ANOLIS
 gpgcheck=1
 
 [updates]
 name=AnolisOS-7 - updates
 baseurl=http://mirrors.openanolis.cn/anolis/7/updates/$basearch/os
 enabled=1
-gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-ANOLIS
+gpgkey=file:///usr/share/distribution-gpg-keys/anolis/RPM-GPG-KEY-ANOLIS
 gpgcheck=1
 
 [extras]
 name=AnolisOS-7 - extras
 baseurl=http://mirrors.openanolis.cn/anolis/7/extras/$basearch/os
 enabled=1
-gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-ANOLIS
+gpgkey=file:///usr/share/distribution-gpg-keys/anolis/RPM-GPG-KEY-ANOLIS
 gpgcheck=1
 """
