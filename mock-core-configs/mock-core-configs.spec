@@ -1,5 +1,5 @@
 Name:       mock-core-configs
-Version:    36.9
+Version:    36.10
 Release:    1%{?dist}
 Summary:    Mock core config files basic chroots
 
@@ -151,6 +151,21 @@ fi
 %ghost %config(noreplace,missingok) %{_sysconfdir}/mock/default.cfg
 
 %changelog
+* Sat Jul 23 2022 Pavel Raiskup <praiskup@redhat.com> 36.10-1
+- Add Anolis OS 7 and Anolis OS 8 templates and configs (wb-zh951434@alibaba- inc.com)
+- add ELN local Koji repo
+- sync epel-8 and epel-9 templates
+- Add Rocky Linux 9 Configuration and Mod RL8 (label@rockylinux.org)
+- Update Fedora ELN repo template (sgallagh@redhat.com)
+- EuroLinux 9 chroot config (git@istiak.com)
+- Fedora 34 is EOL
+- circlelinux+epel-8 as epel-8 alternative
+- Fix dist value for openSUSE Leap 15.4 (ngompa@opensuse.org)
+- Add CircleLinux 8 configs (bella@cclinux.org)
+- Add openSUSE Leap 15.4 configs (ngompa@opensuse.org)
+- Move openSUSE Leap 15.2 to EOL directory (ngompa@opensuse.org)
+- Use MirrorCache for openSUSE repositories instead of MirrorBrain (ngompa@opensuse.org)
+
 * Thu May 19 2022 Pavel Raiskup <praiskup@redhat.com> 36.9-1
 - Add AlmaLinux 9 and AlmaLinux 9 + EPEL configs (neal@gompa.dev)
 - Update the AlmaLinux 8 GPG key path (neal@gompa.dev)
