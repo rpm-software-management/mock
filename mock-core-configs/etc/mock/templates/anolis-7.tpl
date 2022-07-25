@@ -1,6 +1,4 @@
-# This list is taken from 'epel-7-x86_64' @buildsys-build group, minus the
-# 'epel-*' specific stuff.
-config_opts['chroot_setup_cmd'] = 'install bash bzip2 coreutils cpio diffutils findutils gawk gcc gcc-c++ grep gzip info make patch redhat-rpm-config rpm-build sed shadow-utils tar unzip util-linux which xz'
+config_opts['chroot_setup_cmd'] = 'install bash bzip2 coreutils cpio diffutils findutils gawk gcc gcc-c++ grep gzip info make patch redhat-rpm-config anolis-release rpm-build sed shadow-utils tar unzip util-linux which xz'
 
 config_opts['dist'] = 'an7'  # only useful for --resultdir variable subst
 config_opts['releasever'] = '7'
