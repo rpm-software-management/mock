@@ -30,7 +30,7 @@ class Podman:
             seccomp_disable_opts = []
         cmd = ["podman", "run"] + seccomp_disable_opts + \
               ["--quiet", "-i", "--detach", self.image, "/bin/bash"]
-        container_id = util.do(cmd, returnOutput=True, env=self.buildroot.env)
+        container_id = util.do(cmd, returnOutput=True, returnStderr=False, env=self.buildroot.env)
         self.container_id = container_id.strip()
         return self.container_id
 
