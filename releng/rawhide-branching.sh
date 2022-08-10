@@ -48,3 +48,5 @@ done
 echo "WARNING: Make sure Fedora Copr maintainers are informed that"
 echo "WARNING: they should run 'copr-frontend branch-fedora $version'".
 echo "WARNING: That has to be done right on time when branching is done."
+echo "WARNING: Please check that distribution-gpg-keys have the N+1 key,"
+echo "         you likely want to bump Requires: distribution-gpg-keys!"
