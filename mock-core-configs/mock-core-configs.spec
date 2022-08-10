@@ -1,5 +1,5 @@
 Name:       mock-core-configs
-Version:    36.10
+Version:    36.11
 Release:    1%{?dist}
 Summary:    Mock core config files basic chroots
 
@@ -151,6 +151,11 @@ fi
 %ghost %config(noreplace,missingok) %{_sysconfdir}/mock/default.cfg
 
 %changelog
+* Wed Aug 10 2022 Pavel Raiskup <praiskup@redhat.com> 36.11-1
+- Branch Fedora 37 configs (miro@hroncok.cz)
+- Add anolis-release for Anolis OS 7 and Anolis OS 8 templates (wb-
+  zh951434@alibaba-inc.com)
+
 * Sat Jul 23 2022 Pavel Raiskup <praiskup@redhat.com> 36.10-1
 - Add Anolis OS 7 and Anolis OS 8 templates and configs (wb-zh951434@alibaba- inc.com)
 - add ELN local Koji repo
