@@ -48,11 +48,7 @@ gpgkey=file:///usr/share/distribution-gpg-keys/epel/RPM-GPG-KEY-EPEL-8
 gpgcheck=1
 skip_if_unavailable=False
 
-{% if koji_primary_repo != None and koji_primary_repo != "epel-next" %}
-[local-epel-next]
-{% else %}
 [local]
-{% endif %}
 name=Extra Packages for Enterprise Linux $releasever - Next - Koji Local - BUILDROOT ONLY!
 baseurl=https://kojipkgs.fedoraproject.org/repos/epel8-next-build/latest/$basearch/
 cost=2000
