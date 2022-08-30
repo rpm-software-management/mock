@@ -7,7 +7,6 @@ config_opts['extra_chroot_dirs'] = [ '/run/lock', ]
 
 config_opts['dnf.conf'] = """
 [main]
-[main]
 keepcache=1
 debuglevel=2
 reposdir=/dev/null
