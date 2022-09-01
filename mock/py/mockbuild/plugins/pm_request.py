@@ -37,7 +37,7 @@ class OutputFilter(object):
 
 class PMRequestPlugin(object):
     """
-    Executes package manager commands requested by processes runninng in the
+    Executes package manager commands requested by processes running in the
     chroot.
     """
 
