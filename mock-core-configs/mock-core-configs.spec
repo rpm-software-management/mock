@@ -71,6 +71,24 @@ case $HOST in
             echo "config_opts['use_bootstrap_image'] = True" >> "$config"
         fi
     done
+
+    for config in etc/mock/*cfg; do
+        case $config in
+            *alma+epel-9*) ;&
+            *almalinux-9*) ;&
+            *centos-stream-9*) ;&
+            *centos-stream+epel-9*) ;&
+            *centos-stream+epel-next-9*) ;&
+            *eurolinux-9*) ;&
+            *oraclelinux-9*) ;&
+            *oraclelinux+epel-9*) ;&
+            *rhel-9*) ;&
+            *rhel+epel-9*) ;&
+            *rocky-9*) ;&
+            *rocky+epel-9*)
+                echo "config_opts['use_bootstrap_image'] = True" >> "$config" ;;
+        esac
+    done
     ;;
 esac
 
