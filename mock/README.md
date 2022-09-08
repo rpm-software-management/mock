@@ -63,4 +63,4 @@ This project is sponsored by [Red Hat](https://www.redhat.com/). [Buy](https://w
 
 ## License
 
-GPLv2+
+[GPL-2.0-or-later](https://spdx.org/licenses/GPL-2.0-or-later.html)
