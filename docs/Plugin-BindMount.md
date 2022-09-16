@@ -15,6 +15,10 @@ In your config file insert the following lines:
 
 The `/host/path` is the path to a directory on the host that will be the source of a bind-mount, while the `/bind/mount/path/in/chroot` is the path where it will be mounted inside the chroot.
 
+Starting from version 1.4.10 it will work for files too. Just be aware that files are still put in 'dirs' directive. E.g.,
+
+     config_opts['plugin_conf']['bind_mount_opts']['dirs'].append(('/host/path/file.txt', '/bind/mount/path/in/chroot/file.txt' ))
+
 If you want the bind mounts to be available to all configurations, edit [the configuration file](Home#generate-custom-config-file).
 
 ### `/builddir/` cleanup
