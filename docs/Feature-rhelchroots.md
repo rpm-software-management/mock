@@ -43,7 +43,8 @@ $ mock -r rhel-8-x86_64 --shell
 ...
 ```
 
-Mock provides `rhel-8-*` and `rhel-7-*` configs which use pure RHEL. And then there are `rhel+epel-8-*` config which use RHEL 8 plus EPEL.
+Mock provides `rhel-<RELEASEVER>-<TARGET_ARCH>` configs which use pure RHEL.
+There are also `rhel+epel-<RELEASEVER>-<TARGET_ARCH>` configs which use RHEL plus EPEL.
 
 If there are multiple client keys, mock takes the first one in
 glob("/etc/pki/entitlement/<numeric-part>-key.pem") output.  But users
