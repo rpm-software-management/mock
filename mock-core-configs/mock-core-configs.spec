@@ -1,5 +1,5 @@
 Name:       mock-core-configs
-Version:    37.7
+Version:    37.8
 Release:    1%{?dist}
 Summary:    Mock core config files basic chroots
 
@@ -140,6 +140,14 @@ fi
 %ghost %config(noreplace,missingok) %{_sysconfdir}/mock/default.cfg
 
 %changelog
+* Tue Sep 27 2022 Pavel Raiskup <praiskup@redhat.com> 37.8-1
+- openEuler 22.03 configs added (yikunkero@gmail.com)
+- openEuler 20.03 configs added (yikunkero@gmail.com)
+- Oracle Linux 9 configs added (a.samets@gmail.com)
+- change license to spdx (msuchy@redhat.com)
+- Update to AlmaLinux Quay.io repo (srbala@gmail.com)
+- EPEL Koji repo not exposed when we are on EPEL Next (miro@hroncok.cz)
+
 * Wed Aug 10 2022 Pavel Raiskup <praiskup@redhat.com> 37.7-1
 - depend on distribution-gpg-keys 1.76 (F38 key)
 
