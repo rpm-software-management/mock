@@ -7,7 +7,7 @@ from unittest import mock
 from unittest.mock import MagicMock
 
 from templated_dictionary import TemplatedDictionary
-from mockbuild.config import load_defaults
+from mockbuild.config import setup_default_config_opts
 from mockbuild.constants import PKGPYTHONDIR
 from mockbuild.buildroot import Buildroot
 from mockbuild.package_manager import _PackageManager, Dnf
@@ -23,7 +23,7 @@ class TestPackageManager:
         plugindir = os.path.realpath(plugindir)
         PKGPYTHONDIR = plugindir
 
-        self.config_opts = load_defaults(None)
+        self.config_opts = setup_default_config_opts()
         self.config_opts['root'] = 'distro-version-arch'
         self.config_opts['basedir'] = self.workdir
         self.config_opts["resultdir"] = "{{basedir}}/{{root}}/result"

@@ -4,11 +4,13 @@
 # Written by Michael Brown
 # Copyright (C) 2007 Michael E Brown <mebrown@michaels-house.net>
 
+import atexit
 import ctypes
 import errno
 import grp
 import os
 import pwd
+from concurrent.futures import ProcessPoolExecutor
 
 from .trace_decorator import traceLog
 
@@ -151,6 +153,26 @@ class UidManager(object):
             self.restorePrivs()
             os.setgroups((self.mockgid, config_opts['chrootgid']))
             self.dropPrivsTemp()
+
+    def drop_privs_forever_and_execute(self, method, *args, **kwargs):
+        """
+        Assure that the process can not re-elevate privileges to root, and
+        execute the given method.
+        """
+        self.dropPrivsForever()
+        atexit._clear()
+        return method(*args, **kwargs)
+
+    def run_in_subprocess_without_privileges(self, method, *args, **kwargs):
+        """
+        Execute the given method in a forked process that can not re-elevate
+        privileges to root (we drop the saved set-*IDs).  The exceptions from
+        the child pops up to the parent.
+        """
+        with ProcessPoolExecutor(max_workers=1) as executor:
+            future = executor.submit(self.drop_privs_forever_and_execute,
+                                     method, *args, **kwargs)
+            return future.result()
 
 def getresuid():
     ruid = ctypes.c_long()

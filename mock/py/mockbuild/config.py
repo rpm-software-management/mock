@@ -4,15 +4,12 @@
 
 from __future__ import print_function
 
-import atexit
 from ast import literal_eval
-import errno
 from glob import glob
 import grp
 import logging
 import os
 import os.path
-import pickle
 import pipes
 import pwd
 import re
@@ -25,7 +22,7 @@ from . import text
 from .constants import MOCKCONFDIR, PKGPYTHONDIR, VERSION
 from .file_util import is_in_dir
 from .trace_decorator import getLog, traceLog
-from .uid import getresuid, setup_uid_manager
+from .uid import getresuid, getresgid
 from .util import set_use_nspawn, setup_operations_timeout
 
 PLUGIN_LIST = ['tmpfs', 'root_cache', 'yum_cache', 'mount', 'bind_mount',
@@ -49,7 +46,7 @@ def nspawn_supported():
 
 
 @traceLog()
-def setup_default_config_opts(unprivUid):
+def setup_default_config_opts():
     "sets up default configuration."
     config_opts = TemplatedDictionary(alias_spec={'dnf.conf': ['yum.conf']})
     config_opts['config_paths'] = []
@@ -64,7 +61,7 @@ def setup_default_config_opts(unprivUid):
     config_opts['chroothome'] = '/builddir'
     config_opts['log_config_file'] = 'logging.ini'
     config_opts['rpmbuild_timeout'] = 0
-    config_opts['chrootuid'] = unprivUid
+    config_opts['chrootuid'] = os.getuid()
     try:
         config_opts['chrootgid'] = grp.getgrnam("mock")[2]
     except KeyError:
@@ -577,16 +574,16 @@ regexp_include = re.compile(r'^\s*include\((.*)\)', re.MULTILINE)
 
 
 @traceLog()
-def include(config_file, config_opts):
+def include(config_file, search_path, paths):
     if not os.path.isabs(config_file):
-        config_file = os.path.join(config_opts['config_path'], config_file)
+        config_file = os.path.join(search_path, config_file)
 
     if os.path.exists(config_file):
-        if config_file in config_opts['config_paths']:
+        if config_file in paths:
             getLog().warning("Multiple inclusion of %s, skipping" % config_file)
             return ""
 
-        config_opts['config_paths'].append(config_file)
+        paths.add(config_file)
         content = open(config_file).read()
         # Search for "include(FILE)" and for each "include(FILE)" replace with
         # content of the FILE, in a perpective of search for includes and replace with his content.
@@ -595,7 +592,7 @@ def include(config_file, config_opts):
             for include_argument in include_arguments:
                 # pylint: disable=eval-used
                 sub_config_file = eval(include_argument)
-                sub_content = include(sub_config_file, config_opts)
+                sub_content = include(sub_config_file, search_path, paths)
                 content = regexp_include.sub(sub_content, content, count=1)
         return content
     else:
@@ -603,46 +600,33 @@ def include(config_file, config_opts):
 
 
 @traceLog()
-def update_config_from_file(config_opts, config_file, uid_manager):
+def update_config_from_file(config_opts, config_file):
+    """
+    Parse a given Mock config file with Python interpreter.  Return just the
+    'config_opts' global merged with the 'config_opts'.
+    """
     config_file = os.path.realpath(config_file)
-    r_pipe, w_pipe = os.pipe()
-    if os.fork() == 0:
-        atexit._clear()
-        try:
-            os.close(r_pipe)
-            if uid_manager and not all(getresuid()):
-                uid_manager.dropPrivsForever()
-            content = include(config_file, config_opts)
-            # pylint: disable=exec-used
-            exec(content)
-            with os.fdopen(w_pipe, 'wb') as writer:
-                pickle.dump(config_opts, writer)
-        except:  # pylint: disable=bare-except
-            # pylint: disable=import-outside-toplevel
-            import traceback
-            etype, evalue, raw_tb = sys.exc_info()
-            tb = traceback.extract_tb(raw_tb)
-            tb = [entry for entry in tb if entry[0] == config_file]
-            print('\n'.join(traceback.format_list(tb)), file=sys.stderr)
-            print('\n'.join(traceback.format_exception_only(etype, evalue)),
-                  file=sys.stderr)
-            sys.exit(1)
-        sys.exit(0)
-    else:
-        os.close(w_pipe)
-        with os.fdopen(r_pipe, 'rb') as reader:
-            while True:
-                try:
-                    new_config = reader.read()
-                    break
-                except OSError as e:
-                    if e.errno != errno.EINTR:
-                        raise
-            _, ret = os.wait()
-            if ret != 0:
-                raise exception.ConfigError('Error in configuration')
-            if new_config:
-                config_opts.update(pickle.loads(new_config))
+    included_files = set()
+    content = include(config_file, config_opts["config_path"], included_files)
+
+    # TODO: we should avoid doing exec() here long term, and switch to some
+    # better form of configuration (like YAML, json, or so?).  But historically
+    # the configuration is just a python-syntax file, so as a poor safety
+    # measure we disallow this for root (saved set-*IDs checked, too!)
+    for the_id in getresuid() + getresgid():
+        if the_id != 0:
+            continue
+        raise exception.ConfigError("Can't parse Mock configuration under root")
+
+    try:
+        exec(content)  # pylint: disable=exec-used
+    except Exception as exc:
+        raise exception.ConfigError("Config error: {}: {}".format(config_file, str(exc)))
+
+    # this actually allows multiple inclusion of one file, but not in a loop
+    new_paths = set(config_opts["config_paths"])
+    new_paths.union(included_files)
+    config_opts["config_paths"] = list(new_paths)
 
 
 @traceLog()
@@ -694,10 +678,10 @@ def nice_root_alias_error(name, alias_name, arch, no_configs, log):
 
 
 @traceLog()
-def do_update_config(log, config_opts, cfg, uidManager, name, skipError=True):
+def do_update_config(log, config_opts, cfg, name, skipError=True):
     if os.path.exists(cfg):
         log.info("Reading configuration from %s", cfg)
-        update_config_from_file(config_opts, cfg, uidManager)
+        update_config_from_file(config_opts, cfg)
         setup_operations_timeout(config_opts)
         check_macro_definition(config_opts)
         return
@@ -713,29 +697,21 @@ def do_update_config(log, config_opts, cfg, uidManager, name, skipError=True):
     if match and no_configs:
         alias = "-".join([match[1], match[2]])
         if nice_root_alias_error(name, alias, match[3], no_configs, log):
-            sys.exit(1)
+            raise exception.ConfigError(
+                "Mock config '{}' not found, see errors above.".format(name))
 
     if name == "default":
         log.error("  Did you forget to specify the chroot to use with '-r'?")
     if "/" in cfg:
         log.error("  If you're trying to specify a path, include the .cfg extension, e.g. -r ./target.cfg")
 
-    sys.exit(1)
+    raise exception.ConfigError("Non-existing Mock config '{}'".format(name))
 
 
-@traceLog()
-def load_defaults(uidManager):
-    if uidManager:
-        gid = uidManager.unprivUid
-    else:
-        gid = os.getuid()
-    return setup_default_config_opts(gid)
-
-
-def print_description(config_path, config_filename, uidManager):
+def print_description(config_path, config_filename):
     basename_without_ext = parse_config_filename(config_filename)[2]
     try:
-        config_opts = load_config(config_path, config_filename, uidManager)
+        config_opts = load_config(config_path, config_filename)
         description = config_opts.get("description", "")
     except exception.ConfigError:
         description = 'error during parsing the config file'
@@ -759,48 +735,50 @@ def get_global_configs(config_opts):
     return result
 
 
-def get_user_config_files(config_opts, uidManager):
+def get_user_config_files(config_opts):
     """ Return filenames of user configs of chroots """
-    custom_path = os.path.join(os.path.expanduser('~' + pwd.getpwuid(uidManager.unprivUid)[0]), '.config/mock/*.cfg')
+    uid = os.getuid()
+    custom_path = os.path.join(os.path.expanduser('~' + pwd.getpwuid(uid)[0]), '.config/mock/*.cfg')
     result = glob(custom_path)
     return result
 
 
 @traceLog()
-def list_configs(config_opts, uidManager):
+def list_configs(config_opts):
     log = logging.getLogger()
     log.disabled = True
     # array to save config paths
     print("{} {}".format("config name".ljust(34), "description"))
     print("Global configs:")
     for config_filename in sorted(get_global_configs(config_opts)):
-        print_description(config_opts['config_path'], config_filename, uidManager)
-    user_config_files = get_user_config_files(config_opts, uidManager)
+        print_description(config_opts['config_path'], config_filename)
+    user_config_files = get_user_config_files(config_opts)
     if user_config_files:
         print("Custom configs:")
         # ~/.config/mock/CHROOTNAME.cfg
         for config_filename in sorted(user_config_files):
-            print_description(config_opts['config_path'], config_filename, uidManager)
+            print_description(config_opts['config_path'], config_filename)
         log.disabled = False
 
 
 @traceLog()
 def simple_load_config(name, config_path=None):
     """ wrapper around load_config() intended by use 3rd party SW """
-    uidManager = setup_uid_manager()
     if config_path is None:
         config_path = MOCKCONFDIR
-    return load_config(config_path, name, uidManager)
+    return load_config(config_path, name)
 
 
 @traceLog()
-def load_config(config_path, name, uidManager):
+def load_config(config_path, name):
     log = logging.getLogger()
-    config_opts = load_defaults(uidManager)
+    config_opts = setup_default_config_opts()
 
     # array to save config paths
     config_opts['config_path'] = config_path
     config_opts['chroot_name'] = name
+
+    uid = config_opts["chrootuid"]
 
     # Read in the config files: default, and then user specified
     if name.endswith('.cfg'):
@@ -810,7 +788,7 @@ def load_config(config_path, name, uidManager):
         config_opts['chroot_name'] = os.path.splitext(os.path.basename(name))[0]
     else:
         # ~/.config/mock/CHROOTNAME.cfg
-        cfg = os.path.join(os.path.expanduser('~' + pwd.getpwuid(uidManager.unprivUid)[0]),
+        cfg = os.path.join(os.path.expanduser('~' + pwd.getpwuid(uid)[0]),
                            '.config/mock/{}.cfg'.format(name))
         if os.path.exists(cfg):
             chroot_cfg_path = cfg
@@ -823,18 +801,18 @@ def load_config(config_path, name, uidManager):
         os.path.join(config_path, "site-defaults.cfg"),
         os.path.join(config_path, "chroot-aliases.cfg"),
     ]:
-        do_update_config(log, config_opts, cfg_file, uidManager, name)
+        do_update_config(log, config_opts, cfg_file, name)
 
     # load the "chroot" specific config (-r option)
-    do_update_config(log, config_opts, chroot_cfg_path, uidManager, name, skipError=False)
+    do_update_config(log, config_opts, chroot_cfg_path, name, skipError=False)
 
     # Read user specific config file
     cfg = os.path.join(os.path.expanduser(
         '~' + pwd.getpwuid(os.getuid())[0]), '.mock/user.cfg')
-    do_update_config(log, config_opts, cfg, uidManager, name)
+    do_update_config(log, config_opts, cfg, name)
     cfg = os.path.join(os.path.expanduser(
         '~' + pwd.getpwuid(os.getuid())[0]), '.config/mock.cfg')
-    do_update_config(log, config_opts, cfg, uidManager, name)
+    do_update_config(log, config_opts, cfg, name)
 
     if config_opts['use_container_host_hostname'] and '%_buildhost' not in config_opts['macros']:
         config_opts['macros']['%_buildhost'] = socket.getfqdn()
