@@ -11,17 +11,20 @@
 
 
 class Error(Exception):
-    "base class for our errors."
-    def __init__(self, msg, status=None):
-        Exception.__init__(self)
-        self.msg = msg
-        self.resultcode = 1
-        if status is not None:
-            self.resultcode = status
+    resultcode = 1
+
+    def __init__(self, *args):
+        """
+        A base class for our errors.  The exit code can be specified as
+        self.resultcode.  If multiple ARGS are specified, the second one is
+        used as the resultcode.
+        """
+        super().__init__(*args)
+        if len(args) > 1:
+            self.resultcode = args[1]
 
     def __str__(self):
-        return self.msg
-
+        return str(self.args[0])
 
 # result/exit codes
 # 0 = yay!
@@ -103,86 +106,75 @@ def get_class_by_code(exit_code):
 
 class BuildError(Error):
     "rpmbuild failed."
-    def __init__(self, msg):
-        Error.__init__(self, msg)
-        self.msg = msg
+    def __init__(self, *args):
+        super().__init__(*args)
         self.resultcode = 10
 
 
 class commandTimeoutExpired(Error):
-    def __init__(self, msg):
-        Error.__init__(self, msg)
-        self.msg = msg
+    def __init__(self, *args):
+        super().__init__(*args)
         self.resultcode = 11
 
 class RootError(Error):
     "failed to set up chroot"
-    def __init__(self, msg):
-        Error.__init__(self, msg)
-        self.msg = msg
+    def __init__(self, *args):
+        super().__init__(*args)
         self.resultcode = 20
 
 
 class LvmError(Error):
     "LVM manipulation failed."
-    def __init__(self, msg):
-        Error.__init__(self, msg)
-        self.msg = msg
+    def __init__(self, *args):
+        super().__init__(*args)
         self.resultcode = 25
 
 
 class YumError(RootError):
     "yum failed."
-    def __init__(self, msg):
-        RootError.__init__(self, msg)
-        self.msg = msg
+    def __init__(self, *args):
+        super().__init__(*args)
         self.resultcode = 30
 
 
 class ExternalDepsError(RootError):
     "Unknown external dependency."
-    def __init__(self, msg):
-        RootError.__init__(self, msg)
-        self.msg = msg
+    def __init__(self, *args):
+        super().__init__(*args)
         self.resultcode = 31
 
 class PkgError(Error):
     "error with the srpm given to us."
-    def __init__(self, msg):
-        Error.__init__(self, msg)
-        self.msg = msg
+    def __init__(self, *args):
+        super().__init__(*args)
         self.resultcode = 40
 
 
 class BuildRootLocked(Error):
     "build root in use by another process."
-    def __init__(self, msg):
-        Error.__init__(self, msg)
-        self.msg = msg
+    def __init__(self, *args):
+        super().__init__(*args)
         self.resultcode = 60
 
 
 class LvmLocked(Error):
     "LVM thinpool is locked."
-    def __init__(self, msg):
-        Error.__init__(self, msg)
-        self.msg = msg
+    def __init__(self, *args):
+        super().__init__(*args)
         self.resultcode = 65
 
 
 class BadCmdline(Error):
     "user gave bad/inconsistent command line."
-    def __init__(self, msg):
-        Error.__init__(self, msg)
-        self.msg = msg
+    def __init__(self, *args):
+        super().__init__(*args)
         self.resultcode = 5
 
 
 class InvalidArchitecture(Error):
     "invalid host/target architecture specified."
-    def __init__(self, msg):
-        Error.__init__(self, msg)
-        self.msg = msg
+    def __init__(self, *args):
+        super().__init__(*args)
         self.resultcode = 6
 
 
@@ -193,34 +185,30 @@ Could not create output directory for built rpms. The directory specified was:
 
 Try using the --resultdir= option to select another location. Recommended location is --resultdir=~/mock/.
 """
-    def __init__(self, msg):
-        Error.__init__(self, msg)
-        self.msg = msg
+    def __init__(self, *args):
+        super().__init__(*args)
         self.resultcode = 70
 
 
 class UnshareFailed(Error):
     "call to C library unshare(2) syscall failed"
 
-    def __init__(self, msg):
-        Error.__init__(self, msg)
-        self.msg = msg
+    def __init__(self, *args):
+        super().__init__(*args)
         self.resultcode = 80
 
 
 class StateError(Error):
     "unbalanced call to state functions"
 
-    def __init__(self, msg):
-        Error.__init__(self, msg)
-        self.msg = msg
+    def __init__(self, *args):
+        super().__init__(*args)
         self.resultcode = 110
 
 
 class ConfigError(Error):
     "invalid configuration"
 
-    def __init__(self, msg):
-        Error.__init__(self, msg)
-        self.msg = msg
+    def __init__(self, *args):
+        super().__init__(*args)
         self.resultcode = 3
