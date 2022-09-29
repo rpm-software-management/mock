@@ -543,9 +543,9 @@ def check_arch_combination(target_arch, config_opts):
             time.sleep(5)
 
 @traceLog()
-def do_debugconfig(config_opts, uidManager, expand=False):
+def do_debugconfig(config_opts, expand=False):
     jinja_expand = config_opts['__jinja_expand']
-    defaults = config.load_defaults(uidManager)
+    defaults = config.setup_default_config_opts()
     defaults['__jinja_expand'] = expand
     config_opts['__jinja_expand'] = expand
     for key in sorted(config_opts):
@@ -561,7 +561,9 @@ def do_debugconfig(config_opts, uidManager, expand=False):
 
 @traceLog()
 def do_listchroots(config_opts, uidManager):
-    config.list_configs(config_opts, uidManager)
+    uidManager.run_in_subprocess_without_privileges(
+        config.list_configs, config_opts,
+    )
 
 
 @traceLog()
@@ -656,7 +658,8 @@ def main():
     if options.configdir:
         config_path = options.configdir
 
-    config_opts = config.load_config(config_path, options.chroot, uidManager)
+    config_opts = uidManager.run_in_subprocess_without_privileges(
+            config.load_config, config_path, options.chroot)
 
     # cmdline options override config options
     config.set_config_opts_per_cmdline(config_opts, options, args)
@@ -933,10 +936,10 @@ def run_command(options, args, config_opts, commands, buildroot, state):
         mockbuild.rebuild.do_buildsrpm(config_opts, commands, buildroot, options, args)
 
     elif options.mode == 'debugconfig':
-        do_debugconfig(config_opts, buildroot.uid_manager)
+        do_debugconfig(config_opts)
 
     elif options.mode == 'debugconfigexpand':
-        do_debugconfig(config_opts, buildroot.uid_manager, True)
+        do_debugconfig(config_opts, True)
 
     elif options.mode == 'listchroots':
         do_listchroots(config_opts, buildroot.uid_manager)
