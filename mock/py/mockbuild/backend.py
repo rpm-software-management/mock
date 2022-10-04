@@ -67,6 +67,7 @@ class Commands(object):
         self.no_root_shells = config['no_root_shells']
 
         self.private_network = not config['rpmbuild_networking']
+        self.rpmbuild_noclean_option = None
 
     def _get_nspawn_args(self):
         nspawn_args = []
@@ -666,14 +667,34 @@ class Commands(object):
         if return_code:
             raise PkgError("Source RPM is not installable:\n{0}".format(output))
 
+
+    @property
+    def _rpmbuild_noclean_option(self):
+        """
+        Detect and cache if rpmbuild in buildroot supports the --noclean
+        option.  Return "--noclean" string if supported, otherwise return an
+        empty string.
+
+        TODO: Remove this method once nobody is building for RHEL 6.
+        """
+        if self.config["cleanup_on_success"]:
+            return ""
+
+        if self.rpmbuild_noclean_option is not None:
+            return self.rpmbuild_noclean_option
+
+        self.rpmbuild_noclean_option = ""
+        out, status = self.buildroot.doChroot(["rpmbuild", "--help"],
+                                              returnOutput=True)
+        if not status and "--noclean" in out:
+            self.rpmbuild_noclean_option = "--noclean"
+        return self.rpmbuild_noclean_option
+
+
     @traceLog()
     def rebuild_installed_srpm(self, spec_path, timeout):
-        if self.config['cleanup_on_success']:
-            noclean = ''
-        else:
-            noclean = '--noclean'
         command = ['{command} -bs {0} --target {1} --nodeps {2}'.format(
-            noclean, self.rpmbuild_arch, spec_path,
+            self._rpmbuild_noclean_option, self.rpmbuild_arch, spec_path,
             command=self.config['rpmbuild_command'])]
         command = ["bash", "--login", "-c"] + command
         self.buildroot.doChroot(
@@ -716,11 +737,8 @@ class Commands(object):
             additional_opts = []
 
         def get_command(mode):
-            if self.config['cleanup_on_success']:
-                noclean = []
-            else:
-                noclean = ['--noclean']
-            command = [self.config['rpmbuild_command']] + mode + noclean + \
+            command = [self.config['rpmbuild_command']] + mode + \
+                      [self._rpmbuild_noclean_option] + \
                       ['--target', self.rpmbuild_arch, '--nodeps'] + \
                       check_opt + [spec_path] + additional_opts
             command = ["bash", "--login", "-c"] + [' '.join(command)]
