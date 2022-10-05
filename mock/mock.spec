@@ -237,7 +237,7 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 %{_datadir}/cheat/mock
 
 # cache & build dirs
-%defattr(0775, root, mock, 02775)
+%defattr(0775, root, mock, 0775)
 %dir %{_localstatedir}/cache/mock
 %dir %{_localstatedir}/lib/mock
 
