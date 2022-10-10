@@ -103,6 +103,9 @@ Recommends: git
 Recommends: subversion
 Recommends: tar
 
+# We could migrate to 'copr-distgit-client'
+Recommends: rpkg
+
 %description scm
 Mock SCM integration module.
 
