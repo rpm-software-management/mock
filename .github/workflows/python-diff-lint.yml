@@ -1,0 +1,33 @@
+---
+name: Lint Python issues
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  container-python-lint-job:
+    runs-on: ubuntu-latest
+    container: registry.fedoraproject.org/fedora:37
+    steps:
+      - name: Install the needed Fedora packages
+        run: dnf install -y csdiff dnf-plugins-core pylint
+
+      - name: Enable external Copr repo with diff linter
+        run: dnf -y copr enable @copr/vcs-diff-lint
+
+      - name: Install vcs-diff-lint
+        run: dnf -y install vcs-diff-lint
+
+      - uses: actions/checkout@v3
+
+      - name: Adjust git config (we are read only, temporary clones)
+        run: >
+          git config --global --add safe.directory '*' &&
+          git config --global advice.detachedHead false
+
+      - name: Fetch the original code so we can analyze that
+        run: git fetch origin main:main
+
+      - name: Run the analysis
+        run: cd mock && vcs-diff-lint --print-fixed-errors
