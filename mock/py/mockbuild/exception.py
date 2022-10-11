@@ -20,11 +20,12 @@ class Error(Exception):
         used as the resultcode.
         """
         super().__init__(*args)
+        self.msg = args[0]
         if len(args) > 1:
             self.resultcode = args[1]
 
     def __str__(self):
-        return str(self.args[0])
+        return self.msg
 
 # result/exit codes
 # 0 = yay!
