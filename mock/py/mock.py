@@ -603,7 +603,7 @@ def running_in_docker():
             if 'docker' in items[2]:
                 return True
     # For containers with cgroupv2
-    with open('/proc/self/mountinfo') as f:
+    with open('/proc/self/mountinfo', encoding='utf8') as f:
         for line in f:
             if '/docker/containers/' in line:
                 return True
