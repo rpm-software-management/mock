@@ -602,6 +602,11 @@ def running_in_docker():
             items = line.split(':')
             if 'docker' in items[2]:
                 return True
+    # For containers with cgroupv2
+    with open('/proc/self/mountinfo') as f:
+        for line in f:
+            if '/docker/containers/' in line:
+                return True
     return False
 
 
