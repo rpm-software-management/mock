@@ -13,6 +13,9 @@ Released on 2022-10-14.
   old systems (EL6 and older).  The new Mock *v3.2* fixes this, and stops using
   `--noclean` for old target builds.  Related [rhbz#2105393][].
 
+- The `mock --list-chroots` now performs much faster; the amount of `fork()`
+  calls while listing the chroot configuration files was minimized.
+
 - Files installed into `/var/lib/mock` and `/var/cache/mock` no longer get the
   SGID bit (which enforces `mock` group ownership).  The bit shouldn't be needed
   (by common sense, but also given our testsuite is green), so we dropped the
