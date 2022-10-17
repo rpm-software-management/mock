@@ -15,6 +15,7 @@ import pwd
 import re
 import socket
 import sys
+import warnings
 
 from templated_dictionary import TemplatedDictionary
 from . import exception
@@ -613,11 +614,6 @@ def update_config_from_file(config_opts, config_file):
     # better form of configuration (like YAML, json, or so?).  But historically
     # the configuration is just a python-syntax file, so as a poor safety
     # measure we disallow this for root (saved set-*IDs checked, too!)
-    for the_id in getresuid() + getresgid():
-        if the_id != 0:
-            continue
-        raise exception.ConfigError("Can't parse Mock configuration under root")
-
     try:
         exec(content)  # pylint: disable=exec-used
     except Exception as exc:
@@ -764,6 +760,16 @@ def list_configs(config_opts):
 @traceLog()
 def simple_load_config(name, config_path=None):
     """ wrapper around load_config() intended by use 3rd party SW """
+
+    for the_id in getresuid() + getresgid():
+        if the_id != 0:
+            continue
+        warnings.warn(
+            "Parsing Mock configuration as root is highly discouraged, "
+            "see https://rpm-software-management.github.io/mock/#setup"
+        )
+        break
+
     if config_path is None:
         config_path = MOCKCONFDIR
     return load_config(config_path, name)
