@@ -9,7 +9,7 @@
 
 Summary: Builds packages inside chroots
 Name: mock
-Version: 3.2
+Version: 3.3
 Release: 1%{?dist}
 License: GPL-2.0-or-later
 # Source is created by
@@ -261,6 +261,9 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 %dir  %{_datadir}/cheat
 
 %changelog
+* Mon Oct 17 2022 Pavel Raiskup <praiskup@redhat.com> 3.3-1
+- re-allow running mock as root, rhbz#2135203
+
 * Fri Oct 14 2022 Pavel Raiskup <praiskup@redhat.com> 3.2-1
 - Fix the docker environment check for cgroupv2 (achal.velani@oracle.com)
 - mock-scm: recommend rpkg-util
