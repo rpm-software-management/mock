@@ -18,7 +18,7 @@ def rebuild_generic(items, commands, buildroot, config_opts, cmd, post=None, cle
     start = time.time()
     try:
         for item in items:
-            log.info("Start(%s)  Config(%s)", item, buildroot.shared_root_name)
+            log.info("Start(%s)  Config(%s)", item, buildroot.config['chroot_name'])
             if clean:
                 commands.clean()
             commands.init(prebuild=not config_opts.get('short_circuit'))
