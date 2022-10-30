@@ -317,6 +317,16 @@ def setup_default_config_opts():
 
     config_opts["seccomp"] = False
 
+    # mapping from target_arch (or forcearch) to arch in /usr/bin/qemu-*-static
+    config_opts["qemu_user_static_mapping"] = {
+        'aarch64': 'aarch64',
+        'i386': 'i386',
+        'i686': 'i386',
+        'ppc64': 'ppc64',
+        'ppc64le': 'ppc64le',
+        's390x': 's390x',
+        'x86_64': 'x86_64',
+    }
     return config_opts
 
 

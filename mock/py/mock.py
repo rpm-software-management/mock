@@ -529,9 +529,10 @@ def check_arch_combination(target_arch, config_opts):
 
     config.multiply_platform_multiplier(config_opts)
     if config_opts['forcearch']:
-        binary = '/usr/bin/qemu-x86_64-static'
+        binary = f'/usr/bin/qemu-{config_opts["qemu_user_static_mapping"][config_opts["forcearch"]]}-static'
         if not os.path.exists(binary):
             # qemu-user-static is required, but seems to be missing
+            log.warning("missing %s mock will likely fail ...", binary)
             if util.is_host_rh_family():
                 # fail asap on RH systems
                 raise RuntimeError('the --forcearch feature requires the '
@@ -539,7 +540,6 @@ def check_arch_combination(target_arch, config_opts):
             # on other systems we are not sure where the qemu-user-static
             # binaries are installed.  Notify the user verbosely, but do our
             # best and continue!
-            log.warning("missing %s mock will likely fail ...", binary)
             time.sleep(5)
 
 @traceLog()
