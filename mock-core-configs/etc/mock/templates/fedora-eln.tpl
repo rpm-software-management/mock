@@ -77,7 +77,6 @@ gpgcheck=1
 gpgkey={{ rawhide_gpg_keys() }}
 skip_if_unavailable=False
 
-
 [eln-appstream]
 name=Fedora - ELN AppStream - Developmental packages for the next Enterprise Linux release
 baseurl=https://odcs.fedoraproject.org/composes/production/latest-Fedora-ELN/compose/AppStream/$basearch/os/
@@ -111,7 +110,6 @@ gpgcheck=1
 gpgkey={{ rawhide_gpg_keys() }}
 skip_if_unavailable=False
 
-
 [eln-crb]
 name=Fedora - ELN CodeReady Linux Builders - Build packages for the next Enterprise Linux release
 baseurl=https://odcs.fedoraproject.org/composes/production/latest-Fedora-ELN/compose/CRB/$basearch/os/
@@ -144,8 +142,6 @@ type=rpm
 gpgcheck=1
 gpgkey={{ rawhide_gpg_keys() }}
 skip_if_unavailable=False
-
-
 
 [eln-extras]
 name=Fedora - ELN Extras - Developmental packages for the next Enterprise Linux release
@@ -184,8 +180,6 @@ gpgcheck=1
 gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-fedora-eln-$basearch
 skip_if_unavailable=False
 
-
-
 [eln-ha]
 name=Fedora - ELN HighAvailability - Developmental packages for the next Enterprise Linux release
 baseurl=https://odcs.fedoraproject.org/composes/production/latest-Fedora-ELN/compose/HighAvailability/$basearch/os/
@@ -222,8 +216,6 @@ type=rpm
 gpgcheck=1
 gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-fedora-eln-$basearch
 skip_if_unavailable=False
-
-
 
 [eln-rs]
 name=Fedora - ELN ResilientStorage - Developmental packages for the next Enterprise Linux release
@@ -262,8 +254,6 @@ gpgcheck=1
 gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-fedora-eln-$basearch
 skip_if_unavailable=False
 
-
-
 [eln-rt]
 name=Fedora - ELN RT - Developmental packages for the next Enterprise Linux release
 baseurl=https://odcs.fedoraproject.org/composes/production/latest-Fedora-ELN/compose/RT/$basearch/os/
@@ -300,8 +290,6 @@ type=rpm
 gpgcheck=1
 gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-fedora-eln-$basearch
 skip_if_unavailable=False
-
-
 
 [eln-nfv]
 name=Fedora - ELN NFV - Developmental packages for the next Enterprise Linux release
@@ -340,8 +328,6 @@ gpgcheck=1
 gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-fedora-eln-$basearch
 skip_if_unavailable=False
 
-
-
 [eln-sap]
 name=Fedora - ELN SAP - Developmental packages for the next Enterprise Linux release
 baseurl=https://odcs.fedoraproject.org/composes/production/latest-Fedora-ELN/compose/SAP/$basearch/os/
@@ -378,8 +364,6 @@ type=rpm
 gpgcheck=1
 gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-fedora-eln-$basearch
 skip_if_unavailable=False
-
-
 
 [eln-saphana]
 name=Fedora - ELN SAPHANA - Developmental packages for the next Enterprise Linux release

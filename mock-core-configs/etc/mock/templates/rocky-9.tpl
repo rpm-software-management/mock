@@ -5,7 +5,6 @@ config_opts['package_manager'] = 'dnf'
 config_opts['extra_chroot_dirs'] = [ '/run/lock', ]
 config_opts['bootstrap_image'] = 'quay.io/rockylinux/rockylinux:9'
 
-
 config_opts['dnf.conf'] = """
 [main]
 keepcache=1
@@ -25,7 +24,6 @@ install_weak_deps=0
 protected_packages=
 module_platform_id=platform:el9
 user_agent={{ user_agent }}
-
 
 [baseos]
 name=Rocky Linux $releasever - BaseOS
@@ -250,6 +248,5 @@ gpgcheck=1
 enabled=0
 metadata_expire=6h
 gpgkey=file:///usr/share/distribution-gpg-keys/rocky/RPM-GPG-KEY-Rocky-9
-
 
 """

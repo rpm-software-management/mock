@@ -5,7 +5,6 @@ config_opts['package_manager'] = 'dnf'
 config_opts['extra_chroot_dirs'] = [ '/run/lock', ]
 config_opts['bootstrap_image'] = 'docker.io/circlelinuxos/circlelinux:8'
 
-
 config_opts['dnf.conf'] = """
 [main]
 keepcache=1
@@ -25,7 +24,6 @@ install_weak_deps=0
 protected_packages=
 module_platform_id=platform:el8
 user_agent={{ user_agent }}
-
 
 [baseos]
 name=Circle Linux $releasever - BaseOS

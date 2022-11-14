@@ -27,7 +27,6 @@ protected_packages=
 module_platform_id=platform:el9
 user_agent={{ user_agent }}
 
-
 [baseos]
 name=AlmaLinux $releasever - BaseOS
 mirrorlist=https://mirrors.almalinux.org/mirrorlist/$releasever/baseos

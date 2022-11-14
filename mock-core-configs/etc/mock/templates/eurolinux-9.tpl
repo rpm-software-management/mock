@@ -25,7 +25,6 @@ best=0
 protected_packages=
 module_platform_id=platform:el9
 
-
 [baseos-all]
 name=EuroLinux 9 BaseOS All
 baseurl=https://fbi.cdn.euro-linux.com/dist/eurolinux/server/9/$basearch/BaseOS/all/

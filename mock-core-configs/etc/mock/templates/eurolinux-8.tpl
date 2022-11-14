@@ -26,7 +26,6 @@ best=0
 protected_packages=
 module_platform_id=platform:el8
 
-
 [baseos-all]
 name=EuroLinux 8 BaseOS All
 baseurl=https://fbi.cdn.euro-linux.com/dist/eurolinux/server/8/$basearch/certify-BaseOS/all/

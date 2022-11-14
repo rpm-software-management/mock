@@ -43,7 +43,6 @@ sslclientcert = /etc/pki/entitlement/{{ redhat_subscription_key_id }}.pem
 gpgkey=file:///usr/share/distribution-gpg-keys/redhat/RPM-GPG-KEY-redhat7-release
 skip_if_unavailable=False
 
-
 [rhel-optional]
 name = Red Hat Enterprise Linux - Optional
 {% if target_arch == 'aarch64' %}
