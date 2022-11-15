@@ -9,7 +9,7 @@
 
 Summary: Builds packages inside chroots
 Name: mock
-Version: 3.3
+Version: 3.4
 Release: 1%{?dist}
 License: GPL-2.0-or-later
 # Source is created by
@@ -261,6 +261,10 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 %dir  %{_datadir}/cheat
 
 %changelog
+* Tue Nov 15 2022 Pavel Raiskup <praiskup@redhat.com> 3.4-1
+- make device mapper control device available if supported (neal@gompa.dev)
+- check for target specific qemu-user-static (msuchy@redhat.com)
+
 * Mon Oct 17 2022 Pavel Raiskup <praiskup@redhat.com> 3.3-1
 - re-allow running mock as root, rhbz#2135203
 

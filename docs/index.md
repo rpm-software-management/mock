@@ -69,6 +69,7 @@ Versions in Linux distributions:
 
 
 ## Release Notes
+* [3.4](Release-Notes-3.4) (2022-11-15) - Device Mapper control file exposed, better detection for qemu-user-static.
 * [3.3](Release-Notes-3.3) (2022-10-17) - Mock can again be run by `root`, even though this is discouraged.
 * [3.2](Release-Notes-3.2) (2022-10-14) - Optimized --list-chroots option, directories in `/var/lib` dropped SGID bit, `rpmbuild --noclean` is not used for old chroots (EL6 and older).
 * [3.1](Release-Notes-3.1) (2022-07-22) - Fixes for new RPM with --no-cleanup-after, a new config `tar_binary` added, more convenient work with `/bin/bsdtar`.
