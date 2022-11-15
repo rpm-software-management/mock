@@ -117,6 +117,7 @@ class Buildroot(object):
 
         self._homedir_bindmounts = {}
         self._setup_nspawn_btrfs_device()
+        self._setup_nspawn_devicemapper_device()
         self._setup_nspawn_loop_devices()
 
     @traceLog()
@@ -635,6 +636,13 @@ class Buildroot(object):
             self.config['nspawn_args'].append('--bind=/dev/btrfs-control')
 
     @traceLog()
+    def _setup_nspawn_devicemapper_device(self):
+        if not util.USE_NSPAWN or self.is_bootstrap:
+            return
+        if os.path.exists('/dev/mapper/control'):
+            self.config['nspawn_args'].append('--bind=/dev/mapper/control')
+
+    @traceLog()
     def _setup_nspawn_loop_devices(self):
         if not util.USE_NSPAWN or self.is_bootstrap:
             return
@@ -656,6 +664,7 @@ class Buildroot(object):
             file_util.rmtree(self.make_chroot_path("dev"), selinux=self.selinux, exclude=self.mounts.get_mountpoints())
             file_util.mkdirIfAbsent(self.make_chroot_path("dev", "pts"))
             file_util.mkdirIfAbsent(self.make_chroot_path("dev", "shm"))
+            file_util.mkdirIfAbsent(self.make_chroot_path("dev", "mapper"))
             prevMask = os.umask(0000)
             devFiles = [
                 (stat.S_IFCHR | 0o666, os.makedev(1, 3), "dev/null"),
@@ -667,6 +676,7 @@ class Buildroot(object):
                 (stat.S_IFCHR | 0o600, os.makedev(5, 1), "dev/console"),
                 (stat.S_IFCHR | 0o666, os.makedev(5, 2), "dev/ptmx"),
                 (stat.S_IFCHR | 0o660, os.makedev(10, 234), "dev/btrfs-control"),
+                (stat.S_IFCHR | 0o600, os.makedev(10, 236), "dev/mapper/control"),
                 (stat.S_IFCHR | 0o666, os.makedev(10, 237), "dev/loop-control"),
                 (stat.S_IFCHR | 0o600, os.makedev(10, 57), "dev/prandom"),
                 (stat.S_IFCHR | 0o600, os.makedev(10, 183), "dev/hwrng"),
