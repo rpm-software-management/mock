@@ -528,22 +528,44 @@ def check_arch_combination(target_arch, config_opts):
         config_opts['forcearch'] = target_arch
 
     config.multiply_platform_multiplier(config_opts)
-    if config_opts['forcearch']:
-        binary = f'/usr/bin/qemu-{config_opts["qemu_user_static_mapping"][config_opts["forcearch"]]}-static'
-        if not os.path.exists(binary):
-            # qemu-user-static is required, but seems to be missing
-            if util.is_host_rh_family():
-                # fail asap on RH systems
-                raise RuntimeError(
-                    f'The --forcearch feature requires the {binary} '
-                    'file to be installed (typically qemu-user-static* package)')
 
-            # On non-RH systems we are not sure where the qemu-<ARCH>-static
-            # binaries reside - therefore we can't even check whether they are
-            # installed.  Therefore we don't raise an exception; we at least
-            # notify the user verbosely, cross our fingers, and continue.
-            log.warning("missing %s mock will likely fail ...", binary)
-            time.sleep(5)
+    if not config_opts['forcearch']:
+        return
+
+    # Check below that we can do cross-architecture builds.
+
+    option = f"--forcearch={config_opts['forcearch']}"
+    binary_pattern = config_opts["qemu_user_static_mapping"].get(config_opts["forcearch"])
+    if not binary_pattern:
+        # Probably a missing configuration.
+        log.warning(
+            "Mock will likely fail, %s is enabled "
+            "while Mock is unable to detect the corresponding "
+            "/usr/bin/qemu-*-static binary",
+            option,
+        )
+        time.sleep(5)
+        return
+
+    binary = f'/usr/bin/qemu-{binary_pattern}-static'
+    if os.path.exists(binary):
+        return
+
+    # qemu-user-static is required, but seems to be missing
+    if not util.is_host_rh_family():
+        # On non-RH systems we are not sure where the qemu-<ARCH>-static
+        # binaries reside - therefore we can't even check whether they are
+        # installed.  Therefore we don't raise an exception; we at least
+        # notify the user verbosely, cross our fingers, and continue.
+        log.warning("Mock with %s will likely fail with missing %s",
+                    option, binary)
+        time.sleep(5)
+        return
+
+    raise RuntimeError(
+        f'The {option} feature requires the {binary} '
+        'file to be installed (typically qemu-user-static* package)')
+
 
 @traceLog()
 def do_debugconfig(config_opts, expand=False):
