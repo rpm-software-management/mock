@@ -562,7 +562,7 @@ def check_arch_combination(target_arch, config_opts):
         time.sleep(5)
         return
 
-    raise RuntimeError(
+    raise mockbuild.exception.InvalidArchitecture(
         f'The {option} feature requires the {binary} '
         'file to be installed (typically qemu-user-static* package)')
 
