@@ -320,6 +320,7 @@ def setup_default_config_opts():
     # mapping from target_arch (or forcearch) to arch in /usr/bin/qemu-*-static
     config_opts["qemu_user_static_mapping"] = {
         'aarch64': 'aarch64',
+        'armv7hl': 'arm',
         'i386': 'i386',
         'i686': 'i386',
         'ppc64': 'ppc64',
