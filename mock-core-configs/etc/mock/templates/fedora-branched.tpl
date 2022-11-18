@@ -1,6 +1,4 @@
 config_opts['root'] = 'fedora-{{ releasever }}-{{ target_arch }}'
-# config_opts['module_enable'] = ['list', 'of', 'modules']
-# config_opts['module_install'] = ['module1/profile', 'module2/profile']
 
 # fedora 31+ isn't mirrored, we need to run from koji
 config_opts['mirrored'] = config_opts['target_arch'] != 'i686'

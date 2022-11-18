@@ -1,7 +1,4 @@
 config_opts['root'] = 'fedora-30-{{ target_arch }}'
-# config_opts['module_enable'] = ['list', 'of', 'modules']
-# config_opts['module_install'] = ['module1/profile', 'module2/profile']
-
 config_opts['chroot_setup_cmd'] = 'install @buildsys-build'
 
 config_opts['dist'] = 'fc30'  # only useful for --resultdir variable subst
