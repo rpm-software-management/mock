@@ -26,4 +26,3 @@ enabled=0
 gpgkey=file:///usr/share/distribution-gpg-keys/epel/RPM-GPG-KEY-EPEL-8
 gpgcheck=1
 """
-
