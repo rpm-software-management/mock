@@ -26,6 +26,11 @@ config_opts['module_setup_commands'] = [
     ]
 ```
 
+Modules can also be specified on the command line using:
+```
+--config-opts=module_setup_commands.module_install=postgresql:13
+```
+
 The obsolete, less flexible, but still available  modularity syntax was added in Mock 1.4.2.
 
 ```
