@@ -9,7 +9,7 @@
 
 Summary: Builds packages inside chroots
 Name: mock
-Version: 3.4
+Version: 3.5
 Release: 1%{?dist}
 License: GPL-2.0-or-later
 # Source is created by
@@ -261,6 +261,11 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 %dir  %{_datadir}/cheat
 
 %changelog
+* Thu Dec 01 2022 Pavel Raiskup <praiskup@redhat.com> 3.5-1
+- check for qemu-user-static raises InvalidArchitecture()
+- forcearch: map armv7hl to the /usr/bin/qemu-arm-static binary
+- more pedantic check for the qemu-*-static binaries
+
 * Tue Nov 15 2022 Pavel Raiskup <praiskup@redhat.com> 3.4-1
 - make device mapper control device available if supported (neal@gompa.dev)
 - check for target specific qemu-user-static (msuchy@redhat.com)
