@@ -69,6 +69,7 @@ Versions in Linux distributions:
 
 
 ## Release Notes
+* [3.5](Release-Notes-3.5) (2022-12-01) - Fixed detection of qemu-user-static* packages for the `--forcearch` feature.
 * [3.4](Release-Notes-3.4) (2022-11-15) - Device Mapper control file exposed, better detection for qemu-user-static.
 * [3.3](Release-Notes-3.3) (2022-10-17) - Mock can again be run by `root`, even though this is discouraged.
 * [3.2](Release-Notes-3.2) (2022-10-14) - Optimized --list-chroots option, directories in `/var/lib` dropped SGID bit, `rpmbuild --noclean` is not used for old chroots (EL6 and older).
