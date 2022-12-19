@@ -1,6 +1,11 @@
 # See the documentation for more information:
 # https://packit.dev/docs/configuration/
 
+
+srpm_build_deps:
+  - tito
+  - git
+
 jobs:
 # job for mock
 - job: copr_build
