@@ -911,7 +911,7 @@ def find_btrfs_in_chroot(mockdir, chroot_path):
     except Exception as e: # pylint: disable=broad-except
         # it is not btrfs volume
         log = getLog()
-        log.debug("Please ignore the error above above about btrfs.")
+        log.debug("Please ignore the error above about btrfs.")
         return None
 
     for l in output[:-1].splitlines():
