@@ -1,5 +1,5 @@
 Name:       mock-core-configs
-Version:    36.13
+Version:    36.14
 Release:    1%{?dist}
 Summary:    Mock core config files basic chroots
 
@@ -169,6 +169,10 @@ fi
 %ghost %config(noreplace,missingok) %{_sysconfdir}/mock/default.cfg
 
 %changelog
+* Thu Jan 05 2023 Pavel Raiskup <praiskup@redhat.com> 36.14-1
+- missmatching gpg key and rpms in openEuler 20.03 LTS (pkwarcraft@gmail.com)
+- drop unneccessary module docs from configuration files (nkadel@gmail.com)
+
 * Tue Sep 27 2022 Pavel Raiskup <praiskup@redhat.com> 36.13-1
 - add openEuler 20.03 (yikunkero@gmail.com)
 - Adding support Oracle Linux 9 in mock (a.samets@gmail.com)
