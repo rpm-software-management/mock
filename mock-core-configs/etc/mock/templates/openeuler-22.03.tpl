@@ -27,44 +27,47 @@ protected_packages=
 module_platform_id=platform:oe2203
 user_agent={{ user_agent }}
 
+# all openEuler LTS release will continue developing and releasing SPx version
+# such as 22.03-LTS -> 22.03-LTS-SP1 -> 22.03-LTS-SP2 ...
+# all LTS-SPx is compatible with its LTS release
 [OS]
 name=OS
-baseurl=http://repo.openeuler.org/openEuler-22.03-LTS/OS/$basearch/
+baseurl=http://repo.openeuler.org/openEuler-22.03-LTS-SP1/OS/$basearch/
 enabled=1
 gpgcheck=1
 gpgkey=file:///usr/share/distribution-gpg-keys/openeuler/RPM-GPG-KEY-openEuler
 
 [everything]
 name=everything
-baseurl=http://repo.openeuler.org/openEuler-22.03-LTS/everything/$basearch/
+baseurl=http://repo.openeuler.org/openEuler-22.03-LTS-SP1/everything/$basearch/
 enabled=1
 gpgcheck=1
 gpgkey=file:///usr/share/distribution-gpg-keys/openeuler/RPM-GPG-KEY-openEuler
 
 [EPOL]
 name=EPOL
-baseurl=http://repo.openeuler.org/openEuler-22.03-LTS/EPOL/main/$basearch/
+baseurl=http://repo.openeuler.org/openEuler-22.03-LTS-SP1/EPOL/main/$basearch/
 enabled=1
 gpgcheck=1
 gpgkey=file:///usr/share/distribution-gpg-keys/openeuler/RPM-GPG-KEY-openEuler
 
 [debuginfo]
 name=debuginfo
-baseurl=http://repo.openeuler.org/openEuler-22.03-LTS/debuginfo/$basearch/
+baseurl=http://repo.openeuler.org/openEuler-22.03-LTS-SP1/debuginfo/$basearch/
 enabled=0
 gpgcheck=1
 gpgkey=file:///usr/share/distribution-gpg-keys/openeuler/RPM-GPG-KEY-openEuler
 
 [source]
 name=source
-baseurl=http://repo.openeuler.org/openEuler-22.03-LTS/source/
+baseurl=http://repo.openeuler.org/openEuler-22.03-LTS-SP1/source/
 enabled=0
 gpgcheck=1
 gpgkey=file:///usr/share/distribution-gpg-keys/openeuler/RPM-GPG-KEY-openEuler
 
 [update]
 name=update
-baseurl=http://repo.openeuler.org/openEuler-22.03-LTS/update/$basearch/
+baseurl=http://repo.openeuler.org/openEuler-22.03-LTS-SP1/update/$basearch/
 enabled=1
 gpgcheck=1
 gpgkey=file:///usr/share/distribution-gpg-keys/openeuler/RPM-GPG-KEY-openEuler
