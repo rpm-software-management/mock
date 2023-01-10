@@ -59,7 +59,7 @@ def rmtree(path, selinux=False, exclude=()):
                             rmtree(fullname, selinux=selinux, exclude=exclude)
                         except OSError as e:
                             if e.errno in (errno.EPERM, errno.EACCES, errno.EBUSY):
-                                # we alrady tried handling this on lower level and failed,
+                                # we already tried handling this on lower level and failed,
                                 # there's no point in trying again now
                                 failed_to_handle = True
                             raise
