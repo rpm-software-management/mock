@@ -677,7 +677,7 @@ class OverlayFsPlugin(object):
 
     # touch rpmdb files to make overlayfs copy them to upper layer to overcome
     # yum/rpm problems, due to overlayfs limitations. For more details see
-    # documentation of touch_rpmdb option documentation on begining
+    # documentation of touch_rpmdb option documentation on beginning
     # of this file.
     def touchRpmdb(self):
         rpmDbDir = os.path.join(self.rootDir, "var", "lib", "rpm")
