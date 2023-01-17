@@ -34,7 +34,6 @@ mirrorlist=https://mirrors.almalinux.org/mirrorlist/$releasever/baseos
 enabled=1
 gpgcheck=1
 gpgkey=file:///usr/share/distribution-gpg-keys/alma/RPM-GPG-KEY-AlmaLinux-8
-fastestmirror=1
 skip_if_unavailable=False
 
 [appstream]
@@ -44,7 +43,6 @@ mirrorlist=https://mirrors.almalinux.org/mirrorlist/$releasever/appstream
 enabled=1
 gpgcheck=1
 gpgkey=file:///usr/share/distribution-gpg-keys/alma/RPM-GPG-KEY-AlmaLinux-8
-fastestmirror=1
 
 [powertools]
 name=AlmaLinux $releasever - PowerTools
@@ -53,7 +51,6 @@ mirrorlist=https://mirrors.almalinux.org/mirrorlist/$releasever/powertools
 enabled=1
 gpgcheck=1
 gpgkey=file:///usr/share/distribution-gpg-keys/alma/RPM-GPG-KEY-AlmaLinux-8
-fastestmirror=1
 
 [extras]
 name=AlmaLinux $releasever - Extras
@@ -62,7 +59,6 @@ mirrorlist=https://mirrors.almalinux.org/mirrorlist/$releasever/extras
 enabled=1
 gpgcheck=1
 gpgkey=file:///usr/share/distribution-gpg-keys/alma/RPM-GPG-KEY-AlmaLinux-8
-fastestmirror=1
 
 [devel]
 name=AlmaLinux $releasever - Devel (WARNING: UNSUPPORTED - FOR BUILDROOT USE ONLY!)
@@ -71,7 +67,6 @@ mirrorlist=https://mirrors.almalinux.org/mirrorlist/$releasever/devel
 enabled=0
 gpgcheck=1
 gpgkey=file:///usr/share/distribution-gpg-keys/alma/RPM-GPG-KEY-AlmaLinux-8
-fastestmirror=1
 
 [baseos-debuginfo]
 name=AlmaLinux $releasever - BaseOS debuginfo
@@ -80,7 +75,6 @@ mirrorlist=https://mirrors.almalinux.org/mirrorlist/$releasever/baseos-debuginfo
 enabled=0
 gpgcheck=1
 gpgkey=file:///usr/share/distribution-gpg-keys/alma/RPM-GPG-KEY-AlmaLinux-8
-fastestmirror=1
 
 [appstream-debuginfo]
 name=AlmaLinux $releasever - AppStream debuginfo
@@ -89,7 +83,6 @@ mirrorlist=https://mirrors.almalinux.org/mirrorlist/$releasever/appstream-debugi
 enabled=0
 gpgcheck=1
 gpgkey=file:///usr/share/distribution-gpg-keys/alma/RPM-GPG-KEY-AlmaLinux-8
-fastestmirror=1
 
 [powertools-debuginfo]
 name=AlmaLinux $releasever - PowerTools debuginfo
@@ -98,7 +91,6 @@ mirrorlist=https://mirrors.almalinux.org/mirrorlist/$releasever/powertools-debug
 enabled=0
 gpgcheck=1
 gpgkey=file:///usr/share/distribution-gpg-keys/alma/RPM-GPG-KEY-AlmaLinux-8
-fastestmirror=1
 
 [extras-debuginfo]
 name=AlmaLinux $releasever - Extras debuginfo
@@ -107,7 +99,6 @@ mirrorlist=https://mirrors.almalinux.org/mirrorlist/$releasever/extras-debuginfo
 enabled=0
 gpgcheck=1
 gpgkey=file:///usr/share/distribution-gpg-keys/alma/RPM-GPG-KEY-AlmaLinux-8
-fastestmirror=1
 
 [devel-debuginfo]
 name=AlmaLinux $releasever - Devel debuginfo
@@ -116,7 +107,6 @@ mirrorlist=https://mirrors.almalinux.org/mirrorlist/$releasever/devel-debuginfo
 enabled=0
 gpgcheck=1
 gpgkey=file:///usr/share/distribution-gpg-keys/alma/RPM-GPG-KEY-AlmaLinux-8
-fastestmirror=1
 
 [baseos-source]
 name=AlmaLinux $releasever - BaseOS Source
@@ -125,7 +115,6 @@ mirrorlist=https://mirrors.almalinux.org/mirrorlist/$releasever/baseos-source
 enabled=0
 gpgcheck=1
 gpgkey=file:///usr/share/distribution-gpg-keys/alma/RPM-GPG-KEY-AlmaLinux-8
-fastestmirror=1
 
 [appstream-source]
 name=AlmaLinux $releasever - AppStream Source
@@ -134,7 +123,6 @@ mirrorlist=https://mirrors.almalinux.org/mirrorlist/$releasever/appstream-source
 enabled=0
 gpgcheck=1
 gpgkey=file:///usr/share/distribution-gpg-keys/alma/RPM-GPG-KEY-AlmaLinux-8
-fastestmirror=1
 
 [powertools-source]
 name=AlmaLinux $releasever - PowerTools Source
@@ -143,7 +131,6 @@ mirrorlist=https://mirrors.almalinux.org/mirrorlist/$releasever/powertools-sourc
 enabled=0
 gpgcheck=1
 gpgkey=file:///usr/share/distribution-gpg-keys/alma/RPM-GPG-KEY-AlmaLinux-8
-fastestmirror=1
 
 [extras-source]
 name=AlmaLinux $releasever - Extras Source
@@ -152,7 +139,6 @@ mirrorlist=https://mirrors.almalinux.org/mirrorlist/$releasever/extras-source
 enabled=0
 gpgcheck=1
 gpgkey=file:///usr/share/distribution-gpg-keys/alma/RPM-GPG-KEY-AlmaLinux-8
-fastestmirror=1
 
 [devel-source]
 name=AlmaLinux $releasever - Devel Source
@@ -161,6 +147,5 @@ mirrorlist=https://mirrors.almalinux.org/mirrorlist/$releasever/devel-source
 enabled=0
 gpgcheck=1
 gpgkey=file:///usr/share/distribution-gpg-keys/alma/RPM-GPG-KEY-AlmaLinux-8
-fastestmirror=1
 
 """
