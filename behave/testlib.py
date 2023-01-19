@@ -61,6 +61,7 @@ class Mock:
     """ /bin/mock wrapper """
     def __init__(self, context):
         self.context = context
+        self.common_opts = []
         context.mock_runs = {
             "init": [],
             "rebuild": [],
@@ -76,6 +77,8 @@ class Mock:
             cmd += ["--uniqueext", self.context.uniqueext]
         for repo in self.context.add_repos:
             cmd += ["-a", repo]
+        if self.common_opts:
+            cmd += self.common_opts
         return cmd
 
     def init(self):

@@ -46,11 +46,10 @@ def before_all(context):
     context.chroot = default_config[:-4]  # drop cfg suffix
     context.chroot_used = False
 
-    context.add_repos = []
     context.test_storage = (
         "https://github.com/"
         "rpm-software-management/mock-test-data/raw/main/")
-    context.mock = Mock(context)
+
     context.download = lambda url: _download(context, url)
     context.download_rpm = lambda rpm: _download_rpm(context, rpm)
 
@@ -64,3 +63,5 @@ def before_scenario(context, _scenario):
     """ execute before - once for each - scenario """
     context.workdir = tempfile.mkdtemp(prefix="mock-behave-tests-")
     context.add_cleanup(_cleanup_workdir, context)
+    context.mock = Mock(context)
+    context.add_repos = []

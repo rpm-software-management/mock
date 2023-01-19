@@ -28,6 +28,33 @@ def step_impl(context):
     context.uniqueext_used = True
 
 
+@given(u'the {package} package {state} installed on host')
+def step_impl(context, package, state):
+    """
+    Install the package, and uninstall in post- action.  If state is "not", then
+    just check it is not installed.
+    """
+    is_installed, _, _ = run(["rpm", "-q", package])
+    # exit_status 0 => installed
+    is_installed = bool(not is_installed)
+
+    if "not" in state:
+        assert_that(is_installed, equal_to(False))
+        return
+
+    if is_installed:
+        return
+
+    # install the package, and schedule removal
+    def _uninstall_pkg(_context):
+        cmd = ["sudo", "dnf", "-y", "remove", package]
+        assert_that(run(cmd)[0], equal_to(0))
+
+    cmd = ["sudo", "dnf", "-y", "install", package]
+    assert_that(run(cmd)[0], equal_to(0))
+    context.add_cleanup(_uninstall_pkg, context)
+
+
 def _mock_cleanup(context):
     with no_output():
         context.mock.clean()
@@ -85,6 +112,12 @@ def step_impl(context):
 def step_impl(context, options):
     options = options.split()
     context.last_cmd = run(['mock'] + options)
+
+
+@given('mock is always executed with "{options}"')
+def step_impl(context, options):
+    options = options.split()
+    context.mock.common_opts += options
 
 
 @then('the exit code is {code}')
