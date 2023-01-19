@@ -21,10 +21,13 @@ fallbacks = {
     'dnf': ['dnf', 'yum'],
     'yum': ['yum', 'dnf'],
     'microdnf': ['microdnf', 'dnf', 'yum'],
+    'dnf5': ['dnf5', 'dnf', 'yum'],
 }
 
 
 def package_manager_from_string(name):
+    if name == 'dnf5':
+        return Dnf5
     if name == 'yum':
         return Yum
     if name == 'dnf':
@@ -117,6 +120,7 @@ def package_manager(config_opts, buildroot, plugins, bootstrap_buildroot=None):
 
 
 class _PackageManager(object):
+    # pylint: disable=too-many-instance-attributes
     name = None
     command = None
     install_command = None
@@ -125,6 +129,11 @@ class _PackageManager(object):
     # When support_installroot is False then command is run in target chroot
     # you must ensure that `command` is available in the chroot
     support_installroot = True
+    # We specify (historical reasons) opts before args for package managers.
+    # But DNF5 requires the common opts (--allowerasing etc.) specified after
+    # the sub-command (like 'install --allowerasing', instead of
+    # '--allowerasing install').
+    place_common_opts_after = False
 
     @traceLog()
     def __init__(self, config, buildroot, plugins, bootstrap_buildroot, is_bootstrap_image):
@@ -136,15 +145,44 @@ class _PackageManager(object):
         self.is_bootstrap_image = is_bootstrap_image
         self.pkg_manager_config = ""
 
+        self.command = config.get(f"{self.name}_command")
+        self.install_command = config.get(f"{self.name}_install_command")
+        self.builddep_command = [self.command, 'builddep']
+        builddep_override = config.get(f"{self.name}_builddep_command")
+        if builddep_override:
+            self.builddep_command = [builddep_override, "builddep"]
+
+        self.common_opts = copy.copy(config.get(f'{self.name}_common_opts', []))
+
+        disabled_plugins = self.config.get(f"{self.name}_disable_plugins", [])
+        self.common_opts.extend([f"--disableplugin={x}" for x in
+                                 disabled_plugins])
+
+        if 'forcearch' in self.config and self.config['forcearch']:
+            self.common_opts.extend(['--forcearch', self.config['forcearch']])
+
+    def adjust_command_options(self, command, opts):
+        """
+        E.g. --allowerasing is supported by DNF5 in general, but is not
+        supported by DNF5 builddep plugin (yet), therefore we can configure:
+        config_opts["dnf5_avoid_opts"]["builddep"] = ["--allowerasing"]
+        https://github.com/rpm-software-management/dnf5/issues/461
+        """
+        config = self.config.get(f"{self.name}_avoid_opts", {})
+        if command in config:
+            return [o for o in opts if o not in config[command]]
+        return opts
+
     @traceLog()
     def build_invocation(self, *args):
         invocation = []
-        common_opts = self.config[self.name + '_common_opts']
+        args = list(args)
         cmd = args[0]
+        opts = self.adjust_command_options(cmd, copy.copy(self.common_opts))
         if cmd == 'builddep':
             args = args[1:]
             invocation += self.builddep_command
-            common_opts += self.config[self.name + '_builddep_opts']
+            opts += self.config.get(self.name + '_builddep_opts', [])
         elif cmd == 'resolvedep':
             if self.resolvedep_command:
                 args = args[1:]
@@ -164,8 +202,9 @@ class _PackageManager(object):
             invocation.append('-C')
         if self.config['enable_disable_repos']:
             invocation += self.config['enable_disable_repos']
-        invocation += common_opts
-        invocation += args
+
+        invocation += (args + opts) if self.place_common_opts_after else (opts + args)
+
         return invocation
 
     @traceLog()
@@ -205,8 +244,8 @@ class _PackageManager(object):
             if error:
                 sleep_seconds = int(self.config['package_manager_attempt_delay'])
                 self.buildroot.root_log.warning(
-                    "Dnf command failed, retrying, attempt #%s, sleeping %ss",
-                    attempt + 1, sleep_seconds)
+                        "%s command failed, retrying, attempt #%s, sleeping %ss",
+                    self.name.upper(), attempt + 1, sleep_seconds)
                 time.sleep(sleep_seconds)
 
             try:
@@ -443,6 +482,11 @@ Error:      Neither dnf-utils nor yum-utils are installed. Dnf-utils or yum-util
 
     def _check_command(self):
         """ Check if main command exists """
+
+        if self.bootstrap_buildroot:
+            # the command in bootstrap may not exists yet
+            return
+
         if not os.path.exists(self.command):
             raise Exception("""Command {0} is not available. Either install package containing this command
 or run mock with --yum or --dnf to overwrite config value. However this may
@@ -464,9 +508,6 @@ class Yum(_PackageManager):
 
     def __init__(self, config, buildroot, plugins, bootstrap_buildroot, is_bootstrap_image):
         super(Yum, self).__init__(config, buildroot, plugins, bootstrap_buildroot, is_bootstrap_image)
-        self.pm = config['package_manager']
-        self.command = config['yum_command']
-        self.install_command = config['yum_install_command']
         self.builddep_command = [config['yum_builddep_command']]
         if bootstrap_buildroot is not None:
             # we are in bootstrap so use configured names
@@ -488,9 +529,8 @@ class Yum(_PackageManager):
                     '--config', self.buildroot.make_chroot_path('etc', 'yum', 'yum.conf')]
             if os.path.exists(yum_builddep_deprecated_path):
                 self.builddep_command = ['/usr/bin/yum-builddep-deprecated']
-        # the command in bootstrap may not exists yet
-        if bootstrap_buildroot is None:
-            self._check_command()
+
+        self._check_command()
 
     @traceLog()
     def _write_plugin_conf(self, name):
@@ -571,14 +611,8 @@ class Dnf(_PackageManager):
 
     def __init__(self, config, buildroot, plugins, bootstrap_buildroot, is_bootstrap_image):
         super(Dnf, self).__init__(config, buildroot, plugins, bootstrap_buildroot, is_bootstrap_image)
-        self.pm = config['package_manager']
-        self.command = config['dnf_command']
-        self.install_command = config['dnf_install_command']
-        self.builddep_command = [self.command, 'builddep']
-        # the command in bootstrap may not exists yet
-        if bootstrap_buildroot is None:
-            self._check_command()
         self.resolvedep_command = [self.command, 'repoquery', '--resolve', '--requires']
+        self._check_command()
 
     def initialize_vars(self):
         self.buildroot.root_log.debug('configure DNF vars')
@@ -586,26 +620,6 @@ class Dnf(_PackageManager):
         for key in self.config['dnf_vars'].keys():
             with open(os.path.join(var_path, key), 'w+') as conf_file:
                 conf_file.write(self.config['dnf_vars'][key])
-
-    def _get_disabled_plugins(self):
-        if 'dnf_disable_plugins' in self.config:
-            disabled_plugins = self.config['dnf_disable_plugins']
-        else:
-            disabled_plugins = []
-        return ["--disableplugin={}".format(x) for x in disabled_plugins]
-
-    @traceLog()
-    def build_invocation(self, *args):
-        if 'dnf_builddep_opts' not in self.config:
-            self.config['dnf_builddep_opts'] = self.config['yum_builddep_opts']
-        if 'dnf_common_opts' not in self.config:
-            self.config['dnf_common_opts'] = self.config['yum_common_opts'] + \
-                                             ['--setopt=deltarpm=False', '--allowerasing']
-        self.config['dnf_common_opts'].extend(self._get_disabled_plugins())
-        if 'forcearch' in self.config and '--forcearch' not in self.config['dnf_common_opts'] \
-           and self.config['forcearch']:
-            self.config['dnf_common_opts'].extend(['--forcearch', self.config['forcearch']])
-        return super(Dnf, self).build_invocation(*args)
 
     @traceLog()
     def initialize_config(self):
@@ -636,9 +650,6 @@ class MicroDnf(Dnf):
 
     def __init__(self, config, buildroot, plugins, bootstrap_buildroot, is_bootstrap_image):
         super(MicroDnf, self).__init__(config, buildroot, plugins, bootstrap_buildroot, is_bootstrap_image)
-        self.command = config['microdnf_command']
-        self.install_command = config['microdnf_install_command']
-        self.builddep_command = [config['microdnf_builddep_command'], 'builddep']
         self.saved_releasever = config['releasever']
         self.config['releasever'] = None
 
@@ -667,3 +678,14 @@ lead to different dependency solving!""".format(self.config['dnf_command']))
         self.support_installroot = False
         self.config['releasever'] = None
         return result
+
+
+class Dnf5(Dnf):
+    """
+    DNF5 (c++) != DNF4 (python), it has been reimplemented from scratch.
+    Some options can be missing or have a different semantics.
+    """
+    name = 'dnf5'
+    place_common_opts_after = True
+    def update(self, *args, **_kwargs):
+        return self.execute('upgrade', *args)

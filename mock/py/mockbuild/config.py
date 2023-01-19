@@ -294,9 +294,20 @@ def setup_default_config_opts():
     config_opts['system_yum_command'] = '/usr/bin/yum'
     config_opts['yum_install_command'] = 'install yum yum-utils'
     config_opts['yum_builddep_command'] = '/usr/bin/yum-builddep'
-    config_opts['dnf_command'] = '/usr/bin/dnf'
     config_opts['system_dnf_command'] = '/usr/bin/dnf'
+
+    config_opts['dnf_command'] = '/usr/bin/dnf'
+    config_opts['dnf_common_opts'] = ['--setopt=deltarpm=False', '--allowerasing']
     config_opts['dnf_install_command'] = 'install dnf dnf-plugins-core'
+    config_opts['dnf_disable_plugins'] = ['local', 'spacewalk', 'versionlock']
+
+    config_opts['dnf5_command'] = '/usr/bin/dnf5'
+    config_opts['dnf5_common_opts'] = ['--setopt=deltarpm=False', '--allowerasing']
+    config_opts['dnf5_install_command'] = 'install dnf5 dnf5-plugins'
+    config_opts['dnf5_disable_plugins'] = []
+    # Temporary work-around for https://github.com/rpm-software-management/dnf5/issues/461
+    config_opts["dnf5_avoid_opts"] = {"builddep": ["--allowerasing"]}
+
     config_opts['microdnf_command'] = '/usr/bin/microdnf'
     # "dnf-install" is special keyword which tells mock to use install but with DNF
     config_opts['microdnf_install_command'] = \
@@ -304,9 +315,9 @@ def setup_default_config_opts():
     config_opts['microdnf_builddep_command'] = '/usr/bin/dnf'
     config_opts['microdnf_builddep_opts'] = []
     config_opts['microdnf_common_opts'] = []
+
     config_opts['rpm_command'] = '/bin/rpm'
     config_opts['rpmbuild_command'] = '/usr/bin/rpmbuild'
-    config_opts['dnf_disable_plugins'] = ['local', 'spacewalk', 'versionlock']
     config_opts['user_agent'] = "Mock ({{ root }}; {{ target_arch }})"
     config_opts['opstimeout'] = 0
 
