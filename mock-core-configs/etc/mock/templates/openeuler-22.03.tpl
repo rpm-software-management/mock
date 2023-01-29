@@ -35,40 +35,47 @@ name=OS
 baseurl=http://repo.openeuler.org/openEuler-22.03-LTS-SP1/OS/$basearch/
 enabled=1
 gpgcheck=1
-gpgkey=file:///usr/share/distribution-gpg-keys/openeuler/RPM-GPG-KEY-openEuler
+gpgkey=file:///usr/share/distribution-gpg-keys/openeuler/RPM-GPG-KEY-openEuler-EulerMaker
 
 [everything]
 name=everything
 baseurl=http://repo.openeuler.org/openEuler-22.03-LTS-SP1/everything/$basearch/
 enabled=1
 gpgcheck=1
-gpgkey=file:///usr/share/distribution-gpg-keys/openeuler/RPM-GPG-KEY-openEuler
+gpgkey=file:///usr/share/distribution-gpg-keys/openeuler/RPM-GPG-KEY-openEuler-EulerMaker
 
 [EPOL]
 name=EPOL
 baseurl=http://repo.openeuler.org/openEuler-22.03-LTS-SP1/EPOL/main/$basearch/
 enabled=1
 gpgcheck=1
-gpgkey=file:///usr/share/distribution-gpg-keys/openeuler/RPM-GPG-KEY-openEuler
+gpgkey=file:///usr/share/distribution-gpg-keys/openeuler/RPM-GPG-KEY-openEuler-EulerMaker
 
 [debuginfo]
 name=debuginfo
 baseurl=http://repo.openeuler.org/openEuler-22.03-LTS-SP1/debuginfo/$basearch/
 enabled=0
 gpgcheck=1
-gpgkey=file:///usr/share/distribution-gpg-keys/openeuler/RPM-GPG-KEY-openEuler
+gpgkey=file:///usr/share/distribution-gpg-keys/openeuler/RPM-GPG-KEY-openEuler-EulerMaker
 
 [source]
 name=source
 baseurl=http://repo.openeuler.org/openEuler-22.03-LTS-SP1/source/
 enabled=0
 gpgcheck=1
-gpgkey=file:///usr/share/distribution-gpg-keys/openeuler/RPM-GPG-KEY-openEuler
+gpgkey=file:///usr/share/distribution-gpg-keys/openeuler/RPM-GPG-KEY-openEuler-EulerMaker
 
 [update]
 name=update
 baseurl=http://repo.openeuler.org/openEuler-22.03-LTS-SP1/update/$basearch/
 enabled=1
 gpgcheck=1
-gpgkey=file:///usr/share/distribution-gpg-keys/openeuler/RPM-GPG-KEY-openEuler
+gpgkey=file:///usr/share/distribution-gpg-keys/openeuler/RPM-GPG-KEY-openEuler-EulerMaker
+
+[update-source]
+name=update-source
+baseurl=http://repo.openeuler.org/openEuler-22.03-LTS-SP1/update/source/
+enabled=0
+gpgcheck=1
+gpgkey=file:///usr/share/distribution-gpg-keys/openeuler/RPM-GPG-KEY-openEuler-EulerMaker
 """
