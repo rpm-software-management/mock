@@ -316,11 +316,8 @@ Error:      Neither dnf-utils nor yum-utils are installed. Dnf-utils or yum-util
             host_bundle = os.path.realpath('/etc/pki/tls/certs/ca-bundle.crt')
             chroot_bundle_path = self.buildroot.make_chroot_path(bundle_path)
             chroot_bundle_dir = os.path.dirname(chroot_bundle_path)
-            try:
-                os.makedirs(chroot_bundle_dir)
-            except FileExistsError:
-                pass  # for repeated attempts
 
+            file_util.mkdirIfAbsent(chroot_bundle_dir)
             try:
                 shutil.copy(host_bundle, chroot_bundle_path)
             except FileNotFoundError:
