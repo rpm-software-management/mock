@@ -61,7 +61,7 @@ baseurl=https://download.opensuse.org/ports/aarch64/tumbleweed/repo/oss/
 baseurl=https://download.opensuse.org/ports/zsystems/tumbleweed/repo/oss/
 #metalink=https://download.opensuse.org/ports/zsystems/tumbleweed/repo/oss/repodata/repomd.xml.metalink
 {% endif %}
-gpgkey=file:///usr/share/distribution-gpg-keys/opensuse/RPM-GPG-KEY-openSUSE
+gpgkey=file:///usr/share/distribution-gpg-keys/opensuse/RPM-GPG-KEY-openSUSE file:///usr/share/distribution-gpg-keys/opensuse/RPM-GPG-KEY-openSUSE-Tumbleweed
 gpgcheck=1
 
 """
