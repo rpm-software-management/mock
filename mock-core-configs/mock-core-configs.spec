@@ -1,5 +1,5 @@
 Name:       mock-core-configs
-Version:    38.1
+Version:    38.2
 Release:    1%{?dist}
 Summary:    Mock core config files basic chroots
 
@@ -140,6 +140,9 @@ fi
 %ghost %config(noreplace,missingok) %{_sysconfdir}/mock/default.cfg
 
 %changelog
+* Fri Feb 17 2023 Pavel Raiskup <praiskup@redhat.com> 38.2-1
+- update gpg keys for Tumbleweed (msuchy@redhat.com)
+
 * Tue Jan 31 2023 Pavel Raiskup <praiskup@redhat.com> 38.1-1
 - update openEuler gpg key (pkwarcraft@gmail.com)
 - Branch Fedora 38 (miro@hroncok.cz)
