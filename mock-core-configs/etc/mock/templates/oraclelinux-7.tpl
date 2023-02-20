@@ -52,7 +52,6 @@ baseurl=https://yum.oracle.com/repo/OracleLinux/OL7/SoftwareCollections/$basearc
 gpgkey=file:///usr/share/distribution-gpg-keys/oraclelinux/RPM-GPG-KEY-oracle-ol7
 gpgcheck=1
 enabled=1
-includepkgs=devtoolset*
 skip_if_unavailable=False
 
 {% for uekver in range(3,7) %}

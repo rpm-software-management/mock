@@ -85,7 +85,6 @@ name=CentOS-$releasever - SCLo sclo
 baseurl=http://mirror.centos.org/centos/7/sclo/$basearch/sclo/
 gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-SIG-SCLo
 gpgcheck=1
-includepkgs=devtoolset*
 skip_if_unavailable=False
 {% endif %}
 
@@ -95,7 +94,6 @@ name=CentOS-$releasever - SCLo rh
 mirrorlist=http://mirrorlist.centos.org/?release=7&arch=$basearch&repo=sclo-rh
 gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-SIG-SCLo
 gpgcheck=1
-includepkgs=devtoolset*
 skip_if_unavailable=False
 {% endif %}
 """

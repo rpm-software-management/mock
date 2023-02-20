@@ -78,7 +78,6 @@ name=CentOS-$releasever - SCLo sclo
 baseurl=https://vault.centos.org/6.10/sclo/$basearch/sclo/
 gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-SIG-SCLo
 gpgcheck=1
-includepkgs=devtoolset*
 skip_if_unavailable=False
 
 [centos-sclo-rh]
@@ -86,7 +85,6 @@ name=CentOS-$releasever - SCLo rh
 baseurl=https://vault.centos.org/6.10/sclo/$basearch/rh/
 gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-SIG-SCLo
 gpgcheck=1
-includepkgs=devtoolset*
 skip_if_unavailable=False
 {% endif %}
 """
