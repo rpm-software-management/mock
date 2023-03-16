@@ -1,5 +1,5 @@
 Name:       mock-core-configs
-Version:    36.16
+Version:    36.17
 Release:    1%{?dist}
 Summary:    Mock core config files basic chroots
 
@@ -169,6 +169,10 @@ fi
 %ghost %config(noreplace,missingok) %{_sysconfdir}/mock/default.cfg
 
 %changelog
+* Thu Mar 16 2023 Pavel Raiskup <praiskup@redhat.com> 36.17-1
+- new URL for CenOS Stream 8 koji (msuchy@redhat.com)
+- Make --enablerepo=local work with centos-stream chroots (miro@hroncok.cz)
+
 * Fri Feb 17 2023 Pavel Raiskup <praiskup@redhat.com> 36.16-1
 - update gpg keys for Tumbleweed (msuchy@redhat.com)
 
