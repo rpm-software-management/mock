@@ -18,7 +18,7 @@ BuildArch:  noarch
 Provides: mock-configs
 
 # distribution-gpg-keys contains GPG keys used by mock configs
-Requires:   distribution-gpg-keys >= 1.84
+Requires:   distribution-gpg-keys >= 1.85
 # specify minimal compatible version of mock
 Requires:   mock >= 2.5
 Requires:   mock-filesystem
