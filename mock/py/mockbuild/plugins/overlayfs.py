@@ -115,7 +115,7 @@
 #             prior to mount.
 #
 # SNAPSHOTS
-# - used to implement shapshots in mock
+# - used to implement snapshots in mock
 # - snapshots are implemented using REFs
 # - snapsot names map directly to refs
 # - operations on snapshots also involve operations on special REFs (see higher)
