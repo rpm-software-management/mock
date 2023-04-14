@@ -71,8 +71,11 @@ def rmtree(path, selinux=False, exclude=()):
                 raise
             if e.errno == errno.ENOENT:  # no such file or directory
                 pass
-            elif exclude and e.errno == errno.ENOTEMPTY:  # there's something excluded left
-                pass
+            elif e.errno == errno.ENOTEMPTY:  # there's something left
+                if exclude: # but it is excluded
+                    pass
+                else: # likely during Ctrl+C something additional data
+                    try_again = True
             elif selinux and (e.errno == errno.EPERM or e.errno == errno.EACCES):
                 try_again = True
                 if failed_filename == e.filename:
