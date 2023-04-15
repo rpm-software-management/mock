@@ -1,5 +1,5 @@
 Name:       mock-core-configs
-Version:    38.3
+Version:    38.4
 Release:    1%{?dist}
 Summary:    Mock core config files basic chroots
 
@@ -140,6 +140,9 @@ fi
 %ghost %config(noreplace,missingok) %{_sysconfdir}/mock/default.cfg
 
 %changelog
+* Sat Apr 15 2023 Pavel Raiskup <praiskup@redhat.com> 38.4-1
+- Add Amazon Linux 2023 mock configs (trawets@amazon.com)
+
 * Thu Mar 16 2023 Pavel Raiskup <praiskup@redhat.com> 38.3-1
 - new URL for CenOS Stream 8 koji (msuchy@redhat.com)
 - Make --enablerepo=local work with centos-stream chroots (miro@hroncok.cz)
