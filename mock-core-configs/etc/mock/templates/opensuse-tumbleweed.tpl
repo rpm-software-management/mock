@@ -1,7 +1,6 @@
 config_opts['chroot_setup_cmd'] = 'install patterns-devel-base-devel_rpm_build'
 config_opts['dist'] = 'tumbleweed'  # only useful for --resultdir variable subst
 config_opts['extra_chroot_dirs'] = [ '/run/lock', ]
-config_opts['useradd'] = '/usr/sbin/useradd -o -m -u {{chrootuid}} -g {{chrootgid}} -d {{chroothome}} {{chrootuser}}'
 config_opts['releasever'] = '0'
 config_opts['macros']['%dist'] = '.suse.tw%(sh -c ". /etc/os-release; echo \$VERSION_ID")'
 config_opts['package_manager'] = 'dnf'
