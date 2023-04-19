@@ -38,7 +38,7 @@ def rmtree(path, selinux=False, exclude=()):
     if os.path.islink(path):
         raise OSError("Cannot call rmtree on a symbolic link: %s" % path)
     try_again = True
-    retries = 0
+    retries = 10
     failed_to_handle = False
     failed_filename = None
     if path in exclude:
@@ -76,6 +76,10 @@ def rmtree(path, selinux=False, exclude=()):
                     pass
                 else: # likely during Ctrl+C something additional data
                     try_again = True
+                    retries -= 1
+                    if retries <= 0:
+                        raise
+                    time.sleep(2)
             elif selinux and (e.errno == errno.EPERM or e.errno == errno.EACCES):
                 try_again = True
                 if failed_filename == e.filename:
@@ -83,8 +87,8 @@ def rmtree(path, selinux=False, exclude=()):
                 failed_filename = e.filename
                 os.system("chattr -R -i %s" % path)
             elif e.errno == errno.EBUSY:
-                retries += 1
-                if retries > 1:
+                retries -= 1
+                if retries <= 0:
                     raise
                 try_again = True
                 getLog().debug("retrying failed tree remove after sleeping a bit")
