@@ -4,7 +4,6 @@ config_opts['releasever'] = '22.03'
 config_opts['package_manager'] = 'dnf'
 config_opts['description'] = 'openEuler 22.03'
 config_opts['extra_chroot_dirs'] = [ '/run/lock', ]
-config_opts['useradd'] = '/usr/sbin/useradd -o -m -u {{chrootuid}} -g {{chrootgid}} -d {{chroothome}} {{chrootuser}}'
 config_opts['bootstrap_image'] = 'docker.io/openeuler/openeuler:22.03-lts'
 
 config_opts['dnf.conf'] = """

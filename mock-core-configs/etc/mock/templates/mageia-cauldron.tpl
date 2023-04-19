@@ -2,7 +2,6 @@ config_opts['root'] = 'mageia-cauldron-{{ target_arch }}'
 config_opts['chroot_setup_cmd'] = 'install basesystem-minimal-core rpm-build rpm-mageia-setup rpm-mageia-setup-build'
 config_opts['dist'] = 'cauldron'  # only useful for --resultdir variable subst
 config_opts['extra_chroot_dirs'] = [ '/run/lock', ]
-config_opts['useradd'] = '/usr/sbin/useradd -o -m -u {{chrootuid}} -g {{chrootgid}} -d {{chroothome}} {{chrootuser}}'
 config_opts['releasever'] = '9'
 config_opts['macros']['%distro_section'] = 'core'
 config_opts['package_manager'] = 'dnf'
