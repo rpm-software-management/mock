@@ -48,7 +48,7 @@ user_agent={{ user_agent }}
 
 [opensuse-tumbleweed-oss]
 name=openSUSE Tumbleweed - {{ target_arch }} - OSS
-{% if target_arch in ['x86_64', 'i586'] %}
+{% if target_arch in ['x86_64'] %}
 baseurl=https://download.opensuse.org/tumbleweed/repo/oss/
 #metalink=https://download.opensuse.org/tumbleweed/repo/oss/repodata/repomd.xml.metalink
 {% elif target_arch in ['ppc64le', 'ppc64'] %}
@@ -57,6 +57,9 @@ baseurl=https://download.opensuse.org/ports/ppc/tumbleweed/repo/oss/
 {% elif target_arch in ['aarch64'] %}
 baseurl=https://download.opensuse.org/ports/aarch64/tumbleweed/repo/oss/
 #metalink=https://download.opensuse.org/ports/aarch64/tumbleweed/repo/oss/repodata/repomd.xml.metalink
+{% elif target_arch in ['i586'] %}
+baseurl=https://download.opensuse.org/ports/i586/tumbleweed/repo/oss/
+#metalink=https://download.opensuse.org/ports/i586/tumbleweed/repo/oss/repodata/repomd.xml.metalink
 {% elif target_arch in ['s390x'] %}
 baseurl=https://download.opensuse.org/ports/zsystems/tumbleweed/repo/oss/
 #metalink=https://download.opensuse.org/ports/zsystems/tumbleweed/repo/oss/repodata/repomd.xml.metalink
