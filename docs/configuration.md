@@ -5,6 +5,16 @@ title: Mock configuration
 
 ## Mock configuration files
 
+Syntactically, Mock configuration files are just Python files.  But you should
+be rather conservative and use just the `config_opts[]` dictionary because we'd
+like to [change the format in the future](https://github.com/rpm-software-management/mock/issues/1060).
+
+Mock RPM package self-documents all the available options, take a look at this
+file:
+
+    $ rpm -qd mock | grep site-defaults
+    /usr/share/doc/mock/site-defaults.cfg
+
 Mock configuration files can be logically divided into *generic* (used for every
 executed Mock command) and *chroot* configuration (used only if the
 corresponding chroot is selected, see below).
