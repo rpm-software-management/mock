@@ -233,21 +233,58 @@ Note that you can track the progress of mock using the logs stored in `/var/lib/
 
 ## Mock inside Podman, Fedora Toolbox or Docker container
 
-By default, Mock uses [systemd-nspawn](https://www.freedesktop.org/software/systemd/man/systemd-nspawn.html) to isolate the build in chroot.  This is
-not necessary though if you run Mock inside a container, and Mock is the only
-service running there.  NB spawning **containers inside containers** isn't
-implemented in Mock, so switching to `--isolation=simple` is mandatory.  Mock
-is, though, able to automatically detect a container environment, and switch to
-`--isolation=simple`.
+First, we need to state that Mock, in a nutshell, is a tool that (a) prepares an
+appropriate RPM build environment (aka "build chroot" or "buildroot"), and then
+it (b) just executes the RPM build inside (`rpmbuild` run).
 
-One can even run Mock in a rootless Podman container without any special tweaks - the only necessary step is to run the
-container with `--privileged` option.  Read the podman-run manual page for more
-info, but `--privileged` - by the Podman nature - can not give the process more
-permissions than the UID running the podman process already has; in other
-words - `podman run --privileged` is a completely different thing from
-`docker run --privileged`!
+The build environment is (again a bit simplified) defined by a set of RPM
+packages that need to be installed in such environment (build dependencies, or
+also `BuildRequires:` in RPM spec files).
 
-So simply, as any **non-privileged user**, do:
+Mock is a generic tool to build **any** RPM out there.  And each RPM has a
+different set of requirements (so we can not just pre-generate one environment
+for all packages and share it).  Here comes the important implication:  If you
+want to **build an RPM**, you need to install **other RPMs**, and for that,
+you need to have **root access**.
+
+Normally, Mock uses `dnf --installroot /some/directory install ...` (on host)
+to prepare the environment.  Then it switches into the environment using the
+[systemd-nspawn](https://www.freedesktop.org/software/systemd/man/systemd-nspawn.html)
+container (default `--isolation=nspawn`, but you can fallback to `--isolation=simple`
+which is just `man (2) chroot`).  Again [simplified a bit](Feature-bootstrap).
+
+The build itself (`rpmbuild` process) is a non-root operation, Mock
+intentionally drops the privileges there.
+
+All that said, using Mock inside a container to build RPMs is totally possible!
+You just need to have permissions to install RPMs, and be able to switch UID
+when needed (from `root` to non-privileged and back, `man (2) seteuid`).  As a
+benefit, we don't need to run `systemd-nspawn` and still have even better
+isolation because now even the `dnf --installroot` is executed inside the
+container.  This statement assumes the container is dedicated to the Mock build
+and no other task(s) that could be compromised by a rogue build (even subsequent
+builds!).  So ideally, considering how easy is to start new containers from
+images, each build should have its own dedicated container (especially if you
+are a generic build system where you can not fully trust all your users, or even
+the packages that your users with the best intentions build or install).  Then
+the build can only affect the container, not the whole host.
+
+It is known issue that the [`--use-boostrap-image`](Feature-container-for-bootstrap)
+feature [doesn't work in container](https://github.com/rpm-software-management/mock/issues/691).
+To avoid using the `--use-bootstrap-image` feature with Mock-in-container,
+run Mock in containers that are based on sufficiently modern images (e.g. the
+latest Fedora).
+
+So, Mock can be run in a rootless Podman container (with [user
+namespaces](https://man7.org/linux/man-pages/man7/user_namespaces.7.html))
+without any special tweaks.  The only necessary step is to run the container
+with `--privileged` option.  Read the podman-run manual page for more info, but
+`--privileged` - by the Podman nature - can not give the process more
+permissions than the UID running the podman process already has; in other words
+- `podman run --privileged` is a completely different thing from `docker run
+--privileged`!
+
+So simply, as any **non-privileged system user**, do:
 
 ```
 $ podman run --rm --privileged -ti fedora:32 bash
@@ -262,6 +299,15 @@ $ mock --shell
 ```
 
 And similarly in `toolbox enter`.
+
+But running Mock in an OpenShift POD isn't [typically
+allowed](https://access.redhat.com/solutions/6375251).
+Cluster admin typically keeps `SETUID` and `SETGID` [capabilities
+dropped](https://docs.openshift.com/container-platform/4.12/authentication/managing-security-context-constraints.html),
+`allowPrivilegeEscalation` disabled (no root access).  User namespaces are
+[not yet available](https://access.redhat.com/solutions/6977863).  Per previous
+implications, with the default security configuration, you can not install RPMs
+in OpenShift POD containers and thus neither build RPMs.
 
 You can run Mock in Docker container, however, you need to add `SYS_ADMIN`
 capability to the docker container (or use `--privileged`).  I.e. run the
