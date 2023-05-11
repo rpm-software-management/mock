@@ -764,10 +764,14 @@ def main():
         # query pkg_manager to know which manager is in use
         bootstrap_buildroot.config['chroot_setup_cmd'] = bootstrap_buildroot.pkg_manager.install_command
         # override configs for bootstrap_*
-        for k in bootstrap_buildroot.config.copy():
-            if "bootstrap_" + k in bootstrap_buildroot.config:
-                bootstrap_buildroot.config[k] = bootstrap_buildroot_config["bootstrap_" + k]
-                del bootstrap_buildroot.config["bootstrap_" + k]
+        for option in list(bootstrap_buildroot.config.keys()):
+            # options that are not related to bootstrap chroot config_opts
+            dont_copy = ["bootstrap_image"]
+            prefix = "bootstrap_"
+            if option.startswith(prefix) and option not in dont_copy:
+                bootstrap_option = option[len(prefix):]
+                bootstrap_buildroot.config[bootstrap_option] = bootstrap_buildroot.config[option]
+                del bootstrap_buildroot.config[option]
 
         if config_opts['redhat_subscription_required']:
             key_dir = '/etc/pki/entitlement'

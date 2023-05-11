@@ -322,6 +322,12 @@ def setup_default_config_opts():
     config_opts['opstimeout'] = 0
 
     config_opts['stderr_line_prefix'] = ""
+
+    # Packages from this option are baked into the root-cache tarball.
+    config_opts['chroot_additional_packages'] = []
+
+    # This option is command-line only, packages are always re-installed (ie.
+    # not cached in the root-cache tarball).
     config_opts['additional_packages'] = None
 
     config_opts["no-config"] = {}
