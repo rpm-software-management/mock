@@ -257,7 +257,9 @@ class Buildroot(object):
         on host.  Return (output, exit_status) tuple.
         """
         if self.bootstrap_buildroot:
-            return self.bootstrap_buildroot.doChroot(command, *args, **kwargs)
+            with self.mounts.buildroot_in_bootstrap_mounted():
+                return self.bootstrap_buildroot.doChroot(command, *args, **kwargs)
+
         return util.do_with_status(command, *args, **kwargs)
 
     def doChroot(self, command, nosync=False, *args, **kargs):
