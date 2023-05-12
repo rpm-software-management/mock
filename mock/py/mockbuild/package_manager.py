@@ -221,6 +221,9 @@ class _PackageManager(object):
         if not self.buildroot.mounts.essential_mounted:
             self.buildroot.mounts.mountall_essential()
             pm_umount = True
+
+        self.buildroot.mounts.mount_bootstrap()
+
         # intentionally we do not call bootstrap hook here - it does not have sense
         env = self.config['environment'].copy()
         env.update(util.get_proxy_environment(self.config))
@@ -267,6 +270,8 @@ class _PackageManager(object):
                 break
             except Error as e:
                 error = YumError(str(e))
+
+        self.buildroot.mounts.umount_bootstrap()
 
         if pm_umount:
             self.buildroot.mounts.umountall_essential()

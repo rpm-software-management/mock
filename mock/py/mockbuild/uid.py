@@ -11,6 +11,7 @@ import grp
 import os
 import pwd
 from concurrent.futures import ProcessPoolExecutor
+from contextlib import contextmanager
 
 from .trace_decorator import traceLog
 
@@ -59,6 +60,15 @@ class UidManager(object):
     @traceLog()
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.restorePrivs()
+
+    @contextmanager
+    def elevated_privileges(self):
+        self._push()
+        self._elevatePrivs()
+        try:
+            yield
+        finally:
+            self.restorePrivs()
 
     @traceLog()
     def becomeUser(self, uid, gid=-1):

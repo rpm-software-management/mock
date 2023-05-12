@@ -794,12 +794,12 @@ def main():
         inner_mount = bootstrap_buildroot.make_chroot_path(buildroot.make_chroot_path())
 
         # Hide re-mounted chroot from host by private tmpfs.
-        buildroot.mounts.managed_mounts.append(
+        buildroot.mounts.bootstrap_mounts.append(
             FileSystemMountPoint(filetype='tmpfs',
                                  device='hide_root_in_bootstrap',
                                  path=inner_mount,
                                  options="private"))
-        buildroot.mounts.managed_mounts.append(
+        buildroot.mounts.bootstrap_mounts.append(
             BindMountPoint(buildroot.make_chroot_path(), inner_mount,
                            recursive=True, options="private"))
 
