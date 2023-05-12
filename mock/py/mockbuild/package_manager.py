@@ -271,6 +271,11 @@ class _PackageManager(object):
             except Error as e:
                 error = YumError(str(e))
 
+
+        # Scriptlets in dnf transaction shouldn't keep leftover processes
+        # running in background, but it may happen.
+        util.orphansKill(self.buildroot.make_chroot_path(), manual_forced=True)
+
         self.buildroot.mounts.umount_bootstrap()
 
         if pm_umount:
@@ -280,10 +285,6 @@ class _PackageManager(object):
             raise error
 
         self.plugins.call_hooks("postyum")
-
-        # Scriptlets in dnf transaction shouldn't keep leftover processes
-        # running in background, but it may happen.
-        util.orphansKill(self.buildroot.make_chroot_path(), manual_forced=True)
 
         # intentionally we do not call bootstrap hook here - it does not have sense
         return out
