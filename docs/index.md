@@ -269,12 +269,6 @@ are a generic build system where you can not fully trust all your users, or even
 the packages that your users with the best intentions build or install).  Then
 the build can only affect the container, not the whole host.
 
-It is known issue that the [`--use-boostrap-image`](Feature-container-for-bootstrap)
-feature [doesn't work in container](https://github.com/rpm-software-management/mock/issues/691).
-To avoid using the `--use-bootstrap-image` feature with Mock-in-container,
-run Mock in containers that are based on sufficiently modern images (e.g. the
-latest Fedora).
-
 So, Mock can be run in a rootless Podman container (with [user
 namespaces](https://man7.org/linux/man-pages/man7/user_namespaces.7.html))
 without any special tweaks.  The only necessary step is to run the container
