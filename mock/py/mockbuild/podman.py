@@ -2,6 +2,8 @@
 # vim: noai:ts=4:sw=4:expandtab
 
 import subprocess
+from contextlib import contextmanager
+
 from mockbuild.trace_decorator import getLog, traceLog
 from mockbuild import util
 
@@ -22,25 +24,6 @@ class Podman:
         cmd = ["podman", "pull", self.image]
         util.do(cmd, printOutput=True, env=self.buildroot.env)
 
-    @traceLog()
-    def get_container_id(self):
-        """ start a container and detach immediately """
-        seccomp_disable_opts = ["--security-opt", "seccomp=unconfined"]
-        if self.buildroot.config["seccomp"]:
-            seccomp_disable_opts = []
-        cmd = ["podman", "run"] + seccomp_disable_opts + \
-              ["--quiet", "-i", "--detach", self.image, "/bin/bash"]
-        container_id = util.do(cmd, returnOutput=True, returnStderr=False, env=self.buildroot.env)
-        self.container_id = container_id.strip()
-        return self.container_id
-
-    @traceLog()
-    def exec(self, command):
-        """ exec command in container """
-        cmd = ["podman", "exec", self.container_id] + command
-        util.do(cmd, printOutput=True, env=self.buildroot.env)
-
-    @traceLog()
     def install_pkgmgmt_packages(self):
         """ make sure the image contains expected packages """
         pmname = self.buildroot.config['package_manager']
@@ -52,35 +35,47 @@ class Podman:
         self.exec(cmd)
 
     @traceLog()
-    def export(self, cache_file_name, compress_program):
-        """ export container and compress it  """
-        getLog().info("Exporting container: %s as %s", self.image, cache_file_name)
-        cmd_podman = ["podman", "export", self.container_id]
-        podman = subprocess.Popen(cmd_podman, stdout=subprocess.PIPE)
-        cache_file = open(cache_file_name, "w")
-        cmd_compressor = [compress_program, "--stdout"]
-        compressor = subprocess.Popen(cmd_compressor, stdin=podman.stdout, stdout=cache_file)
-        compressor.communicate()
-        podman.communicate()
-        cache_file.close()
+    def exec(self, command):
+        """
+        Execute COMMAND in bootstrap chroot previously initialized by self.cp()
+        """
+        util.do(command, chrootPath=self.buildroot.make_chroot_path(),
+                printOutput=True, env=self.buildroot.env)
+
+    @contextmanager
+    def mounted_image(self):
+        """
+        Using the "podman image mount" command, mount the image as a temporary
+        read-only directory so we can copy-paste the contents into the final
+        bootstrap chroot directory.
+        """
+        cmd_mount = ["podman", "image", "mount", self.image]
+        cmd_umount = ["podman", "image", "umount", self.image]
+        output = subprocess.check_output(cmd_mount)
+        mountpoint = output.decode("utf-8").strip()
+        getLog().info("mounting %s with podman image mount", self.image)
+        try:
+            getLog().info("image %s as %s", self.image, mountpoint)
+            yield mountpoint
+        finally:
+            getLog().info("umounting image %s (%s) with podman image umount",
+                          self.image, mountpoint)
+            output = subprocess.check_output(cmd_umount)
 
     @traceLog()
     def cp(self, destination, tar_cmd):
         """ copy content of container to destination directory """
         getLog().info("Copy content of container %s to %s", self.image, destination)
-        cmd_podman = ["podman", "export", self.container_id]
-        podman = subprocess.Popen(cmd_podman, stdout=subprocess.PIPE)
-        cmd_tar = [tar_cmd, "-xC", destination, "-f", "-"]
-        tar = subprocess.Popen(cmd_tar, stdin=podman.stdout)
-        tar.communicate()
-        podman.communicate()
-
-    @traceLog()
-    def remove(self):
-        """ remove the container """
-        cmd = ["podman", "rm", "-f", self.container_id]
-        util.do(cmd)
-        self.container_id = None
+        with self.mounted_image() as mount_path:
+            # pipe-out the temporary mountpoint with the help of tar utility
+            cmd_podman = [tar_cmd, "-C", mount_path, "-c", "."]
+            with subprocess.Popen(cmd_podman, stdout=subprocess.PIPE) as podman:
+                # read the tarball from stdin, and extract to the destination
+                # directory (bootstrap chroot directory)
+                cmd_tar = [tar_cmd, "-xC", destination, "-f", "-"]
+                with subprocess.Popen(cmd_tar, stdin=podman.stdout) as tar:
+                    tar.communicate()
+                    podman.communicate()
 
     def __repr__(self):
         return "Podman({}({}))".format(self.image, self.container_id)

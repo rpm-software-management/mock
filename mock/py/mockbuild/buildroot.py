@@ -179,10 +179,7 @@ class Buildroot(object):
         if self.uses_bootstrap_image and not self.chroot_was_initialized:
             podman = Podman(self, self.bootstrap_image)
             podman.pull_image()
-            podman.get_container_id()
-            podman.install_pkgmgmt_packages()
             podman.cp(self.make_chroot_path(), self.config["tar_binary"])
-            podman.remove()
 
         self._setup_dirs()
         if do_log:
