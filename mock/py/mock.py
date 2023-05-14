@@ -760,9 +760,7 @@ def main():
         bootstrap_buildroot = Buildroot(bootstrap_buildroot_config,
                                         uidManager, bootstrap_buildroot_state, bootstrap_plugins,
                                         is_bootstrap=True)
-        # this bit of config is needed after we have created the bootstrap buildroot since we need to
-        # query pkg_manager to know which manager is in use
-        bootstrap_buildroot.config['chroot_setup_cmd'] = bootstrap_buildroot.pkg_manager.install_command
+
         # override configs for bootstrap_*
         for option in list(bootstrap_buildroot.config.keys()):
             # options that are not related to bootstrap chroot config_opts
@@ -813,9 +811,6 @@ def main():
 
     log.info("Signal handler active")
     commands = Commands(config_opts, uidManager, plugins, state, buildroot, bootstrap_buildroot)
-
-    if config_opts['use_bootstrap']:
-        bootstrap_buildroot.config['chroot_setup_cmd'] = buildroot.pkg_manager.install_command
 
     state.start("run")
 

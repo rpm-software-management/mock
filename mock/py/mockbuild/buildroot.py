@@ -96,7 +96,7 @@ class Buildroot(object):
         self.use_bootstrap_image = self.config['use_bootstrap_image']
         self.bootstrap_image = self.config['bootstrap_image']
 
-        self.pkg_manager = package_manager(config, self, plugins, bootstrap_buildroot)
+        self.pkg_manager = None
         self.mounts = mounts.Mounts(self)
 
         self.root_log = getLog("mockbuild")
@@ -120,6 +120,26 @@ class Buildroot(object):
         self._setup_nspawn_devicemapper_device()
         self._setup_nspawn_loop_devices()
 
+
+    def set_package_manager(self):
+        """
+        (Re)Set the 'self.pkg_manager' object.  This might be a preliminary
+        choice for bootstrap chroot if 'self.uses_bootstrap_image' because we
+        the image might contain a different package manager by default.
+        Typically when 'dnf5' is desired, but 'dnf' only is baked into the
+        image.
+        """
+
+        old_name = None if not self.pkg_manager else self.pkg_manager.name
+        self.pkg_manager = package_manager(self.config, self, self.plugins,
+                                           self.bootstrap_buildroot)
+        name = self.pkg_manager.name
+        if not old_name:
+            getLog().info("Package manager %s detected and used", name)
+        elif old_name != name:
+            getLog().info("Switching package manager from %s to the %s",
+                          old_name, name)
+
     @traceLog()
     def make_chroot_path(self, *paths):
         new_path = self.rootdir
@@ -140,7 +160,7 @@ class Buildroot(object):
             self._lock_buildroot(exclusive=True)
             self._init(prebuild=prebuild, do_log=do_log)
         except BuildRootLocked:
-            pass
+            self._init_locked()
         finally:
             self._lock_buildroot(exclusive=False)
         if do_log:
@@ -157,6 +177,16 @@ class Buildroot(object):
                 file_util.mkdirIfAbsent(self.resultdir)
             except Error:
                 raise ResultDirNotAccessible(ResultDirNotAccessible.__doc__ % self.resultdir)
+
+
+    @traceLog()
+    def _init_locked(self):
+        """
+        Things to do if other mock process initialized the Buidlroot.  Stuff
+        which would otherwise happen in self._init().
+        """
+        # Detect what package manager to use.
+        self.set_package_manager()
 
     @traceLog()
     def _init(self, prebuild, do_log):
@@ -195,6 +225,7 @@ class Buildroot(object):
         self.root_log.debug('rootdir = %s', self.make_chroot_path())
         self.root_log.debug('resultdir = %s', self.resultdir)
 
+        self.set_package_manager()
         self.pkg_manager.initialize()
         self._setup_resolver_config()
         self._setup_katello_ca()
@@ -369,22 +400,31 @@ class Buildroot(object):
 
     @traceLog()
     def _init_pkg_management(self):
-        if self.uses_bootstrap_image:
-            # we already 'Podman.install_pkgmgmt_packages' to have working
-            # pkg management stack in bootstrap (the rest of this method, like
-            # modules, isn't usefull in bootstrap)
-            return
+        # The desired package manager.
+        pm = self.config['package_manager']
 
-        update_state = '{0} install'.format(self.pkg_manager.name)
+        if self.is_bootstrap:
+            update_state = f'installing {pm} tooling'
+            cmd = self.config.get(f"{pm}_install_command")
+        else:
+            update_state = f'installing minimal buildroot with {pm}'
+            cmd = self.config['chroot_setup_cmd']
+
         self.state.start(update_state)
 
         self._module_setup()
 
-        cmd = self.config['chroot_setup_cmd']
         if cmd:
             if isinstance(cmd, str):
                 cmd = cmd.split()
             self.pkg_manager.init_install_output += self.pkg_manager.execute(*cmd, returnOutput=1)
+
+        if self.uses_bootstrap_image:
+            # TODO: Call _module_setup() again?  Depending on the
+            # implementation, we might want to reset the modules after switching
+            # to the desired manager.  But DNF5 doesn't support modules, yet:
+            # https://github.com/rpm-software-management/dnf5/issues/146
+            self.set_package_manager()
 
         if 'chroot_additional_packages' in self.config and self.config['chroot_additional_packages']:
             cmd = self.config['chroot_additional_packages']

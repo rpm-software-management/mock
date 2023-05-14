@@ -52,11 +52,7 @@ class Commands(object):
         self.buildroot.chrootgid = config['chrootgid']
         self.use_host_resolv = config['use_host_resolv']
         self.chroot_file_contents = config['files']
-        self.chroot_setup_cmd = config['chroot_setup_cmd']
         self.nspawn_args = config['nspawn_args']
-        if isinstance(self.chroot_setup_cmd, str):
-            # accept strings in addition to other sequence types
-            self.chroot_setup_cmd = self.chroot_setup_cmd.split()
         self.more_buildreqs = config['more_buildreqs']
         self.cache_alterations = config['cache_alterations']
 
