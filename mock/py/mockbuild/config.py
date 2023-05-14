@@ -10,9 +10,9 @@ import grp
 import logging
 import os
 import os.path
-import pipes
 import pwd
 import re
+import shlex
 import socket
 import sys
 import warnings
@@ -683,7 +683,7 @@ def nice_root_alias_error(name, alias_name, arch, no_configs, log):
         log.error("")
         log.error("[{}] {}".format(order, short_name))
 
-        alt_cmd = ['mock'] + [short_name if a == arg_name else pipes.quote(a)
+        alt_cmd = ['mock'] + [short_name if a == arg_name else shlex.quote(a)
                               for a in sys.argv[1:]]
 
         log.error("%sUse instead: %s ", pfx, ' '.join(alt_cmd))

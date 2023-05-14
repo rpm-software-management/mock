@@ -15,7 +15,6 @@ from glob import glob
 import logging
 import os
 import os.path
-import pipes
 import re
 import select
 import signal
@@ -92,7 +91,7 @@ _OPS_TIMEOUT = 0
 
 def cmd_pretty(cmd):
     if isinstance(cmd, list):
-        return ' '.join(pipes.quote(arg) for arg in cmd)
+        return ' '.join(shlex.quote(arg) for arg in cmd)
     return cmd
 
 
