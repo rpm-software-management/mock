@@ -91,12 +91,38 @@ in Mock config.""".format(desired.upper(), manager.upper()))
     raise Exception("No package from {} found".format(fallbacks[desired]))
 
 
+def package_manager_class_fallback_from_image(desired, bootstrap):
+    """
+    Search for the package manager available in the "bootstrap image", and
+    return the corresponding _PackageManager class object.
+
+    Typically we search for the package manager on host (the
+    package_manager_class_fallback method above).  With --use-bootstrap-image we
+    though use the package manager from the image and the host's package manager
+    is ignored entirely.
+    """
+    if desired not in fallbacks:
+        raise RuntimeError(f'Unexpected package manager "{desired}"')
+    path = bootstrap.make_chroot_path()
+    for manager in fallbacks[desired]:
+        binary = os.path.join(path, "usr", "bin", manager)
+        getLog().info("Searching for %s script in the extracted bootstrap "
+                      "image", binary)
+        if os.path.exists(binary):
+            return package_manager_from_string(manager)
+    raise RuntimeError(f"No package from {fallbacks[desired]} found")
+
+
 def package_manager_class(config_opts, buildroot, bootstrap_buildroot=None):
     pm = config_opts['package_manager']
 
     if buildroot.is_bootstrap:
         # pkgmanager _to install_ bootstrap.  we don't care about the package
         # manager too much, so we tolerate cross-pkgmanager installation here
+        if buildroot.uses_bootstrap_image:
+            getLog().info("Using package manager from the bootstrap image")
+            return package_manager_class_fallback_from_image(pm, buildroot)
+
         return package_manager_class_fallback(pm, config_opts, True)
 
     if bootstrap_buildroot:
@@ -111,19 +137,15 @@ def package_manager_class(config_opts, buildroot, bootstrap_buildroot=None):
 
 
 def package_manager(config_opts, buildroot, plugins, bootstrap_buildroot=None):
-    is_bootstrap_image = False
-    if buildroot.is_bootstrap and buildroot.use_bootstrap_image:
-        is_bootstrap_image = True
     cls = package_manager_class(config_opts, buildroot, bootstrap_buildroot)
     return cls(config_opts, buildroot, plugins, bootstrap_buildroot,
-               is_bootstrap_image)
+               buildroot.uses_bootstrap_image)
 
 
 class _PackageManager(object):
     # pylint: disable=too-many-instance-attributes
     name = None
     command = None
-    install_command = None
     builddep_command = None
     resolvedep_command = None
     # When support_installroot is False then command is run in target chroot
@@ -146,7 +168,6 @@ class _PackageManager(object):
         self.pkg_manager_config = ""
 
         self.command = config.get(f"{self.name}_command")
-        self.install_command = config.get(f"{self.name}_install_command")
         self.builddep_command = [self.command, 'builddep']
         builddep_override = config.get(f"{self.name}_builddep_command")
         if builddep_override:
@@ -191,7 +212,7 @@ class _PackageManager(object):
                 invocation = [self.command]
         else:
             invocation = [self.command]
-        if self.support_installroot:
+        if self.support_installroot and not self.is_bootstrap_image:
             invocation += ['--installroot', self.buildroot.make_chroot_path('')]
         if cmd in ['upgrade', 'update', 'module']:
             invocation += ['-y']
@@ -489,14 +510,21 @@ Error:      Neither dnf-utils nor yum-utils are installed. Dnf-utils or yum-util
     def _check_command(self):
         """ Check if main command exists """
 
+        command = self.command
+
         if self.bootstrap_buildroot:
             # the command in bootstrap may not exists yet
             return
 
-        if not os.path.exists(self.command):
+        if self.is_bootstrap_image:
+            # with bootstrap image, we don't work with the host's package
+            # manager at all.
+            command = self.buildroot.make_chroot_path(command)
+
+        if not os.path.exists(command):
             raise Exception("""Command {0} is not available. Either install package containing this command
 or run mock with --yum or --dnf to overwrite config value. However this may
-lead to different dependency solving!""".format(self.command))
+lead to different dependency solving!""".format(command))
 
 
 def check_yum_config(config, log):
