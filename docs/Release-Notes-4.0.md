@@ -66,7 +66,7 @@ Released on 2023-05-22.
   against the GitHub upstream [Mock project](https://github.com/rpm-software-management/mock/issues),
   not the Red Hat Bugzilla.
 
-## mock-core-configs-38.4-1
+## mock-core-configs-38.5-1
 
 - Fedora 35 and 36 are now EOL, so the configuration was moved
 - The `includepkgs=devtoolset*` options were
