@@ -69,6 +69,7 @@ Versions in Linux distributions:
 
 
 ## Release Notes
+* [4.0](Release-Notes-4.0) (2023-05-22) - Support for DNF5 added, the '--use-bootstrap-image' feature now works even if Mock is run in container.
 * [3.5](Release-Notes-3.5) (2022-12-01) - Fixed detection of qemu-user-static* packages for the `--forcearch` feature.
 * [3.4](Release-Notes-3.4) (2022-11-15) - Device Mapper control file exposed, better detection for qemu-user-static.
 * [3.3](Release-Notes-3.3) (2022-10-17) - Mock can again be run by `root`, even though this is discouraged.
