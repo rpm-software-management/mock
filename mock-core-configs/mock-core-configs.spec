@@ -1,5 +1,5 @@
 Name:       mock-core-configs
-Version:    38.4
+Version:    38.5
 Release:    1%{?dist}
 Summary:    Mock core config files basic chroots
 
@@ -20,7 +20,7 @@ Provides: mock-configs
 # distribution-gpg-keys contains GPG keys used by mock configs
 Requires:   distribution-gpg-keys >= 1.85
 # specify minimal compatible version of mock
-Requires:   mock >= 2.5
+Requires:   mock >= 4.0
 Requires:   mock-filesystem
 
 Requires(post): coreutils
@@ -140,6 +140,12 @@ fi
 %ghost %config(noreplace,missingok) %{_sysconfdir}/mock/default.cfg
 
 %changelog
+* Mon May 22 2023 Pavel Raiskup <praiskup@redhat.com> 38.5-1
+- drop includepkgs=devtoolset* from centos-{6,7} (orion@nwra.com)
+- Fedora 35 and 36 is EOL
+- remove useradd specific changes in configs - it is not needed for Mock 4+
+- openSUSE i586 has been moved out of the main repo into a port (f_krull@gmx.de)
+
 * Sat Apr 15 2023 Pavel Raiskup <praiskup@redhat.com> 38.4-1
 - Add Amazon Linux 2023 mock configs (trawets@amazon.com)
 

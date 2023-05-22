@@ -9,7 +9,7 @@
 
 Summary: Builds packages inside chroots
 Name: mock
-Version: 3.5
+Version: 4.0
 Release: 1%{?dist}
 License: GPL-2.0-or-later
 # Source is created by
@@ -261,6 +261,17 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 %dir  %{_datadir}/cheat
 
 %changelog
+* Mon May 22 2023 Pavel Raiskup <praiskup@redhat.com> 4.0-1
+- cleanup the bootstrap image logic so it works if Mock is run in container
+- rebuild: kill orphans when mounted
+- bootstrap: delay the buildroot-in-bootstrap recursive mount
+- use shlex instead of pipes
+- fix bootstrap_* prefixed config_opts options
+- manual page: fix the "how to fill an issue" info
+- support for DNF5 added
+- use -N instead of -n for useradd (msuchy@redhat.com)
+- mock: don't use distutils copy_tree()
+
 * Thu Dec 01 2022 Pavel Raiskup <praiskup@redhat.com> 3.5-1
 - check for qemu-user-static raises InvalidArchitecture()
 - forcearch: map armv7hl to the /usr/bin/qemu-arm-static binary
