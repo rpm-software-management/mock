@@ -198,13 +198,13 @@ class Buildroot(object):
         os.chmod(self.basedir, 0o775)
         file_util.mkdirIfAbsent(self.make_chroot_path())
         self.plugins.call_hooks('mount_root')
-        # intentionally we do not call bootstrap hook here - it does not have sense
+        # intentionally we do not call bootstrap hook here - it does not make sense
         self._setup_nosync()
         self.chroot_was_initialized = self.chroot_is_initialized()
         self._setup_result_dir()
         getLog().info("calling preinit hooks")
         self.plugins.call_hooks('preinit')
-        # intentionally we do not call bootstrap hook here - it does not have sense
+        # intentionally we do not call bootstrap hook here - it does not make sense
         self.chroot_was_initialized = self.chroot_is_initialized()
         if self.uses_bootstrap_image and not self.chroot_was_initialized:
             podman = Podman(self, self.bootstrap_image)
@@ -273,7 +273,7 @@ class Buildroot(object):
 
         # done with init
         self.plugins.call_hooks('postinit')
-        # intentionally we do not call bootstrap hook here - it does not have sense
+        # intentionally we do not call bootstrap hook here - it does not make sense
 
         self.mounts.mountall_user()
 
@@ -565,8 +565,13 @@ class Buildroot(object):
 
     @traceLog()
     def _open_lock(self):
+        """
+        Creates and opens the lock file.
+        The lock file is created in the parent directory of basedir.
+        If basedir = "/path/to/basedir" => /path/to/basedir.lock
+        """
         file_util.mkdirIfAbsent(self.basedir)
-        self._lock_file = open(os.path.join(self.basedir, "buildroot.lock"), "a+")
+        self._lock_file = open(os.path.join(os.path.abspath(self.basedir)+ ".lock"), "a+")
 
     @traceLog()
     def _lock_buildroot(self, exclusive):
@@ -576,11 +581,19 @@ class Buildroot(object):
         try:
             fcntl.lockf(self._lock_file.fileno(), lock_type | fcntl.LOCK_NB)
         except IOError:
+            # If the lock file cannot be locked then this process does not own it.
+            # Setting it to None to signal that no lock could be acquired
+            self._lock_file = None
             raise BuildRootLocked("Build root is locked by another process.")
 
     @traceLog()
     def _unlock_buildroot(self):
         if self._lock_file:
+            # We acquired a lock. Hence we can delete the lock file.
+            # Deleting the file must happen before closing it.
+            # Otherwise other process can acquire the lock after this process
+            # closes the lock file but before it deletes it, causing a race condition.
+            os.unlink(os.path.join(os.path.abspath(self.basedir)+ ".lock"))
             self._lock_file.close()
         self._lock_file = None
 
@@ -858,7 +871,7 @@ class Buildroot(object):
                 util.orphansKill(self.make_chroot_path())
                 self.mounts.umountall()
                 self.plugins.call_hooks('postumount')
-                # intentionally we do not call bootstrap hook here - it does not have sense
+                # intentionally we do not call bootstrap hook here - it does not make sense
             except BuildRootLocked:
                 pass
             finally:
@@ -913,8 +926,7 @@ class Buildroot(object):
             util.orphansKill(p)
             self.mounts.umountall()
             self.plugins.call_hooks('umount_root')
-            # intentionally we do not call bootstrap hook here - it does not have sense
-            self._unlock_buildroot()
+            # intentionally we do not call bootstrap hook here - it does not make sense
             subv = util.find_btrfs_in_chroot(self.mockdir, p)
             if subv:
                 util.do(["btrfs", "subv", "delete", "/" + subv])
@@ -923,7 +935,10 @@ class Buildroot(object):
             file_util.rmtree(self.basedir, selinux=self.selinux)
         self.chroot_was_initialized = False
         self.plugins.call_hooks('postclean')
-        # intentionally we do not call bootstrap hook here - it does not have sense
+        # The lock is first released when the buildroot has dissappeared completely
+        # in order to avoid other process seeing a partially deleted buildroot
+        self._unlock_buildroot()
+        # intentionally we do not call bootstrap hook here - it does not make sense
 
     @property
     def uses_bootstrap_image(self):
