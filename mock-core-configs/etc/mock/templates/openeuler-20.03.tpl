@@ -29,7 +29,6 @@ user_agent={{ user_agent }}
 [OS]
 name=OS
 metalink=https://mirrors.openeuler.org/metalink?repo=openEuler-20.03-LTS-SP3/OS&arch=$basearch
-metadata_expire=7d
 enabled=1
 gpgcheck=1
 gpgkey=file:///usr/share/distribution-gpg-keys/openeuler/RPM-GPG-KEY-openEuler
@@ -37,7 +36,6 @@ gpgkey=file:///usr/share/distribution-gpg-keys/openeuler/RPM-GPG-KEY-openEuler
 [everything]
 name=everything
 metalink=https://mirrors.openeuler.org/metalink?repo=openEuler-20.03-LTS-SP3/everything&arch=$basearch
-metadata_expire=7d
 enabled=1
 gpgcheck=1
 gpgkey=file:///usr/share/distribution-gpg-keys/openeuler/RPM-GPG-KEY-openEuler
@@ -45,7 +43,6 @@ gpgkey=file:///usr/share/distribution-gpg-keys/openeuler/RPM-GPG-KEY-openEuler
 [EPOL]
 name=EPOL
 metalink=https://mirrors.openeuler.org/metalink?repo=openEuler-20.03-LTS-SP3/EPOL/main&arch=$basearch
-metadata_expire=7d
 enabled=1
 gpgcheck=1
 gpgkey=file:///usr/share/distribution-gpg-keys/openeuler/RPM-GPG-KEY-openEuler
@@ -53,7 +50,6 @@ gpgkey=file:///usr/share/distribution-gpg-keys/openeuler/RPM-GPG-KEY-openEuler
 [debuginfo]
 name=debuginfo
 metalink=https://mirrors.openeuler.org/metalink?repo=openEuler-20.03-LTS-SP3/debuginfo&arch=$basearch
-metadata_expire=7d
 enabled=0
 gpgcheck=1
 gpgkey=file:///usr/share/distribution-gpg-keys/openeuler/RPM-GPG-KEY-openEuler
@@ -61,7 +57,6 @@ gpgkey=file:///usr/share/distribution-gpg-keys/openeuler/RPM-GPG-KEY-openEuler
 [source]
 name=source
 metalink=https://mirrors.openeuler.org/metalink?path=openeuler/openEuler-20.03-LTS-SP3/source/repodata/repomd.xml
-metadata_expire=7d
 enabled=0
 gpgcheck=1
 gpgkey=file:///usr/share/distribution-gpg-keys/openeuler/RPM-GPG-KEY-openEuler
@@ -69,7 +64,6 @@ gpgkey=file:///usr/share/distribution-gpg-keys/openeuler/RPM-GPG-KEY-openEuler
 [update]
 name=update
 metalink=https://mirrors.openeuler.org/metalink?repo=openEuler-20.03-LTS-SP3/update&arch=$basearch
-metadata_expire=7d
 enabled=1
 gpgcheck=1
 gpgkey=file:///usr/share/distribution-gpg-keys/openeuler/RPM-GPG-KEY-openEuler

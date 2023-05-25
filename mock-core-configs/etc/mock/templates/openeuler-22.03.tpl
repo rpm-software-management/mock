@@ -32,7 +32,6 @@ user_agent={{ user_agent }}
 [OS]
 name=OS
 metalink=https://mirrors.openeuler.org/metalink?repo=openEuler-22.03-LTS-SP1/OS&arch=$basearch
-metadata_expire=7d
 enabled=1
 gpgcheck=1
 gpgkey=file:///usr/share/distribution-gpg-keys/openeuler/RPM-GPG-KEY-openEuler-EulerMaker
@@ -40,7 +39,6 @@ gpgkey=file:///usr/share/distribution-gpg-keys/openeuler/RPM-GPG-KEY-openEuler-E
 [everything]
 name=everything
 metalink=https://mirrors.openeuler.org/metalink?repo=openEuler-22.03-LTS-SP1/everything&arch=$basearch
-metadata_expire=7d
 enabled=1
 gpgcheck=1
 gpgkey=file:///usr/share/distribution-gpg-keys/openeuler/RPM-GPG-KEY-openEuler-EulerMaker
@@ -48,7 +46,6 @@ gpgkey=file:///usr/share/distribution-gpg-keys/openeuler/RPM-GPG-KEY-openEuler-E
 [EPOL]
 name=EPOL
 metalink=https://mirrors.openeuler.org/metalink?repo=openEuler-22.03-LTS-SP1/EPOL/main&arch=$basearch
-metadata_expire=7d
 enabled=1
 gpgcheck=1
 gpgkey=file:///usr/share/distribution-gpg-keys/openeuler/RPM-GPG-KEY-openEuler-EulerMaker
@@ -56,7 +53,6 @@ gpgkey=file:///usr/share/distribution-gpg-keys/openeuler/RPM-GPG-KEY-openEuler-E
 [debuginfo]
 name=debuginfo
 metalink=https://mirrors.openeuler.org/metalink?repo=openEuler-22.03-LTS-SP1/debuginfo&arch=$basearch
-metadata_expire=7d
 enabled=0
 gpgcheck=1
 gpgkey=file:///usr/share/distribution-gpg-keys/openeuler/RPM-GPG-KEY-openEuler-EulerMaker
@@ -64,7 +60,6 @@ gpgkey=file:///usr/share/distribution-gpg-keys/openeuler/RPM-GPG-KEY-openEuler-E
 [source]
 name=source
 metalink=https://mirrors.openeuler.org/metalink?path=openeuler/openEuler-22.03-LTS-SP1/source/repodata/repomd.xml
-metadata_expire=7d
 enabled=0
 gpgcheck=1
 gpgkey=file:///usr/share/distribution-gpg-keys/openeuler/RPM-GPG-KEY-openEuler-EulerMaker
@@ -72,7 +67,6 @@ gpgkey=file:///usr/share/distribution-gpg-keys/openeuler/RPM-GPG-KEY-openEuler-E
 [update]
 name=update
 metalink=https://mirrors.openeuler.org/metalink?repo=openEuler-22.03-LTS-SP1/update&arch=$basearch
-metadata_expire=7d
 enabled=1
 gpgcheck=1
 gpgkey=file:///usr/share/distribution-gpg-keys/openeuler/RPM-GPG-KEY-openEuler-EulerMaker
@@ -80,7 +74,6 @@ gpgkey=file:///usr/share/distribution-gpg-keys/openeuler/RPM-GPG-KEY-openEuler-E
 [update-source]
 name=update-source
 metalink=https://mirrors.openeuler.org/metalink?path=openeuler/openEuler-22.03-LTS-SP1/update/source/repodata/repomd.xml
-metadata_expire=7d
 enabled=0
 gpgcheck=1
 gpgkey=file:///usr/share/distribution-gpg-keys/openeuler/RPM-GPG-KEY-openEuler-EulerMaker
