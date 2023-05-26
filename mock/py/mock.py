@@ -1033,7 +1033,7 @@ def run_command(options, args, config_opts, commands, buildroot, state):
                         shutil.copy(src, dest)
 
     elif options.mode in ('pm-cmd', 'yum-cmd', 'dnf-cmd'):
-        log.info('Running %s %s', buildroot.pkg_manager.command, ' '.join(args))
+        log.info('Running %s %s', options.mode, ' '.join(args))
         commands.init()
         buildroot.pkg_manager.execute(*args)
     elif options.mode == 'snapshot':
