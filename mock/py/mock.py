@@ -748,10 +748,6 @@ def main():
         bootstrap_buildroot_config['use_host_resolv'] = True
         util.setup_host_resolv(bootstrap_buildroot_config)
 
-        # use system_*_command for bootstrapping
-        bootstrap_buildroot_config['yum_command'] = bootstrap_buildroot_config['system_yum_command']
-        bootstrap_buildroot_config['dnf_command'] = bootstrap_buildroot_config['system_dnf_command']
-
         # disable updating bootstrap chroot
         bootstrap_buildroot_config['update_before_build'] = False
 
