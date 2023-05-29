@@ -121,24 +121,44 @@ class Buildroot(object):
         self._setup_nspawn_loop_devices()
 
 
-    def set_package_manager(self):
+    def set_package_manager(self, fallback=None):
         """
         (Re)Set the 'self.pkg_manager' object.  This might be a preliminary
         choice for bootstrap chroot if 'self.uses_bootstrap_image' because we
         the image might contain a different package manager by default.
         Typically when 'dnf5' is desired, but 'dnf' only is baked into the
-        image.
+        image.  So there are 5 situations when this method may be called:
+
+        1. self is bootstrap and we install by package manager from host, and
+           we try to to use any of the package managers on host (fallback)
+        2. self is bootstrap generated from a container image, first we try to
+           use any available package manager in such image (fallback) to install
+           the desired one
+        3. self is bootstrap, generated from image, but we already have the
+           required package manager installed (fallback=False)
+        4. self is buildroot, and bootstrapping is off - we use the best
+           matching package manager on host (fallback) but we do warn
+        5. self is buildroot, but we install from a pre-prepared bootstrap
+           chroot where we already have the desired package manager (there's no
+           fallback/guessing)
         """
 
+        if fallback is None:
+            # True for situation 1, 2, 4.  False for 5.  We do not enter this if
+            # condition for situation 3.
+            fallback = self.is_bootstrap or not self.bootstrap_buildroot
+
         old_name = None if not self.pkg_manager else self.pkg_manager.name
-        self.pkg_manager = package_manager(self.config, self, self.plugins,
-                                           self.bootstrap_buildroot)
+        self.pkg_manager = package_manager(self, self.bootstrap_buildroot, fallback)
+
+        fallback = "fallback" if fallback else "direct choice"
         name = self.pkg_manager.name
         if not old_name:
-            getLog().info("Package manager %s detected and used", name)
+            getLog().info("Package manager %s detected and used (%s)", name,
+                          fallback)
         elif old_name != name:
-            getLog().info("Switching package manager from %s to the %s",
-                          old_name, name)
+            getLog().info("Switching package manager from %s to the %s (%s)",
+                          old_name, name, fallback)
 
     @traceLog()
     def make_chroot_path(self, *paths):
@@ -424,7 +444,7 @@ class Buildroot(object):
             # implementation, we might want to reset the modules after switching
             # to the desired manager.  But DNF5 doesn't support modules, yet:
             # https://github.com/rpm-software-management/dnf5/issues/146
-            self.set_package_manager()
+            self.set_package_manager(fallback=False)
 
         if 'chroot_additional_packages' in self.config and self.config['chroot_additional_packages']:
             cmd = self.config['chroot_additional_packages']

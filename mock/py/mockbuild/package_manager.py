@@ -37,42 +37,46 @@ def package_manager_from_string(name):
     raise Exception('Unrecognized package manager "{}"'.format(name))
 
 
-def package_manager_exists_on_host(name, config_opts, bootstrap=False):
-    option = '{}_command'.format(name)
-    pathname = config_opts[option]
+def package_manager_exists(pm_class, config_opts, chroot=None):
+    name = pm_class.name
+    command = pm_class.get_command(config_opts)
+    pathname = (chroot or "") + command
     if not os.path.isfile(pathname):
-        if pathname == '/usr/bin/yum':
-            # only _exact_ match here, with custom config like
-            # /usr/local/bin/yum user must know where yum is
-            if os.path.isfile('/usr/bin/yum-deprecated'):
-                return True
         return False
-    real_pathname = os.path.realpath(pathname)
     # resolve symlinks, and detect that e.g. /bin/yum doesn't point to /bin/dnf
-    if name not in real_pathname:
-        if not bootstrap:
-            getLog().warning("Not using '%s', it is symlink to '%s'", pathname,
-                             real_pathname)
-        return False
-    return True
+    real_pathname = os.path.realpath(pathname)
+    return name in real_pathname
 
 
-def package_manager_class_fallback(desired, config_opts, bootstrap):
-    getLog().debug("search for '%s' package manager", desired)
+def package_manager_class_fallback(config_opts, buildroot, fallback):
+    desired = config_opts['package_manager']
+    if not fallback:
+        return package_manager_from_string(desired)
+
+    getLog().debug("searching for '%s' package manager or alternatives", desired)
     if desired not in fallbacks:
-        raise Exception('Unexpected package manager "{}"'.format(desired))
+        raise RuntimeError(f'Unexpected package manager "{desired}"')
+
+    chroot_to_search_in = None  # by default we search for PMs on host
+    if buildroot.uses_bootstrap_image:
+        # alternatively in the (extracted) bootstrap image
+        chroot_to_search_in = buildroot.make_chroot_path()
+
+    bootstrap = buildroot.is_bootstrap
 
     for manager in fallbacks[desired]:
-        if package_manager_exists_on_host(manager, config_opts, bootstrap):
-            ret_val = package_manager_from_string(manager)
+        pm_class = package_manager_from_string(manager)
+        package_manager_exists(pm_class, config_opts)
+
+        if package_manager_exists(pm_class, config_opts, chroot=chroot_to_search_in):
             if desired == manager:
-                return ret_val
+                return pm_class
 
             getLog().info("Using '%s' instead of '%s'%s", manager, desired,
                           " for bootstrap chroot" if bootstrap else "")
 
             if 'dnf_warning' in config_opts and not config_opts['dnf_warning']:
-                return ret_val
+                return pm_class
 
             if not bootstrap:
                 print("""WARNING! WARNING! WARNING!
@@ -86,60 +90,15 @@ You can suppress this warning when you put
 in Mock config.""".format(desired.upper(), manager.upper()))
                 input("Press Enter to continue.")
 
-            return ret_val
+            return pm_class
 
     raise Exception("No package from {} found".format(fallbacks[desired]))
 
 
-def package_manager_class_fallback_from_image(desired, bootstrap):
-    """
-    Search for the package manager available in the "bootstrap image", and
-    return the corresponding _PackageManager class object.
-
-    Typically we search for the package manager on host (the
-    package_manager_class_fallback method above).  With --use-bootstrap-image we
-    though use the package manager from the image and the host's package manager
-    is ignored entirely.
-    """
-    if desired not in fallbacks:
-        raise RuntimeError(f'Unexpected package manager "{desired}"')
-    path = bootstrap.make_chroot_path()
-    for manager in fallbacks[desired]:
-        binary = os.path.join(path, "usr", "bin", manager)
-        getLog().info("Searching for %s script in the extracted bootstrap "
-                      "image", binary)
-        if os.path.exists(binary):
-            return package_manager_from_string(manager)
-    raise RuntimeError(f"No package from {fallbacks[desired]} found")
-
-
-def package_manager_class(config_opts, buildroot, bootstrap_buildroot=None):
-    pm = config_opts['package_manager']
-
-    if buildroot.is_bootstrap:
-        # pkgmanager _to install_ bootstrap.  we don't care about the package
-        # manager too much, so we tolerate cross-pkgmanager installation here
-        if buildroot.uses_bootstrap_image:
-            getLog().info("Using package manager from the bootstrap image")
-            return package_manager_class_fallback_from_image(pm, buildroot)
-
-        return package_manager_class_fallback(pm, config_opts, True)
-
-    if bootstrap_buildroot:
-        # Installing from bootstrap to destination buildroot, we expect that the
-        # desired pkg manager is installed and there's need to warn and do
-        # fallbacks.
-        return package_manager_from_string(pm)
-
-    # installing from host directly to destination buildroot, this may fail
-    # miserably (especially if pm=dnf, and only yum is available).
-    return package_manager_class_fallback(pm, config_opts, False)
-
-
-def package_manager(config_opts, buildroot, plugins, bootstrap_buildroot=None):
-    cls = package_manager_class(config_opts, buildroot, bootstrap_buildroot)
-    return cls(config_opts, buildroot, plugins, bootstrap_buildroot,
-               buildroot.uses_bootstrap_image)
+def package_manager(buildroot, bootstrap_buildroot, fallback):
+    cls = package_manager_class_fallback(buildroot.config, buildroot, fallback)
+    return cls(buildroot.config, buildroot, buildroot.plugins,
+               bootstrap_buildroot, buildroot.uses_bootstrap_image)
 
 
 class _PackageManager(object):
@@ -157,6 +116,18 @@ class _PackageManager(object):
     # '--allowerasing install').
     place_common_opts_after = False
 
+    @classmethod
+    def get_command(cls, config):
+        command = config.get(f"{cls.name}_command")
+        if config.get("use_bootstrap_image", False):
+            return command
+        if config.get("use_bootstrap", False):
+            sys_command = config.get(f"system_{cls.name}_command")
+            if sys_command:
+                return sys_command
+        return command
+
+
     @traceLog()
     def __init__(self, config, buildroot, plugins, bootstrap_buildroot, is_bootstrap_image):
         self.config = config
@@ -167,7 +138,8 @@ class _PackageManager(object):
         self.is_bootstrap_image = is_bootstrap_image
         self.pkg_manager_config = ""
 
-        self.command = config.get(f"{self.name}_command")
+        self.command = self.get_command(config)
+
         self.builddep_command = [self.command, 'builddep']
         builddep_override = config.get(f"{self.name}_builddep_command")
         if builddep_override:
