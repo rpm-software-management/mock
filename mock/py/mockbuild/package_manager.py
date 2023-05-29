@@ -18,9 +18,9 @@ from .trace_decorator import traceLog, getLog
 from .mounts import BindMountPoint
 
 fallbacks = {
-    'dnf': ['dnf', 'yum'],
-    'yum': ['yum', 'dnf'],
-    'microdnf': ['microdnf', 'dnf', 'yum'],
+    'dnf': ['dnf', 'dnf5', 'yum'],
+    'yum': ['yum', 'dnf5', 'dnf'],
+    'microdnf': ['microdnf', 'dnf5', 'dnf', 'yum'],
     'dnf5': ['dnf5', 'dnf', 'yum'],
 }
 
