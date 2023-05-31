@@ -50,4 +50,6 @@ class BindMount(object):
                 file_util.mkdirIfAbsent(srcdir)
                 file_util.mkdirIfAbsent(self.buildroot.make_chroot_path(destdir))
             else:
-                file_util.touch(self.buildroot.make_chroot_path(destdir))
+                dest_file = self.buildroot.make_chroot_path(destdir)
+                file_util.mkdirIfAbsent(os.path.dirname(dest_file))
+                file_util.touch(dest_file)
