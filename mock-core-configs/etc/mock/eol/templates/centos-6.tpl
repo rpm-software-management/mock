@@ -35,8 +35,7 @@ name=CentOS-$releasever - Base
 enabled=1
 baseurl=https://vault.centos.org/6.10/os/$basearch/
 failovermethod=priority
-gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-6
-gpgcheck=1
+gpgcheck=0
 skip_if_unavailable=False
 
 [updates]
@@ -44,47 +43,41 @@ name=CentOS-$releasever - Updates
 enabled=0
 baseurl=https://vault.centos.org/6.10/updates/$basearch/
 failovermethod=priority
-gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-6
-gpgcheck=1
+gpgcheck=0
 skip_if_unavailable=False
 
 [extras]
 name=CentOS-$releasever - Extras
 baseurl=https://vault.centos.org/6.10/extras/$basearch/
 failovermethod=priority
-gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-6
-gpgcheck=1
+gpgcheck=0
 skip_if_unavailable=False
 
 [fastrack]
 name=CentOS-$releasever - fasttrack
 baseurl=https://vault.centos.org/6.10/fasttrack/$basearch/
 failovermethod=priority
-gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-6
-gpgcheck=1
+gpgcheck=0
 skip_if_unavailable=False
 enabled=0
 
 [centosplus]
 name=CentOS-$releasever - Plus
 baseurl=https://vault.centos.org/6.10/centosplus/$basearch/
-gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-6
-gpgcheck=1
+gpgcheck=0
 enabled=0
 
 {% if target_arch == "x86_64" %}
 [centos-sclo-sclo]
 name=CentOS-$releasever - SCLo sclo
 baseurl=https://vault.centos.org/6.10/sclo/$basearch/sclo/
-gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-SIG-SCLo
-gpgcheck=1
+gpgcheck=0
 skip_if_unavailable=False
 
 [centos-sclo-rh]
 name=CentOS-$releasever - SCLo rh
 baseurl=https://vault.centos.org/6.10/sclo/$basearch/rh/
-gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-SIG-SCLo
-gpgcheck=1
+gpgcheck=0
 skip_if_unavailable=False
 {% endif %}
 """
