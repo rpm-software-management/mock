@@ -1,6 +1,6 @@
 Name:       mock-core-configs
 Version:    38.5
-Release:    1%{?dist}
+Release:    2%{?dist}
 Summary:    Mock core config files basic chroots
 
 License:    GPL-2.0-or-later
@@ -11,6 +11,7 @@ URL:        https://github.com/rpm-software-management/mock/
 # git reset --hard %%{name}-%%{version}
 # tito build --tgz
 Source:     https://github.com/rpm-software-management/mock/releases/download/%{name}-%{version}-1/%{name}-%{version}.tar.gz
+Patch0: https://github.com/jofavi7803/mock/commit/90e0a5300f994a85af6aefaad6ba1d6ad8de67ec.patch
 BuildArch:  noarch
 
 # The mock.rpm requires this.  Other packages may provide this if they tend to
@@ -40,7 +41,7 @@ Rocky Linux and various other specific or combined chroots.
 
 %prep
 %setup -q
-
+%patch -P0 -p2
 
 %build
 
