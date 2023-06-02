@@ -1,3 +1,7 @@
+%if 0%{?el8}
+%global python3 /usr/libexec/platform-python
+%endif
+
 Name:       mock-core-configs
 Version:    38.5
 Release:    1%{?dist}
@@ -98,7 +102,7 @@ fi
 if [ -s /etc/mageia-release ]; then
     mock_arch=$(sed -n '/^$/!{$ s/.* \(\w*\)$/\1/p}' /etc/mageia-release)
 else
-    mock_arch=$(python3 -c "import dnf.rpm; import hawkey; print(dnf.rpm.basearch(hawkey.detect_arch()))")
+    mock_arch=$(%{python3} -c "import dnf.rpm; import hawkey; print(dnf.rpm.basearch(hawkey.detect_arch()))")
 fi
 
 cfg=unknown-distro
