@@ -9,7 +9,7 @@
 
 Summary: Builds packages inside chroots
 Name: mock
-Version: 4.0
+Version: 4.1
 Release: 1%{?dist}
 License: GPL-2.0-or-later
 # Source is created by
@@ -270,6 +270,15 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 %dir  %{_datadir}/cheat
 
 %changelog
+* Fri Jun 02 2023 Pavel Raiskup <praiskup@redhat.com> 4.1-1
+- bootstrap: fix certificate copying into the bootstrap chroot
+- don't strictly require any package manager
+- config: properly configure package manager commands
+- unify the fallback-detection for host/bootstrap/bootstrap-image
+- bind_mount plug-in: pre-create dest directory before bind-mounting a file
+- bootstrap: use DNF5 in package manager fallbacks
+- fix --dnf-cmd traceback with the new package_manager logic
+
 * Mon May 22 2023 Pavel Raiskup <praiskup@redhat.com> 4.0-1
 - cleanup the bootstrap image logic so it works if Mock is run in container
 - rebuild: kill orphans when mounted
