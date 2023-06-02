@@ -3,9 +3,20 @@
 import errno
 import os
 import os.path
+import shutil
 import stat
 import subprocess
 import time
+
+# TODO: Remove with copy_or_update_tree() removal
+try:
+    deprecated_copy_tree = None
+    deprecated_copy_tree_error = None
+    # pylint: disable=deprecated-module
+    from distutils.dir_util import copy_tree as deprecated_copy_tree   # type: ignore
+    from distutils.errors import DistutilsFileError as deprecated_copy_tree_error  # type: ignore
+except ImportError:
+    pass
 
 from . import exception
 from .trace_decorator import getLog, traceLog
@@ -114,3 +125,20 @@ def find_non_nfs_dir():
         if not get_fs_type(d).startswith('nfs'):
             return d
     raise exception.Error('Cannot find non-NFS directory in: %s' % dirs)
+
+
+def copy_or_update_tree(src, dest):
+    """
+    Copy directory src into the dest directory.  This method won't be needed
+    when we stop supporting Python 3.6 (RHEL 8) where shutil.copytree doesn't
+    support the dirs_exist_ok= option.
+    """
+    try:
+        shutil.copytree(src, dest, dirs_exist_ok=True)
+    except TypeError:  # no dirs_exist_ok= support!
+        try:
+            # RHEL 8 only
+            deprecated_copy_tree(src, dest)
+        except deprecated_copy_tree_error as err:
+            # Caller(s) expect us to raise OSError.
+            raise OSError("Can't copy using distutils's copy_tree()") from err
