@@ -16,7 +16,7 @@ Mock source tarballs: https://github.com/rpm-software-management/mock/releases
 
 Mock currently has one active branch plus `main`.
 
- * `main` - This is currently Mock v3.x and is used for releasing and
+ * `main` - This is currently Mock v4.x and is used for releasing and
    development.  If you want to send patches, you probably want this branch.
  * `mock-2` - This branch is used for Mock v2.x, for EL-7, bug-fixes-only mode.
  * `mock-1.4` - End of life, there will be no changes.
