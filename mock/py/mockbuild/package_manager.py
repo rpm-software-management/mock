@@ -119,7 +119,7 @@ class _PackageManager(object):
     @classmethod
     def get_command(cls, config):
         command = config.get(f"{cls.name}_command")
-        if config.get("use_bootstrap_image", False):
+        if config.get("use_bootstrap_image", True):
             return command
         if config.get("use_bootstrap", False):
             sys_command = config.get(f"system_{cls.name}_command")

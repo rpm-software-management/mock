@@ -11,9 +11,9 @@ We come up with a nice feature. Mock will not install bootstrap chroot itself. I
 
 Using this feature, **any** incompatible feature in either RPM or DNF can be used in the target chroot. Now or in future. And you will be able to install the final chroot. You do not even need to have RPM on a host. So this should work on any system. Even Debian based. The only requirement for this feature is [Podman](https://podman.io/). Do not forget to install the `podman` package.
 
-This feature is now disabled by default. You can enable it using:
+This feature is available since 1.4.20 and enabled by default from 5.0. You can disable it using:
 
-    config_opts['use_bootstrap_image'] = True
+    config_opts['use_bootstrap_image'] = False
 
 It can be enabled or disabled on the command line using `--use-bootstrap-image` or `--no-bootstrap-image` options.
 

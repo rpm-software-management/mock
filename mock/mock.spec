@@ -80,7 +80,7 @@ Recommends: btrfs-progs
 Recommends: dnf-utils
 Suggests: qemu-user-static
 Suggests: procenv
-Suggests: podman
+Recommends: podman
 
 %if %{with tests}
 BuildRequires: python%{python3_pkgversion}-distro
