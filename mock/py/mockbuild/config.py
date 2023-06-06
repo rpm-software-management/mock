@@ -81,7 +81,7 @@ def setup_default_config_opts():
     config_opts['use_container_host_hostname'] = True
 
     config_opts['use_bootstrap'] = True
-    config_opts['use_bootstrap_image'] = False
+    config_opts['use_bootstrap_image'] = True
     config_opts['bootstrap_image'] = 'fedora:latest'
     config_opts['bootstrap_image_ready'] = False
 
