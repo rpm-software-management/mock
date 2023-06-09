@@ -8,7 +8,7 @@ config_opts['root'] = 'fedora-eln-{{ target_arch }}'
 # Note that similar idiom used in fedora-branched.tpl and fedora-rawhide.tpl.
 config_opts['mirrored'] = config_opts['target_arch'] != 'i686'
 
-config_opts['chroot_setup_cmd'] = 'install bash bzip2 coreutils cpio diffutils fedora-release-eln findutils gawk glibc-minimal-langpack grep gzip info patch redhat-rpm-config rpm-build sed shadow-utils tar unzip util-linux which xz'
+config_opts['chroot_setup_cmd'] = 'install bash bzip2 coreutils cpio diffutils fedora-release-eln findutils gawk glibc-minimal-langpack grep gzip info patch redhat-rpm-config rpm-build sed tar unzip util-linux which xz'
 
 config_opts['dist'] = 'eln'  # only useful for --resultdir variable subst
 config_opts['extra_chroot_dirs'] = [ '/run/lock', ]

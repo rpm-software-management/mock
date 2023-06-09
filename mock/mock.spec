@@ -100,6 +100,7 @@ BuildRequires: perl
 Requires: util-linux
 Requires: coreutils
 Requires: procps-ng
+Requires: shadow-utils
 
 
 %description

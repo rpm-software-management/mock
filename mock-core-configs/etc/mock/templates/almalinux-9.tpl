@@ -1,4 +1,4 @@
-config_opts['chroot_setup_cmd'] = 'install bash bzip2 coreutils cpio diffutils redhat-release findutils gawk glibc-minimal-langpack grep gzip info patch redhat-rpm-config rpm-build sed shadow-utils tar unzip util-linux which xz'
+config_opts['chroot_setup_cmd'] = 'install bash bzip2 coreutils cpio diffutils redhat-release findutils gawk glibc-minimal-langpack grep gzip info patch redhat-rpm-config rpm-build sed tar unzip util-linux which xz'
 config_opts['dist'] = 'el9.alma'  # only useful for --resultdir variable subst
 config_opts['releasever'] = '9'
 config_opts['package_manager'] = 'dnf'
