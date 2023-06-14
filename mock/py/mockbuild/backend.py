@@ -156,8 +156,11 @@ class Commands(object):
         return self.buildroot.make_chroot_path(*args)
 
     @traceLog()
-    def init(self, **kwargs):
+    def init(self, do_log=True, **kwargs):
         try:
+            if do_log:
+                self.buildroot.resetLogging()
+
             if self.bootstrap_buildroot is not None:
                 file_util.mkdirIfAbsent(self.buildroot.make_chroot_path())
                 self.bootstrap_buildroot.initialize(**kwargs)
@@ -479,7 +482,7 @@ class Commands(object):
                     pdn = s_pkg.replace('.src.rpm', '')
                     resultdir = os.path.join(self.config['local_repo_dir'], pdn)
                     self.buildroot.resultdir = resultdir
-                    self.buildroot._resetLogging(force=True)
+                    self.buildroot.resetLogging(force=True)
                     file_util.mkdirIfAbsent(resultdir)
                     success_file = os.path.join(resultdir, 'success')
                     build_ret_code = 0
