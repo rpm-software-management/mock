@@ -170,7 +170,7 @@ class Buildroot(object):
         return new_path
 
     @traceLog()
-    def initialize(self, prebuild=False, do_log=True):
+    def initialize(self, prebuild=False):
         """
         Initialize the buildroot to a point where it's possible to execute
         commands in chroot. If it was already initialized, just lock the shared
@@ -178,13 +178,11 @@ class Buildroot(object):
         """
         try:
             self._lock_buildroot(exclusive=True)
-            self._init(prebuild=prebuild, do_log=do_log)
+            self._init(prebuild=prebuild)
         except BuildRootLocked:
             self._init_locked()
         finally:
             self._lock_buildroot(exclusive=False)
-        if do_log:
-            self._resetLogging()
 
     @traceLog()
     def chroot_is_initialized(self):
@@ -209,7 +207,7 @@ class Buildroot(object):
         self.set_package_manager()
 
     @traceLog()
-    def _init(self, prebuild, do_log):
+    def _init(self, prebuild):
 
         self.state.start("chroot init")
         file_util.mkdirIfAbsent(self.basedir)
@@ -232,8 +230,7 @@ class Buildroot(object):
             podman.cp(self.make_chroot_path(), self.config["tar_binary"])
 
         self._setup_dirs()
-        if do_log:
-            self._resetLogging()
+
         # /dev is later overwritten by systemd-nspawn, but we need this for
         # initial installation when chroot is empty
         self._setup_devices()
@@ -512,26 +509,21 @@ class Buildroot(object):
                     f.write(l + '\n')
 
     @traceLog()
-    def _resetLogging(self, force=False):
-        # TODOs:
-        # - we should put all bootstrap logs to - say - bootstrap.log
-        # - _resetLogging() actually needs to be called only once - only for
-        #   target chroot (or ideally on global level, through
-        #   'logging.getLogger()' and not through `self.*log` reference)
-        # - we should **not** drop _all_ handlers here when force=True, but only
-        #   those that are intended to be replaced
-        # - 'Mock Version' message should only go to log file, not to stderr
-        # - we need to call this method much, much sooner, ideally before
-        #   bootstrap_chroot.initialize() is called;  otherwise at least
-        #   root.log is far from incomplete
+    def resetLogging(self, force=False):
+        """
+        Pre-create a result directory for log files, initialize the log files
+        there, and identify Mock by dumping there it's version
+        """
+        assert not self.is_bootstrap
 
         # ensure we dont attach the handlers multiple times.
         if self.logging_initialized and not force:
             return
         self.logging_initialized = True
 
+        self._setup_result_dir()
+
         with self.uid_manager:
-            file_util.mkdirIfAbsent(self.resultdir)
             # attach logs to log files.
             # This happens in addition to anything that
             # is set up in the config file... ie. logs go everywhere
