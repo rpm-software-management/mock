@@ -23,6 +23,9 @@ class HwInfo(object):
     """caches root environment in a tarball"""
     @traceLog()
     def __init__(self, plugins, conf, buildroot):
+        if buildroot.is_bootstrap:
+            return
+
         self.buildroot = buildroot
         self.hw_info_opts = conf
         self.config = buildroot.config
