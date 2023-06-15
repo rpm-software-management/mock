@@ -10,7 +10,7 @@ from mockbuild.trace_decorator import getLog, traceLog
 import mockbuild.util
 
 requires_api_version = "1.1"
-
+run_in_bootstrap = False
 
 # plugin entry point
 @traceLog()
