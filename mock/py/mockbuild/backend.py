@@ -680,9 +680,11 @@ class Commands(object):
             return self.rpmbuild_noclean_option
 
         self.rpmbuild_noclean_option = ""
-        out, status = self.buildroot.doChroot(["rpmbuild", "--help"],
-                                              returnOutput=True)
-        if not status and "--noclean" in out:
+        _, status = self.buildroot.doChroot(
+                "case $(rpmbuild --help) in *--noclean*) exit 0; esac; exit 1",
+                shell=True, raiseExc=False
+        )
+        if not status:
             self.rpmbuild_noclean_option = "--noclean"
         return self.rpmbuild_noclean_option
 
