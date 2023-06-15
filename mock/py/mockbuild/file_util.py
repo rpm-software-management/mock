@@ -8,16 +8,6 @@ import stat
 import subprocess
 import time
 
-# TODO: Remove with copy_or_update_tree() removal
-try:
-    deprecated_copy_tree = None
-    deprecated_copy_tree_error = None
-    # pylint: disable=deprecated-module
-    from distutils.dir_util import copy_tree as deprecated_copy_tree   # type: ignore
-    from distutils.errors import DistutilsFileError as deprecated_copy_tree_error  # type: ignore
-except ImportError:
-    pass
-
 from . import exception
 from .trace_decorator import getLog, traceLog
 
@@ -127,18 +117,44 @@ def find_non_nfs_dir():
     raise exception.Error('Cannot find non-NFS directory in: %s' % dirs)
 
 
-def copy_or_update_tree(src, dest):
-    """
-    Copy directory src into the dest directory.  This method won't be needed
-    when we stop supporting Python 3.6 (RHEL 8) where shutil.copytree doesn't
-    support the dirs_exist_ok= option.
-    """
+def _best_effort_removal(path, use_rmtree=True):
     try:
-        shutil.copytree(src, dest, dirs_exist_ok=True)
-    except TypeError:  # no dirs_exist_ok= support!
-        try:
-            # RHEL 8 only
-            deprecated_copy_tree(src, dest)
-        except deprecated_copy_tree_error as err:
-            # Caller(s) expect us to raise OSError.
-            raise OSError("Can't copy using distutils's copy_tree()") from err
+        os.unlink(path)
+    except OSError:
+        pass
+    if not use_rmtree:
+        return
+    try:
+        shutil.rmtree(path)
+    except OSError:
+        pass
+
+
+def update_tree(dest, src):
+    """
+    Copy files from SRC directory into DEST, recursively.  The DEST directory
+    is created, including subdirectories (if not existent).  The files in DEST
+    are created or updated (shutil.copy2).  If file is about to replace
+    directory or vice versa, it is done without asking.  Files that are in DEST
+    and not in SRC are kept untouched.
+    """
+
+    getLog().debug("Updating files in %s with files from %s", dest, src)
+
+    mkdirIfAbsent(dest)
+
+    for dirpath, dirnames, filenames in os.walk(src):
+        raw_subpath = os.path.relpath(dirpath, src)
+        subpath = os.path.normpath(raw_subpath)
+        destpath = os.path.join(dest, subpath)
+
+        for filename in filenames:
+            file_from = os.path.join(dirpath, filename)
+            file_to = os.path.join(destpath, filename)
+            _best_effort_removal(file_to)
+            shutil.copy2(file_from, file_to)
+
+        for subdir in dirnames:
+            dest_subdir = os.path.join(destpath, subdir)
+            _best_effort_removal(dest_subdir, use_rmtree=False)
+            mkdirIfAbsent(dest_subdir)
