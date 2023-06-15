@@ -62,7 +62,10 @@ class Plugins(object):
                     raise Error('Plugin version mismatch - requested = %s, current = %s'
                                 % (requested_api_version, current_api_version))
 
-                module.init(self, self.plugin_conf["{0}_opts".format(plugin)], buildroot)
+                run_in_bootstrap = getattr(module, "run_in_bootstrap", True)
+                # simplified (buildroot.is_bootstrap and run_in_bootstrap) or not buildroot.is_bootstrap
+                if not buildroot.is_bootstrap or run_in_bootstrap:
+                    module.init(self, self.plugin_conf["{0}_opts".format(plugin)], buildroot)
         self.state.finish("init plugins")
 
     @traceLog()
