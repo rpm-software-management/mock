@@ -25,7 +25,8 @@ from mockbuild.trace_decorator import traceLog
 from mockbuild import file_util
 
 requires_api_version = "1.1"
-
+# Skip mounting user-specified mounts if we're in the boostrap chroot
+run_in_bootstrap = False
 
 # plugin entry point
 @traceLog()
@@ -42,9 +43,6 @@ class Mount(object):
         self.config = buildroot.config
         self.state = buildroot.state
         self.opts = conf
-        # Skip mounting user-specified mounts if we're in the boostrap chroot
-        if buildroot.is_bootstrap:
-            return
         plugins.add_hook("postinit", self._mountCreateDirs)
         for device, dest_dir, vfstype, mount_opts in self.opts['dirs']:
             buildroot.mounts.add_user_mount(

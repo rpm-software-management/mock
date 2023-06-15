@@ -12,7 +12,7 @@ from mockbuild.trace_decorator import getLog, traceLog
 from mockbuild import file_util
 
 requires_api_version = "1.1"
-
+run_in_bootstrap = False
 
 # plugin entry point
 @traceLog()
@@ -25,8 +25,6 @@ class CCache(object):
     # pylint: disable=too-few-public-methods
     @traceLog()
     def __init__(self, plugins, conf, buildroot):
-        if buildroot.is_bootstrap:
-            return
         self.buildroot = buildroot
         self.config = buildroot.config
         self.state = buildroot.state
