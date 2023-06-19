@@ -30,30 +30,32 @@ def run(cmd):
     Return exitcode, stdout, stderr.  It's bad there's no such thing in behave
     directly.
     """
-    process = subprocess.Popen(
-        cmd,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        universal_newlines=True,
-    )
-    stdout, stderr = process.communicate()
-    print("Command exit status {} in: {}".format(
-        process.returncode,
-        quoted_cmd(cmd),
-    ))
-    if stdout:
-        print("stdout:")
-        print(stdout)
-    if stderr:
-        print("stderr:")
-        print(stderr)
-    return process.returncode, stdout, stderr
+    try:
+        process = subprocess.Popen(
+            cmd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            universal_newlines=True,
+        )
+        stdout, stderr = process.communicate()
+        print(f"Command exit status {process.returncode} in: {quoted_cmd(cmd)}")
+        if stdout:
+            print("stdout:")
+            print(stdout)
+        if stderr:
+            print("stderr:")
+            print(stderr)
+        return process.returncode, stdout, stderr
+    except (FileNotFoundError, PermissionError) as e:
+        print(f"Error running command {quoted_cmd(cmd)}: {e}")
+        return -1, "", str(e)
 
 
 def run_check(cmd):
     """ run, but check nonzero exit status """
     retcode, stdout, stderr = run(cmd)
-    assert not retcode
+    if retcode != 0:
+        raise Exception(f"Command failed with return code {retcode}: {quoted_cmd(cmd)}\n{stderr}")
     return stdout, stderr
 
 
