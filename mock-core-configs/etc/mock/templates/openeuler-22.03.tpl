@@ -31,49 +31,49 @@ user_agent={{ user_agent }}
 # all LTS-SPx is compatible with its LTS release
 [OS]
 name=OS
-metalink=https://mirrors.openeuler.org/metalink?repo=openEuler-22.03-LTS-SP1/OS&arch=$basearch
+metalink=https://mirrors.openeuler.org/metalink?repo=$releasever/OS&arch=$basearch
 enabled=1
 gpgcheck=1
 gpgkey=file:///usr/share/distribution-gpg-keys/openeuler/RPM-GPG-KEY-openEuler-EulerMaker
 
 [everything]
 name=everything
-metalink=https://mirrors.openeuler.org/metalink?repo=openEuler-22.03-LTS-SP1/everything&arch=$basearch
+metalink=https://mirrors.openeuler.org/metalink?repo=$releasever/everything&arch=$basearch
 enabled=1
 gpgcheck=1
 gpgkey=file:///usr/share/distribution-gpg-keys/openeuler/RPM-GPG-KEY-openEuler-EulerMaker
 
 [EPOL]
 name=EPOL
-metalink=https://mirrors.openeuler.org/metalink?repo=openEuler-22.03-LTS-SP1/EPOL/main&arch=$basearch
+metalink=https://mirrors.openeuler.org/metalink?repo=$releasever/EPOL/main&arch=$basearch
 enabled=1
 gpgcheck=1
 gpgkey=file:///usr/share/distribution-gpg-keys/openeuler/RPM-GPG-KEY-openEuler-EulerMaker
 
 [debuginfo]
 name=debuginfo
-metalink=https://mirrors.openeuler.org/metalink?repo=openEuler-22.03-LTS-SP1/debuginfo&arch=$basearch
+metalink=https://mirrors.openeuler.org/metalink?repo=$releasever/debuginfo&arch=$basearch
 enabled=0
 gpgcheck=1
 gpgkey=file:///usr/share/distribution-gpg-keys/openeuler/RPM-GPG-KEY-openEuler-EulerMaker
 
 [source]
 name=source
-metalink=https://mirrors.openeuler.org/metalink?path=openeuler/openEuler-22.03-LTS-SP1/source/repodata/repomd.xml
+metalink=https://mirrors.openeuler.org/metalink?path=openeuler/$releasever/source/repodata/repomd.xml
 enabled=0
 gpgcheck=1
 gpgkey=file:///usr/share/distribution-gpg-keys/openeuler/RPM-GPG-KEY-openEuler-EulerMaker
 
 [update]
 name=update
-metalink=https://mirrors.openeuler.org/metalink?repo=openEuler-22.03-LTS-SP1/update&arch=$basearch
+metalink=https://mirrors.openeuler.org/metalink?repo=$releasever/update&arch=$basearch
 enabled=1
 gpgcheck=1
 gpgkey=file:///usr/share/distribution-gpg-keys/openeuler/RPM-GPG-KEY-openEuler-EulerMaker
 
 [update-source]
 name=update-source
-metalink=https://mirrors.openeuler.org/metalink?path=openeuler/openEuler-22.03-LTS-SP1/update/source/repodata/repomd.xml
+metalink=https://mirrors.openeuler.org/metalink?path=openeuler/$releasever/update/source/repodata/repomd.xml
 enabled=0
 gpgcheck=1
 gpgkey=file:///usr/share/distribution-gpg-keys/openeuler/RPM-GPG-KEY-openEuler-EulerMaker
