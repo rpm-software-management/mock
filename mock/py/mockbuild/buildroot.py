@@ -26,6 +26,9 @@ from .trace_decorator import getLog, traceLog
 from .podman import Podman
 
 
+# pylint: disable=too-many-lines
+
+
 def noop_in_bootstrap(f):
     # pylint: disable=inconsistent-return-statements
     def wrapper(self, *args, **kwargs):
@@ -419,6 +422,9 @@ class Buildroot(object):
     def _init_pkg_management(self):
         # The desired package manager.
         pm = self.config['package_manager']
+
+        if self.bootstrap_image_is_ready:
+            return
 
         if self.is_bootstrap:
             update_state = f'installing {pm} tooling'
@@ -940,6 +946,43 @@ class Buildroot(object):
     @property
     def uses_bootstrap_image(self):
         return self.is_bootstrap and self.use_bootstrap_image
+
+    @property
+    def bootstrap_image_is_ready(self):
+        """
+        True if bootstrap image is in use, bootstrap_image_ready==True, and no
+        config_opts field is set that would invalidate the bootstrap
+        "readiness" state.
+        """
+        if not self.uses_bootstrap_image:
+            return False
+
+        # TODO(praiskup): Can we have heuristic for checking if extracted
+        # buildroot is ready?
+
+        # All the options checked here were copied from the corresponding
+        # `bootstrap_` prefixed config option.
+        if not self.config['image_ready']:
+            self.root_log.info("Bootstrap image not marked ready")
+            return False
+
+        # Per configuration, we think that image is ready-made (e.g. ubi8 images
+        # have the 'dnf builddep' command available by default).  But there
+        # still might be reasons to do some updates.
+        for check_option in [
+            "module_enable", "module_install", "module_setup_commands",
+            "chroot_additional_packages"
+        ]:
+            if self.config.get(check_option):
+                self.root_log.info(
+                    f"Package management in bootstrap (from image) is going to "
+                    f"be updated because config_opts['{check_option}'] is set."
+                )
+                return False
+
+        self.root_log.info("Not updating bootstrap chroot, "
+                           "bootstrap_image_ready=True")
+        return True
 
     @traceLog()
     def install_as_root(self, *deps):
