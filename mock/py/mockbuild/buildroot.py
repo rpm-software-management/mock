@@ -657,6 +657,7 @@ class Buildroot(object):
                 rpmmacros.write("%s %s\n" % (key, value))
 
     @traceLog()
+    @noop_in_bootstrap
     def _setup_build_dirs(self):
         build_dirs = ['RPMS', 'SPECS', 'SRPMS', 'SOURCES', 'BUILD', 'BUILDROOT',
                       'originals']
