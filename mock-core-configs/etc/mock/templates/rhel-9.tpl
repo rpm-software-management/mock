@@ -4,6 +4,7 @@ config_opts['dist'] = 'el{{ releasever }}'  # only useful for --resultdir variab
 config_opts['extra_chroot_dirs'] = [ '/run/lock', ]
 config_opts['package_manager'] = 'dnf'
 config_opts['bootstrap_image'] = 'registry.access.redhat.com/ubi{{ releasever }}/ubi'
+config_opts['bootstrap_image_ready'] = True
 config_opts['description'] = 'RHEL {{ releasever }}'
 
 config_opts['dnf_install_command'] += ' subscription-manager'
