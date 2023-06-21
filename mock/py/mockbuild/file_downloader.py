@@ -4,6 +4,7 @@
 import cgi
 import shutil
 import tempfile
+import backoff
 from urllib.parse import urlsplit
 
 import requests
@@ -23,6 +24,7 @@ class FileDownloader:
         cls.tmpdir = tempfile.mkdtemp()
 
     @classmethod
+    @backoff.on_exception(backoff.expo, requests.exceptions.RequestException, max_tries=3, max_time=10)
     def get(cls, pkg_url_or_local_file):
         """
         If the pkg_url_or_local_file looks like a link, try to download it and
@@ -61,7 +63,7 @@ class FileDownloader:
                     filed.write(chunk)
             cls.backmap[pkg] = url
             return pkg
-        except Exception as err:  # pylint: disable=broad-except
+        except requests.exceptions.RequestException as err:
             log.error('Downloading error %s: %s', url, str(err))
         return None
 
