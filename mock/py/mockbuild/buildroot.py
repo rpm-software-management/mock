@@ -482,6 +482,11 @@ class Buildroot(object):
         )
         self._enable_chrootuser_account()
 
+        # Other users
+        for user in self.config.get("copy_host_users", []):
+            self.shadow_utils.copy_from_host(user)
+
+
     @traceLog()
     def _enable_chrootuser_account(self):
         passwd = self.make_chroot_path('/etc/passwd')
