@@ -101,11 +101,11 @@ class Commands(object):
         try:
             self.plugins.call_hooks('clean')
             if self.bootstrap_buildroot is not None:
-                self.bootstrap_buildroot.plugins.call_hooks('clean')    
+                self.bootstrap_buildroot.plugins.call_hooks('clean')
             for scrub in scrub_opts:
                 self.plugins.call_hooks('scrub', scrub)
                 if self.bootstrap_buildroot is not None:
-                    self.bootstrap_buildroot.plugins.call_hooks('scrub', scrub) 
+                    self.bootstrap_buildroot.plugins.call_hooks('scrub', scrub)
                 scrub_actions = {
                     'all': {
                         'msg': f"scrubbing everything for {self.config_name}",
@@ -165,15 +165,15 @@ class Commands(object):
                              if self.bootstrap_buildroot is not None else None)
                         ]
                     }
-                }   
+                }
                 try:
                     scrub_action = scrub_actions[scrub]
                 except KeyError as exc:
-                    raise RuntimeError(f"Unknown scrub option '{scrub}'") from exc  
+                    raise RuntimeError(f"Unknown scrub option '{scrub}'") from exc
                 self.buildroot.root_log.info(f"scrubbing {scrub_action['msg']} for {self.config_name}")
                 for action in scrub_action['actions']:
                     if action is not None:
-                        action()    
+                        action()
         except IOError as e:
             getLog().warning("parts of chroot do not exist: %s", e)
             raise
