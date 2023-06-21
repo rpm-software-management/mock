@@ -23,7 +23,7 @@ class FileDownloader:
         cls.tmpdir = tempfile.mkdtemp()
 
     @classmethod
-    def get(cls, pkg_url_or_local_file):
+    def get(cls, pkg_url_or_local_file, max_retry=3, timeout=10):
         """
         If the pkg_url_or_local_file looks like a link, try to download it and
         store it to a temporary directory - and return path to the local
@@ -32,7 +32,7 @@ class FileDownloader:
         If the pkg_url_or_local_file is not a link, do nothing - just return
         the pkg_url_or_local_file argument.
         """
-        pkg = pkg_url_or_local_file
+        pkg = pkg_url_or_local_file  # 添加这一行
         log = getLog()
 
         url_prefixes = ['http://', 'https://', 'ftp://']
@@ -41,30 +41,37 @@ class FileDownloader:
             return pkg
 
         cls._initialize()
-        try:
-            url = pkg
-            log.info('Fetching remote file %s', url)
-            req = requests.get(url)
-            req.raise_for_status()
-            if req.status_code != requests.codes.ok:
-                log.error("Can't download {}".format(url))
-                return False
+        try_count = 0
+        while try_count < max_retry:
+            try:
+                url = pkg
+                log.info('Fetching remote file %s', url)
+                req = requests.get(url, timeout=timeout)
+                req.raise_for_status()
 
-            filename = urlsplit(req.url).path.rsplit('/', 1)[1]
-            if 'content-disposition' in req.headers:
-                _, params = cgi.parse_header(req.headers['content-disposition'])
-                if 'filename' in params and params['filename']:
-                    filename = params['filename']
-            pkg = cls.tmpdir + '/' + filename
-            with open(pkg, 'wb') as filed:
-                for chunk in req.iter_content(4096):
-                    filed.write(chunk)
-            cls.backmap[pkg] = url
-            return pkg
-        except Exception as err:  # pylint: disable=broad-except
-            log.error('Downloading error %s: %s', url, str(err))
-        return None
+                filename = urlsplit(req.url).path.rsplit('/', 1)[1]
+                if 'content-disposition' in req.headers:
+                    _, params = cgi.parse_header(req.headers['content-disposition'])
+                    if 'filename' in params and params['filename']:
+                        filename = params['filename']
 
+                pkg = cls.tmpdir + '/' + filename
+                with open(pkg, 'wb') as filed:
+                    for chunk in req.iter_content(4096):
+                        filed.write(chunk)
+
+                cls.backmap[pkg] = url
+                return pkg
+            except requests.exceptions.RequestException as err:
+                try_count += 1
+                log.error('Downloading error %s: %s (retrying...)', url, str(err))
+                time.sleep(2 ** try_count)
+            except Exception as err:
+                log.error('Error downloading %s: %s', url, str(err))
+                break
+
+        return None 
+    
     @classmethod
     def original_name(cls, localname):
         """ Get the URL from the local name """
