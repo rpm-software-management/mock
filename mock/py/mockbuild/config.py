@@ -340,6 +340,8 @@ def setup_default_config_opts():
 
     config_opts["seccomp"] = False
 
+    config_opts["copy_host_users"] = []
+
     # mapping from target_arch (or forcearch) to arch in /usr/bin/qemu-*-static
     config_opts["qemu_user_static_mapping"] = {
         'aarch64': 'aarch64',

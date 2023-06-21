@@ -59,3 +59,32 @@ class ShadowUtils:
         if home is not None:
             command += ["-d", str(home)]
         self._execute_command(command)
+
+    def copy_from_host(self, username):
+        """
+        Copy user (with uid/gid/group_name) from Host into the self.root.
+        """
+        try:
+            info = pwd.getpwnam(username)
+            uid = info.pw_uid
+            gid = info.pw_gid
+        except KeyError as err:
+            raise RuntimeError(
+                f"Can not find the requested user {username} "
+                "on host") from err
+
+        try:
+            group_name = grp.getgrgid(gid).gr_name
+        except KeyError as err:
+            raise RuntimeError(
+                f"Can not find the requested GID {gid} "
+                "on host") from err
+
+        self.delete_user(username, can_fail=True)
+        # This might fail because the group doesn't exist in the chroot (OK to
+        # ignore), or because there still are other users in the group (a
+        # serious error case, but OK to ignore because the subsequent
+        # 'crate_group' attempt will fail anyway).
+        self.delete_group(group_name, can_fail=True)
+        self.create_group(group_name, gid=gid)
+        self.create_user(group_name, uid=uid, gid=gid)
