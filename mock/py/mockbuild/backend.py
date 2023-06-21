@@ -95,8 +95,8 @@ class Commands(object):
 
     @traceLog()
     def scrub(self, scrub_opts):
-        """Clean out chroot and/or cache dirs with extreme prejudice :)"""
-        statestr = f"scrub {scrub_opts}"
+        """clean out chroot and/or cache dirs with extreme prejudice :)"""
+        statestr = "scrub %s" % scrub_opts
         self.state.start(statestr)
 
         try:
@@ -181,7 +181,7 @@ class Commands(object):
                         action()
 
         except IOError as e:
-            self.log_manager.warning("parts of chroot do not exist: %s", e)
+            getLog().warning("parts of chroot do not exist: %s", e)
             raise
         finally:
             self.state.finish(statestr)
