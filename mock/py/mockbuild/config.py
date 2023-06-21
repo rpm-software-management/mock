@@ -269,6 +269,8 @@ def setup_default_config_opts():
     config_opts['module_setup_commands'] = []
     config_opts['forcearch'] = None
 
+    # Initialize all the bootstrap configuration (bootstrap_ prefixed) we don't
+    # want to automatically inherit from the target buildroot configuration.
     config_opts['bootstrap_chroot_additional_packages'] = []
     config_opts['bootstrap_module_enable'] = []
     config_opts['bootstrap_module_install'] = []
