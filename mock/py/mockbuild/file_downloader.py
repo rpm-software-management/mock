@@ -56,7 +56,7 @@ class FileDownloader:
                     _, params = cgi.parse_header(req.headers['content-disposition'])
                     if 'filename' in params and params['filename']:
                         filename = params['filename']
-                pkg = os.path.join(cls.tmpdir, filename)
+                pkg = cls.tmpdir + '/' + filename
                 with open(pkg, 'wb') as filed:
                     for chunk in req.iter_content(4096):
                         filed.write(chunk)
