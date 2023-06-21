@@ -298,7 +298,7 @@ def setup_default_config_opts():
     config_opts['dnf_command'] = '/usr/bin/dnf-3'
     config_opts['system_dnf_command'] = '/usr/bin/dnf-3'
     config_opts['dnf_common_opts'] = ['--setopt=deltarpm=False', '--allowerasing']
-    config_opts['dnf_install_command'] = 'install python3-dnf dnf-plugins-core'
+    config_opts['dnf_install_command'] = 'install python3-dnf python3-dnf-plugins-core'
     config_opts['dnf_disable_plugins'] = ['local', 'spacewalk', 'versionlock']
 
     config_opts['dnf5_command'] = '/usr/bin/dnf5'
