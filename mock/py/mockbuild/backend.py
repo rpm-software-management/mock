@@ -95,9 +95,10 @@ class Commands(object):
 
     @traceLog()
     def scrub(self, scrub_opts):
-        """clean out chroot and/or cache dirs with extreme prejudice :)"""
-        statestr = "scrub %s" % scrub_opts
+        """Clean out chroot and/or cache dirs with extreme prejudice :)"""
+        statestr = f"scrub {scrub_opts}"
         self.state.start(statestr)
+
         try:
             self.plugins.call_hooks('clean')
             if self.bootstrap_buildroot is not None:
@@ -110,65 +111,77 @@ class Commands(object):
 
                 scrub_actions = {
                     'all': {
-                        'msg': "scrubbing everything for %s" % self.config_name,
+                        'msg': f"scrubbing everything for {self.config_name}",
                         'actions': [
-                            lambda: self.buildroot.delete(),
-                            lambda: file_util.rmtree(self.buildroot.cachedir, selinux=self.buildroot.selinux),
-                            lambda: self.bootstrap_buildroot.delete(),
-                            lambda: file_util.rmtree(self.bootstrap_buildroot.cachedir, selinux=self.bootstrap_buildroot.selinux) if self.bootstrap_buildroot is not None else None,
+                            self.buildroot.delete,
+                            lambda: file_util.rmtree(self.buildroot.cachedir,
+                                                      selinux=self.buildroot.selinux),
+                            self.bootstrap_buildroot.delete,
+                            (lambda: file_util.rmtree(self.bootstrap_buildroot.cachedir,
+                                                       selinux=self.bootstrap_buildroot.selinux)
+                             if self.bootstrap_buildroot is not None else None),
                         ]
                     },
                     'chroot': {
-                        'msg': "scrubbing chroot for %s" % self.config_name,
-                        'actions': [lambda: self.buildroot.delete()]
+                        'msg': f"scrubbing chroot for {self.config_name}",
+                        'actions': [self.buildroot.delete]
                     },
                     'cache': {
-                        'msg': "scrubbing cache for %s" % self.config_name,
-                        'actions': [lambda: file_util.rmtree(self.buildroot.cachedir, selinux=self.buildroot.selinux)]
+                        'msg': f"scrubbing cache for {self.config_name}",
+                        'actions': [lambda: file_util.rmtree(self.buildroot.cachedir,
+                                                              selinux=self.buildroot.selinux)]
                     },
                     'c-cache': {
-                        'msg': "scrubbing c-cache for %s" % self.config_name,
-                        'actions': [lambda: file_util.rmtree(os.path.join(self.buildroot.cachedir, 'ccache'), selinux=self.buildroot.selinux)]
+                        'msg': f"scrubbing c-cache for {self.config_name}",
+                        'actions': [lambda: file_util.rmtree(os.path.join(self.buildroot.cachedir, 'ccache'),
+                                                              selinux=self.buildroot.selinux)]
                     },
                     'root-cache': {
-                        'msg': "scrubbing root-cache for %s" % self.config_name,
-                        'actions': [lambda: file_util.rmtree(os.path.join(self.buildroot.cachedir, 'root_cache'), selinux=self.buildroot.selinux)]
+                        'msg': f"scrubbing root-cache for {self.config_name}",
+                        'actions': [lambda: file_util.rmtree(os.path.join(self.buildroot.cachedir, 'root_cache'),
+                                                              selinux=self.buildroot.selinux)]
                     },
                     'yum-cache': {
-                        'msg': "scrubbing yum-cache and dnf-cache for %s" % self.config_name,
+                        'msg': f"scrubbing yum-cache and dnf-cache for {self.config_name}",
                         'actions': [
-                            lambda: file_util.rmtree(os.path.join(self.buildroot.cachedir, 'yum_cache'), selinux=self.buildroot.selinux),
-                            lambda: file_util.rmtree(os.path.join(self.buildroot.cachedir, 'dnf_cache'), selinux=self.buildroot.selinux)
+                            lambda: file_util.rmtree(os.path.join(self.buildroot.cachedir, 'yum_cache'),
+                                                      selinux=self.buildroot.selinux),
+                            lambda: file_util.rmtree(os.path.join(self.buildroot.cachedir, 'dnf_cache'),
+                                                      selinux=self.buildroot.selinux)
                         ]
                     },
                     'dnf-cache': {
-                        'msg': "scrubbing yum-cache and dnf-cache for %s" % self.config_name,
+                        'msg': f"scrubbing yum-cache and dnf-cache for {self.config_name}",
                         'actions': [
-                            lambda: file_util.rmtree(os.path.join(self.buildroot.cachedir, 'yum_cache'), selinux=self.buildroot.selinux),
-                            lambda: file_util.rmtree(os.path.join(self.buildroot.cachedir, 'dnf_cache'), selinux=self.buildroot.selinux)
+                            lambda: file_util.rmtree(os.path.join(self.buildroot.cachedir, 'yum_cache'),
+                                                      selinux=self.buildroot.selinux),
+                            lambda: file_util.rmtree(os.path.join(self.buildroot.cachedir, 'dnf_cache'),
+                                                      selinux=self.buildroot.selinux)
                         ]
                     },
                     'bootstrap': {
-                        'msg': "scrubbing bootstrap for %s" % self.config_name,
+                        'msg': f"scrubbing bootstrap for {self.config_name}",
                         'actions': [
-                            lambda: self.bootstrap_buildroot.delete(),
-                            lambda: file_util.rmtree(self.bootstrap_buildroot.cachedir, selinux=self.bootstrap_buildroot.selinux) if self.bootstrap_buildroot is not None else None
+                            self.bootstrap_buildroot.delete,
+                            (lambda: file_util.rmtree(self.bootstrap_buildroot.cachedir,
+                                                       selinux=self.bootstrap_buildroot.selinux)
+                             if self.bootstrap_buildroot is not None else None)
                         ]
                     }
                 }
 
                 try:
                     scrub_action = scrub_actions[scrub]
-                except KeyError:
-                    raise RuntimeError("Unknown scrub option '%s'" % scrub)
+                except KeyError as exc:
+                    raise RuntimeError(f"Unknown scrub option '{scrub}'") from exc
 
-                self.buildroot.root_log.info(scrub_action['msg'])
+                self.buildroot.root_log.info(f"scrubbing {scrub_action['msg']} for {self.config_name}")
                 for action in scrub_action['actions']:
                     if action is not None:
                         action()
 
         except IOError as e:
-            getLog().warning("parts of chroot do not exist: %s", e)
+            self.log_manager.warning("parts of chroot do not exist: %s", e)
             raise
         finally:
             self.state.finish(statestr)
