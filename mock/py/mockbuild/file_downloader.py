@@ -24,7 +24,6 @@ class FileDownloader:
         cls.tmpdir = tempfile.mkdtemp()
 
     @classmethod
-    @backoff.on_exception(backoff.expo, requests.exceptions.RequestException, max_tries=3, max_time=10)
     def get(cls, pkg_url_or_local_file):
         """
         If the pkg_url_or_local_file looks like a link, try to download it and
@@ -44,28 +43,33 @@ class FileDownloader:
 
         cls._initialize()
         try:
-            url = pkg
-            log.info('Fetching remote file %s', url)
-            req = requests.get(url)
-            req.raise_for_status()
-            if req.status_code != requests.codes.ok:
-                log.error("Can't download {}".format(url))
-                return False
+            return cls._get_inner(pkg)
+        except requests.exceptions.RequestException as e:
+            log.error('Downloading error %s: %s', pkg, str(e))
+            return None
 
-            filename = urlsplit(req.url).path.rsplit('/', 1)[1]
-            if 'content-disposition' in req.headers:
-                _, params = cgi.parse_header(req.headers['content-disposition'])
-                if 'filename' in params and params['filename']:
-                    filename = params['filename']
-            pkg = cls.tmpdir + '/' + filename
-            with open(pkg, 'wb') as filed:
-                for chunk in req.iter_content(4096):
-                    filed.write(chunk)
-            cls.backmap[pkg] = url
-            return pkg
-        except Exception as err:  # pylint: disable=broad-except
-            log.error('Downloading error %s: %s', url, str(err))
-        return None
+    @classmethod
+    @backoff.on_exception(backoff.expo, requests.exceptions.RequestException, max_tries=3, max_time=10)
+    def _get_inner(cls, url):
+        log = getLog()
+        log.info('Fetching remote file %s', url)
+        req = requests.get(url)
+        req.raise_for_status()
+        if req.status_code != requests.codes.ok:
+            log.error("Can't download {}".format(url))
+            return False
+
+        filename = urlsplit(req.url).path.rsplit('/', 1)[1]
+        if 'content-disposition' in req.headers:
+            _, params = cgi.parse_header(req.headers['content-disposition'])
+            if 'filename' in params and params['filename']:
+                filename = params['filename']
+        pkg = cls.tmpdir + '/' + filename
+        with open(pkg, 'wb') as filed:
+            for chunk in req.iter_content(4096):
+                filed.write(chunk)
+        cls.backmap[pkg] = url
+        return pkg
 
     @classmethod
     def original_name(cls, localname):
