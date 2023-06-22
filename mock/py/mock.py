@@ -753,6 +753,9 @@ def main():
         # disable updating bootstrap chroot
         bootstrap_buildroot_config['update_before_build'] = False
 
+        # disable forcearch in bootstrap, per https://github.com/rpm-software-management/mock/issues/1110
+        bootstrap_buildroot_config['forcearch'] = None
+
         bootstrap_buildroot_state = State(bootstrap=True)
         bootstrap_plugins = Plugins(bootstrap_buildroot_config, bootstrap_buildroot_state)
         bootstrap_buildroot = Buildroot(bootstrap_buildroot_config,
