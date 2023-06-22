@@ -7,8 +7,15 @@ persistent=no
 
 [MESSAGES CONTROL]
 
-# Disable the message(s) with the given id(s).
-disable=I0011,C0302,C0111,R0801,R0902,R0904,R0912,R0913,R0914,R0915,R0921,R0922,W0142,W0403,W0603,C1001,W0121,useless-else-on-loop,bad-whitespace,unpacking-non-sequence,superfluous-parens,cyclic-import,no-else-return,len-as-condition,useless-object-inheritance,too-many-boolean-expressions
+# Reasoning for wide warning ignore
+# ---------------------------------
+# import-error
+#     This is here to silence Pylint in CI where we do not have all the
+#     build/runtime dependencies installed.
+# cyclic-import
+#     Seems like cyclic-import is just a style check which is not going to be
+#     fixed: https://github.com/PyCQA/pylint/issues/6983
+disable=import-error,cyclic-import
 
 # list of disabled messages:
 #I0011: 62: Locally disabling R0201
