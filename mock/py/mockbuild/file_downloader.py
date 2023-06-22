@@ -65,6 +65,8 @@ class FileDownloader:
             return pkg
         except requests.exceptions.RequestException as err:
             log.error('Downloading error %s: %s', url, str(err))
+        except Exception as e:
+            log.error('Unhandled exception occurred: %s', str(e))
         return None
 
     @classmethod
