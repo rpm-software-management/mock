@@ -696,7 +696,7 @@ def main():
 
     sys.setrecursionlimit(config_opts["recursion_limit"])
 
-    util.subscription_redhat_init(config_opts)
+    util.subscription_redhat_init(config_opts, uidManager)
 
     # allow a different mock group to be specified
     uidManager.fix_different_chrootgid(config_opts)

@@ -993,7 +993,7 @@ best=1
                                         bindpath=mountpoint))
 
 
-def subscription_redhat_init(opts):
+def subscription_redhat_init(opts, uidManager):
     if not opts['redhat_subscription_required']:
         return
 
@@ -1005,7 +1005,21 @@ def subscription_redhat_init(opts):
         raise exception.ConfigError(ent_path + " is not a directory "
                                     "is subscription-manager installed?")
 
-    keys = glob("/etc/pki/entitlement/*-key.pem")
+    key_pattern = os.path.join(ent_path, "*-key.pem")
+    keys = glob(key_pattern)
+    if not keys:
+        hostdir = "/etc/pki/entitlement-host"
+        if os.path.isdir(hostdir):
+            # running in a Podman container
+            host_keys = glob(os.path.join(hostdir, "*-key.pem"))
+            if host_keys:
+                with uidManager.elevated_privileges():
+                    for file in glob(os.path.join(hostdir, "*.pem")):
+                        basename = os.path.basename(file)
+                        target = os.path.join(ent_path, basename)
+                        shutil.copy2(file, target)
+
+    keys = glob(key_pattern)
     if not keys:
         raise exception.ConfigError(
             "No key found in /etc/pki/entitlement directory.  It means "
