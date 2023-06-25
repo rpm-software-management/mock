@@ -54,6 +54,7 @@ class FileDownloader:
     def _get_inner(cls, url):
         req = requests.get(url)
         req.raise_for_status()
+        cls._initialize()
 
         filename = urlsplit(req.url).path.rsplit('/', 1)[1]
         if 'content-disposition' in req.headers:
