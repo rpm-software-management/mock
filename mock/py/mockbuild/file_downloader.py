@@ -52,19 +52,17 @@ class FileDownloader:
     def _get_inner(cls, url):
         req = requests.get(url)
         req.raise_for_status()
-        downloader = cls()
-        downloader._initialize()
-        
+        cls._initialize()
         filename = urlsplit(req.url).path.rsplit('/', 1)[1]
         if 'content-disposition' in req.headers:
             _, params = cgi.parse_header(req.headers['content-disposition'])
             if 'filename' in params and params['filename']:
                 filename = params['filename']
-        pkg = downloader.tmpdir + '/' + filename
+        pkg = cls.tmpdir + '/' + filename
         with open(pkg, 'wb') as filed:
             for chunk in req.iter_content(4096):
                 filed.write(chunk)
-        downloader.backmap[pkg] = url
+        cls.backmap[pkg] = url
         return pkg
 
     @classmethod
