@@ -60,6 +60,7 @@ Requires: python%{python3_pkgversion}-rpm
 Requires: python%{python3_pkgversion}-pyroute2
 Requires: python%{python3_pkgversion}-templated-dictionary
 BuildRequires: python%{python3_pkgversion}-devel
+BuildRequires: python%{python3_pkgversion}-backoff
 %if %{with lint}
 BuildRequires: python%{python3_pkgversion}-pylint
 %endif
