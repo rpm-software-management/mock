@@ -44,7 +44,7 @@ class FileDownloader:
         cls._initialize()
         try:
             log.info('Fetching remote file %s', pkg)
-            return cls._get_inner(pkg)
+            return cls._get_inner(cls, pkg)
         except requests.exceptions.RequestException as e:
             log.error('Downloading error %s: %s', pkg, str(e))
             return None
@@ -52,7 +52,6 @@ class FileDownloader:
     @classmethod
     @backoff.on_exception(backoff.expo, requests.exceptions.RequestException, max_tries=3, max_time=10)
     def _get_inner(cls, url):
-        log = getLog()
         req = requests.get(url)
         req.raise_for_status()
 
