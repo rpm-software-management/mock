@@ -44,7 +44,7 @@ class FileDownloader:
         cls._initialize()
         try:
             log.info('Fetching remote file %s', pkg)
-            return cls._get_inner(cls, pkg)
+            return cls._get_inner(pkg)
         except requests.exceptions.RequestException as e:
             log.error('Downloading error %s: %s', pkg, str(e))
             return None
