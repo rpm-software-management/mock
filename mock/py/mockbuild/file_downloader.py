@@ -4,9 +4,9 @@
 import cgi
 import shutil
 import tempfile
-import backoff
 from urllib.parse import urlsplit
 
+import backoff
 import requests
 
 from .trace_decorator import getLog
@@ -41,7 +41,6 @@ class FileDownloader:
             log.debug("Local file: %s", pkg)
             return pkg
 
-        cls._initialize()
         try:
             log.info('Fetching remote file %s', pkg)
             return cls._get_inner(pkg)
