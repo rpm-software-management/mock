@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # vim: noai:ts=4:sw=4:expandtab
 
-import cgi
+from email.message import Message
 import shutil
 import tempfile
 from urllib.parse import urlsplit
@@ -10,6 +10,16 @@ import backoff
 import requests
 
 from .trace_decorator import getLog
+
+
+def _filename_from_response(response):
+    if 'content-disposition' in response.headers:
+        # https://peps.python.org/pep-0594/#cgi
+        parser = Message()
+        parser["content-type"] = response.headers['content-disposition']
+        if parser.get_param("filename"):
+            return parser.get_param("filename")
+    return urlsplit(response.url).path.rsplit('/', 1)[1]
 
 
 class FileDownloader:
@@ -54,12 +64,7 @@ class FileDownloader:
     def _get_inner(cls, url):
         req = requests.get(url)
         req.raise_for_status()
-
-        filename = urlsplit(req.url).path.rsplit('/', 1)[1]
-        if 'content-disposition' in req.headers:
-            _, params = cgi.parse_header(req.headers['content-disposition'])
-            if 'filename' in params and params['filename']:
-                filename = params['filename']
+        filename = _filename_from_response(req)
         pkg = cls.tmpdir + '/' + filename
         with open(pkg, 'wb') as filed:
             for chunk in req.iter_content(4096):
