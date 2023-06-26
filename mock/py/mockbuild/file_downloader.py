@@ -40,8 +40,7 @@ class FileDownloader:
         if not any([pkg.startswith(pfx) for pfx in url_prefixes]):
             log.debug("Local file: %s", pkg)
             return pkg
-            cls._initialize()
-            
+        cls._initialize()
         try:
             url = pkg
             log.info('Fetching remote file %s', url)
@@ -55,7 +54,6 @@ class FileDownloader:
     def _get_inner(cls, url):
         req = requests.get(url)
         req.raise_for_status()
-        
         filename = urlsplit(req.url).path.rsplit('/', 1)[1]
         if 'content-disposition' in req.headers:
             _, params = cgi.parse_header(req.headers['content-disposition'])
