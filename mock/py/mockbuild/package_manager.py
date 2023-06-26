@@ -207,15 +207,37 @@ class _PackageManager(object):
         else:
             return self.config['yum.conf']
 
-    @traceLog()
     def execute(self, *args, **kwargs):
+        """
+        Execute package manger command (via self._execute_mounted where the
+        args[] form the command, self.build_invocation).  Make sure the
+        essential and the recursive buildroot-in-bootstrap mount points are
+        (un)mounted correctly).
+        """
         self.plugins.call_hooks("preyum")
         pm_umount = False
         if not self.buildroot.mounts.essential_mounted:
             self.buildroot.mounts.mountall_essential()
             pm_umount = True
 
-        self.buildroot.mounts.mount_bootstrap()
+        try:
+            with self.buildroot.mounts.buildroot_in_bootstrap_mounted():
+                return self._execute_mounted(*args, **kwargs)
+        finally:
+            # Scriptlets in dnf transaction shouldn't keep leftover processes
+            # running in background, but it may happen.
+            util.orphansKill(self.buildroot.make_chroot_path(), manual_forced=True)
+
+            # Make sure everything is unmounted, even if e.g. KeyboardInterrupt
+            # is raised.
+            if pm_umount:
+                self.buildroot.mounts.umountall_essential()
+
+        self.plugins.call_hooks("postyum")
+
+
+    @traceLog()
+    def _execute_mounted(self, *args, **kwargs):
 
         # intentionally we do not call bootstrap hook here - it does not have sense
         env = self.config['environment'].copy()
@@ -264,20 +286,8 @@ class _PackageManager(object):
             except Error as e:
                 error = YumError(str(e))
 
-
-        # Scriptlets in dnf transaction shouldn't keep leftover processes
-        # running in background, but it may happen.
-        util.orphansKill(self.buildroot.make_chroot_path(), manual_forced=True)
-
-        self.buildroot.mounts.umount_bootstrap()
-
-        if pm_umount:
-            self.buildroot.mounts.umountall_essential()
-
         if error is not None:
             raise error
-
-        self.plugins.call_hooks("postyum")
 
         # intentionally we do not call bootstrap hook here - it does not have sense
         return out
