@@ -60,9 +60,10 @@ class FileDownloader:
             return None
 
     @classmethod
-    @backoff.on_exception(backoff.expo, requests.exceptions.RequestException, max_tries=3, max_time=10)
+    @backoff.on_exception(backoff.expo, requests.exceptions.RequestException,
+                          max_tries=3, max_time=100)
     def _get_inner(cls, url):
-        req = requests.get(url)
+        req = requests.get(url, timeout=30)
         req.raise_for_status()
         filename = _filename_from_response(req)
         pkg = cls.tmpdir + '/' + filename
