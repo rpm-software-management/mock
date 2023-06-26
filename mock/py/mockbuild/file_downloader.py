@@ -23,8 +23,12 @@ def _filename_from_response(response):
 
 
 class FileDownloader:
+    """
+    Download files into a temporary storage with automatic cleanup with
+    cls.cleanup(), remembering both original URL and the local path name.
+    """
+
     tmpdir = None
-    backmap = None
 
     @classmethod
     def _initialize(cls):
@@ -47,7 +51,7 @@ class FileDownloader:
         log = getLog()
 
         url_prefixes = ['http://', 'https://', 'ftp://']
-        if not any([pkg.startswith(pfx) for pfx in url_prefixes]):
+        if not any(pkg.startswith(pfx) for pfx in url_prefixes):
             log.debug("Local file: %s", pkg)
             return pkg
 
