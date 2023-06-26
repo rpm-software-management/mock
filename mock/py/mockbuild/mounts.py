@@ -231,24 +231,28 @@ class Mounts(object):
             m.mount()
 
     @traceLog()
-    def mount_bootstrap(self):
+    def _mount_bootstrap(self):
         with self.rootObj.uid_manager.elevated_privileges():
             for m in self.bootstrap_mounts:
                 m.mount()
 
     @traceLog()
-    def umount_bootstrap(self):
+    def _umount_bootstrap(self):
         with self.rootObj.uid_manager.elevated_privileges():
             for m in reversed(self.bootstrap_mounts):
                 m.umount()
 
     @contextmanager
     def buildroot_in_bootstrap_mounted(self):
-        self.mount_bootstrap()
+        """
+        Context manager!  Mount the chroot into bootstrap recursively, execute
+        the command within the context, and (lazy) umount it.
+        """
+        self._mount_bootstrap()
         try:
             yield
         finally:
-            self.umount_bootstrap()
+            self._umount_bootstrap()
 
     @traceLog()
     def mountall_managed(self):
