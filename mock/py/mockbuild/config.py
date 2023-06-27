@@ -346,6 +346,9 @@ def setup_default_config_opts():
         's390x': 's390x',
         'x86_64': 'x86_64',
     }
+
+    config_opts["recursion_limit"] = 5000
+
     return config_opts
 
 

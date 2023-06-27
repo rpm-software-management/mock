@@ -694,6 +694,8 @@ def main():
     # cmdline options override config options
     config.set_config_opts_per_cmdline(config_opts, options, args)
 
+    sys.setrecursionlimit(config_opts["recursion_limit"])
+
     util.subscription_redhat_init(config_opts)
 
     # allow a different mock group to be specified
