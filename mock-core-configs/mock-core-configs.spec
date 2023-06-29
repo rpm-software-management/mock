@@ -24,7 +24,7 @@ Provides: mock-configs
 # distribution-gpg-keys contains GPG keys used by mock configs
 Requires:   distribution-gpg-keys >= 1.85
 # specify minimal compatible version of mock
-Requires:   mock >= 4.1
+Requires:   mock >= 4.1.post1
 Requires:   mock-filesystem
 
 Requires(post): coreutils
