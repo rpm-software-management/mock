@@ -60,6 +60,9 @@ Requires: python%{python3_pkgversion}-rpm
 Requires: python%{python3_pkgversion}-pyroute2
 Requires: python%{python3_pkgversion}-templated-dictionary
 Requires: python%{python3_pkgversion}-backoff
+%if v"0%{?python3_version}" >= v"3.12"
+Requires: python%{python3_pkgversion}-zombie-imp
+%endif
 BuildRequires: python%{python3_pkgversion}-devel
 %if %{with lint}
 BuildRequires: python%{python3_pkgversion}-pylint
