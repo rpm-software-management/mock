@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 # vim: noai:ts=4:sw=4:expandtab
 
-import imp
+import importlib.machinery
+import importlib.util
+import sys
 
 from .exception import Error
 from .trace_decorator import traceLog
@@ -44,16 +46,14 @@ class Plugins(object):
         # features later when we prove we need them.
         for plugin in self.plugins:
             if self.plugin_conf.get("{0}_enable".format(plugin)):
-                try:
-                    fp, pathname, description = imp.find_module(plugin, [self.plugin_dir])
-                except ImportError:
+                spec = importlib.machinery.PathFinder.find_spec(plugin, [self.plugin_dir])
+                if not spec:
                     buildroot.root_log.warning(
                         "{0} plugin is enabled in configuration but is not installed".format(plugin))
                     continue
-                try:
-                    module = imp.load_module(plugin, fp, pathname, description)
-                finally:
-                    fp.close()
+                module = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(module)
+                sys.modules[spec.name] = module
 
                 if not hasattr(module, 'requires_api_version'):
                     raise Error('Plugin "%s" doesn\'t specify required API version' % plugin)
