@@ -8,45 +8,80 @@ Previously, when you had to build a package for RHEL you had to use `epel-7-x86_
 
 To build for RHEL you have to [Red Hat subscription](https://www.redhat.com/en/store/linux-platforms). You can use your existing subscription or you can use [free of charge subscription](https://developers.redhat.com/blog/2016/03/31/no-cost-rhel-developer-subscription-now-available/).
 
+### Mock RHEL configs
 
-### Register:
+Mock provides `rhel-<RELEASEVER>-<TARGET_ARCH>` configs which use pure RHEL.
+There are also `rhel+epel-<RELEASEVER>-<TARGET_ARCH>` configs which use RHEL plus EPEL.
+
+### Subscription configuration with Simple Content Access
+
+If you have [Simple Content Access](https://access.redhat.com/articles/simple-content-access#how-do-i-enable-simple-content-access-for-red-hat-subscription-management-2) enabled,
+all you need to do is register the machine you are running mock on.
+The register command will prompt you for your username and password.
 
 ```
-$ subscription-manager register (--serverurl subscription.rhsm.stage.redhat.com) \
- --username username \
- --password password
+$ sudo subscription-manager register
 ```
 
-Check available pools:
+After this the RHEL mock configs should work without further action.
 
 ```
-$ subscription-manager list --all --available
+$ mock -r rhel-9-x86_64 --shell
+```
+
+Optionally, you can disable the subscription-manager dnf plugin if you do not need subscription repos directly on your machine.
+
+```
+$ sudo subscription-manager config --rhsm.auto_enable_yum_plugins 0
+$ sudo sed -e '/^enabled=/ s/1/0/' -i /etc/dnf/plugins/subscription-manager.conf
+```
+
+### Subscription configuration without Simple Content Access
+
+If you do not have Simple Content Access enabled,
+you will need to both register and attach a subscription to the machine you are running mock on.
+The register command will prompt you for your username and password.
+
+```
+$ sudo subscription-manager register
+```
+
+Check the available subscriptions for your account,
+making note of the corresponding pool ID for the subscription you want to use.
+
+```
+$ sudo subscription-manager list --all --available
 ...
 Pool ID:  <THE_POOL_ID>
 ...
 ```
 
-Obtain the keypair:
+Attach the desired subscription referenced by the pool ID in order to obtain the necessary entitlement keypair.
 
 ```
-# subscription-manager attach --pool <THE_POOL_ID>
+$ sudo subscription-manager attach --pool <THE_POOL_ID>
 ...
 
 $ ls /etc/pki/entitlement
 <KEY_ID>-key.pem  <KEY_ID>.pem
 ```
 
-And try mock:
+Now the RHEL mock configs should work.
 
 ```
-$ mock -r rhel-8-x86_64 --shell
-...
+$ mock -r rhel-9-x86_64 --shell
 ```
 
-Mock provides `rhel-<RELEASEVER>-<TARGET_ARCH>` configs which use pure RHEL.
-There are also `rhel+epel-<RELEASEVER>-<TARGET_ARCH>` configs which use RHEL plus EPEL.
+Optionally, you can disable the subscription-manager dnf plugin if you do not need subscription repos directly on your machine.
 
-If there are multiple client keys, mock takes the first one in
-glob("/etc/pki/entitlement/<numeric-part>-key.pem") output.  But users
-still generate configure `config_opts['redhat_subscription_key_id']` in mock
-configuration, or on command line  `--config-opts=redhat_subscription_key_id=<ID>`.
+```
+$ sudo subscription-manager config --rhsm.auto_enable_yum_plugins 0
+$ sudo sed -e '/^enabled=/ s/1/0/' -i /etc/dnf/plugins/subscription-manager.conf
+```
+
+### Multiple client keys
+
+If there are multiple client keys,
+mock takes the first one in `glob("/etc/pki/entitlement/<numeric-part>-key.pem")` output.
+But users still generate configure `config_opts['redhat_subscription_key_id']` in mock configuration,
+or on command line `--config-opts=redhat_subscription_key_id=<ID>`.
