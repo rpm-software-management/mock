@@ -5,6 +5,7 @@ config_opts['extra_chroot_dirs'] = [ '/run/lock', ]
 config_opts['macros']['%distro_section'] = 'core'
 config_opts['package_manager'] = 'dnf'
 config_opts['bootstrap_image'] = 'docker.io/library/mageia:{{ releasever }}'
+config_opts['use_bootstrap_image'] = False
 config_opts['description'] = 'Mageia {{ releasever }}'
 
 config_opts['dnf.conf'] = """
