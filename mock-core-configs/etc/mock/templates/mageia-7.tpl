@@ -5,6 +5,7 @@ config_opts['releasever'] = '7'
 config_opts['macros']['%distro_section'] = 'core'
 config_opts['package_manager'] = 'dnf'
 config_opts['bootstrap_image'] = 'docker.io/library/mageia:7'
+config_opts['use_bootstrap_image'] = False
 config_opts['description'] = 'Mageia 7'
 
 config_opts['dnf.conf'] = """
