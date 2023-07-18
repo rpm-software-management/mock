@@ -1,5 +1,5 @@
 config_opts['root'] = 'amazonlinux-2023-{{ target_arch }}'
-config_opts['chroot_setup_cmd'] = 'install system-release bash bzip2 coreutils cpio diffutils findutils gawk glibc-minimal-langpack grep gzip info patch rpm-build sed shadow-utils system-rpm-config tar unzip util-linux which xz'
+config_opts['chroot_setup_cmd'] = 'install system-release bash bzip2 coreutils cpio diffutils findutils gawk glibc-minimal-langpack grep gzip info patch rpm-build sed system-rpm-config tar unzip util-linux which xz'
 config_opts['dist'] = 'amzn2023' # only useful for --resultdir variable subst
 config_opts['plugin_conf']['ccache_enable'] = False
 config_opts['package_manager'] = 'dnf'

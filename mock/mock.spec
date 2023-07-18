@@ -9,7 +9,7 @@
 
 Summary: Builds packages inside chroots
 Name: mock
-Version: 4.1.post1
+Version: 4.1.post2
 Release: 1%{?dist}
 License: GPL-2.0-or-later
 # Source is created by
@@ -100,6 +100,7 @@ BuildRequires: perl
 Requires: util-linux
 Requires: coreutils
 Requires: procps-ng
+Requires: shadow-utils
 
 
 %description

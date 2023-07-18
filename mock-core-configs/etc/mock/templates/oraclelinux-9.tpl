@@ -1,4 +1,4 @@
-config_opts['chroot_setup_cmd'] = 'install tar redhat-rpm-config redhat-release oraclelinux-release which xz sed make bzip2 gzip coreutils unzip shadow-utils diffutils cpio bash gawk rpm-build info patch util-linux findutils grep glibc-minimal-langpack'
+config_opts['chroot_setup_cmd'] = 'install tar redhat-rpm-config redhat-release oraclelinux-release which xz sed make bzip2 gzip coreutils unzip diffutils cpio bash gawk rpm-build info patch util-linux findutils grep glibc-minimal-langpack'
 config_opts['dist'] = 'el9'  # only useful for --resultdir variable subst
 config_opts['releasever'] = '9'
 config_opts['package_manager'] = 'dnf'
