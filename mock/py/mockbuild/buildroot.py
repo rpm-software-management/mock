@@ -8,7 +8,6 @@ import grp
 import logging
 import os
 import pwd
-import shlex
 import shutil
 import stat
 import tempfile
@@ -20,10 +19,11 @@ from . import text
 from . import uid
 from . import util
 from .exception import (BuildRootLocked, Error, ResultDirNotAccessible,
-                        RootError, BadCmdline)
+                        BadCmdline)
 from .package_manager import package_manager
 from .trace_decorator import getLog, traceLog
 from .podman import Podman
+from .shadow_utils import ShadowUtils
 
 
 # pylint: disable=too-many-lines
@@ -44,6 +44,7 @@ class Buildroot(object):
     def __init__(self, config, uid_manager, state, plugins, bootstrap_buildroot=None, is_bootstrap=False):
         self.config = config
         self.uid_manager = uid_manager
+        self.shadow_utils = ShadowUtils(self)
         self.state = state
         self.plugins = plugins
         self.bootstrap_buildroot = bootstrap_buildroot
@@ -250,6 +251,7 @@ class Buildroot(object):
         self.pkg_manager.initialize()
         self._setup_resolver_config()
         self._setup_katello_ca()
+
         if not self.chroot_was_initialized:
             self._setup_dbus_uuid()
             self._init_aux_files()
@@ -257,16 +259,11 @@ class Buildroot(object):
                 self._setup_timezone()
             self._init_pkg_management()
             self._setup_files_postinstall()
-            self._make_build_user()
             self._setup_build_dirs()
         elif prebuild:
             if 'age_check' in self.config['plugin_conf']['root_cache_opts'] and \
                not self.config['plugin_conf']['root_cache_opts']['age_check']:
                 self._init_pkg_management()
-            # Recreates build user to ensure the uid/gid are up to date with config
-            # and there's no garbage left by previous build
-            self._make_build_user()
-            self._setup_build_dirs()
             if (self.config['online'] and self.config['update_before_build']
                     and self.config['clean']):
                 update_state = "{0} update".format(self.pkg_manager.name)
@@ -281,13 +278,18 @@ class Buildroot(object):
                                        new_packages)
                     self.plugins.call_hooks('postupdate')
                 self.state.finish(update_state)
-        else:
-            self._fixup_build_user()
-            # Change owner of homdir tree if the root of it not owned
-            # by the current user.
-            home = self.make_chroot_path(self.homedir)
-            if os.path.exists(home) and os.stat(home).st_uid != self.chrootuid:
-                self.chown_home_dir()
+
+            # cleanup a potential mess after the previous build
+            self._cleanup_homedir()
+            self._setup_build_dirs()
+
+        # (re)create users to ensure the uid/gid are up to date with config
+        # after doing 'dnf update', 'dnf builddep', etc.
+        self._make_users()
+
+        # Change owner of homdir tree if the root of it not owned
+        # by the current user
+        self.chown_home_dir()
 
         # mark the buildroot as initialized
         file_util.touch(self.make_chroot_path('.initialized'))
@@ -459,42 +461,26 @@ class Buildroot(object):
 
         self.state.finish(update_state)
 
-    @traceLog()
     @noop_in_bootstrap
-    def _fixup_build_user(self):
-        """ensure chrootuser has correct UID"""
-        self.doChroot(['/usr/sbin/usermod', '-u', str(self.chrootuid),
-                       self.chrootuser],
-                      shell=False, nosync=True)
-
-    @traceLog()
-    @noop_in_bootstrap
-    def _make_build_user(self):
-        if not os.path.exists(self.make_chroot_path('usr/sbin/useradd')):
-            raise RootError("Could not find useradd in chroot, maybe the install failed?")
-
+    def _cleanup_homedir(self):
+        # Resolving the 'mockbuilder' user
         excluded = [self.make_chroot_path(self.homedir, path)
                     for path in self.config['exclude_from_homedir_cleanup']] + \
             self.mounts.get_mountpoints()
         file_util.rmtree(self.make_chroot_path(self.homedir),
                     selinux=self.selinux, exclude=excluded)
 
-        # ok for these two to fail
-        if self.config['clean']:
-            self.doChroot(['/usr/sbin/userdel', '-r', '-f', self.chrootuser],
-                          shell=False, raiseExc=False, nosync=True)
-        else:
-            self.doChroot(['/usr/sbin/userdel', '-f', self.chrootuser],
-                          shell=False, raiseExc=False, nosync=True)
-        self.doChroot(['/usr/sbin/groupdel', self.chrootgroup],
-                      shell=False, raiseExc=False, nosync=True)
-
-        if self.chrootgid:
-            self.doChroot(['/usr/sbin/groupadd', '-g', self.chrootgid, self.chrootgroup],
-                          shell=False, nosync=True)
-        self.doChroot(shlex.split(self.config['useradd']), shell=False, nosync=True)
-        if not self.config['clean']:
-            self.uid_manager.changeOwner(self.make_chroot_path(self.homedir))
+    @traceLog()
+    @noop_in_bootstrap
+    def _make_users(self):
+        # The mockbuild user
+        self.shadow_utils.delete_user(self.chrootuser, can_fail=True)
+        self.shadow_utils.delete_group(self.chrootgroup, can_fail=True)
+        self.shadow_utils.create_group(self.chrootgroup, gid=self.chrootgid)
+        self.shadow_utils.create_user(
+            self.chrootuser, uid=self.chrootuid, gid=self.chrootgid,
+            home=self.homedir,
+        )
         self._enable_chrootuser_account()
 
     @traceLog()
@@ -682,8 +668,6 @@ class Buildroot(object):
                 path = self.make_chroot_path(self.builddir, item)
                 file_util.mkdirIfAbsent(path)
                 self.uid_manager.changeOwner(path)
-            if self.config['clean']:
-                self.chown_home_dir()
             self._prepare_rpm_macros()
 
     @traceLog()
