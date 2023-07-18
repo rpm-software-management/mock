@@ -49,7 +49,7 @@ def nspawn_supported():
 @traceLog()
 def setup_default_config_opts():
     "sets up default configuration."
-    config_opts = TemplatedDictionary(alias_spec={'dnf.conf': ['yum.conf']})
+    config_opts = TemplatedDictionary(alias_spec={'dnf.conf': ['yum.conf', 'dnf5.conf']})
     config_opts['config_paths'] = []
     config_opts['version'] = VERSION
     config_opts['basedir'] = '/var/lib/mock'  # root name is automatically added to this
