@@ -311,8 +311,9 @@ def setup_default_config_opts():
     config_opts['dnf5_common_opts'] = ['--setopt=deltarpm=False', '--allowerasing']
     config_opts['dnf5_install_command'] = 'install dnf5 dnf5-plugins'
     config_opts['dnf5_disable_plugins'] = []
-    # Temporary work-around for https://github.com/rpm-software-management/dnf5/issues/461
-    config_opts["dnf5_avoid_opts"] = {"builddep": ["--allowerasing"]}
+    # No --allowerasing with remove, per
+    # https://github.com/rpm-software-management/dnf5/issues/729
+    config_opts["dnf5_avoid_opts"] = {"remove": ["--allowerasing"]}
 
     config_opts['microdnf_command'] = '/usr/bin/microdnf'
     # "dnf-install" is special keyword which tells mock to use install but with DNF
