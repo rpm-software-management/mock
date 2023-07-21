@@ -90,7 +90,6 @@ class Commands(object):
         if self.backup:
             self.backup_results()
         self.state.start("clean chroot")
-        util.orphansKill(self.buildroot.make_chroot_path())
         self.buildroot.delete()
         self.state.finish("clean chroot")
 
