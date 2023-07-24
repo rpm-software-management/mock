@@ -299,14 +299,14 @@ def setup_default_config_opts():
 
     config_opts['dnf_command'] = '/usr/bin/dnf-3'
     config_opts['system_dnf_command'] = '/usr/bin/dnf-3'
-    config_opts['dnf_common_opts'] = ['--setopt=deltarpm=False', '--allowerasing']
+    config_opts['dnf_common_opts'] = ['--setopt=deltarpm=False', '--setopt=allow_vendor_change=yes', '--allowerasing']
     config_opts['dnf_install_command'] = 'install python3-dnf python3-dnf-plugins-core'
     config_opts['dnf_disable_plugins'] = ['local', 'spacewalk', 'versionlock']
     config_opts["dnf_avoid_opts"] = {}
 
     config_opts['dnf5_command'] = '/usr/bin/dnf5'
     config_opts['system_dnf5_command'] = '/usr/bin/dnf5'
-    config_opts['dnf5_common_opts'] = ['--setopt=deltarpm=False', '--allowerasing']
+    config_opts['dnf5_common_opts'] = ['--setopt=deltarpm=False', '--setopt=allow_vendor_change=yes', '--allowerasing']
     config_opts['dnf5_install_command'] = 'install dnf5 dnf5-plugins'
     config_opts['dnf5_disable_plugins'] = []
     # No --allowerasing with remove, per
