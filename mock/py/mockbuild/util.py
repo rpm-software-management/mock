@@ -164,7 +164,7 @@ def orphansKill(rootToKill, manual_forced=False):
 
     When manual_forced==True, the manual kill based on /proc is enforced.
     """
-    getLog().debug("kill orphans")
+    getLog().debug("kill orphans in chroot %s", rootToKill)
     if USE_NSPAWN is False or manual_forced:
         path_cache = {}
         for killsig in [signal.SIGTERM, signal.SIGKILL]:
