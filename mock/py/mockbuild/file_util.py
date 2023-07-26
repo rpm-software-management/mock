@@ -16,14 +16,13 @@ from .trace_decorator import getLog, traceLog
 def mkdirIfAbsent(*args):
     for dirName in args:
         getLog().debug("ensuring that dir exists: %s", dirName)
-        if not os.path.exists(dirName):
-            try:
-                getLog().debug("creating dir: %s", dirName)
-                os.makedirs(dirName)
-            except OSError as e:
-                if e.errno != errno.EEXIST:
-                    getLog().exception("Could not create dir %s. Error: %s", dirName, e)
-                    raise exception.Error("Could not create dir %s. Error: %s" % (dirName, e))
+        try:
+            os.makedirs(dirName)
+            getLog().debug("created dir: %s", dirName)
+        except OSError as e:
+            if e.errno != errno.EEXIST:
+                getLog().exception("Could not create dir %s. Error: %s", dirName, e)
+                raise exception.Error("Could not create dir %s. Error: %s" % (dirName, e))
 
 
 @traceLog()
