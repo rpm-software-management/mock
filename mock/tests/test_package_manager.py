@@ -79,7 +79,7 @@ class TestPackageManager:
         pm.pkg_manager_config = config
         pm.initialize_config()
         pm._bind_mount_repos_to_bootstrap()
-        return self.bootstrap_buildroot.mounts.user_mounts
+        return self.bootstrap_buildroot.mounts.managed_mounts
 
     def test_absolute_path_name_in_baseurl(self):
         repo_directory = os.path.join(self.workdir, 'repo')

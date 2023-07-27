@@ -241,14 +241,18 @@ class Buildroot(object):
         self._setup_devices()
 
         self._setup_files()
-        self.mounts.mountall_managed()
 
         # write out config details
         self.root_log.debug('rootdir = %s', self.make_chroot_path())
         self.root_log.debug('resultdir = %s', self.resultdir)
 
         self.set_package_manager()
+
+        # this creates some managed mounts
         self.pkg_manager.initialize()
+
+        self.mounts.mountall_managed()
+
         self._setup_resolver_config()
         self._setup_katello_ca()
 
