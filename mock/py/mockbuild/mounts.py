@@ -18,6 +18,23 @@ class MountPoint(object):
     def __init__(self, mountsource, mountpath):
         self.mountpath = mountpath
         self.mountsource = mountsource
+        self.mounted = None
+
+    @traceLog()
+    # pylint: disable=unused-argument
+    def umount(self, force=False, nowarn=False):
+        """
+        Return None if not mounted, and True if successfully umounted
+        """
+        if not self.mounted:
+            return None
+        if self._do_umount():
+            self.mounted = False
+            return True
+        return False
+
+    def _do_umount(self):
+        raise NotImplementedError
 
     @traceLog()
     def ismounted(self):
@@ -65,17 +82,12 @@ class FileSystemMountPoint(MountPoint):
         self.mounted = True
         return True
 
-    @traceLog()
-    # pylint: disable=unused-argument
-    def umount(self, force=False, nowarn=False):
-        if not self.mounted:
-            return None
+    def _do_umount(self):
         cmd = ['/bin/umount', '-n', '-l', self.path]
         try:
             util.do(cmd)
         except exception.Error:
             return False
-        self.mounted = False
         return True
 
     def __repr__(self):
@@ -118,9 +130,7 @@ class BindMountPoint(MountPoint):
         return True
 
     @traceLog()
-    def umount(self):
-        if not self.mounted:
-            return None
+    def _do_umount(self):
         cmd = ['/bin/umount', '-n']
         if self.recursive:
             # The mount is busy because of the submounts - a lazy unmount
@@ -132,7 +142,6 @@ class BindMountPoint(MountPoint):
             util.do(cmd)
         except exception.Error:
             return False
-        self.mounted = False
         return True
 
     def __repr__(self):
