@@ -22,7 +22,7 @@ class Podman:
         """ pull the latest image """
         getLog().info("Pulling image: %s", self.image)
         cmd = ["podman", "pull", self.image]
-        util.do(cmd, printOutput=True, env=self.buildroot.env)
+        util.do(cmd, env=self.buildroot.env)
 
     def install_pkgmgmt_packages(self):
         """ make sure the image contains expected packages """
@@ -40,7 +40,7 @@ class Podman:
         Execute COMMAND in bootstrap chroot previously initialized by self.cp()
         """
         util.do(command, chrootPath=self.buildroot.make_chroot_path(),
-                printOutput=True, env=self.buildroot.env)
+                env=self.buildroot.env)
 
     @contextmanager
     def mounted_image(self):
