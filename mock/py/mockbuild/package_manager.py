@@ -476,9 +476,19 @@ Error:      Neither dnf-utils nor yum-utils are installed. Dnf-utils or yum-util
                     bind_mount_point = BindMountPoint(srcpath=srcpath,
                                                       bindpath=bindpath)
 
-                    # we need to use user mounts as essential mounts are used
-                    # only for installing into bootstrap chroot
-                    self.buildroot.mounts.add_user_mount(bind_mount_point)
+                    # This is a very tricky hack.  Note we configure the
+                    # package_manager for the "bootstrap" chroot here, but these
+                    # "local repo" mountpoints are actually needed by both
+                    # "bootstrap" and "build" chroots.  The "bootstrap" chroot
+                    # needs this with the 'bootstrap_image' feature (we use
+                    # package manager _in bootstrap_, not on host, to install
+                    # into the bootstrap) and the "build" chroot package manager
+                    # always needs this (but also mounted in bootstrap).  That's
+                    # why we are not using "essential mounts"; these are only
+                    # automatically mounted by the corresponding package manager
+                    # (we wouldn't mount bootstrap's mountpoints when installing
+                    # into the "build" chroot).
+                    self.buildroot.mounts.add(bind_mount_point)
 
     def initialize_config(self):
         # there may be configs we get from container image
