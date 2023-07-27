@@ -800,7 +800,7 @@ def main():
                                  options="private"))
         buildroot.mounts.bootstrap_mounts.append(
             BindMountPoint(buildroot.make_chroot_path(), inner_mount,
-                           recursive=True, options="private"))
+                           recursive=True, options="private").treat_as_chroot())
 
     signal.signal(signal.SIGTERM, partial(handle_signals, buildroot))
     signal.signal(signal.SIGPIPE, partial(handle_signals, buildroot))

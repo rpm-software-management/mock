@@ -19,6 +19,15 @@ class MountPoint(object):
         self.mountpath = mountpath
         self.mountsource = mountsource
         self.mounted = None
+        self._is_chroot = False
+
+    def treat_as_chroot(self):
+        """
+        If we use this directory as chroot, we might want to do special
+        actions while mounting and unmounting.
+        """
+        self._is_chroot = True
+        return self
 
     @traceLog()
     # pylint: disable=unused-argument
@@ -28,6 +37,12 @@ class MountPoint(object):
         """
         if not self.mounted:
             return None
+
+        if self._is_chroot:
+            # Don't keep background processes running with unmounted
+            # /proc/self/root directory.
+            util.orphansKill(self.mountpath)
+
         if self._do_umount():
             self.mounted = False
             return True
