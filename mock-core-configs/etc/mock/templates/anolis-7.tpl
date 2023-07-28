@@ -5,6 +5,9 @@ config_opts['releasever'] = '7'
 config_opts['package_manager'] = 'yum'
 config_opts['description'] = 'Anolis 7'
 
+# No v7 image https://hub.docker.com/r/openanolis/anolisos ?
+config_opts['use_bootstrap_image'] = False
+
 config_opts['yum.conf'] = """
 [main]
 keepcache=1
