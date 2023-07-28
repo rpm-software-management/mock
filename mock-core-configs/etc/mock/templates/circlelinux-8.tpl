@@ -4,6 +4,8 @@ config_opts['releasever'] = '8'
 config_opts['package_manager'] = 'dnf'
 config_opts['extra_chroot_dirs'] = [ '/run/lock', ]
 config_opts['bootstrap_image'] = 'docker.io/circlelinuxos/circlelinux:8'
+# Relates: https://github.com/rpm-software-management/mock/issues/1170
+config_opts['use_bootstrap_image'] = False
 
 
 config_opts['dnf.conf'] = """
