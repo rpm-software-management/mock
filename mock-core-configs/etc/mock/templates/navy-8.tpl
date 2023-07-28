@@ -4,6 +4,9 @@ config_opts['releasever'] = '8'
 config_opts['package_manager'] = 'dnf'
 config_opts['extra_chroot_dirs'] = [ '/run/lock', ]
 config_opts['description'] = 'Navy Linux {{ releasever }}'
+# FIXME: this might soon stop working because the image is 8.4, see
+#        https://github.com/rpm-software-management/mock/issues/1171
+config_opts['bootstrap_image'] = 'docker.io/navylinux/navylinux:latest'
 
 config_opts['dnf.conf'] = """
 [main]
