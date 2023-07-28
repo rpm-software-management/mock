@@ -521,7 +521,7 @@ def check_arch_combination(target_arch, config_opts):
         legal = config_opts['legal_host_arches']
     except KeyError:
         return
-    host_arch = os.uname()[-1]
+    host_arch = config_opts['host_arch']
     if (host_arch not in legal) and not config_opts['forcearch']:
         log.info("Unable to build arch %s natively on arch %s. Setting forcearch to use software emulation.",
                  target_arch, host_arch)

@@ -270,9 +270,21 @@ class _PackageManager(object):
                 # either it does not support --installroot (microdnf) or
                 # it is bootstrap image made by container with incomaptible dnf/rpm
                 if not self.support_installroot or self.is_bootstrap_image:
+
+                    personality = kwargs.pop("personality", None)
+                    if self.is_bootstrap_image:
+                        # Multilib fix, see on an example: The host-native
+                        # 64-bit package manager installed in the bootstrap
+                        # chroot (from image) needs to know how to resolve the
+                        # $basearch variable.  It would be confused our previous
+                        # 'condPersonality("i386")' call (switched to 32-bit).
+                        # Switch back to 64-bit mode (only the particular DNF
+                        # sub-process).
+                        personality = self.config['host_arch']
+
                     out = util.do(invocation, env=env,
                                   chrootPath=self.buildroot.make_chroot_path(),
-                                  **kwargs)
+                                  personality=personality, **kwargs)
                 elif self.bootstrap_buildroot is None:
                     out = util.do(invocation, env=env,
                                   **kwargs)
