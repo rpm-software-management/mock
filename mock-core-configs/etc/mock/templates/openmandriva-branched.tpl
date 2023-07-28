@@ -5,6 +5,9 @@ config_opts['macros']['%cross_compiling'] = '0' # Mock should generally be consi
 config_opts['package_manager'] = 'dnf'
 config_opts['description'] = 'OpenMandriva {{ releasever }}'
 
+# There's v4.2, but not v4.1, so we can not use releasever here, #1171
+config_opts['use_bootstrap_image'] = False
+
 config_opts['dnf.conf'] = """
 [main]
 keepcache=1

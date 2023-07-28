@@ -6,6 +6,9 @@ config_opts['macros']['%cross_compiling'] = '0' # Mock should generally be consi
 config_opts['package_manager'] = 'dnf'
 config_opts['description'] = 'OpenMandriva Rolling'
 
+# Is there a corresponding rolling image? #1171
+config_opts['use_bootstrap_image'] = False
+
 config_opts['dnf.conf'] = """
 [main]
 keepcache=1
