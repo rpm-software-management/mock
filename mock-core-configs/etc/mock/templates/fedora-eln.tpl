@@ -1,5 +1,5 @@
 config_opts['releasever'] = 'eln'
-config_opts['eln_rawhide_releasever'] = '39'
+config_opts['eln_rawhide_releasever'] = '40'
 
 config_opts['root'] = 'fedora-eln-{{ target_arch }}'
 
