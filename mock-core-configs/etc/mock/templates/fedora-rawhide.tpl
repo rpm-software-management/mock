@@ -8,8 +8,9 @@ config_opts['chroot_setup_cmd'] = 'install @{% if mirrored %}buildsys-{% endif %
 config_opts['dist'] = 'rawhide'  # only useful for --resultdir variable subst
 config_opts['extra_chroot_dirs'] = [ '/run/lock', ]
 config_opts['releasever'] = '40'
-config_opts['package_manager'] = 'dnf'
+config_opts['package_manager'] = 'dnf5'
 config_opts['bootstrap_image'] = 'registry.fedoraproject.org/fedora:rawhide'
+config_opts['bootstrap_image_ready'] = True
 config_opts['description'] = 'Fedora Rawhide'
 
 config_opts['dnf.conf'] = """
