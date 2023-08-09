@@ -1,16 +1,16 @@
 ---
 layout: default
-title: Release Notes - Mock v?.?
+title: Release Notes - Mock v5.0
 ---
 
-Released on ????-??-??.
+Released on 2023-08-09.
 
-## Mock v?.? new features:
+## Mock v5.0 new features:
 
 - The `use_bootstrap_image` feature has been turned on as it was stabilized in
   this release and it speeds up the bootstrap chroot preparation a lot
   (by not installing potentially hundreds of packages into the bootstrap chroot,
-  but just extract the `boostrap_image` contents).  For the RHEL based chroots
+  but just extracting the `boostrap_image` contents).  For the RHEL based chroots
   (where UBI `bootstrap_image` is in use, and where `python3-dnf-plugins-core`
   is installed by default) we also turned on the `bootstrap_image_ready=True`
   which drastically speeds the bootstrap preparation.  See the explanation for
@@ -46,46 +46,76 @@ Released on ????-??-??.
   container, the credentials passed down by Podman are automatically detected
   and used ([PR#1130][]).
 
-- Even though the buildroot is supposed to be initialized with cross-arch
-  packages (using the --forcearch RPM feature), the bootstrap chroot is newly
-  always prepared with the native architecture.  This change has been done to
-  optimize the final buildroot installation because using the "native" DNF is
-  much faster than cross-arch emulation using `qemu-user-static`.  As a benefit,
-  we can simply use the native pulled Podman `bootstrap_image` even for
-  cross-arch builds without any problems.  See [issue#1110][].
+- Even though the requested buildroot is cross-arch (must be initialized with
+  cross-arch packages using the `--forcearch RPM` feature), the bootstrap chroot
+  is newly always prepared with the native architecture.  This change has been
+  done to optimize the final buildroot installation — using the "arch natively"
+  compiled DNF stack is much faster than cross-arch emulation using
+  `qemu-user-static`.  As a benefit, we can newly simply use the "native"
+  Podman-pulled `bootstrap_image` even for cross-arch builds (we have to play
+  with Glibc's "personality" a bit, but still).  See [issue#1110][].
 
-- An easier way to skip Mock plugin execution in the Bootstrap chroot has been
-  invented.  It is now enough to specify the `run_in_bootstrap = False` global
-  variable in such plugin, see [PR#1116][] for more info.  The plugin `hw_info`
-  has been newly disabled for the bootstrap chroot this way.
+- The bootstrap-related logging has been changed so the corresponding log
+  entries are now appended to the default `root.log` file.  This change should
+  lead to a better understanding what is going on in the bootstrap chroot
+  ([issue#539][] and [PR#1106][]).
+
+- An easier way to skip Mock plugin execution in Bootstrap chroot has been
+  invented.  It is now enough to just specify `run_in_bootstrap = False` global
+  variable in such a plugin, see [PR#1116][] for more info.  The plugin
+  `hw_info` has been newly disabled this way.
 
 - The bootstrap chroot installation was made smaller;  newly only the
   `python3-dnf` and `python3-dnf-plugins-core` are installed, instead of `dnf`
   and `dnf-plugins-core` (which used to install also unnecessary documentation
   files).
 
-- Automatic downloads (for example with `mock https://exmaple.com/src.rpm`
+- Automatic file downloads (for example with `mock https://exmaple.com/src.rpm`
   use cases) have been changed to automatically retry the download several times
   to work around random network failures ([PR#1132][] and [PR#1134][]).
 
 - The `dnf` and `dnf5` processes are newly always executed with the
   `--setopt=allow_vendor_change=yes` option.  This is done in belief that we
-  don't have to protect the Mock builds against `Vendor` changes, and we do this
-  because overriding the distro-default RPMs is quite common thing (`mock
-  --chain` e.g.) while mimicking the distro-default `Vendor` tag would be
-  a painful task.  The thing is that the `allow_vendor_change=no` is going to be
-  set by default in DNF5 soon and we want to prevent unnecessary surprises.
-  Also, openSUSE has been reported to use this even now with DNF4 ([PR#1160][]).
+  don't have to protect the Mock builds against `Vendor:` changes, while
+  overriding the distro-default RPMs is quite a common thing (`mock --chain`
+  e.g.) while mimicking the distro-default `Vendor` tag would be a painful task.
+  The thing is that the `allow_vendor_change=no` is going to be set by default
+  in DNF5 soon and we want to prevent unnecessary surprises.  Also, openSUSE has
+  been reported to use this even with DNF4 ([PR#1160][]).
 
-## Mock v?.? bugfixes:
+- Mock now considers DNF5 to be a valid package manager alternative.  For
+  example considering
+
+    1. that Bootstrap chroot is generated from a bootstrap image,
+    2. expected package manager is DNF4 (`package_manager == 'dnf'`)
+    3. but the selected image has only `dnf5` installed by default
+
+  then Mock properly finds the `/bin/dnf5` command in-bootstrap, uses it to
+  install `/bin/dnf-3` into the bootstrap chroot first and then it uses
+  `/bin/dnf-3` in bootstrap for the final target buildroot installation.
+
+
+## Mock v5.0 bugfixes:
+
+- The orphan-process killing feature was enhanced to also properly kill
+  processes started by `dnf install` post-scriptles (installing from bootstrap
+  to buildroot), see [issue#1165][].
+
+- The `podman pull` logic that Mock does in the background with
+  `--use-bootstrap-image` (now by default) was fixed to not affect the
+  `mock --shell` stdout.  That was a bug, stdout is often parsed by callers.
+
+- The fact that we use in-bootstrap package manager for *installation stuff into
+  the bootstrap chroot itself* revealed that we have to do certain mountpoints
+  [earlier than we used to][PR#1167].
 
 - Make sure we properly unmount all the Mock mount internal points even though
   the Mock process was interrupted using `CTRL+C` (`KeyboardInterrupt`
-  exception).  This has fixed a long-term bug which, when observed before, broke
-  the subsequent `mock` processes including `mock --scrub`. Also, the directory
-  removal method has been fixed to re-try under [certain
-  circumstances][PR#1058]. Relates to [rhbz#2176689][], [rhbz#2176691][],
-  [rhbz#2177680][], [rhbz#2181641][], etc.
+  exception).  This has fixed a long-term observed bug that kept things mounted
+  longer than necessary, eventually breaking even subsequent `mock --scrub`
+  attempts.  Also, the internal directory removal method has been fixed to
+  *try its job harder* under [certain circumstances][PR#1058]. Relates to
+  [rhbz#2176689][], [rhbz#2176691][], [rhbz#2177680][], [rhbz#2181641][], etc.
 
 - Python `imp` module was removed from Python 3.12, so the code was migrated to
   `importlib`, [issue#1140][].
@@ -96,16 +126,13 @@ Released on ????-??-??.
   `email.message` library which now provides the same functionality
   ([PR#1134][]).
 
-- The default recursion limit of Python scripts is set to 1000 for non-root
-  users; this isn't enough for Mock in some use-cases so the limit was increased
-  to 5000.  For example, some utilities have directory-tree stress-tests in
-  test suites, and for such cases a very large directory tree can cause too deep
-  recursive calls of the `shutil.rmtree()` method.
-
-- The bootstrap-related logging has been fixed so the corresponding log entries
-  are now added to the default `root.log` file.  This change should lead to
-  a better understanding what is going on in the bootstrap chroot ([issue#539][]
-  and [PR#1106][]).
+- The default recursion limit for Python scripts is set to 1000 (for non-root
+  users); this hasn't been enough for Mock in some use-cases so the limit has
+  been increased in v5.0+.  For example, some utilities have directory-tree
+  stress-tests their test suites, and for such cases a very large directory tree
+  can cause too deep recursive calls of the `shutil.rmtree()` method.  Users
+  can newly also override the Mock's default via the
+  `config_opts["recursion_limit"]` option.
 
 - Mock newly never uses the `--allowerasing` option with the `dnf5 remove`
   command (this option has not been implemented in DNF5 and DNF5 simply fails,
@@ -120,7 +147,10 @@ Released on ????-??-??.
 - Mock no longer dumps the long output of the `rpmbuild --help` command into
   `build.log`, fixes [issue#999][].
 
-## mock-core-configs v?.? changes:
+## mock-core-configs v39 changes:
+
+- Fedora 39 configuration is branched from Rawhide, as branching date
+  is [2023-08-08](https://fedorapeople.org/groups/schedule/f-39/f-39-all-tasks.html).
 
 - The new `mock-core-configs` package is not compatible with older Mock
   versions, therefore the requirement was bumped to `v5.0` or newer.
@@ -138,6 +168,9 @@ Released on ????-??-??.
 
 - Using `$releasever` in openEuler metalink URLs.
 
+- Several configuration files were updated to work correctly with the new
+  `use_bootstrap_image = True` in Mock 5.0.  Relates to [issue#1171][]
+
 
 **Following contributors contributed to this release:**
 
@@ -145,6 +178,7 @@ Released on ????-??-??.
  * Miroslav Suchý
  * Neal Gompa
  * zengwei2000
+ * zengchen1024
 
 Thank you.
 
@@ -158,6 +192,7 @@ Thank you.
 [PR#1134]: https://github.com/rpm-software-management/mock/pull/1134
 [PR#1158]: https://github.com/rpm-software-management/mock/pull/1158
 [PR#1158]: https://github.com/rpm-software-management/mock/pull/1160
+[PR#1167]: https://github.com/rpm-software-management/mock/pull/1167
 [issue#539]: https://github.com/rpm-software-management/mock/issues/539
 [issue#999]: https://github.com/rpm-software-management/mock/issues/999
 [issue#1088]: https://github.com/rpm-software-management/mock/issues/1088
@@ -168,6 +203,8 @@ Thank you.
 [issue#1111]: https://github.com/rpm-software-management/mock/issues/1111
 [issue#1140]: https://github.com/rpm-software-management/mock/issues/1140
 [issue#1149]: https://github.com/rpm-software-management/mock/issues/1149
+[issue#1165]: https://github.com/rpm-software-management/mock/issues/1165
+[issue#1171]: https://github.com/rpm-software-management/mock/issues/1171
 [rhbz#2176689]: https://bugzilla.redhat.com/2176689
 [rhbz#2176691]: https://bugzilla.redhat.com/2176691
 [rhbz#2177680]: https://bugzilla.redhat.com/2177680

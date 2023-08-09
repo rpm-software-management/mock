@@ -9,7 +9,7 @@
 
 Summary: Builds packages inside chroots
 Name: mock
-Version: 4.1.post2
+Version: 5.0
 Release: 1%{?dist}
 License: GPL-2.0-or-later
 # Source is created by
@@ -272,6 +272,9 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 %dir  %{_datadir}/cheat
 
 %changelog
+* Wed Aug 09 2023 Pavel Raiskup <praiskup@redhat.com> 5.0-1
+- new upstream release, per https://rpm-software-management.github.io/mock/Release-Notes-5.0
+
 * Fri Jun 02 2023 Pavel Raiskup <praiskup@redhat.com> 4.1-1
 - bootstrap: fix certificate copying into the bootstrap chroot
 - don't strictly require any package manager
