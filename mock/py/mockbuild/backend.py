@@ -230,7 +230,7 @@ class Commands(object):
     @traceLog()
     def _show_installed_packages(self):
         '''report the installed packages in the chroot to the root log'''
-        pkgs = self.buildroot.all_chroot_packages()
+        pkgs = sorted(self.buildroot.all_chroot_packages())
         self.buildroot.root_log.info("Installed packages:")
         self.buildroot.root_log.info('\n'.join(pkgs))
 
