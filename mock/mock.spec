@@ -65,7 +65,7 @@ BuildRequires: python%{python3_pkgversion}-devel
 BuildRequires: python%{python3_pkgversion}-pylint
 %endif
 
-%if 0%{?fedora} >= 38
+%if 0%{?fedora} >= 41
 # DNF5 stack
 Suggests: dnf5
 Suggests: dnf5-plugins
