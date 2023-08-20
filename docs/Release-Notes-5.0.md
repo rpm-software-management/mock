@@ -37,7 +37,8 @@ Released on 2023-08-09.
   bootstrap (normally Mock installs `dnf` tooling there).  It simply assumes
   that the bootstrap image is ready to use (that the `dnf` tooling is already
   installed on the image).  This might fix hard-to-debug/hard-to-fix issues like
-  [issue#1088][] when an unexpected bootstrap image is used.
+  [issue#1088][] when an unexpected bootstrap image is used. This option is
+  enabled by default for RHEL 8 and 9 chroots only.
 
 - The Podman container environment is able to automatically pass down the Red
   Hat Subscription credentials anytime a RHEL-based (UBI) container is run.  But
