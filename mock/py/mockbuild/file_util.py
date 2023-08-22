@@ -124,6 +124,16 @@ def find_non_nfs_dir():
     raise exception.Error('Cannot find non-NFS directory in: %s' % dirs)
 
 
+def unlink_if_exists(path):
+    """
+    Unlink, ignore FileNotFoundError, but keep raising other exceptions.
+    """
+    try:
+        os.unlink(path)
+    except FileNotFoundError:
+        pass
+
+
 def _best_effort_removal(path, use_rmtree=True):
     try:
         os.unlink(path)
