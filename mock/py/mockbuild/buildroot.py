@@ -233,6 +233,8 @@ class Buildroot(object):
             podman = Podman(self, self.bootstrap_image)
             podman.pull_image()
             podman.cp(self.make_chroot_path(), self.config["tar_binary"])
+            file_util.unlink_if_exists(os.path.join(self.make_chroot_path(),
+                                                    "etc/rpm/macros.image-language-conf"))
 
         self._setup_dirs()
 
