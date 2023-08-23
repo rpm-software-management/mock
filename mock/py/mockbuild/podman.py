@@ -24,24 +24,6 @@ class Podman:
         cmd = ["podman", "pull", self.image]
         util.do(cmd, env=self.buildroot.env)
 
-    def install_pkgmgmt_packages(self):
-        """ make sure the image contains expected packages """
-        pmname = self.buildroot.config['package_manager']
-        binary = self.buildroot.config['{}_command'.format(pmname)]
-        install_command = self.buildroot.config['{}_install_command'.format(pmname)]
-
-        cmd = [binary, '-y']
-        cmd += install_command.split()
-        self.exec(cmd)
-
-    @traceLog()
-    def exec(self, command):
-        """
-        Execute COMMAND in bootstrap chroot previously initialized by self.cp()
-        """
-        util.do(command, chrootPath=self.buildroot.make_chroot_path(),
-                env=self.buildroot.env)
-
     @contextmanager
     def mounted_image(self):
         """
