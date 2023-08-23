@@ -3,6 +3,9 @@ config_opts['root'] = 'fedora-rawhide-{{ target_arch }}'
 # fedora 31+ isn't mirrored, we need to run from koji
 config_opts['mirrored'] = config_opts['target_arch'] != 'i686'
 
+if config_opts['target_arch'] == "ppc64le":
+    config_opts['macros']['%_host_cpu'] = 'ppc64le'
+
 config_opts['chroot_setup_cmd'] = 'install @{% if mirrored %}buildsys-{% endif %}build'
 
 config_opts['dist'] = 'rawhide'  # only useful for --resultdir variable subst
