@@ -236,6 +236,7 @@ def setup_default_config_opts():
         'distgit_get': 'rpkg clone -a --branch SCM_BRN SCM_PKG SCM_PKG',
         'distgit_src_get': 'rpkg sources',
         'spec': 'SCM_PKG.spec',
+        'int_src_dir': None,
         'ext_src_dir': os.devnull,
         'write_tar': False,
         'git_timestamps': False,

@@ -76,6 +76,7 @@ class scmWorker(object):
         self.spec = opts['spec']
         self.spec = self.spec.replace("SCM_PKG", self.pkg)
 
+        self.int_src_dir = opts['int_src_dir']
         self.ext_src_dir = opts['ext_src_dir']
         self.write_tar = opts['write_tar']
         self.exclude_vcs = opts['exclude_vcs']
@@ -147,6 +148,11 @@ class scmWorker(object):
             sys.exit(5)
         self.spec = sf
 
+        # Use specified sources directory
+        sources_dir = self.src_dir
+        if self.int_src_dir:
+            sources_dir = os.path.join(sources_dir, self.int_src_dir)
+
         # Add passed RPM macros before parsing spec file
         for macro, expression in list(self.macros.items()):
             # pylint: disable=no-member
@@ -157,7 +163,7 @@ class scmWorker(object):
         ts = rpm.ts()
         # Spec might %include its sources
         # pylint: disable=no-member
-        rpm.addMacro("_sourcedir", self.src_dir)
+        rpm.addMacro("_sourcedir", sources_dir)
         rpm_spec = ts.parseSpec(self.spec)
         self.name = rpm.expandMacro("%{name}")
         self.version = rpm.expandMacro("%{version}")
@@ -189,26 +195,26 @@ class scmWorker(object):
                 if "--exclude-vcs" in proc_result:
                     taropts = "--exclude-vcs"
 
-            self.log.debug("Writing %s/%s...", self.src_dir, tarball)
+            self.log.debug("Writing %s/%s...", sources_dir, tarball)
             cwd_dir = os.getcwd()
             os.chdir(self.wrk_dir)
             os.rename(self.name, tardir)
             cmd = "{0} caf {1} {2} {3}".format(__tar_cmd, tarball, taropts, tardir)
             util.do(shlex.split(cmd), shell=False, cwd=self.wrk_dir, env=os.environ)
-            os.rename(tarball, tardir + "/" + tarball)
+            os.rename(tarball, tardir + "/" + (self.int_src_dir or "") + "/" + tarball)
             os.rename(tardir, self.name)
             os.chdir(cwd_dir)
 
         # Get possible external sources from an external sources directory
         for f in self.sources:
-            if not os.path.exists(self.src_dir + "/" + f) and \
+            if not os.path.exists(sources_dir + "/" + f) and \
                os.path.exists(self.ext_src_dir + "/" + f):
-                self.log.debug("Copying %s/%s to %s/%s", self.ext_src_dir, f, self.src_dir, f)
-                shutil.copy2(self.ext_src_dir + "/" + f, self.src_dir + "/" + f)
+                self.log.debug("Copying %s/%s to %s/%s", self.ext_src_dir, f, sources_dir, f)
+                shutil.copy2(self.ext_src_dir + "/" + f, sources_dir + "/" + f)
 
         self.log.debug("Prepared sources for building src.rpm")
 
-        return (self.src_dir, self.spec)
+        return (sources_dir, self.spec)
 
     @traceLog()
     def clean(self):
