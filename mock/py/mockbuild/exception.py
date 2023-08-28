@@ -47,6 +47,7 @@ class Error(Exception):
 # 65 = LVM thinpool locked
 # 70 = result dir could not be created
 # 80 = unshare of namespace failed
+# 90 = bootstrap preparation error
 # 110 = unbalanced call to state functions
 # 120 = weak dependent package not installed
 # 129 = the main process get signal SIGHUP, the console was closed
@@ -92,6 +93,8 @@ def get_class_by_code(exit_code):
         return ResultDirNotAccessible("Result dir could not be created.")
     elif exit_code == 80:
         return UnshareFailed("Call to C library unshare(2) syscall failed.")
+    elif exit_code == 90:
+        return BootstrapError("Can not prepare bootstrap chroot")
     elif exit_code == 110:
         return StateError("Unbalanced call to state functions. Check the state.log")
     elif exit_code == 120:
@@ -197,6 +200,14 @@ class UnshareFailed(Error):
     def __init__(self, *args):
         super().__init__(*args)
         self.resultcode = 80
+
+
+class BootstrapError(Error):
+    "Can not prepare bootstrap chroot"
+
+    def __init__(self, *args):
+        super().__init__(*args)
+        self.resultcode = 90
 
 
 class StateError(Error):
