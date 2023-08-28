@@ -1,12 +1,45 @@
 # -*- coding: utf-8 -*-
 # vim: noai:ts=4:sw=4:expandtab
 
+import logging
 import subprocess
 from contextlib import contextmanager
 
 from mockbuild.trace_decorator import getLog, traceLog
 from mockbuild import util
 from mockbuild.exception import BootstrapError
+
+
+def podman_check_native_image_architecture(image, logger=None):
+    """
+    Return True if image's architecture is "native" for this host.
+    Relates:
+        https://github.com/containers/podman/issues/19717
+        https://github.com/fedora-copr/copr/issues/2875
+    """
+
+    logger = logger or logging.getLogger()
+    logger.info("Checking that %s image matches host's architecture", image)
+    sys_check_cmd = ["podman", "version", "--format", "{{.OsArch}}"]
+    image_check_cmd = ["podman", "image", "inspect",
+                        "--format", "{{.Os}}/{{.Architecture}}", image]
+
+    def _podman_query(cmd):
+        return subprocess.check_output(cmd, encoding="utf8").strip()
+
+    try:
+        system_arch = _podman_query(sys_check_cmd)
+        image_arch = _podman_query(image_check_cmd)
+        if system_arch != image_arch:
+            logger.error("Image architecture %s doesn't match system arch %s",
+                         system_arch, image_arch)
+            return False
+    except subprocess.SubprocessError as exc:
+        logger.error("Subprocess failed: %s", exc)
+        return False
+
+    return True
+
 
 class Podman:
     """ interacts with podman to create build chroot """
@@ -28,6 +61,9 @@ class Podman:
                                                raiseExc=False, returnOutput=1)
         if exit_status:
             logger.error(out)
+
+        if not podman_check_native_image_architecture(self.image, logger):
+            raise BootstrapError("Pulled image has invalid architecture")
 
 
     @contextmanager
