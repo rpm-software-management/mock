@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # vim: noai:ts=4:sw=4:expandtab
 
+import os
 import logging
 import subprocess
 from contextlib import contextmanager
@@ -10,7 +11,7 @@ from mockbuild import util
 from mockbuild.exception import BootstrapError
 
 
-def podman_check_native_image_architecture(image, logger=None):
+def podman_check_native_image_architecture(image, logger=None, podman_binary=None):
     """
     Return True if image's architecture is "native" for this host.
     Relates:
@@ -19,10 +20,11 @@ def podman_check_native_image_architecture(image, logger=None):
     """
 
     logger = logger or logging.getLogger()
+    podman = podman_binary or "/usr/bin/podman"
     logger.info("Checking that %s image matches host's architecture", image)
-    sys_check_cmd = ["podman", "version", "--format", "{{.OsArch}}"]
-    image_check_cmd = ["podman", "image", "inspect",
-                        "--format", "{{.Os}}/{{.Architecture}}", image]
+    sys_check_cmd = [podman, "version", "--format", "{{.OsArch}}"]
+    image_check_cmd = [podman, "image", "inspect",
+                       "--format", "{{.Os}}/{{.Architecture}}", image]
 
     def _podman_query(cmd):
         return subprocess.check_output(cmd, encoding="utf8").strip()
@@ -46,6 +48,10 @@ class Podman:
 
     @traceLog()
     def __init__(self, buildroot, image):
+        self.podman_binary = "/usr/bin/podman"
+        if not os.path.exists(self.podman_binary):
+            raise BootstrapError(f"'{self.podman_binary}' not installed")
+
         self.buildroot = buildroot
         self.image = image
         self.container_id = None
@@ -56,7 +62,7 @@ class Podman:
         """ pull the latest image """
         logger = getLog()
         logger.info("Pulling image: %s", self.image)
-        cmd = ["podman", "pull", self.image]
+        cmd = [self.podman_binary, "pull", self.image]
         out, exit_status = util.do_with_status(cmd, env=self.buildroot.env,
                                                raiseExc=False, returnOutput=1)
         if exit_status:
@@ -74,8 +80,8 @@ class Podman:
         bootstrap chroot directory.
         """
         logger = getLog()
-        cmd_mount = ["podman", "image", "mount", self.image]
-        cmd_umount = ["podman", "image", "umount", self.image]
+        cmd_mount = [self.podman_binary, "image", "mount", self.image]
+        cmd_umount = [self.podman_binary, "image", "umount", self.image]
         result = subprocess.run(cmd_mount, capture_output=True, check=False, encoding="utf8")
         if result.returncode:
             message = "Podman mount failed: " + result.stderr
