@@ -6,6 +6,7 @@ from contextlib import contextmanager
 
 from mockbuild.trace_decorator import getLog, traceLog
 from mockbuild import util
+from mockbuild.exception import BootstrapError
 
 class Podman:
     """ interacts with podman to create build chroot """
@@ -20,9 +21,14 @@ class Podman:
     @traceLog()
     def pull_image(self):
         """ pull the latest image """
-        getLog().info("Pulling image: %s", self.image)
+        logger = getLog()
+        logger.info("Pulling image: %s", self.image)
         cmd = ["podman", "pull", self.image]
-        util.do(cmd, env=self.buildroot.env)
+        out, exit_status = util.do_with_status(cmd, env=self.buildroot.env,
+                                               raiseExc=False, returnOutput=1)
+        if exit_status:
+            logger.error(out)
+
 
     def install_pkgmgmt_packages(self):
         """ make sure the image contains expected packages """
@@ -49,18 +55,23 @@ class Podman:
         read-only directory so we can copy-paste the contents into the final
         bootstrap chroot directory.
         """
+        logger = getLog()
         cmd_mount = ["podman", "image", "mount", self.image]
         cmd_umount = ["podman", "image", "umount", self.image]
-        output = subprocess.check_output(cmd_mount)
-        mountpoint = output.decode("utf-8").strip()
-        getLog().info("mounting %s with podman image mount", self.image)
+        result = subprocess.run(cmd_mount, capture_output=True, check=False, encoding="utf8")
+        if result.returncode:
+            message = "Podman mount failed: " + result.stderr
+            raise BootstrapError(message)
+
+        mountpoint = result.stdout.strip()
+        logger.info("mounting %s with podman image mount", self.image)
         try:
-            getLog().info("image %s as %s", self.image, mountpoint)
+            logger.info("image %s as %s", self.image, mountpoint)
             yield mountpoint
         finally:
-            getLog().info("umounting image %s (%s) with podman image umount",
-                          self.image, mountpoint)
-            output = subprocess.check_output(cmd_umount)
+            logger.info("umounting image %s (%s) with podman image umount",
+                        self.image, mountpoint)
+            subprocess.run(cmd_umount, check=True)
 
     @traceLog()
     def cp(self, destination, tar_cmd):
