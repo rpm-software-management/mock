@@ -20,6 +20,7 @@ In your config file insert the following lines:
     config_opts['scm_opts']['distgit_get'] = 'rpkg clone -a --branch SCM_BRN SCM_PKG SCM_PKG'
     config_opts['scm_opts']['distgit_src_get'] = 'rpkg sources'
     config_opts['scm_opts']['spec'] = 'SCM_PKG.spec'
+    config_opts['scm_opts']['int_src_dir'] = None
     config_opts['scm_opts']['ext_src_dir'] = '/dev/null'
     config_opts['scm_opts']['write_tar'] = True
     config_opts['scm_opts']['git_timestamps'] = True
@@ -47,6 +48,10 @@ This option is available only to Git method and not for others.
 ### exclude-vcs
 
 When `exclude-vcs` is set to True, then `--exclude-vcs` option is passed to tar command.
+
+### int_src_dir
+
+When `int_src_dir` is specified, Mock will use that directory in the repository as the SOURCES instead of the repository root.
 
 ### ext_src_dir
 
