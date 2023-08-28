@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # vim: noai:ts=4:sw=4:expandtab
 
+from contextlib import contextmanager
 import errno
 import fcntl
 import glob
@@ -19,7 +20,7 @@ from . import text
 from . import uid
 from . import util
 from .exception import (BuildRootLocked, Error, ResultDirNotAccessible,
-                        BadCmdline)
+                        BadCmdline, BootstrapError)
 from .package_manager import package_manager
 from .trace_decorator import getLog, traceLog
 from .podman import Podman
@@ -212,6 +213,39 @@ class Buildroot(object):
         self.set_package_manager()
 
     @traceLog()
+    def _load_from_container_image(self):
+        if not self.uses_bootstrap_image or self.chroot_was_initialized:
+            return
+
+        class _FallbackException(Exception):
+            pass
+
+        @contextmanager
+        def _fallback(message):
+            try:
+                yield
+            except BootstrapError as exc:
+                if not self.config["image_fallback"]:
+                    raise
+                raise _FallbackException(
+                    f"{message}, falling back to bootstrap installation: {exc}"
+                ) from exc
+
+        try:
+            with _fallback("Can't work with Podman"):
+                podman = Podman(self, self.bootstrap_image)
+
+            with _fallback("Can't initialize from bootstrap image"):
+                podman.pull_image()
+                podman.cp(self.make_chroot_path(), self.config["tar_binary"])
+                file_util.unlink_if_exists(os.path.join(self.make_chroot_path(),
+                                                        "etc/rpm/macros.image-language-conf"))
+        except _FallbackException as exc:
+            getLog().warning("%s", exc)
+            self.use_bootstrap_image = False
+
+
+    @traceLog()
     def _init(self, prebuild):
 
         self.state.start("chroot init")
@@ -229,13 +263,7 @@ class Buildroot(object):
         self.plugins.call_hooks('preinit')
         # intentionally we do not call bootstrap hook here - it does not have sense
         self.chroot_was_initialized = self.chroot_is_initialized()
-        if self.uses_bootstrap_image and not self.chroot_was_initialized:
-            podman = Podman(self, self.bootstrap_image)
-            podman.pull_image()
-            podman.cp(self.make_chroot_path(), self.config["tar_binary"])
-            file_util.unlink_if_exists(os.path.join(self.make_chroot_path(),
-                                                    "etc/rpm/macros.image-language-conf"))
-
+        self._load_from_container_image()
         self._setup_dirs()
 
         # /dev is later overwritten by systemd-nspawn, but we need this for

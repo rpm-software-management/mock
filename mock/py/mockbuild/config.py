@@ -85,6 +85,7 @@ def setup_default_config_opts():
     config_opts['use_bootstrap_image'] = True
     config_opts['bootstrap_image'] = 'fedora:latest'
     config_opts['bootstrap_image_ready'] = False
+    config_opts['bootstrap_image_fallback'] = True
 
     config_opts['internal_dev_setup'] = True
 
