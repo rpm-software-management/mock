@@ -6,6 +6,7 @@ import logging
 import subprocess
 from contextlib import contextmanager
 
+import backoff
 from mockbuild.trace_decorator import getLog, traceLog
 from mockbuild import util
 from mockbuild.exception import BootstrapError
@@ -59,7 +60,7 @@ class Podman:
 
     @traceLog()
     def pull_image(self):
-        """ pull the latest image """
+        """ pull the latest image, return True if successful """
         logger = getLog()
         logger.info("Pulling image: %s", self.image)
         cmd = [self.podman_binary, "pull", self.image]
@@ -67,10 +68,15 @@ class Podman:
                                                raiseExc=False, returnOutput=1)
         if exit_status:
             logger.error(out)
+        return not exit_status
 
-        if not podman_check_native_image_architecture(self.image, logger):
-            raise BootstrapError("Pulled image has invalid architecture")
-
+    def retry_image_pull(self, max_time):
+        """ Try pulling the image multiple times """
+        @backoff.on_predicate(backoff.expo, lambda x: not x,
+                              max_time=max_time, jitter=backoff.full_jitter)
+        def _keep_trying():
+            return self.pull_image()
+        _keep_trying()
 
     @contextmanager
     def mounted_image(self):
@@ -100,7 +106,12 @@ class Podman:
     @traceLog()
     def cp(self, destination, tar_cmd):
         """ copy content of container to destination directory """
-        getLog().info("Copy content of container %s to %s", self.image, destination)
+        logger = getLog()
+        logger.info("Copy content of container %s to %s", self.image, destination)
+
+        if not podman_check_native_image_architecture(self.image, logger):
+            raise BootstrapError("Pulled image has invalid architecture")
+
         with self.mounted_image() as mount_path:
             # pipe-out the temporary mountpoint with the help of tar utility
             cmd_podman = [tar_cmd, "-C", mount_path, "-c", "."]

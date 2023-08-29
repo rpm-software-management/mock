@@ -236,7 +236,7 @@ class Buildroot(object):
                 podman = Podman(self, self.bootstrap_image)
 
             with _fallback("Can't initialize from bootstrap image"):
-                podman.pull_image()
+                podman.retry_image_pull(self.config["image_keep_getting"])
                 podman.cp(self.make_chroot_path(), self.config["tar_binary"])
                 file_util.unlink_if_exists(os.path.join(self.make_chroot_path(),
                                                         "etc/rpm/macros.image-language-conf"))
