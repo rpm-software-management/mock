@@ -25,7 +25,7 @@ from mockbuild.trace_decorator import traceLog
 from mockbuild import file_util
 
 requires_api_version = "1.1"
-# Skip mounting user-specified mounts if we're in the boostrap chroot
+# Skip mounting user-specified mounts if we're in the bootstrap chroot
 run_in_bootstrap = False
 
 # plugin entry point

@@ -59,7 +59,7 @@ Released on 2020-02-07.
    names (relative against `config_opts['config_path']` for now).
 
  * The host local repositories from mock config files
-   (like `baseurl=file://`) are now correctly bind-mounted to boostrap
+   (like `baseurl=file://`) are now correctly bind-mounted to bootstrap
    chroot.  So installing RPM from such repositories with
    `--bootstrap-chroot` now works (related [#381](../issues/381)).
 
