@@ -110,7 +110,7 @@ class Podman:
         logger.info("Copy content of container %s to %s", self.image, destination)
 
         if not podman_check_native_image_architecture(self.image, logger):
-            raise BootstrapError("Pulled image has invalid architecture")
+            raise BootstrapError("Container image architecture check failed")
 
         with self.mounted_image() as mount_path:
             # pipe-out the temporary mountpoint with the help of tar utility
