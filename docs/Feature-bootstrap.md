@@ -27,4 +27,4 @@ This has been added in Mock 1.4.1.
 
 ### Using bootstrap with local repositories
 
-It is possible to use `file://` local repositories with boostrap chroot. However, you should not bind mount repositories located in `/tmp`, `/dev`, etc., as they might be over-mounted by systemd-nspawn.
+It is possible to use `file://` local repositories with bootstrap chroot. However, you should not bind mount repositories located in `/tmp`, `/dev`, etc., as they might be over-mounted by systemd-nspawn.

@@ -10,7 +10,7 @@ Released on 2023-08-09.
 - The `use_bootstrap_image` feature has been turned on as it was stabilized in
   this release and it speeds up the bootstrap chroot preparation a lot
   (by not installing potentially hundreds of packages into the bootstrap chroot,
-  but just extracting the `boostrap_image` contents).  For the RHEL based chroots
+  but just extracting the `bootstrap_image` contents).  For the RHEL based chroots
   (where UBI `bootstrap_image` is in use, and where `python3-dnf-plugins-core`
   is installed by default) we also turned on the `bootstrap_image_ready=True`
   which drastically speeds the bootstrap preparation.  See the explanation for
@@ -161,7 +161,7 @@ Released on 2023-08-09.
 
 - Disable `use_bootstrap_image` for the Mageia chroots;  Mageia doesn't provide
   an officially supported (and working) container images that we could set in
-  the `boostrap_image` config option ([issue#1111][]).
+  the `bootsrap_image` config option ([issue#1111][]).
 
 - Dropped the `config_opts['useradd']` option from all the configs; the
   `useradd` utility from now on always executed on the host (not in chroot) with
