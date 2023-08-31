@@ -1043,3 +1043,30 @@ def subscription_redhat_init(opts, uidManager):
 def is_host_rh_family():
     distro_name = distro.id()
     return distro_name in RHEL_CLONES + ['fedora']
+
+def mock_host_environment_type():
+    """
+    Detect if we run in Docker.
+    """
+    if hasattr(mock_host_environment_type, "cached_retval"):
+        return mock_host_environment_type.cached_retval
+
+    def _cache(retval):
+        mock_host_environment_type.cached_retval = retval
+        getLog().info("Guessed host environment type: %s", retval)
+        return retval
+
+    # Docker container has different cgroup than PID 1 of host.
+    # And have "docker" in that tree.
+    with open('/proc/self/cgroup', encoding="utf8") as f:
+        for line in f:
+            items = line.split(':')
+            if 'docker' in items[2]:
+                return _cache("docker")
+    # For containers with cgroupv2
+    with open('/proc/self/mountinfo', encoding='utf8') as f:
+        for line in f:
+            if '/docker/containers/' in line and "/etc/hosts" in line:
+                return _cache("docker")
+
+    return _cache("unknown")

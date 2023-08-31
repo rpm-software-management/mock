@@ -217,6 +217,13 @@ class Buildroot(object):
         if not self.uses_bootstrap_image or self.chroot_was_initialized:
             return
 
+        if util.mock_host_environment_type() == "docker":
+            getLog().info(
+                "It seems that you run Mock in a Docker container.  Mock "
+                "though uses container tooling itself (namely Podman) for "
+                "downloading bootstrap image.  This might require you to "
+                "run Mock in 'docker run --privileged'.")
+
         class _FallbackException(Exception):
             pass
 
