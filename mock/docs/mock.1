@@ -263,7 +263,16 @@ Clean chroot after building. Use with \-\-resultdir. Only active for '\-\-rebuil
 Change directory where config files are found
 .TP
 \fB\-\-config-opts\fR=\fIKEY=VALUE\fP
-Override configuration option. Can be used multiple times. When used multiple times for the same key, it will create an array. This is evaluated first (after parsing configs) so any specialized command line option can override values defined in this option.
+Override configuration option. Can be used multiple times.
+
+When used multiple times for the same key, it will create an array (if you need
+to specify an array value with just a sigle item, e.g.
+\fIconfig_opts["foo"] = ["baz"]\fR, specify it as array of two items with the
+empty string as the first item, e.g.  \fI--config-opts=foo=
+--config-opts=foo=baz\fR).
+
+This is evaluated after parsing configs, so command line options override
+previously defined options.
 .TP
 \fB\-\-continue\fR
 If a pkg fails to build, continue to the next one, default is to stop.
