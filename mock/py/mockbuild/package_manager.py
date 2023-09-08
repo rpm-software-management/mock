@@ -166,6 +166,46 @@ class _PackageManager(object):
             return [o for o in opts if o not in config[command]]
         return opts
 
+    def log_package_management_packages(self):
+        """
+        Log out the versions of packages related to package management.
+        """
+        if self.buildroot.is_bootstrap:
+            # no-op for the bootstrap chroot;  we don't care how this has been
+            # installed
+            return
+
+        cmd = [
+            "rpm", "-q",
+            "rpm", "rpm-sequoia",
+            "python3-dnf", "python3-dnf-plugins-core",
+            "yum", "yum-utils"
+        ]
+
+
+        def _do(comment, *args, **kwargs):
+            info = "Buildroot is handled by package management"
+            output = util.do(*args, **kwargs, returnOutput=True,
+                                  raiseExc=False).strip()
+            output = "\n".join(["  " + line for line in output.split("\n")
+                                if "is not installed" not in line])
+            getLog().info("%s %s:\n%s", info, comment, output)
+
+        # We want to know the package versions in bootstrap
+        if self.bootstrap_buildroot:
+            if self.bootstrap_buildroot.use_bootstrap_image:
+                # rpm installed from the bootstrap image
+                _do("downloaded with a bootstrap image", cmd,
+                    chrootPath=self.bootstrap_buildroot.make_chroot_path())
+            else:
+                # rpm installed into bootstrap by host's package management
+                _do("installed into bootstrap", cmd + [
+                    "--root", self.bootstrap_buildroot.make_chroot_path()
+                ])
+        else:
+            # Execute with installroot from host
+            _do("from host and used with --installroot", cmd)
+
     @traceLog()
     def build_invocation(self, *args):
         invocation = []

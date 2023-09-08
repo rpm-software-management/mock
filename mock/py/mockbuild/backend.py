@@ -261,6 +261,8 @@ class Commands(object):
         self.plugins.call_hooks('earlyprebuild')
         # intentionally we do not call bootstrap hook here - it does not have sense
 
+        self.buildroot.pkg_manager.log_package_management_packages()
+
         baserpm = os.path.basename(srpm)
 
         buildstate = "build phase for %s" % baserpm
