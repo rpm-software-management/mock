@@ -4,6 +4,7 @@
 from contextlib import contextmanager
 import errno
 import fcntl
+import functools
 import glob
 import grp
 import logging
@@ -37,6 +38,16 @@ def noop_in_bootstrap(f):
             getLog().debug("method {} skipped in bootstrap".format(f.__name__))
             return
         return f(self, *args, **kwargs)
+    return wrapper
+
+
+def call_just_once(f):
+    """ Assure that method returns None, and is called just once """
+    @functools.lru_cache(maxsize=None)
+    @functools.wraps(f)
+    def wrapper(*args, **kwargs):
+        if f(*args, **kwargs) is not None:
+            raise RuntimeError(f"Method '{f.__name__}' can not return values")
     return wrapper
 
 
@@ -194,8 +205,17 @@ class Buildroot(object):
     def chroot_is_initialized(self):
         return os.path.exists(self.make_chroot_path('.initialized'))
 
+    @call_just_once
+    def _setup_basedir(self):
+        file_util.mkdirIfAbsent(self.basedir)
+        mockgid = grp.getgrnam('mock').gr_gid
+        os.chown(self.basedir, os.getuid(), mockgid)
+        os.chmod(self.basedir, 0o775)
+        file_util.mkdirIfAbsent(self.make_chroot_path())
+
     @traceLog()
     def _setup_result_dir(self):
+        self._setup_basedir()
         with self.uid_manager:
             try:
                 file_util.mkdirIfAbsent(self.resultdir)
@@ -254,13 +274,8 @@ class Buildroot(object):
 
     @traceLog()
     def _init(self, prebuild):
-
         self.state.start("chroot init")
-        file_util.mkdirIfAbsent(self.basedir)
-        mockgid = grp.getgrnam('mock').gr_gid
-        os.chown(self.basedir, os.getuid(), mockgid)
-        os.chmod(self.basedir, 0o775)
-        file_util.mkdirIfAbsent(self.make_chroot_path())
+        self._setup_basedir()
         self.plugins.call_hooks('mount_root')
         # intentionally we do not call bootstrap hook here - it does not have sense
         self._setup_nosync()
