@@ -89,9 +89,12 @@ RHEL_CLONES = ['centos', 'deskos', 'ol', 'rhel', 'scientific']
 _OPS_TIMEOUT = 0
 
 
-def cmd_pretty(cmd):
+def cmd_pretty(cmd, env=None):
     if isinstance(cmd, list):
         return ' '.join(shlex.quote(arg) for arg in cmd)
+    if env:
+        variables = [f"{k}={shlex.quote(v)}" for k, v in env.items()]
+        cmd = " ".join(variables) + " " + cmd
     return cmd
 
 
@@ -584,17 +587,13 @@ def do_with_status(command, shell=False, chrootPath=None, cwd=None, timeout=0, r
             niceExit = 0
             os.killpg(child.pid, 9)
 
-    # only logging from this point, convert command to string
-    if isinstance(command, list):
-        command = ' '.join(command)
-
     if not niceExit:
         raise exception.commandTimeoutExpired("Timeout(%s) expired for command:\n # %s\n%s" %
-                                              (timeout, command, output))
+                                              (timeout, cmd_pretty(command, env), output))
 
     logger.debug("Child return code was: %s", child.returncode)
     if raiseExc and child.returncode:
-        raise exception.Error("Command failed: \n # %s\n%s" % (command, output), child.returncode)
+        raise exception.Error("Command failed: \n # %s\n%s" % (cmd_pretty(command, env), output), child.returncode)
 
     return (output, child.returncode)
 
