@@ -781,7 +781,7 @@ def main():
             FileSystemMountPoint(filetype='tmpfs',
                                  device='hide_root_in_bootstrap',
                                  path=inner_mount,
-                                 options="private"))
+                                 options="private,mode=0755"))
         buildroot.mounts.bootstrap_mounts.append(
             BindMountPoint(buildroot.make_chroot_path(), inner_mount,
                            recursive=True, options="private").treat_as_chroot())
