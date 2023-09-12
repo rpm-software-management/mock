@@ -255,19 +255,10 @@ class _PackageManager(object):
         (un)mounted correctly).
         """
         self.plugins.call_hooks("preyum")
-        pm_umount = False
-        if not self.buildroot.mounts.essential_mounted:
-            self.buildroot.mounts.mountall_essential()
-            pm_umount = True
 
-        try:
+        with self.buildroot.mounts.essential_mounted():
             with self.buildroot.mounts.buildroot_in_bootstrap_mounted():
                 return self._execute_mounted(*args, **kwargs)
-        finally:
-            # Make sure everything is unmounted, even if e.g. KeyboardInterrupt
-            # is raised.
-            if pm_umount:
-                self.buildroot.mounts.umountall_essential()
 
         self.plugins.call_hooks("postyum")
 

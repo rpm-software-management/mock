@@ -250,7 +250,7 @@ class Mounts(object):
                         options=opts
                     )
                 )
-        self.essential_mounted = all(m.ismounted() for m in self.essential_mounts)
+        self._essential_mounted = all(m.ismounted() for m in self.essential_mounts)
 
     @traceLog()
     def add(self, mount):
@@ -269,7 +269,7 @@ class Mounts(object):
 
     @traceLog()
     def mountall_essential(self):
-        self.essential_mounted = True
+        self._essential_mounted = True
         for m in self.essential_mounts:
             m.mount()
 
@@ -287,6 +287,23 @@ class Mounts(object):
         with self.rootObj.uid_manager.elevated_privileges():
             for m in reversed(self.bootstrap_mounts):
                 m.umount()
+
+    @contextmanager
+    def essential_mounted(self):
+        """
+        Convenience wrapper around commands that need essential mountpoints
+        mounted.
+        """
+        do_umount = False
+        try:
+            if not self._essential_mounted:
+                do_umount = True
+                self.mountall_essential()
+            yield
+        finally:
+            if do_umount:
+                self.umountall_essential()
+
 
     @contextmanager
     def buildroot_in_bootstrap_mounted(self):
@@ -325,14 +342,14 @@ class Mounts(object):
             for m in reversed(self.managed_mounts + self.user_mounts):
                 if m.umount() is False:
                     failed_new += 1
-        if self.essential_mounted:
+        if self._essential_mounted:
             self.umountall_essential()
 
     @traceLog()
     def umountall_essential(self):
         for m in reversed(self.essential_mounts):
             m.umount()
-        self.essential_mounted = False
+        self._essential_mounted = False
 
     @traceLog()
     def get_mountpoints(self):
