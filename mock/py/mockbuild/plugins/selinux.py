@@ -51,7 +51,9 @@ class SELinux(object):
 
         atexit.register(self._selinuxAtExit)
 
-        self.buildroot.mounts.add(BindMountPoint(srcpath=self.filesystems, bindpath=self.chrootFilesystems))
+        self.buildroot.mounts.essential_mounts.append(
+             BindMountPoint(srcpath=self.filesystems, bindpath=self.chrootFilesystems)
+        )
 
         self.buildroot.mounts.essential_mounts.append(
             # essential mounts since we _always_ need to hide it
