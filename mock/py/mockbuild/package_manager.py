@@ -265,11 +265,12 @@ class _PackageManager(object):
         # is_bootstrap_image is True).
         skip_essential_mounts = util.USE_NSPAWN and self.is_bootstrap_image
 
-        with self.buildroot.mounts.essential_mounted(noop=skip_essential_mounts):
-            with self.buildroot.mounts.buildroot_in_bootstrap_mounted():
-                return self._execute_mounted(*args, **kwargs)
-
-        self.plugins.call_hooks("postyum")
+        try:
+            with self.buildroot.mounts.essential_mounted(noop=skip_essential_mounts):
+                with self.buildroot.mounts.buildroot_in_bootstrap_mounted():
+                    return self._execute_mounted(*args, **kwargs)
+        finally:
+            self.plugins.call_hooks("postyum")
 
 
     @traceLog()
