@@ -1,0 +1,5 @@
+Mock automatically kills "orphan" processes started in buildroot (unwanted
+"daemons").  These are typically started by DNF installation that trigger some
+buggy scriptlet.  The corresponding code has been [moved][PR#1214] to a better
+place which assures that such processes are **always** killed before "buildroot
+in bootstrap" recursive bind-mount is unmounted.

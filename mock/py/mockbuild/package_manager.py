@@ -224,10 +224,6 @@ class _PackageManager(object):
             with self.buildroot.mounts.buildroot_in_bootstrap_mounted():
                 return self._execute_mounted(*args, **kwargs)
         finally:
-            # Scriptlets in dnf transaction shouldn't keep leftover processes
-            # running in background, but it may happen.
-            util.orphansKill(self.buildroot.make_chroot_path(), manual_forced=True)
-
             # Make sure everything is unmounted, even if e.g. KeyboardInterrupt
             # is raised.
             if pm_umount:
