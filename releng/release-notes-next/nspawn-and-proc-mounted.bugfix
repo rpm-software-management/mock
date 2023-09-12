@@ -1,0 +1,18 @@
+The `systemd-nspawn` utility [v253.9 started
+failing](https://github.com/systemd/systemd/issues/29174) with pre-mounted
+`<buildroot>/proc` directory (used like `systemd-nspawn -D <buildroot>`).
+The resulting Mock error, per several reports like [this
+one](https://github.com/fedora-copr/copr/issues/2906), was rather cryptic:
+
+    # /usr/bin/systemd-nspawn -q -M 50743cd0fe0a4142b9b2dbb2c5f8eea6 -D /var/lib/mock/fedora-39-x86_64-bootstrap-1694347273.676351/root
+    Failed to mount /proc/sys (type n/a) on /proc/sys (MS_BIND ""): Invalid argument
+    Failed to create /user.slice/user-1000.slice/session-12.scope/payload subcgroup: Structure needs cleaning
+
+Previous versions of `systemd-nspawn` silently over-mounted the `/proc`
+filesystem so Mock simply could _always_ pre-mount `/proc` (with
+`--isolation=simple` it is still needed).
+
+To work-around this problem, new Mock now [stopped "pre-mounting"][PR#1214]
+`<buildroot>/proc` directory when `--isolation=nspawn` (default) and the package
+management downloaded with bootstrap image is used for **installing packages
+into the bootstrap chroot**.
