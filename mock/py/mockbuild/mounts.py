@@ -281,6 +281,9 @@ class Mounts(object):
 
     @traceLog()
     def _umount_bootstrap(self):
+        # Kill leftover processes in the bind-mountpoint, typically these
+        # processes can be started by DNF/RPM via buggy scriptlets.
+        util.orphansKill(self.rootObj.make_chroot_path(), manual_forced=True)
         with self.rootObj.uid_manager.elevated_privileges():
             for m in reversed(self.bootstrap_mounts):
                 m.umount()
