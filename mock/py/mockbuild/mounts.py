@@ -270,14 +270,14 @@ class Mounts(object):
                 m.umount()
 
     @contextmanager
-    def essential_mounted(self):
+    def essential_mounted(self, noop=False):
         """
         Convenience wrapper around commands that need essential mountpoints
         mounted.
         """
         do_umount = False
         try:
-            if not self._essential_mounted:
+            if not noop and not self._essential_mounted:
                 do_umount = True
                 self.mountall_essential()
             yield

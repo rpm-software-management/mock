@@ -216,7 +216,14 @@ class _PackageManager(object):
         """
         self.plugins.call_hooks("preyum")
 
-        with self.buildroot.mounts.essential_mounted():
+        # systemd-nspawn v253.9 started to dislike our pre-created essential
+        # mountpoints in `-D rootdir`.  Previous versions silently overmounted
+        # them (Copr issue#2906).  Note that we still need essential mountpoints
+        # if DNF is run with NSPAWN with --installroot (so we do this only if
+        # is_bootstrap_image is True).
+        skip_essential_mounts = util.USE_NSPAWN and self.is_bootstrap_image
+
+        with self.buildroot.mounts.essential_mounted(noop=skip_essential_mounts):
             with self.buildroot.mounts.buildroot_in_bootstrap_mounted():
                 return self._execute_mounted(*args, **kwargs)
 
