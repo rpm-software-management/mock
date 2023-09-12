@@ -98,7 +98,7 @@ in Mock config.""".format(desired.upper(), manager.upper()))
 def package_manager(buildroot, bootstrap_buildroot, fallback):
     cls = package_manager_class_fallback(buildroot.config, buildroot, fallback)
     return cls(buildroot.config, buildroot, buildroot.plugins,
-               bootstrap_buildroot, buildroot.uses_bootstrap_image)
+               bootstrap_buildroot)
 
 
 class _PackageManager(object):
@@ -129,13 +129,15 @@ class _PackageManager(object):
 
 
     @traceLog()
-    def __init__(self, config, buildroot, plugins, bootstrap_buildroot, is_bootstrap_image):
+    def __init__(self, config, buildroot, plugins, bootstrap_buildroot):
         self.config = config
         self.plugins = plugins
+        # the buildroot we install into
         self.buildroot = buildroot
         self.init_install_output = ""
         self.bootstrap_buildroot = bootstrap_buildroot
-        self.is_bootstrap_image = is_bootstrap_image
+        # self.buildroot generated from bootstrap image
+        self.is_bootstrap_image = buildroot.uses_bootstrap_image
         self.pkg_manager_config = ""
 
         self.command = self.get_command(config)
@@ -573,8 +575,8 @@ class Yum(_PackageManager):
     name = 'yum'
     support_installroot = True
 
-    def __init__(self, config, buildroot, plugins, bootstrap_buildroot, is_bootstrap_image):
-        super(Yum, self).__init__(config, buildroot, plugins, bootstrap_buildroot, is_bootstrap_image)
+    def __init__(self, config, buildroot, plugins, bootstrap_buildroot):
+        super(Yum, self).__init__(config, buildroot, plugins, bootstrap_buildroot)
         self.builddep_command = [config['yum_builddep_command']]
         if bootstrap_buildroot is not None:
             # we are in bootstrap so use configured names
@@ -676,8 +678,8 @@ class Dnf(_PackageManager):
     name = 'dnf'
     support_installroot = True
 
-    def __init__(self, config, buildroot, plugins, bootstrap_buildroot, is_bootstrap_image):
-        super(Dnf, self).__init__(config, buildroot, plugins, bootstrap_buildroot, is_bootstrap_image)
+    def __init__(self, config, buildroot, plugins, bootstrap_buildroot):
+        super(Dnf, self).__init__(config, buildroot, plugins, bootstrap_buildroot)
         self.resolvedep_command = [self.command, 'repoquery', '--resolve', '--requires']
         self._check_command()
 
@@ -715,8 +717,8 @@ class MicroDnf(Dnf):
     name = 'microdnf'
     support_installroot = False
 
-    def __init__(self, config, buildroot, plugins, bootstrap_buildroot, is_bootstrap_image):
-        super(MicroDnf, self).__init__(config, buildroot, plugins, bootstrap_buildroot, is_bootstrap_image)
+    def __init__(self, config, buildroot, plugins, bootstrap_buildroot):
+        super(MicroDnf, self).__init__(config, buildroot, plugins, bootstrap_buildroot)
         self.saved_releasever = config['releasever']
         self.config['releasever'] = None
 
