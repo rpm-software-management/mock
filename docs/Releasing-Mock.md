@@ -69,8 +69,8 @@ helps you to setup a correct configuration layout.
 
 6. Prepare release notes.
 
-        $ git mv docs/Release-Notes-Next.md docs/Release-Notes-4.2.md
-        $ vim docs/Release-Notes-4.2.md
+        $ ./releng/generate-release-notes --use-version 5.1
+        $ vim docs/Release-Notes-5.1.md  # modify manually!
 
    Add list of contributing authors:
 
@@ -174,10 +174,6 @@ helps you to setup a correct configuration layout.
         Happy building!
 
 14. Do the post-release administrivia
-
-    - `cp docs/Release-Notes-Template.md docs/Release-Notes-Next.md`, fill the
-      template with known info (you may ask the future PR contributors to
-      fill the "NEWS" sections during review!)
 
     - vim mock/mock.spec, and "bump" the version with post-release tag, e.g.
       from `4.1` to `4.1.post1`.  This assures that any pre-release NVR built

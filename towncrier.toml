@@ -1,0 +1,14 @@
+[tool.towncrier]
+# we post-process this file with releng/generate-release-notes
+filename = ".Release-Notes-Next.md"
+directory = "releng/release-notes-next"
+underlines = ["", "", ""]
+template = "releng/release-notes-next/template.jinja"
+title_format = "## [Release {version}](https://rpm-software-management.github.io/mock/Release-Notes-{version}) - {project_date}"
+issue_format = ""
+type = [
+    { name = "Breaking changes", directory = "breaking", showcontent = true },
+    { name = "New features", directory = "feature", showcontent = true },
+    { name = "Bugfixes", directory = "bugfix", showcontent = true },
+    { name = "Mock Core Configs changes", directory = "config", showcontent = true },
+]
