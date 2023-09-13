@@ -1,0 +1,9 @@
+Some container images Mock is using for initializing bootstrap chroot (e.g.
+`centos:7`), do not provide all the needed architectures.  Podman [though
+silently pulls arch-incompatible
+image](https://github.com/containers/podman/issues/19717), which caused
+[hard-to-debug build failures](https://github.com/fedora-copr/copr/issues/2875).
+Mock 5.1 therefore [implements a new assertion][PR#1199] failing the build
+early, before mistakenly trying to run emulated "--forcearch" chroot leading to
+failure.  The assertion is exposed as a Python library call
+`mockbuild.podman:podman_check_native_image_architecture()`.
