@@ -68,17 +68,19 @@ BuildRequires: python%{python3_pkgversion}-pylint
 
 %if 0%{?fedora} >= 38
 # DNF5 stack
-Suggests: dnf5
-Suggests: dnf5-plugins
+Recommends: dnf5
+Recommends: dnf5-plugins
 %endif
 
 # DNF4 stack
-Suggests: python3-dnf
-Suggests: dnf-plugins-core
+Recommends: python3-dnf
+Recommends: python3-dnf-plugins-core
 
-Suggests: yum
-Recommends: btrfs-progs
+# YUM stack, dnf-utils replace yum-utils
+Recommends: yum
 Recommends: dnf-utils
+
+Recommends: btrfs-progs
 Suggests: qemu-user-static
 Suggests: procenv
 Recommends: podman
