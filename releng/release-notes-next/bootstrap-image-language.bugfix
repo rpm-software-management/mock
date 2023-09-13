@@ -1,0 +1,7 @@
+When bootstrap chroot is initialized from downloaded container image, it
+typically contains `/etc/rpm/macros.image-language-conf` file with locale
+filtering of some kind (per defaults from the fedora-kickstarts project).
+This bootstrap configuration though affects the buildroot installation
+(filtering l11n files from buildroot) and this is sometimes unexpected.
+Mock now [automatically removes the macro file][PR#1189], see
+[issue#1181][] for more info.
