@@ -814,24 +814,20 @@ class Commands(object):
 
         # Mount resultdir into bootstrap, so we can later install the build
         # results from there using bootstrap package manager.
+        mount_context = util.nullcontext()
 
-        results_bindmount = None
         if self.bootstrap_buildroot:
             resultdir = self.buildroot.resultdir
             bootstrap_resultdir = self.bootstrap_buildroot.make_chroot_path(resultdir)
             results_bindmount = BindMountPoint(resultdir, bootstrap_resultdir,
                                                options="private")
-        try:
-            self.uid_manager.becomeUser(0, 0)
-            if results_bindmount:
-                results_bindmount.mount()
-            pkgs = [pkg for pkg in results if not pkg.endswith("src.rpm")]
-            try:
-                self.buildroot.install(*pkgs)
-            # pylint: disable=bare-except
-            except:
-                self.buildroot.root_log.warning("Failed install built packages")
-        finally:
-            if results_bindmount:
-                results_bindmount.umount()
-            self.uid_manager.restorePrivs()
+            mount_context = results_bindmount.having_mounted()
+
+        with self.uid_manager.elevated_privileges():
+            with mount_context:
+                pkgs = [pkg for pkg in results if not pkg.endswith("src.rpm")]
+                try:
+                    self.buildroot.install(*pkgs)
+                except:
+                    self.buildroot.root_log.error("Installation of built packages failed")
+                    raise

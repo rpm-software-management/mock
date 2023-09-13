@@ -8,6 +8,7 @@
 from __future__ import print_function
 
 import atexit
+import contextlib
 import ctypes
 import errno
 import fcntl
@@ -1069,3 +1070,12 @@ def mock_host_environment_type():
                 return _cache("docker")
 
     return _cache("unknown")
+
+
+@contextlib.contextmanager
+def nullcontext():
+    """
+    contextlib.nullcontext is not available in Python 3.6, but we are still
+    Python 3.6+ compatible because of EL 8
+    """
+    yield None
