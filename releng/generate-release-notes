@@ -1,0 +1,90 @@
+#! /usr/bin/python3
+
+import argparse
+import os
+import re
+import subprocess
+
+TRANSFORM = {
+    "rhbz": "https://bugzilla.redhat.com/{id}",
+    "issue": "https://github.com/rpm-software-management/mock/issues/{id}",
+    "PR": "https://github.com/rpm-software-management/mock/pull/{id}",
+    "commit": "https://github.com/rpm-software-management/mock/commit/{id}",
+}
+
+TEMP_FILE = ".Release-Notes-Next.md"
+
+def _arg_parser():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--use-version", dest="version")
+    return parser
+
+def _main():
+
+    tc_opts = []
+    options = _arg_parser().parse_args()
+    if not options.version:
+        options.version = "Next"
+        tc_opts.append("--keep")
+    else:
+        tc_opts.append("--yes")
+
+    output_file = os.path.join(f"docs/Release-Notes-{options.version}.md")
+
+    found = set()
+    pattern = "|".join(TRANSFORM.keys())
+    issues_re = re.compile(r"\[(" + pattern + r")#([0-9a-f]+)\]")
+
+
+    cmd = ["towncrier", "build", "--version", options.version] + tc_opts
+    print(f"Calling {cmd}")
+    subprocess.check_call(cmd)
+
+    with open(output_file, "w", encoding="utf8") as fdout:
+
+        fdout.write(f"""---
+layout: default
+title: Release Notes - Mock {options.version}
+---
+
+""")
+
+        if options.version == "Next":
+            fdout.write("""\
+# Pre-release Mock changelog
+
+Every change in Mock or `mock-core-configs` that deserves some promotion needs
+to be mentioned in release notes.  This generated page provides a set of changes
+that will land the future version of Mock.  See [how to add
+entries](Release-Notes-New-Entry).
+""")
+
+
+        with open(TEMP_FILE, encoding="utf8") as fdorig:
+            for line in fdorig:
+                fdout.write(line)
+                findings = re.findall(issues_re, line)
+                if not findings:
+                    continue
+                for finding in findings:
+                    found.add(finding)
+
+        fdout.write("\n")
+        for (key, value) in found:
+            fdout.write(f"[{key}#{value}]: {TRANSFORM[key].format(id=value)}\n")
+
+        if options.version != "Next":
+            subprocess.check_call(["git", "add", output_file])
+
+
+if __name__ == "__main__":
+    # go top-level
+    os.chdir(os.path.join(os.path.dirname(__file__), '..'))
+    try:
+        _main()
+    finally:
+        try:
+            subprocess.check_call(["git", "rm", "-f", TEMP_FILE])
+            os.unlink(TEMP_FILE)
+        except FileNotFoundError:
+            pass

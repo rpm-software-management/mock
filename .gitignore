@@ -29,3 +29,4 @@ docs/.jekyll-cache
 docs/.jekyll-metadata
 docs/vendor
 docs/Gemfile.lock
+docs/Release-Notes-Next.md
