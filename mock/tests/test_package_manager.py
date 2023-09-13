@@ -10,7 +10,7 @@ from templated_dictionary import TemplatedDictionary
 from mockbuild.config import setup_default_config_opts
 from mockbuild.constants import PKGPYTHONDIR
 from mockbuild.buildroot import Buildroot
-from mockbuild.package_manager import _PackageManager, Dnf
+from mockbuild.package_manager import _PackageManager
 
 
 class TestPackageManager:
@@ -60,7 +60,6 @@ class TestPackageManager:
             self.buildroot,
             self.buildroot.plugins,
             self.bootstrap_buildroot,
-            False
         )
 
         self.package_manager_bootstrap = _PackageManager(
@@ -68,7 +67,6 @@ class TestPackageManager:
             self.bootstrap_buildroot,
             self.bootstrap_buildroot.plugins,
             self.buildroot.plugins,
-            False
         )
 
     def teardown_method(self, method):
