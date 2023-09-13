@@ -23,9 +23,9 @@ TAGS
 test-suite.log
 integration-tests/runtests.sh.log
 integration-tests/runtests.sh.trs
-doc/_site
-doc/.sass-cache
-doc/.jekyll-cache
-doc/.jekyll-metadata
-doc/vendor
-doc/Gemfile.lock
+docs/_site
+docs/.sass-cache
+docs/.jekyll-cache
+docs/.jekyll-metadata
+docs/vendor
+docs/Gemfile.lock
