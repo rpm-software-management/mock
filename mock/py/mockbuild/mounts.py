@@ -48,6 +48,25 @@ class MountPoint(object):
             return True
         return False
 
+    def mount(self):
+        """
+        Mount the mountpoint.  Return True if successful, False if not
+        successful and None if already mounted.
+        """
+        raise NotImplementedError
+
+    @contextmanager
+    def having_mounted(self):
+        """
+        Mount this mountpoint and then automatically umount
+        """
+        umount = self.mount()
+        try:
+            yield
+        finally:
+            if umount:
+                self.umount()
+
     def _do_umount(self):
         raise NotImplementedError
 
