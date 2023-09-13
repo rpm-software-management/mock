@@ -224,7 +224,7 @@ class Mounts(object):
                 FileSystemMountPoint(filetype='tmpfs',
                                      device=device,
                                      path=host_path,
-                                     options="rprivate"),
+                                     options="rprivate,mode=0755"),
                 BindMountPoint(srcpath=mount_point,
                                bindpath=host_path,
                                recursive=True,
