@@ -218,7 +218,7 @@ class Commands(object):
         try:
             # pylint: disable=no-member
             spec_file = util.host_file(spec_file)
-            spec = rpm.spec(spec_file).sourceHeader.dsFromHeader()
+            spec = rpm.ds(rpm.spec(spec_file).sourceHeader, "requires")
             self.uid_manager.becomeUser(0, 0)
             for i in range(len(spec)): # pylint: disable=consider-using-enumerate
                 requirement_name = spec[i][2:]

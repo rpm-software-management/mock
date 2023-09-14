@@ -1,0 +1,7 @@
+The `--installdeps foo.spec` feature is implemented using the RPM Python API.
+Previously we used the method `hdr.dsFromHeader()` to get the list of
+`BuildRequires`.  This method has been removed from the Python RPM API (rpm
+v4.19) in favor of the long-enough existing `rpm.ds(hdr, ...)` method.  Mock
+[has started using `rpm.ds()` API call][PR#1223] to fix the [`AttributeError:
+'rpm.hdr' object has no attribute 'dsFromHeader'`][issue#1203] traceback on
+newer systems (e.g. Fedora 40+).
