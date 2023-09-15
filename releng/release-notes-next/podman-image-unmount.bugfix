@@ -1,0 +1,2 @@
+The `--shell` standard output is no longer affected by `podman image unmount`
+output executed in the background (prints out the image ID).

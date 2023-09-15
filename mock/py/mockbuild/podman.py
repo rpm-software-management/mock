@@ -101,7 +101,7 @@ class Podman:
         finally:
             logger.info("umounting image %s (%s) with podman image umount",
                         self.image, mountpoint)
-            subprocess.run(cmd_umount, check=True)
+            subprocess.run(cmd_umount, capture_output=True, check=True)
 
     @traceLog()
     def cp(self, destination, tar_cmd):
