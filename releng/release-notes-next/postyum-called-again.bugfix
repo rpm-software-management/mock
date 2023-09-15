@@ -1,3 +1,0 @@
-Mock 5.0 release contained a bug causing that `postyum` hooks (in Mock plugins)
-were not called.  In turn, e.g. `root_cache` locking mechanism [was
-broken][issue#1186] causing Mock to wait for the lock unnecessary long.

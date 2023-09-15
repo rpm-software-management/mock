@@ -1,5 +1,0 @@
-Mock uses `tmpfs` mountpoints in some cases just to hide (on host) some rather
-complicated mount structures (done in chroot/separate mount namespace).  These
-"barrier" mount points though used to have the default `mode=0777` potentially
-allowing anyone to accidentally write there and cause e.g. unmount failures.
-New Mock [uses `mode=0755`][PR#1213] instead.

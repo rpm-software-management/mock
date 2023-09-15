@@ -1,2 +1,0 @@
-Mock properly dumps Podman's standard error output to logs to allow the user
-better diagnose related errors.  Per [issue#1191][] report.
