@@ -3,7 +3,7 @@
 %endif
 
 Name:       mock-core-configs
-Version:    39
+Version:    39.1
 Release:    1%{?dist}
 Summary:    Mock core config files basic chroots
 
@@ -144,6 +144,11 @@ fi
 %ghost %config(noreplace,missingok) %{_sysconfdir}/mock/default.cfg
 
 %changelog
+* Fri Sep 15 2023 Pavel Raiskup <praiskup@redhat.com> 39.1-1
+- Add openSUSE Leap 15.5 (neal@gompa.dev)
+- Move openSUSE Leap 15.3 to EOL (neal@gompa.dev)
+- Mageia 9 branched, Mageia Cauldron retargeted to Mageia 10 (neal@gompa.dev)
+
 * Wed Aug 09 2023 Pavel Raiskup <praiskup@redhat.com> 39-1
 - new upstream release, per https://rpm-software-management.github.io/mock/Release-Notes-5.0
 

@@ -1,4 +1,0 @@
-Previous version of Mock used to bind-mount `/proc` and `/proc/filesystems` in
-wrong order, eventually causing that `/proc/filesystems` was not visible (this
-could affect some scriptlests from packages installed into such a chroot).  This
-[has been fixed now][PR#1214].
