@@ -69,6 +69,7 @@ Versions in Linux distributions:
 
 
 ## Release Notes
+* [5.1](Release-Notes-5.1) (2023-09-15) - Fixes for `--use-bootstra-image`, it now retries pulling, and fallbacks to a normal bootstrap.
 * [5.0](Release-Notes-5.0) (2023-08-09) - The `--use-bootstra-image` feature enabled by default, using `/sbin/useradd` from host (not in chroot) and configurable.
 * [4.1](Release-Notes-4.1) (2023-06-05) - Bug-fix v4.0 for bootstrap with custom SSL certificates, bug-fix 4.0 the --dnf-cmd option. Newly we use /bin/dnf-3 if `package_manager=dnf`, and dnf5 is used to install bootrap (if found on host).
 * [4.0](Release-Notes-4.0) (2023-05-22) - Support for DNF5 added, the '--use-bootstrap-image' feature now works even if Mock is run in container.

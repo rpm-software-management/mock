@@ -72,6 +72,8 @@ helps you to setup a correct configuration layout.
         $ ./releng/generate-release-notes --use-version 5.1
         $ vim docs/Release-Notes-5.1.md  # modify manually!
 
+   Don't forget to manually modify ./docs/index.md and mention the new release.
+
    Add list of contributing authors:
 
        $ git log mock-4.1-1..HEAD --format="%aN" mock/ | sort | uniq
