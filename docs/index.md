@@ -69,6 +69,7 @@ Versions in Linux distributions:
 
 
 ## Release Notes
+* [5.1.1](Release-Notes-5.1.1) (2023-09-18) - If Mock does multiple builds at once, root directory is re-created for each of them.
 * [5.1](Release-Notes-5.1) (2023-09-15) - Fixes for `--use-bootstrap-image`, it now retries pulling, and fallbacks to a normal bootstrap.
 * [5.0](Release-Notes-5.0) (2023-08-09) - The `--use-bootstrap-image` feature enabled by default, using `/sbin/useradd` from host (not in chroot) and configurable.
 * [4.1](Release-Notes-4.1) (2023-06-05) - Bug-fix v4.0 for bootstrap with custom SSL certificates, bug-fix 4.0 the --dnf-cmd option. Newly we use /bin/dnf-3 if `package_manager=dnf`, and dnf5 is used to install bootrap (if found on host).
