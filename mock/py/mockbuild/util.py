@@ -1079,3 +1079,22 @@ def nullcontext():
     Python 3.6+ compatible because of EL 8
     """
     yield None
+
+@contextlib.contextmanager
+def env_var_override(name, value):
+    """
+    Temporary set environment variable NAME to VALUE, revert to the previous
+    state.
+    """
+
+    oldval = None
+    if name in os.environ:
+        oldval = os.environ[name]
+
+    os.environ[name] = value
+    yield
+
+    if oldval is None:
+        del os.environ[name]
+    else:
+        os.environ[name] = oldval
