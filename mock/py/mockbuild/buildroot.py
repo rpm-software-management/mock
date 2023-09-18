@@ -211,7 +211,6 @@ class Buildroot(object):
         mockgid = grp.getgrnam('mock').gr_gid
         os.chown(self.basedir, os.getuid(), mockgid)
         os.chmod(self.basedir, 0o775)
-        file_util.mkdirIfAbsent(self.make_chroot_path())
 
     @traceLog()
     def _setup_result_dir(self):
@@ -276,6 +275,7 @@ class Buildroot(object):
     def _init(self, prebuild):
         self.state.start("chroot init")
         self._setup_basedir()
+        file_util.mkdirIfAbsent(self.make_chroot_path())
         self.plugins.call_hooks('mount_root')
         # intentionally we do not call bootstrap hook here - it does not have sense
         self._setup_nosync()

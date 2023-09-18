@@ -10,6 +10,7 @@ TRANSFORM = {
     "issue": "https://github.com/rpm-software-management/mock/issues/{id}",
     "PR": "https://github.com/rpm-software-management/mock/pull/{id}",
     "commit": "https://github.com/rpm-software-management/mock/commit/{id}",
+    "copr_issue": "https://github.com/fedora-copr/copr/issues/{id}",
 }
 
 TEMP_FILE = ".Release-Notes-Next.md"
