@@ -998,7 +998,9 @@ def run_command(options, args, config_opts, commands, buildroot, state):
             dest = args[-1]
             sources = []
             for arg in args[:-1]:
-                matches = glob.glob(buildroot.make_chroot_path(arg.replace('~', buildroot.homedir)))
+                with util.env_var_override("HOME", buildroot.homedir):
+                    arg = os.path.expanduser(arg)
+                matches = glob.glob(buildroot.make_chroot_path(arg))
                 if not matches:
                     log.critical("%s not found", arg)
                     return 50
