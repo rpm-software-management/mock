@@ -16,8 +16,8 @@ Mock source tarballs: https://github.com/rpm-software-management/mock/releases
 
 Mock currently has one active branch plus `main`.
 
- * `main` - This is currently Mock v4.x and is used for releasing and
-   development.  If you want to send patches, you probably want this branch.
+ * `main` - This is used for releasing and developing the latest Mock version.
+   If you want to send patches, you probably want this branch.
  * `mock-2` - This branch is used for Mock v2.x, for EL-7, bug-fixes-only mode.
  * `mock-1.4` - End of life, there will be no changes.
  * `mock-1.3` - This branch was used for EL-6, EOL.
@@ -39,7 +39,7 @@ If you hate mailing lists for some reason (we still prefer it) - you can use [Di
     tito build --rpm
 
 
-The latest release for all supported platforms can be found in this [Copr repository](https://copr.fedorainfracloud.org/coprs/g/mock/mock-stable/).
+The latest release for all supported platforms can be found in this [Fedora Copr project](https://copr.fedorainfracloud.org/coprs/g/mock/mock-stable/).
 
 ## Packaging status
 
@@ -51,9 +51,12 @@ The latest release for all supported platforms can be found in this [Copr reposi
 
 ## Nightly
 
-Package from the latest commit in the `main` branch can be obtained from https://copr.fedorainfracloud.org/coprs/g/mock/mock/
+Pre-release packages built from the latest git commit in the `main` branch are in [Fedora Copr project](https://copr.fedorainfracloud.org/coprs/g/mock/mock/):
 
-Latest status: [![build status](https://copr.fedorainfracloud.org/coprs/g/mock/mock/package/mock/status_image/last_build.png)](https://copr.fedorainfracloud.org/coprs/g/mock/mock/package/mock/)
+    dnf copr enable @mock/mock
+    dnf install mock
+
+[Mock pre-release build status: ![build status](https://copr.fedorainfracloud.org/coprs/g/mock/mock/package/mock/status_image/last_build.png)](https://copr.fedorainfracloud.org/coprs/g/mock/mock/package/mock/)
 
 
 ## Sponsor
