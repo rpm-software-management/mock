@@ -88,7 +88,9 @@ class Podman:
         logger = getLog()
         cmd_mount = [self.podman_binary, "image", "mount", self.image]
         cmd_umount = [self.podman_binary, "image", "umount", self.image]
-        result = subprocess.run(cmd_mount, capture_output=True, check=False, encoding="utf8")
+        result = subprocess.run(cmd_mount, stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE, check=False,
+                                encoding="utf8")
         if result.returncode:
             message = "Podman mount failed: " + result.stderr
             raise BootstrapError(message)
@@ -101,7 +103,8 @@ class Podman:
         finally:
             logger.info("umounting image %s (%s) with podman image umount",
                         self.image, mountpoint)
-            subprocess.run(cmd_umount, capture_output=True, check=True)
+            subprocess.run(cmd_umount, stdout=subprocess.PIPE,
+                           stderr=subprocess.PIPE, check=True)
 
     @traceLog()
     def cp(self, destination, tar_cmd):
