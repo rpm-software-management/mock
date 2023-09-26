@@ -54,6 +54,7 @@ import os
 import os.path
 import signal
 import shutil
+import shlex
 import sys
 import time
 import copy
@@ -703,9 +704,10 @@ def main():
 
     # do whatever we're here to do
     py_version = '{0}.{1}.{2}'.format(*sys.version_info[:3])
-    log.info("mock.py version %s starting (python version = %s%s)...",
+    log.info("mock.py version %s starting (python version = %s%s), args: %s",
              VERSION, py_version,
-             "" if not _MOCK_NVR else ", NVR = " + _MOCK_NVR)
+             "" if not _MOCK_NVR else ", NVR = " + _MOCK_NVR,
+             " ".join(shlex.quote(x) for x in sys.argv))
     state = State()
     plugins = Plugins(config_opts, state)
 
