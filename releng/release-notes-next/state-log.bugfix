@@ -1,3 +1,0 @@
-The Mock state monitoring (creating state.log) was fixed so that Mock, unless
-some exception is raised, always checks that we finished all the states we
-started.

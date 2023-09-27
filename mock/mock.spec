@@ -9,7 +9,7 @@
 
 Summary: Builds packages inside chroots
 Name: mock
-Version: 5.1.1.post1
+Version: 5.2
 Release: 1%{?dist}
 License: GPL-2.0-or-later
 # Source is created by
@@ -275,6 +275,14 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 %dir  %{_datadir}/cheat
 
 %changelog
+* Wed Sep 27 2023 Pavel Raiskup <praiskup@redhat.com> 5.2-1
+- Fix '~' user source expansion for --copyout
+- Compatibility fix with EL 8
+- Log out the command-line arguments
+- Make sure that 'state' is always finished
+- README.md: cleaning up
+- Post-release administrivia
+
 * Mon Sep 18 2023 Pavel Raiskup <praiskup@redhat.com> 5.1.1-1
 - keep re-creating the root directory for each build
 
