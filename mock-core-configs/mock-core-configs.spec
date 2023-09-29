@@ -124,6 +124,12 @@ almalinux)
 esac
 cfg=$distro_id+epel-$ver-$mock_arch.cfg
 %endif
+
+%if 0%{?eln}
+# overrides rhel value which resolves in fedora+epel-rawhide-$mock_arch.cfg
+cfg=fedora-eln-$mock_arch.cfg
+%endif
+
 %if 0%{?mageia}
 cfg=mageia-$ver-$mock_arch.cfg
 %endif
