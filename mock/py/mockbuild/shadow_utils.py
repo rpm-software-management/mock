@@ -53,7 +53,7 @@ class ShadowUtils:
         """
         command = ["useradd", username]
         if uid is not None:
-            command += ["-o", "-u", str(uid)]
+            command += ["-o", "-r", "-u", str(uid)]
         if gid is not None:
             command += ["-g", str(gid), "-N"]
         if home is not None:
