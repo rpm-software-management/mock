@@ -23,9 +23,23 @@ Note however that also this is prerequisite:
 
 To specify which image should be used for bootstrap container you can put in config:
 
-    config_opts['bootstrap_image'] = 'fedora:latest'
+    config_opts['bootstrap_image'] = 'registry.fedoraproject.org/fedora:latest'
 
 This is a general config. Each config has specified its own image specified. E.g. CentOS 7 has `config_opts['bootstrap_image'] = 'centos:7'` in config. So unless you use your own config, you can enable this feature, and the right image will be used.
+
+The image contents are typically suboptimal for Mock's use-case.  In particular,
+Mock needs to have a correct package manager (as specified in the
+`package_manager` configuration option) installed inside the image, along with
+the `builddep` functionality (typically provided by `python3-dnf-plugins-core`).
+This is why Mock still has to 'update the downloaded bootstrap' somehow.  If you
+happen to have an image with `builddep` pre-installed, you can set
+`bootstrap_image_ready` to 'True':
+
+    config_opts['bootstrap_image_ready'] = True
+
+This option will significantly reduce the bootstrap preparation time, as no
+package management actions need to be performed for the bootstrap (no need to
+download and initialize package manager caches).
 
 There is one known issue:
 
