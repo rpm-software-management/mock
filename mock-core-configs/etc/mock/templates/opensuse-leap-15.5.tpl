@@ -53,7 +53,7 @@ baseurl=https://download.opensuse.org/distribution/leap/$releasever/repo/oss/
 #metalink=https://download.opensuse.org/distribution/leap/$releasever/repo/oss/repodata/repomd.xml.metalink
 enabled=1
 gpgkey=file:///usr/share/distribution-gpg-keys/opensuse/RPM-GPG-KEY-openSUSE-2022
-        file:///usr/share/distribution-gpg-keys/opensuse/RPM-GPG-KEY-openSUSE-Backports
+        file:///usr/share/distribution-gpg-keys/opensuse/RPM-GPG-KEY-openSUSE-Backports-2023
         file:///usr/share/distribution-gpg-keys/suse/RPM-GPG-KEY-SuSE-SLE-15
         file:///usr/share/distribution-gpg-keys/suse/RPM-GPG-KEY-SuSE-SLE-Main-2023
 gpgcheck=1
@@ -79,7 +79,7 @@ name=openSUSE Leap $releasever - {{ target_arch }} - Updates from Backports for 
 baseurl=https://download.opensuse.org/update/leap/$releasever/backports/
 #metalink=https://download.opensuse.org/update/leap/$releasever/backports/repodata/repomd.xml.metalink
 enabled=1
-gpgkey=file:///usr/share/distribution-gpg-keys/opensuse/RPM-GPG-KEY-openSUSE-Backports
+gpgkey=file:///usr/share/distribution-gpg-keys/opensuse/RPM-GPG-KEY-openSUSE-Backports-2023
 gpgcheck=1
 
 """
