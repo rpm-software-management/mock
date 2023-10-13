@@ -181,7 +181,8 @@ class _PackageManager(object):
             "rpm", "-q",
             "rpm", "rpm-sequoia",
             "python3-dnf", "python3-dnf-plugins-core",
-            "yum", "yum-utils"
+            "yum", "yum-utils",
+            "dnf5", "dnf5-plugins",
         ]
 
 
