@@ -308,6 +308,9 @@ class Buildroot(object):
         self._setup_resolver_config()
         self._setup_katello_ca()
 
+        if prebuild:
+            self.pkg_manager.log_package_management_packages()
+
         if not self.chroot_was_initialized:
             self._setup_dbus_uuid()
             self._init_aux_files()
