@@ -1,0 +1,5 @@
+Previously Mock skipped %prep section when doing the next round of build of `%generate_buildrequries` to save time.
+But we found that when the package deletes `setupmeta.egg-info` in `%prep`, then the next loop can work with incorrect data
+and generate incorrect build requires that may not be satisfied.
+Mock now calls `%prep` section in every loop. This may result in a few seconds of delay when spec file uses
+`%generate_buildrequries`, but generated build dependency is correct now.

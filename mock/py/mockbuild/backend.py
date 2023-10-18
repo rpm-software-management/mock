@@ -783,9 +783,6 @@ class Commands(object):
                     # We want to (re-)write src.rpm with dynamic BuildRequires,
                     # but with short-circuit it doesn't matter
                     mode = ['-ba']
-                # rpmbuild -br already does %prep, so we don't need waste time
-                # on re-doing it
-                mode += ['--noprep']
 
         self.buildroot.doChroot(get_command(mode),
                                 shell=False, logger=self.buildroot.build_log, timeout=timeout,
