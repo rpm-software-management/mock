@@ -3,7 +3,7 @@
 %endif
 
 Name:       mock-core-configs
-Version:    39.1.post1
+Version:    39.2
 Release:    1%{?dist}
 Summary:    Mock core config files basic chroots
 
@@ -150,6 +150,11 @@ fi
 %ghost %config(noreplace,missingok) %{_sysconfdir}/mock/default.cfg
 
 %changelog
+* Thu Oct 19 2023 Pavel Raiskup <praiskup@redhat.com> 39.2-1
+- Switch ELN to use a native bootstrap container image
+- Use the correct openSUSE Backports key for Leap 15.5 (neal@gompa.dev)
+- Properly handle /etc/mock/default.cfg on Fedora ELN (sbonazzo@redhat.com)
+
 * Fri Sep 15 2023 Pavel Raiskup <praiskup@redhat.com> 39.1-1
 - Add openSUSE Leap 15.5 (neal@gompa.dev)
 - Move openSUSE Leap 15.3 to EOL (neal@gompa.dev)
