@@ -737,10 +737,11 @@ class Commands(object):
         if additional_opts == ['']:
             additional_opts = []
 
-        def get_command(mode):
+        def get_command(mode, checkdeps=False):
+            nodeps_opt = [] if checkdeps else ['--nodeps']
             command = [self.config['rpmbuild_command']] + mode + \
                       [self._rpmbuild_noclean_option] + \
-                      ['--target', self.rpmbuild_arch, '--nodeps'] + \
+                      ['--target', self.rpmbuild_arch] + nodeps_opt + \
                       check_opt + [spec_path] + additional_opts
             command = ["bash", "--login", "-c"] + [' '.join(command)]
             return command
@@ -748,7 +749,8 @@ class Commands(object):
         bd_out = self.make_chroot_path(self.buildroot.builddir)
         max_loops = int(self.config.get('dynamic_buildrequires_max_loops'))
         success = False
-        if dynamic_buildrequires and self.config.get('dynamic_buildrequires'):
+        dynamic_buildrequires = dynamic_buildrequires and self.config.get('dynamic_buildrequires')
+        if dynamic_buildrequires:
             while not success and max_loops > 0:
                 # run rpmbuild+installSrpmDeps until
                 # * it fails
@@ -787,7 +789,20 @@ class Commands(object):
                 # on re-doing it
                 mode += ['--noprep']
 
-        self.buildroot.doChroot(get_command(mode),
+        # When we used dynamic buildrequires, the rpmbuild call will
+        # execute the %generate_buildrequires section once again
+        # in order to actually add the BuildRequires to the SRPM metadata.
+        # Since the output of the %generate_buildrequires section isn't
+        # controlled by mock, it is possible (albeit unlikely) that the list
+        # of generated BuildRequires will differ now, as it is not guaranteed
+        # to remain stable.
+        # By instructing rpmbuild to check dependencies, we ensure a failure
+        # if a new unsatisfied dependency is generated.
+        # Unfortunately, we can only do this when using a bootstrap chroot,
+        # because the rpm in the chroot might not understand the rpmdb otherwise.
+        # See https://github.com/rpm-software-management/mock/issues/1246
+        checkdeps = dynamic_buildrequires and self.bootstrap_buildroot is not None
+        self.buildroot.doChroot(get_command(mode, checkdeps=checkdeps),
                                 shell=False, logger=self.buildroot.build_log, timeout=timeout,
                                 uid=self.buildroot.chrootuid, gid=self.buildroot.chrootgid,
                                 user=self.buildroot.chrootuser,
