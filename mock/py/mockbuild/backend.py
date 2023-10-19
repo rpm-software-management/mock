@@ -747,17 +747,18 @@ class Commands(object):
             return command
 
         bd_out = self.make_chroot_path(self.buildroot.builddir)
-        max_loops = int(self.config.get('dynamic_buildrequires_max_loops'))
-        success = False
         dynamic_buildrequires = dynamic_buildrequires and self.config.get('dynamic_buildrequires')
         if dynamic_buildrequires:
+            max_loops = int(self.config.get('dynamic_buildrequires_max_loops'))
+            success = False
+            br_mode = ['-br']
             while not success and max_loops > 0:
                 # run rpmbuild+installSrpmDeps until
                 # * it fails
                 # * installSrpmDeps does nothing
                 # * or we run out of dynamic_buildrequires_max_loops tries
                 packages_before = self.buildroot.all_chroot_packages()
-                command = get_command(['-br'])
+                command = get_command(br_mode)
                 (output, returncode) = \
                     self.buildroot.doChroot(command,
                                             shell=False, logger=self.buildroot.build_log, timeout=timeout,
@@ -781,13 +782,14 @@ class Commands(object):
                     success = True
                 for f_buildreqs in buildreqs:
                     os.remove(f_buildreqs)
-                if not sc:
-                    # We want to (re-)write src.rpm with dynamic BuildRequires,
-                    # but with short-circuit it doesn't matter
-                    mode = ['-ba']
-                # rpmbuild -br already does %prep, so we don't need waste time
-                # on re-doing it
-                mode += ['--noprep']
+                # The first rpmbuild -br already did %prep, so we don't need waste time
+                if '--noprep' not in br_mode:
+                    br_mode += ['--noprep']
+            if not sc:
+                # We want to (re-)write src.rpm with dynamic BuildRequires,
+                # but with short-circuit it doesn't matter
+                mode = ['-ba']
+            mode += ['--noprep']
 
         # When we used dynamic buildrequires, the rpmbuild call will
         # execute the %generate_buildrequires section once again
