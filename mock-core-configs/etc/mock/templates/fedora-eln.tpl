@@ -17,6 +17,8 @@ config_opts['package_manager'] = 'dnf'
 # Per https://github.com/fedora-eln/eln/issues/164 updated up to 4 times a day.
 # Docs: https://docs.fedoraproject.org/en-US/eln/deliverables/#_container_image
 config_opts['bootstrap_image'] = 'quay.io/fedoraci/fedora:eln'
+# Per https://github.com/fedora-eln/eln/issues/166
+config_opts['bootstrap_image_ready'] = True
 
 config_opts['dnf.conf'] = """
 [main]
