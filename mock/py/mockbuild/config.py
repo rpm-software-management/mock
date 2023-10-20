@@ -29,7 +29,8 @@ from .util import set_use_nspawn, setup_operations_timeout
 PLUGIN_LIST = ['tmpfs', 'root_cache', 'yum_cache', 'mount', 'bind_mount',
                'ccache', 'selinux', 'package_state', 'chroot_scan',
                'lvm_root', 'compress_logs', 'sign', 'pm_request',
-               'hw_info', 'procenv', 'showrc', 'rpkg_preprocessor']
+               'hw_info', 'procenv', 'showrc', 'rpkg_preprocessor',
+               'rpmautospec']
 
 def nspawn_supported():
     """Detect some situations where the systemd-nspawn chroot code won't work"""
@@ -201,6 +202,14 @@ def setup_default_config_opts():
         'rpkg_preprocessor_opts': {
             'requires': ['preproc-rpmspec'],
             'cmd': '/usr/bin/preproc-rpmspec %(source_spec)s --output %(target_spec)s',
+        },
+        'rpmautospec_enable': False,
+        'rpmautospec_opts': {
+            'requires': ['rpmautospec'],
+            'cmd_base': [
+                '/usr/bin/rpmautospec',
+                'process-distgit',
+            ]
         },
     }
 

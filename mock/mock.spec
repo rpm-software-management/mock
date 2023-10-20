@@ -65,6 +65,7 @@ BuildRequires: python%{python3_pkgversion}-devel
 %if %{with lint}
 BuildRequires: python%{python3_pkgversion}-pylint
 %endif
+BuildRequires: python%{python3_pkgversion}-rpmautospec-core
 
 %if 0%{?fedora} >= 38
 # DNF5 stack
@@ -131,6 +132,15 @@ Requires: lvm2
 %description lvm
 Mock plugin that enables using LVM as a backend and support creating snapshots
 of the buildroot.
+
+%package rpmautospec
+Summary: Rpmautospec plugin for mock
+Requires: %{name} = %{version}-%{release}
+# This lets mock determine if a spec file needs to be processed with rpmautospec.
+Requires: python%{python3_pkgversion}-rpmautospec-core
+
+%description rpmautospec
+Mock plugin that preprocesses spec files using rpmautospec.
 
 %package filesystem
 Summary:  Mock filesystem layout
@@ -265,6 +275,10 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 %files lvm
 %{python_sitelib}/mockbuild/plugins/lvm_root.*
 %{python3_sitelib}/mockbuild/plugins/__pycache__/lvm_root.*.py*
+
+%files rpmautospec
+%{python_sitelib}/mockbuild/plugins/rpmautospec.*
+%{python3_sitelib}/mockbuild/plugins/__pycache__/rpmautospec.*.py*
 
 %files filesystem
 %license COPYING
