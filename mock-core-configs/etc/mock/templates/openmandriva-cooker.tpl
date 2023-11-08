@@ -4,6 +4,7 @@ config_opts['extra_chroot_dirs'] = [ '/run/lock', ]
 config_opts['releasever'] = '5.0'
 config_opts['macros']['%cross_compiling'] = '0' # Mock should generally be considered native builds
 config_opts['package_manager'] = 'dnf'
+config_opts['dnf_install_command'] = 'install python-dnf python-dnf-plugins-core'
 config_opts['description'] = 'OpenMandriva Cooker {{ releasever }}'
 config_opts['bootstrap_image'] = 'docker.io/openmandriva/cooker:latest'
 
