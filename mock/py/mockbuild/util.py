@@ -177,6 +177,8 @@ def orphansKill(rootToKill, manual_forced=False):
                     root = os.readlink("/proc/%s/root" % fn)
                     if compare_two_paths_cached(root, rootToKill, path_cache):
                         getLog().warning("Process ID %s still running in chroot. Killing with %s...", fn, killsig)
+                        with open(f"/proc/{fn}/cmdline", encoding="utf-8") as f:
+                            getLog().warning("Process is %s", f.readline())
                         pid = int(fn, 10)
                         os.kill(pid, killsig)
                         os.waitpid(pid, 0)
