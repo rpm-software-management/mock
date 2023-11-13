@@ -157,6 +157,20 @@ def compare_two_paths_cached(path1, path2, path_cache):
     return file_dev_ino(path1) == file_dev_ino(path2)
 
 
+def get_pid_cmdline(pid):
+    """
+    For given PID return the command-line arguments from /proc/PID/cmdline
+    """
+    cmd_file = f"/proc/{pid}/cmdline"
+    try:
+        with open(cmd_file, "rb") as cmdline_file:
+            cmdline = cmdline_file.read().decode('utf-8').split('\0')
+            cmdline.pop()  # last string is always empty in 0-terminated file
+            return ' '.join([shlex.quote(x) for x in cmdline])
+    except OSError as e:
+        return f"ERROR: Can not read {pid} file {e}"
+
+
 @traceLog()
 def orphansKill(rootToKill, manual_forced=False):
     """
@@ -176,8 +190,9 @@ def orphansKill(rootToKill, manual_forced=False):
                 try:
                     root = os.readlink("/proc/%s/root" % fn)
                     if compare_two_paths_cached(root, rootToKill, path_cache):
-                        getLog().warning("Process ID %s still running in chroot. Killing with %s...", fn, killsig)
                         pid = int(fn, 10)
+                        getLog().warning("Leftover process %s is being killed with signal %s: %s",
+                                         pid, killsig, get_pid_cmdline(pid))
                         os.kill(pid, killsig)
                         os.waitpid(pid, 0)
                 except OSError:
