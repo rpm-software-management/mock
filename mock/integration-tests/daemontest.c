@@ -8,7 +8,7 @@
  *      INFO: mock.py version 0.8.0 starting...
  *      State Changed: start
  *      State Changed: init
- *      WARNING: Process ID 12180 still running in chroot. Killing...
+ *      WARNING: Leftover process 1331205 is being killed with signal 15: /builddir/a.out
  *
  */
 
