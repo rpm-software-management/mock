@@ -3,7 +3,7 @@
 %endif
 
 Name:       mock-core-configs
-Version:    39.2.post1
+Version:    39.3
 Release:    1%{?dist}
 Summary:    Mock core config files basic chroots
 
@@ -150,6 +150,11 @@ fi
 %ghost %config(noreplace,missingok) %{_sysconfdir}/mock/default.cfg
 
 %changelog
+* Fri Dec 01 2023 Pavel Raiskup <praiskup@redhat.com> 39.3-1
+- Fedora 40+ to use DNF5 for building
+- Mandriva provides python-* not python3-* packages, use them
+- mark ELN bootstrap image as "ready" to speedup bootstrap preparation
+
 * Thu Oct 19 2023 Pavel Raiskup <praiskup@redhat.com> 39.2-1
 - Switch ELN to use a native bootstrap container image
 - Use the correct openSUSE Backports key for Leap 15.5 (neal@gompa.dev)
