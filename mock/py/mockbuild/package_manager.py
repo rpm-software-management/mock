@@ -291,7 +291,7 @@ class _PackageManager(object):
         if not self.config['print_main_output']:
             kwargs.pop('printOutput', None)
         else:
-            kwargs['pty'] = kwargs.get('pty', True)
+            kwargs.setdefault("pty", True)
         self.buildroot.nuke_rpm_db()
 
         error = None
@@ -758,5 +758,10 @@ class Dnf5(Dnf):
     """
     name = 'dnf5'
     place_common_opts_after = True
+
+    def execute(self, *args, **kwargs):
+        kwargs.setdefault("pty", False)
+        return super(Dnf, self).execute(*args, **kwargs)
+
     def update(self, *args, **_kwargs):
         return self.execute('upgrade', *args)
