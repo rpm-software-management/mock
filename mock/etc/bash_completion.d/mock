@@ -23,6 +23,17 @@ _mock_root()
     _filedir 'cfg'
 }
 
+_mock_isopt()
+{
+    [[ ${1:0:1} = - ]] && return 0
+    case $1 in
+    install|remove)
+            return 0
+            ;;
+    esac
+    return 1
+}
+
 _mock()
 {
     local cur prev words cword split
@@ -30,8 +41,17 @@ _mock()
 
     local cfgdirs=( /etc/mock "$HOME/.config/mock" )
     local count=0
+    local prevopt
     for word in "${words[@]}" ; do
-        [[ $count -eq $cword ]] && break
+        if [[ $count -eq $cword ]] ; then
+            # If the last (i.e. current) argument is an option, clear prevopt so that we complete
+            # the current argument as an option instead an argument to prevopt
+            _mock_isopt "$word" && prevopt=
+            break
+        fi
+        # Record the option argument previous to the current argument to determine the type of
+        # completion that is needed
+        _mock_isopt "$word" && prevopt=$word
         if [[ "$word" == --configdir ]] ; then
             cfgdirs=( "${words[((count+1))]}" )
         elif [[ "$word" == --configdir=* ]] ; then
@@ -40,7 +60,7 @@ _mock()
         count=$((++count))
     done
 
-    case "$prev" in
+    case "$prevopt" in
         -h|--help|--version)
             # no further arguments are accepted after the above arguments
             return
