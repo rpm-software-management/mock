@@ -44,7 +44,7 @@ Mock is capable of building SRPMs from source configuration management if the `m
 * [Tarballs](#tarballs)
 * [Download](#download)
 * [Setup](#setup)
-* [Chroot config files](#chroot-config-files)
+* [Chroot configuration files](Mock-Core-Configs)
 * [Plugins](#plugins)
 * [Features](#features)
 * [Using Mock outside your git sandbox](#using-mock-outside-your-git-sandbox)
@@ -175,16 +175,7 @@ By default, builds are done in `/var/lib/mock`, so be sure you have room there. 
 
 ## Chroot config files
 
-Mock project provides the `mock-core-configs` package which installs the
-default [configuration files](configuration) for various RPM-based Linux
-distributions.  This packages is typically installed with Mock by default
-(runtime dependency).
-
-Other projects can provide their own configuration files in other packages, we
-know of:
-
-* [mock-centos-sig-configs](https://pagure.io/centos-sig-hyperscale/mock-centos-sig-configs)
-
+See a [separate document](Mock-Core-Configs).
 
 ## Plugins
 

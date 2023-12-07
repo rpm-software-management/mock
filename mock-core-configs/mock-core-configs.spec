@@ -147,7 +147,7 @@ fi
 
 %files -f %{name}.cfgs
 %license COPYING
-%doc README.md
+%doc README
 %ghost %config(noreplace,missingok) %{_sysconfdir}/mock/default.cfg
 
 %changelog
