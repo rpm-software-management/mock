@@ -1,25 +1,43 @@
+---
+layout: default
+title: Mock Core Configs
+---
+
 # Mock core configs
 
-The mock configs in this package are maintained by the community.
+Mock project provides the `mock-core-configs` package which installs the default
+[configuration files](configuration) for various RPM-based Linux distributions.
+This packages is typically installed with Mock by default (runtime dependency).
+
+Other projects can provide their own configuration files in other packages, we
+know of:
+
+* [mock-centos-sig-configs](https://pagure.io/centos-sig-hyperscale/mock-centos-sig-configs)
+* [RPM Fusion Mock conifgs](https://github.com/rpmfusion-infra/mock-rpmfusion)
+
+
+## Maintenance
+
+The configuration in this package maintained by the community.
 When encountering an issue please use your best judgement to decide
 whether a Mock config is broken, or the distribution is broken.
 
 
-## Mock config issues
+#### Mock config issues
 
 If a Mock config is broken (e.g. [#756][mock-756]), please
 [create a ticket for this repository][mock-issues]
 and tag the responsible maintainer from the table below.
 
 
-## Distribution or repository issues
+#### Distribution or repository issues
 
 If a distribution or repository is broken (e.g. [#889][mock-889]),
 please report the issue to the appropriate issue tracker for the
 distribution.
 
 
-## Table
+#### Table
 
 | Distribution                                                                   | Chroots           | Maintainer                                                            | Distribution or repository issue tracker |
 | ------------------------------------------------------------------------------ | ----------------- | --------------------------------------------------------------------- | ------------- |
