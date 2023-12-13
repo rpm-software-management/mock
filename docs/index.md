@@ -69,6 +69,7 @@ Versions in Linux distributions:
 
 
 ## Release Notes
+* [5.3](Release-Notes-5.3) (2023-12-13) - New "rpmautospec" plugin added, `%generate_buildrequries` fixes landed.
 * [Configs 39.3](Release-Notes-Configs-39.3) - Fedora 40+ configuration uses DNF5, Fedora ELN and OpenMandriva fixes.
 * [Configs 39.2](Release-Notes-39.2) - Fedora ELN and openSUSE fixes.
 * [5.2](Release-Notes-5.2) (2023-09-27) - Compatibility fix with EPEL 8, logging fixes, `--copyout` files with tilde in name.

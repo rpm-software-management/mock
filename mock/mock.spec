@@ -9,7 +9,7 @@
 
 Summary: Builds packages inside chroots
 Name: mock
-Version: 5.2.post1
+Version: 5.3
 Release: 1%{?dist}
 License: GPL-2.0-or-later
 # Source is created by
@@ -289,6 +289,17 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 %dir  %{_datadir}/cheat
 
 %changelog
+* Wed Dec 13 2023 Pavel Raiskup <praiskup@redhat.com> 5.3-1
+- orphanskill: log command line arguments of the terminated process
+- docs: migrate the community from IRC to Matrix
+- dnf5: don't output to a PTY (mail@evangoo.de)
+- new rpmautospec plugin (sgallagh@redhat.com, nils@redhat.com)
+- fix bash completion with multiple file arguments (orion@nwra.com)
+- only %%prep once when running %%generate_buildrequires multiple times (miro@hroncok.cz)
+- Dynamic BuildRequires: Prevent generation of unsatisfied dependency (miro@hroncok.cz)
+- Identify buildroot package management earlier (praiskup@redhat.com)
+- Dump also dnf5 info into logs
+
 * Wed Sep 27 2023 Pavel Raiskup <praiskup@redhat.com> 5.2-1
 - Fix '~' user source expansion for --copyout
 - Compatibility fix with EL 8
