@@ -1,2 +1,0 @@
-The Bash completion bug in Mock for options accepting multiple arguments,
-tracked in the [long-standing issue][issue#746], has been resolved through [PR#1262].

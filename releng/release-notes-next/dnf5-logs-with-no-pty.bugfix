@@ -1,4 +1,0 @@
-If DNF 5 sees an "interactive" TTY on stdout, it will try to draw progress bars
-and cause the Mock logs to [be garbled](https://github.com/fedora-copr/copr/issues/3040).
-This release brings a fix that simply sets the output of DNF5 to a pipe instead
-of a PTY.
