@@ -84,7 +84,7 @@ Released on 2023-12-13.
  * Jakub Kadlcik
  * Miro Hrončok
  * Orion Poplawski
- * Stephen Gallagh
+ * Stephen Gallagher
 
 Thank you!
 
