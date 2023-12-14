@@ -143,7 +143,7 @@ class TestRpmautospecPlugin:
             host_chroot_sources.touch()
 
         if "broken-requires" in testcase:
-            plugin.buildroot.pkg_manager.install_as_root.side_effect = RuntimeError("FAIL")
+            plugin.buildroot.install_as_root.side_effect = RuntimeError("FAIL")
             expect_exception = pytest.raises(PkgError)
         else:
             expect_exception = nullcontext()

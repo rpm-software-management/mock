@@ -91,7 +91,7 @@ class RpmautospecPlugin:
         # Install the `rpmautospec` command line tool into the build root.
         if self.opts.get("requires", None):
             try:
-                self.buildroot.pkg_manager.install_as_root(*self.opts["requires"], check=True)
+                self.buildroot.install_as_root(*self.opts["requires"])
             except Exception as exc:
                 raise PkgError(
                     "Can’t install rpmautospec dependencies into chroot: "
