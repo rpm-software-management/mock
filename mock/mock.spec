@@ -9,7 +9,7 @@
 
 Summary: Builds packages inside chroots
 Name: mock
-Version: 5.3
+Version: 5.4
 Release: 1%{?dist}
 License: GPL-2.0-or-later
 # Source is created by
@@ -289,6 +289,9 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 %dir  %{_datadir}/cheat
 
 %changelog
+* Thu Jan 04 2024 Pavel Raiskup <praiskup@redhat.com> 5.4-1
+- Fix installing rpmautospec plugin dependencies (yzhu@redhat.com)
+
 * Wed Dec 13 2023 Pavel Raiskup <praiskup@redhat.com> 5.3-1
 - orphanskill: log command line arguments of the terminated process
 - docs: migrate the community from IRC to Matrix
