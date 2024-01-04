@@ -1,0 +1,15 @@
+---
+name: Move new issues to issues review
+
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  move-new-issue:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/add-to-project@v0.5.0
+        with:
+          project-url: https://github.com/orgs/fedora-copr/projects/1
+          github-token: ${{ secrets.ADD_TO_PROJECT_PAT }}
