@@ -23,6 +23,7 @@ config_opts['description'] = 'Fedora Rawhide'
 config_opts['dnf.conf'] = """
 [main]
 keepcache=1
+system_cachedir=/var/cache/dnf
 debuglevel=2
 reposdir=/dev/null
 logfile=/var/log/yum.log

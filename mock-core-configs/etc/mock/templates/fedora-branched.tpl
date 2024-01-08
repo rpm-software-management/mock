@@ -14,6 +14,7 @@ config_opts['bootstrap_image'] = 'registry.fedoraproject.org/fedora:{{ releaseve
 config_opts['dnf.conf'] = """
 [main]
 keepcache=1
+system_cachedir=/var/cache/dnf
 debuglevel=2
 reposdir=/dev/null
 logfile=/var/log/yum.log
