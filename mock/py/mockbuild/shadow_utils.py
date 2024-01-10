@@ -14,15 +14,17 @@ class ShadowUtils:
     def __init__(self, root):
         self.root = root
 
-    @property
-    def _chroot_opts(self):
-        return ["--prefix", self.root.make_chroot_path()]
-
     def _execute_command(self, command, can_fail=False):
         with self.root.uid_manager.elevated_privileges():
-            # Execute the command _on host_, not in bootstrap (where we're not
-            # sure how old shadow-utils are).
-            do_with_status(command + self._chroot_opts, raiseExc=not can_fail)
+            # Ordinarily we do not want to depend on shadow-utils in the buildroot, but
+            # configuring certain options (such as FreeIPA-provided subids) can make it
+            # impossible to create users in the buildroot using host shadow-utils so we
+            # provide this workaround.
+            # Tracking upstream bug https://github.com/shadow-maint/shadow/issues/897
+            if self.root.config['use_host_shadow_utils']:
+                do_with_status(command + ['--prefix', self.root.make_chroot_path()], raiseExc=not can_fail)
+            else:
+                self.root.doChroot(command, raiseExc=not can_fail)
 
     def delete_user(self, username, can_fail=False):
         """
