@@ -355,6 +355,13 @@ def setup_default_config_opts():
 
     config_opts["copy_host_users"] = []
 
+    # shadow-utils --prefix and --root options do not play well with
+    # FreeIPA-provided subids. Using the shadow-utils inside the
+    # chroot works around this but this is a niche situation so it is
+    # not the default.
+    # Upstream issue https://github.com/shadow-maint/shadow/issues/897
+    config_opts["use_host_shadow_utils"] = True
+
     # mapping from target_arch (or forcearch) to arch in /usr/bin/qemu-*-static
     config_opts["qemu_user_static_mapping"] = {
         'aarch64': 'aarch64',
