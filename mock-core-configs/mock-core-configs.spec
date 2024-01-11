@@ -3,7 +3,7 @@
 %endif
 
 Name:       mock-core-configs
-Version:    39.3.post1
+Version:    39.4
 Release:    1%{?dist}
 Summary:    Mock core config files basic chroots
 
@@ -151,6 +151,11 @@ fi
 %ghost %config(noreplace,missingok) %{_sysconfdir}/mock/default.cfg
 
 %changelog
+* Thu Jan 11 2024 Pavel Raiskup <praiskup@redhat.com> 39.4-1
+- configure system_cachedir for dnf5
+- configs: EOL Fedora 37
+- config: add README.md with maintainers and issue trackers (frostyx@email.cz)
+
 * Fri Dec 01 2023 Pavel Raiskup <praiskup@redhat.com> 39.3-1
 - Fedora 40+ to use DNF5 for building
 - Mandriva provides python-* not python3-* packages, use them
