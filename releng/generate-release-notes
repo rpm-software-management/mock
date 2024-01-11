@@ -4,6 +4,7 @@ import argparse
 import os
 import re
 import subprocess
+import tempfile
 
 TRANSFORM = {
     "rhbz": "https://bugzilla.redhat.com/{id}",
@@ -18,12 +19,35 @@ TEMP_FILE = ".Release-Notes-Next.md"
 def _arg_parser():
     parser = argparse.ArgumentParser()
     parser.add_argument("--use-version", dest="version")
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument("--config-only", action="store_true")
+    group.add_argument("--mock-only", action="store_true")
     return parser
 
-def _main():
+def _limited_config(opts):
+    if not opts.config_only and not opts.mock_only:
+        return []
+    with tempfile.NamedTemporaryFile(delete=False, dir=".") as config_fd:
+        opts.temp_config = config_fd.name
+        with open("towncrier.toml", "rb") as fd:
+            for line in fd.readlines():
+                if b'{ name' not in line:
+                    config_fd.write(line)
+                    continue
+                # skip non-config files
+                if opts.config_only and b"config" not in line:
+                    continue
+                # skip config files
+                if opts.mock_only and b"config" in line:
+                    continue
+                config_fd.write(line)
+    return ["--config", opts.temp_config]
 
-    tc_opts = []
+
+def _main():
     options = _arg_parser().parse_args()
+    options.temp_config = None
+    tc_opts = _limited_config(options)
     if not options.version:
         options.version = "Next"
         tc_opts.append("--keep")
@@ -85,7 +109,7 @@ if __name__ == "__main__":
         _main()
     finally:
         try:
-            subprocess.check_call(["git", "rm", "-f", TEMP_FILE])
             os.unlink(TEMP_FILE)
+            subprocess.check_call(["git", "rm", "-f", TEMP_FILE])
         except FileNotFoundError:
             pass
