@@ -3,7 +3,7 @@ config_opts['root'] = 'fedora-rawhide-{{ target_arch }}'
 # fedora 31+ isn't mirrored, we need to run from koji
 config_opts['mirrored'] = config_opts['target_arch'] != 'i686'
 
-config_opts['chroot_setup_cmd'] = 'install @{% if mirrored %}buildsys-{% endif %}build'
+config_opts['chroot_setup_cmd'] = 'groupinstall {% if mirrored %}buildsys-{% endif %}build'
 
 config_opts['dist'] = 'rawhide'  # only useful for --resultdir variable subst
 config_opts['extra_chroot_dirs'] = [ '/run/lock', ]
