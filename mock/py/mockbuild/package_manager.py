@@ -765,3 +765,30 @@ class Dnf5(Dnf):
 
     def update(self, *args, **_kwargs):
         return self.execute('upgrade', *args)
+
+    def initialize_aliases(self):
+        """
+        Koji compatibility fix.  Koji uses 'groupinstall' not 'group install' or
+        'install @group'.
+        """
+        self.buildroot.root_log.info("configure DNF5 aliases")
+        if not self.buildroot.bootstrap_buildroot:
+            self.buildroot.root_log.info("no-op")
+            return
+        aliases_path = self.buildroot.bootstrap_buildroot.make_chroot_path('etc/dnf/dnf5-aliases.d/')
+        file_util.mkdirIfAbsent(aliases_path)
+        with open(os.path.join(aliases_path, "groupinstall.conf"), "w+",
+                               encoding="utf8") as alias_fd:
+            alias_fd.write("""version = '1.0'
+['groupinstall']
+type = 'command'
+attached_command = 'group.install'
+descr = "Alias for 'group install'"
+group_id = 'commands-compatibility-aliases'
+complete = true
+""")
+
+    @traceLog()
+    def initialize_config(self):
+        super().initialize_config()
+        self.initialize_aliases()
