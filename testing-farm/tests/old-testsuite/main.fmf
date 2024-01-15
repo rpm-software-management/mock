@@ -1,0 +1,10 @@
+---
+summary: Execute the old `make check` test-suite
+test: ./test.sh
+tag: old_testsuite
+duration: 3h
+
+require:
+  - type: file
+    # copy-paste the whole directory
+    pattern: /

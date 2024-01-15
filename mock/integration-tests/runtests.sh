@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/sh -x
 # vim:tw=0:ts=4:sw=4
 
 # this is a test script to run everything through its paces before you do a
@@ -31,6 +31,18 @@ trap '$MOCKCMD --clean; exit 1' INT HUP QUIT TERM
 #
 # pre-populate yum cache for the rest of the commands below
 #
+
+# With TMT, we have the deps pre-installed by ansible.
+if test -z "$TMT_VERSION"; then
+    MOCKSRPM=$(
+        cd "$TOPDIR" || exit 1
+        tito build --srpm --offline | grep Wrote | grep src.rpm | awk '{ print $2 }'
+    )
+    test -e "$MOCKSRPM" || exit 1
+else
+    set -- /tmp/mock-test-srpms/mock-*.src.rpm
+    MOCKSRPM=$1
+fi
 
 if [ -e /usr/bin/dnf ]; then
     header "pre-populating the cache (DNF)"
