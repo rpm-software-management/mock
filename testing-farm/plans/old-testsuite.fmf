@@ -1,0 +1,12 @@
+---
+summary: run the old testsuite in Fedora Testing Farm
+discover:
+  - how: fmf
+    filter: "tag: old_testsuite"
+
+prepare:
+  - how: ansible
+    playbook: mock/integration-tests/setup-playbook/play-tf.yml
+
+execute:
+  - how: tmt

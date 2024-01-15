@@ -1,0 +1,23 @@
+#! /bin/bash -x
+
+# Install specific Mock RPM packages (and dependencies) from a Copr repository
+# created by Packit PR or PUSH workflow.  Pick the precise package version built
+# from the latest commit.
+
+_d=$(dirname "$(readlink -f "$0")")
+
+if test -n "$PACKIT_PR_ID"; then
+    PROJECT=packit/rpm-software-management-mock-$PACKIT_PR_ID
+    COMMIT=$PACKIT_COMMIT_SHA
+elif test -n "$PACKIT_COPR_PROJECT"; then
+    PROJECT=$PACKIT_COPR_PROJECT
+    COMMIT=$PACKIT_COMMIT_SHA
+elif test -n "$TEST_GIT_MAIN"; then
+    PROJECT=@mock/mock
+    COMMIT=$(curl -H "Accept: application/vnd.github.VERSION.sha"  https://api.github.com/repos/rpm-software-management/mock/commits/main)
+else
+    echo >&2 "Can't decide where to install packages from"
+    exit 1
+fi
+
+"$_d/install-copr-packages" "$PROJECT" "$COMMIT" "$@"
