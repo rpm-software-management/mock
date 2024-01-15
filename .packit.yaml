@@ -32,6 +32,7 @@ packages:
 srpm_build_deps:
   - tito
   - git
+
 jobs:
   - job: copr_build
     trigger: pull_request
@@ -41,3 +42,12 @@ jobs:
     metadata:
       targets:
         - fedora-rawhide
+
+  - job: tests
+    trigger: pull_request
+    targets:
+      - fedora-latest-stable
+    skip_build: true
+    # We don't want to run two test runs; so we limit this to a single package
+    packages:
+      - mock

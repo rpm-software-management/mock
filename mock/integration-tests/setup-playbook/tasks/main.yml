@@ -112,6 +112,8 @@
     username: "{{ mock_rhn_user }}"
     password: "{{ mock_rhn_pass }}"
     pool: "Red Hat Enterprise Linux for Virtual Datacenters, Standard"
+  when:
+    - no_subscription_management is not defined or no_subscription_management is false
 
 - name: Clone Mock repo
   git:

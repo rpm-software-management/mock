@@ -1,0 +1,16 @@
+---
+- name: Prepare the testing machine for running Mock tests
+  hosts: all
+  user: "root"
+  vars:
+    mock_test_username: mockbuild
+    mock_test_workdir: /home/mock/mock-testing
+    mock_gpg_dir: "/home/mockbuild/gpg"
+    mock_gpg_wrapper: "/home/mockbuild/gpg-mock"
+    mock_test_rpmmacros: /home/mockbuild/.rpmmacros
+    mock_lvm_volume: /test-lvm-disk
+    mock_clone: /home/mockbuild/mock
+    no_subscription_management: true
+
+  tasks:
+    - include_tasks: tasks/main.yml
