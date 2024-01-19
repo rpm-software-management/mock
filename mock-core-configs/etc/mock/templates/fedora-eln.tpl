@@ -12,17 +12,22 @@ config_opts['chroot_setup_cmd'] = 'install bash bzip2 coreutils cpio diffutils f
 
 config_opts['dist'] = 'eln'  # only useful for --resultdir variable subst
 config_opts['extra_chroot_dirs'] = [ '/run/lock', ]
-config_opts['package_manager'] = 'dnf'
+
+# https://fedoraproject.org/wiki/Changes/BuildWithDNF5
+# https://pagure.io/releng/issue/11895
+config_opts['package_manager'] = 'dnf5'
 
 # Per https://github.com/fedora-eln/eln/issues/164 updated up to 4 times a day.
 # Docs: https://docs.fedoraproject.org/en-US/eln/deliverables/#_container_image
 config_opts['bootstrap_image'] = 'quay.io/fedoraci/fedora:eln'
-# Per https://github.com/fedora-eln/eln/issues/166
+
+# https://fedoraproject.org/wiki/Changes/ReplaceDnfWithDnf5 applied to ELN!
 config_opts['bootstrap_image_ready'] = True
 
 config_opts['dnf.conf'] = """
 [main]
 keepcache=1
+system_cachedir=/var/cache/dnf
 debuglevel=2
 reposdir=/dev/null
 logfile=/var/log/yum.log
