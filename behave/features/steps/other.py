@@ -22,6 +22,26 @@ from testlib import no_output, run
 # pylint: disable=missing-function-docstring,function-redefined
 
 
+def _first_int(string, max_lines=20):
+    for line in string.split("\n")[:max_lines]:
+        if not line:
+            continue
+        first_word = line.split()[0]
+        if first_word.isdigit():
+            return first_word
+    raise Exception("unexpected dnf history output")
+
+
+def add_cleanup_last_transaction(context):
+    # TODO: DNF5 support https://github.com/rpm-software-management/dnf5/issues/140
+    dnf = ["sudo", "/usr/bin/dnf-3", "-y", "history"]
+    _, out, _ = run(dnf + ["list"])
+    transaction_id = _first_int(out)
+    def _revert_transaction(_context):
+        cmd = dnf + ["undo", transaction_id]
+        assert_that(run(cmd)[0], equal_to(0))
+    context.add_cleanup(_revert_transaction, context)
+
 @given(u'an unique mock namespace')
 def step_impl(context):
     print("using uniqueext {}".format(context.uniqueext))
@@ -39,7 +59,14 @@ def step_impl(context, package, state):
     is_installed = bool(not is_installed)
 
     if "not" in state:
-        assert_that(is_installed, equal_to(False))
+        if not is_installed:
+            return  # nothing to do
+
+        # Remove the package and schedule its removal
+        cmd = ["sudo", "dnf", "-y", "remove", package]
+        assert_that(run(cmd)[0], equal_to(0))
+        # schedule removal
+        add_cleanup_last_transaction(context)
         return
 
     if is_installed:
