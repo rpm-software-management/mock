@@ -35,7 +35,7 @@ Conflicts: mock-core-configs < 33
 
 # Requires 'mock-core-configs', or replacement (GitHub PR#544).
 Requires: mock-configs
-Requires: %{name}-filesystem
+Requires: %{name}-filesystem = %{version}-%{release}
 %if 0%{?fedora} || 0%{?rhel} >= 8
 # This is still preferred package providing 'mock-configs'
 Suggests: mock-core-configs
