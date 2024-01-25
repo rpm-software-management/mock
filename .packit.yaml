@@ -42,6 +42,7 @@ jobs:
     metadata:
       targets:
         - fedora-rawhide
+        - fedora-latest-stable
 
   - job: tests
     trigger: pull_request
