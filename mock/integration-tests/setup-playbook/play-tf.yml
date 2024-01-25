@@ -14,3 +14,12 @@
 
   tasks:
     - include_tasks: tasks/main.yml
+
+    - name: upload the "install copr package" script
+      copy:
+        src: "{{ item }}"
+        dest: "/usr/bin/{{ item }}"
+        mode: '0755'
+      loop:
+        - install-copr-packages
+        - install-mock-packages-built-by-packit
