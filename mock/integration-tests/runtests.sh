@@ -32,20 +32,23 @@ trap '$MOCKCMD --clean; exit 1' INT HUP QUIT TERM
 # pre-populate yum cache for the rest of the commands below
 #
 
-if [ -e /usr/bin/dnf ]; then
-    header "pre-populating the cache (DNF)"
-    runcmd "$MOCKCMD --init --dnf"
-    header "clean up"
-    runcmd "$MOCKCMD --offline --clean"
-else
-    header "pre-populating the cache (YUM)"
-    runcmd "$MOCKCMD --init"
-fi
-header "installing dependencies for $MOCKSRPM"
-runcmd "$MOCKCMD --disable-plugin=tmpfs --installdeps $MOCKSRPM"
-if [ ! -e $CHROOT/usr/include/python* ]; then
-echo "installdeps test FAILED. could not find /usr/include/python*"
-exit 1
+# With TMT, we have the deps pre-installed by ansible.
+if test -z "$TMT_VERSION"; then
+    if [ -e /usr/bin/dnf ]; then
+        header "pre-populating the cache (DNF)"
+        runcmd "$MOCKCMD --init --dnf"
+        header "clean up"
+        runcmd "$MOCKCMD --offline --clean"
+    else
+        header "pre-populating the cache (YUM)"
+        runcmd "$MOCKCMD --init"
+    fi
+    header "installing dependencies for $MOCKSRPM"
+    runcmd "$MOCKCMD --disable-plugin=tmpfs --installdeps $MOCKSRPM"
+    if [ ! -e $CHROOT/usr/include/python* ]; then
+        echo "installdeps test FAILED. could not find /usr/include/python*"
+        exit 1
+    fi
 fi
 
 header "running regression tests"
