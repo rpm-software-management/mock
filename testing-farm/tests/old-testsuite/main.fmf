@@ -1,0 +1,10 @@
+---
+summary: Execute the old testsuite started wit make
+test: ./test.sh
+tag: old_testsuite
+duration: 2h
+
+require:
+  - type: file
+    # copy-paste the whole directory
+    pattern: /
