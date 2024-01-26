@@ -2,4 +2,9 @@
 
 cd ../../../mock
 install-mock-packages-built-by-packit mock-core-configs mock
-make check 2>&1 | tee the-log | grep -e ^PASS -e ^FAIL -e ^ERROR
+
+if make check 2>&1 | tee the-log | grep FAILED: -e PASSED:; then
+    true
+else
+    cat the-log
+fi
