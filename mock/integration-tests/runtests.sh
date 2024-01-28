@@ -55,6 +55,8 @@ header "running regression tests"
 sh ${TESTDIR}/runregressions.sh
 fails=$?
 
+exit $fails
+
 msg=$(printf "%s regression failures\n" $fails)
 header "$msg"
 
