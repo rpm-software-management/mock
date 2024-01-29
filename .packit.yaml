@@ -9,6 +9,10 @@ actions:
   get-current-version:
     - bash -c "grep ^Version \"$PACKIT_CONFIG_PACKAGE_NAME.spec\" | awk '{ print $2 }'"
 
+# We need to keep the pushed SHA, it is later exported
+# as $PACKIT_COMMIT_SHA for Testing Farm jobs.
+merge_pr_in_ci: false
+
 packages:
   mock:
     specfile_path: mock.spec
