@@ -41,7 +41,6 @@ jobs:
     trigger: pull_request
     targets:
       - fedora-latest-stable
-    skip_build: true
     # We don't want to run two test runs; so we limit this to a single package
     packages:
       - mock
