@@ -2,12 +2,10 @@
 
 cd ../../../mock
 
-env
-
 install-mock-packages-built-by-packit mock-core-configs mock
 
-if make check 2>&1 | tee the-log | grep -e FAILED: -e PASSED:; then
-    true
+if make check >the-log 2>&1; then
+    echo "The 'make check' testsuite passed."
 else
-    cat the-log
+    grep -e FAILED: -e PASSED: the-log
 fi
