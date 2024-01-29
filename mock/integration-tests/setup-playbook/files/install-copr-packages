@@ -13,7 +13,7 @@ DNF=/usr/bin/dnf-3
 REPOQUERY=( "$DNF" repoquery )
 
 copr_dir=$1 ; shift
-commit=${1} ; shift
+commit=$1 ; shift
 copr_uri=https://download.copr.fedorainfracloud.org/results
 
 copr_chroot() (
