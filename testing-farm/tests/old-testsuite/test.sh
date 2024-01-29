@@ -8,4 +8,5 @@ if make check >the-log 2>&1; then
     echo "The 'make check' testsuite passed."
 else
     grep -e FAILED: -e PASSED: the-log
+    exit 1
 fi
