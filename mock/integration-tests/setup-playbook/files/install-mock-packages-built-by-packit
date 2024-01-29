@@ -1,4 +1,4 @@
-#! /bin/bash
+#! /bin/bash -x
 
 # Install specific RPM packages (and its dependencies) from a Copr repository
 # created by Packit PR or PUSH workflow.  Pick the precise package version built
