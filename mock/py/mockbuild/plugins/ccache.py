@@ -35,6 +35,7 @@ class CCache(object):
         buildroot.preexisting_deps.append("ccache")
         plugins.add_hook("prebuild", self._ccacheBuildHook)
         plugins.add_hook("preinit", self._ccachePreInitHook)
+        plugins.add_hook("postbuild", self._ccachePostBuildHook)
         buildroot.mounts.add(
             BindMountPoint(srcpath=self.ccachePath, bindpath=buildroot.make_chroot_path("/var/tmp/ccache")))
 
@@ -47,6 +48,11 @@ class CCache(object):
     @traceLog()
     def _ccacheBuildHook(self):
         self.buildroot.doChroot(["ccache", "-M", str(self.ccache_opts['max_cache_size'])], shell=False)
+        if not self.ccache_opts.get("show_stats"):
+            return
+        # zero ccache stats
+        getLog().info("Zero ccache stats:")
+        self.buildroot.doChroot(["ccache", "--zero-stats"], printOutput=True, shell=False)
 
     # set up the ccache dir.
     # we also set a few variables used by ccache to find the shared cache.
@@ -69,3 +75,11 @@ class CCache(object):
         file_util.mkdirIfAbsent(self.buildroot.make_chroot_path('/var/tmp/ccache'))
         file_util.mkdirIfAbsent(self.ccachePath)
         self.buildroot.uid_manager.changeOwner(self.ccachePath, recursive=True)
+
+    # get some cache stats
+    def _ccachePostBuildHook(self):
+        """ show the cache hit stats """
+        if not self.ccache_opts.get("show_stats"):
+            return
+        getLog().info("ccache stats:")
+        self.buildroot.doChroot(["ccache", "--show-stats"], printOutput=True, shell=False)

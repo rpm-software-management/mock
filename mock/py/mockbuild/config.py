@@ -132,6 +132,7 @@ def setup_default_config_opts():
             'dir': "{{cache_topdir}}/{{root}}/ccache/u{{chrootuid}}/",
             'hashdir': True,
             'debug': False,
+            'show_stats': False,
         },
         'yum_cache_enable': True,
         'yum_cache_opts': {
