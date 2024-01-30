@@ -71,4 +71,3 @@ class CCache(object):
         # show the cache hit stats
         getLog().info("ccache stats:")
         self.buildroot.doChroot(["ccache", "--show-stats"], printOutput=True, shell=False)
-+
