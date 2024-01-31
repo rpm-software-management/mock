@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/sh -x
 # vim:tw=0:ts=4:sw=4
 
 # this is a test script to run everything through its paces before you do a
