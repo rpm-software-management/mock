@@ -5,6 +5,10 @@ workdir=$(mktemp -d --suffix=-mock-old-tests)
 rsync -rav ../../../ "$workdir"
 chown -Rv mockbuild:mockbuild "$workdir"
 
+# TODO: Mock should work with 'rw-------' files too.
+# https://github.com/rpm-software-management/mock/issues/1300
+chmod a+r "$workdir/mock/integration-tests"/test-*
+
 # Install the tested RPMs
 install-mock-packages-built-by-packit mock-core-configs mock
 
