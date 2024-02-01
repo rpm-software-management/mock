@@ -20,8 +20,9 @@ cd "$workdir/mock"
 
 # shellcheck disable=SC2024
 if (sudo -E -u mockbuild make check > >(tee the-log | grep -e FAILED: -e PASSED:) 2>&1) >&2; then
-    echo "The 'make check' testsuite passed."
+    : "The 'make check' testsuite passed."
 else
     cat the-log
+    false "The 'make check' testsuite failed."
     exit 1
 fi
