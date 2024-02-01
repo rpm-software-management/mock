@@ -11,6 +11,7 @@
 # TODO: DNF5/YUM compat?
 DNF=/usr/bin/dnf-3
 REPOQUERY=( "$DNF" repoquery )
+DOWNLOAD=( "$DNF" download )
 
 copr_dir=$1 ; shift
 commit=$1 ; shift
@@ -93,6 +94,13 @@ for pkg; do
     done
 done
 
-cmd=( "$DNF" -y install "${nvrs[@]}" "${repos[@]}" --nogpgcheck )
+if test -n "$SRPM_DOWNLOAD_DIR"; then
+    mkdir -p "$SRPM_DOWNLOAD_DIR"
+    cmd=( "${DOWNLOAD[@]}" "${repos[@]}"  '--disablerepo=*' --enablerepo xyztest
+          "${nvrs[@]}" --source --downloaddir "$SRPM_DOWNLOAD_DIR" )
+else
+    cmd=( "$DNF" -y install "${nvrs[@]}" "${repos[@]}" --nogpgcheck )
+fi
+
 info "Running: ${cmd[*]}"
 "${cmd[@]}"
