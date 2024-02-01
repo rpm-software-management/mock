@@ -39,25 +39,25 @@ if test -z "$TMT_VERSION"; then
         tito build --srpm --offline | grep Wrote | grep src.rpm | awk '{ print $2 }'
     )
     test -e "$MOCKSRPM" || exit 1
-
-    if [ -e /usr/bin/dnf ]; then
-        header "pre-populating the cache (DNF)"
-        runcmd "$MOCKCMD --init --dnf"
-        header "clean up"
-        runcmd "$MOCKCMD --offline --clean"
-    else
-        header "pre-populating the cache (YUM)"
-        runcmd "$MOCKCMD --init"
-    fi
-    header "installing dependencies for $MOCKSRPM"
-    runcmd "$MOCKCMD --disable-plugin=tmpfs --installdeps $MOCKSRPM"
-    if [ ! -e $CHROOT/usr/include/python* ]; then
-        echo "installdeps test FAILED. could not find /usr/include/python*"
-        exit 1
-    fi
 else
     set -- /tmp/mock-test-srpms/mock-*.src.rpm
     MOCKSRPM=$1
+fi
+
+if [ -e /usr/bin/dnf ]; then
+    header "pre-populating the cache (DNF)"
+    runcmd "$MOCKCMD --init --dnf"
+    header "clean up"
+    runcmd "$MOCKCMD --offline --clean"
+else
+    header "pre-populating the cache (YUM)"
+    runcmd "$MOCKCMD --init"
+fi
+header "installing dependencies for $MOCKSRPM"
+runcmd "$MOCKCMD --disable-plugin=tmpfs --installdeps $MOCKSRPM"
+if [ ! -e $CHROOT/usr/include/python* ]; then
+    echo "installdeps test FAILED. could not find /usr/include/python*"
+    exit 1
 fi
 
 header "running regression tests"
