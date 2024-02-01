@@ -2,7 +2,7 @@
 summary: Execute the old `make check` test-suite
 test: ./test.sh
 tag: old_testsuite
-duration: 2h
+duration: 3h
 
 require:
   - type: file
