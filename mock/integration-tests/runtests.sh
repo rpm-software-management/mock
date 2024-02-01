@@ -34,6 +34,12 @@ trap '$MOCKCMD --clean; exit 1' INT HUP QUIT TERM
 
 # With TMT, we have the deps pre-installed by ansible.
 if test -z "$TMT_VERSION"; then
+    MOCKSRPM=$(
+        cd "$TOPDIR" || exit 1
+        tito build --srpm --offline | grep Wrote | grep src.rpm | awk '{ print $2 }'
+    )
+    test -e "$MOCKSRPM" || exit 1
+
     if [ -e /usr/bin/dnf ]; then
         header "pre-populating the cache (DNF)"
         runcmd "$MOCKCMD --init --dnf"
@@ -49,6 +55,9 @@ if test -z "$TMT_VERSION"; then
         echo "installdeps test FAILED. could not find /usr/include/python*"
         exit 1
     fi
+else
+    set -- /tmp/mock-test-srpms/mock-*.src.rpm
+    MOCKSRPM=$1
 fi
 
 header "running regression tests"

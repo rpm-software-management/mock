@@ -4,6 +4,8 @@
 # created by Packit PR or PUSH workflow.  Pick the precise package version built
 # from the latest commit in the PR.
 
+_d=$(dirname "$(readlink -f "$0")")
+
 if test -n "$PACKIT_PR_ID"; then
     PROJECT=packit/rpm-software-management-mock-$PACKIT_PR_ID
     COMMIT=$PACKIT_COMMIT_SHA
@@ -18,4 +20,4 @@ else
     exit 1
 fi
 
-install-copr-packages "$PROJECT" "$COMMIT" "$@"
+"$_d/install-copr-packages" "$PROJECT" "$COMMIT" "$@"
