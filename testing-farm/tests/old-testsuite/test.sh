@@ -1,6 +1,9 @@
 #!/bin/bash -eux
 
-cd ../../../mock
+# Copy files so the 'mockbuild' user has the full access
+workdir=$(mktemp -d --suffix=-mock-old-tests)
+rsync -rav ../../../ "$workdir"
+chown -Rv mockbuild:mockbuild "$workdir"
 
 # Install the tested RPMs
 install-mock-packages-built-by-packit mock-core-configs mock
