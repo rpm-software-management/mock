@@ -22,13 +22,12 @@ _libc = ctypes.CDLL(None, use_errno=True)
 def setup_uid_manager():
     mockgid = grp.getgrnam('mock').gr_gid
     unprivUid = os.getuid()
-    unprivGid = os.getgid()
+    unprivGid = mockgid
 
     # sudo
     if os.environ.get("SUDO_UID") is not None:
         unprivUid = int(os.environ['SUDO_UID'])
         os.setgroups((mockgid,))
-        unprivGid = int(os.environ['SUDO_GID'])
 
     # consolehelper
     if os.environ.get("USERHELPER_UID") is not None:
@@ -36,7 +35,6 @@ def setup_uid_manager():
         unprivName = pwd.getpwuid(unprivUid).pw_name
         secondary_groups = [g.gr_gid for g in grp.getgrall() if unprivName in g.gr_mem]
         os.setgroups([mockgid] + secondary_groups)
-        unprivGid = pwd.getpwuid(unprivUid)[3]
 
     uidManager = UidManager(unprivUid, unprivGid)
     return uidManager
