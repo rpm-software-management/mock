@@ -3,8 +3,8 @@
 # The Mock's test-suite is designed for the mockbuild users.  Copy files to a
 # separate directory where the 'mockbuild' user has a full access.
 workdir=$(mktemp -d --suffix=-mock-old-tests)
-rsync -rav ../../../ "$workdir"
-chown -Rv mockbuild:mockbuild "$workdir"
+rsync -ra ../../../ "$workdir"
+chown -R mockbuild:mockbuild "$workdir"
 
 # TODO: Mock should work with 'rw-------' files too.
 # https://github.com/rpm-software-management/mock/issues/1300
