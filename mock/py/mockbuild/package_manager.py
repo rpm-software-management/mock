@@ -480,7 +480,7 @@ Error:      Neither dnf-utils nor yum-utils are installed. Dnf-utils or yum-util
         }
 
         # in dnf, the last occurence of the same option beats the previous
-        config = ConfigParser(strict=False)
+        config = ConfigParser(strict=False, interpolation=None)
         config.read_string(self.pkg_manager_config)
 
         # don't bindmount the same paths multiple times
