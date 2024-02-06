@@ -7,7 +7,9 @@
 ## arguments).
 
 set -e
-cd "$(dirname "$(readlink -f "$0")")/../mock-core-configs/etc/mock"
+topdir=$(git rev-parse --show-toplevel)
+
+cd "$topdir/mock-core-configs/etc/mock"
 
 for config in fedora-??-x86_64.cfg; do
     prev_version=$version
@@ -37,6 +39,13 @@ for arch in "${architectures[@]}"; do
     git add "fedora-$next_version-$arch.cfg" "fedora-$version-$arch.cfg"
 done
 
+towncrier_file=$topdir/releng/release-notes-next/fedora-$version-branching.feature
+cat > "$towncrier_file" <<EOF
+Configuration files for Fedora $version have been branched from Rawhide,
+according to the [Fedora $version Schedule](https://fedorapeople.org/groups/schedule/f-$version/f-$version-all-tasks.html).
+EOF
+git add "$towncrier_file"
+
 # Use updated relasever in rawhide template, because we need to reference
 # updated GPG keys (of $next_version and $versiono).
 
@@ -44,6 +53,11 @@ for file in templates/fedora-rawhide.tpl templates/fedora-eln.tpl; do
   sed -i "s|'$version'|'$next_version'|" "$file"
   git add "$file"
 done
+
+
+config_spec=$topdir/mock-core-configs/mock-core-configs.spec
+sed -i "s/\(Version:[[:space:]]\+\).*/\1$version.0.post1/" "$config_spec"
+git add "$config_spec"
 
 echo "WARNING: Make sure Fedora Copr maintainers are informed that"
 echo "WARNING: they should run 'copr-frontend branch-fedora $version'".
