@@ -22,7 +22,8 @@ class ShadowUtils:
             # provide this workaround.
             # Tracking upstream bug https://github.com/shadow-maint/shadow/issues/897
             if self.root.config['use_host_shadow_utils']:
-                do_with_status(command + ['--prefix', self.root.make_chroot_path()], raiseExc=not can_fail)
+                isolate_by = self.root.config['shadow_utils_isolation_option']
+                do_with_status(command + [isolate_by, self.root.make_chroot_path()], raiseExc=not can_fail)
             else:
                 self.root.doChroot(command, raiseExc=not can_fail)
 
