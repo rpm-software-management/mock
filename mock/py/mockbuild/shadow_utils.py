@@ -3,7 +3,9 @@ Create users/groups in chroot.  Wrapping the useradd/groupadd utilities.
 """
 
 import grp
+import os
 import pwd
+from mockbuild.file_util import mkdirIfAbsent
 from mockbuild.util import do_with_status
 
 
@@ -13,8 +15,27 @@ class ShadowUtils:
     """
     def __init__(self, root):
         self.root = root
+        self._selinux_workaround_applied = False
+
+    def _selinux_workaround(self):
+        """
+        Work-around for:
+        https://github.com/shadow-maint/shadow/issues/940
+        https://github.com/SELinuxProject/selinux/issues/419
+        """
+        if self._selinux_workaround_applied:
+            return
+
+        path = self.root.make_chroot_path("/sys/fs/selinux")
+        mkdirIfAbsent(path)
+        file = os.path.join(path, "enforce")
+        with open(file, "w", encoding="utf-8") as fd:
+            fd.write("0")
+        self._selinux_workaround_applied = True
 
     def _execute_command(self, command, can_fail=False):
+        self._selinux_workaround()
+
         with self.root.uid_manager.elevated_privileges():
             # Ordinarily we do not want to depend on shadow-utils in the buildroot, but
             # configuring certain options (such as FreeIPA-provided subids) can make it
@@ -22,7 +43,7 @@ class ShadowUtils:
             # provide this workaround.
             # Tracking upstream bug https://github.com/shadow-maint/shadow/issues/897
             if self.root.config['use_host_shadow_utils']:
-                do_with_status(command + ['--prefix', self.root.make_chroot_path()], raiseExc=not can_fail)
+                do_with_status(command + ['--root', self.root.make_chroot_path()], raiseExc=not can_fail)
             else:
                 self.root.doChroot(command, raiseExc=not can_fail)
 
