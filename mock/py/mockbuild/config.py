@@ -423,6 +423,9 @@ def setup_default_config_opts():
     # Upstream issue https://github.com/shadow-maint/shadow/issues/897
     config_opts["use_host_shadow_utils"] = True
 
+    # newer systems overwrite this at rpmbuild time to --root!
+    config_opts["shadow_utils_isolation_option"] = "--prefix"
+
     # mapping from target_arch (or forcearch) to arch in /usr/bin/qemu-*-static
     config_opts["qemu_user_static_mapping"] = {
         'armv7hl': 'arm',

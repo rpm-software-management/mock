@@ -185,6 +185,12 @@ for i in docs/mock.1 docs/mock-parse-buildlog.1; do
     perl -p -i -e 's|\@VERSION\@|%{version}"|' $i
 done
 
+%if 0%{?fedora} >= 44 || 0%{?rhel} >= 11
+for i in docs/site-defaults.cfg py/mockbuild/config.py; do
+    perl -p -i -e 's|config_opts\["shadow_utils_isolation_option"\] = .*|config_opts["shadow_utils_isolation_option"] = "--root"|' "$i"
+done
+%endif
+
 ./precompile-bash-completion "mock.complete"
 
 argparse-manpage --pyfile ./py/mock-hermetic-repo.py --function _argparser > mock-hermetic-repo.1
