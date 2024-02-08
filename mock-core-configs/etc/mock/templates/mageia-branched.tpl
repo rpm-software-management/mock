@@ -29,10 +29,10 @@ user_agent={{ user_agent }}
 # repos
 
 [mageia]
-name=Mageia $releasever - {{ target_arch }}
-#baseurl=http://mirrors.kernel.org/mageia/distrib/$releasever/{{ target_arch }}/media/core/release/
-#metalink=https://mirrors.mageia.org/metalink?distrib=mageia-$releasever&arch={{ target_arch }}@&section=core&repo=release
-mirrorlist=https://www.mageia.org/mirrorlist/?release=$releasever&arch={{ target_arch }}&section=core&repo=release
+name=Mageia $releasever - {{ repo_arch }}
+#baseurl=http://mirrors.kernel.org/mageia/distrib/$releasever/{{ repo_arch }}/media/core/release/
+#metalink=https://mirrors.mageia.org/metalink?distrib=mageia-$releasever&arch={{ repo_arch }}@&section=core&repo=release
+mirrorlist=https://www.mageia.org/mirrorlist/?release=$releasever&arch={{ repo_arch }}&section=core&repo=release
 fastestmirror=1
 gpgcheck=1
 gpgkey=file:///usr/share/distribution-gpg-keys/mageia/RPM-GPG-KEY-Mageia
@@ -40,10 +40,10 @@ enabled=1
 skip_if_unavailable=False
 
 [updates]
-name=Mageia $releasever - {{ target_arch }} - Updates
-#baseurl=http://mirrors.kernel.org/mageia/distrib/$releasever/{{ target_arch }}/media/core/updates/
-#metalink=https://mirrors.mageia.org/metalink?distrib=mageia-$releasever&arch={{ target_arch }}@&section=core&repo=updates
-mirrorlist=https://www.mageia.org/mirrorlist/?release=$releasever&arch={{ target_arch }}&section=core&repo=updates
+name=Mageia $releasever - {{ repo_arch }} - Updates
+#baseurl=http://mirrors.kernel.org/mageia/distrib/$releasever/{{ repo_arch }}/media/core/updates/
+#metalink=https://mirrors.mageia.org/metalink?distrib=mageia-$releasever&arch={{ repo_arch }}@&section=core&repo=updates
+mirrorlist=https://www.mageia.org/mirrorlist/?release=$releasever&arch={{ repo_arch }}&section=core&repo=updates
 fastestmirror=1
 gpgcheck=1
 gpgkey=file:///usr/share/distribution-gpg-keys/mageia/RPM-GPG-KEY-Mageia
@@ -51,10 +51,10 @@ enabled=1
 skip_if_unavailable=False
 
 [mageia-debuginfo]
-name=Mageia $releasever - {{ target_arch }} - Debug
-#baseurl=http://mirrors.kernel.org/mageia/distrib/$releasever/{{ target_arch }}/media/debug/core/release/
-#metalink=https://mirrors.mageia.org/metalink?distrib=mageia-$releasever&arch={{ target_arch }}@&section=core&repo=release&debug=true
-mirrorlist=https://www.mageia.org/mirrorlist/?release=$releasever&arch={{ target_arch }}&section=core&repo=release&debug=1
+name=Mageia $releasever - {{ repo_arch }} - Debug
+#baseurl=http://mirrors.kernel.org/mageia/distrib/$releasever/{{ repo_arch }}/media/debug/core/release/
+#metalink=https://mirrors.mageia.org/metalink?distrib=mageia-$releasever&arch={{ repo_arch }}@&section=core&repo=release&debug=true
+mirrorlist=https://www.mageia.org/mirrorlist/?release=$releasever&arch={{ repo_arch }}&section=core&repo=release&debug=1
 fastestmirror=1
 gpgcheck=1
 gpgkey=file:///usr/share/distribution-gpg-keys/mageia/RPM-GPG-KEY-Mageia
@@ -62,10 +62,10 @@ enabled=0
 skip_if_unavailable=False
 
 [updates-debuginfo]
-name=Mageia $releasever - {{ target_arch }} - Updates - Debug
-#baseurl=http://mirrors.kernel.org/mageia/distrib/$releasever/{{ target_arch }}/media/debug/core/updates/
-#metalink=https://mirrors.mageia.org/metalink?distrib=mageia-$releasever&arch={{ target_arch }}@&section=core&repo=updates&debug=true
-mirrorlist=https://www.mageia.org/mirrorlist/?release=$releasever&arch={{ target_arch }}&section=core&repo=updates&debug=1
+name=Mageia $releasever - {{ repo_arch }} - Updates - Debug
+#baseurl=http://mirrors.kernel.org/mageia/distrib/$releasever/{{ repo_arch }}/media/debug/core/updates/
+#metalink=https://mirrors.mageia.org/metalink?distrib=mageia-$releasever&arch={{ repo_arch }}@&section=core&repo=updates&debug=true
+mirrorlist=https://www.mageia.org/mirrorlist/?release=$releasever&arch={{ repo_arch }}&section=core&repo=updates&debug=1
 fastestmirror=1
 gpgcheck=1
 gpgkey=file:///usr/share/distribution-gpg-keys/mageia/RPM-GPG-KEY-Mageia

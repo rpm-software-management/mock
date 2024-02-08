@@ -307,30 +307,24 @@ class _PackageManager(object):
             try:
                 # either it does not support --installroot (microdnf) or
                 # it is bootstrap image made by container with incomaptible dnf/rpm
+                personality = kwargs.pop("personality", None)
+                if self.buildroot.is_bootstrap and not self.buildroot.config["forcearch"]:
+                    personality = self.buildroot.config["repo_arch"]
+
                 if not self.support_installroot or self.is_bootstrap_image:
-
-                    personality = kwargs.pop("personality", None)
-                    if self.is_bootstrap_image:
-                        # Multilib fix, see on an example: The host-native
-                        # 64-bit package manager installed in the bootstrap
-                        # chroot (from image) needs to know how to resolve the
-                        # $basearch variable.  It would be confused our previous
-                        # 'condPersonality("i386")' call (switched to 32-bit).
-                        # Switch back to 64-bit mode (only the particular DNF
-                        # sub-process).
-                        personality = self.config['host_arch']
-
                     out = util.do(invocation, env=env,
                                   chrootPath=self.buildroot.make_chroot_path(),
                                   personality=personality, **kwargs)
                 elif self.bootstrap_buildroot is None:
+
+
                     out = util.do(invocation, env=env,
-                                  **kwargs)
+                                  personality=personality, **kwargs)
                 else:
                     out = util.do(invocation, env=env,
                                   chrootPath=self.bootstrap_buildroot.make_chroot_path(),
                                   nspawn_args=self.bootstrap_buildroot.config['nspawn_args'],
-                                  **kwargs)
+                                  personality=personality, **kwargs)
                 error = None
                 break
             except Error as e:

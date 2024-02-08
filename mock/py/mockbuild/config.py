@@ -255,6 +255,8 @@ def setup_default_config_opts():
     # dependent on guest OS
     config_opts['use_host_resolv'] = False
     config_opts['chroot_setup_cmd'] = ('groupinstall', 'buildsys-build')
+    config_opts['repo_arch'] = None
+    config_opts['repo_arch_map'] = {}
     config_opts['target_arch'] = 'i386'
     config_opts['releasever'] = None
     config_opts['rpmbuild_arch'] = None  # <-- None means set automatically from target_arch
@@ -431,6 +433,10 @@ def set_config_opts_per_cmdline(config_opts, options, args):
         config_opts['rpmbuild_arch'] = config_opts['target_arch']
     if options.forcearch:
         config_opts['forcearch'] = options.forcearch
+
+    if not config_opts['repo_arch']:
+        target = config_opts['target_arch']
+        config_opts['repo_arch'] = config_opts['repo_arch_map'].get(target, target)
 
     if not options.clean:
         config_opts['clean'] = options.clean
