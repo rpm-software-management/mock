@@ -1,0 +1,3 @@
+The Bash completion script has been fixed to properly complete arguments
+of [multi-arg options][issue#1279] like `--install` or `--chain`.  This
+bug-fix is a follow-up for fix related to [issue#746][].
