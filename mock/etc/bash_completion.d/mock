@@ -34,6 +34,22 @@ _mock_isopt()
     return 1
 }
 
+_mock_isopt_multiarg() {
+    local the_option=$1
+    _mock_isopt "$the_option" || return 1
+    case $the_option in
+    --*)
+        the_option=${the_option##--}
+        ;;
+    esac
+    case $the_option in
+    rebuild|install|installdeps|remove|chain|update|copyin|copyout|pm-cmd|yum-cmd|dnf-cmd|chroot|shell)
+        return 0
+        ;;
+    esac
+    return 1
+}
+
 _mock()
 {
     local cur prev words cword split
@@ -41,7 +57,9 @@ _mock()
 
     local cfgdirs=( /etc/mock "$HOME/.config/mock" )
     local count=0
-    local prevopt
+    local greedyopt=rebuild  # the default mode eating srpms
+    local prevopt=rebuild
+
     for word in "${words[@]}" ; do
         if [[ $count -eq $cword ]] ; then
             # If the last (i.e. current) argument is an option, clear prevopt so that we complete
@@ -51,7 +69,18 @@ _mock()
         fi
         # Record the option argument previous to the current argument to determine the type of
         # completion that is needed
-        _mock_isopt "$word" && prevopt=$word
+        if _mock_isopt_multiarg "$word"; then
+            prevopt=$word
+            # last greedy option wins
+            greedyopt=$word
+        elif _mock_isopt "$word"; then
+            prevopt=$word
+        else
+            # Revert back to the last greedy option.  E.g. for 'mock -r fedora-rawhide-x86_64 <tab>',
+            # we want to react on the default 'rebuild' mode, not `-r`.
+            prevopt=$greedyopt
+        fi
+
         if [[ "$word" == --configdir ]] ; then
             cfgdirs=( "${words[((count+1))]}" )
         elif [[ "$word" == --configdir=* ]] ; then
