@@ -60,7 +60,7 @@ _mock()
         count=$((++count))
     done
 
-    case "$prevopt" in
+    case "$prev" in
         -h|--help|--version)
             # no further arguments are accepted after the above arguments
             return
@@ -138,6 +138,21 @@ _mock()
         COMPREPLY+=( $( compgen -W '--define=' -- "$cur" ) )
         [[ $COMPREPLY == *= ]] && compopt -o nospace
     else
+        # Some options are "sticky" and affect all later regular args
+        case "$prevopt" in
+            -i|--install|install)
+                _filedir 'rpm'
+                COMPREPLY=( $( compgen -W '"${COMPREPLY[@]}"' -X '*.src.rpm' ) )
+                COMPREPLY=( $( compgen -W '"${COMPREPLY[@]}"' -X '*.nosrc.rpm' ) )
+                [[ $cur != */* && $cur != [.~]* ]] && \
+                    declare -F _yum_list &>/dev/null && _yum_list all "$cur"
+                return
+                ;;
+            --remove|remove)
+                declare -F _yum_list &>/dev/null && _yum_list all "$cur"
+                return
+                ;;
+        esac
         _filedir '@(?(no)src.r|s)pm'
     fi
 
