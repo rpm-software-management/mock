@@ -69,6 +69,7 @@ Versions in Linux distributions:
 
 
 ## Release Notes
+* [5.5](Release-Notes-5.5) (2024-02-14) - The `{{ repo_arch }}` support added, chroot_scan supports tarballs, ownership during `--init` fixed, fixed `root_cache` tarball invalidation problem.
 * [5.4](Release-Notes-5.4) (2024-01-04) - Bugfix the rpmautospec plugin.
 * [5.3](Release-Notes-5.3) (2023-12-13) - New "rpmautospec" plugin added, `%generate_buildrequries` fixes landed.
 * [Configs 39.3](Release-Notes-Configs-39.3) - Fedora 40+ configuration uses DNF5, Fedora ELN and OpenMandriva fixes.

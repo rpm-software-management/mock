@@ -3,7 +3,7 @@
 %endif
 
 Name:       mock-core-configs
-Version:    40.0.post1
+Version:    40.1
 Release:    1%{?dist}
 Summary:    Mock core config files basic chroots
 
@@ -151,6 +151,12 @@ fi
 %ghost %config(noreplace,missingok) %{_sysconfdir}/mock/default.cfg
 
 %changelog
+* Wed Feb 14 2024 Pavel Raiskup <praiskup@redhat.com>
+- new '{{ repo_arch }}' template variable used for Mageia
+- Mageia 7 is EOL (wally@mageia.org)
+- OpenMandriva i686 is EOL (frostyx@email.cz)
+- Fedora 40 branched
+
 * Thu Jan 11 2024 Pavel Raiskup <praiskup@redhat.com> 39.4-1
 - configure system_cachedir for dnf5
 - configs: EOL Fedora 37

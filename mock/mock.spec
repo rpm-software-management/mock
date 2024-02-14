@@ -9,7 +9,7 @@
 
 Summary: Builds packages inside chroots
 Name: mock
-Version: 5.4.post1
+Version: 5.5
 Release: 1%{?dist}
 License: GPL-2.0-or-later
 # Source is created by
@@ -289,6 +289,18 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 %dir  %{_datadir}/cheat
 
 %changelog
+* Wed Feb 14 2024 Pavel Raiskup <praiskup@redhat.com>
+- allow chroot_scan to create archive instead of directory (tkopecek@redhat.com)
+- handle greedy options in Bash completion
+- fix root_cache invalidation (not) triggered by config changes
+- new '{{ repo_arch }}' Jinja2 template support
+- package_manager: disable %%-interpolation in dnf.conf parser
+- only `chown` the in-chroot home files with the --rebuild mode
+- all non-privileged actions performed wiht EGID=135 (mock group)
+- mock newly requires a precise version of mock-filesystem
+- allow shadow-utils to run in buildroot by exception if necessary (martjack@redhat.com)
+- hw_info now reports file system type (vondruch@redhat.com)
+
 * Thu Jan 04 2024 Pavel Raiskup <praiskup@redhat.com> 5.4-1
 - Fix installing rpmautospec plugin dependencies (yzhu@redhat.com)
 
