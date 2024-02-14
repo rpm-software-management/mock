@@ -179,7 +179,9 @@ def setup_default_config_opts():
             'regexes': [
                 "^[^k]?core(\\.\\d+)?$", "\\.log$",
             ],
-            'only_failed': True},
+            'only_failed': True,
+            'write_tar': False,
+        },
         'sign_enable': False,
         'sign_opts': {
             'cmd': 'rpmsign',

@@ -8,11 +8,12 @@
 import os
 import os.path
 import re
+import shutil
 import subprocess
 
 # our imports
 from mockbuild.trace_decorator import getLog, traceLog
-from mockbuild import file_util
+from mockbuild import file_util, util
 
 requires_api_version = "1.1"
 
@@ -40,6 +41,10 @@ class ChrootScan(object):
     def _only_failed(self):
         """ Returns boolean value if option 'only_failed' is set. """
         return str(self.scan_opts['only_failed']) == 'True'
+
+    def _tarball(self):
+        """ Returns boolean value if option 'write_tar' is set. """
+        return str(self.scan_opts['write_tar']) == 'True'
 
     @traceLog()
     def _scanChroot(self):
@@ -72,3 +77,12 @@ class ChrootScan(object):
             # some packages installs 555 perms on dirs,
             # so user can't delete/move chroot_scan's results
             subprocess.call(['chmod', '-R', 'u+w', self.resultdir])
+            if self._tarball():
+                tarfile = self.resultdir + ".tar.gz"
+                logger.info("chroot_scan: creating tarball %s", tarfile)
+                __tar_cmd = self.config["tar_binary"]
+                util.do(
+                    [__tar_cmd, "-czf", tarfile, self.resultdir],
+                    shell=False, printOutput=True
+                )
+                shutil.rmtree(self.resultdir)
