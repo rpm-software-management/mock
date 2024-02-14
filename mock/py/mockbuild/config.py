@@ -685,8 +685,7 @@ def update_config_from_file(config_opts, config_file):
         raise exception.ConfigError("Config error: {}: {}".format(config_file, str(exc)))
 
     # this actually allows multiple inclusion of one file, but not in a loop
-    new_paths = set(config_opts["config_paths"])
-    new_paths.union(included_files)
+    new_paths = set(config_opts["config_paths"]) | included_files
     config_opts["config_paths"] = list(new_paths)
 
 
