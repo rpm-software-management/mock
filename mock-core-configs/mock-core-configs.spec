@@ -151,7 +151,7 @@ fi
 %ghost %config(noreplace,missingok) %{_sysconfdir}/mock/default.cfg
 
 %changelog
-* Wed Feb 14 2024 Pavel Raiskup <praiskup@redhat.com>
+* Wed Feb 14 2024 Pavel Raiskup <praiskup@redhat.com> 40.1-1
 - new '{{ repo_arch }}' template variable used for Mageia
 - Mageia 7 is EOL (wally@mageia.org)
 - OpenMandriva i686 is EOL (frostyx@email.cz)

@@ -289,7 +289,7 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 %dir  %{_datadir}/cheat
 
 %changelog
-* Wed Feb 14 2024 Pavel Raiskup <praiskup@redhat.com>
+* Wed Feb 14 2024 Pavel Raiskup <praiskup@redhat.com> 5.5-1
 - allow chroot_scan to create archive instead of directory (tkopecek@redhat.com)
 - handle greedy options in Bash completion
 - fix root_cache invalidation (not) triggered by config changes
