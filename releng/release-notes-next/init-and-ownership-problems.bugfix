@@ -1,0 +1,17 @@
+Mock [has been][PR#1322] [fixed][commit#27dde5da] so that it no longer
+inadvertently changes the group ownership of the in-chroot $HOME directory
+to the wrong group ID.  In previous versions of Mock, the group ownership
+was changed to the effective group ID of the user on the host that
+executed Mock.  This could confuse some tools during the build process, as
+they might want to create similarly owned files at the `rpmbuild` time
+(but that assumption would be incorrect, such GID doesn't exist
+in-chroot).  Now, Mock changes the files to the `mockbuild:mock`
+ownership, where the `mock` group ID is always 135 (the same GID on host
+and in-chroot).  This matches the effective GID for the `rpmbuild`
+process, ensuring that the tools executed during the build process have
+full control over such files.
+
+While on this, Mock was also [optimized][commit#db64d468202] to do this
+ownership change before, and only if, the `rpmbuild` process is started
+(so e.g. plain `mock --chroot` commands do not touch the file ownership at
+all).

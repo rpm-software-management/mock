@@ -1,0 +1,3 @@
+The `mock` package has been fixed to depend on precisely the same version
+of `mock-filesystem` sub-package (product of the same rpm build).  This is
+to protect against incompatible Mock sub-package installations.
