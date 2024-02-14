@@ -1,9 +1,0 @@
-Mock parses the DNF configuration specified in `config_opts["dnf.conf"]` itself
-to perform some post-processing tasks, such as bind-mounting the on-host repo
-directories into the bootstrap chroot based on this DNF config.  In previous
-versions of Mock, there was an issue where it failed to parse the DNF config if
-some of the DNF options contained the '%' symbol.  This was due to Python's
-ConfigParser raising an %-interpolation exception that was ignored but Mock, but
-resulting in Mock ignoring the rest of the config file and finishing without
-performing the mentioned bind-mounts.  This bug has been fixed, and the '%' sign
-is no longer considered to be a special Python ConfigParser character.
