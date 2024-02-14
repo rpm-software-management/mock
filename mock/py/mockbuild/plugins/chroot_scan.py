@@ -40,11 +40,11 @@ class ChrootScan(object):
 
     def _only_failed(self):
         """ Returns boolean value if option 'only_failed' is set. """
-        return str(self.scan_opts['only_failed']) == 'True'
+        return str(self.scan_opts.get('only_failed')) == 'True'
 
     def _tarball(self):
         """ Returns boolean value if option 'write_tar' is set. """
-        return str(self.scan_opts['write_tar']) == 'True'
+        return str(self.scan_opts.get('write_tar')) == 'True'
 
     @traceLog()
     def _scanChroot(self):
