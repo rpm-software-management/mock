@@ -1,0 +1,6 @@
+The `root_cache` plugin is designed to invalidate the cache tarball whenever the
+corresponding Mock configuration changes (any file in the list
+`config_opts['config_paths']` changes).  This cache invalidation mechanism had
+been broken since Mock v3.2 when we rewrote the configuration file loader and
+inadvertently broke the `config_opts['config_paths']`.  The config loader [has
+now been fixed][PR#1322], and the cache invalidation works again as expected.
