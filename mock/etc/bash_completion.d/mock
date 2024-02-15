@@ -50,6 +50,12 @@ _mock_isopt_multiarg() {
     return 1
 }
 
+_mock_parse_help()
+{
+    # PRECOMPILED_PARSED_MOCK_HELP
+    _parse_help "$1"
+}
+
 _mock()
 {
     local cur prev words cword split
@@ -161,7 +167,7 @@ _mock()
     $split && return
 
     if [[ "$cur" == -* ]] ; then
-        COMPREPLY=( $( compgen -W '$( _parse_help "$1" )' -- "$cur" ) )
+        COMPREPLY=( $( compgen -W '$( _mock_parse_help "$1" )' -- "$cur" ) )
         # _parse_help fails to pick up --define (it's a parsing failure due to
         # the quoted 'MACRO EXPR' argument)
         COMPREPLY+=( $( compgen -W '--define=' -- "$cur" ) )

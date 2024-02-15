@@ -65,6 +65,7 @@ BuildRequires: python%{python3_pkgversion}-devel
 %if %{with lint}
 BuildRequires: python%{python3_pkgversion}-pylint
 %endif
+BuildRequires: python%{python3_pkgversion}-rpm
 BuildRequires: python%{python3_pkgversion}-rpmautospec-core
 
 %if 0%{?fedora} >= 38
@@ -166,6 +167,8 @@ for i in docs/mock.1 docs/mock-parse-buildlog.1; do
     perl -p -i -e 's|\@VERSION\@|%{version}"|' $i
 done
 
+./precompile-bash-completion "mock.complete"
+
 %install
 #base filesystem
 mkdir -p %{buildroot}%{_sysconfdir}/mock/eol/templates
@@ -190,6 +193,7 @@ cp -a etc/consolehelper/mock %{buildroot}%{_sysconfdir}/security/console.apps/%{
 
 install -d %{buildroot}%{_datadir}/bash-completion/completions/
 cp -a etc/bash_completion.d/* %{buildroot}%{_datadir}/bash-completion/completions/
+cp -a mock.complete %{buildroot}%{_datadir}/bash-completion/completions/mock
 ln -s mock %{buildroot}%{_datadir}/bash-completion/completions/mock-parse-buildlog
 
 install -d %{buildroot}%{_sysconfdir}/pki/mock
