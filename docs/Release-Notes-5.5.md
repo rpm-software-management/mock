@@ -12,7 +12,7 @@ Released on 2024-02-14.
   directory structure is created in `resultdir`.  If `write_tar` is set to
   `True`, `chroot_scan.tar.gz` tarball will be created instead.
 
-- A new `{{ repo_arch }}` Jinja2 template (templated-dictionary) is provided
+- A new `{% raw %}{{ repo_arch }}{% endraw %}` Jinja2 template (templated-dictionary) is provided
   by Mock.  This variable is usable for DNF config options denoting URLs like
   `baseurl=`, `metalink=`, etc.  Namely, it can be used instead of the DNF-native
   `$basearch` variable which [doesn't work properly for all the
@@ -88,7 +88,7 @@ Released on 2024-02-14.
 
 - Mageia 7 configs [marked as end-of-life][PR#1316].
 
-- Mageia config files started using the `{{ repo_arch }}` option to fix the
+- Mageia config files started using the `{% raw %}{{ repo_arch }}{% endraw %}` option to fix the
   [cross-arch builds][issue#1317].
 
 - The OpenMandriva i686 chroots [have been marked as end-of-life][PR#1315], fixing
