@@ -3,7 +3,7 @@
 %endif
 
 Name:       mock-core-configs
-Version:    40.2
+Version:    40.2.post1
 Release:    1%{?dist}
 Summary:    Mock core config files basic chroots
 
