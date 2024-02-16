@@ -51,7 +51,19 @@ def nspawn_supported():
 @traceLog()
 def setup_default_config_opts():
     "sets up default configuration."
-    config_opts = TemplatedDictionary(alias_spec={'dnf.conf': ['yum.conf', 'dnf5.conf']})
+
+    alt_opts = {'dnf.conf': ['yum.conf', 'dnf5.conf', 'dnf4.conf']}
+    for alt in ["dnf_command", "dnf_common_opts", "dnf_install_command",
+                "dnf_disable_plugins", "dnf_avoid_opts"]:
+        alt_opts[alt.replace("dnf", "dnf4")] = [alt]
+
+    for pm in ["dnf4", "dnf5", "yum", "microdnf"]:
+        alt_opts[f"{pm}_system_command"] = [f"system_{pm}_command"]
+
+    alt_opts["dnf4_system_command"].append("system_dnf_command")
+
+    config_opts = TemplatedDictionary(alias_spec=alt_opts)
+
     config_opts['config_paths'] = []
     config_opts['version'] = VERSION
     config_opts['basedir'] = '/var/lib/mock'  # root name is automatically added to this
@@ -318,20 +330,20 @@ def setup_default_config_opts():
 
     # configurable commands executables
     config_opts['yum_command'] = '/usr/bin/yum'
-    config_opts['system_yum_command'] = '/usr/bin/yum'
+    config_opts['yum_system_command'] = '/usr/bin/yum'
     config_opts['yum_install_command'] = 'install yum yum-utils'
     config_opts['yum_builddep_command'] = '/usr/bin/yum-builddep'
     config_opts["yum_avoid_opts"] = {}
 
-    config_opts['dnf_command'] = '/usr/bin/dnf-3'
-    config_opts['system_dnf_command'] = '/usr/bin/dnf-3'
-    config_opts['dnf_common_opts'] = ['--setopt=deltarpm=False', '--setopt=allow_vendor_change=yes', '--allowerasing']
-    config_opts['dnf_install_command'] = 'install python3-dnf python3-dnf-plugins-core'
-    config_opts['dnf_disable_plugins'] = ['local', 'spacewalk', 'versionlock']
-    config_opts["dnf_avoid_opts"] = {}
+    config_opts['dnf4_command'] = '/usr/bin/dnf-3'
+    config_opts['dnf4_system_command'] = '/usr/bin/dnf-3'
+    config_opts['dnf4_common_opts'] = ['--setopt=deltarpm=False', '--setopt=allow_vendor_change=yes', '--allowerasing']
+    config_opts['dnf4_install_command'] = 'install python3-dnf python3-dnf-plugins-core'
+    config_opts['dnf4_disable_plugins'] = ['local', 'spacewalk', 'versionlock']
+    config_opts["dnf4_avoid_opts"] = {}
 
     config_opts['dnf5_command'] = '/usr/bin/dnf5'
-    config_opts['system_dnf5_command'] = '/usr/bin/dnf5'
+    config_opts['dnf5_system_command'] = '/usr/bin/dnf5'
     config_opts['dnf5_common_opts'] = ['--setopt=deltarpm=False', '--setopt=allow_vendor_change=yes', '--allowerasing']
     config_opts['dnf5_install_command'] = 'install dnf5 dnf5-plugins'
     config_opts['dnf5_disable_plugins'] = []
