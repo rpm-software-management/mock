@@ -820,9 +820,12 @@ class Commands(object):
     def copy_build_results(self, results):
         self.buildroot.root_log.debug("Copying packages to result dir")
         ret = []
-        for item in results:
-            shutil.copy2(item, self.buildroot.resultdir)
-            ret.append(os.path.join(self.buildroot.resultdir, os.path.split(item)[1]))
+        try:
+            for item in results:
+                shutil.copy2(item, self.buildroot.resultdir)
+                ret.append(os.path.join(self.buildroot.resultdir, os.path.split(item)[1]))
+        except OSError as err:
+            raise Error(f"Can not copy {item} into resultdir {self.buildroot.resultdir}: {err}") from err
         return ret
 
     @traceLog()
