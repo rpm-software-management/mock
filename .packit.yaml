@@ -63,3 +63,10 @@ jobs:
 
   - <<: *pr_test
     trigger: commit
+
+tf_extra_params:
+  # https://cockpit-project.org/blog/tmt-cross-project-testing.html
+  environments:
+    - artifacts:
+      - type: repository-file
+        id: https://copr.fedorainfracloud.org/coprs/g/mock/mock-deps/repo/fedora-$releasever/group_mock-mock-deps-fedora-$releasever.repo

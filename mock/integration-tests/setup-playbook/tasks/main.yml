@@ -3,6 +3,10 @@
   community.general.copr:
     name: '@mock/mock-stable'
 
+- name: up2date mock dependencies
+  community.general.copr:
+    name: '@mock/mock-deps'
+
 - name: install mock and other needed packages
   package: name={{ packages }} state=latest
   vars:
