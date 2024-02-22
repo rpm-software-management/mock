@@ -178,6 +178,7 @@ install -d %{buildroot}%{_bindir}
 install -d %{buildroot}%{_libexecdir}/mock
 install mockchain %{buildroot}%{_bindir}/mockchain
 install py/mock-parse-buildlog.py %{buildroot}%{_bindir}/mock-parse-buildlog
+install py/mock-scrub-everything.py %{buildroot}%{_bindir}/mock-scrub-everything
 install py/mock.py %{buildroot}%{_libexecdir}/mock/mock
 ln -s consolehelper %{buildroot}%{_bindir}/mock
 install create_default_route_in_container.sh %{buildroot}%{_libexecdir}/mock/
@@ -243,6 +244,7 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 # executables
 %{_bindir}/mock
 %{_bindir}/mockchain
+%{_bindir}/mock-scrub-everything
 %{_bindir}/mock-parse-buildlog
 %{_libexecdir}/mock
 
