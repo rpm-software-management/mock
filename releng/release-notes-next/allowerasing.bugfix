@@ -1,0 +1,2 @@
+Don't use the `--allowerasing` parameter for DNF subcommands such as
+`repoquery`, `makecache`, `search`, and `info`.
