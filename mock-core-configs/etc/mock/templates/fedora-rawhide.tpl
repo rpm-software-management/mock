@@ -86,33 +86,5 @@ gpgkey={{ rawhide_gpg_keys() }}
 gpgcheck=1
 enabled=0
 skip_if_unavailable=False
-
-# modular
-
-[rawhide-modular]
-name=Fedora - Modular Rawhide - Developmental packages for the next Fedora release
-metalink=https://mirrors.fedoraproject.org/metalink?repo=rawhide-modular&arch=$basearch
-# if you want to enable it, you should set best=0
-# see https://bugzilla.redhat.com/show_bug.cgi?id=1673851
-enabled=0
-gpgcheck=1
-gpgkey={{ rawhide_gpg_keys() }}
-skip_if_unavailable=False
-
-[rawhide-modular-debuginfo]
-name=Fedora - Modular Rawhide - Debug
-metalink=https://mirrors.fedoraproject.org/metalink?repo=rawhide-modular-debug&arch=$basearch
-enabled=0
-gpgcheck=1
-gpgkey={{ rawhide_gpg_keys() }}
-skip_if_unavailable=False
-
-[rawhide-modular-source]
-name=Fedora - Modular Rawhide - Source
-metalink=https://mirrors.fedoraproject.org/metalink?repo=rawhide-modular-source&arch=$basearch
-enabled=0
-gpgcheck=1
-gpgkey={{ rawhide_gpg_keys() }}
-skip_if_unavailable=False
 {% endif %}
 """
