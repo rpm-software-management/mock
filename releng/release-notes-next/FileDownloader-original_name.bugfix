@@ -1,0 +1,5 @@
+When a `mock --chain --recurse` fails to built at least one package, it is
+unable to print a list of failed packages and displays `AttributeError: type
+object 'FileDownloader' has no attribute 'backmap'` instead. The `original_name`
+method of `FileDownloader` class has been fixed, and the chain build results
+displayed as expected ([issue#1345][]).
