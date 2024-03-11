@@ -9,10 +9,16 @@ config_opts['chroot_setup_cmd'] = 'install @{% if mirrored %}buildsys-{% endif %
 config_opts['dist'] = 'fc{{ releasever }}'  # only useful for --resultdir variable subst
 config_opts['extra_chroot_dirs'] = [ '/run/lock', ]
 
-# https://fedoraproject.org/wiki/Changes/BuildWithDNF5 for Fedora 40+
-config_opts['package_manager'] = '{% if releasever|int >= 40 %}dnf5{% else %}dnf{% endif %}'
-
-config_opts['bootstrap_image'] = 'registry.fedoraproject.org/fedora:{{ releasever }}'
+# For F41+ there's https://fedoraproject.org/wiki/Changes/ReplaceDnfWithDnf5 so
+# once finished, we may use the default Fedora image.  Now we are on nightlies
+# maintained by the RPM Software Management team.
+if int(config_opts['releasever']) >= 40:
+    config_opts['package_manager'] = 'dnf5'
+    config_opts['bootstrap_image'] = 'quay.io/rpmsoftwaremanagement/fedora-dnf5:{{ releasever }}'
+    config_opts['bootstrap_image_ready'] = True
+else:
+    config_opts['package_manager'] = 'dnf'
+    config_opts['bootstrap_image'] = 'registry.fedoraproject.org/fedora:{{ releasever }}'
 
 config_opts['dnf.conf'] = """
 [main]
