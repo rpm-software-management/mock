@@ -12,11 +12,11 @@ config_opts['releasever'] = '41'
 # https://fedoraproject.org/wiki/Changes/BuildWithDNF5
 config_opts['package_manager'] = 'dnf5'
 
-config_opts['bootstrap_image'] = 'registry.fedoraproject.org/fedora:rawhide'
-
 # For F41+ there's https://fedoraproject.org/wiki/Changes/ReplaceDnfWithDnf5 so
-# once done, re-revert https://pagure.io/fedora-kickstarts/c/f7bf98d3af6d655c6d64ba9c8d2f88cbffbbb06d?branch=main
-#config_opts['bootstrap_image_ready'] = True
+# once finished, we may use the default Fedora image.  Now we are on nightlies
+# maintained by the RPM Software Management team.
+config_opts['bootstrap_image'] = 'quay.io/rpmsoftwaremanagement/fedora-dnf5:rawhide'
+config_opts['bootstrap_image_ready'] = True
 
 config_opts['description'] = 'Fedora Rawhide'
 
