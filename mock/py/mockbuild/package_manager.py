@@ -18,10 +18,11 @@ from .trace_decorator import traceLog, getLog
 from .mounts import BindMountPoint
 
 fallbacks = {
-    'dnf': ['dnf', 'dnf5', 'yum'],
-    'yum': ['yum', 'dnf', 'dnf5'],
-    'microdnf': ['microdnf', 'dnf','dnf5', 'yum'],
-    'dnf5': ['dnf5', 'dnf', 'yum'],
+    'dnf4': ['dnf4', 'dnf5', 'yum'],
+    'dnf': ['dnf4', 'dnf5', 'yum'],  # backward-compat
+    'yum': ['yum', 'dnf4', 'dnf5'],
+    'microdnf': ['microdnf', 'dnf4', 'dnf5', 'yum'],
+    'dnf5': ['dnf5', 'dnf4', 'yum'],
 }
 
 
@@ -30,7 +31,9 @@ def package_manager_from_string(name):
         return Dnf5
     if name == 'yum':
         return Yum
-    if name == 'dnf':
+    if name == 'dnf4':
+        return Dnf
+    if name == 'dnf': # backward compat
         return Dnf
     if name == 'microdnf':
         return MicroDnf
@@ -671,7 +674,7 @@ def _check_missing(output):
 
 
 class Dnf(_PackageManager):
-    name = 'dnf'
+    name = 'dnf4'
     support_installroot = True
 
     def __init__(self, config, buildroot, plugins, bootstrap_buildroot):
