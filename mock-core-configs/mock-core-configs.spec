@@ -3,7 +3,7 @@
 %endif
 
 Name:       mock-core-configs
-Version:    40.2.post1
+Version:    40.3
 Release:    1%{?dist}
 Summary:    Mock core config files basic chroots
 
@@ -151,6 +151,16 @@ fi
 %ghost %config(noreplace,missingok) %{_sysconfdir}/mock/default.cfg
 
 %changelog
+* Fri Apr 05 2024 Jakub Kadlcik <frostyx@email.cz> 40.3-1
+- Add initial c10s mock configs (Koji BUILDROOT only) (miro@hroncok.cz)
+- configs: use repo_arch, not target_arch with openSUSE (praiskup@redhat.com)
+- configs: Drop modular repositories from Fedora Branched
+  (ngompa@fedoraproject.org)
+- configs: Drop modular repositories from Fedora Rawhide
+  (ngompa@fedoraproject.org)
+- Configs 40.2 release notes && post-release administrivia
+  (praiskup@redhat.com)
+
 * Fri Feb 16 2024 Pavel Raiskup <praiskup@redhat.com> 40.2-1
 - Use dnf5 on Fedora 40+ (miro@hroncok.cz)
 
