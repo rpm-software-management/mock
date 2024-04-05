@@ -29,7 +29,7 @@ def _limited_config(opts):
         return []
     with tempfile.NamedTemporaryFile(delete=False, dir=".") as config_fd:
         opts.temp_config = config_fd.name
-        with open("towncrier.toml", "rb") as fd:
+        with open("pyproject.toml", "rb") as fd:
             for line in fd.readlines():
                 if b'{ name' not in line:
                     config_fd.write(line)
