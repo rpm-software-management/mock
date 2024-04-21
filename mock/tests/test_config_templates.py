@@ -12,6 +12,31 @@ def test_transitive_expand():
     assert config['c'] == 'test test test test'
 
 
+@pytest.mark.parametrize('setup', [
+    # host target bootstrap expected_repo
+    ('x86_64', 'arm7hl', True, 'x86_64'),
+    ('x86_64', 'arm7hl', False, 'armhfp'),
+    ('ppc64le', 'arm7hl', True, 'ppc64le'),
+    ('ppc64le', 'arm7hl', False, 'armhfp'),
+])
+def test_nested_access(setup):
+    """
+    Check that we can access config_opts["foo"]["bar"] items in jinja.
+    """
+    host, target, bootstrap, result = setup
+    config = TemplatedDictionary()
+    config["archmap"] = {"i386": "i686", "arm7hl": "armhfp", "x86_64": "x86_64"}
+    config["host_arch"] = host
+    config["target_arch"] = target
+    config["root"] = "foo-bootstrap" if bootstrap else "foo"
+    config["repo_arch"] = (
+        "{% set desired = host_arch if root.endswith('bootstrap') else target_arch %}"
+        "{{ archmap[desired] if desired in archmap else desired }}"
+    )
+    config['__jinja_expand'] = True
+    assert config['repo_arch'] == result
+
+
 def test_aliases():
     config = TemplatedDictionary(
         alias_spec={

@@ -1,0 +1,106 @@
+#! /bin/bash
+
+# Install RPM packages (and dependencies) identified by the (a) package names,
+# (b) upstream commmit and (c) Copr directory.  The short variant of the
+# upstream commit must be part of the packages' Release in NVR.
+#
+# ARG1: coprowner/projectname:dir
+# ARG2: upstream-commit
+# ARGN: packagename1 packagename2 ...
+
+# TODO: DNF5/YUM compat?
+DNF=/usr/bin/dnf-3
+REPOQUERY=( "$DNF" repoquery )
+DOWNLOAD=( "$DNF" download )
+
+copr_dir=$1 ; shift
+commit=$1 ; shift
+copr_uri=https://download.copr.fedorainfracloud.org/results
+
+copr_chroot() (
+    # mimic: https://github.com/rpm-software-management/dnf5/blob/c6edcd75260accf7070f261e5b406fcf1f5db328/dnf5-plugins/copr_plugin/copr_config.cpp#L71-L80
+    . /etc/os-release
+    name=$ID
+    version=$VERSION_ID
+    arch=$(rpm --eval %_arch)
+    if test "$name" = fedora; then
+        if test "$REDHAT_SUPPORT_PRODUCT_VERSION" = rawhide; then
+            version=rawhide
+        fi
+    fi
+    echo "$name-$version-$arch"
+)
+
+repo=$copr_uri/$copr_dir/$(copr_chroot)
+
+echo >&2 "using repo: $repo"
+
+repoid=xyztest
+
+export clean_cache=true
+
+
+repos=( "--repofrompath=$repoid,$repo"  )
+
+_repoquery() {
+    local opts=( "${repos[@]}" --disablerepo='*' --enablerepo "$repoid" )
+    if ${clean_cache-true}; then
+        opts+=( "--setopt=$repoid.metadata_expire=1" )
+    fi
+    local cmd=( "${REPOQUERY[@]}" "${opts[@]}" "$@" )
+    info "Executing: ${cmd[*]}"
+    "${cmd[@]}" 2>/dev/null
+}
+
+info() { echo >&2 "INFO: $*" ;  }
+error() { echo >&2 "ERROR: $*" ; false; }
+die() { echo >&2 "FATAL: $*" ; exit 1 ; }
+
+find_nvr() {
+    # ARGS: $1=pkg $2=commit
+    # RETURN: $find_nvr_result
+    # STATUS: true if found
+    local _pkgname=$1 _commit=${2:0:7} _found=false
+    while read -r name version release; do
+        test -z "$name" && continue
+        test "$name" = "$_pkgname" || continue
+        case $release in
+            *$_commit*)
+                find_nvr_result=$name-$version-$release
+                $_found && error "second occurence of $name-$version-$release"
+                _found=true
+                ;;
+            *)
+                continue
+                ;;
+        esac
+    done < <( _repoquery --qf='%{NAME} %{VERSION} %{RELEASE}\n' )
+    $_found || error "$_pkgname with $commit in release not found"
+}
+
+nvrs=()
+SECONDS=0
+TIMEOUT=${TIMEOUT-1200} # 20 minutes by default
+for pkg; do
+    while true; do
+        if find_nvr "$pkg" "$commit"; then
+            nvrs+=( "$find_nvr_result" )
+            clean_cache=false
+            break
+        fi
+        test "$SECONDS" -gt "$TIMEOUT" && die "The timeout ${TIMEOUT}s left"
+        clean_cache=true
+        sleep 5
+    done
+done
+
+if test -n "$SRPM_DOWNLOAD_DIR"; then
+    mkdir -p "$SRPM_DOWNLOAD_DIR"
+    cmd=( "${DOWNLOAD[@]}" "${repos[@]}"  '--disablerepo=*' --enablerepo xyztest
+          "${nvrs[@]}" --source --downloaddir "$SRPM_DOWNLOAD_DIR" )
+else
+    cmd=( "$DNF" -y install "${nvrs[@]}" "${repos[@]}" --nogpgcheck )
+fi
+
+info "Running: ${cmd[*]}"
+"${cmd[@]}"

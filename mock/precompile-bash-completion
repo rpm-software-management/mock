@@ -1,0 +1,25 @@
+#! /bin/bash
+
+mock_options=$(
+    # shellcheck source=/dev/null
+    . /usr/share/bash-completion/bash_completion
+    _parse_help py/mock.py
+)
+
+# Some trivial assert to check it actually works
+case $mock_options in
+*--chroot*) ;;
+*) exit 1 ;;
+esac
+
+while IFS= read -r line; do
+    case $line in
+    *PRECOMPILED_PARSED_MOCK_HELP*)
+        echo "echo '"
+        echo "$mock_options"
+        echo "'"
+        echo "return"
+        ;;
+    *) echo "$line" ;;
+    esac
+done < ./etc/bash_completion.d/mock > "${1-mock-preprocessed}"

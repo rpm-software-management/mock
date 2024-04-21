@@ -8,7 +8,10 @@ config_opts['chroot_setup_cmd'] = 'install @{% if mirrored %}buildsys-{% endif %
 
 config_opts['dist'] = 'fc{{ releasever }}'  # only useful for --resultdir variable subst
 config_opts['extra_chroot_dirs'] = [ '/run/lock', ]
-config_opts['package_manager'] = 'dnf'
+
+# https://fedoraproject.org/wiki/Changes/BuildWithDNF5 for Fedora 40+
+config_opts['package_manager'] = '{% if releasever|int >= 40 %}dnf5{% else %}dnf{% endif %}'
+
 config_opts['bootstrap_image'] = 'registry.fedoraproject.org/fedora:{{ releasever }}'
 
 config_opts['dnf.conf'] = """
@@ -101,73 +104,6 @@ metalink=https://mirrors.fedoraproject.org/metalink?repo=updates-released-source
 gpgkey=file:///usr/share/distribution-gpg-keys/fedora/RPM-GPG-KEY-fedora-{{ releasever }}-primary
 gpgcheck=1
 enabled=0
-skip_if_unavailable=False
-
-# modular
-
-[fedora-modular]
-name=Fedora Modular $releasever - $basearch
-metalink=https://mirrors.fedoraproject.org/metalink?repo=fedora-modular-$releasever&arch=$basearch
-# if you want to enable it, you should set best=0
-# see https://bugzilla.redhat.com/show_bug.cgi?id=1673851
-enabled=0
-repo_gpgcheck=0
-type=rpm
-gpgcheck=1
-gpgkey=file:///usr/share/distribution-gpg-keys/fedora/RPM-GPG-KEY-fedora-$releasever-primary
-skip_if_unavailable=False
-
-[fedora-modular-debuginfo]
-name=Fedora Modular $releasever - $basearch - Debug
-metalink=https://mirrors.fedoraproject.org/metalink?repo=fedora-modular-debug-$releasever&arch=$basearch
-enabled=0
-repo_gpgcheck=0
-type=rpm
-gpgcheck=1
-gpgkey=file:///usr/share/distribution-gpg-keys/fedora/RPM-GPG-KEY-fedora-$releasever-primary
-skip_if_unavailable=False
-
-[fedora-modular-source]
-name=Fedora Modular $releasever - Source
-metalink=https://mirrors.fedoraproject.org/metalink?repo=fedora-modular-source-$releasever&arch=$basearch
-enabled=0
-repo_gpgcheck=0
-type=rpm
-gpgcheck=1
-gpgkey=file:///usr/share/distribution-gpg-keys/fedora/RPM-GPG-KEY-fedora-$releasever-primary
-skip_if_unavailable=False
-
-[updates-modular]
-name=Fedora Modular $releasever - $basearch - Updates
-#baseurl=http://download.fedoraproject.org/pub/fedora/linux/updates/$releasever/Modular/$basearch/
-metalink=https://mirrors.fedoraproject.org/metalink?repo=updates-released-modular-f$releasever&arch=$basearch
-enabled=0
-repo_gpgcheck=0
-type=rpm
-gpgcheck=1
-gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-fedora-$releasever-$basearch
-skip_if_unavailable=False
-
-[updates-modular-debuginfo]
-name=Fedora Modular $releasever - $basearch - Updates - Debug
-#baseurl=http://download.fedoraproject.org/pub/fedora/linux/updates/$releasever/Modular/$basearch/debug/
-metalink=https://mirrors.fedoraproject.org/metalink?repo=updates-released-modular-debug-f$releasever&arch=$basearch
-enabled=0
-repo_gpgcheck=0
-type=rpm
-gpgcheck=1
-gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-fedora-$releasever-$basearch
-skip_if_unavailable=False
-
-[updates-modular-source]
-name=Fedora Modular $releasever - Updates Source
-#baseurl=http://download.fedoraproject.org/pub/fedora/linux/updates/$releasever/Modular/SRPMS/
-metalink=https://mirrors.fedoraproject.org/metalink?repo=updates-released-modular-source-f$releasever&arch=$basearch
-enabled=0
-repo_gpgcheck=0
-type=rpm
-gpgcheck=1
-gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-fedora-$releasever-$basearch
 skip_if_unavailable=False
 {% endif %}
 """

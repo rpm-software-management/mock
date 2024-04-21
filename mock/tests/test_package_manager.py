@@ -89,6 +89,9 @@ class TestPackageManager:
         [external]
         baseurl = http://exmaple.com/test/
 
+        [external-urlencoded]
+        baseurl = http://example.com/results/%40fedora-llvm-team/
+
         [fedora]
         baseurl = {}
         """.format(repo_directory)

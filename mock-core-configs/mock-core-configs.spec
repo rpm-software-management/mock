@@ -3,7 +3,7 @@
 %endif
 
 Name:       mock-core-configs
-Version:    39.4.post1
+Version:    40.3.post1
 Release:    1%{?dist}
 Summary:    Mock core config files basic chroots
 
@@ -24,7 +24,7 @@ Provides: mock-configs
 # distribution-gpg-keys contains GPG keys used by mock configs
 Requires:   distribution-gpg-keys >= 1.98
 # specify minimal compatible version of mock
-Requires:   mock >= 5.0
+Requires:   mock >= 5.4.post1
 Requires:   mock-filesystem
 
 Requires(post): coreutils
@@ -151,6 +151,25 @@ fi
 %ghost %config(noreplace,missingok) %{_sysconfdir}/mock/default.cfg
 
 %changelog
+* Fri Apr 05 2024 Jakub Kadlcik <frostyx@email.cz> 40.3-1
+- Add initial c10s mock configs (Koji BUILDROOT only) (miro@hroncok.cz)
+- configs: use repo_arch, not target_arch with openSUSE (praiskup@redhat.com)
+- configs: Drop modular repositories from Fedora Branched
+  (ngompa@fedoraproject.org)
+- configs: Drop modular repositories from Fedora Rawhide
+  (ngompa@fedoraproject.org)
+- Configs 40.2 release notes && post-release administrivia
+  (praiskup@redhat.com)
+
+* Fri Feb 16 2024 Pavel Raiskup <praiskup@redhat.com> 40.2-1
+- Use dnf5 on Fedora 40+ (miro@hroncok.cz)
+
+* Wed Feb 14 2024 Pavel Raiskup <praiskup@redhat.com> 40.1-1
+- new '{{ repo_arch }}' template variable used for Mageia
+- Mageia 7 is EOL (wally@mageia.org)
+- OpenMandriva i686 is EOL (frostyx@email.cz)
+- Fedora 40 branched
+
 * Thu Jan 11 2024 Pavel Raiskup <praiskup@redhat.com> 39.4-1
 - configure system_cachedir for dnf5
 - configs: EOL Fedora 37

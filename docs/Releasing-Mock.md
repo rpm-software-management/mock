@@ -67,10 +67,16 @@ helps you to setup a correct configuration layout.
 
    Fix the test-suite errors first, before moving to the next step.
 
-6. Prepare release notes.
+6. Prepare release notes. Use the going-to-be-released version, not
+   the current version. If you want to release only configs, use
+   `--config-only`.
 
+        $ sudo dnf install towncrier
         $ ./releng/generate-release-notes --use-version 5.1
         $ vim docs/Release-Notes-5.1.md  # modify manually!
+
+   Rename release notes for configs from e.g. `Release-Notes-40.3.md`
+   to `Release-Notes-Configs-40.3.md`.
 
    Don't forget to manually modify ./docs/index.md and mention the new release.
 

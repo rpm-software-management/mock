@@ -30,10 +30,10 @@ user_agent={{ user_agent }}
 # repos
 
 [mageia-cauldron]
-name=Mageia Cauldron - {{ target_arch }}
-#baseurl=http://mirrors.kernel.org/mageia/distrib/cauldron/{{ target_arch }}/media/core/release/
-#metalink=https://mirrors.mageia.org/metalink?distrib=cauldron&arch={{ target_arch }}@&section=core&repo=release
-mirrorlist=https://www.mageia.org/mirrorlist/?release=cauldron&arch={{ target_arch }}&section=core&repo=release
+name=Mageia Cauldron - {{ repo_arch }}
+#baseurl=http://mirrors.kernel.org/mageia/distrib/cauldron/{{ repo_arch }}/media/core/release/
+#metalink=https://mirrors.mageia.org/metalink?distrib=cauldron&arch={{ repo_arch }}@&section=core&repo=release
+mirrorlist=https://www.mageia.org/mirrorlist/?release=cauldron&arch={{ repo_arch }}&section=core&repo=release
 fastestmirror=1
 gpgcheck=1
 gpgkey=file:///usr/share/distribution-gpg-keys/mageia/RPM-GPG-KEY-Mageia
@@ -41,10 +41,10 @@ enabled=1
 skip_if_unavailable=False
 
 [mageia-cauldron-debuginfo]
-name=Mageia Cauldron - {{ target_arch }} - Debug
-#baseurl=http://mirrors.kernel.org/mageia/distrib/cauldron/{{ target_arch }}/media/debug/core/release/
-#metalink=https://mirrors.mageia.org/metalink?distrib=cauldron&arch={{ target_arch }}@&section=core&repo=release&debug=true
-mirrorlist=https://www.mageia.org/mirrorlist/?release=cauldron&arch={{ target_arch }}&section=core&repo=release&debug=1
+name=Mageia Cauldron - {{ repo_arch }} - Debug
+#baseurl=http://mirrors.kernel.org/mageia/distrib/cauldron/{{ repo_arch }}/media/debug/core/release/
+#metalink=https://mirrors.mageia.org/metalink?distrib=cauldron&arch={{ repo_arch }}@&section=core&repo=release&debug=true
+mirrorlist=https://www.mageia.org/mirrorlist/?release=cauldron&arch={{ repo_arch }}&section=core&repo=release&debug=1
 fastestmirror=1
 gpgcheck=1
 gpgkey=file:///usr/share/distribution-gpg-keys/mageia/RPM-GPG-KEY-Mageia

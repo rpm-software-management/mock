@@ -179,7 +179,9 @@ def setup_default_config_opts():
             'regexes': [
                 "^[^k]?core(\\.\\d+)?$", "\\.log$",
             ],
-            'only_failed': True},
+            'only_failed': True,
+            'write_tar': False,
+        },
         'sign_enable': False,
         'sign_opts': {
             'cmd': 'rpmsign',
@@ -255,6 +257,8 @@ def setup_default_config_opts():
     # dependent on guest OS
     config_opts['use_host_resolv'] = False
     config_opts['chroot_setup_cmd'] = ('groupinstall', 'buildsys-build')
+    config_opts['repo_arch'] = None
+    config_opts['repo_arch_map'] = {}
     config_opts['target_arch'] = 'i386'
     config_opts['releasever'] = None
     config_opts['rpmbuild_arch'] = None  # <-- None means set automatically from target_arch
@@ -324,7 +328,13 @@ def setup_default_config_opts():
     config_opts['dnf5_disable_plugins'] = []
     # No --allowerasing with remove, per
     # https://github.com/rpm-software-management/dnf5/issues/729
-    config_opts["dnf5_avoid_opts"] = {"remove": ["--allowerasing"]}
+    config_opts["dnf5_avoid_opts"] = {
+        "remove": ["--allowerasing"],
+        "repoquery": ["--allowerasing"],
+        "makecache": ["--allowerasing"],
+        "search": ["--allowerasing"],
+        "info": ["--allowerasing"],
+    }
 
     config_opts['microdnf_command'] = '/usr/bin/microdnf'
     # "dnf-install" is special keyword which tells mock to use install but with DNF
@@ -431,6 +441,10 @@ def set_config_opts_per_cmdline(config_opts, options, args):
         config_opts['rpmbuild_arch'] = config_opts['target_arch']
     if options.forcearch:
         config_opts['forcearch'] = options.forcearch
+
+    if not config_opts['repo_arch']:
+        target = config_opts['target_arch']
+        config_opts['repo_arch'] = config_opts['repo_arch_map'].get(target, target)
 
     if not options.clean:
         config_opts['clean'] = options.clean
@@ -679,8 +693,7 @@ def update_config_from_file(config_opts, config_file):
         raise exception.ConfigError("Config error: {}: {}".format(config_file, str(exc)))
 
     # this actually allows multiple inclusion of one file, but not in a loop
-    new_paths = set(config_opts["config_paths"])
-    new_paths.union(included_files)
+    new_paths = set(config_opts["config_paths"]) | included_files
     config_opts["config_paths"] = list(new_paths)
 
 

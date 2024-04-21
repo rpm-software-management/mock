@@ -80,9 +80,9 @@ class FileDownloader:
     @classmethod
     def original_name(cls, localname):
         """ Get the URL from the local name """
-        if not cls.backmap:
-            return localname
-        return cls.backmap.get(localname, localname)
+        if getattr(cls, 'backmap', None):
+            return cls.backmap.get(localname, localname)
+        return localname
 
     @classmethod
     def cleanup(cls):

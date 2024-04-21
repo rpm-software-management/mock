@@ -739,6 +739,22 @@ def main():
         # disable updating bootstrap chroot
         bootstrap_buildroot_config['update_before_build'] = False
 
+        # Enforce host-native repo architecture for bootstrap chroot (unless
+        # bootstrap_forcearch=True, which should never be the case).  This
+        # decision affects condPersonality() for DNF calls!
+        host_arch = config_opts["host_arch"]
+        if config_opts["use_bootstrap_image"]:
+            # with bootstrap image, bootstrap is always native
+            bootstrap_buildroot_config['repo_arch'] = config_opts['repo_arch_map'].get(host_arch, host_arch)
+        elif host_arch not in config_opts.get("legal_host_arches", []) \
+                and not config_opts.get('bootstrap_forcearch'):
+            # target chroot uses --forcearch, but bootstrap is native
+            bootstrap_buildroot_config['repo_arch'] = config_opts['repo_arch_map'].get(host_arch, host_arch)
+        # else:
+        # We keep the 'repo_arch' copied from target chroot (config_opts['repo_arch']):
+        # - for the 'multilib' cases (we don't want to use x86_64 repos for i586 chroots)
+        # - 'bootstrap_forcearch' is set
+
         # disable forcearch in bootstrap, per https://github.com/rpm-software-management/mock/issues/1110
         bootstrap_buildroot_config['forcearch'] = None
 

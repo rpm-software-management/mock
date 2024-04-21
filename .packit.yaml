@@ -2,42 +2,59 @@
 # https://packit.dev/docs/configuration/
 
 ---
+actions:
+  create-archive:
+    - bash -c "tito build --tgz --test -o ."
+    - bash -c "ls -1t ./*.tar.gz | head -n 1"
+  get-current-version:
+    - bash -c "grep ^Version \"$PACKIT_CONFIG_PACKAGE_NAME.spec\" | awk '{ print $2 }'"
+
+# We need to keep the pushed SHA, it is later exported
+# as $PACKIT_COMMIT_SHA for Testing Farm jobs.
+merge_pr_in_ci: false
+
 packages:
   mock:
     specfile_path: mock.spec
     paths:
       - ./mock
-    actions:
-      create-archive:
-        - bash -c "tito build --tgz --test -o ."
-        - bash -c "ls -1t ./*.tar.gz | head -n 1"
-      get-current-version:
-        - bash -c "git describe --match mock-[0-9]* --abbrev=0 HEAD | egrep -o
-          [0-9]+\.[0-9]+"
     downstream_package_name: mock
     upstream_tag_template: mock-{version}
   mock-core-configs:
     specfile_path: mock-core-configs.spec
     paths:
       - ./mock-core-configs
-    actions:
-      create-archive:
-        - bash -c "tito build --tgz --test -o ."
-        - bash -c "ls -1t ./*.tar.gz | head -n 1"
-      get-current-version:
-        - bash -c "git describe --match mock-core-configs-[0-9]* --abbrev=0 HEAD
-          | egrep -o [0-9]+\.[0-9]+"
     downstream_package_name: mock-core-configs
     upstream_tag_template: mock-core-configs-{version}
 srpm_build_deps:
   - tito
   - git
+
 jobs:
-  - job: copr_build
-    trigger: pull_request
-    packages:
-      - mock
-      - mock-core-configs
-    metadata:
+  - <<: &pr_build
+      job: copr_build
+      trigger: pull_request
+      packages:
+        - mock
+        - mock-core-configs
       targets:
         - fedora-rawhide
+        - fedora-latest-stable
+
+  - <<: *pr_build
+    trigger: commit
+    owner: "@mock"
+    project: "mock"
+    branch: main
+
+  - <<: &pr_test
+      job: tests
+      trigger: pull_request
+      targets:
+        - fedora-latest-stable
+      # We don't want to run two test runs; so we limit this to a single package
+      packages:
+        - mock
+
+  - <<: *pr_test
+    trigger: commit

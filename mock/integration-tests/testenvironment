@@ -1,6 +1,5 @@
 TESTDIR=$(cd $(dirname $0); pwd; cd ..)
 TOPDIR=$(dirname $TESTDIR)
-MOCKSRPM=$( (cd $TOPDIR; tito build --srpm --offline |grep Wrote | grep src.rpm | awk '{ print $2}' ))
 SIMPLESRPM=$TESTDIR/test-C-1.1-0.src.rpm
 
 #VERBOSE=

@@ -1,0 +1,3 @@
+No more ugly tracebacks for "no space left on device" (and similar
+`OSError`s) related to copying built artifacts to `--resultdir`,
+[rhbz#2261758][].

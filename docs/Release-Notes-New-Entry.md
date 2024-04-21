@@ -3,11 +3,24 @@ layout: default
 title: Maintaining ChangeLog
 ---
 
+# TL;DR - quick start
+
+You typically want to create a markdown snippet with:
+
+    $ towncrier create failed-selinux-mountpoint.bugfix
+    Created news fragment at ./releng/release-notes-next/failed-selinux-mountpoint.bugfix
+    $ vim ./releng/release-notes-next/failed-selinux-mountpoint.bugfix
+    ... document ...
+    $ git add ./releng/release-notes-next/failed-selinux-mountpoint.bugfix
+
+Please refer to issues, PRs, bugs, commits using the
+`[reference#ID][]` or `[some text][reference#ID]` syntax described below.
+
 # Maintaining ChangeLog
 
 Mock uses the [towncrier](https://github.com/twisted/towncrier) project for
-maintaining release notes (aka changelog).  For adding new entry, provide a text
-file in
+maintaining release notes (aka changelog).  For adding a new Release Notes
+entry, provide a markdown file in the
 [releng/release-notes-next](https://github.com/rpm-software-management/mock/tree/main/releng/release-notes-next)
 drop-in directory.
 

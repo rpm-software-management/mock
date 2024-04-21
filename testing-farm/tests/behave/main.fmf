@@ -1,0 +1,9 @@
+---
+summary: Execute the behave test
+test: ./test.sh
+tag: behave
+duration: 2h
+
+require:
+  - type: file
+    pattern: /behave

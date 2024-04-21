@@ -348,7 +348,8 @@ class Buildroot(object):
 
         # Change owner of homdir tree if the root of it not owned
         # by the current user
-        self.chown_home_dir()
+        if prebuild:
+            self.chown_home_dir()
 
         # mark the buildroot as initialized
         file_util.touch(self.make_chroot_path('.initialized'))

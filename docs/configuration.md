@@ -78,6 +78,13 @@ You may also copy and edit an existing configuration file into a new one:
 
     $ cp /etc/mock/fedora-rawhide-x86_64.cfg ~/.config/mock/foo.cfg
 
+The default chroot configuration file is `/etc/mock/default.cfg`, which is
+usually a symlink to one of the installed chroot configuration files.  You may
+create another symlink to an installed configuration file to change the default
+chroot config file:
+
+    $ ln -s /etc/mock/fedora-rawhide-x86_64.cfg ~/.config/mock/default.cfg
+
 If Koji is already using a config you need, then you can use the Koji client
 tool for generating the file:
 
