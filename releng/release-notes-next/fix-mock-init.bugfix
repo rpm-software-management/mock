@@ -1,0 +1,3 @@
+mock --init occasionally failed because bootstrap buildroot hadn't
+set up its temporary directory ([issue#1351][]).
+
