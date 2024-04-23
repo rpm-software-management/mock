@@ -1,0 +1,3 @@
+The `nosync` logic was preparing temporary directories even when
+`config_opts["nosync"] = False` (meaning nosync was disabled).  This logic has
+been optimized out.  Works around [issue#1351][].
