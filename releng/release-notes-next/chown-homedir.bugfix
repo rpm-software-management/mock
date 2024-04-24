@@ -1,0 +1,7 @@
+In the [issue#1257][] it was suggested that we do not change recursively
+ownership every run. This was implemented and landed in Mock 5.5.
+But in the [issue#1364][] we found that for fresh chroots the homedir
+is not writable for unpriv user.
+We changed the behaviour that ownership of homedir is changed always (that was
+a behaviour prior 5.5 release) and the ownership is changed recursively only for
+rebuilds. 
