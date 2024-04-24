@@ -350,6 +350,8 @@ class Buildroot(object):
         # by the current user
         if prebuild:
             self.chown_home_dir()
+        else:
+            self.chown_home_dir(recursive=False)
 
         # mark the buildroot as initialized
         file_util.touch(self.make_chroot_path('.initialized'))
@@ -678,10 +680,10 @@ class Buildroot(object):
             file_util.mkdirIfAbsent(self.make_chroot_path(item))
 
     @traceLog()
-    def chown_home_dir(self):
+    def chown_home_dir(self, recursive=True):
         """ set ownership of homedir and subdirectories to mockbuild user """
         self.uid_manager.changeOwner(self.make_chroot_path(self.homedir),
-                                     recursive=True)
+                                     recursive=recursive)
 
     @traceLog()
     def prepare_installation_time_homedir(self):
