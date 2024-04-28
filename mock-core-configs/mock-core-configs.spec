@@ -51,6 +51,9 @@ Rocky Linux and various other specific or combined chroots.
 
 %install
 mkdir -p %{buildroot}%{_sysusersdir}
+%if 0%{?fedora} > 29 || 0%{?rhel} > 8
+cp -a mock.conf %{buildroot}%{_sysusersdir}
+%endif
 
 mkdir -p %{buildroot}%{_sysconfdir}/mock/eol/templates
 mkdir -p %{buildroot}%{_sysconfdir}/mock/templates
