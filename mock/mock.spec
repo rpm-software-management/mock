@@ -1,9 +1,6 @@
 %bcond_with lint
 %bcond_without tests
 
-# mock group id allocate for Fedora
-%global mockgid 135
-
 %global __python %{__python3}
 %global python_sitelib %{python3_sitelib}
 
@@ -146,6 +143,9 @@ Mock plugin that preprocesses spec files using rpmautospec.
 %package filesystem
 Summary:  Mock filesystem layout
 Requires(pre):  shadow-utils
+BuildRequires:  systemd-rpm-macros
+
+%{?sysusers_requires_compat}
 
 %description filesystem
 Filesystem layout and group for Mock.
@@ -168,6 +168,9 @@ for i in docs/mock.1 docs/mock-parse-buildlog.1; do
 done
 
 ./precompile-bash-completion "mock.complete"
+
+# this is what %%sysusers_create_compat will expand to
+%{_rpmconfigdir}/sysusers.generate-pre.sh mock.conf > sysusers_script
 
 %install
 #base filesystem
@@ -213,13 +216,15 @@ install -d %{buildroot}/var/cache/mock
 mkdir -p %{buildroot}%{_pkgdocdir}
 install -p -m 0644 docs/site-defaults.cfg %{buildroot}%{_pkgdocdir}
 
+mkdir -p %{buildroot}%{_sysusersdir}
+install -p -D -m 0644 %{name}.conf %{buildroot}%{_sysusersdir}
+
 sed -i 's/^_MOCK_NVR = None$/_MOCK_NVR = "%name-%version-%release"/' \
     %{buildroot}%{_libexecdir}/mock/mock
 
-%pre filesystem
-# check for existence of mock group, create it if not found
-getent group mock > /dev/null || groupadd -f -g %mockgid -r mock
-exit 0
+
+%pre filesystem -f sysusers_script
+
 
 %check
 %if %{with lint}
@@ -292,6 +297,7 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 %dir  %{_sysconfdir}/mock/eol/templates
 %dir  %{_sysconfdir}/mock/templates
 %dir  %{_datadir}/cheat
+%config(noreplace) %{_sysusersdir}/mock.conf
 
 %changelog
 * Tue May 14 2024 Jakub Kadlcik <frostyx@email.cz> 5.6-1
