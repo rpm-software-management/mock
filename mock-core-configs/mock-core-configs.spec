@@ -50,8 +50,6 @@ Rocky Linux and various other specific or combined chroots.
 
 
 %install
-mkdir -p %{buildroot}%{_sysusersdir}
-
 mkdir -p %{buildroot}%{_sysconfdir}/mock/eol/templates
 mkdir -p %{buildroot}%{_sysconfdir}/mock/templates
 cp -a etc/mock/*.cfg %{buildroot}%{_sysconfdir}/mock
