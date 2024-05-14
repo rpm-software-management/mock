@@ -3,7 +3,7 @@
 %endif
 
 Name:       mock-core-configs
-Version:    40.3.post1
+Version:    40.4
 Release:    1%{?dist}
 Summary:    Mock core config files basic chroots
 
@@ -151,6 +151,13 @@ fi
 %ghost %config(noreplace,missingok) %{_sysconfdir}/mock/default.cfg
 
 %changelog
+* Tue May 14 2024 Jakub Kadlcik <frostyx@email.cz> 40.4-1
+- configs: BuildWithDNF5 for ELN (praiskup@redhat.com)
+- Add Circle Linux 9 configs (bella@cclinux.org)
+- configs: Replace Mageia 10 and Cauldron i586 configs with i686
+  (wally@mageia.org)
+- Post-release administrivia (frostyx@email.cz)
+
 * Fri Apr 05 2024 Jakub Kadlcik <frostyx@email.cz> 40.3-1
 - Add initial c10s mock configs (Koji BUILDROOT only) (miro@hroncok.cz)
 - configs: use repo_arch, not target_arch with openSUSE (praiskup@redhat.com)
