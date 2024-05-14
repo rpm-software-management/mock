@@ -1,2 +1,0 @@
-The SCM plugin's option `git_timestamps` has been updated to work with Python 3
-and to handle Git repositories with non-Unicode data. ([PR#1355][])

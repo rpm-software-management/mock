@@ -69,6 +69,7 @@ Versions in Linux distributions:
 
 
 ## Release Notes
+* [5.6](Release-Notes-5.6) - Improved performance of bash completion, don't use `--allowerasing` for commands that doesn't provide it, fixed "no space left" tracebacks, new Circle Linux 9 configs, Mageia Cauldron i686, fixed Fedora ELN.
 * [Configs 40.3](Release-Notes-Configs-40.3) - Added C10s chroots, Dropped Fedora modular repositories, fix bootstrap from image for openSUSE
 * [Configs 40.2](Release-Notes-Configs-40.2) - Fixed Fedora 40 builds that regressed back to `dnf` (instead of expected `dnf5`).
 * [5.5](Release-Notes-5.5) (2024-02-14) - The `{{ repo_arch }}` support added, chroot_scan supports tarballs, ownership during `--init` fixed, fixed `root_cache` tarball invalidation problem.
