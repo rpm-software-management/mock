@@ -9,7 +9,7 @@
 
 Summary: Builds packages inside chroots
 Name: mock
-Version: 5.5.post1
+Version: 5.6
 Release: 1%{?dist}
 License: GPL-2.0-or-later
 # Source is created by
@@ -293,6 +293,22 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 %dir  %{_datadir}/cheat
 
 %changelog
+* Tue May 14 2024 Jakub Kadlcik <frostyx@email.cz> 5.6-1
+- scm: Open stdout in text mode for Git timestamp subprocesses
+  (fedora.dm0@gmail.com)
+- always set ownership of homedir (but not recursively) (msuchy@redhat.com)
+- Do not create temporary Buildroot.tmpdir for disabled nosync
+  (praiskup@redhat.com)
+- bash-completion: add mock-parse-buildlog (pastalian46@gmail.com)
+- Rewrites "original_name" method to check if "cls" has a "backmap"
+  (nikitych@yandex.ru)
+- Don't use --allowerasing for more DNF commands (frostyx@email.cz)
+- bash-completion: pre-build the list of mock known options
+  (praiskup@redhat.com)
+- Avoid Traceback for resultdir ENOSPC (praiskup@redhat.com)
+- Post-release administrivia (praiskup@redhat.com)
+- Fix Version in %%changelogs (praiskup@redhat.com)
+
 * Wed Feb 14 2024 Pavel Raiskup <praiskup@redhat.com> 5.5-1
 - allow chroot_scan to create archive instead of directory (tkopecek@redhat.com)
 - handle greedy options in Bash completion
