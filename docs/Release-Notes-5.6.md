@@ -55,27 +55,12 @@ title: Release Notes - Mock 5.6
 
 - Bella Zhang
 - David Michael
-- Evan Goode
-- Felix Krull
 - Jakub Kadlcik
 - Jani Välimaa
-- Martin Jackson
-- Michael Rochefort
-- Miro Hrončok
 - Miroslav Suchý
-- Neal Gompa
 - Nikita Gerasimov
-- Orion Poplawski
 - Pavel Raiskup
-- Sandro Bonazzola
-- Stephen Gallagher
-- Stewart Smith
 - Takuya Wakazono
-- Tomas Kopecek
-- Vít Ondruch
-- Yu Ming Zhu
-- zengchen1024
-- zengwei2000
 
 [rhbz#2259430]: https://bugzilla.redhat.com/2259430
 [issue#1292]: https://github.com/rpm-software-management/mock/issues/1292
