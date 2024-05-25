@@ -234,6 +234,7 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 
 %files
 %defattr(0644, root, mock)
+%dir %{_pkgdocdir}/
 %doc %{_pkgdocdir}/site-defaults.cfg
 %{_datadir}/bash-completion/completions/mock
 %{_datadir}/bash-completion/completions/mock-parse-buildlog
