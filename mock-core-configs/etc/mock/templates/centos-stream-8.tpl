@@ -40,16 +40,16 @@ skip_if_unavailable=False
 
 [baseos]
 name=CentOS Stream $releasever - BaseOS
-mirrorlist=http://mirrorlist.centos.org/?release=$releasever-stream&arch=$basearch&repo=BaseOS&infra=$infra
-#baseurl=http://mirror.centos.org/centos/$releasever-stream/BaseOS/$basearch/os/
+#mirrorlist=http://mirrorlist.centos.org/?release=$releasever-stream&arch=$basearch&repo=BaseOS&infra=$infra
+baseurl=https://vault.centos.org/centos/$releasever-stream/BaseOS/$basearch/os/
 gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
 gpgcheck=1
 skip_if_unavailable=False
 
 [appstream]
 name=CentOS Stream $releasever - AppStream
-mirrorlist=http://mirrorlist.centos.org/?release=$releasever-stream&arch=$basearch&repo=AppStream&infra=$infra
-#baseurl=http://mirror.centos.org/centos/$releasever-stream/AppStream/$basearch/os/
+#mirrorlist=http://mirrorlist.centos.org/?release=$releasever-stream&arch=$basearch&repo=AppStream&infra=$infra
+baseurl=https://vault.centos.org/centos/$releasever-stream/AppStream/$basearch/os/
 gpgcheck=1
 enabled=1
 gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
@@ -63,14 +63,14 @@ gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Officia
 
 [Stream-centosplus]
 name=CentOS-Stream - Plus
-baseurl=http://mirror.centos.org/centos/$releasever-stream/centosplus/$basearch/os/
+baseurl=https://vault.centos.org/centos/$releasever-stream/centosplus/$basearch/os/
 gpgcheck=1
 enabled=0
 gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
 
 [cr]
 name=CentOS-$releasever - cr
-baseurl=http://mirror.centos.org/centos/$releasever/cr/$basearch/os/
+baseurl=https://vault.centos.org/centos/$releasever/cr/$basearch/os/
 gpgcheck=1
 enabled=0
 gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
@@ -84,74 +84,74 @@ gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Officia
 
 [extras]
 name=CentOS Stream $releasever - Extras
-mirrorlist=http://mirrorlist.centos.org/?release=$releasever-stream&arch=$basearch&repo=extras&infra=$infra
-#baseurl=http://mirror.centos.org/centos/$releasever-stream/extras/$basearch/os/
+#mirrorlist=http://mirrorlist.centos.org/?release=$releasever-stream&arch=$basearch&repo=extras&infra=$infra
+baseurl=https://vault.centos.org/centos/$releasever-stream/extras/$basearch/os/
 gpgcheck=1
 enabled=1
 gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
 
 [powertools]
 name=CentOS Stream $releasever - PowerTools
-mirrorlist=http://mirrorlist.centos.org/?release=$releasever-stream&arch=$basearch&repo=PowerTools&infra=$infra
-#baseurl=http://mirror.centos.org/centos/$releasever-stream/PowerTools/$basearch/os/
+#mirrorlist=http://mirrorlist.centos.org/?release=$releasever-stream&arch=$basearch&repo=PowerTools&infra=$infra
+baseurl=https://vault.centos.org/centos/$releasever-stream/PowerTools/$basearch/os/
 gpgcheck=1
 enabled=1
 gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
 
 [rt]
 name=CentOS Stream $releasever - RealTime
-mirrorlist=http://mirrorlist.centos.org/?release=$releasever-stream&arch=$basearch&repo=RT&infra=$infra
-#baseurl=http://mirror.centos.org/centos/$releasever-stream/RT/$basearch/os/
+#mirrorlist=http://mirrorlist.centos.org/?release=$releasever-stream&arch=$basearch&repo=RT&infra=$infra
+baseurl=https://vault.centos.org/centos/$releasever-stream/RT/$basearch/os/
 gpgcheck=1
 enabled=0
 gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
 
 [ha]
 name=CentOS Stream $releasever - HighAvailability
-mirrorlist=http://mirrorlist.centos.org/?release=$releasever-stream&arch=$basearch&repo=HighAvailability&infra=$infra
-#baseurl=http://mirror.centos.org/centos/$releasever-stream/HighAvailability/$basearch/os/
+#mirrorlist=http://mirrorlist.centos.org/?release=$releasever-stream&arch=$basearch&repo=HighAvailability&infra=$infra
+baseurl=https://vault.centos.org/centos/$releasever-stream/HighAvailability/$basearch/os/
 gpgcheck=1
 enabled=0
 gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
 
 [Stream-Devel]
 name=CentOS-Stream - Devel (WARNING: UNSUPPORTED - FOR BUILDROOT USE ONLY!)
-baseurl=http://mirror.centos.org/centos/$releasever-stream/Devel/$basearch/os/
+baseurl=https://vault.centos.org/centos/$releasever-stream/Devel/$basearch/os/
 gpgcheck=1
 enabled=0
 gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
 
 [Stream-BaseOS-source]
 name=CentOS-Stream - BaseOS Sources
-baseurl=http://vault.centos.org/centos/$releasever-stream/BaseOS/Source/
+baseurl=https://vault.centos.org/centos/$releasever-stream/BaseOS/Source/
 gpgcheck=1
 enabled=0
 gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
 
 [Stream-AppStream-source]
 name=CentOS-Stream - AppStream Sources
-baseurl=http://vault.centos.org/centos/$releasever-stream/AppStream/Source/
+baseurl=https://vault.centos.org/centos/$releasever-stream/AppStream/Source/
 gpgcheck=1
 enabled=0
 gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
 
 [Stream-PowerTools-source]
 name=CentOS-Stream - PowerTools Sources
-baseurl=http://vault.centos.org/centos/$releasever-stream/PowerTools/Source/
+baseurl=https://vault.centos.org/centos/$releasever-stream/PowerTools/Source/
 gpgcheck=1
 enabled=0
 gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
 
 [Stream-extras-source]
 name=CentOS-Stream - Extras Sources
-baseurl=http://vault.centos.org/centos/$releasever-stream/extras/Source/
+baseurl=https://vault.centos.org/centos/$releasever-stream/extras/Source/
 gpgcheck=1
 enabled=0
 gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
 
 [Stream-centosplus-source]
 name=CentOS-Stream - Plus Sources
-baseurl=http://vault.centos.org/centos/$releasever-stream/centosplus/Source/
+baseurl=https://vault.centos.org/centos/$releasever-stream/centosplus/Source/
 gpgcheck=1
 enabled=0
 gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
