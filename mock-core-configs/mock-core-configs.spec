@@ -3,7 +3,7 @@
 %endif
 
 Name:       mock-core-configs
-Version:    40.4.post1
+Version:    40.5
 Release:    1%{?dist}
 Summary:    Mock core config files basic chroots
 
@@ -151,6 +151,10 @@ fi
 %ghost %config(noreplace,missingok) %{_sysconfdir}/mock/default.cfg
 
 %changelog
+* Wed Jun 05 2024 Miroslav Suchý <msuchy@redhat.com> 40.5-1
+- CentOS Stream 8 is EOL (andykimpe@gmail.com)
+- configs: Fedora 38 goes EOL (praiskup@redhat.com)
+
 * Tue May 14 2024 Jakub Kadlcik <frostyx@email.cz> 40.4-1
 - configs: BuildWithDNF5 for ELN (praiskup@redhat.com)
 - Add Circle Linux 9 configs (bella@cclinux.org)
