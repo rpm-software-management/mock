@@ -69,6 +69,7 @@ Versions in Linux distributions:
 
 
 ## Release Notes
+* [Configs 40.5](Release-Notes-Configs-40.5) - Fedora 38 moved to EOL. CentOS Stream 8 moved to vault.
 * [5.6](Release-Notes-5.6) - Improved performance of bash completion, don't use `--allowerasing` for commands that doesn't provide it, fixed "no space left" tracebacks, new Circle Linux 9 configs, Mageia Cauldron i686, fixed Fedora ELN.
 * [Configs 40.3](Release-Notes-Configs-40.3) - Added C10s chroots, Dropped Fedora modular repositories, fix bootstrap from image for openSUSE
 * [Configs 40.2](Release-Notes-Configs-40.2) - Fixed Fedora 40 builds that regressed back to `dnf` (instead of expected `dnf5`).
