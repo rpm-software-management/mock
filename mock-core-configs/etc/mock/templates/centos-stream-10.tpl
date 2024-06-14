@@ -20,9 +20,11 @@ gpgcheck=0
 assumeyes=1
 syslog_ident=mock
 syslog_device=
+metadata_expire=0
 best=1
 install_weak_deps=0
 protected_packages=
+skip_if_unavailable=False
 module_platform_id=platform:el10
 user_agent={{ user_agent }}
 
@@ -35,18 +37,42 @@ name=CentOS Stream $releasever - Koji Local - BUILDROOT ONLY!
 baseurl=https://kojihub.stream.centos.org/kojifiles/repos/c{{ releasever }}s-build/latest/$basearch/
 cost=2000
 enabled=0
-skip_if_unavailable=False
 
 [baseos]
 name=CentOS Stream $releasever - BaseOS
-baseurl=https://composes.stream.centos.org/stream-10/production/latest-CentOS-Stream/compose/BaseOS/$basearch/os
-#metalink=https://mirrors.centos.org/metalink?repo=centos-baseos-$stream&arch=$basearch&protocol=https,http
+#baseurl=http://mirror.stream.centos.org/$releasever-stream/BaseOS/$basearch/os/
+metalink=https://mirrors.centos.org/metalink?repo=centos-baseos-$releasever-stream&arch=$basearch&protocol=https,http
 gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official-SHA256
 gpgcheck=1
-repo_gpgcheck=0
-metadata_expire=6h
 countme=1
 enabled=1
+
+[appstream]
+name=CentOS Stream $releasever - AppStream
+#baseurl=http://mirror.stream.centos.org/$releasever-stream/AppStream/$basearch/os/
+metalink=https://mirrors.centos.org/metalink?repo=centos-appstream-$releasever-stream&arch=$basearch&protocol=https,http
+gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official-SHA256
+gpgcheck=1
+countme=1
+enabled=1
+
+[crb]
+name=CentOS Stream $releasever - CRB
+#baseurl=http://mirror.stream.centos.org/$releasever-stream/CRB/$basearch/os/
+metalink=https://mirrors.centos.org/metalink?repo=centos-crb-$releasever-stream&arch=$basearch&protocol=https,http
+gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official-SHA256
+gpgcheck=1
+countme=1
+enabled=1
+
+[extras-common]
+name=CentOS Stream $releasever - Extras packages
+#baseurl=http://mirror.stream.centos.org/SIGs/$releasever-stream/extras/$basearch/extras-common/
+metalink=https://mirrors.centos.org/metalink?repo=centos-extras-sig-extras-common-$releasever-stream&arch=$basearch&protocol=https,http
+gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official-SHA256
+gpgcheck=1
+enabled=1
+skip_if_unavailable=False
 
 [baseos-debuginfo]
 name=CentOS Stream $releasever - BaseOS - Debug
@@ -54,8 +80,6 @@ baseurl=https://composes.stream.centos.org/stream-10/production/latest-CentOS-St
 #metalink=https://mirrors.centos.org/metalink?repo=centos-baseos-debug-$stream&arch=$basearch&protocol=https,http
 gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official-SHA256
 gpgcheck=1
-repo_gpgcheck=0
-metadata_expire=6h
 enabled=0
 
 [baseos-source]
@@ -64,20 +88,7 @@ baseurl=https://composes.stream.centos.org/stream-10/production/latest-CentOS-St
 #metalink=https://mirrors.centos.org/metalink?repo=centos-baseos-source-$stream&arch=source&protocol=https,http
 gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official-SHA256
 gpgcheck=1
-repo_gpgcheck=0
-metadata_expire=6h
 enabled=0
-
-[appstream]
-name=CentOS Stream $releasever - AppStream
-baseurl=https://composes.stream.centos.org/stream-10/production/latest-CentOS-Stream/compose/AppStream/$basearch/os
-#metalink=https://mirrors.centos.org/metalink?repo=centos-appstream-$stream&arch=$basearch&protocol=https,http
-gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official-SHA256
-gpgcheck=1
-repo_gpgcheck=0
-metadata_expire=6h
-countme=1
-enabled=1
 
 [appstream-debuginfo]
 name=CentOS Stream $releasever - AppStream - Debug
@@ -85,8 +96,6 @@ baseurl=https://composes.stream.centos.org/stream-10/production/latest-CentOS-St
 #metalink=https://mirrors.centos.org/metalink?repo=centos-appstream-debug-$stream&arch=$basearch&protocol=https,http
 gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official-SHA256-SHA256
 gpgcheck=1
-repo_gpgcheck=0
-metadata_expire=6h
 enabled=0
 
 [appstream-source]
@@ -95,20 +104,7 @@ baseurl=https://composes.stream.centos.org/stream-10/production/latest-CentOS-St
 #metalink=https://mirrors.centos.org/metalink?repo=centos-appstream-source-$stream&arch=source&protocol=https,http
 gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official-SHA256
 gpgcheck=1
-repo_gpgcheck=0
-metadata_expire=6h
 enabled=0
-
-[crb]
-name=CentOS Stream $releasever - CRB
-baseurl=https://composes.stream.centos.org/stream-10/production/latest-CentOS-Stream/compose/CRB/$basearch/os
-#metalink=https://mirrors.centos.org/metalink?repo=centos-crb-$stream&arch=$basearch&protocol=https,http
-gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official-SHA256
-gpgcheck=1
-repo_gpgcheck=0
-metadata_expire=6h
-countme=1
-enabled=1
 
 [crb-debuginfo]
 name=CentOS Stream $releasever - CRB - Debug
@@ -116,8 +112,6 @@ baseurl=https://composes.stream.centos.org/stream-10/production/latest-CentOS-St
 #metalink=https://mirrors.centos.org/metalink?repo=centos-crb-debug-$stream&arch=$basearch&protocol=https,http
 gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official-SHA256
 gpgcheck=1
-repo_gpgcheck=0
-metadata_expire=6h
 enabled=0
 
 [crb-source]
@@ -126,7 +120,5 @@ baseurl=https://composes.stream.centos.org/stream-10/production/latest-CentOS-St
 #metalink=https://mirrors.centos.org/metalink?repo=centos-crb-source-$stream&arch=source&protocol=https,http
 gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official-SHA256
 gpgcheck=1
-repo_gpgcheck=0
-metadata_expire=6h
 enabled=0
 """
