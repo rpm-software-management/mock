@@ -25,7 +25,7 @@ entry, provide a markdown file in the
 drop-in directory.
 
 Each drop-in file is markdown, and the filename must have
-`<some-unique-text>.<change_category>.md` pattern.  The "unique filename" is
+`<some-unique-text>.<change_category>` pattern.  The "unique filename" is
 important, but the name is not used anywhere (choose wisely to not collide with
 other changes in the next release).  For example, let's have a file
 
