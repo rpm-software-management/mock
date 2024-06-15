@@ -72,7 +72,9 @@ metalink=https://mirrors.centos.org/metalink?repo=centos-extras-sig-extras-commo
 gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official-SHA256
 gpgcheck=1
 enabled=1
-skip_if_unavailable=False
+{% if repo_arch == 's390x' %}
+skip_if_unavailable=True
+{% endif %}
 
 [baseos-debuginfo]
 name=CentOS Stream $releasever - BaseOS - Debug
