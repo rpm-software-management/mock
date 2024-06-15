@@ -3,7 +3,7 @@
 %endif
 
 Name:       mock-core-configs
-Version:    40.5
+Version:    40.6
 Release:    1%{?dist}
 Summary:    Mock core config files basic chroots
 
@@ -151,6 +151,9 @@ fi
 %ghost %config(noreplace,missingok) %{_sysconfdir}/mock/default.cfg
 
 %changelog
+* Sat Jun 15 2024 Pavel Raiskup <praiskup@redhat.com> 40.6-1
+- c10s config use mirrored metalinks
+
 * Wed Jun 05 2024 Miroslav Suchý <msuchy@redhat.com> 40.5-1
 - CentOS Stream 8 is EOL (andykimpe@gmail.com)
 - configs: Fedora 38 goes EOL (praiskup@redhat.com)
