@@ -795,6 +795,8 @@ class Commands(object):
                 mode = ['-ba']
             mode += ['--noprep']
 
+        self.plugins.call_hooks('postdeps')
+
         # When we used dynamic buildrequires, the rpmbuild call will
         # execute the %generate_buildrequires section once again
         # in order to actually add the BuildRequires to the SRPM metadata.

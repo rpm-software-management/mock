@@ -18,6 +18,7 @@ Where `HOOK_NAME` is one of:
 * postbuild - This hook is called just after RPM or SRPM have been build (with or without success).
 * postchroot - This hook is called just after exiting from command in `mock chroot` command. This action is currently being used by `root_cache` plugin.
 * postclean - This hook is called when the content of the chroot has been deleted. It is called after `umount_root`.  E.g., `lvm_root` use this to delete the LVM volume.
+* postdeps - Called when the build dependencies (both static and dynamic) are installed, but the build has not started, yet.
 * postinit - Chroot have been initialized and it is ready for installing SRPM dependencies. E.g., root_cache plugin now packs the chroot and put it in a cache. This action is currently being used by `bind_mount`, `lvm_root`, `mount`, `root_cache` plugins.
 * postshell - This hook is called just after exiting from the shell in `mock shell` command. This action is currently being used by `root_cache` plugin.
 * postupdate - Mock attempts to cache buildroot contents, but tries to automatically update the packages inside the buildroot in subsequent executions (so up2date packages are used during build). This hook is called anytime such update is successful and any package is updated inside the buildroot.  Any plugin taking care of the buildroot caches can then react and update the cache to avoid re-updating in the subsequent mock runs.
