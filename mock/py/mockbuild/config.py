@@ -386,6 +386,8 @@ def setup_default_config_opts():
 
     config_opts["recursion_limit"] = 5000
 
+    config_opts["calculatedeps"] = None
+
     return config_opts
 
 
@@ -636,6 +638,8 @@ def set_config_opts_per_cmdline(config_opts, options, args):
     # This option is command-line only (contrary to chroot_additional_packages,
     # which though affects root_cache).
     config_opts["additional_packages"] = options.additional_packages
+
+    config_opts["calculatedeps"] = options.calculatedeps
 
 
 def check_config(config_opts):

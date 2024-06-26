@@ -120,6 +120,9 @@ def command_parse():
     parser.add_option("--rebuild", action="store_const", const="rebuild",
                       dest="mode", default='__default__',
                       help="rebuild the specified SRPM(s)")
+    parser.add_option("--calculate-build-dependencies", action="store_const",
+                      const="calculatedeps", dest="mode",
+                      help="Resolve static and dynamic build dependencies")
     parser.add_option("--chain", action="store_const", const="chain",
                       dest="mode",
                       help="build multiple RPMs in chain loop")
@@ -401,6 +404,11 @@ def command_parse():
             args = args[1:]
         else:
             options.mode = 'rebuild'
+
+    options.calculatedeps = None
+    if options.mode == "calculatedeps":
+        options.mode = "rebuild"
+        options.calculatedeps = True
 
     # Optparse.parse_args() eats '--' argument, while argparse doesn't.  Do it manually.
     if args and args[0] == '--':
