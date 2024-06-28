@@ -168,6 +168,7 @@ def setup_default_config_opts():
         'package_state_opts': {
             'available_pkgs': False,
             'installed_pkgs': True,
+            'buildroot_info': True,
         },
         'pm_request_enable': False,
         'pm_request_opts': {},

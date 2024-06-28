@@ -12,6 +12,9 @@
 #             installed_pkgs.log
 
 # our imports
+import json
+import os
+import shlex
 from mockbuild.trace_decorator import traceLog
 import mockbuild.util
 
@@ -44,6 +47,8 @@ class PackageState(object):
         self.online = self.buildroot.config['online']
         plugins.add_hook("postyum", self._availablePostYumHook)
         plugins.add_hook("postdeps", self._installedPreBuildHook)
+        if self.conf.get("buildroot_info", False):
+            plugins.add_hook("postdeps", self._installedPreBuildHook2)
 
     @traceLog()
     def _availablePostYumHook(self):
@@ -61,6 +66,40 @@ class PackageState(object):
                 mockbuild.util.do(cmd, shell=True, env=self.buildroot.env)
                 self.avail_done = True
                 self.state.finish("Outputting list of available packages")
+
+    @traceLog()
+    def _installedPreBuildHook2(self):
+        filename = "mock-build-environment.json"
+        statename = "Outputting the file " + filename
+        try:
+            with self.buildroot.uid_manager:
+                self.state.start(statename)
+                out_file = os.path.join(self.buildroot.resultdir, filename)
+                chrootpath = self.buildroot.make_chroot_path()
+
+                package_list_cmd  = "rpm --root {0} -qa".format(shlex.quote(chrootpath))
+                out, _ = self.buildroot.doOutChroot(package_list_cmd, returnOutput=True, shell=True)
+                packages = out.splitlines()
+
+                cmd = "dnf -q --installroot={0} repoquery --location".format(shlex.quote(chrootpath))
+                cmd += " " + " ".join(shlex.quote(p) for p in packages)
+                out, _ = self.buildroot.doOutChroot(cmd, returnOutput=True, shell=True)
+
+                self.avail_done = True
+                data = {
+                    "version": "0",
+                    "buildroot": {
+                        "packages": []
+                    }
+                }
+                data["version"] = "0"
+                for pkg in out.splitlines():
+                    data["buildroot"]["packages"].append({"url": pkg})
+
+                with open(out_file, "w", encoding="utf-8") as fdlist:
+                    fdlist.write(json.dumps(data, indent=4) + "\n")
+        finally:
+            self.state.finish(statename)
 
     @traceLog()
     def _installedPreBuildHook(self):
