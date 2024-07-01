@@ -1,0 +1,52 @@
+#! /usr/bin/python3
+
+"""
+Take the JSON provided by Mock, download corresponding RPMs, and put them into
+an RPM repository.
+"""
+
+import concurrent.futures
+import json
+import os
+import shutil
+import subprocess
+import sys
+
+import requests
+
+
+def download_file(url):
+    """
+    Download a single file (pool worker)
+    """
+    file_name = os.path.basename(url)
+    try:
+        with requests.get(url, stream=True, timeout=30) as response:
+            if response.status_code != 200:
+                return False
+            with open(file_name, "wb") as fd:
+                shutil.copyfileobj(response.raw, fd)
+            return True
+    except:
+        print(f"traceback for {url}")
+        raise
+
+def _main():
+    with open(sys.argv[1], "r", encoding="utf-8") as fd:
+        data = json.load(fd)
+
+    failed = False
+    urls = [i["url"] for i in data["buildroot"]["packages"]]
+    with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+        for i, out in zip(urls, executor.map(download_file, urls)):
+            if out is False:
+                print(f"{i} download failed")
+                failed = True
+    if failed:
+        print("Download failed")
+        sys.exit(1)
+
+    subprocess.check_call(["createrepo_c", "."])
+
+if __name__ == "__main__":
+    _main()
