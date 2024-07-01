@@ -5,6 +5,7 @@ Take the JSON provided by Mock, download corresponding RPMs, and put them into
 an RPM repository.
 """
 
+import argparse
 import concurrent.futures
 import json
 import os
@@ -15,11 +16,11 @@ import sys
 import requests
 
 
-def download_file(url):
+def download_file(url, outputdir):
     """
     Download a single file (pool worker)
     """
-    file_name = os.path.basename(url)
+    file_name = os.path.join(outputdir, os.path.basename(url))
     try:
         with requests.get(url, stream=True, timeout=30) as response:
             if response.status_code != 200:
@@ -31,14 +32,29 @@ def download_file(url):
         print(f"traceback for {url}")
         raise
 
+def _argparser():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--json", required=True)
+    parser.add_argument("--output-repo", required=True)
+    return parser
+
+
 def _main():
-    with open(sys.argv[1], "r", encoding="utf-8") as fd:
+    options = _argparser().parse_args()
+
+    with open(options.json, "r", encoding="utf-8") as fd:
         data = json.load(fd)
+
+    try:
+        os.makedirs(options.output_repo)
+    except FileExistsError:
+        pass
 
     failed = False
     urls = [i["url"] for i in data["buildroot"]["packages"]]
     with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
-        for i, out in zip(urls, executor.map(download_file, urls)):
+        for i, out in zip(urls, executor.map(download_file, urls,
+                                             [options.output_repo for _ in urls])):
             if out is False:
                 print(f"{i} download failed")
                 failed = True
@@ -46,7 +62,7 @@ def _main():
         print("Download failed")
         sys.exit(1)
 
-    subprocess.check_call(["createrepo_c", "."])
+    subprocess.check_call(["createrepo_c", options.output_repo])
 
 if __name__ == "__main__":
     _main()
