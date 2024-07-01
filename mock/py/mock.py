@@ -394,6 +394,8 @@ def command_parse():
                       help=("Additional package to install into the buildroot before "
                             "the build is done.  Can be specified multiple times."))
 
+    parser.add_option("--isolated-build-config")
+
     (options, args) = parser.parse_known_args()
 
     if options.mode == '__default__':
@@ -404,6 +406,9 @@ def command_parse():
             args = args[1:]
         else:
             options.mode = 'rebuild'
+
+    if options.isolated_build_config and options.mode != "rebuild":
+        raise mockbuild.exception.BadCmdline("--rebuild mode needed with --isolated-build-config")
 
     options.calculatedeps = None
     if options.mode == "calculatedeps":

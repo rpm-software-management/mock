@@ -6,6 +6,7 @@ from __future__ import print_function
 
 from ast import literal_eval
 from glob import glob
+import json
 import grp
 import logging
 import os
@@ -642,6 +643,12 @@ def set_config_opts_per_cmdline(config_opts, options, args):
     config_opts["additional_packages"] = options.additional_packages
 
     config_opts["calculatedeps"] = options.calculatedeps
+
+    if options.isolated_build_config:
+        with open(options.isolated_build_config, "r", encoding="utf-8") as fd:
+            data = json.load(fd)
+        for opt, val in data["config"].items():
+            config_opts[opt] = val
 
 
 def check_config(config_opts):
