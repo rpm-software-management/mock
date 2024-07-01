@@ -90,7 +90,11 @@ class PackageState(object):
                     "version": "0",
                     "buildroot": {
                         "packages": []
-                    }
+                    },
+                    "config": {
+                        "target_arch": self.buildroot.config['target_arch'],
+                        "legal_host_arches": self.buildroot.config['legal_host_arches'],
+                    },
                 }
 
                 if self.buildroot.config['bootstrap_image']:
