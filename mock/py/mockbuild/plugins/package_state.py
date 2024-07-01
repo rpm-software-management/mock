@@ -92,7 +92,10 @@ class PackageState(object):
                         "packages": []
                     }
                 }
-                data["version"] = "0"
+
+                if self.buildroot.config['bootstrap_image']:
+                    data["bootstrap_image"] = self.buildroot.config['bootstrap_image']
+
                 for pkg in out.splitlines():
                     data["buildroot"]["packages"].append({"url": pkg})
 
