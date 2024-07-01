@@ -394,7 +394,7 @@ def command_parse():
                       help=("Additional package to install into the buildroot before "
                             "the build is done.  Can be specified multiple times."))
 
-    parser.add_option("--isolated-build-config")
+    parser.add_option("--isolated-build-config", nargs=2, metavar=("json", "localrepo"))
 
     (options, args) = parser.parse_known_args()
 

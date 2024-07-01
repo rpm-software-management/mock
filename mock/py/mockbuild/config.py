@@ -645,10 +645,12 @@ def set_config_opts_per_cmdline(config_opts, options, args):
     config_opts["calculatedeps"] = options.calculatedeps
 
     if options.isolated_build_config:
-        with open(options.isolated_build_config, "r", encoding="utf-8") as fd:
+        json_conf, local_repo = options.isolated_build_config
+        with open(json_conf, "r", encoding="utf-8") as fd:
             data = json.load(fd)
         for opt, val in data["config"].items():
             config_opts[opt] = val
+        config_opts["local_directory"] = local_repo
 
 
 def check_config(config_opts):
