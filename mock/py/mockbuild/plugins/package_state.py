@@ -101,6 +101,8 @@ class PackageState(object):
                     data["bootstrap_image"] = self.buildroot.config['bootstrap_image']
 
                 for pkg in out.splitlines():
+                    if not pkg.endswith(".rpm"):
+                        continue
                     data["buildroot"]["packages"].append({"url": pkg})
 
                 with open(out_file, "w", encoding="utf-8") as fdlist:
