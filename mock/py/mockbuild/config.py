@@ -6,6 +6,7 @@ from __future__ import print_function
 
 from ast import literal_eval
 from glob import glob
+import json
 import grp
 import logging
 import os
@@ -85,6 +86,7 @@ def setup_default_config_opts():
     config_opts['use_bootstrap'] = True
     config_opts['use_bootstrap_image'] = True
     config_opts['bootstrap_image'] = 'fedora:latest'
+    config_opts['bootstrap_image_skip_pull'] = False
     config_opts['bootstrap_image_ready'] = False
     config_opts['bootstrap_image_fallback'] = True
     config_opts['bootstrap_image_keep_getting'] = 120
@@ -167,6 +169,7 @@ def setup_default_config_opts():
         'package_state_opts': {
             'available_pkgs': False,
             'installed_pkgs': True,
+            'buildroot_info': True,
         },
         'pm_request_enable': False,
         'pm_request_opts': {},
@@ -385,6 +388,8 @@ def setup_default_config_opts():
     }
 
     config_opts["recursion_limit"] = 5000
+
+    config_opts["calculatedeps"] = None
 
     return config_opts
 
@@ -636,6 +641,16 @@ def set_config_opts_per_cmdline(config_opts, options, args):
     # This option is command-line only (contrary to chroot_additional_packages,
     # which though affects root_cache).
     config_opts["additional_packages"] = options.additional_packages
+
+    config_opts["calculatedeps"] = options.calculatedeps
+
+    if options.isolated_build_config:
+        json_conf, local_repo = options.isolated_build_config
+        with open(json_conf, "r", encoding="utf-8") as fd:
+            data = json.load(fd)
+        for opt, val in data["config"].items():
+            config_opts[opt] = val
+        config_opts["local_directory"] = local_repo
 
 
 def check_config(config_opts):
