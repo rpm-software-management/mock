@@ -686,6 +686,9 @@ def main():
     if options.configdir:
         config_path = options.configdir
 
+    if options.isolated_build_config:
+        options.chroot = "isolated-build"
+
     config_opts = uidManager.run_in_subprocess_without_privileges(
             config.load_config, config_path, options.chroot)
 

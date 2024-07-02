@@ -91,11 +91,17 @@ class PackageState(object):
                     "buildroot": {
                         "packages": []
                     },
-                    "config": {
-                        "target_arch": self.buildroot.config['target_arch'],
-                        "legal_host_arches": self.buildroot.config['legal_host_arches'],
-                    },
+                    "config": {}
                 }
+                for cfg_option in [
+                    "target_arch", "legal_host_arches",
+                    "dist",
+                    "package_manager", "chroot_setup_cmd",
+                    "bootstrap_image", "bootstrap_image_ready",
+                    "extra_chroot_dirs",
+                ]:
+                    if cfg_option in self.buildroot.config:
+                        data["config"][cfg_option] = self.buildroot.config[cfg_option]
 
                 if self.buildroot.config['bootstrap_image']:
                     data["bootstrap_image"] = self.buildroot.config['bootstrap_image']
