@@ -13,6 +13,7 @@ config_opts['extra_chroot_dirs'] = [ '/run/lock', ]
 config_opts['package_manager'] = '{% if releasever|int >= 40 %}dnf5{% else %}dnf{% endif %}'
 
 config_opts['bootstrap_image'] = 'registry.fedoraproject.org/fedora:{{ releasever }}'
+config_opts['bootstrap_image_ready'] = int(config_opts['releasever']) >= 41
 
 config_opts['dnf.conf'] = """
 [main]
