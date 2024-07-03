@@ -33,11 +33,22 @@ def download_file(url, outputdir):
         print(f"traceback for {url}")
         raise
 
+
 def _argparser():
     parser = argparse.ArgumentParser()
     parser.add_argument("--json", required=True)
     parser.add_argument("--output-repo", required=True)
     return parser
+
+
+def prepare_image(image_specification, outputdir):
+    """
+    Store the tarball into the same directory where the RPMs are
+    """
+    subprocess.check_output(["podman", "pull", image_specification])
+    subprocess.check_output(["podman", "save", "--quiet", "-o",
+                             os.path.join(outputdir, "bootstrap.tar"),
+                             image_specification])
 
 
 def _main():
@@ -64,6 +75,8 @@ def _main():
         sys.exit(1)
 
     subprocess.check_call(["createrepo_c", options.output_repo])
+
+    prepare_image(data["config"]["bootstrap_image"], options.output_repo)
 
 if __name__ == "__main__":
     _main()
