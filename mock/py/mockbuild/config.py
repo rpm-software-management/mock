@@ -432,6 +432,10 @@ def process_isolated_build_config(cmdline_opts, config_opts):
     # installation command - and we have no groups in the local_directory repo.
     config_opts["chroot_setup_cmd"] = "install *"
 
+    # The image needs to be prepared on host.  Build-systems implementing SLSA 3
+    # should make sure the config_opts["bootstrap_image"] is already downloaded.
+    config_opts["bootstrap_image_skip_pull"] = True
+
 
 @traceLog()
 def set_config_opts_per_cmdline(config_opts, options, args):
