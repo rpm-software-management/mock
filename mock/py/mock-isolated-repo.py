@@ -46,7 +46,7 @@ def prepare_image(image_specification, outputdir):
     Store the tarball into the same directory where the RPMs are
     """
     subprocess.check_output(["podman", "pull", image_specification])
-    subprocess.check_output(["podman", "save", "--format=oci-archive" "--quiet",
+    subprocess.check_output(["podman", "save", "--format=oci-archive", "--quiet",
                              "-o", os.path.join(outputdir, "bootstrap.tar"),
                              image_specification])
 
