@@ -70,6 +70,14 @@ class Podman:
             logger.error(out)
         return not exit_status
 
+    def import_tarball(self, tarball):
+        """
+        Import tarball using podman into the local database.
+        """
+        getLog().info("Loading bootstrap image from %s", tarball)
+        cmd = [self.podman_binary, "load", "-i", tarball]
+        util.do_with_status(cmd, env=self.buildroot.env)
+
     def retry_image_pull(self, max_time):
         """ Try pulling the image multiple times """
         @backoff.on_predicate(backoff.expo, lambda x: not x,

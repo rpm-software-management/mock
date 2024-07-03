@@ -390,6 +390,7 @@ def setup_default_config_opts():
     config_opts["recursion_limit"] = 5000
 
     config_opts["calculatedeps"] = None
+    config_opts["isolated_build"] = False
 
     return config_opts
 
@@ -410,6 +411,8 @@ def process_isolated_build_config(cmdline_opts, config_opts):
 
     if not cmdline_opts.isolated_build_config:
         return
+
+    config_opts["isolated_build"] = True
 
     json_conf, local_repo = cmdline_opts.isolated_build_config
     with open(json_conf, "r", encoding="utf-8") as fd:
