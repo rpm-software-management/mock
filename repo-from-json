@@ -21,6 +21,7 @@ def download_file(url, outputdir):
     Download a single file (pool worker)
     """
     file_name = os.path.join(outputdir, os.path.basename(url))
+    print(f"Downloading {url}")
     try:
         with requests.get(url, stream=True, timeout=30) as response:
             if response.status_code != 200:
