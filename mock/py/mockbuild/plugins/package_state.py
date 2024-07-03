@@ -97,7 +97,7 @@ class PackageState(object):
                     "target_arch", "legal_host_arches",
                     "dist",
                     "package_manager", "chroot_setup_cmd",
-                    "bootstrap_image", "bootstrap_image_ready",
+                    "bootstrap_image",
                     "extra_chroot_dirs",
                 ]:
                     if cfg_option in self.buildroot.config:
