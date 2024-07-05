@@ -15,6 +15,7 @@ The ccache plugin is enabled by default and has the following values built-in:
     config_opts['plugin_conf']['ccache_opts']['max_cache_size'] = '4G'
     config_opts['plugin_conf']['ccache_opts']['compress'] = None
     config_opts['plugin_conf']['ccache_opts']['dir'] = "%(cache_topdir)s/%(root)s/ccache/u%(chrootuid)s/"
+    config_opts['plugin_conf']['ccache_opts']['hashdir'] = True
 
 To turn on ccache compression, use the following in a config file:
 
