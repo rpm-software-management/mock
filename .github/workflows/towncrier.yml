@@ -49,7 +49,7 @@ jobs:
           if $status; then
             echo "Thank you for providing the release note snippet!"
           else
-            echo "Please provide release notes snippet, per the instructions"
+            echo "Please provide a release notes snippet, per the instructions"
             echo https://rpm-software-management.github.io/mock/Release-Notes-New-Entry
           fi
           $status
