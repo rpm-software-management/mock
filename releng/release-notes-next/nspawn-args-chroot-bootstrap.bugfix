@@ -1,0 +1,5 @@
+Previously, the `nspawn_args` configuration value was not applied in multiple
+internal `doChroot()` calls.  This could cause issues when custom nspawn
+arguments were needed everywhere (see [PR#1410][]).  Now, `doChroot()`
+automatically applies `nspawn_args`, shifting the responsibility from callers to
+callee.

@@ -65,12 +65,6 @@ class Commands(object):
         self.private_network = not config['rpmbuild_networking']
         self.rpmbuild_noclean_option = None
 
-    def _get_nspawn_args(self):
-        nspawn_args = []
-        if util.USE_NSPAWN:
-            nspawn_args.extend(self.config['nspawn_args'])
-        return nspawn_args
-
     @traceLog()
     def backup_results(self):
         srcdir = os.path.join(self.buildroot.basedir, "result")
@@ -370,7 +364,7 @@ class Commands(object):
             ret = util.doshell(chrootPath=self.buildroot.make_chroot_path(),
                                environ=self.buildroot.env, uid=uid, gid=gid,
                                cwd=cwd,
-                               nspawn_args=self._get_nspawn_args(),
+                               nspawn_args=self.config.get("nspawn_args", []),
                                unshare_net=self.private_network,
                                cmd=cmd)
         finally:
@@ -400,11 +394,10 @@ class Commands(object):
                 result = self.buildroot.doChroot(args, shell=shell, printOutput=True,
                                                  uid=self.buildroot.chrootuid, gid=self.buildroot.chrootgid,
                                                  user=self.buildroot.chrootuser, cwd=options.cwd,
-                                                 nspawn_args=self._get_nspawn_args(), raiseExc=False,
+                                                 raiseExc=False,
                                                  unshare_net=self.private_network)[1]
             else:
                 result = self.buildroot.doChroot(args, shell=shell, cwd=options.cwd,
-                                                 nspawn_args=self._get_nspawn_args(),
                                                  unshare_net=self.private_network,
                                                  printOutput=True, raiseExc=False)[1]
         finally:
@@ -644,7 +637,6 @@ class Commands(object):
     def get_specfile_name(self, srpm_path):
         files = self.buildroot.doChroot([self.config['rpm_command'], "-qpl", srpm_path],
                                         shell=False, uid=self.buildroot.chrootuid, gid=self.buildroot.chrootgid,
-                                        nspawn_args=self._get_nspawn_args(),
                                         unshare_net=self.private_network,
                                         user=self.buildroot.chrootuser,
                                         returnOutput=True
@@ -661,7 +653,6 @@ class Commands(object):
         output, return_code = self.buildroot.doChroot(
             command, shell=False, uid=self.buildroot.chrootuid,
             gid=self.buildroot.chrootgid, user=self.buildroot.chrootuser,
-            nspawn_args=self._get_nspawn_args(),
             unshare_net=self.private_network, returnOutput=True,
             returnStderr=True, raiseExc=False)
         if return_code:
@@ -704,7 +695,6 @@ class Commands(object):
             shell=False, logger=self.buildroot.build_log, timeout=timeout,
             uid=self.buildroot.chrootuid, gid=self.buildroot.chrootgid,
             user=self.buildroot.chrootuser,
-            nspawn_args=self._get_nspawn_args(),
             unshare_net=self.private_network,
             printOutput=self.config['print_main_output']
         )
@@ -766,7 +756,6 @@ class Commands(object):
                                             shell=False, logger=self.buildroot.build_log, timeout=timeout,
                                             uid=self.buildroot.chrootuid, gid=self.buildroot.chrootgid,
                                             user=self.buildroot.chrootuser,
-                                            nspawn_args=self._get_nspawn_args(),
                                             unshare_net=self.private_network, raiseExc=False,
                                             printOutput=self.config['print_main_output'])
                 if returncode > 0 and returncode != 11:
@@ -816,7 +805,6 @@ class Commands(object):
                                     shell=False, logger=self.buildroot.build_log, timeout=timeout,
                                     uid=self.buildroot.chrootuid, gid=self.buildroot.chrootgid,
                                     user=self.buildroot.chrootuser,
-                                    nspawn_args=self._get_nspawn_args(),
                                     unshare_net=self.private_network,
                                     printOutput=self.config['print_main_output'])
         results = glob.glob(bd_out + '/RPMS/*.rpm')
