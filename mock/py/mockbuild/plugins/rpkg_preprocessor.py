@@ -117,6 +117,5 @@ class RpkgPreprocessor(object):
             gid=self.buildroot.chrootgid,
             user=self.buildroot.chrootuser,
             unshare_net=private_network,
-            nspawn_args=self.config.get('nspawn_args', []),
             printOutput=self.config.get('print_main_output', True)
         )

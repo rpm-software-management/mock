@@ -167,7 +167,6 @@ class TestRpmautospecPlugin:
                 gid=plugin.buildroot.chrootgid,
                 user=plugin.buildroot.chrootuser,
                 unshare_net=not plugin.config.get("rpmbuild_networking", False),
-                nspawn_args=plugin.config.get("nspawn_args", []),
                 printOutput=plugin.config.get("print_main_output", True),
             )
         else:

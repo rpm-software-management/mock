@@ -389,9 +389,16 @@ class Buildroot(object):
         Execute the command in bootstrap chroot (when bootstrap is enabled) or
         on host.  Return (output, exit_status) tuple.
         """
+
+        # the chrootPath would imply running chroot within containers, as well
+        # as on host (where we would have to setup nspawn_args, which is not
+        # implemented).
+        assert "chrootPath" not in kwargs
+
         if self.bootstrap_buildroot:
             with self.mounts.buildroot_in_bootstrap_mounted():
-                return self.bootstrap_buildroot.doChroot(command, *args, **kwargs)
+                return self.bootstrap_buildroot.doChroot(
+                    command, *args, **kwargs)
 
         return util.do_with_status(command, *args, **kwargs)
 
@@ -407,6 +414,9 @@ class Buildroot(object):
             if 'gid' not in kargs:
                 kargs['gid'] = uid.getresgid()[1]
             self.uid_manager.becomeUser(0, 0)
+
+        kargs.setdefault("nspawn_args", [])
+        kargs["nspawn_args"].extend(self.config.get("nspawn_args", []))
 
         try:
             result = util.do_with_status(command, chrootPath=self.make_chroot_path(),

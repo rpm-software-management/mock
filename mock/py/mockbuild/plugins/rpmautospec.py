@@ -123,6 +123,5 @@ class RpmautospecPlugin:
             gid=self.buildroot.chrootgid,
             user=self.buildroot.chrootuser,
             unshare_net=not self.config.get("rpmbuild_networking", False),
-            nspawn_args=self.config.get("nspawn_args", []),
             printOutput=self.config.get("print_main_output", True),
         )
