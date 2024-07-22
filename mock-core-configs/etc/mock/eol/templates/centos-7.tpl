@@ -38,7 +38,7 @@ user_agent={{ user_agent }}
 # repos
 [base]
 name=CentOS-$releasever - Base
-mirrorlist=http://mirrorlist.centos.org/?release=7&arch=$basearch&repo=os
+baseurl=https://vault.centos.org/7.9.2009/os/$basearch/
 failovermethod=priority
 gpgkey={{ centos_7_gpg_keys }}
 gpgcheck=1
@@ -47,7 +47,7 @@ skip_if_unavailable=False
 [updates]
 name=CentOS-$releasever - Updates
 enabled=1
-mirrorlist=http://mirrorlist.centos.org/?release=7&arch=$basearch&repo=updates
+baseurl=https://vault.centos.org/7.9.2009/updates/$basearch/
 failovermethod=priority
 gpgkey={{ centos_7_gpg_keys }}
 gpgcheck=1
@@ -55,8 +55,7 @@ skip_if_unavailable=False
 
 [extras]
 name=CentOS-$releasever - Extras
-mirrorlist=http://mirrorlist.centos.org/?release=7&arch=$basearch&repo=extras
-#baseurl=http://mirror.centos.org/centos/$releasever/extras/$basearch/os/
+baseurl=https://vault.centos.org/7.9.2009/extras/$basearch/
 failovermethod=priority
 gpgkey={{ centos_7_gpg_keys }}
 gpgcheck=1
@@ -64,7 +63,7 @@ skip_if_unavailable=False
 
 [fastrack]
 name=CentOS-$releasever - fasttrack
-mirrorlist=http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=fasttrack
+baseurl=https://vault.centos.org/7.9.2009/fasttrack/$basearch/
 failovermethod=priority
 gpgkey={{ centos_7_gpg_keys }}
 gpgcheck=1
@@ -73,8 +72,7 @@ enabled=0
 
 [centosplus]
 name=CentOS-$releasever - Plus
-mirrorlist=http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=centosplus
-#baseurl=http://mirror.centos.org/centos/$releasever/centosplus/$basearch/
+baseurl=https://vault.centos.org/7.9.2009/centosplus/$basearch/
 gpgkey={{ centos_7_gpg_keys }}
 gpgcheck=1
 enabled=0
@@ -82,7 +80,7 @@ enabled=0
 {% if target_arch == 'x86_64' %}
 [centos-sclo-sclo]
 name=CentOS-$releasever - SCLo sclo
-baseurl=http://mirror.centos.org/centos/7/sclo/$basearch/sclo/
+baseurl=https://vault.centos.org/7.9.2009/sclo/$basearch/sclo/
 gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-SIG-SCLo
 gpgcheck=1
 skip_if_unavailable=False
@@ -91,7 +89,7 @@ skip_if_unavailable=False
 {% if target_arch in ['x86_64', 'ppc64le', 'aarch64'] %}
 [centos-sclo-rh]
 name=CentOS-$releasever - SCLo rh
-mirrorlist=http://mirrorlist.centos.org/?release=7&arch=$basearch&repo=sclo-rh
+baseurl=https://vault.centos.org/7.9.2009/sclo/$basearch/rh/
 gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-SIG-SCLo
 gpgcheck=1
 skip_if_unavailable=False
