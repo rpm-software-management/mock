@@ -284,10 +284,9 @@ Note: While you can specify more commands on a command line, only one can be exe
 .LP
 .TP
 \fB\-a\fR, \fB\-\-addrepo\fR=\fIREPO\fP
-Add this repo baseurl to the yumconfig for the chroot. This can be specified
-multiple times. Let's you point to multiple paths beyond the default to pull
-build deps from.
-
+Add a repo baseurl to the DNF/YUM configuration for both the build chroot and
+the bootstrap chroot.  This option can be specified multiple times, allowing you
+to reference multiple repositories in addition to the default repository set.
 .TP
 \fB\-\-arch\fR=\fIARCH\fP
 Calls the Linux personality() syscall to tell the kernel to emulate a secondary architecture. For example, building i386 packages on an x86_64 buildhost.

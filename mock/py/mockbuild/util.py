@@ -991,10 +991,15 @@ cost=1
 best=1
 """.format(repoid=repoid, baseurl=baseurl)
 
-    config_opts['{0}.conf'.format(config_opts['package_manager'])] += localyumrepo
+    def _fix_cfg(cfg):
+        cfg['dnf.conf'] += localyumrepo
+
+    _fix_cfg(config_opts)
 
     if bootstrap is None:
         return
+
+    _fix_cfg(bootstrap.config)
 
     if not baseurl.startswith("file:///") and not baseurl.startswith("/"):
         return
