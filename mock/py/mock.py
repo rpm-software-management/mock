@@ -224,9 +224,13 @@ def command_parse():
     parser.add_option('-c', '--continue', default=False, action='store_true',
                       dest='cont',
                       help="if a pkg fails to build, continue to the next one")
-    parser.add_option('-a', '--addrepo', default=[], action='append',
-                      dest='repos',
-                      help="add these repo baseurls to the chroot's yum config")
+    parser.add_option(
+        '-a', '--addrepo', default=[], action='append', dest='repos',
+        metavar="REPO", help=(
+            "Add a repo baseurl to the DNF/YUM configuration for both the "
+            "build chroot and the bootstrap chroot.  This option can be "
+            "specified multiple times, allowing you to reference multiple "
+            "repositories in addition to the default repository set."))
     parser.add_option('--recurse', default=False, action='store_true',
                       help="if more than one pkg and it fails to build, try to build the rest and come back to it")
     parser.add_option('--tmp_prefix', default=None, dest='tmp_prefix',
