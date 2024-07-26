@@ -60,6 +60,10 @@ class CCache(object):
             envupd["CCACHE_HASHDIR"] = "1"
         else:
             envupd["CCACHE_NOHASHDIR"] = "1"
+        if self.ccache_opts.get('debug'):
+            envupd["CCACHE_DEBUG"] = "1"
+        else:
+            envupd["CCACHE_NODEBUG"] = "1"
         self.buildroot.env.update(envupd)
 
         file_util.mkdirIfAbsent(self.buildroot.make_chroot_path('/var/tmp/ccache'))
