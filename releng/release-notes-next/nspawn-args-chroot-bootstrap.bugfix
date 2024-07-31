@@ -1,0 +1,4 @@
+Previously, the 'nspawn_args' configuration value was not used when executing
+the systemd-nspawn command during the chroot bootstrapping. 'nspawn_args' are
+now used during the chroot bootstrapping in case systemd-nspawn isolation is
+used.

@@ -137,6 +137,11 @@ class Buildroot(object):
         self._setup_nspawn_fuse_device()
         self._setup_nspawn_loop_devices()
 
+    def _get_nspawn_args(self):
+        nspawn_args = []
+        if util.USE_NSPAWN:
+            nspawn_args.extend(self.config['nspawn_args'])
+        return nspawn_args
 
     def set_package_manager(self, fallback=None):
         """
@@ -371,7 +376,8 @@ class Buildroot(object):
         """
         if self.bootstrap_buildroot:
             with self.mounts.buildroot_in_bootstrap_mounted():
-                return self.bootstrap_buildroot.doChroot(command, *args, **kwargs)
+                return self.bootstrap_buildroot.doChroot(
+                    command, nspawn_args=self._get_nspawn_args(), *args, **kwargs)
 
         return util.do_with_status(command, *args, **kwargs)
 
