@@ -36,13 +36,11 @@ Conflicts: mock-core-configs < 33
 # Requires 'mock-core-configs', or replacement (GitHub PR#544).
 Requires: mock-configs
 Requires: %{name}-filesystem = %{version}-%{release}
-%if 0%{?fedora} || 0%{?rhel} >= 8
 # This is still preferred package providing 'mock-configs'
 Suggests: mock-core-configs
-%endif
 
 Requires: systemd
-%if 0%{?fedora} || 0%{?rhel} >= 8
+%if 0%{?fedora} || 0%{?rhel}
 Requires: systemd-container
 %endif
 Requires: coreutils
@@ -96,7 +94,7 @@ BuildRequires: python%{python3_pkgversion}-requests
 BuildRequires: python%{python3_pkgversion}-templated-dictionary
 %endif
 
-%if 0%{?fedora} || 0%{?rhel} >= 8
+%if 0%{?fedora} || 0%{?rhel}
 BuildRequires: perl-interpreter
 %else
 BuildRequires: perl
