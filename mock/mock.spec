@@ -180,6 +180,7 @@ mkdir -p %{buildroot}%{_sysconfdir}/mock/templates
 install -d %{buildroot}%{_bindir}
 install -d %{buildroot}%{_libexecdir}/mock
 install mockchain %{buildroot}%{_bindir}/mockchain
+install py/mock-isolated-repo.py %{buildroot}%{_bindir}/mock-isolated-repo
 install py/mock-parse-buildlog.py %{buildroot}%{_bindir}/mock-parse-buildlog
 install py/mock.py %{buildroot}%{_libexecdir}/mock/mock
 ln -s consolehelper %{buildroot}%{_bindir}/mock
@@ -249,6 +250,7 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 # executables
 %{_bindir}/mock
 %{_bindir}/mockchain
+%{_bindir}/mock-isolated-repo
 %{_bindir}/mock-parse-buildlog
 %{_libexecdir}/mock
 

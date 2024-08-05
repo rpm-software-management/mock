@@ -300,6 +300,7 @@ class Commands(object):
                             ' See "dynamic_buildrequires" in config_opts.')
 
             self.install_external(requires)
+            # install the (static) BuildRequires
             self.installSrpmDeps(rebuilt_srpm)
             self.state.finish(buildsetup)
             buildsetup_finished = True
@@ -720,6 +721,7 @@ class Commands(object):
         # --nodeps because rpm in the root may not be able to read rpmdb
         # created by rpm that created it (outside of chroot)
         check_opt = []
+        depsonly = self.config["calculatedeps"]
         if not check:
             # this is because EL5/6 does not know --nocheck
             # when EL5/6 targets are not supported, replace it with --nocheck
@@ -781,7 +783,9 @@ class Commands(object):
                 if packages_after == packages_before:
                     success = True
                 for f_buildreqs in buildreqs:
-                    os.remove(f_buildreqs)
+                    if not (success and depsonly):
+                        # we want to keep the nosrc.rpm file
+                        os.remove(f_buildreqs)
                 # The first rpmbuild -br already did %prep, so we don't need waste time
                 if '--noprep' not in br_mode:
                     br_mode += ['--noprep']
@@ -790,6 +794,8 @@ class Commands(object):
                 # but with short-circuit it doesn't matter
                 mode = ['-ba']
             mode += ['--noprep']
+
+        self.plugins.call_hooks('postdeps')
 
         # When we used dynamic buildrequires, the rpmbuild call will
         # execute the %generate_buildrequires section once again
@@ -803,14 +809,16 @@ class Commands(object):
         # Unfortunately, we can only do this when using a bootstrap chroot,
         # because the rpm in the chroot might not understand the rpmdb otherwise.
         # See https://github.com/rpm-software-management/mock/issues/1246
-        checkdeps = dynamic_buildrequires and self.bootstrap_buildroot is not None
-        self.buildroot.doChroot(get_command(mode, checkdeps=checkdeps),
-                                shell=False, logger=self.buildroot.build_log, timeout=timeout,
-                                uid=self.buildroot.chrootuid, gid=self.buildroot.chrootgid,
-                                user=self.buildroot.chrootuser,
-                                nspawn_args=self._get_nspawn_args(),
-                                unshare_net=self.private_network,
-                                printOutput=self.config['print_main_output'])
+
+        if not depsonly:
+            checkdeps = dynamic_buildrequires and self.bootstrap_buildroot is not None
+            self.buildroot.doChroot(get_command(mode, checkdeps=checkdeps),
+                                    shell=False, logger=self.buildroot.build_log, timeout=timeout,
+                                    uid=self.buildroot.chrootuid, gid=self.buildroot.chrootgid,
+                                    user=self.buildroot.chrootuser,
+                                    nspawn_args=self._get_nspawn_args(),
+                                    unshare_net=self.private_network,
+                                    printOutput=self.config['print_main_output'])
         results = glob.glob(bd_out + '/RPMS/*.rpm')
         results += glob.glob(bd_out + '/SRPMS/*.rpm')
         self.buildroot.final_rpm_list = [os.path.basename(result) for result in results]

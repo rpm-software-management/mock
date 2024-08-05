@@ -120,6 +120,9 @@ def command_parse():
     parser.add_option("--rebuild", action="store_const", const="rebuild",
                       dest="mode", default='__default__',
                       help="rebuild the specified SRPM(s)")
+    parser.add_option("--calculate-build-dependencies", action="store_const",
+                      const="calculatedeps", dest="mode",
+                      help="Resolve static and dynamic build dependencies")
     parser.add_option("--chain", action="store_const", const="chain",
                       dest="mode",
                       help="build multiple RPMs in chain loop")
@@ -391,6 +394,8 @@ def command_parse():
                       help=("Additional package to install into the buildroot before "
                             "the build is done.  Can be specified multiple times."))
 
+    parser.add_option("--isolated-build-config", nargs=2, metavar=("json", "localrepo"))
+
     (options, args) = parser.parse_known_args()
 
     if options.mode == '__default__':
@@ -401,6 +406,14 @@ def command_parse():
             args = args[1:]
         else:
             options.mode = 'rebuild'
+
+    if options.isolated_build_config and options.mode != "rebuild":
+        raise mockbuild.exception.BadCmdline("--rebuild mode needed with --isolated-build-config")
+
+    options.calculatedeps = None
+    if options.mode == "calculatedeps":
+        options.mode = "rebuild"
+        options.calculatedeps = True
 
     # Optparse.parse_args() eats '--' argument, while argparse doesn't.  Do it manually.
     if args and args[0] == '--':
@@ -672,6 +685,9 @@ def main():
     config_path = MOCKCONFDIR
     if options.configdir:
         config_path = options.configdir
+
+    if options.isolated_build_config:
+        options.chroot = "isolated-build"
 
     config_opts = uidManager.run_in_subprocess_without_privileges(
             config.load_config, config_path, options.chroot)
