@@ -30,15 +30,15 @@ syslog_device=
 install_weak_deps=0
 metadata_expire=0
 best=1
-{% if target_arch == 'x86_64' %}
+{% if repo_arch == 'x86_64' %}
 excludepkgs=*.i586,*.i686,*.ppc,*.ppc64,*.ppc64le,*.s390x
-{% elif target_arch == 'i586' %}
+{% elif repo_arch == 'i586' %}
 excludepkgs=*.x86_64,*.ppc,*.ppc64,*.ppc64le,*.s390x
-{% elif target_arch == 'ppc64le' %}
+{% elif repo_arch == 'ppc64le' %}
 excludepkgs=*.ppc,*.ppc64,*.x86_64,*.i586,*.i686,*.s390x
-{% elif target_arch == 'ppc64' %}
+{% elif repo_arch == 'ppc64' %}
 excludepkgs=*.ppc,*.ppc64le,*.x86_64,*.i586,*.i686,*.s390x
-{% elif target_arch == 's390x' %}
+{% elif repo_arch == 's390x' %}
 excludepkgs=*.ppc,*.ppc64,*.ppc64le,*.x86_64,*.i586,*.i686
 {% endif %}
 
@@ -48,7 +48,7 @@ user_agent={{ user_agent }}
 # repos
 
 [opensuse-leap-oss]
-name=openSUSE Leap $releasever - {{ target_arch }} - OSS
+name=openSUSE Leap $releasever - {{ repo_arch }} - OSS
 baseurl=https://download.opensuse.org/distribution/leap/$releasever/repo/oss/
 #metalink=https://download.opensuse.org/distribution/leap/$releasever/repo/oss/repodata/repomd.xml.metalink
 enabled=1
@@ -58,7 +58,7 @@ gpgkey=file:///usr/share/distribution-gpg-keys/opensuse/RPM-GPG-KEY-openSUSE
 gpgcheck=1
 
 [opensuse-leap-oss-update]
-name=openSUSE Leap $releasever - {{ target_arch }} - OSS - Updates
+name=openSUSE Leap $releasever - {{ repo_arch }} - OSS - Updates
 baseurl=https://download.opensuse.org/update/leap/$releasever/oss/
 #metalink=https://download.opensuse.org/update/leap/$releasever/oss/repodata/repomd.xml.metalink
 enabled=1
@@ -66,7 +66,7 @@ gpgkey=file:///usr/share/distribution-gpg-keys/opensuse/RPM-GPG-KEY-openSUSE
 gpgcheck=1
 
 [opensuse-leap-sle-update]
-name=openSUSE Leap $releasever - {{ target_arch }} - Updates from SUSE Linux Enterprise
+name=openSUSE Leap $releasever - {{ repo_arch }} - Updates from SUSE Linux Enterprise
 baseurl=https://download.opensuse.org/update/leap/$releasever/sle/
 #metalink=https://download.opensuse.org/update/leap/$releasever/sle/repodata/repomd.xml.metalink
 enabled=1
@@ -74,7 +74,7 @@ gpgkey=file:///usr/share/distribution-gpg-keys/suse/RPM-GPG-KEY-SuSE-SLE-15
 gpgcheck=1
 
 [opensuse-leap-sle-backports-update]
-name=openSUSE Leap $releasever - {{ target_arch }} - Updates from Backports for SUSE Linux Enterprise
+name=openSUSE Leap $releasever - {{ repo_arch }} - Updates from Backports for SUSE Linux Enterprise
 baseurl=https://download.opensuse.org/update/leap/$releasever/backports/
 #metalink=https://download.opensuse.org/update/leap/$releasever/backports/repodata/repomd.xml.metalink
 enabled=1

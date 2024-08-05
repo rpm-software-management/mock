@@ -350,6 +350,8 @@ class Buildroot(object):
         # by the current user
         if prebuild:
             self.chown_home_dir()
+        else:
+            self.chown_home_dir(recursive=False)
 
         # mark the buildroot as initialized
         file_util.touch(self.make_chroot_path('.initialized'))
@@ -678,10 +680,10 @@ class Buildroot(object):
             file_util.mkdirIfAbsent(self.make_chroot_path(item))
 
     @traceLog()
-    def chown_home_dir(self):
+    def chown_home_dir(self, recursive=True):
         """ set ownership of homedir and subdirectories to mockbuild user """
         self.uid_manager.changeOwner(self.make_chroot_path(self.homedir),
-                                     recursive=True)
+                                     recursive=recursive)
 
     @traceLog()
     def prepare_installation_time_homedir(self):
@@ -877,6 +879,9 @@ class Buildroot(object):
 
     @traceLog()
     def _setup_nosync(self):
+        if not self.config['nosync']:
+            return
+
         multilib = ('x86_64', 's390x')
         # ld_preload need to be same as in bootstrap because we call DNF in bootstrap, but
         # but it will load nosync from the final chroot
@@ -903,20 +908,20 @@ class Buildroot(object):
                 shutil.copy2(nosync, dst)
             return True
 
-        if self.config['nosync']:
-            target_arch = self.config['target_arch']
-            copied_lib = copy_nosync()
-            copied_lib64 = copy_nosync(lib64=True)
-            if not copied_lib and not copied_lib64:
-                self.root_log.warning("nosync is enabled but the library "
-                                      "wasn't found on the system")
-                return
-            if (target_arch in multilib and not self.config['nosync_force']
-                    and copied_lib != copied_lib64):
-                self.root_log.warning("For multilib systems, both architectures"
-                                      " of nosync library need to be installed")
-                return
-            self.nosync_path = os.path.join(tmp_libdir, 'nosync.so')
+        target_arch = self.config['target_arch']
+        copied_lib = copy_nosync()
+        copied_lib64 = copy_nosync(lib64=True)
+        if not copied_lib and not copied_lib64:
+            self.root_log.warning("nosync is enabled but the library "
+                                  "wasn't found on the system")
+            return
+        if all([target_arch in multilib,
+                not self.config['nosync_force'],
+                copied_lib != copied_lib64]):
+            self.root_log.warning("For multilib systems, both architectures"
+                                  " of nosync library need to be installed")
+            return
+        self.nosync_path = os.path.join(tmp_libdir, 'nosync.so')
 
     @traceLog()
     def finalize(self):

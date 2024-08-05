@@ -30,13 +30,13 @@ syslog_device=
 install_weak_deps=0
 metadata_expire=0
 best=1
-{% if target_arch == 'x86_64' %}
+{% if repo_arch == 'x86_64' %}
 excludepkgs=*.i586,*.i686
-{% elif target_arch == 'i586' %}
+{% elif repo_arch == 'i586' %}
 excludepkgs=*.x86_64
-{% elif target_arch == 'ppc64le' %}
+{% elif repo_arch == 'ppc64le' %}
 excludepkgs=*.ppc,*.ppc64
-{% elif target_arch == 'ppc64' %}
+{% elif repo_arch == 'ppc64' %}
 excludepkgs=*.ppc,*.ppc64le
 {% endif %}
 
@@ -46,20 +46,20 @@ user_agent={{ user_agent }}
 # repos
 
 [opensuse-tumbleweed-oss]
-name=openSUSE Tumbleweed - {{ target_arch }} - OSS
-{% if target_arch in ['x86_64'] %}
+name=openSUSE Tumbleweed - {{ repo_arch }} - OSS
+{% if repo_arch in ['x86_64'] %}
 baseurl=https://download.opensuse.org/tumbleweed/repo/oss/
 #metalink=https://download.opensuse.org/tumbleweed/repo/oss/repodata/repomd.xml.metalink
-{% elif target_arch in ['ppc64le', 'ppc64'] %}
+{% elif repo_arch in ['ppc64le', 'ppc64'] %}
 baseurl=https://download.opensuse.org/ports/ppc/tumbleweed/repo/oss/
 #metalink=https://download.opensuse.org/ports/ppc/tumbleweed/repo/oss/repodata/repomd.xml.metalink
-{% elif target_arch in ['aarch64'] %}
+{% elif repo_arch in ['aarch64'] %}
 baseurl=https://download.opensuse.org/ports/aarch64/tumbleweed/repo/oss/
 #metalink=https://download.opensuse.org/ports/aarch64/tumbleweed/repo/oss/repodata/repomd.xml.metalink
-{% elif target_arch in ['i586'] %}
+{% elif repo_arch in ['i586'] %}
 baseurl=https://download.opensuse.org/ports/i586/tumbleweed/repo/oss/
 #metalink=https://download.opensuse.org/ports/i586/tumbleweed/repo/oss/repodata/repomd.xml.metalink
-{% elif target_arch in ['s390x'] %}
+{% elif repo_arch in ['s390x'] %}
 baseurl=https://download.opensuse.org/ports/zsystems/tumbleweed/repo/oss/
 #metalink=https://download.opensuse.org/ports/zsystems/tumbleweed/repo/oss/repodata/repomd.xml.metalink
 {% endif %}

@@ -56,6 +56,10 @@ class CCache(object):
         envupd = {"CCACHE_DIR": "/var/tmp/ccache", "CCACHE_UMASK": "002"}
         if self.ccache_opts.get('compress') is not None:
             envupd["CCACHE_COMPRESS"] = str(self.ccache_opts['compress'])
+        if self.ccache_opts.get('hashdir'):
+            envupd["CCACHE_HASHDIR"] = "1"
+        else:
+            envupd["CCACHE_NOHASHDIR"] = "1"
         self.buildroot.env.update(envupd)
 
         file_util.mkdirIfAbsent(self.buildroot.make_chroot_path('/var/tmp/ccache'))

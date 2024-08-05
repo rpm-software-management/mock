@@ -3,7 +3,7 @@
 %endif
 
 Name:       mock-core-configs
-Version:    40.2.post1
+Version:    40.6
 Release:    1%{?dist}
 Summary:    Mock core config files basic chroots
 
@@ -22,7 +22,7 @@ BuildArch:  noarch
 Provides: mock-configs
 
 # distribution-gpg-keys contains GPG keys used by mock configs
-Requires:   distribution-gpg-keys >= 1.101
+Requires:   distribution-gpg-keys >= 1.104
 # specify minimal compatible version of mock
 Requires:   mock >= 5.4.post1
 Requires:   mock-filesystem
@@ -37,7 +37,7 @@ Requires(post): sed
 
 %description
 Mock configuration files which allow you to create chroots for Alma Linux,
-Amazon Linux, CentOS, CentOS Stream, EuroLinux, Fedora, Fedora EPEL, Mageia,
+Amazon Linux, CentOS, CentOS Stream, Circle Linux, EuroLinux, Fedora, Fedora EPEL, Mageia,
 Navy Linux, OpenMandriva Lx, openSUSE, Oracle Linux, Red Hat Enterprise Linux,
 Rocky Linux and various other specific or combined chroots.
 
@@ -151,6 +151,30 @@ fi
 %ghost %config(noreplace,missingok) %{_sysconfdir}/mock/default.cfg
 
 %changelog
+* Sat Jun 15 2024 Pavel Raiskup <praiskup@redhat.com> 40.6-1
+- c10s config use mirrored metalinks
+
+* Wed Jun 05 2024 Miroslav Suchý <msuchy@redhat.com> 40.5-1
+- CentOS Stream 8 is EOL (andykimpe@gmail.com)
+- configs: Fedora 38 goes EOL (praiskup@redhat.com)
+
+* Tue May 14 2024 Jakub Kadlcik <frostyx@email.cz> 40.4-1
+- configs: BuildWithDNF5 for ELN (praiskup@redhat.com)
+- Add Circle Linux 9 configs (bella@cclinux.org)
+- configs: Replace Mageia 10 and Cauldron i586 configs with i686
+  (wally@mageia.org)
+- Post-release administrivia (frostyx@email.cz)
+
+* Fri Apr 05 2024 Jakub Kadlcik <frostyx@email.cz> 40.3-1
+- Add initial c10s mock configs (Koji BUILDROOT only) (miro@hroncok.cz)
+- configs: use repo_arch, not target_arch with openSUSE (praiskup@redhat.com)
+- configs: Drop modular repositories from Fedora Branched
+  (ngompa@fedoraproject.org)
+- configs: Drop modular repositories from Fedora Rawhide
+  (ngompa@fedoraproject.org)
+- Configs 40.2 release notes && post-release administrivia
+  (praiskup@redhat.com)
+
 * Fri Feb 16 2024 Pavel Raiskup <praiskup@redhat.com> 40.2-1
 - Use dnf5 on Fedora 40+ (miro@hroncok.cz)
 

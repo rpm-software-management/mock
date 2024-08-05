@@ -69,6 +69,10 @@ Versions in Linux distributions:
 
 
 ## Release Notes
+* [Configs 40.6](Release-Notes-Configs-40.6) - CentOS Stream 10 uses mirrored repositories.
+* [Configs 40.5](Release-Notes-Configs-40.5) - Fedora 38 moved to EOL. CentOS Stream 8 moved to vault.
+* [5.6](Release-Notes-5.6) - Improved performance of bash completion, don't use `--allowerasing` for commands that doesn't provide it, fixed "no space left" tracebacks, new Circle Linux 9 configs, Mageia Cauldron i686, fixed Fedora ELN.
+* [Configs 40.3](Release-Notes-Configs-40.3) - Added C10s chroots, Dropped Fedora modular repositories, fix bootstrap from image for openSUSE
 * [Configs 40.2](Release-Notes-Configs-40.2) - Fixed Fedora 40 builds that regressed back to `dnf` (instead of expected `dnf5`).
 * [5.5](Release-Notes-5.5) (2024-02-14) - The `{{ repo_arch }}` support added, chroot_scan supports tarballs, ownership during `--init` fixed, fixed `root_cache` tarball invalidation problem.
 * [5.4](Release-Notes-5.4) (2024-01-04) - Bugfix the rpmautospec plugin.
@@ -352,4 +356,3 @@ If you use Mock, we'd love to hear from you and add you to this [wiki page](http
 * [Increase Mock performance](http://miroslav.suchy.cz/blog/archives/2015/05/28/increase_mock_performance_-_build_packages_in_memory/index.html).
 * [RPM Packaging Guide](https://rpm-packaging-guide.github.io/)
 * [Modularity Features in Mock](http://frostyx.cz/posts/modularity-features-in-mock)
-

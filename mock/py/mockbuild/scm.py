@@ -114,14 +114,18 @@ class scmWorker(object):
         cwd_dir = util.pretty_getcwd()
         self.log.debug("Adjusting timestamps in %s", self.src_dir)
         os.chdir(self.src_dir)
-        proc = subprocess.Popen(['git', 'ls-files', '-z'], shell=False, stdout=subprocess.PIPE)
+        proc = subprocess.Popen(
+            ['git', 'ls-files', '-z'],
+            shell=False, stdout=subprocess.PIPE, universal_newlines=True,
+        )
         for f in proc.communicate()[0].split('\0')[:-1]:
             rev = subprocess.Popen(
-                ['git', 'rev-list', 'HEAD', f], shell=False, stdout=subprocess.PIPE
+                ['git', 'rev-list', 'HEAD', f],
+                shell=False, stdout=subprocess.PIPE, universal_newlines=True,
             ).stdout.readlines()[0].rstrip('\n')
             ts = subprocess.Popen(
-                ['git', 'show', '--pretty=format:%ai', '--abbrev-commit', rev, f],
-                shell=False, stdout=subprocess.PIPE
+                ['git', 'show', '--pretty=format:%ai', '--no-patch', rev, f],
+                shell=False, stdout=subprocess.PIPE, universal_newlines=True,
             ).stdout.readlines()[0].rstrip('\n')
             subprocess.Popen(['touch', '-d', ts, f], shell=False)
         os.chdir(cwd_dir)

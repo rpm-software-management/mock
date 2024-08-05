@@ -179,6 +179,31 @@ _mock()
 } &&
 complete -F _mock mock mock.py
 
+_mock_parse_buildlog()
+{
+    local cur prev cword split
+    _init_completion -s || return
+
+    case "$prev" in
+        -h|--help)
+            # no further arguments are accepted after the above arguments
+            return
+            ;;
+        -p|--path)
+            _filedir
+            return
+            ;;
+    esac
+
+    $split && return
+
+    if [[ $cword -eq 1 ]] ; then
+        COMPREPLY=( $( compgen -W '$( _parse_help "$1" )' -- "$cur" ) )
+        [[ $COMPREPLY == *= ]] && compopt -o nospace
+    fi
+} &&
+complete -F _mock_parse_buildlog mock-parse-buildlog mock-parse-buildlog.py
+
 # Local variables:
 # mode: shell-script
 # sh-basic-offset: 4

@@ -13,10 +13,7 @@ config_opts['releasever'] = '41'
 config_opts['package_manager'] = 'dnf5'
 
 config_opts['bootstrap_image'] = 'registry.fedoraproject.org/fedora:rawhide'
-
-# For F41+ there's https://fedoraproject.org/wiki/Changes/ReplaceDnfWithDnf5 so
-# once done, re-revert https://pagure.io/fedora-kickstarts/c/f7bf98d3af6d655c6d64ba9c8d2f88cbffbbb06d?branch=main
-#config_opts['bootstrap_image_ready'] = True
+config_opts['bootstrap_image_ready'] = True
 
 config_opts['description'] = 'Fedora Rawhide'
 
@@ -85,34 +82,6 @@ metalink=https://mirrors.fedoraproject.org/metalink?repo=rawhide-source&arch=$ba
 gpgkey={{ rawhide_gpg_keys() }}
 gpgcheck=1
 enabled=0
-skip_if_unavailable=False
-
-# modular
-
-[rawhide-modular]
-name=Fedora - Modular Rawhide - Developmental packages for the next Fedora release
-metalink=https://mirrors.fedoraproject.org/metalink?repo=rawhide-modular&arch=$basearch
-# if you want to enable it, you should set best=0
-# see https://bugzilla.redhat.com/show_bug.cgi?id=1673851
-enabled=0
-gpgcheck=1
-gpgkey={{ rawhide_gpg_keys() }}
-skip_if_unavailable=False
-
-[rawhide-modular-debuginfo]
-name=Fedora - Modular Rawhide - Debug
-metalink=https://mirrors.fedoraproject.org/metalink?repo=rawhide-modular-debug&arch=$basearch
-enabled=0
-gpgcheck=1
-gpgkey={{ rawhide_gpg_keys() }}
-skip_if_unavailable=False
-
-[rawhide-modular-source]
-name=Fedora - Modular Rawhide - Source
-metalink=https://mirrors.fedoraproject.org/metalink?repo=rawhide-modular-source&arch=$basearch
-enabled=0
-gpgcheck=1
-gpgkey={{ rawhide_gpg_keys() }}
 skip_if_unavailable=False
 {% endif %}
 """

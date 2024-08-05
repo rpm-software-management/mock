@@ -25,6 +25,8 @@ helps you to setup a correct configuration layout.
 
 ## Release checklist overview
 
+0. Make sure all GitHub CI checks are passing for the latest commit
+
 1. change to the correct local branch, e.g. `main`
 
         $ git checkout main
@@ -33,44 +35,20 @@ helps you to setup a correct configuration layout.
 
         $ git pull --rebase main
 
-3. Prepare a testing machine
+3. If you want to propose the PR through a PR, switch to a new branch
 
-   It's strongly discouraged to run the test-suite locally, because certain
-   rather intrusive system configuration is needed (LVM partitions, `/var/lib`
-   space requirements, etc.).  Please allocate some disposable VM (with root
-   partition of size ">= 60GB"), and run the test-suite there.
+        $ git checkout -b release-2024-05-15
 
-   The system can be preconfigured using the Ansible playbook provided in the
-   Mock git repository.  Play it like `./integration-tests/setup-box`.
+5. Prepare release notes. Use the going-to-be-released version, not
+   the current version. If you want to release only configs, use
+   `--config-only`.
 
-    Then just:
-
-        $ ssh root@<IP_ADDRESS_OF_TESTED_MACHINE>
-        # su - mockbuild
-
-
-4. Install the snapshot version of Mock/configs (to test the right pre-release
-   version)
-
-        $ cd mock && cd mock
-        $ tito build --rpm -i
-        $ cd ../mock-core-configs
-        $ tito build --rpm -i
-        $ cd ..
-
-5. Run the test-suite
-
-        $ cd mock/behave
-        $ behave        # the new test-suite
-        $ cd ../mock    # the old test-suite
-        $ make check 1>/tmp/test-output.txt  2>&1
-
-   Fix the test-suite errors first, before moving to the next step.
-
-6. Prepare release notes.
-
+        $ sudo dnf install towncrier
         $ ./releng/generate-release-notes --use-version 5.1
         $ vim docs/Release-Notes-5.1.md  # modify manually!
+
+   Rename release notes for configs from e.g. `Release-Notes-40.3.md`
+   to `Release-Notes-Configs-40.3.md`.
 
    Don't forget to manually modify ./docs/index.md and mention the new release.
 
@@ -78,6 +56,8 @@ helps you to setup a correct configuration layout.
 
        $ git log mock-4.1-1..HEAD --format="%aN" mock/ | sort | uniq
        $ git log mock-core-configs-38.1-1..HEAD --format="%aN" mock-core-configs/ | sort | uniq
+
+6. Commit all the pending changes
 
 7. On your box (you need push-access rights), tag the git tree:
 
@@ -107,15 +87,15 @@ helps you to setup a correct configuration layout.
     tag back (if dropped) 'git tag mock-4.1-1'.  Alternatively just `git push`
     the commits.
 
-9. Push the git tags upstream
+9. Push the git tags upstream, e.g.
 
-       $ git push --tags
+       $ git push origin mock-core-configs-40.4-1
 
 10. Release for EPEL and Fedora
 
-       $ # make sure that .tito/releasers.conf is up to date
-       $ cd ./mock  # or mock-core-configs
-       $ tito release fedora-git-all
+    $ # make sure that .tito/releasers.conf is up to date
+    $ cd ./mock  # or mock-core-configs
+    $ tito release fedora-git-all
 
 11. publish tgz
 
