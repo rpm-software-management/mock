@@ -1,4 +1,8 @@
 ---
+- name: install also RPMs from the stable copr repository
+  community.general.copr:
+    name: '@mock/mock-stable'
+
 - name: install mock and other needed packages
   package: name={{ packages }} state=latest
   vars:
