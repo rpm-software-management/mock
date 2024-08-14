@@ -3,7 +3,7 @@
 %endif
 
 Name:       mock-core-configs
-Version:    41.0.post1
+Version:    41.1
 Release:    1%{?dist}
 Summary:    Mock core config files basic chroots
 
@@ -149,6 +149,20 @@ fi
 %ghost %config(noreplace,missingok) %{_sysconfdir}/mock/default.cfg
 
 %changelog
+* Wed Aug 14 2024 Pavel Raiskup <praiskup@redhat.com> 41.1-1
+- branch F41 from Rawhide (frostyx@email.cz)
+- added centos-stream+epel-10 configs
+- Enable RPM sysusers integration (j1.kyjovsky@gmail.com)
+- Rawhide to accept GPG key from future Fedora Rawhide+1
+- openEuler 24.03 LTS (nucleo@fedoraproject.org)
+- drop fedora-eln-i386 (yselkowi@redhat.com)
+- Switch CentOS 7 to vault.centos.org (robert@fedoraproject.org)
+- Fix GPG keys for CentOS Stream 10 repositories (daan.j.demeyer@gmail.com)
+- EOL epel-7 configuration
+- CentOS 7 is EOL
+- Fedora 41+ configuration images are "dnf5 ready"
+- Use metalinks for c10s {baseos,appstream,crb}-{source,debuginfo} (miro@hroncok.cz)
+
 * Sat Jun 15 2024 Pavel Raiskup <praiskup@redhat.com> 40.6-1
 - c10s config use mirrored metalinks
 
