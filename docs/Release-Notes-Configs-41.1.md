@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Release Notes - Mock Configs 41.1
+title: Release Notes - Mock Configs 41.1 (and typofix 41.2)
 ---
 
 ## [Release Configs 41.1](https://rpm-software-management.github.io/mock/Release-Notes-Configs-41.1) - 2024-08-14

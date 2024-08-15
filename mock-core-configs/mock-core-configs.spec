@@ -3,7 +3,7 @@
 %endif
 
 Name:       mock-core-configs
-Version:    41.1
+Version:    41.2
 Release:    1%{?dist}
 Summary:    Mock core config files basic chroots
 
@@ -149,6 +149,9 @@ fi
 %ghost %config(noreplace,missingok) %{_sysconfdir}/mock/default.cfg
 
 %changelog
+* Thu Aug 15 2024 Pavel Raiskup <praiskup@redhat.com> 41.2-1
+- fix centos-stream+epel-10-s390x /bin/sed typo
+
 * Wed Aug 14 2024 Pavel Raiskup <praiskup@redhat.com> 41.1-1
 - branch F41 from Rawhide (frostyx@email.cz)
 - added centos-stream+epel-10 configs
