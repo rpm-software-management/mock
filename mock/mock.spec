@@ -256,6 +256,8 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 %exclude %{python_sitelib}/mockbuild/__pycache__/scm.*
 %exclude %{python_sitelib}/mockbuild/plugins/lvm_root.*
 %exclude %{python_sitelib}/mockbuild/plugins/__pycache__/lvm_root.*
+%exclude %{python_sitelib}/mockbuild/plugins/rpmautospec.*
+%exclude %{python3_sitelib}/mockbuild/plugins/__pycache__/rpmautospec.*.py*
 
 # config files
 %config(noreplace) %{_sysconfdir}/%{name}/*.ini
