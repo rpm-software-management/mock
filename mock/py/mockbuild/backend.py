@@ -300,6 +300,7 @@ class Commands(object):
                             ' See "dynamic_buildrequires" in config_opts.')
 
             self.install_external(requires)
+            # install the (static) BuildRequires
             self.installSrpmDeps(rebuilt_srpm)
             self.state.finish(buildsetup)
             buildsetup_finished = True
@@ -790,6 +791,8 @@ class Commands(object):
                 # but with short-circuit it doesn't matter
                 mode = ['-ba']
             mode += ['--noprep']
+
+        self.plugins.call_hooks('postdeps')
 
         # When we used dynamic buildrequires, the rpmbuild call will
         # execute the %generate_buildrequires section once again
