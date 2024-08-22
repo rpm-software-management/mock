@@ -43,7 +43,7 @@ class PackageState(object):
         self.inst_done = False
         self.online = self.buildroot.config['online']
         plugins.add_hook("postyum", self._availablePostYumHook)
-        plugins.add_hook("prebuild", self._installedPreBuildHook)
+        plugins.add_hook("postdeps", self._installedPreBuildHook)
 
     @traceLog()
     def _availablePostYumHook(self):
