@@ -1,0 +1,102 @@
+{
+  "$id": "https://raw.githubusercontent.com/rpm-software-management/mock/main/mock/docs/buildroot-lock-schema-1.0.0.json",
+  "$schema": "http://json-schema.org/draft-06/schema#",
+  "type": "object",
+  "title": "Mock buildroot_lock.json file specification",
+  "description": "Version 1.0.0; last updated 2024-09-02",
+  "additionalProperties": false,
+  "properties": {
+    "version": {
+      "description": "Version of the https://raw.githubusercontent.com/rpm-software-management/mock/main/mock/docs/buildroot-lock-schema.json schema the document conforms to. Semantic versioned. Mock that implements v2.Y.Z versions no longer reads v1.Y.Z.",
+      "const": "1.0.0"
+    },
+    "buildroot": {
+      "description": "The object that describes the Mock buildroot",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "rpms": {
+          "description": "List of RPM packages installed in the buildroot",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "arch": {
+                "description": "Architecture for which the package was built, 'noarch' for arch agnostic packages",
+                "type": "string"
+              },
+              "epoch": {
+                "description": "Epoch number of the package",
+                "type": ["string", "null"]
+              },
+              "license": {
+                "description": "The distribution license(s) of the package",
+                "type": "string"
+              },
+              "name": {
+                "description": "Name of the package",
+                "type": "string"
+              },
+              "release": {
+                "description": "Release (downstream) number of the package",
+                "type": "string"
+              },
+              "sigmd5": {
+                "description": "The SIGMD5 tag from the rpm header.",
+                "type": "string"
+              },
+              "signature": {
+                "description": "The signature used to sign the rpm (if any), last 8 characters from the \"rpm  -q --qf '%{sigpgp:pgpsig}\n'\" output",
+                "type": ["string", "null"]
+              },
+              "url": {
+                "description": "Uniform Resource Locator that points to additional information on the packaged software",
+                "type": "string"
+              },
+              "version": {
+                "description": "Version (upstream) of the package",
+                "type": "string"
+              }
+            },
+            "required": [
+              "arch",
+              "epoch",
+              "license",
+              "name",
+              "release",
+              "sigmd5",
+              "signature",
+              "url",
+              "version"
+            ]
+          }
+        }
+      },
+      "required": [
+        "rpms"
+      ]
+    },
+    "bootstrap": {
+      "description": "The object that describes the Mock bootstrap chroot.  Optional, only provided when bootstrap (image) is used.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "image_digest": {
+          "description": "Digest got by the 'podman image inspect --format {{ .Digest }}' command, sha256 string",
+          "type": "string"
+        }
+      }
+    },
+    "config": {
+      "description": "A set of important Mock configuration options used when the buildroot was generated (Mock's internal)",
+      "type": "object",
+      "properties": {}
+    }
+  },
+  "required": [
+    "buildroot",
+    "config",
+    "version"
+  ]
+}

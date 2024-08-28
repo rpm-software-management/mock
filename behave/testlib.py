@@ -3,6 +3,7 @@
 from contextlib import contextmanager
 import io
 import pipes
+import os
 import subprocess
 import sys
 
@@ -67,20 +68,22 @@ class Mock:
         context.mock_runs = {
             "init": [],
             "rebuild": [],
+            "calculate-build-deps": [],
         }
 
     @property
     def basecmd(self):
         """ return the pre-configured mock base command """
         cmd = ["mock"]
-        if self.context.chroot_used:
-            cmd += ["--chroot", self.context.chroot]
         if self.context.uniqueext_used:
             cmd += ["--uniqueext", self.context.uniqueext]
         for repo in self.context.add_repos:
             cmd += ["-a", repo]
         if self.common_opts:
             cmd += self.common_opts
+        if self.context.next_mock_options:
+            cmd += self.context.next_mock_options
+            self.context.next_mock_options = []
         return cmd
 
     def init(self):
@@ -102,6 +105,40 @@ class Mock:
             "err": err,
             "srpms": srpms,
         }]
+
+    def calculate_deps(self, srpm, chroot):
+        """
+        Call Mock with --calculate-build-dependencies and produce lockfile
+        """
+        out, err = run_check(
+            self.basecmd + ["-r", chroot] + ["--calculate-build-dependencies",
+                                             srpm])
+        self.context.chroot = chroot
+        self.context.mock_runs["calculate-build-deps"].append({
+            "status": 0,
+            "out": out,
+            "err": err,
+            "srpm": srpm,
+            "chroot": chroot,
+            "lockfile": os.path.join(self.resultdir, "buildroot_lock.json")
+        })
+
+    def isolated_build(self):
+        """
+        From the previous calculate_deps() run, perform isolated build
+        """
+        mock_calc = self.context.mock_runs["calculate-build-deps"][-1]
+        out, err = run_check(self.basecmd + [
+            "--isolated-build", mock_calc["lockfile"], self.context.local_repo,
+            mock_calc["srpm"]
+        ])
+        self.context.mock_runs["rebuild"].append({
+            "status": 0,
+            "out": out,
+            "err": err,
+        })
+        # We built into an isolated-build.cfg!
+        self.context.chroot = "isolated-build"
 
     def clean(self):
         """ Clean chroot, but keep dnf/yum caches """

@@ -70,6 +70,14 @@ class Podman:
             logger.error(out)
         return not exit_status
 
+    def import_tarball(self, tarball):
+        """
+        Import tarball using podman into the local database.
+        """
+        getLog().info("Loading bootstrap image from %s", tarball)
+        cmd = [self.podman_binary, "load", "-i", tarball]
+        util.do_with_status(cmd, env=self.buildroot.env)
+
     def retry_image_pull(self, max_time):
         """ Try pulling the image multiple times """
         @backoff.on_predicate(backoff.expo, lambda x: not x,
@@ -105,6 +113,22 @@ class Podman:
                         self.image, mountpoint)
             subprocess.run(cmd_umount, stdout=subprocess.PIPE,
                            stderr=subprocess.PIPE, check=True)
+
+    def get_image_digest(self):
+        """
+        Get the "sha256:..." string for the image we work with.
+        """
+        check = [self.podman_binary, "image", "inspect", self.image,
+                 "--format", "{{ .Digest }}"]
+        result = subprocess.run(check, stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE, check=False,
+                                encoding="utf8")
+        if result.returncode:
+            raise BootstrapError(f"Can't get {self.image} podman image digest: {result.stderr}")
+        result = result.stdout.strip()
+        if len(result.splitlines()) != 1:
+            raise BootstrapError(f"The digest of {self.image} image is not a single-line string")
+        return result
 
     @traceLog()
     def cp(self, destination, tar_cmd):
