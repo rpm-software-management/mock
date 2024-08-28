@@ -2,6 +2,7 @@
 
 import glob
 import importlib
+import json
 import os
 import shutil
 import tempfile
@@ -12,14 +13,18 @@ from hamcrest import (
     ends_with,
     equal_to,
     has_item,
+    has_entries,
     has_length,
     not_,
 )
+import jsonschema
 from behave import given, when, then  # pylint: disable=no-name-in-module
 
 from testlib import no_output, run
 
+# flake8: noqa
 # pylint: disable=missing-function-docstring,function-redefined
+# mypy: disable-error-code="no-redef"
 
 
 def _first_int(string, max_lines=20):
@@ -187,3 +192,49 @@ def step_impl(context, call, module, args):
 def step_impl(context, field, value):
     assert_that(context.last_method_call_retval[field],
                 equal_to(value))
+
+
+@when('deps for {srpm} are calculated against {chroot}')
+def step_impl(context, srpm, chroot):
+    url = context.test_storage + srpm
+    context.mock.calculate_deps(url, chroot)
+
+
+@when('a local repository is created from lockfile')
+def step_impl(context):
+    mock_run = context.mock_runs["calculate-build-deps"][-1]
+    lockfile = mock_run["lockfile"]
+
+    context.local_repo = tempfile.mkdtemp(prefix="mock-tests-local-repo-")
+    cmd = ["mock-isolated-repo", "--lockfile", lockfile, "--output-repo",
+           context.local_repo]
+    assert_that(run(cmd)[0], equal_to(0))
+
+
+@when('an isolated build is retriggered with the lockfile and repository')
+def step_impl(context):
+    context.mock.isolated_build()
+
+
+@then('the produced lockfile is validated properly')
+def step_impl(context):
+    mock_run = context.mock_runs["calculate-build-deps"][-1]
+    lockfile = mock_run["lockfile"]
+    with open(lockfile, "r", encoding="utf-8") as fd:
+        lockfile_data = json.load(fd)
+
+    assert_that(lockfile_data["buildroot"]["rpms"],
+                has_item(has_entries({"name": "filesystem"})))
+
+    schemafile = os.path.join(os.path.dirname(__file__), '..', '..', '..',
+                              "mock", "docs",
+                              "buildroot-lock-schema-1.0.0.json")
+    with open(schemafile, "r", encoding="utf-8") as fd:
+        schema = json.load(fd)
+
+    jsonschema.validate(lockfile_data, schema)
+
+
+@given('next mock call uses {option} option')
+def step_impl(context, option):
+    context.next_mock_options.append(option)

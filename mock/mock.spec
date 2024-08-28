@@ -63,6 +63,8 @@ BuildRequires: python%{python3_pkgversion}-pylint
 BuildRequires: python%{python3_pkgversion}-rpm
 BuildRequires: python%{python3_pkgversion}-rpmautospec-core
 
+BuildRequires: argparse-manpage
+
 %if 0%{?fedora} >= 38
 # DNF5 stack
 Recommends: dnf5
@@ -86,6 +88,7 @@ Recommends: fuse-overlayfs
 %if %{with tests}
 BuildRequires: python%{python3_pkgversion}-distro
 BuildRequires: python%{python3_pkgversion}-jinja2
+BuildRequires: python%{python3_pkgversion}-jsonschema
 BuildRequires: python%{python3_pkgversion}-pyroute2
 BuildRequires: python%{python3_pkgversion}-pytest
 BuildRequires: python%{python3_pkgversion}-requests
@@ -171,6 +174,9 @@ done
 # this is what %%sysusers_create_compat will expand to
 %{_rpmconfigdir}/sysusers.generate-pre.sh mock.conf > sysusers_script
 
+argparse-manpage --pyfile ./py/mock-isolated-repo.py --function _argparser > mock-isolated-repo.1
+
+
 %install
 #base filesystem
 mkdir -p %{buildroot}%{_sysconfdir}/mock/eol/templates
@@ -179,6 +185,7 @@ mkdir -p %{buildroot}%{_sysconfdir}/mock/templates
 install -d %{buildroot}%{_bindir}
 install -d %{buildroot}%{_libexecdir}/mock
 install mockchain %{buildroot}%{_bindir}/mockchain
+install py/mock-isolated-repo.py %{buildroot}%{_bindir}/mock-isolated-repo
 install py/mock-parse-buildlog.py %{buildroot}%{_bindir}/mock-parse-buildlog
 install py/mock.py %{buildroot}%{_libexecdir}/mock/mock
 ln -s consolehelper %{buildroot}%{_bindir}/mock
@@ -205,7 +212,7 @@ install -d %{buildroot}%{python_sitelib}/
 cp -a py/mockbuild %{buildroot}%{python_sitelib}/
 
 install -d %{buildroot}%{_mandir}/man1
-cp -a docs/mock.1 docs/mock-parse-buildlog.1 %{buildroot}%{_mandir}/man1/
+cp -a docs/mock.1 docs/mock-parse-buildlog.1 mock-isolated-repo.1 %{buildroot}%{_mandir}/man1/
 install -d %{buildroot}%{_datadir}/cheat
 cp -a docs/mock.cheat %{buildroot}%{_datadir}/cheat/mock
 
@@ -213,6 +220,7 @@ install -d %{buildroot}/var/lib/mock
 install -d %{buildroot}/var/cache/mock
 
 mkdir -p %{buildroot}%{_pkgdocdir}
+install -p -m 0644 docs/buildroot-lock-schema-*.json %{buildroot}%{_pkgdocdir}
 install -p -m 0644 docs/site-defaults.cfg %{buildroot}%{_pkgdocdir}
 
 mkdir -p %{buildroot}%{_sysusersdir}
@@ -240,6 +248,7 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 %defattr(0644, root, mock)
 %dir %{_pkgdocdir}/
 %doc %{_pkgdocdir}/site-defaults.cfg
+%doc %{_pkgdocdir}/buildroot-lock-schema-*.json
 %{_datadir}/bash-completion/completions/mock
 %{_datadir}/bash-completion/completions/mock-parse-buildlog
 
@@ -248,6 +257,7 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 # executables
 %{_bindir}/mock
 %{_bindir}/mockchain
+%{_bindir}/mock-isolated-repo
 %{_bindir}/mock-parse-buildlog
 %{_libexecdir}/mock
 
@@ -262,6 +272,7 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 
 # config files
 %config(noreplace) %{_sysconfdir}/%{name}/*.ini
+%config(noreplace) %{_sysconfdir}/%{name}/isolated-build.cfg
 %config(noreplace) %{_sysconfdir}/pam.d/%{name}
 %config(noreplace) %{_sysconfdir}/security/console.apps/%{name}
 
@@ -272,6 +283,7 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 # docs
 %{_mandir}/man1/mock.1*
 %{_mandir}/man1/mock-parse-buildlog.1*
+%{_mandir}/man1/mock-isolated-repo.1*
 %{_datadir}/cheat/mock
 
 # cache & build dirs

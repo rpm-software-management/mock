@@ -44,7 +44,6 @@ def before_all(context):
 
     default_config = os.readlink("/etc/mock/default.cfg")
     context.chroot = default_config[:-4]  # drop cfg suffix
-    context.chroot_used = False
 
     context.test_storage = (
         "https://github.com/"
@@ -52,6 +51,7 @@ def before_all(context):
 
     context.download = lambda url: _download(context, url)
     context.download_rpm = lambda rpm: _download_rpm(context, rpm)
+    context.next_mock_options = []
 
 
 def _cleanup_workdir(context):

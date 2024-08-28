@@ -189,6 +189,7 @@ See a [separate document](Mock-Core-Configs).
 ## Plugins
 
 * [bind_mount](Plugin-BindMount) - bind mountpoints inside the chroot
+* [buildroot_lock](Plugin-BuildrootLock) - provide a buildroot lockfile
 * [ccache](Plugin-CCache) - compiler cache plugin
 * [chroot_scan](Plugin-ChrootScan) - allows you to retrieve build artifacts from buildroot (e.g. additional logs, coredumps)
 * [compress_logs](Plugin-CompressLogs) - compress logs
@@ -225,6 +226,7 @@ Every plugin has a corresponding wiki page with docs.
 * [package managers](Feature-package-managers) - supported package managers
 * [rhel chroots](Feature-rhelchroots) - builds for RHEL
 * [GPG keys and SSL](feature-gpg-and-ssl) - how to get your GPG keys and SSL certificates to buildroot
+* [Isolated (offline) Builds](feature-isolated-builds) - doing offline builds with Mock
 
 ## Using Mock outside your git sandbox
 
