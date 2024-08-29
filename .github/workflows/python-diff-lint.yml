@@ -17,6 +17,9 @@ jobs:
         id: VCS_Diff_Lint
         with:
           subdirectory: mock
+          linter_tags: |
+            ruff
+            pylint
 
       - if: ${{ always() }}
         name: Upload artifact with detected defects in SARIF format
