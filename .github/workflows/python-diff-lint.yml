@@ -2,6 +2,7 @@
 name: Lint Python issues
 
 on:
+  push:
   pull_request:
     branches: [main]
 
@@ -10,26 +11,29 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Repository checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: VCS Diff Lint
         uses: fedora-copr/vcs-diff-lint-action@v1
         id: VCS_Diff_Lint
         with:
-          subdirectory: mock
+          subdirectories: |
+            behave
+            mock
+            releng
           linter_tags: |
             ruff
             pylint
 
-      - if: ${{ always() }}
-        name: Upload artifact with detected defects in SARIF format
-        uses: actions/upload-artifact@v3
+      - name: Upload artifact with detected defects in SARIF format
+        uses: actions/upload-artifact@v4
         with:
           name: VCS Diff Lint SARIF
           path: ${{ steps.VCS_Diff_Lint.outputs.sarif }}
+        if: ${{ always() }}
 
-      - if: ${{ always() }}
-        name: Upload SARIF to GitHub using github/codeql-action/upload-sarif
-        uses: github/codeql-action/upload-sarif@v2
+      - name: Upload SARIF to GitHub using github/codeql-action/upload-sarif
+        uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: ${{ steps.VCS_Diff_Lint.outputs.sarif }}
+        if: ${{ always() }}
