@@ -1,0 +1,4 @@
+---
+# Config for https://github.com/sanitizers/chronographer-github-app
+labels:
+  skip-changelog: no-release-notes
