@@ -1,0 +1,40 @@
+---
+- name: "Start new machine"
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  tasks:
+    - name: "create the testing mock vm in ec2"
+      amazon.aws.ec2_instance:
+        name: "testing-mock"
+        state: running
+        profile: fedora-copr
+        region: us-east-1
+        key_name: "{{ aws.ssh_key }}"
+        count: 1
+        image_id: "{{ aws.image }}"
+        instance_type: "{{ aws.instance_type }}"
+        detailed_monitoring: true
+        network:
+          assign_public_ip: true
+        vpc_subnet_id: "{{ infra_subnet }}"
+        security_group: "{{ aws.security_group }}"
+        termination_protection: false
+        wait: true
+        tags:
+          FedoraGroup: copr
+          CoprPurpose: testing-mock
+        volumes:
+          - ebs:
+              volume_size: "{{ aws.root_volume_size }}"
+              encrypted: true
+              delete_on_termination: true
+            device_name: /dev/sda1
+      register: instances_started
+
+    - name: print ipv4
+      debug:
+        msg:
+          - "Instance ID: {{ instances_started.instances[0].instance_id }}"
+          - "Network ID: {{ instances_started.instances[0].network_interfaces[0].network_interface_id }}"
+          - "Unusable Public IP: {{ instances_started.instances[0].public_ip_address }}"
