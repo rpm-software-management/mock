@@ -1,4 +1,5 @@
 ---
 # Config for https://github.com/sanitizers/chronographer-github-app
 labels:
+  fragment-provided: ~  # opt out
   skip-changelog: no-release-notes
