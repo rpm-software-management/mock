@@ -22,6 +22,31 @@ with content similar to:
   mock_rhn_pass=<your Red Hat account password>
 
 ... and then re-run this script.
+
+If you have no IP_ADDRESS for testing, you may, e.g., create a new machine in
+EC2 with group_vars/all.yaml file like:
+
+    infra_subnet: subnet-0995f6a466849f4c3
+    aws:
+      ssh_key: "praiskup"
+      image: ami-004f552bba0e5f64f
+      instance_type: t2.large
+      root_volume_size: 60
+      security_group: mock-testing
+
+by running
+
+      $ ansible-playbook spawn-test-machine-ec2.yaml
+      PLAY [Start new machine] *****************
+
+      TASK [create the testing mock vm in ec2] *
+      changed: [localhost]
+
+      TASK [print ipv4] ************************
+      ...
+              "Public IP: 18.234.135.130"
+      ...
+
 EOF
     exit 1
 }
