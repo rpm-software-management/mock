@@ -81,6 +81,7 @@ Recommends: btrfs-progs
 Suggests: qemu-user-static
 Suggests: procenv
 Recommends: podman
+Recommends: fuse-overlayfs
 
 %if %{with tests}
 BuildRequires: python%{python3_pkgversion}-distro
