@@ -2,6 +2,11 @@
 # https://packit.dev/docs/configuration/
 
 ---
+require:
+  label:
+    absent:
+      - no-ci-builds
+
 actions:
   create-archive:
     - bash -c "tito build --tgz --test -o ."
