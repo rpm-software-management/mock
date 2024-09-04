@@ -6,6 +6,7 @@ on:
 name: Run Tox tests
 jobs:
   tox_test:
+    if: !contains(github.event.issue.labels.*.name, 'no-ci-builds')
     name: Tox test
     steps:
       - uses: actions/checkout@v3
