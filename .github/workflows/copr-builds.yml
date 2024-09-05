@@ -15,7 +15,7 @@ permissions:
 
 jobs:
   build:
-    if: !contains(github.event.issue.labels.*.name, 'no-ci-builds')
+    if: "!contains(github.event.pull_request.labels.*.name, 'no-ci-builds')"
     runs-on: ubuntu-latest
     name: RPM package
     strategy:
