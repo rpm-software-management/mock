@@ -51,6 +51,8 @@ mock  [options] \fB\-\-dnf\-cmd\fR [\fIarguments ...\fR]
 mock  [options] \fB\-\-calculate\-build\-dependencies\fR \fISRPM\fR
 .LP
 mock  [options] \fB\-\-isolated\-build \fILOCKFILE\fR \fIREPO\fR \fISRPM\fR
+.LP
+mock  [options] {\fB\-\-scrub\fR=\fITYPE\fP,\fB\-\-scrub\-all\-chroots\fR}
 
 
 .SH "DESCRIPTION"
@@ -219,6 +221,15 @@ see site\-defaults.cfg for more information.
 .TP
 \fB\-\-scrub\fR=\fITYPE\fP
 Completely remove the specified chroot or cache dir or all of the chroot and cache.  \fITYPE\fR is one of all, chroot, bootstrap, cache, root\-cache, c\-cache, yum\-cache or dnf\-cache. In fact, dnf\-cache is just alias for yum\-cache, and both remove Dnf and Yum cache.
+.TP
+\fB\-\-scrub\-all\-chroots\fP
+Run \fBmock \-\-scrub=all \-r <\fIchroot\fB>\fR for all chroots that appear to
+have been used previously (some leftovers in \fB/var/lib/mock\fR or
+\fB/var/cache/mock\fR were detected by the heuristic).  This option cannot clean
+leftovers for chroots with configurations in non-standard locations, or if the
+configuration is no longer available.  It also attempts to detect previous use
+of \fB\-\-uniqueext\fR and adjusts the corresponding \fB\-\-scrub=all\fR call
+accordingly.
 .TP
 \fB\-\-shell\fP [\fI\-\-\fR] [\fICOMMAND\fR [\fIARGS...\fR]]
 Shell mode.  Run the specified command interactively within the chroot (no

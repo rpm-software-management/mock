@@ -87,6 +87,7 @@ import mockbuild.rebuild
 from mockbuild.state import State
 from mockbuild.trace_decorator import traceLog
 import mockbuild.uid
+from mockbuild.scrub_all import scrub_all_chroots
 
 signal_names = {1: "SIGHUP",
                 13: "SIGPIPE",
@@ -153,6 +154,14 @@ def command_parse():
                       metavar=scrub_metavar,
                       help="completely remove the specified chroot "
                            "or cache dir or all of the chroot and cache")
+    parser.add_option(
+        "--scrub-all-chroots", action="store_const", dest="mode",
+        const="scrub-all-chroots", help=(
+            "Run mock --scrub=all for all chroots that appear to have been "
+            "used previously (see manual page for more info)."
+        ),
+
+    )
     parser.add_option("--init", action="store_const", const="init", dest="mode",
                       help="initialize the chroot, do not build anything")
     parser.add_option("--installdeps", action="store_const", const="installdeps",
@@ -606,9 +615,9 @@ def do_debugconfig(config_opts, expand=False):
 
 
 @traceLog()
-def do_listchroots(config_opts, uidManager):
+def do_listchroots(config_path, uidManager):
     uidManager.run_in_subprocess_without_privileges(
-        config.list_configs, config_opts,
+        config.list_configs, config_path,
     )
 
 
@@ -687,6 +696,9 @@ def main():
     (options, args) = command_parse()
     if options.printrootpath or options.list_snapshots:
         options.verbose = 0
+
+    if options.mode == "scrub-all-chroots":
+        return scrub_all_chroots()
 
     # config path -- can be overridden on cmdline
     config_path = MOCKCONFDIR
@@ -1008,7 +1020,7 @@ def run_command(options, args, config_opts, commands, buildroot):
         do_debugconfig(config_opts, True)
 
     elif options.mode == 'listchroots':
-        do_listchroots(config_opts, buildroot.uid_manager)
+        do_listchroots(config_opts["config_path"], buildroot.uid_manager)
 
     elif options.mode == 'orphanskill':
         util.orphansKill(buildroot.make_chroot_path())
