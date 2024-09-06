@@ -869,17 +869,18 @@ def parse_config_filename(config_filename):
     basename_without_ext = os.path.splitext(basename)[0]
     return (basename, dirname, basename_without_ext)
 
-def get_global_configs(config_opts):
+
+def get_global_configs(config_path):
     """ Return filenames of global configs of chroots"""
     result = []
-    for config_filename in glob("{}/*.cfg".format(config_opts['config_path'])):
+    for config_filename in glob(f"{config_path}/*.cfg"):
         if config_filename in ["/etc/mock/chroot-aliases.cfg", "/etc/mock/site-defaults.cfg"]:
             continue
         result.append(config_filename)
     return result
 
 
-def get_user_config_files(config_opts):
+def get_user_config_files():
     """ Return filenames of user configs of chroots """
     uid = os.getuid()
     custom_path = os.path.join(os.path.expanduser('~' + pwd.getpwuid(uid)[0]), '.config/mock/*.cfg')
@@ -887,22 +888,47 @@ def get_user_config_files(config_opts):
     return result
 
 
+def traverse_chroot_configs(config_path=MOCKCONFDIR,
+                            system_configs_traversed_cb=None,
+                            include_eol=False):
+    """
+    Traverse the configuration directories, starting from the system-wide
+    directories, then going through $HOME/.mock/, and yield the (config_path,
+    config_filename, eol=True|False) 3-aries.  Config_path is just passed to
+    callee unchanged!
+    """
+    for config_filename in sorted(get_global_configs(config_path)):
+        yield config_path, config_filename, False
+
+    if include_eol:
+        for config_filename in sorted(get_global_configs(
+                os.path.join(config_path, "eol"))):
+            yield config_path, config_filename, True
+
+    if system_configs_traversed_cb:
+        system_configs_traversed_cb()
+
+    user_config_files = get_user_config_files()
+    if user_config_files:
+        # ~/.config/mock/CHROOTNAME.cfg
+        for config_filename in sorted(user_config_files):
+            yield config_path, config_filename, False
+
+
 @traceLog()
-def list_configs(config_opts):
+def list_configs(config_path):
     log = logging.getLogger()
     log.disabled = True
     # array to save config paths
     print("{} {}".format("config name".ljust(34), "description"))
     print("Global configs:")
-    for config_filename in sorted(get_global_configs(config_opts)):
-        print_description(config_opts['config_path'], config_filename)
-    user_config_files = get_user_config_files(config_opts)
-    if user_config_files:
+
+    def _print_custom():
         print("Custom configs:")
-        # ~/.config/mock/CHROOTNAME.cfg
-        for config_filename in sorted(user_config_files):
-            print_description(config_opts['config_path'], config_filename)
-        log.disabled = False
+
+    for cp, fn, _ in traverse_chroot_configs(config_path, _print_custom):
+        print_description(cp, fn)
+    log.disabled = False
 
 
 @traceLog()

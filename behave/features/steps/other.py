@@ -238,3 +238,9 @@ def step_impl(context):
 @given('next mock call uses {option} option')
 def step_impl(context, option):
     context.next_mock_options.append(option)
+
+
+@then("the directory {directory} is empty")
+def step_impl(_, directory):
+    assert_that(os.path.exists(directory), equal_to(True))
+    assert_that(not os.listdir(directory), equal_to(True))
