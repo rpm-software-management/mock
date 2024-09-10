@@ -89,6 +89,9 @@ class BuildrootLockfile:
                     # process_isolated_build_config() method.
                     "bootstrap_image",
                     "bootstrap_image_ready",
+                    # Macros need to be inherited, e.g., to keep the original
+                    # %vendor tag specification, or %_host_cpu hacks.
+                    "macros",
                 ]:
                     if cfg_option in self.buildroot.config:
                         data["config"][cfg_option] = self.buildroot.config[cfg_option]
