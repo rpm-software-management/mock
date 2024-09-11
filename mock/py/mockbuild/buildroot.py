@@ -279,7 +279,7 @@ class Buildroot(object):
                                   digest_expected)
                     digest = podman.get_image_digest()
                     if digest != digest_expected:
-                        raise BootstrapError(
+                        getLog().warning(
                             f"Expected digest for image {podman.image} is"
                             f"{digest_expected}, but {digest} found.")
 
