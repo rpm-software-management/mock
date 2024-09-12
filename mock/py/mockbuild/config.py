@@ -425,6 +425,8 @@ def multiply_platform_multiplier(config_opts):
 def set_config_opts_per_cmdline(config_opts, options, args):
     "takes processed cmdline args and sets config options."
 
+    process_isolated_build_config(options, config_opts)
+
     cli_opt_new = {}
     for cli_opt in options.cli_config_opts:
         k, v = cli_opt.split("=", 1)
@@ -665,8 +667,6 @@ def set_config_opts_per_cmdline(config_opts, options, args):
     config_opts["calculatedeps"] = options.calculatedeps
     if config_opts["calculatedeps"]:
         config_opts["plugin_conf"]["buildroot_lock_enable"] = True
-
-    process_isolated_build_config(options, config_opts)
 
 def check_config(config_opts):
     if 'root' not in config_opts:
