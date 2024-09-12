@@ -2,7 +2,7 @@
 
 from contextlib import contextmanager
 import io
-import pipes
+import shlex
 import os
 import subprocess
 import sys
@@ -23,7 +23,7 @@ def no_output():
 
 def quoted_cmd(cmd):
     """ shell quoted cmd array as string """
-    return " ".join(pipes.quote(arg) for arg in cmd)
+    return " ".join(shlex.quote(arg) for arg in cmd)
 
 
 def run(cmd):
