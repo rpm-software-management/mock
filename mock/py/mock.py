@@ -61,23 +61,13 @@ import copy
 
 # pylint: disable=import-error
 from functools import partial
-from mockbuild import config
-from mockbuild import util
-from mockbuild.constants import MOCKCONFDIR, PYTHONDIR, VERSION
-from mockbuild.file_downloader import FileDownloader
-from mockbuild.mounts import BindMountPoint, FileSystemMountPoint
-
-# import all mockbuild.* modules after this.
-sys.path.insert(0, PYTHONDIR)
-
-# set up basic logging until config file can be read
-FORMAT = "%(levelname)s: %(message)s"
-logging.basicConfig(format=FORMAT, level=logging.WARNING)
-log = logging.getLogger()
 
 # our imports
-# pylint: disable=wrong-import-position
-
+from mockbuild import config
+from mockbuild import util
+from mockbuild.constants import MOCKCONFDIR, VERSION
+from mockbuild.file_downloader import FileDownloader
+from mockbuild.mounts import BindMountPoint, FileSystemMountPoint
 import mockbuild.backend
 from mockbuild.backend import Commands
 from mockbuild.buildroot import Buildroot
@@ -88,6 +78,12 @@ from mockbuild.state import State
 from mockbuild.trace_decorator import traceLog
 import mockbuild.uid
 from mockbuild.scrub_all import scrub_all_chroots
+
+# set up basic logging until config file can be read
+FORMAT = "%(levelname)s: %(message)s"
+logging.basicConfig(format=FORMAT, level=logging.WARNING)
+log = logging.getLogger()
+
 
 signal_names = {1: "SIGHUP",
                 13: "SIGPIPE",
