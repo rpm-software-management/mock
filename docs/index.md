@@ -226,7 +226,7 @@ Every plugin has a corresponding wiki page with docs.
 * [package managers](Feature-package-managers) - supported package managers
 * [rhel chroots](Feature-rhelchroots) - builds for RHEL
 * [GPG keys and SSL](feature-gpg-and-ssl) - how to get your GPG keys and SSL certificates to buildroot
-* [Isolated (offline) Builds](feature-isolated-builds) - doing offline builds with Mock
+* [Hermetic (offline) Builds](feature-hermetic-builds) - doing hermetic builds with Mock
 
 ## Using Mock outside your git sandbox
 

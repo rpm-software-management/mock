@@ -49,9 +49,9 @@ def download_file(url, outputdir):
 
 def _argparser():
     parser = argparse.ArgumentParser(
-        prog='mock-isolated-repo',
+        prog='mock-hermetic-repo',
         description=(
-            "Prepare a repository for a `mock --isolated-build` build. "
+            "Prepare a repository for a `mock --hermetic-build` build. "
             "Given a Mock buildroot \"lockfile\"\n\n"
             "  a) create an output repo directory,\n"
             "  b) download and place all the necessary RPM files there,\n"

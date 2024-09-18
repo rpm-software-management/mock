@@ -72,8 +72,8 @@ class BuildrootLockfile:
                     },
                     # Try to keep this as minimal as possible.  If possible,
                     # implement the config options as DEFAULTS in the
-                    # isolated-build.cfg, or in the
-                    # process_isolated_build_config() method.
+                    # hermetic-build.cfg, or in the
+                    # process_hermetic_build_config() method.
                     "config": {}
                 }
                 for cfg_option in [
@@ -83,10 +83,10 @@ class BuildrootLockfile:
                     "legal_host_arches",
                     "dist",
                     "package_manager",
-                    # At this point, we only support isolated builds iff
+                    # At this point, we only support hermetic builds iff
                     # bootstrap_image_ready=True, so these two options are
                     # useful for implementing "assertion" in the
-                    # process_isolated_build_config() method.
+                    # process_hermetic_build_config() method.
                     "bootstrap_image",
                     "bootstrap_image_ready",
                     # Macros need to be inherited, e.g., to keep the original
@@ -98,7 +98,7 @@ class BuildrootLockfile:
 
                 if "bootstrap_image" in data["config"]:
                     # Optional object, only if bootstrap image used (we still
-                    # produce lockfiles even if these are useless for isolated
+                    # produce lockfiles even if these are useless for hermetic
                     # builds).
                     with self.buildroot.uid_manager.elevated_privileges():
                         podman = Podman(self.buildroot,

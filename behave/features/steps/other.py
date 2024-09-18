@@ -206,14 +206,14 @@ def step_impl(context):
     lockfile = mock_run["lockfile"]
 
     context.local_repo = tempfile.mkdtemp(prefix="mock-tests-local-repo-")
-    cmd = ["mock-isolated-repo", "--lockfile", lockfile, "--output-repo",
+    cmd = ["mock-hermetic-repo", "--lockfile", lockfile, "--output-repo",
            context.local_repo]
     assert_that(run(cmd)[0], equal_to(0))
 
 
-@when('an isolated build is retriggered with the lockfile and repository')
+@when('a hermetic build is retriggered with the lockfile and repository')
 def step_impl(context):
-    context.mock.isolated_build()
+    context.mock.hermetic_build()
 
 
 @then('the produced lockfile is validated properly')

@@ -123,13 +123,13 @@ class Mock:
             "lockfile": os.path.join(self.resultdir, "buildroot_lock.json")
         })
 
-    def isolated_build(self):
+    def hermetic_build(self):
         """
-        From the previous calculate_deps() run, perform isolated build
+        From the previous calculate_deps() run, perform hermetic build
         """
         mock_calc = self.context.mock_runs["calculate-build-deps"][-1]
         out, err = run_check(self.basecmd + [
-            "--isolated-build", mock_calc["lockfile"], self.context.local_repo,
+            "--hermetic-build", mock_calc["lockfile"], self.context.local_repo,
             mock_calc["srpm"]
         ])
         self.context.mock_runs["rebuild"].append({
@@ -137,8 +137,8 @@ class Mock:
             "out": out,
             "err": err,
         })
-        # We built into an isolated-build.cfg!
-        self.context.chroot = "isolated-build"
+        # We built into a hermetic-build.cfg!
+        self.context.chroot = "hermetic-build"
 
     def clean(self):
         """ Clean chroot, but keep dnf/yum caches """
