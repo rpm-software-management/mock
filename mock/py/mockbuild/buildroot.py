@@ -268,7 +268,7 @@ class Buildroot(object):
                     getLog().info("Using local image %s (pull skipped)",
                                   self.bootstrap_image)
 
-                if self.config["isolated_build"]:
+                if self.config["hermetic_build"]:
                     tarball = os.path.join(self.config["offline_local_repository"],
                                            "bootstrap.tar")
                     podman.import_tarball(tarball)

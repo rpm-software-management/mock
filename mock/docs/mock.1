@@ -50,7 +50,7 @@ mock  [options] \fB\-\-dnf\-cmd\fR [\fIarguments ...\fR]
 .LP
 mock  [options] \fB\-\-calculate\-build\-dependencies\fR \fISRPM\fR
 .LP
-mock  [options] \fB\-\-isolated\-build \fILOCKFILE\fR \fIREPO\fR \fISRPM\fR
+mock  [options] \fB\-\-hermetic\-build \fILOCKFILE\fR \fIREPO\fR \fISRPM\fR
 .LP
 mock  [options] {\fB\-\-scrub\fR=\fITYPE\fP,\fB\-\-scrub\-all\-chroots\fR}
 
@@ -109,7 +109,7 @@ corresponding static list of build dependencies (= \fIBuildRequires\fR).  The
 Test with \fIrpm -qpR [*.src.rpm|*.nosrc.rpm]\fR.
 
 Additionally, provide a \fIbuildroot_lock.json\fR file; this records the
-metadata needed for an isolated build (see also \fB\-\-isolated\-build\fR).
+metadata needed for a hermetic build (see also \fB\-\-hermetic\-build\fR).
 .TP
 \fB\-\-chain\fR
 When passing more than one SRPM, it will try to build failed builds if at least one subsequent SRPM succeed. This mimic the behaviour of deprecated mockchain.
@@ -162,18 +162,18 @@ into the buildroot.  No 'cleanup' is performed.
 Dynamic build dependencies (\fI%generate_buildrequires\fR specfile section) are
 not installed, see \fB\-\-calculate\-build\-dependencies\fR.
 .TP
-\fB\-\-isolated\-build \fILOCKFILE\fR \fIREPO\fR \fISRPM\fR
-Perform an isolated RPM build (i.e., an offline build without the need to access
+\fB\-\-hermetic\-build \fILOCKFILE\fR \fIREPO\fR \fISRPM\fR
+Perform a hermetic RPM build (i.e., an offline build without the need to access
 the Internet at all) from the given \fISRPM\fR (= file name, path on your
 system).  After running Mock with the \fB\-\-calculate\-build\-dependencies\fR
 option to generate the \fILOCKFILE\fR file (typically named
 \fIbuildroot_lock.json\fR in the result directory), and then running the
-\fImock\-isolated\-repo(1)\fR helper to generate \fIREPO\fR (a directory on the
+\fImock\-hermetic\-repo(1)\fR helper to generate \fIREPO\fR (a directory on the
 host that provides RPMs with metadata and a bootstrap image tarball), Mock has
 all the necessary information to build RPMs from the given \fISRPM\fR fully
 offline.  More info in the feature page:
 
-\fIhttps://rpm-software-management.github.io/mock/feature-isolated-builds\fR
+\fIhttps://rpm-software-management.github.io/mock/feature-hermetic-builds\fR
 .TP
 \fB\-\-list-chroots\fP
 List all available chroots names and their description - both system-wide and user ones.

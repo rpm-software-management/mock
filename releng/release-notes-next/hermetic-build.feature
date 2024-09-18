@@ -1,7 +1,7 @@
-Support for [isolated builds](feature-isolated-builds) has been
+Support for [hermetic builds](feature-hermetic-builds) has been
 [implemented][PR#1393].  This update introduces two new command-line options:
-`--calculate-build-deps` and `--isolated-build`, along with the new
-`mock-isolated-repo(1)` utility.
+`--calculate-build-deps` and `--hermetic-build`, along with the new
+`mock-hermetic-repo(1)` utility.
 
 Additionally, this change introduces a new [`buildroot_lock`
 plugin](Plugin-BuildrootLock), which generates a new artifact in the buildroot—a

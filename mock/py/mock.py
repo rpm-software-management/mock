@@ -398,9 +398,9 @@ def command_parse():
                       type=str, dest="additional_packages",
                       help=("Additional package to install into the buildroot before "
                             "the build is done.  Can be specified multiple times."))
-    parser.add_option("--isolated-build", nargs=2,
+    parser.add_option("--hermetic-build", nargs=2,
                       metavar=("LOCKFILE", "REPO_DIRECTORY"),
-                      help="Perform an isolated (fully offline) SRPM build")
+                      help="Perform a hermetic (fully offline) build")
 
     (options, args) = parser.parse_known_args()
 
@@ -413,14 +413,14 @@ def command_parse():
         else:
             options.mode = 'rebuild'
 
-    if options.isolated_build and options.chroot != 'default':
+    if options.hermetic_build and options.chroot != 'default':
         raise mockbuild.exception.BadCmdline(
-            "The --isolated-build mode uses a special chroot configuration, "
+            "The --hermetic-build mode uses a special chroot configuration, "
             "you can not select the chroot configuration with the "
             "-r/--root option.")
 
-    if options.isolated_build and options.mode != "rebuild":
-        raise mockbuild.exception.BadCmdline("--rebuild mode needed with --isolated-build")
+    if options.hermetic_build and options.mode != "rebuild":
+        raise mockbuild.exception.BadCmdline("--rebuild mode needed with --hermetic-build")
 
     options.calculatedeps = None
     if options.mode == "calculatedeps":
@@ -701,8 +701,8 @@ def main():
     if options.configdir:
         config_path = options.configdir
 
-    if options.isolated_build:
-        options.chroot = "isolated-build"
+    if options.hermetic_build:
+        options.chroot = "hermetic-build"
 
     config_opts = uidManager.run_in_subprocess_without_privileges(
             config.load_config, config_path, options.chroot)
@@ -977,8 +977,8 @@ def run_command(options, args, config_opts, commands, buildroot):
         buildroot.remove(*args)
 
     elif options.mode == 'rebuild':
-        if options.isolated_build:
-            # No caches with isolated builds!  Bootstrap is extracted from
+        if options.hermetic_build:
+            # No caches with hermetic builds!  Bootstrap is extracted from
             # given tarball, buildroot installed from pre-fetched RPMs.
             commands.scrub(["all"])
 

@@ -174,7 +174,7 @@ done
 # this is what %%sysusers_create_compat will expand to
 %{_rpmconfigdir}/sysusers.generate-pre.sh mock.conf > sysusers_script
 
-argparse-manpage --pyfile ./py/mock-isolated-repo.py --function _argparser > mock-isolated-repo.1
+argparse-manpage --pyfile ./py/mock-hermetic-repo.py --function _argparser > mock-hermetic-repo.1
 
 
 %install
@@ -185,7 +185,7 @@ mkdir -p %{buildroot}%{_sysconfdir}/mock/templates
 install -d %{buildroot}%{_bindir}
 install -d %{buildroot}%{_libexecdir}/mock
 install mockchain %{buildroot}%{_bindir}/mockchain
-install py/mock-isolated-repo.py %{buildroot}%{_bindir}/mock-isolated-repo
+install py/mock-hermetic-repo.py %{buildroot}%{_bindir}/mock-hermetic-repo
 install py/mock-parse-buildlog.py %{buildroot}%{_bindir}/mock-parse-buildlog
 install py/mock.py %{buildroot}%{_libexecdir}/mock/mock
 ln -s consolehelper %{buildroot}%{_bindir}/mock
@@ -212,7 +212,7 @@ install -d %{buildroot}%{python_sitelib}/
 cp -a py/mockbuild %{buildroot}%{python_sitelib}/
 
 install -d %{buildroot}%{_mandir}/man1
-cp -a docs/mock.1 docs/mock-parse-buildlog.1 mock-isolated-repo.1 %{buildroot}%{_mandir}/man1/
+cp -a docs/mock.1 docs/mock-parse-buildlog.1 mock-hermetic-repo.1 %{buildroot}%{_mandir}/man1/
 install -d %{buildroot}%{_datadir}/cheat
 cp -a docs/mock.cheat %{buildroot}%{_datadir}/cheat/mock
 
@@ -257,7 +257,7 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 # executables
 %{_bindir}/mock
 %{_bindir}/mockchain
-%{_bindir}/mock-isolated-repo
+%{_bindir}/mock-hermetic-repo
 %{_bindir}/mock-parse-buildlog
 %{_libexecdir}/mock
 
@@ -272,7 +272,7 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 
 # config files
 %config(noreplace) %{_sysconfdir}/%{name}/*.ini
-%config(noreplace) %{_sysconfdir}/%{name}/isolated-build.cfg
+%config(noreplace) %{_sysconfdir}/%{name}/hermetic-build.cfg
 %config(noreplace) %{_sysconfdir}/pam.d/%{name}
 %config(noreplace) %{_sysconfdir}/security/console.apps/%{name}
 
@@ -283,7 +283,7 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 # docs
 %{_mandir}/man1/mock.1*
 %{_mandir}/man1/mock-parse-buildlog.1*
-%{_mandir}/man1/mock-isolated-repo.1*
+%{_mandir}/man1/mock-hermetic-repo.1*
 %{_datadir}/cheat/mock
 
 # cache & build dirs

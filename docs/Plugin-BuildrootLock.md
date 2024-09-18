@@ -12,7 +12,7 @@ This plugin generates an additional build artifact—the buildroot *lockfile*
 The *lockfile* describes both the list of buildroot sources (e.g., a list of
 installed RPMs, bootstrap image info, etc.) and a set of Mock configuration
 options.  Using this information, Mock can later reproduce the buildroot
-preparation (see the [Isolated Builds feature page](feature-isolated-builds)).
+preparation (see the [Hermetic Builds feature page](feature-hermetic-builds)).
 
 This plugin is **disabled** by default but is automatically enabled with the
 `--calculate-build-dependencies` option.  You can enable it (for all builds) by
@@ -36,4 +36,12 @@ installed together with the Mock RPM package:
 
 Currently, we do not provide a compatibility promise.  Only the exact same
 version of Mock that produced the file is guaranteed to read and process it.
-For more information, see [Isolated Builds](feature-isolated-builds).
+For more information, see [Hermetic Builds](feature-hermetic-builds).
+
+Also, in the future we plan to switch to a standardized tooling so we operate
+with a standardized format, too.  For more info see the [DNF5 feature
+request][discussion], [rpm-lockfile-prototype][] and [libpkgmanifest][].
+
+[discussion]: https://github.com/rpm-software-management/dnf5/issues/833
+[rpm-lockfile-prototype]: https://github.com/konflux-ci/rpm-lockfile-prototype
+[libpkgmanifest]: https://github.com/rpm-software-management/libpkgmanifest
