@@ -59,7 +59,12 @@ Pre-release packages built from the latest git commit in the `main` branch are i
     dnf copr enable @mock/mock
     dnf install mock
 
-[Mock pre-release build status: ![build status](https://copr.fedorainfracloud.org/coprs/g/mock/mock/package/mock/status_image/last_build.png)](https://copr.fedorainfracloud.org/coprs/g/mock/mock/package/mock/)
+### Copr build status
+
+package | released | development
+------- | -------- | -----------
+mock | [![badge](https://copr.fedorainfracloud.org/coprs/g/mock/mock-stable/package/mock/status_image/last_build.png)](https://copr.fedorainfracloud.org/coprs/g/mock/mock-stable/package/mock/) | [![badge](https://copr.fedorainfracloud.org/coprs/g/mock/mock/package/mock/status_image/last_build.png)](https://copr.fedorainfracloud.org/coprs/g/mock/mock/package/mock/)
+mock-core-configs | [![badge](https://copr.fedorainfracloud.org/coprs/g/mock/mock-stable/package/mock-core-configs/status_image/last_build.png)](https://copr.fedorainfracloud.org/coprs/g/mock/mock-stable/package/mock-core-configs/) | [![badge](https://copr.fedorainfracloud.org/coprs/g/mock/mock/package/mock-core-configs/status_image/last_build.png)](https://copr.fedorainfracloud.org/coprs/g/mock/mock/package/mock-core-configs/)
 
 
 ## Sponsor
