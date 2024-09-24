@@ -104,18 +104,4 @@ class RpkgPreprocessor(object):
         command_str = self.opts.get('cmd') % {'source_spec': chroot_sources_spec,
                                               'target_spec': chroot_spec}
         command = shlex.split(command_str)
-
-        # determine whether to use private network or not based on rpmbuild_networking
-        private_network = (not self.config.get('rpmbuild_networking', False))
-
-        self.buildroot.doChroot(
-            command,
-            shell=False,
-            cwd=chroot_sources,
-            logger=self.buildroot.build_log,
-            uid=self.buildroot.chrootuid,
-            gid=self.buildroot.chrootgid,
-            user=self.buildroot.chrootuser,
-            unshare_net=private_network,
-            printOutput=self.config.get('print_main_output', True)
-        )
+        self.buildroot.doChrootPlugin(command, cwd=chroot_sources)

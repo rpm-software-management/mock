@@ -158,19 +158,12 @@ class TestRpmautospecPlugin:
 
             expected_command = plugin.opts["cmd_base"] + [chroot_sources_spec, chroot_spec]
 
-            plugin.buildroot.doChroot.assert_called_once_with(
+            plugin.buildroot.doChrootPlugin.assert_called_once_with(
                 expected_command,
-                shell=False,
                 cwd=chroot_sources,
-                logger=plugin.buildroot.build_log,
-                uid=plugin.buildroot.chrootuid,
-                gid=plugin.buildroot.chrootgid,
-                user=plugin.buildroot.chrootuser,
-                unshare_net=not plugin.config.get("rpmbuild_networking", False),
-                printOutput=plugin.config.get("print_main_output", True),
             )
         else:
-            plugin.buildroot.doChroot.assert_not_called()
+            plugin.buildroot.doChrootPlugin.assert_not_called()
             if "broken-requires" not in testcase:
                 if "spec-files-different" in testcase:
                     log_method = log.warning
