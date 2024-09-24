@@ -45,6 +45,8 @@ jobs:
       targets:
         - fedora-rawhide
         - fedora-latest-stable
+      additional_repos:
+        - copr://@mock/mock-deps
 
   - <<: *pr_build
     trigger: commit
