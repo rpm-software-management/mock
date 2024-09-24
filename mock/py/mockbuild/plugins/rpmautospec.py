@@ -114,14 +114,4 @@ class RpmautospecPlugin:
         # bonus, spec files will be processed in the environment they will be
         # built for, reducing the impact of the host system on the outcome,
         # leading to more deterministic results and better repeatable builds.
-        self.buildroot.doChroot(
-            command,
-            shell=False,
-            cwd=chroot_sources,
-            logger=self.buildroot.build_log,
-            uid=self.buildroot.chrootuid,
-            gid=self.buildroot.chrootgid,
-            user=self.buildroot.chrootuser,
-            unshare_net=not self.config.get("rpmbuild_networking", False),
-            printOutput=self.config.get("print_main_output", True),
-        )
+        self.buildroot.doChrootPlugin(command, cwd=chroot_sources)

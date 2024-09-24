@@ -426,6 +426,24 @@ class Buildroot(object):
                 self.uid_manager.restorePrivs()
         return result
 
+    def doChrootPlugin(self, command, cwd=None):
+        """
+        Execute command (specified as array, not a shell command string) in this
+        buildroot  in `cwd`, as a non-privileged user.  Used by plugins.
+        """
+        private_network = not self.config.get('rpmbuild_networking', False)
+        self.doChroot(
+            command,
+            shell=False,
+            cwd=cwd,
+            logger=self.build_log,
+            uid=self.chrootuid,
+            gid=self.chrootgid,
+            user=self.chrootuser,
+            unshare_net=private_network,
+            printOutput=self.config.get('print_main_output', True)
+        )
+
     def all_chroot_packages(self):
         """package set, result of rpm -qa in the buildroot"""
         self.nuke_rpm_db()
