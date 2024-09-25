@@ -33,8 +33,6 @@ import uuid
 
 import distro
 
-from mockbuild.mounts import BindMountPoint
-
 from . import exception
 from . import file_util
 from . import text
@@ -1000,17 +998,6 @@ best=1
         return
 
     _fix_cfg(bootstrap.config)
-
-    if not baseurl.startswith("file:///") and not baseurl.startswith("/"):
-        return
-
-    local_dir = baseurl.replace("file://", "", 1)
-    if not local_dir or not os.path.isdir(local_dir):
-        return
-
-    mountpoint = bootstrap.make_chroot_path(local_dir)
-    bootstrap.mounts.add(BindMountPoint(srcpath=local_dir,
-                                        bindpath=mountpoint))
 
 
 def subscription_redhat_init(opts, uidManager):
