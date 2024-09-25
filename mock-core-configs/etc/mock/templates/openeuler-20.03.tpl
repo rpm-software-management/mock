@@ -25,6 +25,7 @@ install_weak_deps=0
 protected_packages=
 module_platform_id=platform:oe2003
 user_agent={{ user_agent }}
+tsflags=nodocs
 
 [OS]
 name=OS

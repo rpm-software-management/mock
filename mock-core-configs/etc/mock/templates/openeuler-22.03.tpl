@@ -25,6 +25,7 @@ install_weak_deps=0
 protected_packages=
 module_platform_id=platform:oe2203
 user_agent={{ user_agent }}
+tsflags=nodocs
 
 # all openEuler LTS release will continue developing and releasing SPx version
 # such as 22.03-LTS -> 22.03-LTS-SP1 -> 22.03-LTS-SP2 ...

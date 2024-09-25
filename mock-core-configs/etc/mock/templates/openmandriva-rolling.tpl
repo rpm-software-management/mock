@@ -27,6 +27,7 @@ metadata_expire=0
 best=1
 protected_packages=
 user_agent={{ user_agent }}
+tsflags=nodocs
 
 # repos
 

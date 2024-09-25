@@ -36,6 +36,7 @@ best=1
 module_platform_id=platform:f{{ releasever }}
 protected_packages=
 user_agent={{ user_agent }}
+tsflags=nodocs
 
 {%- macro rawhide_gpg_keys() -%}
 file:///usr/share/distribution-gpg-keys/fedora/RPM-GPG-KEY-fedora-$releasever-primary

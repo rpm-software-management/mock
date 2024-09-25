@@ -25,6 +25,7 @@ best=1
 protected_packages=
 module_platform_id=platform:el8
 user_agent={{ user_agent }}
+tsflags=nodocs
 
 [nl-base]
 name=Navy Linux Enterprise OS Repository - el$releasever

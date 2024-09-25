@@ -25,6 +25,7 @@ mdpolicy=group:primary
 best=0
 protected_packages=
 module_platform_id=platform:el9
+tsflags=nodocs
 
 
 [baseos-all]

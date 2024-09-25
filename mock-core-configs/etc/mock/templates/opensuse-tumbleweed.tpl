@@ -42,6 +42,7 @@ excludepkgs=*.ppc,*.ppc64le
 
 protected_packages=
 user_agent={{ user_agent }}
+tsflags=nodocs
 
 # repos
 

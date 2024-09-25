@@ -25,6 +25,7 @@ install_weak_deps=0
 protected_packages=
 module_platform_id=platform:el8
 user_agent={{ user_agent }}
+tsflags=nodocs
 
 # Primary
 [baseos]

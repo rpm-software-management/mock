@@ -41,6 +41,7 @@ install_weak_deps=0
 metadata_expire=0
 best=1
 user_agent={{ user_agent }}
+tsflags=nodocs
 
 # TODO
 module_platform_id=platform:eln

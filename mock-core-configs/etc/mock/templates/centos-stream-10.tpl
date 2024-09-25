@@ -27,6 +27,7 @@ protected_packages=
 skip_if_unavailable=False
 module_platform_id=platform:el10
 user_agent={{ user_agent }}
+tsflags=nodocs
 
 {% if koji_primary_repo != None and koji_primary_repo != "centos-stream" %}
 [local-centos-stream]

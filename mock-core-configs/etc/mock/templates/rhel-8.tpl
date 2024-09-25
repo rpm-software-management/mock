@@ -32,6 +32,7 @@ best=1
 module_platform_id=platform:el8
 protected_packages=
 user_agent={{ user_agent }}
+tsflags=nodocs
 
 # repos
 [rhel-baseos]

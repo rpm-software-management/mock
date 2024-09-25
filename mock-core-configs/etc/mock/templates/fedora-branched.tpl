@@ -34,6 +34,7 @@ best=1
 module_platform_id=platform:f{{ releasever }}
 protected_packages=
 user_agent={{ user_agent }}
+tsflags=nodocs
 
 # repos
 
