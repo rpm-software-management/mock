@@ -1,3 +1,0 @@
-The fuse-overlayfs package is not installed in the Fedora container images
-by default. We need to explicitly install it, otherwise running Mock inside of
-a container won't work.

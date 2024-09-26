@@ -1,5 +1,0 @@
-De-duplicating bootstrap mount points for local repositories used with `--chain`
-or `--localrepo=file:///repo/on/host`.  Caused eventual problems during
-`--scrub=bootstrap`.  This bug existed in Mock <= 5.6, but after fixing the
-[issue#1414][], it got exposed by our test suite.  Related issues include
-[issue#357][] ([commit#a0a2cba3][]) and [issue#381][] ([commit#16462acc][]).

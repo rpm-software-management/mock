@@ -6,7 +6,7 @@
 
 Summary: Builds packages inside chroots
 Name: mock
-Version: 5.6.post1
+Version: 5.7
 Release: 1%{?dist}
 License: GPL-2.0-or-later
 # Source is created by
@@ -313,6 +313,27 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 %config(noreplace) %{_sysusersdir}/mock.conf
 
 %changelog
+* Thu Sep 26 2024 Pavel Raiskup <praiskup@redhat.com> 5.7-1
+- hermetic: new mode to do fully-offline builds
+- new --scrub-all-chroots option
+- make "dnf4" equivalent to "dnf"
+- chroot_scan: create result directory with appropriate permissions
+- chain: No need to re-create resultdir
+- de-duplicate the local-repo mountpoint in bootstrap
+- respect `nspawn_args` whenever `doChroot` is called
+- ensure --addrepo option also affects bootstrap
+- de-duplicate two opinionated doChroot() calls
+- show ccache stats at the end of the build (brian@interlinx.bc.ca)
+- add `debug` option to the ccache plugin (belegdol@fedoraproject.org)
+- add runtime dependency on fuse-overlayfs (frostyx@email.cz)
+- skip the "podman pull" for bootstrap when not needed
+- package_state: the installed_pkgs.log file now covers dynamic builddeps
+- don’t ship rpmautospec plugin with main package (nils@redhat.com)
+- clean up of macros referencing rhel7 (msuchy@redhat.com)
+- enable RPM sysusers integration (j1.kyjovsky@gmail.com)
+- add hashdir option to ccache plugin (belegdol@fedoraproject.org)
+- own /usr/share/doc/mock (msuchy@redhat.com)
+
 * Tue May 14 2024 Jakub Kadlcik <frostyx@email.cz> 5.6-1
 - scm: Open stdout in text mode for Git timestamp subprocesses
   (fedora.dm0@gmail.com)

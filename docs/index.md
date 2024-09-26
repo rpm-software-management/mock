@@ -69,7 +69,8 @@ Versions in Linux distributions:
 
 
 ## Release Notes
-* [Configs 41.1](Release-Notes-Configs-41.1) - EL7 configs EOL. F38 EOL. F41 branched.
+* [5.7 and Configs 41.3](Release-Notes-5.7) - Support for isolated builds added.  DNF4 = DNF.  Option `--scrub-all-chroots` added.
+* [Configs 41.1 (and 41.2)](Release-Notes-Configs-41.1) - EL7 configs EOL. F38 EOL. F41 branched.
 * [Configs 40.6](Release-Notes-Configs-40.6) - CentOS Stream 10 uses mirrored repositories.
 * [Configs 40.5](Release-Notes-Configs-40.5) - Fedora 38 moved to EOL. CentOS Stream 8 moved to vault.
 * [5.6](Release-Notes-5.6) - Improved performance of bash completion, don't use `--allowerasing` for commands that doesn't provide it, fixed "no space left" tracebacks, new Circle Linux 9 configs, Mageia Cauldron i686, fixed Fedora ELN.
