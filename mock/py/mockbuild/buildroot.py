@@ -52,6 +52,7 @@ def call_just_once(f):
 
 
 class Buildroot(object):
+    # pylint: disable=too-many-public-methods,too-many-instance-attributes
     @traceLog()
     def __init__(self, config, uid_manager, state, plugins, bootstrap_buildroot=None, is_bootstrap=False):
         self.config = config
@@ -213,13 +214,18 @@ class Buildroot(object):
         os.chmod(self.basedir, 0o775)
 
     @traceLog()
-    def _setup_result_dir(self):
+    def create_resultdir(self):
+        """
+        (re)create self.resultdir directory with appropriate permissions
+        """
         self._setup_basedir()
         with self.uid_manager:
             try:
                 file_util.mkdirIfAbsent(self.resultdir)
-            except Error:
-                raise ResultDirNotAccessible(ResultDirNotAccessible.__doc__ % self.resultdir)
+            except Error as err:
+                raise ResultDirNotAccessible(
+                    ResultDirNotAccessible.__doc__ % self.resultdir
+                ) from err
 
 
     @traceLog()
@@ -300,7 +306,7 @@ class Buildroot(object):
         # intentionally we do not call bootstrap hook here - it does not have sense
         self._setup_nosync()
         self.chroot_was_initialized = self.chroot_is_initialized()
-        self._setup_result_dir()
+        self.create_resultdir()
         getLog().info("calling preinit hooks")
         self.plugins.call_hooks('preinit')
         # intentionally we do not call bootstrap hook here - it does not have sense
@@ -629,7 +635,7 @@ class Buildroot(object):
             return
         self.logging_initialized = True
 
-        self._setup_result_dir()
+        self.create_resultdir()
 
         with self.uid_manager:
             # attach logs to log files.
