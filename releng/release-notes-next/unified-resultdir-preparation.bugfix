@@ -1,0 +1,5 @@
+Several internal code locations attempt to ensure that the result directory
+exists, creating it if necessary.  However, these locations handled it
+inconsistently, sometimes neglecting to [change the ownership][issue#1467] of
+the result directory.  Now, all locations use a single method dedicated to
+result directory preparation.
