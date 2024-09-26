@@ -1,2 +1,0 @@
-Previously mock.rpm created file in /usr/share/doc/mock directory but did Mock
-did not owned this directory. This directory is now owned by Mock.

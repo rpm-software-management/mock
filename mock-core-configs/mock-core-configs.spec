@@ -3,7 +3,7 @@
 %endif
 
 Name:       mock-core-configs
-Version:    41.2
+Version:    41.3
 Release:    1%{?dist}
 Summary:    Mock core config files basic chroots
 
@@ -149,6 +149,14 @@ fi
 %ghost %config(noreplace,missingok) %{_sysconfdir}/mock/default.cfg
 
 %changelog
+* Thu Sep 26 2024 Pavel Raiskup <praiskup@redhat.com> 41.3-1
+- move anolis-7 to eol directory (msuchy@redhat.com)
+- move opensuse-leap-15.4 to eol directory (msuchy@redhat.com)
+- configs: the stream9 image is "ready" for Mock bootstrap
+- enable bootstrap container for CentOS Stream 10 (carlwgeorge@gmail.com)
+- configs: replace `powerpc64le` with `ppc64le` in the `%%_host_cpu` macro
+- fix EOL template locations for CentOS7/EPEL7 (thomas.mendorf@ebf.com)
+
 * Thu Aug 15 2024 Pavel Raiskup <praiskup@redhat.com> 41.2-1
 - fix centos-stream+epel-10-s390x /bin/sed typo
 
