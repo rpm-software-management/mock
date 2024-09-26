@@ -477,7 +477,6 @@ class Commands(object):
                     resultdir = os.path.join(self.config['local_repo_dir'], pdn)
                     self.buildroot.resultdir = resultdir
                     self.buildroot.resetLogging(force=True)
-                    file_util.mkdirIfAbsent(resultdir)
                     success_file = os.path.join(resultdir, 'success')
                     build_ret_code = 0
                     try:
