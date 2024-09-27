@@ -90,3 +90,4 @@ class ChrootScan(object):
                     shell=False, printOutput=True
                 )
                 shutil.rmtree(self.resultdir)
+                self.buildroot.uid_manager.changeOwner(tarfile)
