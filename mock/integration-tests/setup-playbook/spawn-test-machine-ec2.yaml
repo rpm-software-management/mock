@@ -8,7 +8,7 @@
       amazon.aws.ec2_instance:
         name: "testing-mock"
         state: running
-        profile: fedora-copr
+        profile: "{{ aws.profile }}"
         region: us-east-1
         key_name: "{{ aws.ssh_key }}"
         count: 1
@@ -17,7 +17,7 @@
         detailed_monitoring: true
         network:
           assign_public_ip: true
-        vpc_subnet_id: "{{ infra_subnet }}"
+        vpc_subnet_id: "{{ aws.infra_subnet }}"
         security_group: "{{ aws.security_group }}"
         termination_protection: false
         wait: true
