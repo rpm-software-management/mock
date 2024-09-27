@@ -1,3 +1,0 @@
-Mock v5.7 introduced a regression in the `chroot_scan` plugin that prevented the
-result directory from being created properly. This issue has been
-[fixed][PR#1472].

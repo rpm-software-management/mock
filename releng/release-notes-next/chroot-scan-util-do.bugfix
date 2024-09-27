@@ -1,3 +1,0 @@
-The `chroot_scan` plugin now consistently uses the `util.do` method instead of
-custom `subprocess.call` calls.  This ensures that the `mock --verbose` output
-properly displays the commands (like `cp`, or `tar`) being executed.

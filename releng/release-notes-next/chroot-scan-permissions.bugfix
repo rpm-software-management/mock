@@ -1,2 +1,0 @@
-The ownership of the `chroot_scan` plugin "output tarball" (when `write_tar =
-True`) has been corrected, ensuring the file is no longer root-owned.

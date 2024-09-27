@@ -6,7 +6,7 @@
 
 Summary: Builds packages inside chroots
 Name: mock
-Version: 5.7
+Version: 5.8
 Release: 1%{?dist}
 License: GPL-2.0-or-later
 # Source is created by
@@ -313,6 +313,11 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 %config(noreplace) %{_sysusersdir}/mock.conf
 
 %changelog
+* Fri Sep 27 2024 Pavel Raiskup <praiskup@redhat.com> 5.8-1
+- chroot_scan: make sure the tarball is owned by non-priv user
+- chroot_scan: use util.do to display command in --verbose
+- chroot_scan: correctly create the result directory
+
 * Thu Sep 26 2024 Pavel Raiskup <praiskup@redhat.com> 5.7-1
 - hermetic: new mode to do fully-offline builds
 - new --scrub-all-chroots option
