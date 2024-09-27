@@ -3,6 +3,7 @@ Global configuration for Mock's behave tests
 """
 
 import os
+import pwd
 import random
 import shutil
 import string
@@ -57,11 +58,14 @@ def before_all(context):
 def _cleanup_workdir(context):
     shutil.rmtree(context.workdir)
     context.workdir = None
+    context.custom_config = ""
 
 
 def before_scenario(context, _scenario):
     """ execute before - once for each - scenario """
     context.workdir = tempfile.mkdtemp(prefix="mock-behave-tests-")
+    context.custom_config = ""
     context.add_cleanup(_cleanup_workdir, context)
     context.mock = Mock(context)
     context.add_repos = []
+    context.current_user = pwd.getpwuid(os.getuid())[0]

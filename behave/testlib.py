@@ -2,6 +2,7 @@
 
 from contextlib import contextmanager
 import io
+from pathlib import Path
 import shlex
 import os
 import subprocess
@@ -98,7 +99,16 @@ class Mock:
 
     def rebuild(self, srpms):
         """ Rebuild source RPM(s) """
-        out, err = run_check(self.basecmd + ["--rebuild"] + srpms)
+
+        chrootspec = []
+        if self.context.custom_config:
+            config_file = Path(self.context.workdir) / "custom.cfg"
+            with config_file.open("w") as fd:
+                fd.write(f"include('{self.context.chroot}.cfg')\n")
+                fd.write(self.context.custom_config)
+            chrootspec = ["-r", str(config_file)]
+
+        out, err = run_check(self.basecmd + chrootspec + ["--rebuild"] + srpms)
         self.context.mock_runs['rebuild'] += [{
             "status": 0,
             "out": out,
