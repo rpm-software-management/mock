@@ -5,7 +5,9 @@ import importlib
 import json
 import os
 import shutil
+import tarfile
 import tempfile
+from pathlib import Path
 
 from hamcrest import (
     assert_that,
@@ -244,3 +246,58 @@ def step_impl(context, option):
 def step_impl(_, directory):
     assert_that(os.path.exists(directory), equal_to(True))
     assert_that(not os.listdir(directory), equal_to(True))
+
+
+@given('chroot_scan is enabled for {regex}')
+def step_impl(context, regex):
+    context.custom_config += f"""\
+config_opts['plugin_conf']['chroot_scan_enable'] = True
+config_opts['plugin_conf']['chroot_scan_opts']['regexes'] = ["{regex}"]
+config_opts['plugin_conf']['chroot_scan_opts']['only_failed'] = False
+"""
+
+
+@then('{file} file is in chroot_scan result dir')
+def step_impl(context, file):
+    resultdir = os.path.join(context.mock.resultdir, 'chroot_scan')
+
+    # Find the expected file
+    found = False
+    print("resultdir: ", resultdir)
+    for _, _, files in os.walk(resultdir):
+        for f in files:
+            print(f)
+            if f == file:
+                found = True
+                break
+        if found:
+            break
+    assert_that(found, equal_to(True))
+
+
+@given('chroot_scan is configured to produce tarball')
+def step_impl(context):
+    context.custom_config += """\
+config_opts['plugin_conf']['chroot_scan_opts']['write_tar'] = True
+"""
+
+
+@then('ownership of all chroot_scan files is correct')
+def step_impl(context):
+    resultdir = os.path.join(context.mock.resultdir, 'chroot_scan')
+    for root, dirs, files in os.walk(resultdir):
+        for f in files + dirs:
+            path = Path(root) / f
+            assert_that(path.group(), equal_to("mock"))
+            assert_that(path.owner(), equal_to(context.current_user))
+
+
+@then('chroot_scan tarball has correct perms and provides dnf5.log')
+def step_impl(context):
+    tarball = Path(context.mock.resultdir, 'chroot_scan.tar.gz')
+    with tarfile.open(tarball, 'r:gz') as tarf:
+        for file in tarf.getnames():
+            if file.endswith("dnf5.log"):
+                break
+    assert_that(tarball.group(), equal_to("mock"))
+    assert_that(tarball.owner(), equal_to(context.current_user))
