@@ -9,7 +9,6 @@ import os
 import os.path
 import re
 import shutil
-import subprocess
 
 # our imports
 from mockbuild.trace_decorator import getLog, traceLog
@@ -68,7 +67,10 @@ class ChrootScan(object):
                 m = regex.search(f)
                 if m:
                     srcpath = os.path.join(root, f)
-                    subprocess.call("cp --preserve=mode --parents %s %s" % (srcpath, self.resultdir), shell=True)
+                    # we intentionally ignore errors here:
+                    # https://github.com/rpm-software-management/mock/issues/1455
+                    util.do(["cp", "--preserve=mode", "--parents", srcpath,
+                             self.resultdir], raiseExc=False)
                     count += 1
                     copied.append(srcpath)
         logger.debug("chroot_scan: finished with %d files found", count)
@@ -78,7 +80,7 @@ class ChrootScan(object):
             self.buildroot.uid_manager.changeOwner(self.resultdir, recursive=True)
             # some packages installs 555 perms on dirs,
             # so user can't delete/move chroot_scan's results
-            subprocess.call(['chmod', '-R', 'u+w', self.resultdir])
+            util.do(['chmod', '-R', 'u+w', self.resultdir])
             if self._tarball():
                 tarfile = self.resultdir + ".tar.gz"
                 logger.info("chroot_scan: creating tarball %s", tarfile)
