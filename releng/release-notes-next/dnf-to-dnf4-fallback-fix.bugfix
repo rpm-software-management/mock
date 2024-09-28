@@ -1,0 +1,3 @@
+A fix for the DNF → DNF4 fallback has been applied.  Now Mock correctly selects
+DNF4, even when the `--no-bootstrap-chroot` command is used.  See
+[issue#1475][] for more info.
