@@ -55,6 +55,7 @@ import os.path
 import signal
 import shutil
 import shlex
+import pipes
 import sys
 import time
 import copy
