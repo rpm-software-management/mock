@@ -25,7 +25,7 @@ fallbacks = {
 }
 
 
-def package_manager_from_string(name):
+def _package_manager_from_string(name):
     if name == 'dnf5':
         return Dnf5
     if name == 'yum':
@@ -37,7 +37,7 @@ def package_manager_from_string(name):
     raise Exception('Unrecognized package manager "{}"'.format(name))
 
 
-def package_manager_exists(pm_class, config_opts, chroot=None):
+def _package_manager_exists(pm_class, config_opts, chroot=None):
     name = pm_class.name
     command = pm_class.get_command(config_opts)
     pathname = (chroot or "") + command
@@ -51,14 +51,14 @@ def package_manager_exists(pm_class, config_opts, chroot=None):
     return name in real_pathname
 
 
-def package_manager_class_fallback(config_opts, buildroot, fallback):
+def _package_manager_class_fallback(config_opts, buildroot, fallback):
     desired = config_opts['package_manager']
 
     if desired == 'dnf':  # backward compat
         desired = 'dnf4'
 
     if not fallback:
-        return package_manager_from_string(desired)
+        return _package_manager_from_string(desired)
 
     getLog().debug("searching for '%s' package manager or alternatives", desired)
     if desired not in fallbacks:
@@ -72,8 +72,8 @@ def package_manager_class_fallback(config_opts, buildroot, fallback):
     bootstrap = buildroot.is_bootstrap
 
     for manager in fallbacks[desired]:
-        pm_class = package_manager_from_string(manager)
-        if package_manager_exists(pm_class, config_opts, chroot=chroot_to_search_in):
+        pm_class = _package_manager_from_string(manager)
+        if _package_manager_exists(pm_class, config_opts, chroot=chroot_to_search_in):
             if desired == manager:
                 return pm_class
 
@@ -101,7 +101,7 @@ in Mock config.""".format(desired.upper(), manager.upper()))
 
 
 def package_manager(buildroot, bootstrap_buildroot, fallback):
-    cls = package_manager_class_fallback(buildroot.config, buildroot, fallback)
+    cls = _package_manager_class_fallback(buildroot.config, buildroot, fallback)
     return cls(buildroot.config, buildroot, buildroot.plugins,
                bootstrap_buildroot)
 
