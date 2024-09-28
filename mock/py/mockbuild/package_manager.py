@@ -34,7 +34,7 @@ def _package_manager_from_string(name):
         return Dnf
     if name == 'microdnf':
         return MicroDnf
-    raise Exception('Unrecognized package manager "{}"'.format(name))
+    raise RuntimeError(f'Unrecognized package manager "{name}"')
 
 
 def _package_manager_exists(pm_class, config_opts, chroot=None):
@@ -84,6 +84,7 @@ def _package_manager_class_fallback(config_opts, buildroot, fallback):
                 return pm_class
 
             if not bootstrap:
+                # pylint: disable=consider-using-f-string
                 print("""WARNING! WARNING! WARNING!
 You are building package for distribution which uses {0}. However your system
 does not support {0}. You can continue with {1}, which will likely succeed,
@@ -97,7 +98,7 @@ in Mock config.""".format(desired.upper(), manager.upper()))
 
             return pm_class
 
-    raise Exception(f"No package from {fallbacks[desired]} found, desired {desired}")
+    raise RuntimeError(f"No package from {fallbacks[desired]} found, desired {desired}")
 
 
 def package_manager(buildroot, bootstrap_buildroot, fallback):
