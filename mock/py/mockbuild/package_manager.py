@@ -73,8 +73,6 @@ def package_manager_class_fallback(config_opts, buildroot, fallback):
 
     for manager in fallbacks[desired]:
         pm_class = package_manager_from_string(manager)
-        package_manager_exists(pm_class, config_opts)
-
         if package_manager_exists(pm_class, config_opts, chroot=chroot_to_search_in):
             if desired == manager:
                 return pm_class
