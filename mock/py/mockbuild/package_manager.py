@@ -19,7 +19,6 @@ from .mounts import BindMountPoint
 
 fallbacks = {
     'dnf4': ['dnf4', 'dnf5', 'yum'],
-    'dnf': ['dnf4', 'dnf5', 'yum'],  # backward-compat
     'yum': ['yum', 'dnf4', 'dnf5'],
     'microdnf': ['microdnf', 'dnf4', 'dnf5', 'yum'],
     'dnf5': ['dnf5', 'dnf4', 'yum'],
@@ -31,7 +30,7 @@ def package_manager_from_string(name):
         return Dnf5
     if name == 'yum':
         return Yum
-    if name in ['dnf4', 'dnf']:  # dnf for backward compat
+    if name in 'dnf4':
         return Dnf
     if name == 'microdnf':
         return MicroDnf
@@ -54,6 +53,10 @@ def package_manager_exists(pm_class, config_opts, chroot=None):
 
 def package_manager_class_fallback(config_opts, buildroot, fallback):
     desired = config_opts['package_manager']
+
+    if desired == 'dnf':  # backward compat
+        desired = 'dnf4'
+
     if not fallback:
         return package_manager_from_string(desired)
 
