@@ -22,7 +22,7 @@ from hamcrest import (
 import jsonschema
 from behave import given, when, then  # pylint: disable=no-name-in-module
 
-from testlib import no_output, run
+from testlib import run
 
 # flake8: noqa
 # pylint: disable=missing-function-docstring,function-redefined
@@ -91,15 +91,9 @@ def step_impl(context, package, state):
     context.add_cleanup(_uninstall_pkg, context)
 
 
-def _mock_cleanup(context):
-    with no_output():
-        context.mock.clean()
-
-
 @given(u'pre-intitialized chroot')
 def step_impl(context):
     context.mock.init()
-    context.add_cleanup(_mock_cleanup, context)
 
 
 @given(u'a custom third-party repository is used for builds')

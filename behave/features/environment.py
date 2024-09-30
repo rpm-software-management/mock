@@ -69,3 +69,8 @@ def before_scenario(context, _scenario):
     context.mock = Mock(context)
     context.add_repos = []
     context.current_user = pwd.getpwuid(os.getuid())[0]
+
+
+def after_scenario(context, _scenario):
+    """ execute after - and for each - scenario """
+    context.mock.clean()
