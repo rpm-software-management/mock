@@ -21,8 +21,8 @@ def _random_string(length):
 
 
 def _download(context, url):
-    print('Downloading {}'.format(url))
-    req = requests.get(url)
+    print(f'Downloading {url}')
+    req = requests.get(url, timeout=60)
     filename = os.path.join(context.workdir, os.path.basename(url))
     with open(filename, 'wb') as dfd:
         dfd.write(req.content)

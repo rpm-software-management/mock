@@ -10,4 +10,6 @@
 # cyclic-import
 #     Seems like cyclic-import is just a style check which is not going to be
 #     fixed: https://github.com/PyCQA/pylint/issues/6983
-disable=import-error,cyclic-import
+# function-redefined
+#     This is a Behave's policy to create all step methods as `step_impl()`.
+disable=import-error,cyclic-import,function-redefined
