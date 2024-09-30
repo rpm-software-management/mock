@@ -165,7 +165,10 @@ def step_impl(context, expected_message):
 
 def _rebuild_online(context, chroot=None):
     url = context.test_storage + "mock-test-bump-version-1-0.src.rpm"
-    context.mock.rebuild([url], chroot)
+    if chroot:
+        context.mock.chroot = chroot
+        context.mock.chroot_opt = chroot
+    context.mock.rebuild([url])
 
 
 @when('an online source RPM is rebuilt')
