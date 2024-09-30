@@ -11,7 +11,7 @@ import tempfile
 
 import requests
 
-from testlib import Mock
+from testlib import Mock, no_output
 
 
 def _random_string(length):
@@ -74,4 +74,5 @@ def before_scenario(context, _scenario):
 
 def after_scenario(context, _scenario):
     """ execute after - and for each - scenario """
-    context.mock.clean()
+    with no_output():
+        context.mock.clean()

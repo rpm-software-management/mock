@@ -22,7 +22,7 @@ from hamcrest import (
 import jsonschema
 from behave import given, when, then  # pylint: disable=no-name-in-module
 
-from testlib import run
+from testlib.commands import run, no_output
 
 # flake8: noqa
 # pylint: disable=missing-function-docstring,function-redefined
@@ -47,7 +47,8 @@ def add_cleanup_last_transaction(context):
 
     def _revert_transaction(_context):
         cmd = dnf + ["undo", transaction_id]
-        assert_that(run(cmd)[0], equal_to(0))
+        with no_output():
+            assert_that(run(cmd)[0], equal_to(0))
 
     context.add_cleanup(_revert_transaction, context)
 
@@ -84,7 +85,8 @@ def step_impl(context, package, state):
     # install the package, and schedule removal
     def _uninstall_pkg(_context):
         cmd = ["sudo", "dnf", "-y", "remove", package]
-        assert_that(run(cmd)[0], equal_to(0))
+        with no_output():
+            assert_that(run(cmd)[0], equal_to(0))
 
     cmd = ["sudo", "dnf", "-y", "install", package]
     assert_that(run(cmd)[0], equal_to(0))
