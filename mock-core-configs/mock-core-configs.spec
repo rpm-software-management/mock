@@ -3,7 +3,7 @@
 %endif
 
 Name:       mock-core-configs
-Version:    41.3
+Version:    41.4
 Release:    1%{?dist}
 Summary:    Mock core config files basic chroots
 
@@ -149,6 +149,9 @@ fi
 %ghost %config(noreplace,missingok) %{_sysconfdir}/mock/default.cfg
 
 %changelog
+* Mon Sep 30 2024 Pavel Raiskup <praiskup@redhat.com> 41.4-1
+- update ELN repos (yselkowi@redhat.com)
+
 * Thu Sep 26 2024 Pavel Raiskup <praiskup@redhat.com> 41.3-1
 - move anolis-7 to eol directory (msuchy@redhat.com)
 - move opensuse-leap-15.4 to eol directory (msuchy@redhat.com)

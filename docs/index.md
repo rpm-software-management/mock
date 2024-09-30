@@ -69,6 +69,7 @@ Versions in Linux distributions:
 
 
 ## Release Notes
+* [5.9 and Configs 41.4](Release-Notes-5.9) - A --no-bootstrap-chroot regression with DNF4 chroots fixed.
 * [5.8](Release-Notes-5.8) - Bug-fixed regression in `chroot_scan` plugin.
 * [5.7 and Configs 41.3](Release-Notes-5.7) - Support for isolated builds added.  DNF4 = DNF.  Option `--scrub-all-chroots` added.
 * [Configs 41.1 (and 41.2)](Release-Notes-Configs-41.1) - EL7 configs EOL. F38 EOL. F41 branched.
