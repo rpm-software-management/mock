@@ -1,0 +1,13 @@
+# mock pylint configuration for behave/ subdir
+
+[MESSAGES CONTROL]
+
+# Reasoning for wide warning ignore
+# ---------------------------------
+# import-error
+#     This is here to silence Pylint in CI where we do not have all the
+#     build/runtime dependencies installed.
+# cyclic-import
+#     Seems like cyclic-import is just a style check which is not going to be
+#     fixed: https://github.com/PyCQA/pylint/issues/6983
+disable=import-error,cyclic-import

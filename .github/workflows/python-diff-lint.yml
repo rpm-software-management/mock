@@ -17,6 +17,10 @@ jobs:
         uses: fedora-copr/vcs-diff-lint-action@v1
         id: VCS_Diff_Lint
         with:
+          subdirectories: |
+            behave
+            mock
+            releng
           linter_tags: |
             ruff
             pylint
