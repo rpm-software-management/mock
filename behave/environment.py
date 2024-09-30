@@ -11,7 +11,8 @@ import tempfile
 
 import requests
 
-from testlib import Mock, no_output
+from testlib.mock import Mock
+from testlib.commands import no_output
 
 
 def _random_string(length):
