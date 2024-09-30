@@ -169,11 +169,19 @@ def step_impl(context, expected_message):
     assert_that(err[0], contains_string(expected_message))
 
 
+def _rebuild_online(context, chroot=None):
+    url = context.test_storage + "mock-test-bump-version-1-0.src.rpm"
+    context.mock.rebuild([url], chroot)
+
+
 @when('an online source RPM is rebuilt')
 def step_impl(context):
-    url = context.test_storage + "mock-test-bump-version-1-0.src.rpm"
-    context.mock.rebuild([url])
+    _rebuild_online(context)
 
+
+@when('an online source RPM is rebuilt against {chroot}')
+def step_impl(context, chroot):
+    _rebuild_online(context, chroot)
 
 @then('{output} contains "{text}"')
 def step_impl(context, output, text):
