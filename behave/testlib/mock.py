@@ -1,64 +1,11 @@
-""" helpers for Copr BDD tests """
+"""
+Stateful "Mock" command object.
+"""
 
-from contextlib import contextmanager
-import io
 from pathlib import Path
-import shlex
 import os
-import subprocess
-import sys
 
-
-@contextmanager
-def no_output():
-    """
-    Suppress stdout/stderr when it is not captured by behave
-    https://github.com/behave/behave/issues/863
-    """
-    real_out = sys.stdout, sys.stderr
-    sys.stdout = io.StringIO()
-    sys.stderr = io.StringIO()
-    yield
-    sys.stdout, sys.stderr = real_out
-
-
-def quoted_cmd(cmd):
-    """ shell quoted cmd array as string """
-    return " ".join(shlex.quote(arg) for arg in cmd)
-
-
-def run(cmd):
-    """
-    Return exitcode, stdout, stderr.  It's bad there's no such thing in behave
-    directly.
-    """
-    try:
-        process = subprocess.Popen(
-            cmd,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            universal_newlines=True,
-        )
-        stdout, stderr = process.communicate()
-        print(f"Command exit status {process.returncode} in: {quoted_cmd(cmd)}")
-        if stdout:
-            print("stdout:")
-            print(stdout)
-        if stderr:
-            print("stderr:")
-            print(stderr)
-        return process.returncode, stdout, stderr
-    except (FileNotFoundError, PermissionError) as e:
-        print(f"Error running command {quoted_cmd(cmd)}: {e}")
-        return -1, "", str(e)
-
-
-def run_check(cmd):
-    """ run, but check nonzero exit status """
-    retcode, stdout, stderr = run(cmd)
-    if retcode != 0:
-        raise Exception(f"Command failed with return code {retcode}: {quoted_cmd(cmd)}\n{stderr}")
-    return stdout, stderr
+from testlib.commands import run_check
 
 
 class Mock:
@@ -187,4 +134,4 @@ def assert_is_subset(set_a, set_b):
     """ assert that SET_A is subset of SET_B """
     if set_a.issubset(set_b):
         return
-    raise AssertionError("Set {} is not a subset of {}".format(set_a, set_b))
+    raise AssertionError(f"Set {set_a} is not a subset of {set_b}")

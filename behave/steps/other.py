@@ -235,7 +235,7 @@ def step_impl(context):
     assert_that(lockfile_data["buildroot"]["rpms"],
                 has_item(has_entries({"name": "filesystem"})))
 
-    schemafile = os.path.join(os.path.dirname(__file__), '..', '..', '..',
+    schemafile = os.path.join(os.path.dirname(__file__), '..', '..',
                               "mock", "docs",
                               "buildroot-lock-schema-1.0.0.json")
     with open(schemafile, "r", encoding="utf-8") as fd:
