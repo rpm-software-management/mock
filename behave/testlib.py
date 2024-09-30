@@ -97,11 +97,14 @@ class Mock:
         }]
         return out, err
 
-    def rebuild(self, srpms):
+    def rebuild(self, srpms, chroot=None):
         """ Rebuild source RPM(s) """
 
         chrootspec = []
-        if self.context.custom_config:
+        if chroot:
+            chrootspec += ["-r", chroot]
+            self.context.chroot = chroot
+        elif self.context.custom_config:
             config_file = Path(self.context.workdir) / "custom.cfg"
             with config_file.open("w") as fd:
                 fd.write(f"include('{self.context.chroot}.cfg')\n")
