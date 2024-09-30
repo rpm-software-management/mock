@@ -66,6 +66,20 @@ class Mock:
     def __init__(self, context):
         self.context = context
         self.common_opts = []
+
+        # The chroot being used (e.g. fedora-rawhide-x86_64).  If None is used,
+        # it is automatically set to the default.cfg target.
+        self.chroot = context.chroot
+
+        # The -r/--root option being used.  Sometimes it is convenient to use a
+        # custom config file that includes `fedora-rawhide-x86_64`
+        # configuration without overriding the `config_opts["root"]" opt.
+        # None means "no option used".
+        self.chroot_opt = None
+
+        # Sometimes we use multiple chroots.  Clean them all.
+        self.more_cleanups = []
+
         context.mock_runs = {
             "init": [],
             "rebuild": [],
@@ -76,6 +90,8 @@ class Mock:
     def basecmd(self):
         """ return the pre-configured mock base command """
         cmd = ["mock"]
+        if self.chroot_opt:
+            cmd += ["-r", self.chroot_opt]
         if self.context.uniqueext_used:
             cmd += ["--uniqueext", self.context.uniqueext]
         for repo in self.context.add_repos:
@@ -97,17 +113,14 @@ class Mock:
         }]
         return out, err
 
-    def rebuild(self, srpms, chroot=None):
+    def rebuild(self, srpms):
         """ Rebuild source RPM(s) """
 
         chrootspec = []
-        if chroot:
-            chrootspec += ["-r", chroot]
-            self.context.chroot = chroot
-        elif self.context.custom_config:
+        if self.context.custom_config:
             config_file = Path(self.context.workdir) / "custom.cfg"
             with config_file.open("w") as fd:
-                fd.write(f"include('{self.context.chroot}.cfg')\n")
+                fd.write(f"include('{self.chroot}.cfg')\n")
                 fd.write(self.context.custom_config)
             chrootspec = ["-r", str(config_file)]
 
@@ -123,10 +136,10 @@ class Mock:
         """
         Call Mock with --calculate-build-dependencies and produce lockfile
         """
-        out, err = run_check(
-            self.basecmd + ["-r", chroot] + ["--calculate-build-dependencies",
-                                             srpm])
-        self.context.chroot = chroot
+        call = self.basecmd + ["-r", chroot]
+        self.more_cleanups += [call]
+        out, err = run_check(call + ["--calculate-build-dependencies", srpm])
+        self.chroot = chroot
         self.context.mock_runs["calculate-build-deps"].append({
             "status": 0,
             "out": out,
@@ -151,18 +164,20 @@ class Mock:
             "err": err,
         })
         # We built into a hermetic-build.cfg!
-        self.context.chroot = "hermetic-build"
+        self.chroot = "hermetic-build"
+        self.chroot_opt = "hermetic-build"
 
     def clean(self):
         """ Clean chroot, but keep dnf/yum caches """
-        run_check(self.basecmd + [
-            "--scrub=bootstrap", "--scrub=root-cache", "--scrub=chroot",
-        ])
+        args = ["--scrub=bootstrap", "--scrub=root-cache", "--scrub=chroot"]
+        run_check(self.basecmd + args)
+        for call in self.more_cleanups:
+            run_check(call + args)
 
     @property
     def resultdir(self):
         """ Where the results are stored """
-        resultdir = "/var/lib/mock/" + self.context.chroot
+        resultdir = "/var/lib/mock/" + self.chroot
         if self.context.uniqueext_used:
             resultdir += "-" + self.context.uniqueext
         return resultdir + "/result"

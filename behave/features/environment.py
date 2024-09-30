@@ -43,6 +43,7 @@ def before_all(context):
     context.uniqueext = _random_string(8)
     context.uniqueext_used = False
 
+    # detect the default used chroot from default.cfg link
     default_config = os.readlink("/etc/mock/default.cfg")
     context.chroot = default_config[:-4]  # drop cfg suffix
 
