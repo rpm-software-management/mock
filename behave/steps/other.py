@@ -36,11 +36,11 @@ def _first_int(string, max_lines=20):
         first_word = line.split()[0]
         if first_word.isdigit():
             return first_word
-    raise Exception("unexpected dnf history output")
+    raise RuntimeError("unexpected dnf history output")
 
 
 def add_cleanup_last_transaction(context):
-    # TODO: DNF5 support https://github.com/rpm-software-management/dnf5/issues/140
+    # DNF5 support https://github.com/rpm-software-management/dnf5/issues/140
     dnf = ["sudo", "/usr/bin/dnf-3", "-y", "history"]
     _, out, _ = run(dnf + ["list"])
     transaction_id = _first_int(out)
@@ -52,13 +52,14 @@ def add_cleanup_last_transaction(context):
 
     context.add_cleanup(_revert_transaction, context)
 
-@given(u'an unique mock namespace')
+
+@given('an unique mock namespace')
 def step_impl(context):
-    print("using uniqueext {}".format(context.uniqueext))
+    print(f"using uniqueext {context.uniqueext}")
     context.uniqueext_used = True
 
 
-@given(u'the {package} package {state} installed on host')
+@given('the {package} package {state} installed on host')
 def step_impl(context, package, state):
     """
     Install the package, and uninstall in post- action.  If state is "not", then
@@ -93,12 +94,12 @@ def step_impl(context, package, state):
     context.add_cleanup(_uninstall_pkg, context)
 
 
-@given(u'pre-intitialized chroot')
+@given('pre-intitialized chroot')
 def step_impl(context):
     context.mock.init()
 
 
-@given(u'a custom third-party repository is used for builds')
+@given('a custom third-party repository is used for builds')
 def step_impl(context):
     context.add_repos.append(
         "https://raw.githubusercontent.com/rpm-software-management/"
@@ -112,7 +113,7 @@ def step_impl(context):
     run(["createrepo_c", context.local_repo])
 
 
-@given(u'the local repo contains a "{rpm}" RPM')
+@given('the local repo contains a "{rpm}" RPM')
 def step_impl(context, rpm):
     rpm = context.download_rpm(rpm)
     shutil.move(rpm, context.local_repo)
@@ -124,14 +125,14 @@ def step_impl(context):
     context.add_repos.append(context.local_repo)
 
 
-@when(u'a build is depending on third-party repo requested')
-@when(u'a build which requires the "always-installable" RPM is requested')
+@when('a build is depending on third-party repo requested')
+@when('a build which requires the "always-installable" RPM is requested')
 def step_impl(context):
     local_file = context.download_rpm("buildrequires-always-installable")
     context.mock.rebuild([local_file])
 
 
-@then(u'the build succeeds')
+@then('the build succeeds')
 def step_impl(context):
     assert os.path.exists(context.mock.resultdir)
     rpms = glob.glob(os.path.join(context.mock.resultdir, "*.rpm"))
