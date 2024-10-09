@@ -1,6 +1,7 @@
 config_opts['chroot_setup_cmd'] = 'install bash bzip2 centos-stream-release coreutils cpio diffutils findutils gawk glibc-minimal-langpack grep gzip info patch redhat-rpm-config rpm-build sed shadow-utils tar unzip util-linux which xz'
 config_opts['dist'] = 'el10'  # only useful for --resultdir variable subst
 config_opts['releasever'] = '10'
+config_opts['releasever_major'] = '10'
 config_opts['package_manager'] = 'dnf'
 config_opts['extra_chroot_dirs'] = [ '/run/lock', ]
 config_opts['description'] = 'CentOS Stream 10'
