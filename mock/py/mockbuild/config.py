@@ -31,7 +31,7 @@ PLUGIN_LIST = ['tmpfs', 'root_cache', 'yum_cache', 'mount', 'bind_mount',
                'ccache', 'selinux', 'package_state', 'chroot_scan',
                'lvm_root', 'compress_logs', 'sign', 'pm_request',
                'hw_info', 'procenv', 'showrc', 'rpkg_preprocessor',
-               'rpmautospec', 'buildroot_lock']
+               'rpmautospec', 'buildroot_lock', 'export_buildroot_image']
 
 def nspawn_supported():
     """Detect some situations where the systemd-nspawn chroot code won't work"""
@@ -234,6 +234,8 @@ def setup_default_config_opts():
                 'process-distgit',
             ]
         },
+        'export_buildroot_image_enable': False,
+        'export_buildroot_image_opts': {},
     }
 
     config_opts['environment'] = {

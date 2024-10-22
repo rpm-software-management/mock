@@ -196,6 +196,7 @@ See a [separate document](Mock-Core-Configs).
 * [ccache](Plugin-CCache) - compiler cache plugin
 * [chroot_scan](Plugin-ChrootScan) - allows you to retrieve build artifacts from buildroot (e.g. additional logs, coredumps)
 * [compress_logs](Plugin-CompressLogs) - compress logs
+* [export_buildroot_image](Plugin-Export-Buildroot-Image) - export prepared build chroot as an OCI image
 * [hw_info](Plugin-HwInfo) - prints HW information of builder
 * [lvm_root](Plugin-LvmRoot) - caching buildroots using LVM
 * [mount](Plugin-Mount) - allows you to mount directories into chroot
