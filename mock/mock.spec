@@ -94,6 +94,7 @@ Recommends: dnf-utils
 Recommends: btrfs-progs
 Suggests: qemu-user-static
 Suggests: procenv
+Recommends: buildah
 Recommends: podman
 Recommends: fuse-overlayfs
 
