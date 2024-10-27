@@ -9,7 +9,12 @@ from contextlib import contextmanager
 import backoff
 from mockbuild.trace_decorator import getLog, traceLog
 from mockbuild import util
-from mockbuild.exception import BootstrapError
+
+
+class PodmanError(Exception):
+    """
+    Exception raised by mockbuild.podman.Podman
+    """
 
 
 def podman_check_native_image_architecture(image, logger=None, podman_binary=None):
@@ -51,12 +56,12 @@ class Podman:
     def __init__(self, buildroot, image):
         self.podman_binary = "/usr/bin/podman"
         if not os.path.exists(self.podman_binary):
-            raise BootstrapError(f"'{self.podman_binary}' not installed")
+            raise PodmanError(f"'{self.podman_binary}' not installed")
 
         self.buildroot = buildroot
         self.image = image
         self.container_id = None
-        getLog().info("Using bootstrap image: %s", image)
+        getLog().info("Using container image: %s", image)
 
     @traceLog()
     def pull_image(self):
@@ -74,7 +79,7 @@ class Podman:
         """
         Import tarball using podman into the local database.
         """
-        getLog().info("Loading bootstrap image from %s", tarball)
+        getLog().info("Loading container image from %s", tarball)
         cmd = [self.podman_binary, "load", "-i", tarball]
         util.do_with_status(cmd, env=self.buildroot.env)
 
@@ -91,7 +96,7 @@ class Podman:
         """
         Using the "podman image mount" command, mount the image as a temporary
         read-only directory so we can copy-paste the contents into the final
-        bootstrap chroot directory.
+        chroot directory.
         """
         logger = getLog()
         cmd_mount = [self.podman_binary, "image", "mount", self.image]
@@ -101,7 +106,7 @@ class Podman:
                                 encoding="utf8")
         if result.returncode:
             message = "Podman mount failed: " + result.stderr
-            raise BootstrapError(message)
+            raise PodmanError(message)
 
         mountpoint = result.stdout.strip()
         logger.info("mounting %s with podman image mount", self.image)
@@ -124,27 +129,30 @@ class Podman:
                                 stderr=subprocess.PIPE, check=False,
                                 encoding="utf8")
         if result.returncode:
-            raise BootstrapError(f"Can't get {self.image} podman image digest: {result.stderr}")
+            raise PodmanError(f"Can't get {self.image} podman image digest: {result.stderr}")
         result = result.stdout.strip()
         if len(result.splitlines()) != 1:
-            raise BootstrapError(f"The digest of {self.image} image is not a single-line string")
+            raise PodmanError(f"The digest of {self.image} image is not a single-line string")
         return result
+
+    def check_native_image_architecture(self):
+        """
+        Check that self.image has been generated for the current
+        host's architecture.
+        """
+        return podman_check_native_image_architecture(self.image, getLog())
 
     @traceLog()
     def cp(self, destination, tar_cmd):
         """ copy content of container to destination directory """
-        logger = getLog()
-        logger.info("Copy content of container %s to %s", self.image, destination)
-
-        if not podman_check_native_image_architecture(self.image, logger):
-            raise BootstrapError("Container image architecture check failed")
+        getLog().info("Copy content of container %s to %s", self.image, destination)
 
         with self.mounted_image() as mount_path:
             # pipe-out the temporary mountpoint with the help of tar utility
             cmd_podman = [tar_cmd, "-C", mount_path, "-c", "."]
             with subprocess.Popen(cmd_podman, stdout=subprocess.PIPE) as podman:
                 # read the tarball from stdin, and extract to the destination
-                # directory (bootstrap chroot directory)
+                # directory (chroot directory)
                 cmd_tar = [tar_cmd, "-xC", destination, "-f", "-"]
                 with subprocess.Popen(cmd_tar, stdin=podman.stdout) as tar:
                     tar.communicate()
