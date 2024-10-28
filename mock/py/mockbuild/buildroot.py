@@ -272,8 +272,10 @@ class Buildroot(object):
                 if not self.config["image_skip_pull"]:
                     podman.retry_image_pull(self.config["image_keep_getting"])
                 else:
-                    getLog().info("Using local image %s (pull skipped)",
-                                  self.chroot_image)
+                    podman.read_image_id()
+                    getLog().info("Using local image %s (%s)",
+                                  self.chroot_image, podman.image_id)
+                podman.tag_image()
 
                 if self.is_bootstrap and self.config["hermetic_build"]:
                     tarball = os.path.join(self.config["offline_local_repository"],
@@ -294,6 +296,7 @@ class Buildroot(object):
                     raise BootstrapError("Container image architecture check failed")
 
                 podman.cp(self.make_chroot_path(), self.config["tar_binary"])
+                podman.untag()
                 file_util.unlink_if_exists(os.path.join(self.make_chroot_path(),
                                                         "etc/rpm/macros.image-language-conf"))
         except _FallbackException as exc:

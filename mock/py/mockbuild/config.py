@@ -16,6 +16,7 @@ import re
 import shlex
 import socket
 import sys
+import uuid
 import warnings
 
 from templated_dictionary import TemplatedDictionary
@@ -411,6 +412,7 @@ def setup_default_config_opts():
 
     config_opts["calculatedeps"] = None
     config_opts["hermetic_build"] = False
+    config_opts["mock_run_uuid"] = str(uuid.uuid4())
 
     return config_opts
 
