@@ -60,7 +60,7 @@ class Podman:
 
         self.buildroot = buildroot
         self.image = image
-        self.container_id = None
+        self.image_id = None
         getLog().info("Using container image: %s", image)
 
     @traceLog()
@@ -69,11 +69,33 @@ class Podman:
         logger = getLog()
         logger.info("Pulling image: %s", self.image)
         cmd = [self.podman_binary, "pull", self.image]
-        out, exit_status = util.do_with_status(cmd, env=self.buildroot.env,
-                                               raiseExc=False, returnOutput=1)
-        if exit_status:
-            logger.error(out)
-        return not exit_status
+
+        res = subprocess.run(cmd, env=self.buildroot.env,
+                             stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                             check=False)
+        if res.returncode != 0:
+            logger.error("%s\n%s", res.stdout, res.stderr)
+            return False
+
+        # Record the image id for later use.  This is needed for the
+        # oci-image:tarball images that not necessarily have tags/names.
+        self.image_id = res.stdout.decode("utf-8").strip()
+        return True
+
+    @property
+    def _tagged_id(self):
+        uuid = self.buildroot.config["mock_run_uuid"]
+        bootstrap = "-bootstrap" if self.buildroot.is_bootstrap else ""
+        return f"mock{bootstrap}-{uuid}"
+
+    def tag_image(self):
+        """
+        Tag the pulled image as mock-{uuid}, or mock-bootstrap-{uuid}.
+        """
+        cmd = ["podman", "tag", self.image_id, self._tagged_id]
+        getLog().info("Tagging container image as %s", self._tagged_id)
+        subprocess.run(cmd, env=self.buildroot.env, stdout=subprocess.PIPE,
+                       stderr=subprocess.PIPE, check=True)
 
     def import_tarball(self, tarball):
         """
@@ -99,8 +121,8 @@ class Podman:
         chroot directory.
         """
         logger = getLog()
-        cmd_mount = [self.podman_binary, "image", "mount", self.image]
-        cmd_umount = [self.podman_binary, "image", "umount", self.image]
+        cmd_mount = [self.podman_binary, "image", "mount", self.image_id]
+        cmd_umount = [self.podman_binary, "image", "umount", self.image_id]
         result = subprocess.run(cmd_mount, stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE, check=False,
                                 encoding="utf8")
@@ -109,13 +131,13 @@ class Podman:
             raise PodmanError(message)
 
         mountpoint = result.stdout.strip()
-        logger.info("mounting %s with podman image mount", self.image)
+        logger.info("mounting %s with podman image mount", self.image_id)
         try:
-            logger.info("image %s as %s", self.image, mountpoint)
+            logger.info("image %s as %s", self.image_id, mountpoint)
             yield mountpoint
         finally:
             logger.info("umounting image %s (%s) with podman image umount",
-                        self.image, mountpoint)
+                        self.image_id, mountpoint)
             subprocess.run(cmd_umount, stdout=subprocess.PIPE,
                            stderr=subprocess.PIPE, check=True)
 
@@ -123,16 +145,21 @@ class Podman:
         """
         Get the "sha256:..." string for the image we work with.
         """
-        check = [self.podman_binary, "image", "inspect", self.image,
+        the_image = self.image
+        if the_image.startswith("oci-archive:"):
+            # We can't query digest from tarball directly, but note
+            # the image needs to be tagged first!
+            the_image = self._tagged_id
+        check = [self.podman_binary, "image", "inspect", the_image,
                  "--format", "{{ .Digest }}"]
         result = subprocess.run(check, stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE, check=False,
                                 encoding="utf8")
         if result.returncode:
-            raise PodmanError(f"Can't get {self.image} podman image digest: {result.stderr}")
+            raise PodmanError(f"Can't get {the_image} podman image digest: {result.stderr}")
         result = result.stdout.strip()
         if len(result.splitlines()) != 1:
-            raise PodmanError(f"The digest of {self.image} image is not a single-line string")
+            raise PodmanError(f"The digest of {the_image} image is not a single-line string")
         return result
 
     def check_native_image_architecture(self):
@@ -140,12 +167,12 @@ class Podman:
         Check that self.image has been generated for the current
         host's architecture.
         """
-        return podman_check_native_image_architecture(self.image, getLog())
+        return podman_check_native_image_architecture(self.image_id, getLog())
 
     @traceLog()
     def cp(self, destination, tar_cmd):
         """ copy content of container to destination directory """
-        getLog().info("Copy content of container %s to %s", self.image, destination)
+        getLog().info("Copy content of container %s to %s", self.image_id, destination)
 
         with self.mounted_image() as mount_path:
             # pipe-out the temporary mountpoint with the help of tar utility
@@ -158,5 +185,27 @@ class Podman:
                     tar.communicate()
                     podman.communicate()
 
+    def untag(self):
+        """
+        Remove the additional image ID we created - which means the image itself
+        is garbage-collected if there's no other tag.
+        """
+        cmd = ["podman", "rmi", self._tagged_id]
+        getLog().info("Removing image %s", self._tagged_id)
+        subprocess.run(cmd, env=self.buildroot.env, stdout=subprocess.PIPE,
+                       stderr=subprocess.PIPE, check=True)
+
+    def read_image_id(self):
+        """
+        Given self.image (name), get the image Id.
+        """
+        cmd = ["podman", "image", "inspect", self.image, "--format",
+               "{{ .Id }}"]
+        getLog().info("Removing image %s", self.image)
+        res = subprocess.run(cmd, env=self.buildroot.env,
+                             stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                             check=True)
+        self.image_id = res.stdout.decode("utf-8").strip()
+
     def __repr__(self):
-        return "Podman({}({}))".format(self.image, self.container_id)
+        return "Podman({}({}))".format(self.image, self.image_id)
