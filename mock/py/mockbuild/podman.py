@@ -8,7 +8,6 @@ from contextlib import contextmanager
 
 import backoff
 from mockbuild.trace_decorator import getLog, traceLog
-from mockbuild import util
 
 
 class PodmanError(Exception):
@@ -96,14 +95,6 @@ class Podman:
         getLog().info("Tagging container image as %s", self._tagged_id)
         subprocess.run(cmd, env=self.buildroot.env, stdout=subprocess.PIPE,
                        stderr=subprocess.PIPE, check=True)
-
-    def import_tarball(self, tarball):
-        """
-        Import tarball using podman into the local database.
-        """
-        getLog().info("Loading container image from %s", tarball)
-        cmd = [self.podman_binary, "load", "-i", tarball]
-        util.do_with_status(cmd, env=self.buildroot.env)
 
     def retry_image_pull(self, max_time):
         """ Try pulling the image multiple times """

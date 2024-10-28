@@ -777,16 +777,16 @@ def process_hermetic_build_config(cmdline_opts, config_opts):
             f"The {repo_reference} doesn't seem to be a valid "
             "offline RPM repository (RPM metadata not found)")
 
+    # Use the offline image for bootstrapping.
+    bootstrap_tarball = os.path.join(final_offline_repo, "bootstrap.tar")
+    config_opts["bootstrap_image"] = f"oci-archive:{bootstrap_tarball}"
+
     config_opts["offline_local_repository"] = final_offline_repo
 
     # We install all the packages at once (for now?).  We could inherit the
     # command from the previous "online" run, but it often employs a group
     # installation command - and we have no groups in the offline repo.
     config_opts["chroot_setup_cmd"] = "install *"
-
-    # The image needs to be prepared on host.  Build-systems implementing SLSA 3
-    # should make sure the config_opts["bootstrap_image"] is already downloaded.
-    config_opts["bootstrap_image_skip_pull"] = True
 
     # With hermetic builds, we always assert that we are reproducing the build
     # with the same image.

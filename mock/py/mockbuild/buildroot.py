@@ -277,11 +277,6 @@ class Buildroot(object):
                                   self.chroot_image, podman.image_id)
                 podman.tag_image()
 
-                if self.is_bootstrap and self.config["hermetic_build"]:
-                    tarball = os.path.join(self.config["offline_local_repository"],
-                                           "bootstrap.tar")
-                    podman.import_tarball(tarball)
-
                 digest_expected = self.config.get("image_assert_digest", None)
                 if digest_expected:
                     getLog().info("Checking image digest: %s",
