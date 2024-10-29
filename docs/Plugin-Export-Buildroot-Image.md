@@ -29,7 +29,9 @@ The archive has been saved in the result directory:
     $ ls /var/lib/mock/fedora-rawhide-x86_64/result/*.tar
     /var/lib/mock/fedora-rawhide-x86_64/result/buildroot-oci.tar
 
-Then, you can try re-running the build without Mock, like this:
+You may use this tarball together with [the `--buildroot-image` option
+then](Feature-buildroot-image).  But also, you can try re-running the
+build without Mock, like this:
 
     $ chmod a+r /tmp/quick-package/dummy-pkg-20241212_1114-1.src.rpm
     $ podman run --rm -ti \

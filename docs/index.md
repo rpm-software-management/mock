@@ -221,8 +221,9 @@ Every plugin has a corresponding wiki page with docs.
 
 ## Features
 
-* [container image for bootstrap](Feature-container-for-bootstrap) - set up bootstrap chroot using Podman.
 * [bootstrap](Feature-bootstrap) - bootstrapping chroot. I.e., when building F28 on RHEL7, then first install very minimal bootstrap chroot with DNF and rpm from F28 and then use F28's rpm to install final F28 chroot.
+* [container image for bootstrap](Feature-container-for-bootstrap) - set up bootstrap chroot using Podman.
+* [container image for buildroot](Feature-buildroot-image) - pre-create buildroot from an OCI image
 * [external dependencies](Feature-external-deps) - use of external dependencies, e.g., `BuildRequires external:pypi:foo`.
 * [forcearch](Feature-forcearch) - build for foreign architecture using emulated virtualization.
 * [nosync](Feature-nosync) - speed up build by making `fsync`(2) no-op.

@@ -398,6 +398,13 @@ def command_parse():
     parser.add_option('--no-bootstrap-image', dest='usebootstrapimage', action='store_false',
                       help="don't create bootstrap chroot from container image", default=None)
 
+    parser.add_option('--buildroot-image',
+                      help=(
+                          "Use an OCI image (or a local file containing an OCI "
+                          "image as a tarball) as the base for the buildroot. "
+                          "The image must contain a compatible distribution "
+                          "(e.g., fedora:41 for fedora-41-x86_64)"))
+
     parser.add_option('--additional-package', action='append', default=[],
                       type=str, dest="additional_packages",
                       help=("Additional package to install into the buildroot before "

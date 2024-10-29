@@ -500,6 +500,11 @@ on non-RPM distributions.  This option turns \fB\-\-bootstrap\-chroot\fR on.
 \fB\-\-no-bootstrap-image\fR
 don't create bootstrap chroot from container image
 
+.TP
+\fB\-\-buildroot\-image\fR \fIBUILDROOT_IMAGE\fR
+Use an OCI image (or a local file containing an OCI image as a tarball) as the
+base for the buildroot.  The image must contain a compatible distribution.
+
 .SH "FILES"
 .LP
 \fI/etc/mock/\fP \- default configuration directory
