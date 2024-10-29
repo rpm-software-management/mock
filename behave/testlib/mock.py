@@ -30,8 +30,11 @@ class Mock:
         context.mock_runs = {
             "init": [],
             "rebuild": [],
+            "scrubs": [],
             "calculate-build-deps": [],
         }
+
+        self.buildroot_image = None
 
     @property
     def basecmd(self):
@@ -60,6 +63,19 @@ class Mock:
         }]
         return out, err
 
+    def scrub(self, chroot=None):
+        """ initialize chroot """
+        opts = ["--scrub=all"]
+        if chroot is not None:
+            opts += ["-r", chroot]
+        out, err = run_check(self.basecmd + opts)
+        self.context.mock_runs['scrubs'] += [{
+            "status": 0,
+            "out": out,
+            "err": err,
+        }]
+        return out, err
+
     def rebuild(self, srpms):
         """ Rebuild source RPM(s) """
 
@@ -71,7 +87,14 @@ class Mock:
                 fd.write(self.context.custom_config)
             chrootspec = ["-r", str(config_file)]
 
-        out, err = run_check(self.basecmd + chrootspec + ["--rebuild"] + srpms)
+        opts = []
+        if self.buildroot_image:
+            # use and drop
+            opts += ["--buildroot-image", self.buildroot_image]
+            self.buildroot_image = None
+        opts += ["--rebuild"] + srpms
+
+        out, err = run_check(self.basecmd + chrootspec + opts)
         self.context.mock_runs['rebuild'] += [{
             "status": 0,
             "out": out,

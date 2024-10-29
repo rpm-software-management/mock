@@ -166,8 +166,9 @@ def step_impl(context, expected_message):
     assert_that(err[0], contains_string(expected_message))
 
 
-def _rebuild_online(context, chroot=None):
-    url = context.test_storage + "mock-test-bump-version-1-0.src.rpm"
+def _rebuild_online(context, chroot=None, package=None):
+    package = package or "mock-test-bump-version-1-0.src.rpm"
+    url = context.test_storage + package
     if chroot:
         context.mock.chroot = chroot
         context.mock.chroot_opt = chroot
@@ -182,6 +183,12 @@ def step_impl(context):
 @when('an online source RPM is rebuilt against {chroot}')
 def step_impl(context, chroot):
     _rebuild_online(context, chroot)
+
+
+@when('an online SRPM {package} is rebuilt against {chroot}')
+def step_impl(context, package, chroot):
+    _rebuild_online(context, chroot, package)
+
 
 @then('{output} contains "{text}"')
 def step_impl(context, output, text):
@@ -309,3 +316,18 @@ def step_impl(context):
                 break
     assert_that(tarball.group(), equal_to("mock"))
     assert_that(tarball.owner(), equal_to(context.current_user))
+
+
+@when('OCI tarball from {chroot} backed up and will be used')
+def step_impl(context, chroot):
+    resultdir = f"/var/lib/mock/{chroot}-{context.uniqueext}/result"
+    tarball_base = "buildroot-oci.tar"
+    tarball = os.path.join(resultdir, tarball_base)
+    assert os.path.exists(tarball)
+    shutil.copy(tarball, context.workdir)
+    context.mock.buildroot_image = os.path.join(context.workdir, tarball_base)
+
+
+@when('the {chroot} chroot is scrubbed')
+def step_impl(context, chroot):
+    context.mock.scrub(chroot)

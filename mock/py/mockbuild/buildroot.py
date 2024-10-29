@@ -110,8 +110,12 @@ class Buildroot(object):
         self.env.update(proxy_env)
         os.environ.update(proxy_env)
 
-        self.use_chroot_image = self.config['use_bootstrap_image']
-        self.chroot_image = self.config['bootstrap_image']
+        image = 'bootstrap' if is_bootstrap else 'buildroot'
+        self.use_chroot_image = self.config[f"use_{image}_image"]
+        self.chroot_image = self.config[f"{image}_image"]
+        self.image_skip_pull = self.config[f"{image}_image_skip_pull"]
+        self.image_assert_digest = self.config.get(f"{image}_image_assert_digest", None)
+        self.image_keep_getting = self.config[f"{image}_image_keep_getting"]
 
         self.pkg_manager = None
         self.mounts = mounts.Mounts(self)
@@ -239,7 +243,7 @@ class Buildroot(object):
 
     @traceLog()
     def _load_from_container_image(self):
-        if not self.uses_bootstrap_image or self.chroot_was_initialized:
+        if not self.use_chroot_image or self.chroot_was_initialized:
             return
 
         if util.mock_host_environment_type() == "docker":
@@ -269,15 +273,15 @@ class Buildroot(object):
                 podman = Podman(self, self.chroot_image)
 
             with _fallback("Can't initialize from container image"):
-                if not self.config["image_skip_pull"]:
-                    podman.retry_image_pull(self.config["image_keep_getting"])
+                if not self.image_skip_pull:
+                    podman.retry_image_pull(self.image_keep_getting)
                 else:
                     podman.read_image_id()
                     getLog().info("Using local image %s (%s)",
                                   self.chroot_image, podman.image_id)
                 podman.tag_image()
 
-                digest_expected = self.config.get("image_assert_digest", None)
+                digest_expected = self.image_assert_digest
                 if digest_expected:
                     getLog().info("Checking image digest: %s",
                                   digest_expected)
