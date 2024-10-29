@@ -105,6 +105,14 @@ def setup_default_config_opts():
     config_opts['bootstrap_image_keep_getting'] = 120
     config_opts['bootstrap_image_assert_digest'] = None
 
+    config_opts['use_buildroot_image'] = False
+    config_opts['buildroot_image'] = None
+    config_opts['buildroot_image_skip_pull'] = True
+    config_opts['buildroot_image_ready'] = False
+    config_opts['buildroot_image_fallback'] = True
+    config_opts['buildroot_image_keep_getting'] = 120
+    config_opts['buildroot_image_assert_digest'] = None
+
     config_opts['internal_dev_setup'] = True
 
     # cleanup_on_* only take effect for separate --resultdir
@@ -235,7 +243,7 @@ def setup_default_config_opts():
                 'process-distgit',
             ]
         },
-        'oci_as_buildroot_enable': True,
+        'oci_as_buildroot_enable': False,
         'oci_as_buildroot_opts': {},
     }
 
@@ -675,6 +683,9 @@ def set_config_opts_per_cmdline(config_opts, options, args):
     config_opts["calculatedeps"] = options.calculatedeps
     if config_opts["calculatedeps"]:
         config_opts["plugin_conf"]["buildroot_lock_enable"] = True
+
+    if config_opts["buildroot_image"]:
+        config_opts["use_buildroot_image"] = True
 
 def check_config(config_opts):
     if 'root' not in config_opts:
