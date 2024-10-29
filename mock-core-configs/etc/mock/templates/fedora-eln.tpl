@@ -229,45 +229,6 @@ skip_if_unavailable=False
 
 
 
-[eln-rs]
-name=Fedora - ELN ResilientStorage - Developmental packages for the next Enterprise Linux release
-#baseurl=https://dl.fedoraproject.org/pub/eln/1/ResilientStorage/$basearch/os/
-metalink=https://mirrors.fedoraproject.org/metalink?repo=eln-resilientstorage-1&arch=$basearch
-enabled=0
-countme=1
-metadata_expire=6h
-repo_gpgcheck=0
-type=rpm
-gpgcheck=1
-gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-fedora-eln-$basearch
-skip_if_unavailable=False
-
-[eln-rs-debuginfo]
-name=Fedora - ELN ResilientStorage - Debug
-#baseurl=https://dl.fedoraproject.org/pub/eln/1/ResilientStorage/$basearch/debug/tree
-metalink=https://mirrors.fedoraproject.org/metalink?repo=eln-resilientstorage-debug-1&arch=$basearch
-enabled=0
-metadata_expire=6h
-repo_gpgcheck=0
-type=rpm
-gpgcheck=1
-gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-fedora-eln-$basearch
-skip_if_unavailable=False
-
-[eln-rs-source]
-name=Fedora - ELN ResilientStorage - Source
-#baseurl=https://dl.fedoraproject.org/pub/eln/1/ResilientStorage/source/tree/
-metalink=https://mirrors.fedoraproject.org/metalink?repo=eln-resilientstorage-source-1&arch=source
-enabled=0
-metadata_expire=6h
-repo_gpgcheck=0
-type=rpm
-gpgcheck=1
-gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-fedora-eln-$basearch
-skip_if_unavailable=False
-
-
-
 [eln-rt]
 name=Fedora - ELN RT - Developmental packages for the next Enterprise Linux release
 #baseurl=https://dl.fedoraproject.org/pub/eln/1/RT/$basearch/os/
