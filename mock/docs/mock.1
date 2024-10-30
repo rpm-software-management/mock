@@ -491,7 +491,7 @@ build in a single stage, using system rpm for creating the build chroot
 
 .TP
 \fB\-\-use-bootstrap-image\fR
-Instead of creating a bootstrap chroot from scrath, use podman image specified in
+Instead of creating a bootstrap chroot from scratch, use podman image specified in
 \fBconfig_opts['bootstrap_image']\fR, extract it, and use it as a cache for the bootstrap chroot.
 This is useful when host \fBrpm\fR version is not compatible with the target system, or when using mock
 on non-RPM distributions.  This option turns \fB\-\-bootstrap\-chroot\fR on.
