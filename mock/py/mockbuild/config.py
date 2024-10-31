@@ -243,7 +243,7 @@ def setup_default_config_opts():
                 'process-distgit',
             ]
         },
-        'oci_as_buildroot_enable': True,
+        'oci_as_buildroot_enable': False,
         'oci_as_buildroot_opts': {},
     }
 
