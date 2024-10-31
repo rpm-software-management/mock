@@ -1,0 +1,1 @@
+Regression introduced in Mock v5.7 that ignored the `dnf_builddep_opts` configuration is now fixed.

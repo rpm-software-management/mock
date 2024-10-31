@@ -54,7 +54,7 @@ def setup_default_config_opts():
 
     alt_opts = {'dnf.conf': ['yum.conf', 'dnf5.conf', 'dnf4.conf']}
     for alt in ["dnf_command", "dnf_common_opts", "dnf_install_command",
-                "dnf_disable_plugins", "dnf_avoid_opts"]:
+                "dnf_disable_plugins", "dnf_avoid_opts", "dnf_builddep_opts"]:
         alt_opts[alt.replace("dnf", "dnf4")] = [alt]
 
     for pm in ["dnf4", "dnf5", "yum", "microdnf"]:
