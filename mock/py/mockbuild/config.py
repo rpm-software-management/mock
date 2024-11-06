@@ -629,7 +629,11 @@ def set_config_opts_per_cmdline(config_opts, options, args):
     if options.mode == 'yum-cmd':
         config_opts['package_manager'] = 'yum'
     if options.mode == 'dnf-cmd':
-        config_opts['package_manager'] = 'dnf'
+        # If config specifies a different package manager (e.g. yum), force
+        # using dnf. However, if config specifies its preference on either dnf
+        # or dnf5, respect that preference.
+        if config_opts['package_manager'] not in ['dnf', 'dnf5']:
+            config_opts['package_manager'] = 'dnf'
 
     if options.short_circuit:
         config_opts['short_circuit'] = options.short_circuit
