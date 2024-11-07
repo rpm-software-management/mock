@@ -14,7 +14,7 @@ License: GPL-2.0-or-later
 # cd mock
 # git reset --hard %%{name}-%%{version}
 # tito build --tgz
-Source: %{name}-%{version}.tar.gz
+Source: https://github.com/rpm-software-management/%{name}/releases/download/%{name}-%{version}-1/%{name}-%{version}.tar.gz
 URL: https://github.com/rpm-software-management/mock/
 BuildArch: noarch
 Requires: tar
