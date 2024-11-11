@@ -36,49 +36,6 @@ $ sudo subscription-manager config --rhsm.auto_enable_yum_plugins 0
 $ sudo sed -e '/^enabled=/ s/1/0/' -i /etc/dnf/plugins/subscription-manager.conf
 ```
 
-### Subscription configuration without Simple Content Access
-
-If you do not have Simple Content Access enabled,
-you will need to both register and attach a subscription to the machine you are running mock on.
-The register command will prompt you for your username and password.
-
-```
-$ sudo subscription-manager register
-```
-
-Check the available subscriptions for your account,
-making note of the corresponding pool ID for the subscription you want to use.
-
-```
-$ sudo subscription-manager list --all --available
-...
-Pool ID:  <THE_POOL_ID>
-...
-```
-
-Attach the desired subscription referenced by the pool ID in order to obtain the necessary entitlement keypair.
-
-```
-$ sudo subscription-manager attach --pool <THE_POOL_ID>
-...
-
-$ ls /etc/pki/entitlement
-<KEY_ID>-key.pem  <KEY_ID>.pem
-```
-
-Now the RHEL mock configs should work.
-
-```
-$ mock -r rhel-9-x86_64 --shell
-```
-
-Optionally, you can disable the subscription-manager dnf plugin if you do not need subscription repos directly on your machine.
-
-```
-$ sudo subscription-manager config --rhsm.auto_enable_yum_plugins 0
-$ sudo sed -e '/^enabled=/ s/1/0/' -i /etc/dnf/plugins/subscription-manager.conf
-```
-
 ### Multiple client keys
 
 If there are multiple client keys,
