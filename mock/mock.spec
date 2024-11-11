@@ -189,7 +189,6 @@ install py/mock-hermetic-repo.py %{buildroot}%{_bindir}/mock-hermetic-repo
 install py/mock-parse-buildlog.py %{buildroot}%{_bindir}/mock-parse-buildlog
 install py/mock.py %{buildroot}%{_libexecdir}/mock/mock
 ln -s consolehelper %{buildroot}%{_bindir}/mock
-install create_default_route_in_container.sh %{buildroot}%{_libexecdir}/mock/
  
 install -d %{buildroot}%{_sysconfdir}/pam.d
 cp -a etc/pam/* %{buildroot}%{_sysconfdir}/pam.d/
