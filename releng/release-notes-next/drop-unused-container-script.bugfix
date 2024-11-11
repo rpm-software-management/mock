@@ -1,0 +1,2 @@
+The `libexec/create_default_route_in_container.sh` has been removed, it was
+never used in practice (relates to [issue#113][]).
