@@ -4,3 +4,4 @@ pyroute2
 requests
 rpmautospec-core
 templated-dictionary
+backoff
