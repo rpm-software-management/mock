@@ -1,4 +1,4 @@
-config_opts['chroot_setup_cmd'] = 'install patterns-devel-base-devel_rpm_build'
+config_opts['chroot_setup_cmd'] = 'install patterns-devel-base-devel_rpm_build openSUSE-release rpm-repos-openSUSE-Tumbleweed'
 config_opts['dist'] = 'tumbleweed'  # only useful for --resultdir variable subst
 config_opts['extra_chroot_dirs'] = [ '/run/lock', ]
 config_opts['releasever'] = '0'
