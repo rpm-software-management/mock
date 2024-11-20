@@ -6,7 +6,7 @@ config_opts['package_manager'] = 'dnf'
 config_opts['extra_chroot_dirs'] = [ '/run/lock', ]
 config_opts['description'] = 'CentOS Stream 10'
 
-config_opts['bootstrap_image'] = 'quay.io/centos/centos:stream10-development'
+config_opts['bootstrap_image'] = 'quay.io/centos/centos:stream10'
 config_opts['bootstrap_image_ready'] = True
 
 config_opts['dnf.conf'] = """
