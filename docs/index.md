@@ -69,15 +69,15 @@ Versions in Linux distributions:
 
 
 ## Release Notes
-* [5.9 and Configs 41.4](Release-Notes-5.9) - A --no-bootstrap-chroot regression with DNF4 chroots fixed.
-* [5.8](Release-Notes-5.8) - Bug-fixed regression in `chroot_scan` plugin.
-* [5.7 and Configs 41.3](Release-Notes-5.7) - Support for isolated builds added.  DNF4 = DNF.  Option `--scrub-all-chroots` added.
-* [Configs 41.1 (and 41.2)](Release-Notes-Configs-41.1) - EL7 configs EOL. F38 EOL. F41 branched.
-* [Configs 40.6](Release-Notes-Configs-40.6) - CentOS Stream 10 uses mirrored repositories.
-* [Configs 40.5](Release-Notes-Configs-40.5) - Fedora 38 moved to EOL. CentOS Stream 8 moved to vault.
-* [5.6](Release-Notes-5.6) - Improved performance of bash completion, don't use `--allowerasing` for commands that doesn't provide it, fixed "no space left" tracebacks, new Circle Linux 9 configs, Mageia Cauldron i686, fixed Fedora ELN.
-* [Configs 40.3](Release-Notes-Configs-40.3) - Added C10s chroots, Dropped Fedora modular repositories, fix bootstrap from image for openSUSE
-* [Configs 40.2](Release-Notes-Configs-40.2) - Fixed Fedora 40 builds that regressed back to `dnf` (instead of expected `dnf5`).
+* [5.9 and Configs 41.4](Release-Notes-5.9) (2024-09-30) - A --no-bootstrap-chroot regression with DNF4 chroots fixed.
+* [5.8](Release-Notes-5.8) (2024-09-27) - Bug-fixed regression in `chroot_scan` plugin.
+* [5.7 and Configs 41.3](Release-Notes-5.7) (2024-09-26) - Support for isolated builds added.  DNF4 = DNF.  Option `--scrub-all-chroots` added.
+* [Configs 41.1 (and 41.2)](Release-Notes-Configs-41.1) (2024-08-15) - EL7 configs EOL. F38 EOL. F41 branched.
+* [Configs 40.6](Release-Notes-Configs-40.6) (2024-06-15) - CentOS Stream 10 uses mirrored repositories.
+* [Configs 40.5](Release-Notes-Configs-40.5) (2024-06-05) - Fedora 38 moved to EOL. CentOS Stream 8 moved to vault.
+* [5.6](Release-Notes-5.6) (2024-05-15) - Improved performance of bash completion, don't use `--allowerasing` for commands that doesn't provide it, fixed "no space left" tracebacks, new Circle Linux 9 configs, Mageia Cauldron i686, fixed Fedora ELN.
+* [Configs 40.3](Release-Notes-Configs-40.3) (2024-04-09) - Added C10s chroots, Dropped Fedora modular repositories, fix bootstrap from image for openSUSE
+* [Configs 40.2](Release-Notes-Configs-40.2) (2024-02-16) - Fixed Fedora 40 builds that regressed back to `dnf` (instead of expected `dnf5`).
 * [5.5](Release-Notes-5.5) (2024-02-14) - The `{{ repo_arch }}` support added, chroot_scan supports tarballs, ownership during `--init` fixed, fixed `root_cache` tarball invalidation problem.
 * [5.4](Release-Notes-5.4) (2024-01-04) - Bugfix the rpmautospec plugin.
 * [5.3](Release-Notes-5.3) (2023-12-13) - New "rpmautospec" plugin added, `%generate_buildrequries` fixes landed.
