@@ -15,14 +15,18 @@ import os
 import shutil
 import subprocess
 import sys
+
 from urllib.parse import quote
 
+import backoff
 import requests
 
 logging.basicConfig(level=logging.DEBUG)
 log = logging.getLogger(__name__)
 
 
+@backoff.on_exception(backoff.expo, requests.exceptions.RequestException,
+                      max_tries=5, max_time=300)
 def download_file(url, outputdir):
     """
     Download a single file (pool worker)
