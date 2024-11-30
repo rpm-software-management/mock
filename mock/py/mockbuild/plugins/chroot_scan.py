@@ -32,10 +32,17 @@ class ChrootScan(object):
         self.config = buildroot.config
         self.state = buildroot.state
         self.scan_opts = conf
-        self.resultdir = os.path.join(buildroot.resultdir, "chroot_scan")
         plugins.add_hook("postbuild", self._scanChroot)
         plugins.add_hook("initfailed", self._scanChroot)
         getLog().info("chroot_scan: initialized")
+
+    @property
+    def resultdir(self):
+        """
+        The plugin's self.resultdir is a subdir of buildroot.resultdir, which
+        is, e.g., for --chain, changed for every single package.
+        """
+        return os.path.join(self.buildroot.resultdir, "chroot_scan")
 
     def _only_failed(self):
         """ Returns boolean value if option 'only_failed' is set. """
