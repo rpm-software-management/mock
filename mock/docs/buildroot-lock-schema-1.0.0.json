@@ -83,7 +83,7 @@
       "additionalProperties": false,
       "properties": {
         "image_digest": {
-          "description": "Digest got by the 'podman image inspect --format {{ .Digest }}' command, sha256 string",
+          "description": "SHA256 digest concatenated RootFS layer digests and Config section from 'podman image inspect' command, sha256 string",
           "type": "string"
         }
       }

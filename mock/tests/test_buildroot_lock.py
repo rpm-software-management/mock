@@ -99,7 +99,7 @@ def _call_method(plugins, buildroot):
     _, method = plugins.add_hook.call_args[0]
 
     podman_obj = MagicMock()
-    podman_obj.get_image_digest.return_value = EXPECTED_OUTPUT["bootstrap"]["image_digest"]
+    podman_obj.get_oci_digest.return_value = EXPECTED_OUTPUT["bootstrap"]["image_digest"]
     podman_cls = MagicMock(return_value=podman_obj)
     with patch("mockbuild.plugins.buildroot_lock.Podman", side_effect=podman_cls):
         method()
