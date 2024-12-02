@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 # vim: noai:ts=4:sw=4:expandtab
 
+import hashlib
+import json
 import os
 import logging
 import subprocess
@@ -114,21 +116,33 @@ class Podman:
             subprocess.run(cmd_umount, stdout=subprocess.PIPE,
                            stderr=subprocess.PIPE, check=True)
 
-    def get_image_digest(self):
+    def get_layers_digest(self):
         """
-        Get the "sha256:..." string for the image we work with.
+        Get sha256 digest of RootFS layers. This must be identical for
+        all images containing same order of layers, thus it can be used
+        as the check that we've loaded same image.
         """
         check = [self.podman_binary, "image", "inspect", self.image,
-                 "--format", "{{ .Digest }}"]
+                 "--format", "{{ .RootFS }}"]
         result = subprocess.run(check, stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE, check=False,
                                 encoding="utf8")
         if result.returncode:
             raise BootstrapError(f"Can't get {self.image} podman image digest: {result.stderr}")
         result = result.stdout.strip()
-        if len(result.splitlines()) != 1:
-            raise BootstrapError(f"The digest of {self.image} image is not a single-line string")
-        return result
+        try:
+            rootfs = json.loads(result)
+            layers = rootfs['layers']
+        except json.JSONDecodeError as exc:
+            raise BootstrapError(f"The RootFS layers of {self.image} "
+                                  "are not json-formatted.") from exc
+        except (KeyError, TypeError) as exc:
+            raise BootstrapError(f"The Layers of {self.image} "
+                                  "are not in expected format.") from exc
+        sha = hashlib.sha256()
+        for layer in layers:
+            sha.update(layer.encode()) # as it was decoded from json, it is unicode again
+        return sha.hexdigest()
 
     @traceLog()
     def cp(self, destination, tar_cmd):
