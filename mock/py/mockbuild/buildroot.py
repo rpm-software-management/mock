@@ -283,7 +283,7 @@ class Buildroot(object):
                 if digest_expected:
                     getLog().info("Checking image digest: %s",
                                   digest_expected)
-                    digest = podman.get_image_digest()
+                    digest = podman.get_layers_digest()
                     if digest != digest_expected:
                         getLog().warning(
                             f"Expected digest for image {podman.image} is"

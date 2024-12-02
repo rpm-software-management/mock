@@ -786,7 +786,7 @@ def process_hermetic_build_config(cmdline_opts, config_opts):
 
     # With hermetic builds, we always assert that we are reproducing the build
     # with the same image.
-    config_opts["bootstrap_image_assert_digest"] = data["bootstrap"]["image_digest"]
+    config_opts["bootstrap_image_assert_digest"] = data["bootstrap"]["image_layers_digest"]
 
 
 @traceLog()

@@ -103,9 +103,9 @@ class BuildrootLockfile:
                     with self.buildroot.uid_manager.elevated_privileges():
                         podman = Podman(self.buildroot,
                                         data["config"]["bootstrap_image"])
-                        digest = podman.get_image_digest()
+                        digest = podman.get_layers_digest()
                     data["bootstrap"] = {
-                        "image_digest": digest,
+                        "image_layers_digest": digest,
                     }
 
                 with open(out_file, "w", encoding="utf-8") as fdlist:
