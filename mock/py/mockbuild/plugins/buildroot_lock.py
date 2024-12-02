@@ -104,7 +104,7 @@ class BuildrootLockfile:
                         try:
                             podman = Podman(self.buildroot,
                                             data["config"]["bootstrap_image"])
-                            digest = podman.get_image_digest()
+                            digest = podman.get_oci_digest()
                         except PodmanError:
                             digest = "unknown"
                     data["bootstrap"] = {

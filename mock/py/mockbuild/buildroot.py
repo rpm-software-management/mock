@@ -281,13 +281,13 @@ class Buildroot(object):
                                   self.chroot_image, podman.image_id)
                 podman.tag_image()
 
-                digest_expected = self.image_assert_digest
+                digest_expected = self.config.get("image_assert_digest")
                 if digest_expected:
                     getLog().info("Checking image digest: %s",
                                   digest_expected)
-                    digest = podman.get_image_digest()
+                    digest = podman.get_oci_digest()
                     if digest != digest_expected:
-                        getLog().warning(
+                        raise BootstrapError(
                             f"Expected digest for image {podman.image} is"
                             f"{digest_expected}, but {digest} found.")
 

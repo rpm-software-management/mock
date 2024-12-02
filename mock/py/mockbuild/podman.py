@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 # vim: noai:ts=4:sw=4:expandtab
 
+import hashlib
+import json
 import os
 import logging
 import subprocess
@@ -14,6 +16,47 @@ class PodmanError(Exception):
     """
     Exception raised by mockbuild.podman.Podman
     """
+
+
+def podman_get_oci_digest(image, logger=None, podman_binary=None):
+    """
+    Get sha256 digest of RootFS layers. This must be identical for
+    all images containing same order of layers, thus it can be used
+    as the check that we've loaded same image.
+    """
+    logger = logger or logging.getLogger()
+    podman = podman_binary or "/usr/bin/podman"
+    logger.info("Calculating %s image OCI digest", image)
+    check = [podman, "image", "inspect", image]
+    result = subprocess.run(check, stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE, check=False,
+                            encoding="utf8")
+    if result.returncode:
+        logger.error("Can't get %s podman image digest: %s", image, result.stderr)
+        return None
+    result = result.stdout.strip()
+
+    try:
+        data = json.loads(result)[0]
+    except json.JSONDecodeError:
+        logger.error("The manifest data of %s are not json-formatted.", image)
+        return None
+
+    if 'RootFS' not in data:
+        logger.error("RootFS section of %s is missing.", image)
+        return None
+    if data['RootFS']['Type'] != 'layers':
+        logger.error("Unexpected format for RootFS in %s.", image)
+        return None
+
+    # data which should be sufficient to confirm the image
+    data = {
+        'RootFS': data['RootFS'],
+        'Config': data['Config'],
+    }
+    # convert to json string with ordered dicts and create hash
+    data = json.dumps(data, sort_keys=True)
+    return hashlib.sha256(data.encode()).hexdigest()
 
 
 def podman_check_native_image_architecture(image, logger=None, podman_binary=None):
@@ -132,26 +175,21 @@ class Podman:
             subprocess.run(cmd_umount, stdout=subprocess.PIPE,
                            stderr=subprocess.PIPE, check=True)
 
-    def get_image_digest(self):
+    def get_oci_digest(self):
         """
-        Get the "sha256:..." string for the image we work with.
+        Get sha256 digest of RootFS layers. This must be identical for
+        all images containing same order of layers, thus it can be used
+        as the check that we've loaded same image.
         """
         the_image = self.image
         if the_image.startswith("oci-archive:"):
             # We can't query digest from tarball directly, but note
             # the image needs to be tagged first!
             the_image = self._tagged_id
-        check = [self.podman_binary, "image", "inspect", the_image,
-                 "--format", "{{ .Digest }}"]
-        result = subprocess.run(check, stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE, check=False,
-                                encoding="utf8")
-        if result.returncode:
-            raise PodmanError(f"Can't get {the_image} podman image digest: {result.stderr}")
-        result = result.stdout.strip()
-        if len(result.splitlines()) != 1:
-            raise PodmanError(f"The digest of {the_image} image is not a single-line string")
-        return result
+        digest = podman_get_oci_digest(the_image, logger=getLog())
+        if digest is None:
+            raise PodmanError(f"Getting OCI digest for image {self.image} failed")
+        return digest
 
     def check_native_image_architecture(self):
         """
