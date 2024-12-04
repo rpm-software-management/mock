@@ -17,16 +17,35 @@ import subprocess
 import sys
 
 from urllib.parse import quote
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.util.retry import Retry
 
-import backoff
 import requests
 
 logging.basicConfig(level=logging.DEBUG)
 log = logging.getLogger(__name__)
 
 
-@backoff.on_exception(backoff.expo, requests.exceptions.RequestException,
-                      max_tries=5, max_time=300)
+def request_with_retry(retries=5, backoff_factor=0.3,
+                       status_forcelist=(500, 502, 504, 408, 429), session=None):
+    """
+    Wrapper for requests Session with default retries
+
+    Converted from koji:
+    https://pagure.io/koji/blob/fccf4fa3f990ca454a411c8a699e693f4e5b0ac8/f/koji/__init__.py#_2004
+    originally stolen from
+    https://www.peterbe.com/plog/best-practice-with-retries-with-requests
+    """
+    session = session or requests.Session()
+    retry = Retry(total=retries, read=retries, connect=retries,
+                  backoff_factor=backoff_factor,
+                  status_forcelist=status_forcelist)
+    adapter = HTTPAdapter(max_retries=retry)
+    session.mount('http://', adapter)
+    session.mount('https://', adapter)
+    return session
+
+
 def download_file(url, outputdir):
     """
     Download a single file (pool worker)
@@ -40,7 +59,7 @@ def download_file(url, outputdir):
     log.info("Downloading %s", url)
 
     try:
-        with requests.get(url, stream=True, timeout=30) as response:
+        with request_with_retry().get(url, stream=True, timeout=60) as response:
             if response.status_code != 200:
                 return False
             with open(file_name, "wb") as fd:
