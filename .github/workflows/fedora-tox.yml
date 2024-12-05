@@ -18,12 +18,13 @@ jobs:
     strategy:
       matrix:
         tox_env:
-          - py37
+          # sync with /tox.ini
           - py38
           - py39
           - py310
           - py311
           - py312
+          - py313
 
     # Use GitHub's Linux Docker host
     runs-on: ubuntu-latest
