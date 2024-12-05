@@ -202,7 +202,7 @@ class _PackageManager(object):
 
         # We want to know the package versions in bootstrap
         if self.bootstrap_buildroot:
-            if self.bootstrap_buildroot.use_bootstrap_image:
+            if self.bootstrap_buildroot.use_chroot_image:
                 # rpm installed from the bootstrap image
                 _do("downloaded with a bootstrap image", cmd,
                     chrootPath=self.bootstrap_buildroot.make_chroot_path())
