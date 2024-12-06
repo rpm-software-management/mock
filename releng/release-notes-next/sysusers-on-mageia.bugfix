@@ -1,0 +1,2 @@
+The %pre scriptlet is not generated for modern distributions like Fedora 39+ or
+Mageia (group/user additions are handled by an RPM built-in feature).

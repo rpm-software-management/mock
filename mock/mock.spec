@@ -1,6 +1,18 @@
 %bcond_with lint
 %bcond_without tests
 
+# Modern distributions (using RPM v4.19+; for example, Fedora 39+) do not
+# require the %%pre scriptlet for creating users/groups because the sysusers
+# feature is now built directly into RPM.  Simply including the sysusers
+# `mock.conf` file in a package payload is sufficient to leverage this feature.
+# However, for older distributions that lack this capability, we still define
+# the %%pre scriptlet.
+%if (0%{?rhel} && 0%{?rhel} < 10) || (0%{?mageia} && 0%{?mageia} < 10) || (0%{?suse_version} && 0%{?suse_version} < 1660)
+%bcond_without sysusers_compat
+%else
+%bcond_with sysusers_compat
+%endif
+
 %global __python %{__python3}
 %global python_sitelib %{python3_sitelib}
 
@@ -147,7 +159,9 @@ Summary:  Mock filesystem layout
 Requires(pre):  shadow-utils
 BuildRequires:  systemd-rpm-macros
 
-%{?sysusers_requires_compat}
+%if %{with sysusers_compat}
+Requires(pre): shadow-utils
+%endif
 
 %description filesystem
 Filesystem layout and group for Mock.
@@ -170,9 +184,6 @@ for i in docs/mock.1 docs/mock-parse-buildlog.1; do
 done
 
 ./precompile-bash-completion "mock.complete"
-
-# this is what %%sysusers_create_compat will expand to
-%{_rpmconfigdir}/sysusers.generate-pre.sh mock.conf > sysusers_script
 
 argparse-manpage --pyfile ./py/mock-hermetic-repo.py --function _argparser > mock-hermetic-repo.1
 
@@ -229,7 +240,13 @@ sed -i 's/^_MOCK_NVR = None$/_MOCK_NVR = "%name-%version-%release"/' \
     %{buildroot}%{_libexecdir}/mock/mock
 
 
-%pre filesystem -f sysusers_script
+%if %{with sysusers_compat}
+%pre filesystem
+# Some of these older distributions do not ship with the %%sysusers_*_compat.
+# Instead of another ifdef/else here, we prefer to hardcode the scriptlet
+# content here.
+getent group 'mock' >/dev/null || groupadd -f -g '135' -r 'mock' || :
+%endif
 
 
 %check
