@@ -54,6 +54,7 @@ distribution.
 | [Mageia](https://www.mageia.org/en/)                                           | `mageia-*`        | [@Conan-Kudo](https://github.com/Conan-Kudo)                          | [Issues](https://bugs.mageia.org/)  |
 | [openEuler](https://www.openeuler.org/en/)                                     | `openeuler-*`     | [@Yikun](https://github.com/Yikun)                                    | NA  |
 | [OpenMandriva](https://www.openmandriva.org/)                                  | `openmandriva-*`  | [berolinux](https://github.com/berolinux)                             | [Issues](https://github.com/OpenMandrivaAssociation/distribution/issues)  |
+| [OpenSuse](https://www.opensuse.org/)                                          | `opensuse-*`      | [@Conan-Kudo](https://github.com/Conan-Kudo), [@lkocman](https://github.com/lkocman) | [Issues](https://bugzilla.opensuse.org/)  |
 | [RHEL](https://www.redhat.com/en/technologies/linux-platforms/enterprise-linux)| `rhel-*`          | [@rpm-software-management](https://github.com/rpm-software-management)| [Issues](https://issues.redhat.com/projects/RHEL)  |
 | [Rocky Linux](https://rockylinux.org/)                                         | `rocky-*`         | [@nazunalika](https://github.com/nazunalika)                          | [Issues](https://bugs.rockylinux.org/)  |
 
