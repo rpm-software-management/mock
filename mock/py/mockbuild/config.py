@@ -107,7 +107,7 @@ def setup_default_config_opts():
 
     config_opts['use_buildroot_image'] = False
     config_opts['buildroot_image'] = None
-    config_opts['buildroot_image_skip_pull'] = True
+    config_opts['buildroot_image_skip_pull'] = False
     config_opts['buildroot_image_ready'] = False
     config_opts['buildroot_image_fallback'] = True
     config_opts['buildroot_image_keep_getting'] = 120
