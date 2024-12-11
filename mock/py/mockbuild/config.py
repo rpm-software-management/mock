@@ -16,6 +16,7 @@ import re
 import shlex
 import socket
 import sys
+import uuid
 import warnings
 
 from templated_dictionary import TemplatedDictionary
@@ -31,7 +32,7 @@ PLUGIN_LIST = ['tmpfs', 'root_cache', 'yum_cache', 'mount', 'bind_mount',
                'ccache', 'selinux', 'package_state', 'chroot_scan',
                'lvm_root', 'compress_logs', 'sign', 'pm_request',
                'hw_info', 'procenv', 'showrc', 'rpkg_preprocessor',
-               'rpmautospec', 'buildroot_lock']
+               'rpmautospec', 'buildroot_lock', 'oci_as_buildroot']
 
 def nspawn_supported():
     """Detect some situations where the systemd-nspawn chroot code won't work"""
@@ -103,6 +104,14 @@ def setup_default_config_opts():
     config_opts['bootstrap_image_fallback'] = True
     config_opts['bootstrap_image_keep_getting'] = 120
     config_opts['bootstrap_image_assert_digest'] = None
+
+    config_opts['use_buildroot_image'] = False
+    config_opts['buildroot_image'] = None
+    config_opts['buildroot_image_skip_pull'] = False
+    config_opts['buildroot_image_ready'] = False
+    config_opts['buildroot_image_fallback'] = True
+    config_opts['buildroot_image_keep_getting'] = 120
+    config_opts['buildroot_image_assert_digest'] = None
 
     config_opts['internal_dev_setup'] = True
 
@@ -234,6 +243,8 @@ def setup_default_config_opts():
                 'process-distgit',
             ]
         },
+        'oci_as_buildroot_enable': False,
+        'oci_as_buildroot_opts': {},
     }
 
     config_opts['environment'] = {
@@ -409,6 +420,7 @@ def setup_default_config_opts():
 
     config_opts["calculatedeps"] = None
     config_opts["hermetic_build"] = False
+    config_opts["mock_run_uuid"] = str(uuid.uuid4())
 
     return config_opts
 
@@ -672,6 +684,9 @@ def set_config_opts_per_cmdline(config_opts, options, args):
     if config_opts["calculatedeps"]:
         config_opts["plugin_conf"]["buildroot_lock_enable"] = True
 
+    if config_opts["buildroot_image"]:
+        config_opts["use_buildroot_image"] = True
+
 def check_config(config_opts):
     if 'root' not in config_opts:
         raise exception.ConfigError("Error in configuration "
@@ -773,16 +788,16 @@ def process_hermetic_build_config(cmdline_opts, config_opts):
             f"The {repo_reference} doesn't seem to be a valid "
             "offline RPM repository (RPM metadata not found)")
 
+    # Use the offline image for bootstrapping.
+    bootstrap_tarball = os.path.join(final_offline_repo, "bootstrap.tar")
+    config_opts["bootstrap_image"] = f"oci-archive:{bootstrap_tarball}"
+
     config_opts["offline_local_repository"] = final_offline_repo
 
     # We install all the packages at once (for now?).  We could inherit the
     # command from the previous "online" run, but it often employs a group
     # installation command - and we have no groups in the offline repo.
     config_opts["chroot_setup_cmd"] = "install *"
-
-    # The image needs to be prepared on host.  Build-systems implementing SLSA 3
-    # should make sure the config_opts["bootstrap_image"] is already downloaded.
-    config_opts["bootstrap_image_skip_pull"] = True
 
     # With hermetic builds, we always assert that we are reproducing the build
     # with the same image.

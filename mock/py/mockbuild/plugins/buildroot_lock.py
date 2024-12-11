@@ -7,7 +7,7 @@ https://github.com/rpm-software-management/dnf5/issues/833
 import json
 import os
 
-from mockbuild.podman import Podman
+from mockbuild.podman import Podman, PodmanError
 from mockbuild.installed_packages import query_packages, query_packages_location
 
 requires_api_version = "1.1"
@@ -101,9 +101,12 @@ class BuildrootLockfile:
                     # produce lockfiles even if these are useless for hermetic
                     # builds).
                     with self.buildroot.uid_manager.elevated_privileges():
-                        podman = Podman(self.buildroot,
-                                        data["config"]["bootstrap_image"])
-                        digest = podman.get_image_digest()
+                        try:
+                            podman = Podman(self.buildroot,
+                                            data["config"]["bootstrap_image"])
+                            digest = podman.get_image_digest()
+                        except PodmanError:
+                            digest = "unknown"
                     data["bootstrap"] = {
                         "image_digest": digest,
                     }

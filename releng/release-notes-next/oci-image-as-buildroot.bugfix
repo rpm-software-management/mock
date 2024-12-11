@@ -1,0 +1,2 @@
+New feature was added to a) generate an OCI image from Mock-generated buildroot,
+and b) for using such an image as a base buildroot for the next build.
