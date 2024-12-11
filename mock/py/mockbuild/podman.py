@@ -136,11 +136,11 @@ class Podman:
             raise BootstrapError(f"The manifest data of {self.image} "
                                   "are not json-formatted.") from exc
         if 'Config' not in data:
-            raise BootstrapError(f"Config section of {self.image} is missing.") 
+            raise BootstrapError(f"Config section of {self.image} is missing.")
         if 'RootFS' not in data:
-            raise BootstrapError(f"RootFS section of {self.image} is missing.") 
+            raise BootstrapError(f"RootFS section of {self.image} is missing.")
         if data['RootFS']['Type'] != 'layers':
-            raise BootstrapError(f"Unexpected format for RootFS in {self.image}.") 
+            raise BootstrapError(f"Unexpected format for RootFS in {self.image}.")
 
         # data which should be sufficient to confirm the image
         data = {
