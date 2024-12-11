@@ -37,6 +37,8 @@ class OCIAsBuildroot:
         chroot = self.buildroot.make_chroot_path()
         self.do(["buildah", "from", "--name", name, "scratch"])
         self.do(["buildah", "add", name, chroot, "/"])
+        self.do(["buildah", "run", name, "rm", "-rf",
+                 self.buildroot.config["chroothome"]])
         self.do(["buildah", "commit", "--format", "oci", name,
                  "oci-archive:" + tarball])
         self.do(["buildah", "rm", name])
