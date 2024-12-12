@@ -135,8 +135,6 @@ class Podman:
         except json.JSONDecodeError as exc:
             raise BootstrapError(f"The manifest data of {self.image} "
                                   "are not json-formatted.") from exc
-        if 'Config' not in data:
-            raise BootstrapError(f"Config section of {self.image} is missing.")
         if 'RootFS' not in data:
             raise BootstrapError(f"RootFS section of {self.image} is missing.")
         if data['RootFS']['Type'] != 'layers':
@@ -145,7 +143,7 @@ class Podman:
         # data which should be sufficient to confirm the image
         data = {
             'RootFS': data['RootFS'],
-            'Config': data['Config'],
+            'Config': data.get('Config'),
         }
         # convert to json string with ordered dicts and create hash
         data = json.dumps(data, sort_keys=True)
