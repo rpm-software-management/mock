@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 # vim: noai:ts=4:sw=4:expandtab
 
+import hashlib
+import json
 import os
 import logging
 import subprocess
@@ -114,21 +116,38 @@ class Podman:
             subprocess.run(cmd_umount, stdout=subprocess.PIPE,
                            stderr=subprocess.PIPE, check=True)
 
-    def get_image_digest(self):
+    def get_layers_digest(self):
         """
-        Get the "sha256:..." string for the image we work with.
+        Get sha256 digest of RootFS layers. This must be identical for
+        all images containing same order of layers, thus it can be used
+        as the check that we've loaded same image.
         """
-        check = [self.podman_binary, "image", "inspect", self.image,
-                 "--format", "{{ .Digest }}"]
+        check = [self.podman_binary, "image", "inspect", self.image]
         result = subprocess.run(check, stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE, check=False,
                                 encoding="utf8")
         if result.returncode:
             raise BootstrapError(f"Can't get {self.image} podman image digest: {result.stderr}")
         result = result.stdout.strip()
-        if len(result.splitlines()) != 1:
-            raise BootstrapError(f"The digest of {self.image} image is not a single-line string")
-        return result
+
+        try:
+            data = json.loads(result)
+        except json.JSONDecodeError as exc:
+            raise BootstrapError(f"The manifest data of {self.image} "
+                                  "are not json-formatted.") from exc
+        if 'RootFS' not in data:
+            raise BootstrapError(f"RootFS section of {self.image} is missing.")
+        if data['RootFS']['Type'] != 'layers':
+            raise BootstrapError(f"Unexpected format for RootFS in {self.image}.")
+
+        # data which should be sufficient to confirm the image
+        data = {
+            'RootFS': data['RootFS'],
+            'Config': data.get('Config'),
+        }
+        # convert to json string with ordered dicts and create hash
+        data = json.dumps(data, sort_keys=True)
+        return hashlib.sha256(data.encode()).hexdigest()
 
     @traceLog()
     def cp(self, destination, tar_cmd):

@@ -60,7 +60,7 @@ EXPECTED_OUTPUT = {
         }]
     },
     "bootstrap": {
-        "image_digest": "sha256:ba1067bef190fbe88f085bd019464a8c0803b7cd1e3f",
+        "image_layers_digest": "sha256:ba1067bef190fbe88f085bd019464a8c0803b7cd1e3f",
     },
     'config': {
         'bootstrap_image': 'foo',
@@ -99,7 +99,7 @@ def _call_method(plugins, buildroot):
     _, method = plugins.add_hook.call_args[0]
 
     podman_obj = MagicMock()
-    podman_obj.get_image_digest.return_value = EXPECTED_OUTPUT["bootstrap"]["image_digest"]
+    podman_obj.get_layers_digest.return_value = EXPECTED_OUTPUT["bootstrap"]["image_layers_digest"]
     podman_cls = MagicMock(return_value=podman_obj)
     with patch("mockbuild.plugins.buildroot_lock.Podman", side_effect=podman_cls):
         method()
