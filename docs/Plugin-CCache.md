@@ -9,9 +9,9 @@ Note: this plugin was enabled by default in mock-1.2.14 and older.
 
 ## Configuration
 
-The ccache plugin is enabled by default and has the following values built-in:
+The ccache plugin is disabled by default and has the following values built-in:
 
-    config_opts['plugin_conf']['ccache_enable'] = True
+    config_opts['plugin_conf']['ccache_enable'] = False
     config_opts['plugin_conf']['ccache_opts']['max_cache_size'] = '4G'
     config_opts['plugin_conf']['ccache_opts']['compress'] = None
     config_opts['plugin_conf']['ccache_opts']['dir'] = "%(cache_topdir)s/%(root)s/ccache/u%(chrootuid)s/"
