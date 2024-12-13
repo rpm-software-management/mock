@@ -154,16 +154,3 @@ helps you to setup a correct configuration layout.
         [EPEL 8]:
 
         Happy building!
-
-14. Do the post-release administrivia
-
-    - vim mock/mock.spec, and "bump" the version with post-release tag, e.g.
-      from `4.1` to `4.1.post1`.  This assures that any pre-release NVR built
-      from upstream git will be higher than the NVR from Fedora (typically,
-      Fedora bumps the Release `1 => 2` at some point, but we Version from git
-      is still higher).  Also, any subsequent PR that touches
-      `mock-core-configs` so that the package requires newer Mock version, you
-      may specify `Requires: mock >= 4.1.post1` and eventually bump to `post2`,
-      `post3`, etc.
-
-    - `git commit -m 'Post-release administrivia'` (review and push)
