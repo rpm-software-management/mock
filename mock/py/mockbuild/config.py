@@ -810,6 +810,10 @@ def process_hermetic_build_config(cmdline_opts, config_opts):
     # with the same image.
     config_opts["bootstrap_image_assert_digest"] = data["bootstrap"]["image_digest"]
 
+    # It doesn't make sense to fallback to `dnf install dnf --installroot ...`,
+    # we simply don't have DNF stack pre-downloaded in offline_local_repository.
+    config_opts["bootstrap_image_fallback"] = False
+
 
 @traceLog()
 def nice_root_alias_error(name, alias_name, arch, no_configs, log):
