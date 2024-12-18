@@ -39,7 +39,7 @@ def podman_check_native_image_architecture(image, logger=None, podman_binary=Non
         image_arch = _podman_query(image_check_cmd)
         if system_arch != image_arch:
             logger.error("Image architecture %s doesn't match system arch %s",
-                         system_arch, image_arch)
+                         image_arch, system_arch)
             return False
     except subprocess.SubprocessError as exc:
         logger.error("Subprocess failed: %s", exc)
