@@ -3,7 +3,7 @@
 %endif
 
 Name:       mock-core-configs
-Version:    41.4
+Version:    41.5
 Release:    1%{?dist}
 Summary:    Mock core config files basic chroots
 
@@ -149,6 +149,14 @@ fi
 %ghost %config(noreplace,missingok) %{_sysconfdir}/mock/default.cfg
 
 %changelog
+* Thu Dec 19 2024 Pavel Raiskup <praiskup@redhat.com> 41.5-1
+- Fedora 39 EOL
+- fix openSUSE-tumbleweed update failure during the second build (duli4868@gmail.com)
+- use non development bootstrap image for CentOS Stream 10 (romain.geissler@amadeus.com)
+- remove ELN ResilientStorage repos (yselkowi@redhat.com)
+- update ELN bootstrap image (yselkowi@redhat.com)
+- Add epel and epel-testing repos to the EPEL 10 config (carlwgeorge@gmail.com)
+
 * Mon Sep 30 2024 Pavel Raiskup <praiskup@redhat.com> 41.4-1
 - update ELN repos (yselkowi@redhat.com)
 

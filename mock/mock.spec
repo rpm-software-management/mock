@@ -18,7 +18,7 @@
 
 Summary: Builds packages inside chroots
 Name: mock
-Version: 5.9
+Version: 6.0
 Release: 1%{?dist}
 License: GPL-2.0-or-later
 # Source is created by
@@ -330,6 +330,24 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 %config(noreplace) %{_sysusersdir}/mock.conf
 
 %changelog
+* Thu Dec 19 2024 Pavel Raiskup <praiskup@redhat.com> 6.0-1
+- export_buildroot_image: new plugin for OCI image exports
+- buildroot_image: allow using OCI images as the base for buildroot
+- hermetic: do not install buildroot via DNF
+- podman: typofix in library call error-message
+- use new digest for comparing podman images (tkopecek@redhat.com)
+- hermetic: do "podman pull" instead of "podman load" for bootstrap
+- podman: always tag/untag the images we work with locally
+- podman: generalize the logic so it is not bootstrap-only
+- avoid using the %%pre scriptlet if possible
+- hermetic: retry on failed network requests (rbean@redhat.com)
+- hermetic: more robust retry mechanism for downloading rpms (tkopecek@redhat.com)
+- chroot_scan: bugfix - create chroot_scan/ correctly in buildroot.resultdir
+- mock: drop the unused create_default_route_in_container.sh script
+- mock: make --dnf-cmd compatible with DNF5 (frostyx@email.cz)
+- mock: add a real source URL into %%Source
+- the dnf_builddep_opts made working again (addisu@openrobotics.org)
+
 * Mon Sep 30 2024 Pavel Raiskup <praiskup@redhat.com> 5.9-1
 - fix the DNF4 fallback for --no-bootstrap-chroot
 

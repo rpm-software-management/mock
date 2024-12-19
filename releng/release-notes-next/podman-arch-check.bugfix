@@ -1,3 +1,0 @@
-The error message in podman_check_native_image_architecture() method has been
-fixed to correctly what is the expected (system) architecture, and what is the
-image architecture.
