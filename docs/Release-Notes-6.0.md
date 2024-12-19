@@ -39,10 +39,10 @@ title: Release Notes - Mock 6.0 (+ mock-core-configs v41.5)
 
 ### Bugfixes
 
-- The [chroot_scan plugin](Plugin-ChrootScan) [issue#1490][] has been fixed so it
+- The [chroot_scan plugin](Plugin-ChrootScan) has been fixed so it
   no longer (re)creates resultdir below the global `basedir`, but under the
   per-package resultdir (by default in a `/var/tmp/` sub-directory).  In turn, the
-  resultdir is no longer created with improper ownership.
+  resultdir is no longer created with improper ownership, [issue#1490][].
 
 - Make `--dnf-cmd` compatible with DNF5, fixes [issue#1400][].
 
@@ -109,3 +109,4 @@ Thank You!
 [issue#1490]: https://github.com/rpm-software-management/mock/issues/1490
 [issue#1522]: https://github.com/rpm-software-management/mock/issues/1522
 [issue#1400]: https://github.com/rpm-software-management/mock/issues/1400
+[issue#1496]: https://github.com/rpm-software-management/mock/issues/1496
