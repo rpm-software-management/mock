@@ -1,4 +1,0 @@
-The [chroot_scan plugin](Plugin-ChrootScan) [issue#1490][] has been fixed so it
-no longer (re)creates resultdir below the global `basedir`, but under the
-per-package resultdir (by default in a `/var/tmp/` sub-directory).  In turn, the
-resultdir is not created with improper ownership.

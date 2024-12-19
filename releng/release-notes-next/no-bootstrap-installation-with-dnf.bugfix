@@ -1,4 +1,0 @@
-The [hermetic mode](feature-hermetic-builds) no longer fallbacks to a manual
-bootstrap installation using the hosts's DNF stack; it doesn't make sense
-because we don't have the bootstrap packages pre-downloaded in the local
-"offline" repository.  Fixes [issue#1522][].
