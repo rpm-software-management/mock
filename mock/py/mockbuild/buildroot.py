@@ -943,7 +943,7 @@ class Buildroot(object):
             return
 
         multilib = ('x86_64', 's390x')
-        # ld_preload need to be same as in bootstrap because we call DNF in 
+        # ld_preload need to be same as in bootstrap because we call DNF in
         # bootstrap, but it will load nosync from the final chroot
         if self.bootstrap_buildroot is not None:
             self.tmpdir = self.bootstrap_buildroot.tmpdir
