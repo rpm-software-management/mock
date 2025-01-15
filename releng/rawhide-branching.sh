@@ -70,7 +70,7 @@ done
 
 
 config_spec=$topdir/mock-core-configs/mock-core-configs.spec
-sed -i "s/\(Version:[[:space:]]\+\).*/\1$version.0.post1/" "$config_spec"
+sed -i "s/\(Version:[[:space:]]\+\).*/\1$version.0/" "$config_spec"
 git add "$config_spec"
 
 echo "WARNING: Make sure Fedora Copr maintainers are informed that"
