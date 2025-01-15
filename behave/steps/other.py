@@ -41,12 +41,12 @@ def _first_int(string, max_lines=20):
 
 def add_cleanup_last_transaction(context):
     # DNF5 support https://github.com/rpm-software-management/dnf5/issues/140
-    dnf = ["sudo", "/usr/bin/dnf-3", "-y", "history"]
+    dnf = ["sudo", "/usr/bin/dnf", "history"]
     _, out, _ = run(dnf + ["list"])
     transaction_id = _first_int(out)
 
     def _revert_transaction(_context):
-        cmd = dnf + ["undo", transaction_id]
+        cmd = dnf + ["undo", transaction_id, "-y"]
         with no_output():
             assert_that(run(cmd)[0], equal_to(0))
 

@@ -1,17 +1,15 @@
-Feature: Mock 3.6+ should be able to work with DNF5
+Feature: Mock correctly works with DNF5
 
-    @dnf5
-    Scenario: Building in Rawhide with DNF5 but DNF4 on host
-        Given mock is always executed with "--config-opts package_manager=dnf5"
-        And the dnf5 package not installed on host
+    @dnf5 @no-bootstrap
+    Scenario: Building in Rawhide with DNF5, without bootstrap chroot
+        Given mock is always executed with "--no-bootstrap-chroot"
         And an unique mock namespace
         When an online source RPM is rebuilt
         Then the build succeeds
 
-    @dnf5
+    @dnf5 @no-bootstrap-image
     Scenario: Building in Rawhide with DNF5 with DNF5 on host
-        Given mock is always executed with "--config-opts package_manager=dnf5"
-        And the dnf5 package is installed on host
+        Given mock is always executed with "--no-bootstrap-image"
         And an unique mock namespace
         When an online source RPM is rebuilt
         Then the build succeeds
