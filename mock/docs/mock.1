@@ -314,8 +314,8 @@ Override configuration option. Can be used multiple times.
 When used multiple times for the same key, it will create an array (if you need
 to specify an array value with just a single item, e.g.
 \fIconfig_opts["foo"] = ["baz"]\fR, specify it as array of two items with the
-empty string as the first item, e.g.  \fI--config-opts=foo=
---config-opts=foo=baz\fR).
+empty string as the second item, e.g.  \fI--config-opts=foo=baz
+--config-opts=foo=\fR).
 
 This is evaluated after parsing configs, so command line options override
 previously defined options.
