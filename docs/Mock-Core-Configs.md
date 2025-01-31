@@ -41,7 +41,7 @@ distribution.
 
 | Distribution                                                                   | Chroots           | Maintainer                                                            | Distribution or repository issue tracker |
 | ------------------------------------------------------------------------------ | ----------------- | --------------------------------------------------------------------- | ------------- |
-| [AlmaLinux](https://almalinux.org/)                                            | `almalinux-*`     | [@Conan-Kudo](https://github.com/Conan-Kudo)                          | [Issues](https://bugs.almalinux.org/)  |
+| [AlmaLinux](https://almalinux.org/)                                            | `almalinux-*`     | [@Conan-Kudo](https://github.com/Conan-Kudo), [@javihernandez](https://github.com/javihernandez) | [Issues](https://bugs.almalinux.org/)  |
 | [Amazon Linux 2](https://aws.amazon.com/amazon-linux-2/)                       | `amazonlinux-2-*` | [@stewartsmith](https://github.com/stewartsmith)                      | NA  |
 | [Amazon Linux](https://aws.amazon.com/linux/amazon-linux-2023/)                | `amazonlinux-*`   | [@amazonlinux](https://github.com/amazonlinux)                        | [Issues](https://github.com/amazonlinux/amazon-linux-2023/issues)  |
 | [Anolis](https://openanolis.cn/)                                               | `anolis-*`        | NA                                                                    | [Issues](https://bugzilla.openanolis.cn/)  |
