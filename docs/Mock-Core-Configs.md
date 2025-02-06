@@ -45,6 +45,7 @@ distribution.
 | [Amazon Linux 2](https://aws.amazon.com/amazon-linux-2/)                       | `amazonlinux-2-*` | [@stewartsmith](https://github.com/stewartsmith)                      | NA  |
 | [Amazon Linux](https://aws.amazon.com/linux/amazon-linux-2023/)                | `amazonlinux-*`   | [@amazonlinux](https://github.com/amazonlinux)                        | [Issues](https://github.com/amazonlinux/amazon-linux-2023/issues)  |
 | [Anolis](https://openanolis.cn/)                                               | `anolis-*`        | NA                                                                    | [Issues](https://bugzilla.openanolis.cn/)  |
+| [Azure Linux](https://github.com/microsoft/azurelinux)                         | `azure-linux-*`   | [@scaronni](https://github.com/scaronni)                              | [Issues](https://github.com/microsoft/azurelinux/issues)  |
 | [CentOS Stream](https://www.centos.org/centos-stream/)                         | `centos-stream*`  | [@rpm-software-management](https://github.com/rpm-software-management)| [Issues](https://issues.redhat.com/projects/CS)  |
 | [CentOS Linux](https://www.centos.org/centos-linux/)                           | `centos*`         | [@rpm-software-management](https://github.com/rpm-software-management)| NA  |
 | [Circle Linux](https://cclinux.org/)                                           | `circlelinux-*`   | [@bella485](https://github.com/bella485)                              | [Issues](https://bugzilla.cclinux.org/)  |
