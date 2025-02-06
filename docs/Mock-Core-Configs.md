@@ -51,6 +51,7 @@ distribution.
 | [EuroLinux](https://en.euro-linux.com/)                                        | `eurolinux-*`     | [@nkadel](https://github.com/nkadel)                                  | [Issues](https://github.com/EuroLinux/eurolinux-distro-bugs-and-rfc)  |
 | [Fedora ELN](https://docs.fedoraproject.org/en-US/eln/)                        | `fedora-eln-*`    | [@fedora-eln](https://github.com/fedora-eln)                          | [Issues](https://github.com/fedora-eln/eln/issues)  |
 | [Fedora](https://fedoraproject.org/)                                           | `fedora-*`        | NA                                                                    | [Issues](https://bugzilla.redhat.com/)  |
+| [Kylin](https://kylinos.cn/)                                                   | `kylin-*`         | [@scaronni](https://github.com/scaronni)                              | NA  |
 | [Mageia](https://www.mageia.org/en/)                                           | `mageia-*`        | [@Conan-Kudo](https://github.com/Conan-Kudo)                          | [Issues](https://bugs.mageia.org/)  |
 | [openEuler](https://www.openeuler.org/en/)                                     | `openeuler-*`     | [@Yikun](https://github.com/Yikun)                                    | NA  |
 | [OpenMandriva](https://www.openmandriva.org/)                                  | `openmandriva-*`  | [berolinux](https://github.com/berolinux)                             | [Issues](https://github.com/OpenMandrivaAssociation/distribution/issues)  |
