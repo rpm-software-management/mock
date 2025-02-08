@@ -1,10 +1,10 @@
 config_opts['chroot_setup_cmd'] = 'install tar gcc-c++ openEuler-rpm-config openEuler-release which xz sed make bzip2 gzip gcc coreutils unzip diffutils cpio bash gawk rpm-build info patch util-linux findutils grep'
 config_opts['dist'] = 'oe2403'  # only useful for --resultdir variable subst
-config_opts['releasever'] = '24.03LTS'
+config_opts['releasever'] = '24.03LTS_SP1'
 config_opts['package_manager'] = 'dnf'
-config_opts['description'] = 'openEuler 24.03 LTS'
+config_opts['description'] = 'openEuler 24.03 LTS SP1'
 config_opts['extra_chroot_dirs'] = [ '/run/lock', ]
-config_opts['bootstrap_image'] = 'docker.io/openeuler/openeuler:24.03-lts'
+config_opts['bootstrap_image'] = 'docker.io/openeuler/openeuler:24.03-lts-sp1'
 
 config_opts['dnf.conf'] = """
 [main]
