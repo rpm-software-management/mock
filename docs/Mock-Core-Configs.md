@@ -44,7 +44,7 @@ distribution.
 | [AlmaLinux](https://almalinux.org/)                                            | `almalinux-*`     | [@Conan-Kudo](https://github.com/Conan-Kudo), [@javihernandez](https://github.com/javihernandez) | [Issues](https://bugs.almalinux.org/)  |
 | [Amazon Linux 2](https://aws.amazon.com/amazon-linux-2/)                       | `amazonlinux-2-*` | [@stewartsmith](https://github.com/stewartsmith)                      | NA  |
 | [Amazon Linux](https://aws.amazon.com/linux/amazon-linux-2023/)                | `amazonlinux-*`   | [@amazonlinux](https://github.com/amazonlinux)                        | [Issues](https://github.com/amazonlinux/amazon-linux-2023/issues)  |
-| [Anolis](https://openanolis.cn/)                                               | `anolis-*`        | NA                                                                    | [Issues](https://bugzilla.openanolis.cn/)  |
+| [Anolis](https://openanolis.cn/)                                               | `anolis-*`        | [@geliwei-ali](https://github.com/geliwei-ali)                        | [Issues](https://bugzilla.openanolis.cn/)  |
 | [Azure Linux](https://github.com/microsoft/azurelinux)                         | `azure-linux-*`   | [@scaronni](https://github.com/scaronni)                              | [Issues](https://github.com/microsoft/azurelinux/issues)  |
 | [CentOS Stream](https://www.centos.org/centos-stream/)                         | `centos-stream*`  | [Mock team][]                                                         | [Issues](https://issues.redhat.com/projects/CS)  |
 | [CentOS Linux](https://www.centos.org/centos-linux/)                           | `centos*`         | End-of-life.                                                          | End-of-life.  |
