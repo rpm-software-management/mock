@@ -79,7 +79,4 @@ baseurl=https://cdn.navylinux.org/navylinux/releases/$releasever/$basearch/sourc
 enabled=0
 gpgcheck=1
 gpgkey=file:///usr/share/distribution-gpg-keys/navy/RPM-GPG-KEY-navy-linux-official
-
 """
-
-
