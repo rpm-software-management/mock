@@ -12,6 +12,7 @@ This packages is typically installed with Mock by default (runtime dependency).
 Other projects can provide their own configuration files in other packages, we
 know of:
 
+* [mock-core-configs](https://github.com/rpm-software-management/mock/tree/main/mock-core-configs) (this project)
 * [mock-centos-sig-configs](https://pagure.io/centos-sig-hyperscale/mock-centos-sig-configs)
 * [RPM Fusion Mock conifgs](https://github.com/rpmfusion-infra/mock-rpmfusion)
 
