@@ -101,11 +101,18 @@ def _argparser():
     return parser
 
 
-def prepare_image(image_specification, outputdir):
+def prepare_image(image_specification, bootstrap_data, outputdir):
     """
     Store the tarball into the same directory where the RPMs are
     """
-    subprocess.check_output(["podman", "pull", image_specification])
+    pull_cmd = ["podman", "pull"]
+    if "pull_digest" in bootstrap_data:
+        image_specification +=  "@" + bootstrap_data["pull_digest"]
+    if "architecture" in bootstrap_data:
+        pull_cmd += ["--arch", bootstrap_data["architecture"]]
+    pull_cmd += [image_specification]
+    log.info("Pulling like: %s", ' '.join(pull_cmd))
+    subprocess.check_output(pull_cmd)
     subprocess.check_output(["podman", "save", "--format=oci-archive", "--quiet",
                              "-o", os.path.join(outputdir, "bootstrap.tar"),
                              image_specification])
@@ -136,7 +143,8 @@ def _main():
 
     subprocess.check_call(["createrepo_c", options.output_repo])
 
-    prepare_image(data["config"]["bootstrap_image"], options.output_repo)
+    prepare_image(data["config"]["bootstrap_image"], data["bootstrap"],
+                  options.output_repo)
 
 
 if __name__ == "__main__":

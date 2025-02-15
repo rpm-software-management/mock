@@ -33,6 +33,7 @@ installed together with the Mock RPM package:
 
     rpm -ql mock | grep schema
     /usr/share/doc/mock/buildroot-lock-schema-1.0.0.json
+    /usr/share/doc/mock/buildroot-lock-schema-1.1.0.json
 
 Currently, we do not provide a compatibility promise.  Only the exact same
 version of Mock that produced the file is guaranteed to read and process it.
