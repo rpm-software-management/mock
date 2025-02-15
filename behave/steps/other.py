@@ -245,7 +245,7 @@ def step_impl(context):
 
     schemafile = os.path.join(os.path.dirname(__file__), '..', '..',
                               "mock", "docs",
-                              "buildroot-lock-schema-1.0.0.json")
+                              "buildroot-lock-schema-1.1.0.json")
     with open(schemafile, "r", encoding="utf-8") as fd:
         schema = json.load(fd)
 

@@ -66,7 +66,7 @@ class BuildrootLockfile:
                     # the latest Mock implementing with Major == 1 can read any
                     # version from the 1.Y.Z range.  Mock implementing v2.Y.Z
                     # no longer reads v1.Y.Z variants.
-                    "version": "1.0.0",
+                    "version": "1.1.0",
                     "buildroot": {
                         "rpms": packages,
                     },
@@ -104,12 +104,10 @@ class BuildrootLockfile:
                         try:
                             podman = Podman(self.buildroot,
                                             data["config"]["bootstrap_image"])
-                            digest = podman.get_oci_digest()
+                            data["bootstrap"] = podman.inspect_hermetic_metadata()
+                            data["bootstrap"]["image_digest"] = podman.get_oci_digest()
                         except PodmanError:
-                            digest = "unknown"
-                    data["bootstrap"] = {
-                        "image_digest": digest,
-                    }
+                            data["bootstrap"] = {}
 
                 with open(out_file, "w", encoding="utf-8") as fdlist:
                     fdlist.write(json.dumps(data, indent=4, sort_keys=True) + "\n")

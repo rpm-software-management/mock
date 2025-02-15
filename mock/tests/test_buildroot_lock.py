@@ -2,6 +2,7 @@
 Test the methods that generate buildroot_lock.json
 """
 
+import copy
 import json
 import os
 import tempfile
@@ -32,7 +33,7 @@ https://cdn.redhat.com/content/dist/rhel9/9/x86_64/baseos/os/Packages/b/bash-5.1
 """
 
 EXPECTED_OUTPUT = {
-    'version': '1.0.0',
+    'version': '1.1.0',
     'buildroot': {
         'rpms': [{
             'arch': 'x86_64',
@@ -61,6 +62,9 @@ EXPECTED_OUTPUT = {
     },
     "bootstrap": {
         "image_digest": "sha256:ba1067bef190fbe88f085bd019464a8c0803b7cd1e3f",
+        "pull_digest": "sha256:1d9f0eaec60b59a669b285d1e775d970061b9694d4998b5bdb9626c9f33685cd",
+        "id": "b222730c2ba32385173fe3351026c316c9a294fa8d8c3c0f80d8afdb1b1aeef7",
+        "architecture": "amd64",
     },
     'config': {
         'bootstrap_image': 'foo',
@@ -70,6 +74,12 @@ EXPECTED_OUTPUT = {
         "dist": ".f42",
     },
 }
+
+
+def _exp_output_bootstrap(exp_data):
+    data = copy.deepcopy(exp_data["bootstrap"])
+    del data["image_digest"]
+    return data
 
 
 def _mock_vars(rpm_out, repoquery_out):
@@ -100,6 +110,7 @@ def _call_method(plugins, buildroot):
 
     podman_obj = MagicMock()
     podman_obj.get_oci_digest.return_value = EXPECTED_OUTPUT["bootstrap"]["image_digest"]
+    podman_obj.inspect_hermetic_metadata.return_value = _exp_output_bootstrap(EXPECTED_OUTPUT)
     podman_cls = MagicMock(return_value=podman_obj)
     with patch("mockbuild.plugins.buildroot_lock.Podman", side_effect=podman_cls):
         method()

@@ -230,11 +230,25 @@ class Podman:
         """
         cmd = ["podman", "image", "inspect", self.image, "--format",
                "{{ .Id }}"]
-        getLog().info("Removing image %s", self.image)
+        getLog().info("Reading image .ID from %s", self.image)
         res = subprocess.run(cmd, env=self.buildroot.env,
                              stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                              check=True)
         self.image_id = res.stdout.decode("utf-8").strip()
+
+
+    def inspect_hermetic_metadata(self):
+        """
+        Get the image metadata needed for the subsequent hermetic build.
+        """
+        get_query = '{"pull_digest": "{{ .Digest }}", "id": "{{.Id}}", "architecture": "{{ .Architecture }}"}'
+        getLog().info("Reading image %s from %s", get_query, self.image)
+        cmd = ["podman", "image", "inspect", "--format", get_query, self.image]
+        res = subprocess.run(cmd, env=self.buildroot.env,
+                             stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                             check=True)
+        return json.loads(res.stdout.decode("utf-8").strip())
+
 
     def __repr__(self):
         return "Podman({}({}))".format(self.image, self.image_id)
