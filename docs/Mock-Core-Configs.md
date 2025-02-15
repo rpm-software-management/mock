@@ -59,7 +59,7 @@ distribution.
 | [openEuler](https://www.openeuler.org/en/)                                     | `openeuler-*`     | [@Yikun](https://github.com/Yikun)                                    | NA  |
 | [OpenMandriva](https://www.openmandriva.org/)                                  | `openmandriva-*`  | [berolinux](https://github.com/berolinux)                             | [Issues](https://github.com/OpenMandrivaAssociation/distribution/issues)  |
 | [openSUSE](https://www.opensuse.org/)                                          | `opensuse-*`      | [@Conan-Kudo](https://github.com/Conan-Kudo), [@lkocman](https://github.com/lkocman) | [Issues](https://bugzilla.opensuse.org/)  |
-| [Oracle Linux](https://www.oracle.com/linux/)                                  | `oraclelinux-*`   | [@Mno-hime](https://github.com/Mno-hime)                              | [issues](https://github.com/oracle/oracle-linux/issues) |
+| [Oracle Linux](https://www.oracle.com/linux/)                                  | `oraclelinux-*`   | [@Mno-hime](https://github.com/Mno-hime), [sharewax](https://github.com/sharewax), [Djelibeybi](https://github.com/Djelibeybi) | [issues](https://github.com/oracle/oracle-linux/issues) |
 | [RHEL](https://www.redhat.com/en/technologies/linux-platforms/enterprise-linux)| `rhel-*`          | [Mock team][]                                                         | [Issues](https://issues.redhat.com/projects/RHEL)  |
 | [Rocky Linux](https://rockylinux.org/)                                         | `rocky-*`         | [@nazunalika](https://github.com/nazunalika)                          | [Issues](https://bugs.rockylinux.org/)  |
 
