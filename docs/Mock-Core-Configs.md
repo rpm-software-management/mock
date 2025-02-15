@@ -50,7 +50,7 @@ distribution.
 | [CentOS Stream](https://www.centos.org/centos-stream/)                         | `centos-stream*`  | [Mock team][]                                                         | [Issues](https://issues.redhat.com/projects/CS)  |
 | [CentOS Linux](https://www.centos.org/centos-linux/)                           | `centos*`         | End-of-life.                                                          | End-of-life.  |
 | [Circle Linux](https://cclinux.org/)                                           | `circlelinux-*`   | [@bella485](https://github.com/bella485)                              | [Issues](https://bugzilla.cclinux.org/)  |
-| [EuroLinux](https://en.euro-linux.com/)                                        | `eurolinux-*`     | [@nkadel](https://github.com/nkadel)                                  | [Issues](https://github.com/EuroLinux/eurolinux-distro-bugs-and-rfc)  |
+| [EuroLinux](https://en.euro-linux.com/)                                        | `eurolinux-*`     | End-of-life.                                                          | End-of-life.  |
 | [Fedora ELN](https://docs.fedoraproject.org/en-US/eln/)                        | `fedora-eln-*`    | [@fedora-eln](https://github.com/fedora-eln)                          | [Issues](https://github.com/fedora-eln/eln/issues)  |
 | [Fedora](https://fedoraproject.org/)                                           | `fedora-*`        | [Mock team][]                                                         | [Issues](https://github.com/rpm-software-management/mock/issues) |
 | [Kylin](https://kylinos.cn/)                                                   | `kylin-*`         | [@scaronni](https://github.com/scaronni)                              | NA  |
