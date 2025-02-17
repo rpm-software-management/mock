@@ -55,7 +55,7 @@ distribution.
 | [Fedora](https://fedoraproject.org/)                                           | `fedora-*`        | [Mock team][]                                                         | [Issues](https://github.com/rpm-software-management/mock/issues) |
 | [Kylin](https://kylinos.cn/)                                                   | `kylin-*`         | [@scaronni](https://github.com/scaronni)                              | NA  |
 | [Mageia](https://www.mageia.org/en/)                                           | `mageia-*`        | [@Conan-Kudo](https://github.com/Conan-Kudo)                          | [Issues](https://bugs.mageia.org/)  |
-| [Navy Linux](https://navylinux.org/)                                           | `navy-*`          | N/A                                                                   | N/A |
+| [Navy Linux](https://navylinux.org/)                                           | `navy-*`          | [@unixlabs](https://github.com/unixlabs)                              | [issues](https://github.com/navy-linux/issue-tracker/issues) |
 | [openEuler](https://www.openeuler.org/en/)                                     | `openeuler-*`     | [@Yikun](https://github.com/Yikun)                                    | NA  |
 | [OpenMandriva](https://www.openmandriva.org/)                                  | `openmandriva-*`  | [berolinux](https://github.com/berolinux)                             | [Issues](https://github.com/OpenMandrivaAssociation/distribution/issues)  |
 | [openSUSE](https://www.opensuse.org/)                                          | `opensuse-*`      | [@Conan-Kudo](https://github.com/Conan-Kudo), [@lkocman](https://github.com/lkocman) | [Issues](https://bugzilla.opensuse.org/)  |
