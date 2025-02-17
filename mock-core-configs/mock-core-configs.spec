@@ -22,7 +22,7 @@ BuildArch:  noarch
 Provides: mock-configs
 
 # distribution-gpg-keys contains GPG keys used by mock configs
-Requires:   distribution-gpg-keys >= 1.109
+Requires:   distribution-gpg-keys >= 1.110
 # specify minimal compatible version of mock
 Requires:   mock >= 5.4.post1
 Requires:   mock-filesystem
@@ -149,6 +149,9 @@ fi
 %ghost %config(noreplace,missingok) %{_sysconfdir}/mock/default.cfg
 
 %changelog
+* Mon Feb 17 2025 Adil Hussain <adil@linux.com> 42.1-1
+- configs: update distribution-gpg-keys v1.110
+  
 * Thu Jan 16 2025 Pavel Raiskup <praiskup@redhat.com> 42.1-1
 - branch fedora-42 configs, move rawhide to releasever=43
 
