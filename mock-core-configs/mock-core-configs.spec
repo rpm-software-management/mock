@@ -119,6 +119,10 @@ almalinux)
   # AlmaLinux configs look like 'alma+epel'
   distro_id=alma
   ;;
+ol)
+  # Oracle Linux uses 'oraclelinux' as the file prefix
+  distro_id=oraclelinux
+  ;;
 esac
 cfg=$distro_id+epel-$ver-$mock_arch.cfg
 %endif
@@ -689,5 +693,3 @@ fi
 
 * Thu Sep 07 2017 Miroslav Suchý <msuchy@redhat.com> 27.1-1
 - Split from Mock package.
-
-
