@@ -38,8 +38,11 @@ for i in $configs; do
     # Keep building the SIMPLESRPM
     # - oraclelinux+epel can't work with mock.spec, as %rhel is not defined
     # - fedora-eln doesn't provide all the EPEL packages needed by mock.spec
+    # - navy doesn't provide all the needed packages:
+    #   https://github.com/rpm-software-management/mock/pull/1550
     oraclelinux+epel-7*) ;;
     fedora-eln*) ;;
+    navy-*) ;;
     # For EPEL/Fedora try to build Mock.
     fedora*|*+epel*-8*)
         # we support building mock there, so test it instead
