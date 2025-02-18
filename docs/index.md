@@ -39,6 +39,7 @@ Mock is capable of building SRPMs from source configuration management if the `m
 
 ## Content
 
+* [Why Mock?](Why-Mock)
 * [Status](#status)
 * [Release Notes](#release-notes)
 * [Tarballs](#tarballs)
