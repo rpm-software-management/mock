@@ -1030,8 +1030,8 @@ class Buildroot(object):
 
         basename = os.path.basename(filename)
         if basename in self._homedir_bindmounts:
-            raise BadCmdline("File '{0}' can not be bind-mounted to "
-                             "bootstrap chroot twice".format(basename))
+            raise BadCmdline(f"File '{basename}' can not be bind-mounted to "
+                             "bootstrap chroot twice")
         self._homedir_bindmounts[basename] = 1
 
         host_filename = os.path.abspath(filename)
