@@ -125,7 +125,10 @@ class Buildroot(object):
         self.logging_initialized = False
         self.chroot_was_initialized = False
 
-        additional_packages = config["additional_packages"] or []
+        self._homedir_bindmounts = {}
+        additional_packages = [self.wrap_host_file(f) for f in
+                               config["additional_packages"] or []]
+
         if is_bootstrap:
             self.preexisting_deps = []
         else:
@@ -136,7 +139,6 @@ class Buildroot(object):
         self.nosync_path = None
         self.final_rpm_list = None
 
-        self._homedir_bindmounts = {}
         self._setup_nspawn_btrfs_device()
         self._setup_nspawn_devicemapper_device()
         self._setup_nspawn_fuse_device()
@@ -1007,10 +1009,10 @@ class Buildroot(object):
                 self._unlock_buildroot()
 
     @traceLog()
-    def file_on_cmdline(self, filename):
+    def wrap_host_file(self, filename):
         """
         If the bootstrap chroot feature is enabled, and the FILENAME represents
-        a filename (file exists on host), bind-mount it into the bootstrap
+        a filename that exists on host, bind-mount it into the bootstrap
         chroot automatically and return its modified filename (relatively to
         bootstrap chroot).  But on some places, we still need to access the
         host's file so we use BindMountedFile() wrapper.

@@ -852,7 +852,7 @@ def main():
 
     # postprocess option arguments for bootstrap
     if options.mode in ['installdeps', 'install']:
-        args = [buildroot.file_on_cmdline(arg) for arg in args]
+        args = [buildroot.wrap_host_file(arg) for arg in args]
 
     log.info("Signal handler active")
     commands = Commands(config_opts, uidManager, plugins, state, buildroot, bootstrap_buildroot)
