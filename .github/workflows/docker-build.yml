@@ -1,0 +1,26 @@
+name: dockertest
+on:
+  push:
+  pull_request:
+
+jobs:
+  dockertest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Checkout mock
+        uses: actions/checkout@v4
+        with:
+          path: mock
+          fetch-depth: 0
+      - name: Build new image with mock in it and Load it into Docker for testing
+        uses: docker/build-push-action@v6
+        with:
+          tags: mockenv:latest
+          file: mock/.github/workflows/Dockerfile
+          context: .
+          pull: true
+          push: false
+          load: true
+      - run: docker run --privileged --cap-add=SYS_ADMIN -t --rm mockenv:latest sh -c "mock --shell echo hello world"
