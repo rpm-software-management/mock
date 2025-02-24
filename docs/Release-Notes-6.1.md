@@ -40,6 +40,16 @@ title: Release Notes - Mock 6.1
   Move openSUSE Leap 15.5 configurations to eol (since 31st December 2024) [issue#1516][] 
 - Expand Oracle Linux distro_id from `ol` to `oraclelinux` when looking for configuration files [issue#1545]
 
+#### The following contributors have contributed to this release:
+                                                                                                                                                                                             
+- Evan Goode
+- cheese1
+- Pavel Raiskup
+
+Thank You!
+
+
+
 [issue#1516]: https://github.com/rpm-software-management/mock/issues/1516
 [issue#1545]: https://github.com/rpm-software-management/mock/issues/1545
 [issue#1537]: https://github.com/rpm-software-management/mock/issues/1537
