@@ -1,3 +1,0 @@
-Prevoius versions of Mock did not install local RPMs (specified as filenames)
-via --additional-package when bootstrap was enabled (default).  This bug has
-been fixed.  [issue#1532][].
