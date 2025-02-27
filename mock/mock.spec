@@ -18,7 +18,7 @@
 
 Summary: Builds packages inside chroots
 Name: mock
-Version: 6.0
+Version: 6.1
 Release: 1%{?dist}
 License: GPL-2.0-or-later
 # Source is created by
@@ -330,6 +330,14 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 %config(noreplace) %{_sysusersdir}/mock.conf
 
 %changelog
+* Thu Feb 27 2025 Miroslav Suchý <msuchy@redhat.com> 6.1-1
+- bootstrap: automatically bind-mount local --additional-package
+  (praiskup@redhat.com)
+- tests: do not try to build mock.src.rpm against navy-* (praiskup@redhat.com)
+- hermetic: more image-pedantic work with bootstrap (praiskup@redhat.com)
+- doc: --config-opts single-item array wants second to be blank
+  (mail@evangoo.de)
+
 * Thu Dec 19 2024 Pavel Raiskup <praiskup@redhat.com> 6.0-1
 - export_buildroot_image: new plugin for OCI image exports
 - buildroot_image: allow using OCI images as the base for buildroot
