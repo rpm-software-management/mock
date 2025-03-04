@@ -4,7 +4,7 @@ config_opts['extra_chroot_dirs'] = [ '/run/lock', ]
 config_opts['releasever'] = '15.6'
 config_opts['macros']['%dist'] = '.suse.lp156'
 config_opts['package_manager'] = 'dnf'
-config_opts['bootstrap_image'] = 'registry.opensuse.org/opensuse/leap-dnf:15.5'
+config_opts['bootstrap_image'] = 'registry.opensuse.org/opensuse/leap-dnf:{{ releasever }}'
 config_opts['ssl_ca_bundle_path'] = '/var/lib/ca-certificates/ca-bundle.pem'
 config_opts['description'] = 'openSUSE Leap {{ releasever }}'
 
