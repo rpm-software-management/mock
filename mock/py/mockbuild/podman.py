@@ -91,6 +91,13 @@ def podman_check_native_image_architecture(image, logger=None, podman_binary=Non
     return True
 
 
+def pull_fail_handler(details):
+    """
+    Raise an error when image pull fails, because lambdas can't raise.
+    """
+    raise PodmanError("Image pull failed")
+
+
 class Podman:
     """ interacts with podman to create build chroot """
 
@@ -134,6 +141,8 @@ class Podman:
         """
         Tag the pulled image as mock-{uuid}, or mock-bootstrap-{uuid}.
         """
+        if not self.image_id:
+            raise PodmanError("No image to tag. Image pull failed or was not attempted")
         cmd = ["podman", "tag", self.image_id, self._tagged_id]
         getLog().info("Tagging container image as %s", self._tagged_id)
         subprocess.run(cmd, env=self.buildroot.env, stdout=subprocess.PIPE,
@@ -142,7 +151,8 @@ class Podman:
     def retry_image_pull(self, max_time):
         """ Try pulling the image multiple times """
         @backoff.on_predicate(backoff.expo, lambda x: not x,
-                              max_time=max_time, jitter=backoff.full_jitter)
+                              max_time=max_time, jitter=backoff.full_jitter,
+                              on_giveup=pull_fail_handler)
         def _keep_trying():
             return self.pull_image()
         _keep_trying()
