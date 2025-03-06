@@ -46,6 +46,16 @@ title: Release Notes - Mock 6.1
 - cheese1
 - Pavel Raiskup
 
+and to release of configs:
+
+- Adil Hussain
+- Avi Miller
+- Li Chaoran
+- Miroslav Suchý
+- Neal Gompa
+- Pavel Raiskup
+- Simone Caronni
+
 Thank You!
 
 
