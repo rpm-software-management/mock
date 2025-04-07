@@ -1,4 +1,4 @@
-config_opts['chroot_setup_cmd'] = 'install bash binutils bzip2 coreutils cpio diffutils dnf findutils gawk glibc-devel grep gzip kernel-headers patch redhat-rpm-config rpm-build sed tar unzip util-linux which xz'
+config_opts['chroot_setup_cmd'] = 'install bash binutils bzip2 coreutils cpio diffutils dnf findutils gawk glibc-devel grep gzip kernel-headers patch redhat-rpm-config rpm-build sed shadow-utils tar unzip util-linux which xz'
 config_opts['dist'] = 'cm2'
 config_opts['releasever'] = '2.0'
 config_opts['package_manager'] = 'dnf'
