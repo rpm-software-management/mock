@@ -136,6 +136,11 @@ def setup_default_config_opts():
 
     config_opts['ssl_ca_bundle_path'] = None
 
+    config_opts['ssl_copied_ca_trust_dirs'] = [
+        ('/etc/pki/ca-trust', '/etc/pki/ca-trust'),
+        ('/usr/share/pki/ca-trust-source', '/usr/share/pki/ca-trust-source')
+    ]
+
     config_opts['ssl_extra_certs'] = None
 
     # (global) plugins and plugin configs.

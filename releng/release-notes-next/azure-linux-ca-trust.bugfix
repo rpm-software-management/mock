@@ -1,0 +1,5 @@
+Disables copying /etc/pki/ca-trust and /usr/share/pki/ca-trust-source on
+Azure Linux 3.0 via a new config options ('ssl_copied_ca_trust_dirs').
+This avoids file ownership conflicts with a symlink installed by the
+ca-certificates-shared packages on that distro. Behavior should be unchanged
+for other configurations.

@@ -5,6 +5,11 @@ config_opts['releasever'] = '3.0'
 config_opts['package_manager'] = 'dnf'
 config_opts['extra_chroot_dirs'] = [ '/run/lock', ]
 
+# Disable copying ca-trust dirs on Azure Linux 3.0 to avoid any symlinks under the host's
+# ca-trust dirs from turning into non-symlink'd dirs in the root and later conflicting
+# with the symlink installed by the 'ca-certificates-shared' package.
+config_opts['ssl_copied_ca_trust_dirs'] = None
+
 # https://mcr.microsoft.com/en-us/product/azurelinux/base/core/tags:
 # config_opts['bootstrap_image'] = 'mcr.microsoft.com/azurelinux/base/core:3.0'
 # Container image contains tdnf (https://github.com/vmware/tdnf) as the base package manager so it can't be used:
