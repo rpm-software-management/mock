@@ -77,7 +77,7 @@ environment, of course).
 Challenges
 ----------
 
-You’ve probably noticed that what used to be a simple command—like
+You've probably noticed that what used to be a simple command—like
 `mock -r "$chroot" "$srpm"`—has now become a more complicated set of commands.
 This complexity arises because the *buildroot* in Mock is always prepared by
 installing a set of RPMs (Mock calls DNF, DNF calls RPM, ...), which normally
@@ -99,7 +99,7 @@ connection!
 
 All of this is further complicated by the goal of making the *buildroot* as
 *minimal* as possible—the fewer packages installed, the better.  We can’t even
-afford to install DNF into the buildroot, and as you’ve probably realized, we
+afford to install DNF into the buildroot, and as you've probably realized, we
 definitely don’t want to blindly install all available RPMs.
 
 
@@ -131,7 +131,7 @@ that Mock performs.
    components from the internet and places them into a single local
    directory—let's call it an *offline repository*.
 
-   **Note:** This step doesn’t necessarily have to be done by the Mock project
+   **Note:** This step doesn't necessarily have to be done by the Mock project
    itself.  The *lockfile* is concise enough for further processing and
    validation (e.g., ensuring the set of RPMs and the buildroot image come from
    trusted sources) and could be parsed by build-system-specific tools like

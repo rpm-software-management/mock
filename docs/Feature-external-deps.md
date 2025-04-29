@@ -8,9 +8,9 @@ It can happen that you need some library that is not packaged. PyPI has ten time
 
 External dependencies allow you to install a package using the native package manager. I.e. not dnf or rpm, but rather using `pip`, `gem`, etc.
 
-Right now it is possible to do that only for BuildRequires. Run-time requires will need more co-operation with DNF and rpm.
+Right now it is possible to do that only for `BuildRequires`. Run-time `Requires` will need more co-operation with DNF and rpm.
 
-This feature is by default disabled. It can be enabled using:
+This feature is disabled by default. It can be enabled using:
 
 ```
 config_opts['external_buildrequires'] = True

@@ -31,7 +31,7 @@ $ mock -r rhel-9-x86_64 --shell
 
 Optionally, you can disable the subscription-manager dnf plugin if you do not need subscription repos directly on your machine.
 
-```
+```sh
 $ sudo subscription-manager config --rhsm.auto_enable_yum_plugins 0
 $ sudo sed -e '/^enabled=/ s/1/0/' -i /etc/dnf/plugins/subscription-manager.conf
 ```

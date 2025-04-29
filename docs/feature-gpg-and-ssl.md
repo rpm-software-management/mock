@@ -6,16 +6,17 @@ title: GPG keys and SSL certificates
 ## GPG Keys
 
 When you want to verify GPG keys during installation in build root you can use something like in the config:
-
-    config_opts['dnf.conf'] = """
-    ... SNIP
-    [appstream]
-    name=CentOS Stream $releasever - AppStream
-    metalink=https://mirrors.centos.org/metalink?repo=centos-appstream-$releasever-stream&arch=$basearch
-    gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
-    gpgcheck=1
-    ... SNIP
-    """
+```python
+config_opts['dnf.conf'] = """
+... SNIP
+[appstream]
+name=CentOS Stream $releasever - AppStream
+metalink=https://mirrors.centos.org/metalink?repo=centos-appstream-$releasever-stream&arch=$basearch
+gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
+gpgcheck=1
+... SNIP
+"""
+```
 
 The path in `gpgkey` refers to the path in a buildchroot. How do you get your GPG key to buildchroot? There are several ways:
 

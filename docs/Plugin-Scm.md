@@ -11,28 +11,29 @@ This module does not use the plugin infrastructure of Mock, it is provided as a 
 
 In your config file insert the following lines:
 
-
-    config_opts['scm'] = True
-    config_opts['scm_opts']['method'] = 'git'
-    config_opts['scm_opts']['cvs_get'] = 'cvs -d /srv/cvs co SCM_BRN SCM_PKG'
-    config_opts['scm_opts']['git_get'] = 'git clone --depth 1 SCM_BRN git://localhost/SCM_PKG.git SCM_PKG'
-    config_opts['scm_opts']['svn_get'] = 'svn co file:///srv/svn/SCM_PKG/SCM_BRN SCM_PKG'
-    config_opts['scm_opts']['distgit_get'] = 'rpkg clone -a --branch SCM_BRN SCM_PKG SCM_PKG'
-    config_opts['scm_opts']['distgit_src_get'] = 'rpkg sources'
-    config_opts['scm_opts']['spec'] = 'SCM_PKG.spec'
-    config_opts['scm_opts']['int_src_dir'] = None
-    config_opts['scm_opts']['ext_src_dir'] = '/dev/null'
-    config_opts['scm_opts']['write_tar'] = True
-    config_opts['scm_opts']['git_timestamps'] = True
-    config_opts['scm_opts']['exclude_vcs'] = True
-    config_opts['scm_opts']['package'] = 'mypkg'
-    config_opts['scm_opts']['branch'] = 'master'
+```python
+config_opts['scm'] = True
+config_opts['scm_opts']['method'] = 'git'
+config_opts['scm_opts']['cvs_get'] = 'cvs -d /srv/cvs co SCM_BRN SCM_PKG'
+config_opts['scm_opts']['git_get'] = 'git clone --depth 1 SCM_BRN git://localhost/SCM_PKG.git SCM_PKG'
+config_opts['scm_opts']['svn_get'] = 'svn co file:///srv/svn/SCM_PKG/SCM_BRN SCM_PKG'
+config_opts['scm_opts']['distgit_get'] = 'rpkg clone -a --branch SCM_BRN SCM_PKG SCM_PKG'
+config_opts['scm_opts']['distgit_src_get'] = 'rpkg sources'
+config_opts['scm_opts']['spec'] = 'SCM_PKG.spec'
+config_opts['scm_opts']['int_src_dir'] = None
+config_opts['scm_opts']['ext_src_dir'] = '/dev/null'
+config_opts['scm_opts']['write_tar'] = True
+config_opts['scm_opts']['git_timestamps'] = True
+config_opts['scm_opts']['exclude_vcs'] = True
+config_opts['scm_opts']['package'] = 'mypkg'
+config_opts['scm_opts']['branch'] = 'master'
+```
 
 While you can specify this in configuration file, this is less flexible and you may rather use command line options. E.g. `config_opts['scm_opts']['method'] = 'git'` is the same as `--scm-option method=git` or `config_opts['scm_opts']['branch'] = 'master'` is the same as `--scm-option branch=master`.
 
 ## Tar file
 
-When either `write_tar` is set to True or /var/lib/mock/<chroot>/root/builddir/build/SOURCES/ contains `.write_tar`. Mock will create tar file from whole SVN repo. This is what you probably want to. Otherwise you have to manually create the tar file and put it there yourself before you run mock command.
+When either `write_tar` is set to `True` or `/var/lib/mock/<chroot>/root/builddir/build/SOURCES/` contains `.write_tar`. Mock will create tar file from whole SVN repo. This is what you probably want to. Otherwise you have to manually create the tar file and put it there yourself before you run mock command.
 
 Extension and compression method is chosen automatically according your Source line in spec file. Therefore if there is:
 
@@ -64,7 +65,7 @@ Since version 1.3.4, there is support for [dist-git](https://github.com/release-
 ## Example
 
 In this example, mock will clone `master` branch of `github.com/xsuchy/rpmconf.git` and use `./rpmconf.spec` in that directory to build rpm package:
-
+```sh
     mock -r fedora-22-x86_64 \
          --scm-enable \
          --scm-option method=git \
@@ -73,6 +74,7 @@ In this example, mock will clone `master` branch of `github.com/xsuchy/rpmconf.g
          --scm-option branch=master \
          --scm-option write_tar=True \
          --scm-option git_get='git clone https://github.com/xsuchy/rpmconf.git'
+```
 
 Or you can:
 
@@ -80,14 +82,15 @@ Or you can:
     vi ./my-config.cfg
 
 put there those lines:
-
-    config_opts['scm'] = True
-    config_opts['scm_opts']['method'] = 'git'
-    config_opts['scm_opts']['git_get'] = 'git clone https://github.com/xsuchy/rpmconf.git'
-    config_opts['scm_opts']['spec'] = 'rpmconf.spec'
-    config_opts['scm_opts']['write_tar'] = True
-    config_opts['scm_opts']['package'] = 'rpmconf'
-    config_opts['scm_opts']['branch'] = 'master'
+```python
+config_opts['scm'] = True
+config_opts['scm_opts']['method'] = 'git'
+config_opts['scm_opts']['git_get'] = 'git clone https://github.com/xsuchy/rpmconf.git'
+config_opts['scm_opts']['spec'] = 'rpmconf.spec'
+config_opts['scm_opts']['write_tar'] = True
+config_opts['scm_opts']['package'] = 'rpmconf'
+config_opts['scm_opts']['branch'] = 'master'
+```
 
 and then just call
 

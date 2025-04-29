@@ -10,18 +10,21 @@ Note: this plugin was enabled by default in mock-1.2.14 and older.
 ## Configuration
 
 The ccache plugin is disabled by default and has the following values built-in:
-
-    config_opts['plugin_conf']['ccache_enable'] = False
-    config_opts['plugin_conf']['ccache_opts']['max_cache_size'] = '4G'
-    config_opts['plugin_conf']['ccache_opts']['compress'] = None
-    config_opts['plugin_conf']['ccache_opts']['dir'] = "%(cache_topdir)s/%(root)s/ccache/u%(chrootuid)s/"
-    config_opts['plugin_conf']['ccache_opts']['hashdir'] = True
-    config_opts['plugin_conf']['ccache_opts']['debug'] = False
-    config_opts['plugin_conf']['ccache_opts']['show_stats'] = False
+```python
+config_opts['plugin_conf']['ccache_enable'] = False
+config_opts['plugin_conf']['ccache_opts']['max_cache_size'] = '4G'
+config_opts['plugin_conf']['ccache_opts']['compress'] = None
+config_opts['plugin_conf']['ccache_opts']['dir'] = "%(cache_topdir)s/%(root)s/ccache/u%(chrootuid)s/"
+config_opts['plugin_conf']['ccache_opts']['hashdir'] = True
+config_opts['plugin_conf']['ccache_opts']['debug'] = False
+config_opts['plugin_conf']['ccache_opts']['show_stats'] = False
+```
 
 To turn on ccache compression, use the following in a config file:
 
-    config_opts['plugin_conf']['ccache_opts']['compress'] = 'on'
+```python
+config_opts['plugin_conf']['ccache_opts']['compress'] = 'on'
+```
 
 The value specified is not important, this just triggers the setting of the CCACHE_COMPRESS environment variable, which is what the ccache program uses to determine if compression of cache elements is desired.
 

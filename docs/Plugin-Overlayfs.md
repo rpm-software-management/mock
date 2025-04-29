@@ -6,24 +6,25 @@ title: Plugin OverlayFS
 This plugin implements mock's snapshot functionality using overlayfs. From a user perspective, it works similar to LVM plugin, but unlike LVM plugin, it only needs a directory (not a volume group) for its data (snapshots). Plugin has no additional dependencies, it only requires a kernel with overlayfs support, but this is the case for both current Fedora and RHEL-7.
 
 ## Configuration
-U can enable overlayfs plugin by adding this line to your configuration:
-
-    config_opts['plugin_conf']['overlayfs_enable'] = True
+You can enable overlayfs plugin by adding this line to your configuration:
+```python
+config_opts['plugin_conf']['overlayfs_enable'] = True
+```
 
 It is recommended to disable root_cache plugin when overlayfs plugin is enabled. (Plugin does implicit snapshot named "postinit" after init phase similarly to LVM plugin, which makes root cache pointless)
-
-    config_opts['plugin_conf']['root_cache_enable'] = False
-
+```python
+config_opts['plugin_conf']['root_cache_enable'] = False
+```
 Base directory sets directory, where places all its data (snapshots etc.) are placed. Multiple configurations can share base directory (every configuration will have its own directory there).
-
-    config_opts['plugin_conf']['overlayfs_opts']['base_dir'] = "/some/directory"
-
+```python
+config_opts['plugin_conf']['overlayfs_opts']['base_dir'] = "/some/directory"
+```
 
 Enabling touch_rpmd option causes the plugin to implicitly "touch" rpm database files after each mount overcoming issue with rpm/mock, caused by limitations of overlayfs. Option may be useful only when running yum/rpm directly. However, it is not necessary when using package-manager related mock commands (e.g., mock --install). For more details see the section: Limitations of overlayfs (lower).
 Default: false
-
-    config_opts['plugin_conf']['overlayfs_opts']['touch_rpmdb'] = True
-
+```python
+config_opts['plugin_conf']['overlayfs_opts']['touch_rpmdb'] = True
+```
 
 ## Usage
 As said earlier, plugins allow you to use mock's snapshot functionality. Snapshots hold the state of (current config's) root fs, which can be recovered later.
@@ -48,7 +49,7 @@ To remove all plugin's data associated with configuration (and therefore snapsho
 
     mock --scrub overlayfs
 
-alternatively, you can remove everything from current configuration:
+Alternatively, you can remove everything from current configuration:
 
     mock --scrub all
 

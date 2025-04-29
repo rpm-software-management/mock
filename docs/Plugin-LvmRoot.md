@@ -3,7 +3,7 @@ layout: default
 title: Plugin LVM Root
 ---
 
-Mock can use LVM as a backend for caching buildroots which is a bit faster than using root_cache and enables efficient snapshotting (copy-on-write). This feature is intended to be used by people who maintain a lot packages and find themselves waiting for mock to install the same set of BuildRequires over and over again.
+Mock can use LVM as a backend for caching buildroots which is a bit faster than using root_cache and enables efficient snapshotting (copy-on-write). This feature is intended to be used by people who maintain a lot packages and find themselves waiting for mock to install the same set of `BuildRequires` over and over again.
 Mock uses LVM thin provisioning which means that one logical volume (called
 thinpool) can hold all thin logical volumes and snapshots used by all
 buildroots (you have to set it like that in the config) without each of them
@@ -58,6 +58,7 @@ You need to specify a volume group which mock will use to create it's thinpool. 
 
 ## Configuration
 
+```python
     config_opts['plugin_conf']['root_cache_enable'] = False
     config_opts['plugin_conf']['lvm_root_enable'] = True
     config_opts['plugin_conf']['lvm_root_opts'] = {
@@ -66,7 +67,7 @@ You need to specify a volume group which mock will use to create it's thinpool. 
         'pool_name': 'mock',
         'check_size': True,
     }
-
+```
 Explanation: You need to disable root_cache - having two caches with the same contents would just slow you down. You need to specify a size for the thinpool. It can be shared across all mock buildroots so make sure it's big enough. Ideally there will be just one thinpool. Then specify name for the thinpool - all configs which have the same pool_name will share the thinpool, thus being more space-efficient. Make sure the name doesn't clash with existing volumes in your system (you can list existing volumes with lvs command).
 
 Every run, the plugin write usage of data pool and metadata pool.

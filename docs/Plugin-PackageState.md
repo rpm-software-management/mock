@@ -19,7 +19,8 @@ The Package_state plugin is enabled by default.
     config_opts['plugin_conf']['package_state_enable'] = True
 
 The following sub-options may be turned off/on:
-
-    config_opts['plugin_conf']['package_state_opts'] = {}
-    config_opts['plugin_conf']['package_state_opts']['available_pkgs'] = False
-    config_opts['plugin_conf']['package_state_opts']['installed_pkgs'] = True
+```python
+config_opts['plugin_conf']['package_state_opts'] = {}
+config_opts['plugin_conf']['package_state_opts']['available_pkgs'] = False
+config_opts['plugin_conf']['package_state_opts']['installed_pkgs'] = True
+```
