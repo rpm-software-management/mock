@@ -12,9 +12,10 @@ It calls `procenv` command and stores its output.
 ## Configuration
 
 You can enable the plugin using this settings:
-
-    config_opts['plugin_conf']['procenv_enable'] = True
-    config_opts['plugin_conf']['procenv_opts'] = {}
+```python
+config_opts['plugin_conf']['procenv_enable'] = True
+config_opts['plugin_conf']['procenv_opts'] = {}
+```
 
 Available since version 1.4.18.
 

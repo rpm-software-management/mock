@@ -12,12 +12,13 @@ You can explicitly clean the package manager caches by `--scrub=dnf-cache` optio
 ## Configuration
 
 This plugin is **enabled by default** and has the following values built-in:
-
-    config_opts['plugin_conf']['yum_cache_enable'] = True
-    config_opts['plugin_conf']['yum_cache_opts'] = {}
-    config_opts['plugin_conf']['yum_cache_opts']['max_age_days'] = 30
-    config_opts['plugin_conf']['yum_cache_opts']['max_metadata_age_days'] = 30
-    config_opts['plugin_conf']['yum_cache_opts']['online'] = True
+```python
+config_opts['plugin_conf']['yum_cache_enable'] = True
+config_opts['plugin_conf']['yum_cache_opts'] = {}
+config_opts['plugin_conf']['yum_cache_opts']['max_age_days'] = 30
+config_opts['plugin_conf']['yum_cache_opts']['max_metadata_age_days'] = 30
+config_opts['plugin_conf']['yum_cache_opts']['online'] = True
+```
 
 * `max_age_days` - when files in cache directory is older than this number of days, then such files are removed
 * `max_metadata_age_days` - when metadata (everything with suffix: ".sqlite", ".xml", ".bz2", ".gz") in cache directory is older than this number of days, then such files are removed.

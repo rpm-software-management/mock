@@ -10,8 +10,9 @@ It prints information about all defined RPM macros.
 ## Configuration
 
 You can enable the plugin using this settings:
-
-    config_opts['plugin_conf']['showrc_enable'] = True
+```python
+config_opts['plugin_conf']['showrc_enable'] = True
+```
 
 Available since version 2.5.
 

@@ -13,8 +13,8 @@ This plugin is **disabled** by default.
 
 To compress your logs with XZ, you can put this into the
 [configuration](configuration):
-
-    config_opts['plugin_conf']['compress_logs_enable'] = True
-    config_opts['plugin_conf']['compress_logs_opts']['command'] = "/usr/bin/xz -9"
-
+```python
+config_opts['plugin_conf']['compress_logs_enable'] = True
+config_opts['plugin_conf']['compress_logs_opts']['command'] = "/usr/bin/xz -9"
+```
 This plugin is available since mock-1.2.1.

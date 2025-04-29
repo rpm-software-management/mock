@@ -24,7 +24,7 @@ Mock does many parts of the build process inside a `systemd-nspawn`
 container (or at least [chroot][chroot]) to avoid such disasters as much as
 possible.
 
-For fully offline builds, Mock suports [hermetic builds][hermetic-builds].
+For fully offline builds, Mock supports [hermetic builds][hermetic-builds].
 
 ## Mock can build packages for different distributions
 
