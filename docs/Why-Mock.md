@@ -16,7 +16,7 @@ their host system.
 Additionally, building RPM packages is inherently dangerous because specfiles
 are written in a Turing-complete language. Building an untrusted package can
 easily lead to a compromised system. This is also true for self-written
-packages. One small bug like `rpm -rf %{?nonexisting}/` can wipe your entire
+packages. One small bug like `rm -rf %{?nonexisting}/` can wipe your entire
 system if you are unwise enough to run `rpmbuild` as `root`. Or at least your
 user home directory.
 
