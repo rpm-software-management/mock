@@ -13,6 +13,10 @@ DNF=/usr/bin/dnf-3
 REPOQUERY=( "$DNF" repoquery )
 DOWNLOAD=( "$DNF" download )
 
+info() { echo >&2 "INFO: $*" ;  }
+error() { echo >&2 "ERROR: $*" ; false; }
+die() { echo >&2 "FATAL: $*" ; exit 1 ; }
+
 copr_dir=$1 ; shift
 commit=$1 ; shift
 copr_uri=https://download.copr.fedorainfracloud.org/results
@@ -33,9 +37,9 @@ copr_chroot() (
 
 repo=$copr_uri/$copr_dir/$(copr_chroot)
 
-echo >&2 "using repo: $repo"
+repoid=pull-request-proposed-packages
 
-repoid=xyztest
+info "using [$repoid] repo: $repo"
 
 export clean_cache=true
 
@@ -51,10 +55,6 @@ _repoquery() {
     info "Executing: ${cmd[*]}"
     "${cmd[@]}" 2>/dev/null
 }
-
-info() { echo >&2 "INFO: $*" ;  }
-error() { echo >&2 "ERROR: $*" ; false; }
-die() { echo >&2 "FATAL: $*" ; exit 1 ; }
 
 find_nvr() {
     # ARGS: $1=pkg $2=commit
@@ -96,7 +96,7 @@ done
 
 if test -n "$SRPM_DOWNLOAD_DIR"; then
     mkdir -p "$SRPM_DOWNLOAD_DIR"
-    cmd=( "${DOWNLOAD[@]}" "${repos[@]}"  '--disablerepo=*' --enablerepo xyztest
+    cmd=( "${DOWNLOAD[@]}" "${repos[@]}"  '--disablerepo=*' --enablerepo "$repoid"
           "${nvrs[@]}" --source --downloaddir "$SRPM_DOWNLOAD_DIR" )
 else
     cmd=( "$DNF" -y install "${nvrs[@]}" "${repos[@]}" --nogpgcheck )
