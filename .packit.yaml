@@ -12,7 +12,8 @@ actions:
     - bash -c "tito build --tgz --test -o ."
     - bash -c "ls -1t ./*.tar.gz | head -n 1"
   get-current-version:
-    - bash -c "grep ^Version \"$PACKIT_CONFIG_PACKAGE_NAME.spec\" | awk '{ print $2 }'"
+    # we should use Tito for this: https://github.com/rpm-software-management/tito/pull/495
+    - bash -c "grep ^Version \"$PACKIT_CONFIG_PACKAGE_NAME.spec\" | awk '{ print $2 \".test\" }'"
 
 # We need to keep the pushed SHA, it is later exported
 # as $PACKIT_COMMIT_SHA for Testing Farm jobs.
