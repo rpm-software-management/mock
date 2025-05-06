@@ -19,7 +19,7 @@ jobs:
       matrix:
         tox_env:
           # sync with /tox.ini
-          - py38
+          - py36
           - py39
           - py310
           - py311
