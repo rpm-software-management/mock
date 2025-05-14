@@ -32,7 +32,8 @@ PLUGIN_LIST = ['tmpfs', 'root_cache', 'yum_cache', 'mount', 'bind_mount',
                'ccache', 'selinux', 'package_state', 'chroot_scan',
                'lvm_root', 'compress_logs', 'sign', 'pm_request',
                'hw_info', 'procenv', 'showrc', 'rpkg_preprocessor',
-               'rpmautospec', 'buildroot_lock', 'export_buildroot_image']
+               'rpmautospec', 'buildroot_lock', 'export_buildroot_image',
+               'sbom_generator']
 
 def nspawn_supported():
     """Detect some situations where the systemd-nspawn chroot code won't work"""
@@ -250,6 +251,10 @@ def setup_default_config_opts():
         },
         'export_buildroot_image_enable': False,
         'export_buildroot_image_opts': {},
+        'sbom_generator_enable': False,
+        'sbom_generator_opts': {
+            'generate_sbom': True,
+        },
     }
 
     config_opts['environment'] = {
