@@ -70,6 +70,7 @@ Versions in Linux distributions:
 
 
 ## Release Notes
+* [6.2 and Configs 42.2](Release-Notes-6.2) (2025-05-22) - RHEL 10 configuration, configurable ca-trust paths that Mock copies to chroots.
 * [6.1 and Configs 42.1](Release-Notes-6.1) (2025-02-27) - more hermetic-build improvements, AlmaLinux Kitten 10, Azure Linux 2.0 and 3.0, Kylin 10, Navy Linux 8, openSUSE Leap 15.6
 * [Configs 42.1](Release-Notes-Configs-42.1) (2025-01-16) - Fedora 42 branched.
 * [6.0 and Configs 41.5](Release-Notes-6.0) (2024-12-19) - New OCI image support for buildroot, hermetic build mode fixes, Fedora 39 EOL.

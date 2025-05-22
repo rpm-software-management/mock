@@ -18,7 +18,7 @@
 
 Summary: Builds packages inside chroots
 Name: mock
-Version: 6.1
+Version: 6.2
 Release: 1%{?dist}
 License: GPL-2.0-or-later
 # Source is created by
@@ -330,6 +330,10 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 %config(noreplace) %{_sysusersdir}/mock.conf
 
 %changelog
+* Thu May 22 2025 Pavel Raiskup <praiskup@redhat.com> 6.2-1
+- disable copying ca-trust dirs with Azure Linux 3 (reubeno@users.noreply.github.com)
+- bail clearly when image pull fails (awilliam@redhat.com)
+
 * Thu Feb 27 2025 Miroslav Suchý <msuchy@redhat.com> 6.1-1
 - bootstrap: automatically bind-mount local --additional-package
   (praiskup@redhat.com)

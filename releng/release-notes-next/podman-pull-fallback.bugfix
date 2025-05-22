@@ -1,1 +1,0 @@
-mock will now fall back smoothly to chroot if podman image pull fails entirely.
