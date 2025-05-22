@@ -3,7 +3,7 @@
 %endif
 
 Name:       mock-core-configs
-Version:    42.2
+Version:    42.3
 Release:    1%{?dist}
 Summary:    Mock core config files basic chroots
 
@@ -153,6 +153,15 @@ fi
 %ghost %config(noreplace,missingok) %{_sysconfdir}/mock/default.cfg
 
 %changelog
+* Thu May 22 2025 Pavel Raiskup <praiskup@redhat.com> 42.3-1
+- Fedora 40 EOL
+- Add RHEL 10 template and configs (carlwgeorge@gmail.com)
+- disable copying ca-trust dirs with Azure Linux 3 (reubeno@users.noreply.github.com)
+- Add epel-z-10 template (carlwgeorge@gmail.com)
+- Update Azure Linux configurations (scaronni@nvidia.com)
+- make opensuse-leap-15.5.tpl eol
+- fix the leap image reference to 15.6
+
 * Thu Feb 27 2025 Miroslav Suchý <msuchy@redhat.com> 42.2-1
 - fix: expand Oracle Linux distro_id from ol to oraclelinux
   (avi.miller@oracle.com)
