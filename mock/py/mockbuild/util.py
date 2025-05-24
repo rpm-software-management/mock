@@ -884,7 +884,6 @@ def setup_host_resolv(config_opts):
     config_opts['nspawn_args'] += ['--bind={0}:/etc/resolv.conf'.format(resolv_path)]
 
 
-@traceLog()
 def pretty_getcwd():
     try:
         return os.getcwd()
