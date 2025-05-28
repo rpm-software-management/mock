@@ -42,7 +42,7 @@ class HwInfo(object):
         out.write("CPU info:\n")
         out.write(output)
 
-        cmd = ["/bin/free"]
+        cmd = ["/bin/free", "--human"]
         output = mockbuild.util.do(cmd, shell=False, returnOutput=True, raiseExc=False)
         out.write("\n\nMemory:\n")
         out.write(output)
