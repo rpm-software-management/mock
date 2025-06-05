@@ -12,5 +12,6 @@ RUN tito build --test --rpm
 WORKDIR /home/user/mock/mock
 RUN tito build --test --rpm
 USER root
+RUN dnf -y copr enable @mock/mock-deps
 RUN dnf -y install --allow-downgrade /tmp/tito/*/mock*.rpm
 USER user
