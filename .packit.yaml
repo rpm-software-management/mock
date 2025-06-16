@@ -44,9 +44,7 @@ jobs:
         - mock
         - mock-core-configs
       targets:
-        - fedora-rawhide
-        - fedora-41
-        - fedora-40
+        - fedora-all
       additional_repos:
         - copr://@mock/mock-deps
 
