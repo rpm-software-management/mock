@@ -8,8 +8,10 @@ import atexit
 import ctypes
 import errno
 import grp
+import multiprocessing
 import os
 import pwd
+import sys
 from concurrent.futures import ProcessPoolExecutor
 from contextlib import contextmanager
 
@@ -177,7 +179,14 @@ class UidManager(object):
         privileges to root (we drop the saved set-*IDs).  The exceptions from
         the child pops up to the parent.
         """
-        with ProcessPoolExecutor(max_workers=1) as executor:
+        if sys.version_info >= (3, 14):
+            # RHEL 9+ supports this too
+            # Fedora 43+ needs this
+            pool_executor = ProcessPoolExecutor(max_workers=1, mp_context=multiprocessing.get_context("fork"))
+        else:
+            # Can be removed when we stop supporting RHEL8
+            pool_executor = ProcessPoolExecutor(max_workers=1)
+        with pool_executor as executor:
             future = executor.submit(self.drop_privs_forever_and_execute,
                                      method, *args, **kwargs)
             return future.result()
