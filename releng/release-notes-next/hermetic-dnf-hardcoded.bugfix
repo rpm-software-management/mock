@@ -1,0 +1,4 @@
+The `/bin/dnf` command is no longer hardcoded
+[in the --calculate-build-dependencies code][issue#1592], and we
+use the standard config_opts['dnf5_command'] (or `config_opts['dnf_command']`,
+respectively).
