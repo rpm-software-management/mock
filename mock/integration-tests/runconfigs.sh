@@ -81,7 +81,7 @@ for i in $configs; do
 	echo "PASSED: $i"
     fi
 
-    runcmd "$MOCKCMD -r $name --scrub=all"  || die "can not scrub"
+    runcmd "$MOCKCMD -r $name --scrub=all"  || echo >&2 "Can not even --scrub $name!"
 done
 
 msg=$(printf "%d configuration failures\n" $fails)
