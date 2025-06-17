@@ -57,7 +57,8 @@ class BuildrootLockfile:
                     return out
 
                 packages = query_packages(query_fields, chrootpath, _executor)
-                query_packages_location(packages, chrootpath, _executor)
+                query_packages_location(packages, chrootpath, _executor,
+                                        dnf_cmd=self.buildroot.pkg_manager.command)
 
                 data = {
                     # Try to semver.  The future Mock versions (the tool) should
