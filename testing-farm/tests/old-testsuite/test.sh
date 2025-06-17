@@ -18,12 +18,11 @@ SRPM_DOWNLOAD_DIR=/tmp/mock-test-srpms install-mock-packages-built-by-packit moc
 
 cd "$workdir/mock"
 
-# shellcheck disable=SC2024
-if (sudo -E -u mockbuild make check > >(tee the-log | grep -e FAILED: -e PASSED:) 2>&1) >&2; then
-    : "The 'make check' testsuite passed, ignoring tests related to specific chroots."
-    cat the-log
-else
-    cat the-log
-    false "The 'make check' testsuite failed."
-    exit 1
-fi
+# We want to provide rather short live logs ASAP, hence that grep.  Full logs
+# are provided later no matter the exit status.
+exit_status=0
+sudo -E -u mockbuild make check |& tee the-log | grep -e FAILED: -e PASSED: || {
+    exit_status=$?
+}
+cat the-log
+exit $exit_status
