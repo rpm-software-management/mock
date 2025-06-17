@@ -45,6 +45,7 @@ jobs:
         - mock-core-configs
       targets:
         - fedora-all
+        - epel-all
       additional_repos:
         - copr://@mock/mock-deps
 
