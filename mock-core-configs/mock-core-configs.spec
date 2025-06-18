@@ -58,7 +58,6 @@ cp -a etc/mock/eol/*cfg %{buildroot}%{_sysconfdir}/mock/eol
 cp -a etc/mock/eol/templates/*.tpl %{buildroot}%{_sysconfdir}/mock/eol/templates
 
 # generate files section with config - there is many of them
-echo "%defattr(0644, root, mock)" > %{name}.cfgs
 find %{buildroot}%{_sysconfdir}/mock -name "*.cfg" -o -name '*.tpl' \
     | grep -v chroot-aliases \
     | sed -e "s|^%{buildroot}|%%config(noreplace) |" >> %{name}.cfgs

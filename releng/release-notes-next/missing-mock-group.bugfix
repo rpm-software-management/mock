@@ -1,0 +1,10 @@
+The mechanism for creating the `mock` group has been fixed again on Fedora/RHEL,
+because the built-in RPM user creation mechanism only works on F42 and newer.
+Older versions still require `%pre`.
+
+The `mock-core-configs` package files were previously owned by the `mock` group,
+same as a few files in `mock` package — which was unnecessary.  These files are
+intended to be read-only and accessible by anyone.  This issue was actually
+[causing install-order problems][issue#1588] when `mock-core-configs` or `mock`
+was installed before `mock-filesystem`.  So newly those files have the default
+`0644, root, root` ownership.
