@@ -1,13 +1,13 @@
 %bcond_with lint
 %bcond_without tests
 
-# Modern distributions (using RPM v4.19+; for example, Fedora 39+) do not
+# Modern distributions (using RPM v4.20+; for example, Fedora 42+) do not
 # require the %%pre scriptlet for creating users/groups because the sysusers
 # feature is now built directly into RPM.  Simply including the sysusers
 # `mock.conf` file in a package payload is sufficient to leverage this feature.
 # However, for older distributions that lack this capability, we still define
 # the %%pre scriptlet.
-%if (0%{?rhel} && 0%{?rhel} < 10) || (0%{?mageia} && 0%{?mageia} < 10) || (0%{?suse_version} && 0%{?suse_version} < 1660)
+%if 0%{?fedora} < 42 || (0%{?rhel} && 0%{?rhel} <= 10) || (0%{?mageia} && 0%{?mageia} < 10) || (0%{?suse_version} && 0%{?suse_version} < 1660)
 %bcond_without sysusers_compat
 %else
 %bcond_with sysusers_compat
@@ -262,14 +262,11 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 
 
 %files
-%defattr(0644, root, mock)
 %dir %{_pkgdocdir}/
 %doc %{_pkgdocdir}/site-defaults.cfg
 %doc %{_pkgdocdir}/buildroot-lock-schema-*.json
 %{_datadir}/bash-completion/completions/mock
 %{_datadir}/bash-completion/completions/mock-parse-buildlog
-
-%defattr(-, root, root)
 
 # executables
 %{_bindir}/mock
@@ -303,10 +300,6 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 %{_mandir}/man1/mock-hermetic-repo.1*
 %{_datadir}/cheat/mock
 
-# cache & build dirs
-%defattr(0775, root, mock, 0775)
-%dir %{_localstatedir}/cache/mock
-%dir %{_localstatedir}/lib/mock
 
 %files scm
 %{python_sitelib}/mockbuild/scm.py*
@@ -328,6 +321,12 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 %dir  %{_sysconfdir}/mock/templates
 %dir  %{_datadir}/cheat
 %config(noreplace) %{_sysusersdir}/mock.conf
+
+# cache & build dirs, writeable by mock group
+%defattr(0775, root, mock, 0775)
+%dir %{_localstatedir}/cache/mock
+%dir %{_localstatedir}/lib/mock
+
 
 %changelog
 * Thu May 22 2025 Pavel Raiskup <praiskup@redhat.com> 6.2-1
