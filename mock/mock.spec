@@ -18,7 +18,7 @@
 
 Summary: Builds packages inside chroots
 Name: mock
-Version: 6.2
+Version: 6.3
 Release: 1%{?dist}
 License: GPL-2.0-or-later
 # Source is created by
@@ -329,6 +329,13 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 
 
 %changelog
+* Wed Jun 18 2025 Pavel Raiskup <praiskup@redhat.com> 6.3-1
+- lockfile: don't hard-code DNF _bindir location, use config_opts
+- fix sysusers packaging once more
+- ProcessPoolExecutor changed behaviour with Python 3.14 (msuchy@redhat.com)
+- feat: plugin: hw_info: added human-readable flag for memory info (k0ste@k0ste.ru)
+- Remove the traceLog decorator from pretty_getcwd (ferdnyc@gmail.com)
+
 * Thu May 22 2025 Pavel Raiskup <praiskup@redhat.com> 6.2-1
 - disable copying ca-trust dirs with Azure Linux 3 (reubeno@users.noreply.github.com)
 - bail clearly when image pull fails (awilliam@redhat.com)

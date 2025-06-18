@@ -3,7 +3,7 @@
 %endif
 
 Name:       mock-core-configs
-Version:    42.3
+Version:    42.4
 Release:    1%{?dist}
 Summary:    Mock core config files basic chroots
 
@@ -152,6 +152,14 @@ fi
 %ghost %config(noreplace,missingok) %{_sysconfdir}/mock/default.cfg
 
 %changelog
+* Wed Jun 18 2025 Pavel Raiskup <praiskup@redhat.com> 42.4-1
+- fix sysusers packaging practice once more
+- configuration file owned by `root:root`
+- Rocky Linux 10 configs added (label@rockylinux.org)
+- missing config for AlmaLinux Kitten x86_64_v2 added (jhernandez@cloudlinux.com)
+- config for AlmaLinux Kitten 10 x86_64_v2 added (jonathan@almalinux.org)
+- AlmaLinux 10 configs added (jonathan@almalinux.org)
+
 * Thu May 22 2025 Pavel Raiskup <praiskup@redhat.com> 42.3-1
 - Fedora 40 EOL
 - Add RHEL 10 template and configs (carlwgeorge@gmail.com)
