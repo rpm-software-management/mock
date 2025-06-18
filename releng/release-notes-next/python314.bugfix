@@ -1,4 +1,0 @@
-This release include fix with Python 3.14 incompatibility. [#1594](https://github.com/rpm-software-management/mock/issues/1594)
-
-Mock refused to start as non-root user with Python 3.14. This was because of the change in behaviour of ProcessPoolExecutor in Python.
-The code was altered to work with both old and new Python.
