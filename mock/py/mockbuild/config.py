@@ -719,7 +719,8 @@ def include(config_file, search_path, paths):
             return ""
 
         paths.add(config_file)
-        content = open(config_file).read()
+        with open(config_file) as f:
+            content = f.read()
         # Search for "include(FILE)" and for each "include(FILE)" replace with
         # content of the FILE, in a perpective of search for includes and replace with his content.
         include_arguments = regexp_include.findall(content)
