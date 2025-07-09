@@ -132,9 +132,15 @@ def query_packages_location(packages, chrootpath=None,
         arch = basename.split(".")[-2]
         location_map[f"{name}.{arch}"] = url
 
+    failed_packages = []
     for package in packages:
         name_arch = f"{package['name']}.{package['arch']}"
         try:
             package["url"] = location_map[name_arch]
-        except KeyError as exc:
-            raise mockbuild.exception.Error(f"Can't get location for {name_arch}") from exc
+        except KeyError:
+            failed_packages.append(package)
+
+    if failed_packages:
+        failed_str = ", ".join([f"{p['name']}-{p['version']}-{p['release']}.{p['arch']}"
+                                for p in failed_packages])
+        raise mockbuild.exception.Error(f"Can't get location for {failed_str}")
