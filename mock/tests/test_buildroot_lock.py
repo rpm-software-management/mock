@@ -129,7 +129,7 @@ def test_nonexisting_file_in_repo():
     try:
         _call_method(plugins, buildroot)
     except mockbuild.exception.Error as e:
-        assert e.msg == "Can't get location for cyrus-sasl-lib.x86_64"
+        assert e.msg == "Can't get location for cyrus-sasl-lib-2.1.27-21.el9.x86_64"
         raised = True
     assert raised
 
