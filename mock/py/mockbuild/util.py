@@ -734,6 +734,14 @@ def check_nspawn_has_chdir_option():
     """
     return '--chdir' in systemd_nspawn_help_output()
 
+def check_nspawn_has_suppress_sync_option():
+    """
+    Older systemd-nspawn versions don't have --suppress-sync option, and sometimes we
+    need to know we work with such version.
+    This is here becase RHEL 8 and older. When systemd 250 is everywhere we can
+    remove this.
+    """
+    return '--suppress-sync' in systemd_nspawn_help_output()
 
 def _prepare_nspawn_command(chrootPath, user, cmd, nspawn_args=None, env=None,
                             cwd=None, interactive=False, shell=False):
@@ -774,6 +782,9 @@ def _prepare_nspawn_command(chrootPath, user, cmd, nspawn_args=None, env=None,
 
     if _check_nspawn_resolv_conf():
         nspawn_argv.append("--resolv-conf=off")
+
+    if check_nspawn_has_suppress_sync_option():
+        nspawn_argv += ['--suppress-sync=yes']
 
     # The '/bin/sh -c' wrapper is explicitly requested (--shell).  In this case
     # we shrink the list of arguments into one shell command, so the command is
