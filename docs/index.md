@@ -70,6 +70,7 @@ Versions in Linux distributions:
 
 
 ## Release Notes
+* [Configs 43.1](Release-Notes-Configs-43.1) (2025-08-12) - Fedora 43 branched.
 * [6.3 and Configs 42.4](Release-Notes-6.3) (2025-06-18) - Compatibility bug-fix for Python 3.14, configuration is owned by root group, AlmaLinux and Rocky Linux 10 added.
 * [6.2 and Configs 42.3](Release-Notes-6.2) (2025-05-22) - RHEL 10 configuration, configurable ca-trust paths that Mock copies to chroots.
 * [6.1 and Configs 42.2](Release-Notes-6.1) (2025-02-27) - more hermetic-build improvements, AlmaLinux Kitten 10, Azure Linux 2.0 and 3.0, Kylin 10, Navy Linux 8, openSUSE Leap 15.6

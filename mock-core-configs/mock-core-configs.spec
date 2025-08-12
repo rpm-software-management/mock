@@ -3,7 +3,7 @@
 %endif
 
 Name:       mock-core-configs
-Version:    43.0
+Version:    43.1
 Release:    1%{?dist}
 Summary:    Mock core config files basic chroots
 
@@ -152,6 +152,9 @@ fi
 %ghost %config(noreplace,missingok) %{_sysconfdir}/mock/default.cfg
 
 %changelog
+* Tue Aug 12 2025 Jiri Kyjovsky <j1.kyjovsky@gmail.com> 43.1-1
+- Move Rawhide to F44
+
 * Wed Jun 18 2025 Pavel Raiskup <praiskup@redhat.com> 42.4-1
 - fix sysusers packaging practice once more
 - configuration file owned by `root:root`
