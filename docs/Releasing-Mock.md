@@ -23,51 +23,74 @@ When you plan to release a new mock-core-configs for a new Fedora version being
 branched from Rawhide, there's a script in releng/rawhide-branching.sh that
 helps you to setup a correct configuration layout.
 
+For Rawhide releases, you'll primarily be updating mock-core-configs only. Follow the
+steps in the release checklist, but focus only on the mock-core-configs parts.
+Be sure to use the `--config-only` flag when generating release notes.
+
 ## Release checklist overview
 
 0. Make sure all GitHub CI checks are passing for the latest commit
 
-1. change to the correct local branch, e.g. `main`
+1. Change to the correct local branch, e.g. `main`
 
         $ git checkout main
 
-2. fetch git remote, and propose local-only patches (if any)
+2. Fetch git remote, and propose local-only patches (if any)
 
         $ git pull --rebase main
 
-3. If you want to propose the PR through a PR, switch to a new branch
+3. If you want to propose the release through a PR, switch to a new branch
 
         $ git checkout -b release-2024-05-15
 
 5. Prepare release notes. Use the going-to-be-released version, not
-   the current version. If you want to release only configs, use
-   `--config-only`.
+   the current version.
 
+   For a full release (both mock and mock-core-configs):
+        
         $ sudo dnf install towncrier
         $ ./releng/generate-release-notes --use-version 5.1
         $ vim docs/Release-Notes-5.1.md  # modify manually!
-
-   Rename release notes for configs from e.g. `Release-Notes-40.3.md`
-   to `Release-Notes-Configs-40.3.md`.
+        
+   For a mock-core-configs only release:
+   
+        $ ./releng/generate-release-notes --use-version 40.3 --config-only
+        $ vim docs/Release-Notes-Configs-40.3.md  # modify manually!
 
    Don't forget to manually modify ./docs/index.md and mention the new release.
 
    Add list of contributing authors:
 
+   For mock:
        $ git log mock-4.1-1..HEAD --format="%aN" mock/ | sort | uniq
+   
+   For mock-core-configs:
        $ git log mock-core-configs-38.1-1..HEAD --format="%aN" mock-core-configs/ | sort | uniq
 
 6. Commit all the pending changes
 
 7. On your box (you need push-access rights), tag the git tree:
 
-       $ cd ./mock  # or cd ./mock-core-configs
-       $ tito tag --use-version 3.0  # major.minor according to policy
+   For a full release (both mock and mock-core-configs):
+       
+       # First tag mock-core-configs
+       $ cd ./mock-core-configs
+       $ tito tag --use-version 40.3  # major.minor according to policy
+       
+       # Then update mock's spec and tag mock
+       # Update 'Conflicts: mock-core-configs < ??' in mock.spec
+       $ cd ./mock
+       $ tito tag --use-version 5.1  # major.minor according to policy
 
-   When you release both mock and mock-core-configs together, you
-   likely want to (a) first tag 'mock-core-configs' package with bumped
-   'Requires: mock >= ??', (b) bump 'Conflicts: mock-core-configs < ??' in
-   mock.spec and (c) then tag new mock version.
+   For a mock-core-configs only release:
+   
+       $ cd ./mock-core-configs
+       $ tito tag --use-version 40.3  # major.minor according to policy
+       
+   For a mock only release:
+   
+       $ cd ./mock
+       $ tito tag --use-version 5.1  # major.minor according to policy
 
 8. Push the tito-generated commits to the upstream repo
 
@@ -89,12 +112,22 @@ helps you to setup a correct configuration layout.
 
 9. Push the git tags upstream, e.g.
 
+   For mock-core-configs:
        $ git push origin mock-core-configs-40.4-1
+       
+   For mock:
+       $ git push origin mock-5.1-1
 
 10. Release for EPEL and Fedora
 
     $ # make sure that .tito/releasers.conf is up to date
-    $ cd ./mock  # or mock-core-configs
+    
+    For mock-core-configs:
+    $ cd ./mock-core-configs
+    $ tito release fedora-git-all
+    
+    For mock:
+    $ cd ./mock
     $ tito release fedora-git-all
 
 11. publish tgz
@@ -131,7 +164,7 @@ helps you to setup a correct configuration layout.
 
     We also announce in [Fosstodon CPT's space](https://fosstodon.org/@fedoracpt).
 
-    Typical e-mail looks like:
+    For a full release (both mock and mock-core-configs):
 
         Subject: Mock v4.0 released (and mock-core-configs v38.5)
 
