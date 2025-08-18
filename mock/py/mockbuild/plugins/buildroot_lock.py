@@ -52,9 +52,11 @@ class BuildrootLockfile:
                                 "epoch", "sigmd5", "signature"]
 
                 def _executor(cmd):
-                    out, _ = self.buildroot.doOutChroot(cmd, returnOutput=True,
-                                                        returnStderr=False)
-                    return out
+                    with self.buildroot.uid_manager.elevated_privileges():
+                        out, _ = self.buildroot.doOutChroot(cmd,
+                                                            returnOutput=True,
+                                                            returnStderr=False)
+                        return out
 
                 packages = query_packages(query_fields, chrootpath, _executor)
                 query_packages_location(packages, chrootpath, _executor,
