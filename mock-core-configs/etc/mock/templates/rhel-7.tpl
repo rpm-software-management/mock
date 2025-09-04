@@ -36,6 +36,7 @@ baseurl = https://cdn.redhat.com/content/dist/rhel-alt/{{ rhel_product }}/7/$rel
 {% else %}
 baseurl = https://cdn.redhat.com/content/dist/rhel/{{ rhel_product }}/7/$releasever/$basearch/os
 {% endif %}
+enabled=1
 sslverify = 1
 sslcacert = /etc/rhsm/ca/redhat-uep.pem
 sslclientkey = /etc/pki/entitlement/{{ redhat_subscription_key_id }}-key.pem
@@ -51,6 +52,7 @@ baseurl = https://cdn.redhat.com/content/dist/rhel-alt/{{ rhel_product }}/7/$rel
 {% else %}
 baseurl = https://cdn.redhat.com/content/dist/rhel/{{ rhel_product }}/7/$releasever/$basearch/optional/os
 {% endif %}
+enabled=1
 sslverify = 1
 sslcacert = /etc/rhsm/ca/redhat-uep.pem
 sslclientkey = /etc/pki/entitlement/{{ redhat_subscription_key_id }}-key.pem
