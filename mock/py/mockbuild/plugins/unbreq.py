@@ -76,7 +76,7 @@ class Unbreq(object):
         Get the files owned by `packages` using an RPM query.
         """
         if len(packages) == 0:
-            return list()
+            return []
         process = subprocess.run(self.chroot_command + ["/usr/bin/rpm", "--root", self.buildroot.rootdir, "-ql"] + packages,
             stdin = subprocess.DEVNULL, stdout = subprocess.PIPE, stderr = subprocess.PIPE, text = True
         )
@@ -128,7 +128,7 @@ class Unbreq(object):
             br_providers_br = process.stdout.splitlines()
             br_providers[br] = br_providers_br
             for provider in br_providers_br:
-                rev_br_providers.setdefault(provider, list()).append(br)
+                rev_br_providers.setdefault(provider, []).append(br)
         # attempt to resolve providers so that each BR is provided by only one provider
         sorted_br_providers = sorted(br_providers, key = lambda k: len(br_providers[k]))
         if len(sorted_br_providers) != 0 and len(sorted_br_providers[-1]) > 1:
@@ -146,7 +146,7 @@ class Unbreq(object):
 
 ################################################################################
 
-        brs_can_be_removed = list()
+        brs_can_be_removed = []
         for br, providers in br_providers.items():
             removed_packages = self.try_remove([v for vs in brs_can_be_removed for v in vs[1]] + providers)
             can_be_removed = True
