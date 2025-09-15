@@ -4,6 +4,7 @@ import rpm
 import subprocess
 import os
 import re
+from typing import *
 
 # our imports
 from mockbuild.trace_decorator import getLog, traceLog
@@ -23,7 +24,11 @@ class AtimeDict(dict):
 def init(plugins, conf, buildroot):
     Unbreq(plugins, conf, buildroot)
 
-def get_buildrequires(rpm_file):
+@traceLog()
+def get_buildrequires(rpm_file: str) -> List[str]:
+    """
+    Get the BuildRequires fields of a SRPM file.
+    """
     result = list()
     ts = rpm.TransactionSet()
     ts.setFlags(rpm.RPMVSF_NOHDRCHK | rpm.RPMVSF_NOSHA1HEADER | rpm.RPMVSF_NODSAHEADER | rpm.RPMVSF_NORSAHEADER | rpm.RPMVSF_NOMD5 | rpm.RPMVSF_NODSA | rpm.RPMVSF_NORSA)
@@ -72,9 +77,9 @@ class Unbreq(object):
                 function()
 
     @traceLog()
-    def get_files(self, packages):
+    def get_files(self, packages: List[str]) -> List[str]:
         """
-        Get the files owned by `packages` using an RPM query
+        Get the files owned by `packages` using an RPM query.
         """
         if len(packages) == 0:
             return list()
@@ -89,7 +94,10 @@ class Unbreq(object):
             return process.stdout.splitlines()
     
     @traceLog()
-    def try_remove(self, packages):
+    def try_remove(self, packages: List[str]) -> List[str]:
+        """
+        Try to remove `packages` and obtain all the packages (NVRs) that would be removed.
+        """
         process = subprocess.run(self.chroot_dnf_command + ["--setopt", "protected_packages=", "--assumeno", "remove"] + packages,
             stdin = subprocess.DEVNULL, stdout = subprocess.PIPE, stderr = subprocess.PIPE, text = True,
         )
@@ -109,6 +117,9 @@ class Unbreq(object):
     
     @traceLog()
     def resolve_buildrequires(self):
+        """
+        Decide which BuildRequire fields were not used based on file accesses.
+        """
         br_providers = dict()
         rev_br_providers = dict()
         for br in self.buildrequires:
