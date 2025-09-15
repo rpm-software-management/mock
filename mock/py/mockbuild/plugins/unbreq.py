@@ -1,6 +1,5 @@
 #!/usr/bin/python3
 # python library imports
-import rpm
 import subprocess
 import os
 import re
@@ -23,29 +22,6 @@ class AtimeDict(dict):
 @traceLog()
 def init(plugins, conf, buildroot):
     Unbreq(plugins, conf, buildroot)
-
-@traceLog()
-def get_buildrequires(rpm_file: str) -> List[str]:
-    """
-    Get the BuildRequires fields of a SRPM file.
-    """
-    result = list()
-    ts = rpm.TransactionSet()
-    ts.setFlags(rpm.RPMVSF_NOHDRCHK | rpm.RPMVSF_NOSHA1HEADER | rpm.RPMVSF_NODSAHEADER | rpm.RPMVSF_NORSAHEADER | rpm.RPMVSF_NOMD5 | rpm.RPMVSF_NODSA | rpm.RPMVSF_NORSA)
-    try:
-        fd = rpm.fd.open(rpm_file)
-        h = ts.hdrFromFdno(fd.fileno())
-        ds = rpm.ds(h, rpm.RPMTAG_REQUIRENAME)
-        for ds in ds:
-            name = ds.N()
-            if name.startswith("rpmlib(") and name.endswith(")"):
-                continue
-            br = ds.DNEVR()
-            if br[: 2] == "R ":
-                result.append(br[2 :])
-    finally:
-        fd.close()
-    return result
 
 class Unbreq(object):
     @traceLog()
@@ -70,11 +46,29 @@ class Unbreq(object):
     @traceLog()
     def do_with_chroot(self, function):
         if self.USE_NSPAWN:
-            function()
+            return function()
         else:
             with mockbuild.mounts.BindMountPoint(self.buildroot.rootdir,
                 self.buildroot.bootstrap_buildroot.make_chroot_path(self.buildroot.rootdir)).having_mounted():
-                function()
+                return function()
+
+    @traceLog()
+    def get_buildrequires(self, srpm: str) -> List[str]:
+        """
+        Get the BuildRequires fields of a SRPM file.
+        """
+        process = subprocess.run(self.chroot_command + ["/usr/bin/rpm", "--root", self.buildroot.rootdir, "-q", "--qf", "[%{REQUIREFLAGS:deptype} %{REQUIRES} %{REQUIREFLAGS:depflags} %{REQUIREVERSION}\\n]", srpm],
+            stdin = subprocess.DEVNULL, stdout = subprocess.PIPE, stderr = subprocess.PIPE, text = True
+        )
+        if process.returncode != 0:
+            raise RuntimeError("process {} returned {}: {}".format(
+                process.args, process.returncode, process.stderr.rstrip()
+            ))
+        result = []
+        for line in process.stdout.splitlines():
+            if line.startswith("manual "):
+                result.append(line[7:].rstrip())
+        return result
 
     @traceLog()
     def get_files(self, packages: List[str]) -> List[str]:
@@ -200,7 +194,7 @@ class Unbreq(object):
         
         self.buildrequires = set()
         for srpm in os.scandir(self.srpm_dir):
-            for br in get_buildrequires(srpm.path):
+            for br in self.do_with_chroot(lambda: self.get_buildrequires(srpm.path)):
                 self.buildrequires.add(br)
         self.buildrequires = sorted(set(self.buildrequires))
         
