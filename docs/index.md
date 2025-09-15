@@ -218,6 +218,7 @@ See a [separate document](Mock-Core-Configs).
 * [showrc](Plugin-Showrc) - Log the content of `rpm --showrc` for capturing all defined macros
 * [sign](Plugin-Sign) - call command on the produced rpm
 * [tmpfs](Plugin-Tmpfs) - mount buildroot directory as tmpfs
+* [unbreq](Plugin-Unbreq) - detector of unused `BuildRequires`
 * [yum_cache](Plugin-YumCache) - mount `/var/cache/{dnf,yum}` of your host machine to chroot
 
 Plugins can be enabled on command line e.g `--enable-plugin=chroot_scan`. And you can set plugin options using e.g. `'--plugin-option=root_cache:age_check=False'`
