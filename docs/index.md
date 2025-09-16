@@ -217,8 +217,8 @@ See a [separate document](Mock-Core-Configs).
 * [selinux](Plugin-SELinux) - on SELinux enabled box, this plugin will pretend, that SELinux is disabled in build environment
 * [showrc](Plugin-Showrc) - Log the content of `rpm --showrc` for capturing all defined macros
 * [sign](Plugin-Sign) - call command on the produced rpm
-* [unbreq](Plugin-Unbreq) - detector of unused `BuildRequires`
 * [tmpfs](Plugin-Tmpfs) - mount buildroot directory as tmpfs
+* [unbreq](Plugin-Unbreq) - detector of unused `BuildRequires`
 * [yum_cache](Plugin-YumCache) - mount `/var/cache/{dnf,yum}` of your host machine to chroot
 
 Plugins can be enabled on command line e.g `--enable-plugin=chroot_scan`. And you can set plugin options using e.g. `'--plugin-option=root_cache:age_check=False'`

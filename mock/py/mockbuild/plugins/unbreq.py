@@ -3,11 +3,14 @@
 import subprocess
 import os
 import re
-from typing import *
+from typing import (
+    List,
+)
 
 # our imports
 from mockbuild.trace_decorator import getLog, traceLog
 import mockbuild.util
+from mockbuild.util import USE_NSPAWN
 import mockbuild.mounts
 
 requires_api_version = "1.1"
@@ -31,7 +34,6 @@ class Unbreq(object):
         self.config = buildroot.config
         
         self.min_time = None
-        self.USE_NSPAWN = mockbuild.util.USE_NSPAWN
         self.exclude_accessed_files = [re.compile(r) for r in self.config.get("plugin_conf", {}).get("unbreq_opts", {}).get("exclude_accessed_files", [])]
         self.accessed_files = AtimeDict()
         self.mount_options = None
@@ -45,7 +47,7 @@ class Unbreq(object):
 
     @traceLog()
     def do_with_chroot(self, function):
-        if self.USE_NSPAWN:
+        if USE_NSPAWN:
             return function()
         else:
             with mockbuild.mounts.BindMountPoint(self.buildroot.rootdir,
@@ -106,7 +108,7 @@ class Unbreq(object):
             nvr = line.split()
             if len(nvr) != 6:
                 continue
-            result.append(nvr[0] + "-" + nvr[2] + "." + nvr[1])
+            result.append("{}-{}.{}".format(nvr[0], nvr[2], nvr[1]))
         return result
     
     @traceLog()
@@ -185,7 +187,7 @@ class Unbreq(object):
     def _PreBuildHook(self):
         getLog().info("enabled unbreq plugin (prebuild)")
         
-        if self.USE_NSPAWN:
+        if USE_NSPAWN:
             self.chroot_command = ["/usr/bin/systemd-nspawn", "--quiet", "--pipe", "-D", self.buildroot.bootstrap_buildroot.rootdir, "--bind", self.buildroot.rootdir]
         else:
             self.chroot_command = ["/usr/bin/chroot", self.buildroot.bootstrap_buildroot.rootdir]
