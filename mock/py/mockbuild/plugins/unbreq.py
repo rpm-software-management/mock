@@ -210,7 +210,11 @@ class Unbreq(object):
         Get all the BuildRequires, the RPMs that provide them, the files they
         own and set both their access and modify timestamps to zero.
         """
-        for path in set(self.get_files(self.try_remove(sum(self.buildrequires_providers.values(), [])))):
+        buildrequires_providers = []
+        for providers in self.buildrequires_providers.values():
+            buildrequires_providers.extend(providers)
+
+        for path in set(self.get_files(self.try_remove(buildrequires_providers))):
             try:
                 os.utime(self.buildroot.make_chroot_path(path), (0, 0))
             except FileNotFoundError:
