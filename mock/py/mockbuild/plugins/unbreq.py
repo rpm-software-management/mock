@@ -4,6 +4,7 @@ import subprocess
 import os
 import re
 from typing import (
+    Dict,
     List,
 )
 
@@ -16,6 +17,10 @@ import mockbuild.mounts
 requires_api_version = "1.1"
 
 class AtimeDict(dict):
+    """
+    A caching lazy dictionary mapping file paths to their access time.
+    """
+
     def __missing__(self, key):
         result = os.stat(key).st_atime
         self[key] = result
@@ -117,12 +122,17 @@ class Unbreq(object):
         return result
 
     @traceLog()
-    def resolve_buildrequires(self):
+    def get_buildrequires_providers(self) -> Dict[str, List[str]]:
         """
-        Decide which BuildRequire fields were not used based on file accesses.
+        Get the mapping of BuildRequires fields to the RPMs that provide it.
+        Each BR can be provided by multiple installed RPMs but we try to
+        minimize it.
         """
-        br_providers = dict()
-        rev_br_providers = dict()
+
+        # Get both the mapping and the reverse mapping between each BuildRequire
+        # and the RPMs that provide it.
+        br_providers: Dict[str, List[str]] = dict()
+        provided_brs: Dict[str, List[str]] = dict()
         for br in self.buildrequires:
             process = subprocess.run(
                 self.chroot_dnf_command + ["repoquery", "--installed", "--whatprovides", br],
@@ -132,27 +142,39 @@ class Unbreq(object):
                 raise RuntimeError("process {} returned {}: {}".format(
                     process.args, process.returncode, process.stderr.strip()
                 ))
-            br_providers_br = process.stdout.splitlines()
-            br_providers[br] = br_providers_br
-            for provider in br_providers_br:
-                rev_br_providers.setdefault(provider, []).append(br)
-        # attempt to resolve providers so that each BR is provided by only one provider
+            current_br_providers: List[str] = process.stdout.splitlines()
+            br_providers[br] = current_br_providers
+            for provider in current_br_providers:
+                provided_brs.setdefault(provider, []).append(br)
+
+        # We work with the assumption that the package manager installed the
+        # minimal set of packages. In case we encounter a BR provided by
+        # multiple RPMs, it will be because there are other BRs which are
+        # provided by only one of them.
+        # So sort the BR mapping by the number of providers from the shortest
+        # one and if the same RPM provider is found providing a different BR,
+        # remove it from the other list.
         sorted_br_providers = sorted(br_providers, key = lambda k: len(br_providers[k]))
         if len(sorted_br_providers) != 0 and len(sorted_br_providers[-1]) > 1:
             for br in sorted_br_providers:
-                br_providers_br = br_providers[br]
-                if len(br_providers_br) == 1:
-                    for rev_br in rev_br_providers[br_providers_br[0]]:
-                        if rev_br != br:
-                            br_providers_rev_br = br_providers[rev_br]
-                            if len(br_providers_rev_br) > 1:
+                current_br_providers = br_providers[br]
+                if len(current_br_providers) == 1:
+                    for provided_br in provided_brs[current_br_providers[0]]:
+                        if provided_br != br:
+                            provided_brs_of_current_br_provider = br_providers[provided_br]
+                            if len(provided_brs_of_current_br_provider) > 1:
                                 try:
-                                    br_providers_rev_br.remove(br_providers_br[0])
+                                    provided_brs_of_current_br_provider.remove(current_br_providers[0])
                                 except ValueError:
                                     pass
+        return br_providers
 
-################################################################################
-
+    @traceLog()
+    def resolve_buildrequires(self):
+        """
+        Decide which BuildRequire fields were not used based on file accesses.
+        """
+        br_providers = self.get_buildrequires_providers()
         brs_can_be_removed = []
         for br, providers in br_providers.items():
             removed_packages = self.try_remove([v for vs in brs_can_be_removed for v in vs[1]] + providers)
@@ -184,7 +206,11 @@ class Unbreq(object):
             getLog().warning("unbreq plugin: the following BuildRequires were not used:\n\t%s", "\n\t".join(brs))
 
     @traceLog()
-    def set_am_time(self):
+    def set_br_files_am_time(self):
+        """
+        Get all the BuildRequires, the RPMs that provide them, the files they
+        own and set both their access and modify timestamps to zero.
+        """
         for filename in set(self.get_files(self.try_remove(self.buildrequires))):
             try:
                 os.utime(self.buildroot.rootdir + filename, (0, 0))
@@ -230,7 +256,7 @@ class Unbreq(object):
                 "unbreq plugin: detected 'relatime' mount option, going to set access times of files under %s to 0",
                 self.buildroot.rootdir
             )
-            self.do_with_chroot(self.set_am_time)
+            self.do_with_chroot(self.set_br_files_am_time)
 
     @traceLog()
     def _PostBuildHook(self):
