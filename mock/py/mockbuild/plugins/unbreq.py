@@ -88,7 +88,7 @@ class Unbreq(object):
         if len(packages) == 0:
             return []
         process = subprocess.run(self.chroot_command +
-            ["/usr/bin/rpm", "--root", self.buildroot.rootdir, "-ql"] + packages,
+            ["/usr/bin/rpm", "--root", self.buildroot.rootdir, "-q", "--qf", "[%{FILENAMES}\\n]"] + packages,
             stdin = subprocess.DEVNULL, stdout = subprocess.PIPE, stderr = subprocess.PIPE, text = True,
         )
         if process.returncode != 0:
