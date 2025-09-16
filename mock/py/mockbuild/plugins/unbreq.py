@@ -44,7 +44,7 @@ class Unbreq(object):
         ]
         self.accessed_files = AtimeDict()
         self.mount_options = None
-        self.buildrequires = None
+        self.buildrequires_providers = None
 
         # TODO handle different package managers
         # self.buildroot.pkg_manager.name
@@ -122,7 +122,7 @@ class Unbreq(object):
         return result
 
     @traceLog()
-    def get_buildrequires_providers(self) -> Dict[str, List[str]]:
+    def get_buildrequires_providers(self, buildrequires: List[str]) -> Dict[str, List[str]]:
         """
         Get the mapping of BuildRequires fields to the RPMs that provide it.
         Each BR can be provided by multiple installed RPMs but we try to
@@ -133,7 +133,7 @@ class Unbreq(object):
         # and the RPMs that provide it.
         br_providers: Dict[str, List[str]] = dict()
         provided_brs: Dict[str, List[str]] = dict()
-        for br in self.buildrequires:
+        for br in buildrequires:
             process = subprocess.run(
                 self.chroot_dnf_command + ["repoquery", "--installed", "--whatprovides", br],
                 stdin = subprocess.DEVNULL, stdout = subprocess.PIPE, stderr = subprocess.PIPE, text = True
@@ -174,9 +174,8 @@ class Unbreq(object):
         """
         Decide which BuildRequire fields were not used based on file accesses.
         """
-        br_providers = self.get_buildrequires_providers()
         brs_can_be_removed = []
-        for br, providers in br_providers.items():
+        for br, providers in self.buildrequires_providers.items():
             removed_packages = self.try_remove([v for vs in brs_can_be_removed for v in vs[1]] + providers)
             can_be_removed = True
             for path in self.get_files(removed_packages):
@@ -211,7 +210,7 @@ class Unbreq(object):
         Get all the BuildRequires, the RPMs that provide them, the files they
         own and set both their access and modify timestamps to zero.
         """
-        for path in set(self.get_files(self.try_remove(self.buildrequires))):
+        for path in set(self.get_files(self.try_remove(sum(self.buildrequires_providers.values(), [])))):
             try:
                 os.utime(self.buildroot.make_chroot_path(path), (0, 0))
             except FileNotFoundError:
@@ -230,11 +229,11 @@ class Unbreq(object):
         self.chroot_dnf_command = self.chroot_command + ["/usr/bin/dnf", "--installroot", self.buildroot.rootdir]
         self.srpm_dir = self.buildroot.make_chroot_path(self.buildroot.builddir, "SRPMS")
 
-        self.buildrequires = set()
+        buildrequires = set()
         for srpm in os.scandir(self.srpm_dir):
             for br in self.do_with_chroot(lambda: self.get_buildrequires(srpm.path)):
-                self.buildrequires.add(br)
-        self.buildrequires = sorted(set(self.buildrequires))
+                buildrequires.add(br)
+        self.buildrequires_providers = self.get_buildrequires_providers(sorted(buildrequires))
 
         # NOTE maybe find a better example file to touch to get an atime?
         path = os.path.join(self.buildroot.rootdir, "dev", "null")
