@@ -95,8 +95,8 @@ class Unbreq(object):
             raise RuntimeError("process {} returned {}: {}".format(
                 process.args, process.returncode, process.stderr.rstrip()
             ))
-        else:
-            return process.stdout.splitlines()
+        result = process.stdout.splitlines()
+        return result
 
     @traceLog()
     def try_remove(self, packages: List[str]) -> List[str]:
@@ -180,7 +180,7 @@ class Unbreq(object):
             removed_packages = self.try_remove([v for vs in brs_can_be_removed for v in vs[1]] + providers)
             can_be_removed = True
             for path in self.get_files(removed_packages):
-                path = self.buildroot.rootdir + path
+                path = self.buildroot.make_chroot_path(path)
                 try:
                     atime = self.accessed_files[path]
                 except FileNotFoundError:
@@ -211,9 +211,9 @@ class Unbreq(object):
         Get all the BuildRequires, the RPMs that provide them, the files they
         own and set both their access and modify timestamps to zero.
         """
-        for filename in set(self.get_files(self.try_remove(self.buildrequires))):
+        for path in set(self.get_files(self.try_remove(self.buildrequires))):
             try:
-                os.utime(self.buildroot.rootdir + filename, (0, 0))
+                os.utime(self.buildroot.make_chroot_path(path), (0, 0))
             except FileNotFoundError:
                 pass
 
@@ -228,7 +228,7 @@ class Unbreq(object):
         else:
             self.chroot_command = ["/usr/bin/chroot", self.buildroot.bootstrap_buildroot.rootdir]
         self.chroot_dnf_command = self.chroot_command + ["/usr/bin/dnf", "--installroot", self.buildroot.rootdir]
-        self.srpm_dir = self.buildroot.rootdir + os.path.join(self.buildroot.builddir, "SRPMS")
+        self.srpm_dir = self.buildroot.make_chroot_path(self.buildroot.builddir, "SRPMS")
 
         self.buildrequires = set()
         for srpm in os.scandir(self.srpm_dir):
