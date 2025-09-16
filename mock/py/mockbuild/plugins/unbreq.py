@@ -32,9 +32,11 @@ class Unbreq(object):
         self.buildroot = buildroot
         self.showrc_opts = conf
         self.config = buildroot.config
-        
+
         self.min_time = None
-        self.exclude_accessed_files = [re.compile(r) for r in self.config.get("plugin_conf", {}).get("unbreq_opts", {}).get("exclude_accessed_files", [])]
+        self.exclude_accessed_files = [re.compile(r) for r in
+            self.config.get("plugin_conf", {}).get("unbreq_opts", {}).get("exclude_accessed_files", [])
+        ]
         self.accessed_files = AtimeDict()
         self.mount_options = None
         self.buildrequires = None
@@ -59,7 +61,8 @@ class Unbreq(object):
         """
         Get the BuildRequires fields of a SRPM file.
         """
-        process = subprocess.run(self.chroot_command + ["/usr/bin/rpm", "--root", self.buildroot.rootdir, "-q", "--qf", "[%{REQUIREFLAGS:deptype} %{REQUIRES} %{REQUIREFLAGS:depflags} %{REQUIREVERSION}\\n]", srpm],
+        process = subprocess.run(self.chroot_command + ["/usr/bin/rpm", "--root", self.buildroot.rootdir, "-q",
+            "--qf", "[%{REQUIREFLAGS:deptype} %{REQUIRES} %{REQUIREFLAGS:depflags} %{REQUIREVERSION}\\n]", srpm],
             stdin = subprocess.DEVNULL, stdout = subprocess.PIPE, stderr = subprocess.PIPE, text = True
         )
         if process.returncode != 0:
@@ -79,8 +82,9 @@ class Unbreq(object):
         """
         if len(packages) == 0:
             return []
-        process = subprocess.run(self.chroot_command + ["/usr/bin/rpm", "--root", self.buildroot.rootdir, "-ql"] + packages,
-            stdin = subprocess.DEVNULL, stdout = subprocess.PIPE, stderr = subprocess.PIPE, text = True
+        process = subprocess.run(self.chroot_command +
+            ["/usr/bin/rpm", "--root", self.buildroot.rootdir, "-ql"] + packages,
+            stdin = subprocess.DEVNULL, stdout = subprocess.PIPE, stderr = subprocess.PIPE, text = True,
         )
         if process.returncode != 0:
             raise RuntimeError("process {} returned {}: {}".format(
@@ -88,13 +92,14 @@ class Unbreq(object):
             ))
         else:
             return process.stdout.splitlines()
-    
+
     @traceLog()
     def try_remove(self, packages: List[str]) -> List[str]:
         """
         Try to remove `packages` and obtain all the packages (NVRs) that would be removed.
         """
-        process = subprocess.run(self.chroot_dnf_command + ["--setopt", "protected_packages=", "--assumeno", "remove"] + packages,
+        process = subprocess.run(self.chroot_dnf_command +
+            ["--setopt", "protected_packages=", "--assumeno", "remove"] + packages,
             stdin = subprocess.DEVNULL, stdout = subprocess.PIPE, stderr = subprocess.PIPE, text = True,
         )
         if process.returncode != 1:
@@ -110,7 +115,7 @@ class Unbreq(object):
                 continue
             result.append("{}-{}.{}".format(nvr[0], nvr[2], nvr[1]))
         return result
-    
+
     @traceLog()
     def resolve_buildrequires(self):
         """
@@ -166,7 +171,10 @@ class Unbreq(object):
                             skip = True
                             break
                     else:
-                        getLog().info("unbreq plugin: cannot remove %s because file %s was accessed", br, short_path)
+                        getLog().info(
+                            "unbreq plugin: cannot remove %s because file %s was accessed",
+                            br, short_path
+                        )
                         can_be_removed = False
                         break
             if can_be_removed:
@@ -186,34 +194,42 @@ class Unbreq(object):
     @traceLog()
     def _PreBuildHook(self):
         getLog().info("enabled unbreq plugin (prebuild)")
-        
+
         if USE_NSPAWN:
-            self.chroot_command = ["/usr/bin/systemd-nspawn", "--quiet", "--pipe", "-D", self.buildroot.bootstrap_buildroot.rootdir, "--bind", self.buildroot.rootdir]
+            self.chroot_command = ["/usr/bin/systemd-nspawn", "--quiet", "--pipe",
+                "-D", self.buildroot.bootstrap_buildroot.rootdir, "--bind", self.buildroot.rootdir
+            ]
         else:
             self.chroot_command = ["/usr/bin/chroot", self.buildroot.bootstrap_buildroot.rootdir]
         self.chroot_dnf_command = self.chroot_command + ["/usr/bin/dnf", "--installroot", self.buildroot.rootdir]
         self.srpm_dir = self.buildroot.rootdir + os.path.join(self.buildroot.builddir, "SRPMS")
-        
+
         self.buildrequires = set()
         for srpm in os.scandir(self.srpm_dir):
             for br in self.do_with_chroot(lambda: self.get_buildrequires(srpm.path)):
                 self.buildrequires.add(br)
         self.buildrequires = sorted(set(self.buildrequires))
-        
+
         # NOTE maybe find a better example file to touch to get an atime?
         path = os.path.join(self.buildroot.rootdir, "dev", "null")
         subprocess.run(["touch", path], check = True)
         self.min_time = os.stat(path).st_atime
-        
+
         try:
-            mount_options_process = subprocess.run(["findmnt", "-n", "-o", "OPTIONS", "--target", self.buildroot.rootdir], stdin = subprocess.DEVNULL, stdout = subprocess.PIPE, stderr = subprocess.PIPE, text = True)
+            mount_options_process = subprocess.run(
+                ["findmnt", "-n", "-o", "OPTIONS", "--target", self.buildroot.rootdir],
+                stdin = subprocess.DEVNULL, stdout = subprocess.PIPE, stderr = subprocess.PIPE, text = True,
+            )
             if mount_options_process:
                 self.mount_options = mount_options_process.stdout.rstrip().split(",")
         except FileNotFoundError:
             pass
-        
+
         if "relatime" in self.mount_options:
-            getLog().info("unbreq plugin: detected 'relatime' mount option, going to set access times of files under %s to 0", self.buildroot.rootdir)
+            getLog().info(
+                "unbreq plugin: detected 'relatime' mount option, going to set access times of files under %s to 0",
+                self.buildroot.rootdir
+            )
             self.do_with_chroot(self.set_am_time)
 
     @traceLog()
@@ -223,6 +239,11 @@ class Unbreq(object):
         getLog().info("enabled unbreq plugin (postbuild)")
 
         if "noatime" in self.mount_options:
-            getLog().warning("unbreq plugin: chroot %s is on a filesystem mounted with the 'noatime' option; detection will not work correctly, you may want to remount the proper directory with mount options 'strictatime,lazytime'", self.buildroot.rootdir)
+            getLog().warning(
+                "unbreq plugin: chroot %s is on a filesystem mounted with the 'noatime' option;"
+                "detection will not work correctly,"
+                "you may want to remount the proper directory with mount options 'strictatime,lazytime'",
+                self.buildroot.rootdir
+            )
 
         self.do_with_chroot(self.resolve_buildrequires)
