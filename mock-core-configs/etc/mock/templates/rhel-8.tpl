@@ -37,6 +37,7 @@ user_agent={{ user_agent }}
 [rhel-baseos]
 name = Red Hat Enterprise Linux - BaseOS
 baseurl = https://cdn.redhat.com/content/dist/rhel8/$releasever/$basearch/baseos/os
+enabled=1
 sslverify = 1
 sslcacert = /etc/rhsm/ca/redhat-uep.pem
 sslclientkey = /etc/pki/entitlement/{{ redhat_subscription_key_id }}-key.pem
@@ -47,6 +48,7 @@ skip_if_unavailable=False
 [rhel-appstream]
 name = Red Hat Enterprise Linux - AppStream
 baseurl = https://cdn.redhat.com/content/dist/rhel8/$releasever/$basearch/appstream/os
+enabled=1
 sslverify = 1
 sslcacert = /etc/rhsm/ca/redhat-uep.pem
 sslclientkey = /etc/pki/entitlement/{{ redhat_subscription_key_id }}-key.pem
@@ -57,6 +59,7 @@ skip_if_unavailable=False
 [codeready-builder]
 name = Red Hat Enterprise Linux - CodeReady Linux Builder
 baseurl = https://cdn.redhat.com/content/dist/rhel8/$releasever/$basearch/codeready-builder/os
+enabled=1
 sslverify = 1
 sslcacert = /etc/rhsm/ca/redhat-uep.pem
 sslclientkey = /etc/pki/entitlement/{{ redhat_subscription_key_id }}-key.pem
