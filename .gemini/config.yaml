@@ -1,0 +1,12 @@
+# overrides summary setting from default configuration:
+# https://developers.google.com/gemini-code-assist/docs/customize-gemini-behavior-github#default-configuration
+have_fun: true
+code_review:
+  disable: false
+  comment_severity_threshold: MEDIUM
+  max_review_comments: -1
+  pull_request_opened:
+    help: false
+    summary: false
+    code_review: true
+ignore_patterns: []
