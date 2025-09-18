@@ -193,7 +193,7 @@ class Unbreq(object):
                             break
                     else:
                         getLog().info(
-                            "unbreq plugin: cannot remove %s because file %s was accessed",
+                            "unbreq plugin: BuildRequire %s is needed because file %s was accessed",
                             br, short_path
                         )
                         can_be_removed = False
