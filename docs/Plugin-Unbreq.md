@@ -19,6 +19,8 @@ mock --enable-plugin=unbreq ...
 In logs you should see messages like:
 ```
 INFO: enabled unbreq plugin(prebuild)
+...
+INFO: enabled unbreq plugin(postbuild)
 ```
 
 If Unbreq detects an unneeded `BuildRequire` it prints a message like:
@@ -58,3 +60,5 @@ After executing the build, the relevant files have their access time compared to
 2. Then the tool checks the files owned by all the RPMs, if they were accessed during the build.
 3. If no, then the `BuildRequire` is added to the list of removable fields.
    In the next iteration the `dnf` query is executed with the next `BuildRequire` field together with all the fields that can be removed.
+
+Available since version 6.4.
