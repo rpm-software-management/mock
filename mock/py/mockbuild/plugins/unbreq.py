@@ -13,6 +13,7 @@ from mockbuild.trace_decorator import getLog, traceLog
 import mockbuild.util
 from mockbuild.util import USE_NSPAWN
 import mockbuild.mounts
+import mockbuild.file_util
 
 requires_api_version = "1.1"
 
@@ -240,9 +241,9 @@ class Unbreq(object):
         self.buildrequires_providers = self.get_buildrequires_providers(sorted(buildrequires))
 
         # NOTE maybe find a better example file to touch to get an atime?
-        path = os.path.join(self.buildroot.rootdir, "dev", "null")
-        subprocess.run(["touch", path], check = True)
-        self.min_time = os.stat(path).st_atime
+        path = self.buildroot.make_chroot_path("dev", "null")
+        mockbuild.file_util.touch(path)
+        self.min_time = os.path.getatime(path)
 
         try:
             mount_options_process = subprocess.run(
