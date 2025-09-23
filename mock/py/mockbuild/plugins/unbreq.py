@@ -28,7 +28,7 @@ class AtimeDict(dict):
 def init(plugins, conf, buildroot):
     Unbreq(plugins, conf, buildroot)
 
-class Unbreq(object):
+class Unbreq():
     @traceLog()
     def __init__(self, plugins, conf, buildroot):
         self.buildroot = buildroot
@@ -38,9 +38,8 @@ class Unbreq(object):
         self.min_time = None
         config_exclude_accessed_files = self.config.get("plugin_conf", {}).get("unbreq_opts", {}).get("exclude_accessed_files", [])
         if not isinstance(config_exclude_accessed_files, list):
-            raise mockbuild.exception.ConfigError(
-                "unbreq plugin: expected configuration field `exclude_accessed_files` to be a list, but was {}"
-                .format(type(config_exclude_accessed_files))
+            raise mockbuild.exception.ConfigError("unbreq plugin: expected configuration field "
+                f"`exclude_accessed_files` to be a list, but was {type(config_exclude_accessed_files)}"
             )
         self.exclude_accessed_files = [re.compile(r) for r in config_exclude_accessed_files]
         self.accessed_files = AtimeDict()
@@ -114,7 +113,7 @@ class Unbreq(object):
             nvr = line.split()
             if len(nvr) != 6:
                 continue
-            result.append("{}-{}.{}".format(nvr[0], nvr[2], nvr[1]))
+            result.append(f"{nvr[0]}-{nvr[2]}.{nvr[1]}")
         return result
 
     @traceLog()
@@ -127,8 +126,8 @@ class Unbreq(object):
 
         # Get both the mapping and the reverse mapping between each BuildRequire
         # and the RPMs that provide it.
-        br_providers: dict[str, list[str]] = dict()
-        provided_brs: dict[str, list[str]] = dict()
+        br_providers: dict[str, list[str]] = {}
+        provided_brs: dict[str, list[str]] = {}
         for br in buildrequires:
             process = subprocess.run(
                 self.chroot_dnf_command + ["repoquery", "--installed", "--whatprovides", br],
