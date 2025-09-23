@@ -36,9 +36,13 @@ class Unbreq(object):
         self.config = buildroot.config
 
         self.min_time = None
-        self.exclude_accessed_files = [re.compile(r) for r in
-            self.config.get("plugin_conf", {}).get("unbreq_opts", {}).get("exclude_accessed_files", [])
-        ]
+        config_exclude_accessed_files = self.config.get("plugin_conf", {}).get("unbreq_opts", {}).get("exclude_accessed_files", [])
+        if not isinstance(config_exclude_accessed_files, list):
+            raise mockbuild.exception.ConfigError(
+                "unbreq plugin: expected configuration field `exclude_accessed_files` to be a list, but was {}"
+                .format(type(config_exclude_accessed_files))
+            )
+        self.exclude_accessed_files = [re.compile(r) for r in config_exclude_accessed_files]
         self.accessed_files = AtimeDict()
         self.mount_options = None
         self.buildrequires_providers = None
