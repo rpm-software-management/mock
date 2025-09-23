@@ -183,10 +183,8 @@ class Unbreq(object):
                     continue
                 if atime > self.min_time:
                     short_path = path[len(self.buildroot.rootdir):]
-                    skip = False
                     for r in self.exclude_accessed_files:
                         if r.search(short_path) is not None:
-                            skip = True
                             break
                     else:
                         getLog().info(
