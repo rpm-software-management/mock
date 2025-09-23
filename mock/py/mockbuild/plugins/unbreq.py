@@ -65,12 +65,9 @@ class Unbreq(object):
         """
         process = subprocess.run(self.chroot_command + ["/usr/bin/rpm", "--root", self.buildroot.rootdir, "-q",
             "--qf", "[%{REQUIREFLAGS:deptype} %{REQUIRES} %{REQUIREFLAGS:depflags} %{REQUIREVERSION}\\n]", srpm],
-            stdin = subprocess.DEVNULL, stdout = subprocess.PIPE, stderr = subprocess.PIPE, text = True
+            stdin = subprocess.DEVNULL, stdout = subprocess.PIPE, stderr = subprocess.PIPE,
+            text = True, check = True,
         )
-        if process.returncode != 0:
-            raise RuntimeError("process {} returned {}: {}".format(
-                process.args, process.returncode, process.stderr.rstrip()
-            ))
         result = []
         for line in process.stdout.splitlines():
             if line.startswith("manual "):
@@ -86,12 +83,9 @@ class Unbreq(object):
             return []
         process = subprocess.run(self.chroot_command +
             ["/usr/bin/rpm", "--root", self.buildroot.rootdir, "-q", "--qf", "[%{FILENAMES}\\n]"] + packages,
-            stdin = subprocess.DEVNULL, stdout = subprocess.PIPE, stderr = subprocess.PIPE, text = True,
+            stdin = subprocess.DEVNULL, stdout = subprocess.PIPE, stderr = subprocess.PIPE,
+            text = True, check = True,
         )
-        if process.returncode != 0:
-            raise RuntimeError("process {} returned {}: {}".format(
-                process.args, process.returncode, process.stderr.rstrip()
-            ))
         result = process.stdout.splitlines()
         return result
 
@@ -100,14 +94,15 @@ class Unbreq(object):
         """
         Try to remove `packages` and obtain all the packages (NVRs) that would be removed.
         """
+
+        # Note that we expect this command to return 1
         process = subprocess.run(self.chroot_dnf_command +
             ["--setopt", "protected_packages=", "--assumeno", "remove"] + packages,
-            stdin = subprocess.DEVNULL, stdout = subprocess.PIPE, stderr = subprocess.PIPE, text = True,
+            stdin = subprocess.DEVNULL, stdout = subprocess.PIPE, stderr = subprocess.PIPE,
+            text = True, check = False,
         )
         if process.returncode != 1:
-            raise RuntimeError("process {} returned {}: {}".format(
-                process.args, process.returncode, process.stderr.rstrip()
-            ))
+            raise subprocess.CalledProcessError(process.returncode, process, process.stdout, process.stderr)
         result = []
         for line in process.stdout.splitlines():
             if not line.startswith(" "):
@@ -133,12 +128,9 @@ class Unbreq(object):
         for br in buildrequires:
             process = subprocess.run(
                 self.chroot_dnf_command + ["repoquery", "--installed", "--whatprovides", br],
-                stdin = subprocess.DEVNULL, stdout = subprocess.PIPE, stderr = subprocess.PIPE, text = True
+                stdin = subprocess.DEVNULL, stdout = subprocess.PIPE, stderr = subprocess.PIPE,
+                text = True, check = True,
             )
-            if process.returncode != 0:
-                raise RuntimeError("process {} returned {}: {}".format(
-                    process.args, process.returncode, process.stderr.strip()
-                ))
             current_br_providers: list[str] = process.stdout.splitlines()
             br_providers[br] = current_br_providers
             for provider in current_br_providers:
@@ -240,12 +232,18 @@ class Unbreq(object):
         self.min_time = os.path.getatime(path)
 
         try:
+            # NOTE should failure throw an exception?
             mount_options_process = subprocess.run(
-                ["findmnt", "-n", "-o", "OPTIONS", "--target", self.buildroot.rootdir],
-                stdin = subprocess.DEVNULL, stdout = subprocess.PIPE, stderr = subprocess.PIPE, text = True,
+                ["/usr/bin/findmnt", "-n", "-o", "OPTIONS", "--target", self.buildroot.rootdir],
+                stdin = subprocess.DEVNULL, stdout = subprocess.PIPE, stderr = subprocess.PIPE,
+                text = True, check = False,
             )
             if mount_options_process:
                 self.mount_options = mount_options_process.stdout.rstrip().split(",")
+            else:
+                getLog().warning("unbreq plugin: unable to detect buildroot mount options, process %s returned %d: %s",
+                    mount_options_process, mount_options_process.returncode, mount_options_process.stderr,
+                )
         except FileNotFoundError:
             pass
 
