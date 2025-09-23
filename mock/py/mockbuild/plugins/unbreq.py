@@ -3,10 +3,6 @@
 import subprocess
 import os
 import re
-from typing import (
-    Dict,
-    List,
-)
 
 # our imports
 from mockbuild.trace_decorator import getLog, traceLog
@@ -63,7 +59,7 @@ class Unbreq(object):
                 return function()
 
     @traceLog()
-    def get_buildrequires(self, srpm: str) -> List[str]:
+    def get_buildrequires(self, srpm: str) -> list[str]:
         """
         Get the BuildRequires fields of a SRPM file.
         """
@@ -82,7 +78,7 @@ class Unbreq(object):
         return result
 
     @traceLog()
-    def get_files(self, packages: List[str]) -> List[str]:
+    def get_files(self, packages: list[str]) -> list[str]:
         """
         Get the files owned by `packages` using an RPM query.
         """
@@ -100,7 +96,7 @@ class Unbreq(object):
         return result
 
     @traceLog()
-    def try_remove(self, packages: List[str]) -> List[str]:
+    def try_remove(self, packages: list[str]) -> list[str]:
         """
         Try to remove `packages` and obtain all the packages (NVRs) that would be removed.
         """
@@ -123,7 +119,7 @@ class Unbreq(object):
         return result
 
     @traceLog()
-    def get_buildrequires_providers(self, buildrequires: List[str]) -> Dict[str, List[str]]:
+    def get_buildrequires_providers(self, buildrequires: list[str]) -> dict[str, list[str]]:
         """
         Get the mapping of BuildRequires fields to the RPMs that provide it.
         Each BR can be provided by multiple installed RPMs but we try to
@@ -132,8 +128,8 @@ class Unbreq(object):
 
         # Get both the mapping and the reverse mapping between each BuildRequire
         # and the RPMs that provide it.
-        br_providers: Dict[str, List[str]] = dict()
-        provided_brs: Dict[str, List[str]] = dict()
+        br_providers: dict[str, list[str]] = dict()
+        provided_brs: dict[str, list[str]] = dict()
         for br in buildrequires:
             process = subprocess.run(
                 self.chroot_dnf_command + ["repoquery", "--installed", "--whatprovides", br],
@@ -143,7 +139,7 @@ class Unbreq(object):
                 raise RuntimeError("process {} returned {}: {}".format(
                     process.args, process.returncode, process.stderr.strip()
                 ))
-            current_br_providers: List[str] = process.stdout.splitlines()
+            current_br_providers: list[str] = process.stdout.splitlines()
             br_providers[br] = current_br_providers
             for provider in current_br_providers:
                 provided_brs.setdefault(provider, []).append(br)
