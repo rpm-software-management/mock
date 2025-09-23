@@ -29,6 +29,14 @@ def init(plugins, conf, buildroot):
     Unbreq(plugins, conf, buildroot)
 
 class Unbreq():
+    """
+    Mock plugin that detects unused BuildRequires in RPM builds.
+
+    Works by tracking file access times during the build process to determine
+    which BuildRequire packages had their files accessed. Reports any
+    BuildRequires whose files were not accessed as potentially unnecessary.
+    """
+
     @traceLog()
     def __init__(self, plugins, conf, buildroot):
         self.buildroot = buildroot
