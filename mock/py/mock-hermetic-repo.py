@@ -16,7 +16,7 @@ import shutil
 import subprocess
 import sys
 
-from urllib.parse import quote
+from urllib.parse import quote, urlparse
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 
@@ -46,7 +46,7 @@ def request_with_retry(retries=5, backoff_factor=0.3,
     return session
 
 
-def download_file(url, outputdir):
+def download_file(url, outputdir, client_auth_map):
     """
     Download a single file (pool worker)
     """
@@ -59,7 +59,23 @@ def download_file(url, outputdir):
     log.info("Downloading %s", url)
 
     try:
-        with request_with_retry().get(url, stream=True, timeout=60) as response:
+        parsed = urlparse(url)
+        host_with_port = parsed.netloc
+        host_only = parsed.hostname or host_with_port
+
+        cert_arg = None
+        # Prefer exact host:port mapping, then hostname-only
+        mapping_value = client_auth_map.get(host_with_port) or client_auth_map.get(host_only)
+        if mapping_value:
+            cert_path, key_path = mapping_value
+            cert_arg = (cert_path, key_path) if key_path else cert_path
+
+        session = request_with_retry()
+        request_kwargs = {"stream": True, "timeout": 60}
+        if cert_arg is not None:
+            request_kwargs["cert"] = cert_arg
+
+        with session.get(url, **request_kwargs) as response:
             if response.status_code != 200:
                 return False
             with open(file_name, "wb") as fd:
@@ -98,6 +114,12 @@ def _argparser():
                             "Download RPMs into this directory, and then run "
                             "/bin/createrepo_c utility there to populate the "
                             "RPM repo metadata."))
+    parser.add_argument("--client-cert-for", dest="client_cert_for",
+                        action="append", nargs='+', metavar="HOST CERT [KEY]",
+                        help=(
+                            "Register a client certificate (and optional key) to use for a "
+                            "specific host. Repeatable. Usage: \n"
+                            "  --client-cert-for HOST CERT [KEY]"))
     return parser
 
 
@@ -121,6 +143,32 @@ def prepare_image(image_specification, bootstrap_data, outputdir):
 def _main():
     options = _argparser().parse_args()
 
+    # Build host -> (cert_path, key_path|None) mapping
+    client_auth_map = {}
+    if getattr(options, "client_cert_for", None):
+        for parts in options.client_cert_for:
+            if len(parts) < 2 or len(parts) > 3:
+                log.error("Invalid --client-cert-for usage (expected: --client-cert-for HOST CERT [KEY]) -> %s", parts)
+                sys.exit(2)
+            host = parts[0]
+            cert_path = parts[1]
+            key_path = parts[2] if len(parts) == 3 else None
+            if not cert_path:
+                log.error("Invalid --client-cert-for value for %s (missing CERT path)", host)
+                sys.exit(2)
+            if not os.path.isfile(cert_path):
+                log.error("Client certificate file does not exist for %s: %s", host, cert_path)
+                sys.exit(2)
+            if key_path and not os.path.isfile(key_path):
+                log.error("Client key file does not exist for %s: %s", host, key_path)
+                sys.exit(2)
+            # Log registration without printing key path
+            if key_path:
+                log.info("Registering client certificate for %s: cert=%s (key provided)", host, cert_path)
+            else:
+                log.info("Registering client certificate for %s: cert=%s", host, cert_path)
+            client_auth_map[host] = (cert_path, key_path)
+
     with open(options.lockfile, "r", encoding="utf-8") as fd:
         data = json.load(fd)
 
@@ -132,8 +180,10 @@ def _main():
     failed = False
     urls = [i["url"] for i in data["buildroot"]["rpms"]]
     with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
-        for i, out in zip(urls, executor.map(download_file, urls,
-                                             [options.output_repo for _ in urls])):
+        for i, out in zip(urls, executor.map(download_file,
+                                             urls,
+                                             [options.output_repo for _ in urls],
+                                             [client_auth_map for _ in urls])):
             if out is False:
                 log.error("Download failed: %s", i)
                 failed = True
