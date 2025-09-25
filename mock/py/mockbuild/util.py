@@ -994,6 +994,7 @@ metadata_expire=0
 gpgcheck=0
 cost=1
 best=1
+module_hotfixes=true
 """.format(repoid=repoid, baseurl=baseurl)
 
     def _fix_cfg(cfg):
