@@ -18,7 +18,7 @@
 
 Summary: Builds packages inside chroots
 Name: mock
-Version: 6.3
+Version: 6.4
 Release: 1%{?dist}
 License: GPL-2.0-or-later
 # Source is created by
@@ -329,6 +329,15 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 
 
 %changelog
+* Thu Oct 09 2025 Pavel Raiskup <praiskup@redhat.com> 6.4-1
+- add unbreq plugin for detection of unused BuildRequires (marian.koncek@mailbox.org)
+- set module_hotfixes=true for --addrepo repositories (andreas.rogge@bareos.com)
+- added options to /bin/mock-hermetic-repo support for client certificates (scoheb@gmail.com)
+- use "systemd-nspawn --suppress-sync=yes" when available (msuchy@redhat.com)
+- buildroot_lock: call repoquery as a privileged user
+- buildroot_lock: better error reporting
+- fix unclosed file warning (pastalian46@gmail.com)
+
 * Wed Jun 18 2025 Pavel Raiskup <praiskup@redhat.com> 6.3-1
 - lockfile: don't hard-code DNF _bindir location, use config_opts
 - fix sysusers packaging once more

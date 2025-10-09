@@ -3,7 +3,7 @@
 %endif
 
 Name:       mock-core-configs
-Version:    43.1
+Version:    43.2
 Release:    1%{?dist}
 Summary:    Mock core config files basic chroots
 
@@ -152,6 +152,12 @@ fi
 %ghost %config(noreplace,missingok) %{_sysconfdir}/mock/default.cfg
 
 %changelog
+* Thu Oct 09 2025 Pavel Raiskup <praiskup@redhat.com> 43.2-1
+- disable gpgcheck for EPEL [local] repos
+- make sure [local] repo is available in rhel+epel repos
+- Add Kylin OS 11 (negativo17@gmail.com)
+- Azure Linux (CBL Mariner) 2.0 is now EOL (negativo17@gmail.com)
+
 * Tue Aug 12 2025 Jiri Kyjovsky <j1.kyjovsky@gmail.com> 43.1-1
 - Move Rawhide to F44
 
