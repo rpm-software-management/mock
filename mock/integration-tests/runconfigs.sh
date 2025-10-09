@@ -14,8 +14,8 @@ if [ "$1" != "" ]; then
     configs=$1
 else
     configs=$(ls ../mock-core-configs/etc/mock | grep .cfg \
-                | grep -v -e default -e custom -e chroot-aliases \
-                | grep -E -v 'arm|ppc|s390|sparc|aarch')
+                | grep -v -e default -e custom -e chroot-aliases -e hermetic-build \
+                | grep -e "x86_64" -e "i*86")
 fi
 
 cleanup()
