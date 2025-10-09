@@ -54,4 +54,5 @@ baseurl=https://kojipkgs.fedoraproject.org/repos/epel8-next-build/latest/$basear
 cost=2000
 enabled=0
 skip_if_unavailable=False
+gpgcheck=0
 """
