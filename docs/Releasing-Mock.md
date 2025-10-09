@@ -29,7 +29,10 @@ Be sure to use the `--config-only` flag when generating release notes.
 
 ## Release checklist overview
 
-0. Make sure all GitHub CI checks are passing for the latest commit
+0. Make sure all GitHub CI checks are passing for the latest commit.
+   Roughly check the commits that are to be released:
+
+        $ tito report --untagged-commits
 
 1. Change to the correct local branch, e.g. `main`
 
@@ -47,13 +50,13 @@ Be sure to use the `--config-only` flag when generating release notes.
    the current version.
 
    For a full release (both mock and mock-core-configs):
-        
+
         $ sudo dnf install towncrier
         $ ./releng/generate-release-notes --use-version 5.1
         $ vim docs/Release-Notes-5.1.md  # modify manually!
-        
+
    For a mock-core-configs only release:
-   
+
         $ ./releng/generate-release-notes --use-version 40.3 --config-only
         $ vim docs/Release-Notes-Configs-40.3.md  # modify manually!
 
@@ -62,9 +65,11 @@ Be sure to use the `--config-only` flag when generating release notes.
    Add list of contributing authors:
 
    For mock:
+
        $ git log mock-4.1-1..HEAD --format="%aN" mock/ | sort | uniq
-   
+
    For mock-core-configs:
+
        $ git log mock-core-configs-38.1-1..HEAD --format="%aN" mock-core-configs/ | sort | uniq
 
 6. Commit all the pending changes
@@ -72,23 +77,23 @@ Be sure to use the `--config-only` flag when generating release notes.
 7. On your box (you need push-access rights), tag the git tree:
 
    For a full release (both mock and mock-core-configs):
-       
+
        # First tag mock-core-configs
        $ cd ./mock-core-configs
        $ tito tag --use-version 40.3  # major.minor according to policy
-       
+
        # Then update mock's spec and tag mock
        # Update 'Conflicts: mock-core-configs < ??' in mock.spec
        $ cd ./mock
        $ tito tag --use-version 5.1  # major.minor according to policy
 
    For a mock-core-configs only release:
-   
+
        $ cd ./mock-core-configs
        $ tito tag --use-version 40.3  # major.minor according to policy
-       
+
    For a mock only release:
-   
+
        $ cd ./mock
        $ tito tag --use-version 5.1  # major.minor according to policy
 
@@ -107,28 +112,32 @@ Be sure to use the `--config-only` flag when generating release notes.
 
     These tito-generated commits can calmly be squashed, updated, etc. (you may
     include documentation fixes there).  Just don't forget to re-add the dropped
-    tag back (if dropped) 'git tag mock-4.1-1'.  Alternatively just `git push`
+    tag back (if dropped) `git tag mock-4.1-1`.  Alternatively just `git push`
     the commits.
 
 9. Push the git tags upstream, e.g.
 
    For mock-core-configs:
+
        $ git push origin mock-core-configs-40.4-1
-       
+
    For mock:
+
        $ git push origin mock-5.1-1
 
 10. Release for EPEL and Fedora
 
-    $ # make sure that .tito/releasers.conf is up to date
-    
+    Make sure that `.tito/releasers.conf` is up to date.
+
     For mock-core-configs:
-    $ cd ./mock-core-configs
-    $ tito release fedora-git-all
-    
+
+        $ cd ./mock-core-configs
+        $ tito release fedora-git-all
+
     For mock:
-    $ cd ./mock
-    $ tito release fedora-git-all
+
+        $ cd ./mock
+        $ tito release fedora-git-all
 
 11. publish tgz
 

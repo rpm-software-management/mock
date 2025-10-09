@@ -1,6 +1,0 @@
-We now execute `repoquery` in `buildroot_lock.py` as a privileged user.
-Otherwise, [DNF5 fails with](https://github.com/rpm-software-management/dnf5/issues/2392):
-
-    filesystem error: cannot create directories: Permission denied [/var/lib/mock/f44-build-repo_6596509/root/home/mockbuilder/.local/state]
-
-We could do additional homedir preparations, but that doesn't seem useful.

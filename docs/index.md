@@ -70,6 +70,7 @@ Versions in Linux distributions:
 
 
 ## Release Notes
+* [6.4 and Configs 43.2](Release-Notes-6.4) (2025-10-09) - Release 6.4 adds the experimental `unbreq` plugin and boosts performance with a new default setting.
 * [Configs 43.1](Release-Notes-Configs-43.1) (2025-08-12) - Fedora 43 branched.
 * [6.3 and Configs 42.4](Release-Notes-6.3) (2025-06-18) - Compatibility bug-fix for Python 3.14, configuration is owned by root group, AlmaLinux and Rocky Linux 10 added.
 * [6.2 and Configs 42.3](Release-Notes-6.2) (2025-05-22) - RHEL 10 configuration, configurable ca-trust paths that Mock copies to chroots.

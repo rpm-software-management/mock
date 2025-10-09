@@ -1,3 +1,0 @@
-We now set `module_hotfixes=true` on repositories generated via `--localrepo`.
-This allows fetching packages from the local repository that are filtered out
-via modularity when building with `--chain --localrepo <dir>`.
