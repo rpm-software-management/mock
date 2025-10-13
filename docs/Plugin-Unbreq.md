@@ -12,9 +12,14 @@ Detector of unused `BuildRequires` of RPM builds.
 > If `relatime` is used, the tool will still work but will spend some time rewriting filesystem metadata inside the build root.
 > The tool works fastest with mount options `strictatime,lazytime`.
 
-Enable it upon `mock` execution via a flag:
+Enable it upon `mock` execution via a command line flag:
 ```
 mock --enable-plugin=unbreq ...
+```
+
+Enable it permamently by adding / editing the configuration file in `$HOME/.config/mock.cfg`:
+```
+config_opts['plugin_conf']['unbreq_enable'] = True
 ```
 
 In logs you should see messages like:
