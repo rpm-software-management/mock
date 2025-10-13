@@ -7,9 +7,10 @@ Detector of unused `BuildRequires` of RPM builds.
 
 # Usage
 
-> [!Note]
+> [!NOTE]
 > The current implementation requires that the mock chroot is **not** on a filesystem mounted with the `noatime` option.
-> You may need to remount the relevant directory with options `strictatime,lazytime`.
+> If `relatime` is used, the tool will still work but will spend some time rewriting filesystem metadata inside the build root.
+> The tool works fastest with mount options `strictatime,lazytime`.
 
 Enable it upon `mock` execution via a flag:
 ```
