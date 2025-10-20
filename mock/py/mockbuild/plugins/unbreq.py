@@ -56,6 +56,7 @@ class Unbreq:
         self.showrc_opts = conf
         self.config = buildroot.config
 
+        self.enabled = False
         self.chroot_command: list[str] = []
         self.chroot_dnf_command: list[str] = []
         self.min_time: float = 0.0
@@ -268,6 +269,8 @@ class Unbreq:
         """
         Initialize some chroot attributes.
         """
+        self.enabled = True
+
         getLog().info("enabled unbreq plugin (earlyprebuild)")
 
         if self.buildroot.bootstrap_buildroot is not None:
@@ -286,6 +289,9 @@ class Unbreq:
         temporary SRPM containing dynamically generated BuildRequires.
         We simply collect them every time this hook is invoked.
         """
+        if not self.enabled:
+            return
+
         getLog().info("enabled unbreq plugin (postyum)")
 
         srpm_dir = self.buildroot.make_chroot_path(self.buildroot.builddir, "SRPMS")
@@ -298,6 +304,9 @@ class Unbreq:
         """
         At this point even dynamic BuildRequires have been generated.
         """
+        if not self.enabled:
+            return
+
         getLog().info("enabled unbreq plugin (postdeps)")
 
         with self.do_with_chroot():
@@ -337,7 +346,7 @@ class Unbreq:
         """
         Resolve accessed files to BuildRequires.
         """
-        if self.buildroot.state.result != "success":
+        if not self.enabled or self.buildroot.state.result != "success":
             return
 
         getLog().info("enabled unbreq plugin (postbuild)")
