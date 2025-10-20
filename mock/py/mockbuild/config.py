@@ -26,7 +26,7 @@ from .constants import MOCKCONFDIR, PKGPYTHONDIR, VERSION
 from .file_util import is_in_dir
 from .trace_decorator import getLog, traceLog
 from .uid import getresuid, getresgid
-from .util import set_use_nspawn, setup_operations_timeout, check_nspawn_has_suppress_sync_option
+from .util import set_use_nspawn, setup_operations_timeout
 
 PLUGIN_LIST = ['tmpfs', 'root_cache', 'yum_cache', 'mount', 'bind_mount',
                'ccache', 'selinux', 'package_state', 'chroot_scan',
@@ -95,8 +95,9 @@ def setup_default_config_opts():
     config_opts['use_nspawn'] = None
     config_opts['rpmbuild_networking'] = False
     config_opts['nspawn_args'] = ['--capability=cap_ipc_lock']
-    if check_nspawn_has_suppress_sync_option():
-        config_opts['nspawn_args'] += ['--suppress-sync=yes']
+    # FIXME disable as default because of https://github.com/rpm-software-management/mock/issues/1641
+    # if check_nspawn_has_suppress_sync_option():
+    #    config_opts['nspawn_args'] += ['--suppress-sync=yes']
     config_opts['use_container_host_hostname'] = True
 
     config_opts['use_bootstrap'] = True
