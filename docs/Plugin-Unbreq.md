@@ -5,13 +5,12 @@ title: Plugin Unbreq
 
 Detector of unused `BuildRequires` of RPM builds.
 
+### Mount options notes
+* The current implementation requires that the mock chroot is **not** on a filesystem mounted with the `noatime` option.
+* If `relatime` is used, the tool will still work but will spend some time rewriting filesystem metadata inside the build root.
+* The tool works fastest with mount options `strictatime,lazytime`.
+
 # Usage
-
-> [!NOTE]
-> The current implementation requires that the mock chroot is **not** on a filesystem mounted with the `noatime` option.
-> If `relatime` is used, the tool will still work but will spend some time rewriting filesystem metadata inside the build root.
-> The tool works fastest with mount options `strictatime,lazytime`.
-
 Enable it upon `mock` execution via a command line flag:
 ```
 mock --enable-plugin=unbreq ...
