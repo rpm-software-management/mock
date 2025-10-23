@@ -18,7 +18,7 @@
 
 Summary: Builds packages inside chroots
 Name: mock
-Version: 6.4
+Version: 6.5
 Release: 1%{?dist}
 License: GPL-2.0-or-later
 # Source is created by
@@ -329,6 +329,9 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 
 
 %changelog
+* Thu Oct 23 2025 Pavel Raiskup <praiskup@redhat.com> 6.5-1
+- make suppress-sync opt-in, not opt-out (msuchy@redhat.com)
+
 * Thu Oct 09 2025 Pavel Raiskup <praiskup@redhat.com> 6.4-1
 - add unbreq plugin for detection of unused BuildRequires (marian.koncek@mailbox.org)
 - set module_hotfixes=true for --addrepo repositories (andreas.rogge@bareos.com)
