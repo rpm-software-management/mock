@@ -423,6 +423,7 @@ def setup_default_config_opts():
         'armv7hl': 'arm',
         'i386': 'i386',
         'i686': 'i386',
+        'loongarch64': 'loongarch64',
         'ppc64': 'ppc64',
         'ppc64le': 'ppc64le',
         's390x': 's390x',
