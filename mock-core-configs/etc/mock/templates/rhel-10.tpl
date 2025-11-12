@@ -42,6 +42,7 @@ sslcacert=/etc/rhsm/ca/redhat-uep.pem
 sslclientkey=/etc/pki/entitlement/{{ redhat_subscription_key_id }}-key.pem
 sslclientcert=/etc/pki/entitlement/{{ redhat_subscription_key_id }}.pem
 gpgkey=file:///usr/share/distribution-gpg-keys/redhat/RPM-GPG-KEY-redhat{{ releasever_major }}-release
+enabled=1
 
 [appstream]
 name=Red Hat Enterprise Linux {{ releasever_major }} for {{ target_arch }} - AppStream (RPMs)
@@ -51,6 +52,7 @@ sslcacert=/etc/rhsm/ca/redhat-uep.pem
 sslclientkey=/etc/pki/entitlement/{{ redhat_subscription_key_id }}-key.pem
 sslclientcert=/etc/pki/entitlement/{{ redhat_subscription_key_id }}.pem
 gpgkey=file:///usr/share/distribution-gpg-keys/redhat/RPM-GPG-KEY-redhat{{ releasever_major }}-release
+enabled=1
 
 [crb]
 name=Red Hat CodeReady Linux Builder for RHEL {{ releasever_major }} {{ target_arch }} (RPMs)
@@ -60,6 +62,7 @@ sslcacert=/etc/rhsm/ca/redhat-uep.pem
 sslclientkey=/etc/pki/entitlement/{{ redhat_subscription_key_id }}-key.pem
 sslclientcert=/etc/pki/entitlement/{{ redhat_subscription_key_id }}.pem
 gpgkey=file:///usr/share/distribution-gpg-keys/redhat/RPM-GPG-KEY-redhat{{ releasever_major }}-release
+enabled=1
 
 [highavailability]
 name=Red Hat Enterprise Linux {{ releasever_major }} for {{ target_arch }} - High Availability (RPMs)
