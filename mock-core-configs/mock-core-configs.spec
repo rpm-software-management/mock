@@ -3,7 +3,7 @@
 %endif
 
 Name:       mock-core-configs
-Version:    43.2
+Version:    43.3
 Release:    1%{?dist}
 Summary:    Mock core config files basic chroots
 
@@ -152,6 +152,10 @@ fi
 %ghost %config(noreplace,missingok) %{_sysconfdir}/mock/default.cfg
 
 %changelog
+* Fri Nov 14 2025 Pavel Raiskup <praiskup@redhat.com> 43.3-1
+- Add openSUSE Leap 16.0 configurations (negativo17@gmail.com)
+- Update Kylin OS images and comments (negativo17@gmail.com)
+
 * Thu Oct 09 2025 Pavel Raiskup <praiskup@redhat.com> 43.2-1
 - disable gpgcheck for EPEL [local] repos
 - make sure [local] repo is available in rhel+epel repos
