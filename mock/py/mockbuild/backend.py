@@ -281,21 +281,30 @@ class Commands(object):
                 spec = self.get_specfile_name(srpm)
                 spec_path = os.path.join(self.buildroot.builddir, 'SPECS', spec)
 
-            rebuilt_srpm = self.rebuild_installed_srpm(spec_path, timeout)
+            # We need to rebuild the SRPM and install dependencies multiple
+            # times so that cases like #1652 are covered
+            max_loops = int(self.config.get('static_buildrequires_max_loops'))
+            for _ in range(max_loops):
+                packages_before = self.buildroot.all_chroot_packages()
+                rebuilt_srpm = self.rebuild_installed_srpm(spec_path, timeout)
 
-            # Check if we will have dynamic BuildRequires, but do not allow it
-            hdr = next(util.yieldSrpmHeaders((rebuilt_srpm,)))
-            # pylint: disable=no-member
-            requires = {text._to_text(req) for req in hdr[rpm.RPMTAG_REQUIRES]}
-            dynamic_buildreqs = 'rpmlib(DynamicBuildRequires)' in requires
+                # Check if we will have dynamic BuildRequires, but do not allow it
+                hdr = next(util.yieldSrpmHeaders((rebuilt_srpm,)))
+                # pylint: disable=no-member
+                requires = {text._to_text(req) for req in hdr[rpm.RPMTAG_REQUIRES]}
+                dynamic_buildreqs = 'rpmlib(DynamicBuildRequires)' in requires
 
-            if dynamic_buildreqs and not self.config.get('dynamic_buildrequires'):
-                raise Error('DynamicBuildRequires are found but support is disabled.'
-                            ' See "dynamic_buildrequires" in config_opts.')
+                if dynamic_buildreqs and not self.config.get('dynamic_buildrequires'):
+                    raise Error('DynamicBuildRequires are found but support is disabled.'
+                                ' See "dynamic_buildrequires" in config_opts.')
 
-            self.install_external(requires)
-            # install the (static) BuildRequires
-            self.installSrpmDeps(rebuilt_srpm)
+                self.install_external(requires)
+                # Install the (static) BuildRequires
+                self.installSrpmDeps(rebuilt_srpm)
+                packages_after = self.buildroot.all_chroot_packages()
+                if packages_after == packages_before:
+                    break
+
             self.state.finish(buildsetup)
             buildsetup_finished = True
 
