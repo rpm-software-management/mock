@@ -16,6 +16,7 @@ metalink=https://mirrors.fedoraproject.org/metalink?repo=epel-{{ releasever_majo
 gpgkey=file:///usr/share/distribution-gpg-keys/epel/RPM-GPG-KEY-EPEL-{{ releasever_major }}
 gpgcheck=1
 countme=1
+enabled=1
 
 [epel-testing]
 name=Extra Packages for Enterprise Linux $releasever - Testing - $basearch
