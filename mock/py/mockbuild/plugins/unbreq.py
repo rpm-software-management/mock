@@ -45,8 +45,9 @@ class Unbreq:
     Mock plugin that detects unused BuildRequires in RPM builds.
 
     Works by tracking file access times during the build process to determine
-    which BuildRequire packages had their files accessed. Reports any
-    BuildRequires whose files were not accessed as potentially unnecessary.
+    which packages listed as BuildRequires had their files accessed. Reports any
+    BuildRequires fields whose files were not accessed as potentially
+    unnecessary.
     """
 
     # pylint: disable=too-many-instance-attributes
@@ -122,10 +123,10 @@ class Unbreq:
             if deptype_end == -1:
                 deptype_end = separator
             deptype = line[:deptype_end]
-            buildrequire = line[separator + 1:].rstrip()
+            buildrequires = line[separator + 1:].rstrip()
             if deptype == "rpmlib":
                 continue
-            self.buildrequires_deptype[buildrequire] = deptype
+            self.buildrequires_deptype[buildrequires] = deptype
 
     @traceLog()
     def get_files(self, packages: list[str]) -> list[str]:
@@ -176,8 +177,8 @@ class Unbreq:
         minimize it.
         """
 
-        # Get both the mapping and the reverse mapping between each BuildRequire
-        # and the RPMs that provide it.
+        # Get both the mapping and the reverse mapping between each
+        # BuildRequires field and the RPMs that provide it.
         br_providers: dict[str, list[str]] = {}
         provided_brs: dict[str, list[str]] = {}
         for br in buildrequires:
@@ -218,7 +219,7 @@ class Unbreq:
     @traceLog()
     def resolve_buildrequires(self) -> None:
         """
-        Decide which BuildRequire fields were not used based on file accesses.
+        Decide which BuildRequires fields were not used based on file accesses.
         """
         brs_can_be_removed: list[tuple[str, list[str]]] = []
         for br, providers in self.buildrequires_providers.items():
@@ -237,7 +238,7 @@ class Unbreq:
                             break
                     else:
                         getLog().info(
-                            "unbreq plugin: BuildRequire %s is needed because file %s was accessed",
+                            "unbreq plugin: BuildRequires %s is needed because file %s was accessed",
                             br, short_path
                         )
                         can_be_removed = False
