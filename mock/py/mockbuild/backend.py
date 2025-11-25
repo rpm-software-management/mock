@@ -281,6 +281,11 @@ class Commands(object):
                 spec = self.get_specfile_name(srpm)
                 spec_path = os.path.join(self.buildroot.builddir, 'SPECS', spec)
 
+            # Install the (static) BuildRequires
+            # We need the `dnf builddep` before rebuilding the SRPM so that
+            # cases like #1652 are covered
+            self.installSrpmDeps(self.buildroot.rootdir + srpm)
+
             rebuilt_srpm = self.rebuild_installed_srpm(spec_path, timeout)
 
             # Check if we will have dynamic BuildRequires, but do not allow it
@@ -294,8 +299,6 @@ class Commands(object):
                             ' See "dynamic_buildrequires" in config_opts.')
 
             self.install_external(requires)
-            # install the (static) BuildRequires
-            self.installSrpmDeps(rebuilt_srpm)
             self.state.finish(buildsetup)
             buildsetup_finished = True
 
