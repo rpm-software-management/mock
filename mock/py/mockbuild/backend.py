@@ -281,9 +281,10 @@ class Commands(object):
                 spec = self.get_specfile_name(srpm)
                 spec_path = os.path.join(self.buildroot.builddir, 'SPECS', spec)
 
-            # We need to rebuild the SRPM and install dependencies twice so that
-            # cases like #1652 are covered
-            for _ in range(2):
+            # We need to rebuild the SRPM and install dependencies multiple
+            # times so that cases like #1652 are covered
+            for _ in range(5):
+                packages_before = self.buildroot.all_chroot_packages()
                 rebuilt_srpm = self.rebuild_installed_srpm(spec_path, timeout)
 
                 # Check if we will have dynamic BuildRequires, but do not allow it
@@ -299,6 +300,9 @@ class Commands(object):
                 self.install_external(requires)
                 # Install the (static) BuildRequires
                 self.installSrpmDeps(rebuilt_srpm)
+                packages_after = self.buildroot.all_chroot_packages()
+                if packages_after == packages_before:
+                    break
 
             self.state.finish(buildsetup)
             buildsetup_finished = True
