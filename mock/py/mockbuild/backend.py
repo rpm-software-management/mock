@@ -56,9 +56,6 @@ class Commands(object):
         self.more_buildreqs = config['more_buildreqs']
         self.cache_alterations = config['cache_alterations']
 
-        self.backup = config['backup_on_clean']
-        self.backup_base_dir = config['backup_base_dir']
-
         # do we allow interactive root shells?
         self.no_root_shells = config['no_root_shells']
 
@@ -66,23 +63,8 @@ class Commands(object):
         self.rpmbuild_noclean_option = None
 
     @traceLog()
-    def backup_results(self):
-        srcdir = os.path.join(self.buildroot.basedir, "result")
-        if not os.path.exists(srcdir):
-            return
-        dstdir = os.path.join(self.backup_base_dir, self.config['root'])
-        file_util.mkdirIfAbsent(dstdir)
-        rpms = glob.glob(os.path.join(srcdir, "*rpm"))
-        if len(rpms) == 0:
-            return
-        self.state.state_log.info("backup_results: saving with cp %s %s", " ".join(rpms), dstdir)
-        util.run(cmd="cp %s %s" % (" ".join(rpms), dstdir))
-
-    @traceLog()
     def clean(self):
         """clean out chroot with extreme prejudice :)"""
-        if self.backup:
-            self.backup_results()
         self.state.start("clean chroot")
         self.buildroot.delete()
         self.state.finish("clean chroot")
