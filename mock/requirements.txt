@@ -1,8 +1,7 @@
 backoff
 distro
 jinja2
-pyroute2==0.5.3; python_version < "3.9"
-pyroute2; python_version >= "3.9"
+pyroute2
 requests
 rpmautospec-core
 templated-dictionary
