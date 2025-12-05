@@ -1,0 +1,1 @@
+The `file_util.rmtree` cleanup process has been significantly accelerated, especially for very large buildroots. For example, cleanup time for a ~2M-file tree has been reduced from over 13 minutes to approximately one minute.
