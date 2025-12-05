@@ -1052,6 +1052,23 @@ class Buildroot(object):
         Deletes the buildroot contents.
         """
         if os.path.exists(self.basedir):
+            # Backup the built RPMs before deleting the buildroot and results, if the backup_on_clean option is enabled
+            if self.config['backup_on_clean']:
+                srcdir = os.path.join(self.basedir, "result")
+                if os.path.exists(srcdir):
+                    dstdir = os.path.join(self.config['backup_base_dir'], self.config['root'])
+                    file_util.mkdirIfAbsent(dstdir)
+                    rpms = glob.glob(os.path.join(srcdir, "*rpm"))
+                    if rpms:
+                        self.state.state_log.info("backup_results: saving with mv %s %s", " ".join(rpms), dstdir)
+                        for rpm in rpms:
+                            dest_path = os.path.join(dstdir, os.path.basename(rpm))
+                            try:
+                                os.replace(rpm, dest_path)
+                            except Exception as e:
+                                self.state.state_log.error("backup_results: error moving %s to %s: %s",
+                                       rpm, dest_path, e)
+
             p = self.make_chroot_path()
             self._lock_buildroot(exclusive=True)
             util.orphansKill(p)
