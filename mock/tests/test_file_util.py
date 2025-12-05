@@ -303,6 +303,8 @@ class TestRmtree:
             if islonglongpath:
                 file_util.rmtree(str(temp_dir))
                 assert not temp_dir.exists()
+        except OSError:
+            pytest.skip("Support of path > PATH_MAX not yet implemented")
         finally:
             if temp_dir.exists():
                 shutil.rmtree(str(temp_dir))
