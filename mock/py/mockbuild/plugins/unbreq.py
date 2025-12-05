@@ -238,16 +238,15 @@ class Unbreq:
                             break
                     else:
                         getLog().info(
-                            "unbreq plugin: BuildRequires %s is needed because file %s was accessed",
+                            "unbreq plugin: BuildRequires '%s' is needed because file %s was accessed",
                             br, short_path
                         )
                         can_be_removed = False
                         break
             if can_be_removed:
                 brs_can_be_removed.append((br, providers))
-        if len(brs_can_be_removed) != 0:
-            brs = list(map(lambda t: t[0], brs_can_be_removed))
-            getLog().warning("unbreq plugin: the following BuildRequires were not used:\n\t%s", "\n\t".join(brs))
+        for br, _ in brs_can_be_removed:
+            getLog().warning("unbreq plugin: BuildRequires '%s' was not used", br)
 
     @traceLog()
     def set_br_files_am_time(self) -> None:
