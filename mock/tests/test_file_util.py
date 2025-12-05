@@ -50,7 +50,7 @@ def chattr_works_or_skip(path: Path):
         set_immutable(path, True)
         set_immutable(path, False)
     except subprocess.CalledProcessError as e:
-        pytest.skip(e.stderr)
+        pytest.skip(e.stderr.rstrip())
 
 
 class TestRmtree:
@@ -229,30 +229,42 @@ class TestRmtree:
 
     def test_rmtree_error_retry_simulated(self, temp_dir):
         """Simulate delayed deletion."""
-        (temp_dir / "file.txt").write_text("will be deleted late")
+        struct = {"subdir": {"file.txt": "will be deleted late", }}
+        create_dir_structure(temp_dir, struct)
 
         # Monkey-patch os.remove to fail first few times
         original_remove = os.remove
-        retries = 10 * 2 + 2
 
         def fake_remove(path):
             nonlocal retries
-            if path == str(temp_dir / "file.txt") and retries:
+            if path == str(temp_dir / "subdir" / "file.txt") and retries:
                 retries -= 1
-                if retries < 12:
-                    raise OSError(errno.EBUSY, "tst EBUSY", path)
-                return
+                raise OSError(errno.EBUSY, "tst EBUSY", path)
             original_remove(path)
 
-        with patch("os.remove", fake_remove):
-            # Patch time.sleep to avoid long waits during retry
-            with patch("time.sleep"):
+        def fake_rmtree(path):
+            nonlocal retries
+            if path == str(temp_dir) and retries:
+                retries -= 1
+                raise OSError(errno.ENOTEMPTY, "Directory not empty", path)
+            shutil.rmtree(path)
+
+        # Patch time.sleep to avoid long waits during retry
+        with patch("time.sleep"):
+            retries = 10 + 2
+            with patch("os.remove", fake_remove):
+                exclude = (str(temp_dir / "subdir" / "exclude"),)
+                with pytest.raises(OSError, match="tst EBUSY"):
+                    file_util.rmtree(str(temp_dir), exclude=exclude)
+                file_util.rmtree(str(temp_dir), exclude=exclude)
+            assert not temp_dir.exists()
+
+            temp_dir.mkdir()
+            retries = 10 + 2
+            with patch("mockbuild.file_util._fastRm", fake_rmtree):
                 with pytest.raises(OSError, match="Directory not empty"):
                     file_util.rmtree(str(temp_dir))
-                with pytest.raises(OSError, match="tst EBUSY"):
-                    file_util.rmtree(str(temp_dir))
                 file_util.rmtree(str(temp_dir))
-
             assert not temp_dir.exists()
 
     def test_rmtree_long_path(self, temp_dir):

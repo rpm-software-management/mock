@@ -1,0 +1,2 @@
+The `file_util.rmtree` cleanup process has been significantly accelerated, especially for very large buildroots. The previous pure-Python approach could take over 13 minutes to remove ~2 million files. A new backend now uses either native `rm -r` or `shutil.rmtree`, reducing cleanup times to under one minute.
+Also introduces support for paths exceeding PATH_MAX, applied to all non-excluded directories.

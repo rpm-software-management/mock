@@ -4,8 +4,8 @@ import errno
 import os
 import os.path
 import shutil
-import stat
 import subprocess
+import tempfile
 import time
 
 from . import exception
@@ -31,6 +31,47 @@ def touch(fileName):
     open(fileName, 'a').close()
 
 
+_ERRNO_MAP = {
+    os.strerror(errno.ENOENT): errno.ENOENT,
+    os.strerror(errno.ENOTEMPTY): errno.ENOTEMPTY,
+    os.strerror(errno.EPERM): errno.EPERM,
+    os.strerror(errno.EACCES): errno.EACCES,
+    os.strerror(errno.EBUSY): errno.EBUSY,
+}
+
+
+def _fastRm(path):
+    cmd = [b"/usr/bin/rm", b"--recursive", b"--interactive=never", path]
+    r = subprocess.run(cmd, stderr=subprocess.PIPE, shell=False, check=False, encoding="utf-8", env={b"LC_ALL": b"C.UTF-8"})
+    if r.returncode:
+        # "rm" uses libc's function: void error (int status, int errnum, const char *format, …)
+        # let's try to parse its format
+        rmerr = r.stderr.find("rm: ")
+        if rmerr != -1:
+            rmerr = r.stderr[rmerr + 4:].split(": ")
+            if len(rmerr) > 1:
+                error_message = rmerr[-1][:-1]
+                if error_message in _ERRNO_MAP:
+                    file_name = None
+                    if rmerr[0][:14] == "cannot remove ":
+                        file_name = rmerr[0][15:-1]
+                    elif rmerr[0] == "traversal failed":
+                        file_name = rmerr[1][1:-1]
+                    raise OSError(_ERRNO_MAP[error_message], r.stderr.rstrip(), file_name)
+        raise OSError(None, r.stderr.rstrip())
+
+
+# Let's make sure /usr/bin/rm works or foll back to shutil.rmtree
+with tempfile.TemporaryDirectory() as td:
+    tst = os.path.join(td, "foobar")
+    try:
+        os.mkdir(tst)
+        _fastRm(tst)
+    except BaseException:
+        _fastRm = shutil.rmtree
+del td, tst
+
+
 @traceLog()
 def rmtree(path, selinux=False, exclude=()):
     """Version of shutil.rmtree that ignores no-such-file-or-directory errors,
@@ -46,35 +87,38 @@ def rmtree(path, selinux=False, exclude=()):
     while try_again:
         try_again = False
         try:
-            names = os.listdir(path)
-            for name in names:
-                fullname = os.path.join(path, name)
-                if fullname not in exclude:
+            if any(e.startswith(path) for e in exclude):
+                dirs = []
+                with os.scandir(path) as it:
+                    for entry in it:
+                        fullname = entry.path
+                        if fullname not in exclude:
+                            if entry.is_dir(follow_symlinks=False):
+                                dirs.append(fullname)
+                            else:
+                                os.remove(fullname)
+                for fullname in dirs:
+                    subexclude = [e for e in exclude if e.startswith(fullname)]
                     try:
-                        mode = os.lstat(fullname).st_mode
-                    except OSError:
-                        mode = 0
-                    if stat.S_ISDIR(mode):
-                        try:
-                            rmtree(fullname, selinux=selinux, exclude=exclude)
-                        except OSError as e:
-                            if e.errno in (errno.EPERM, errno.EACCES, errno.EBUSY):
-                                # we already tried handling this on lower level and failed,
-                                # there's no point in trying again now
-                                failed_to_handle = True
-                            raise
-                    else:
-                        os.remove(fullname)
-            os.rmdir(path)
+                        rmtree(fullname, selinux=selinux, exclude=subexclude)
+                    except OSError as e:
+                        if e.errno in (errno.EPERM, errno.EACCES, errno.EBUSY):
+                            # we already tried handling this on lower level and failed,
+                            # there's no point in trying again now
+                            failed_to_handle = True
+                        raise
+                os.rmdir(path)
+            else:
+                _fastRm(path)
         except OSError as e:
             if failed_to_handle:
                 raise
             if e.errno == errno.ENOENT:  # no such file or directory
                 pass
             elif e.errno == errno.ENOTEMPTY:  # there's something left
-                if exclude: # but it is excluded
+                if exclude:  # but it is excluded
                     pass
-                else: # likely during Ctrl+C something additional data
+                else:  # likely during Ctrl+C something additional data
                     try_again = True
                     retries -= 1
                     if retries <= 0:
