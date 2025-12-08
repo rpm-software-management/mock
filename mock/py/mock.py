@@ -572,18 +572,8 @@ def check_arch_combination(target_arch, config_opts):
     # Check below that we can do cross-architecture builds.
 
     option = f"--forcearch={config_opts['forcearch']}"
-    binary_pattern = config_opts["qemu_user_static_mapping"].get(config_opts["forcearch"])
-    if not binary_pattern:
-        # Probably a missing configuration.
-        log.warning(
-            "Mock will likely fail, %s is enabled "
-            "while Mock is unable to detect the corresponding "
-            "/usr/bin/qemu-*-static binary",
-            option,
-        )
-        time.sleep(5)
-        return
-
+    binary_pattern = config_opts["qemu_user_static_mapping"].get(config_opts["forcearch"],
+                                                                 config_opts["forcearch"])
     binary = f'/usr/bin/qemu-{binary_pattern}-static'
     if os.path.exists(binary):
         return
