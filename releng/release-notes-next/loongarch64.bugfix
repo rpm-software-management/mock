@@ -1,1 +1,0 @@
-The `loongarch64` architecture was missing from the `target_arch` to `force_arch` mapping, preventing the use of QEMU user static binaries for `loongarch64` chroots.
