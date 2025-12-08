@@ -1,0 +1,4 @@
+`mock --scrub=all` now correctly backs up successful builds from the buildroot. Fixes issue #1639.
+The backup process now uses `mv` semantics instead of `cp`, avoiding file duplication, preserving timestamps, and improving performance.
+Replaced the `util.run` call with `shutil.move`, following the suggestion from gemini-code-assist and providing a more idiomatic and portable Python implementation.
+Fix gemini-code-assist suggestion: `shutil.move` may raise "Error: Destination path already exists"; use `os.replace` to safely overwrite.
