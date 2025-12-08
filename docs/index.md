@@ -70,6 +70,7 @@ Versions in Linux distributions:
 
 
 ## Release Notes
+* [6.6](Release-Notes-6.6) (2025-12-08) - Static build-requires installed in multiple waves, easier forcearch selection.
 * [Configs 43.3](Release-Notes-Configs-43.3) (2025-11-14) - configs for openSUSE 16.0 added
 * [6.5](Release-Notes-6.5) (2025-10-23) - Release 6.5 makes the skip-fsync() opt-out into an opt-in.
 * [6.4 and Configs 43.2](Release-Notes-6.4) (2025-10-09) - Release 6.4 adds the experimental `unbreq` plugin and boosts performance with a new default setting.

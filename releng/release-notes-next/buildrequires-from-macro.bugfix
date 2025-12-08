@@ -1,8 +1,0 @@
-Make sure to install `BuildRequires` defined by macros. For example:
-
-```
-BuildRequires: selinux-policy
-%{?selinux_requires}
-```
-
-This now properly installs the `selinux-policy-devel` package.
