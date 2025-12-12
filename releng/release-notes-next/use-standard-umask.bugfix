@@ -1,0 +1,4 @@
+Use umask 0022 instead of 0002 to avoid strange permissions.
+This was causing issues with image builds running inside of
+mock resulting in weird default permissions that broke some
+workloads.

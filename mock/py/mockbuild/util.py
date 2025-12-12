@@ -36,6 +36,7 @@ import distro
 from . import exception
 from . import file_util
 from . import text
+from .constants import DEFAULT_UMASK
 from .trace_decorator import getLog, traceLog
 from .uid import setresuid
 from pyroute2 import IPRoute
@@ -636,7 +637,7 @@ class ChildPreExec(object):
     def __call__(self, *args, **kargs):
         if not self.shell and not self.no_setsid:
             os.setsid()
-        os.umask(0o02)
+        os.umask(DEFAULT_UMASK)
         condUnshareNet(self.unshare_net)
         condPersonality(self.personality)
         condEnvironment(self.env)

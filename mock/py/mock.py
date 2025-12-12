@@ -65,7 +65,7 @@ from functools import partial
 # our imports
 from mockbuild import config
 from mockbuild import util
-from mockbuild.constants import MOCKCONFDIR, VERSION
+from mockbuild.constants import MOCKCONFDIR, VERSION, DEFAULT_UMASK
 from mockbuild.file_downloader import FileDownloader
 from mockbuild.mounts import BindMountPoint, FileSystemMountPoint
 import mockbuild.backend
@@ -867,7 +867,7 @@ def main():
     for k, v in list(config_opts.items()):
         log.debug("    %s:  %s", k, v)
 
-    os.umask(0o02)
+    os.umask(DEFAULT_UMASK)
     os.environ["HOME"] = buildroot.homedir
 
     # New namespace starting from here

@@ -12,3 +12,5 @@ PYTHONDIR = os.path.dirname(os.path.realpath(sys.argv[0]))
 PKGPYTHONDIR = os.path.join(os.path.dirname(os.path.realpath(sys.argv[0])), "mockbuild")
 MOCKCONFDIR = os.path.join(SYSCONFDIR, "mock")
 # end build system subs
+
+DEFAULT_UMASK = 0o022
