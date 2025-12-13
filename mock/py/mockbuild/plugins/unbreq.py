@@ -11,7 +11,7 @@ Author: Marián Konček <mkoncek@redhat.com>
 import subprocess
 import os
 import re
-from typing import Generator
+from typing import Generator, Iterable, Optional
 from contextlib import contextmanager
 
 # our imports
@@ -59,6 +59,7 @@ class Unbreq:
 
         self.enabled = False
         self.chroot_command: list[str] = []
+        self.chroot_rpm_command: list[str] = []
         self.chroot_dnf_command: list[str] = []
         self.min_time: float = 0.0
         config_exclude_accessed_files = (
@@ -115,8 +116,8 @@ class Unbreq:
         Dependency type strings can have more attributes separated by a comma.
         We ignore those.
         """
-        process = subprocess.run(self.chroot_command + ["/usr/bin/rpm", "--root", self.buildroot.rootdir, "-q",
-            "--qf", "[%{REQUIREFLAGS:deptype} %{REQUIRES} %{REQUIREFLAGS:depflags} %{REQUIREVERSION}\\n]", srpm],
+        process = subprocess.run([*self.chroot_rpm_command, "-q", "--qf",
+            "[%{REQUIREFLAGS:deptype} %{REQUIRES} %{REQUIREFLAGS:depflags} %{REQUIREVERSION}\\n]", srpm],
             stdin = subprocess.DEVNULL, stdout = subprocess.PIPE, stderr = subprocess.PIPE,
             text = True, check = True,
         )
@@ -138,8 +139,7 @@ class Unbreq:
         """
         if len(packages) == 0:
             return []
-        process = subprocess.run(self.chroot_command +
-            ["/usr/bin/rpm", "--root", self.buildroot.rootdir, "-q", "--qf", "[%{FILENAMES}\\n]"] + packages,
+        process = subprocess.run([*self.chroot_rpm_command, "-q", "--qf", "[%{FILENAMES}\\n]", *packages],
             stdin = subprocess.DEVNULL, stdout = subprocess.PIPE, stderr = subprocess.PIPE,
             text = True, check = True,
         )
@@ -153,8 +153,8 @@ class Unbreq:
         """
 
         # Note that we expect this command to return 1
-        process = subprocess.run(self.chroot_dnf_command +
-            ["--setopt", "protected_packages=", "--assumeno", "remove"] + packages,
+        process = subprocess.run([*self.chroot_dnf_command,
+            "--setopt", "protected_packages=", "--assumeno", "remove", *packages],
             stdin = subprocess.DEVNULL, stdout = subprocess.PIPE, stderr = subprocess.PIPE,
             text = True, check = False,
         )
@@ -173,7 +173,7 @@ class Unbreq:
         return result
 
     @traceLog()
-    def get_buildrequires_providers(self, buildrequires: list[str]) -> dict[str, list[str]]:
+    def get_buildrequires_providers(self, buildrequires: Iterable[str]) -> dict[str, list[str]]:
         """
         Get the mapping of BuildRequires fields to the RPMs that provide it.
         Each BR can be provided by multiple installed RPMs but we try to
@@ -186,7 +186,7 @@ class Unbreq:
         provided_brs: dict[str, list[str]] = {}
         for br in buildrequires:
             process = subprocess.run(
-                self.chroot_dnf_command + ["repoquery", "--installed", "--whatprovides", br],
+                [*self.chroot_dnf_command, "repoquery", "--installed", "--whatprovides", br],
                 stdin = subprocess.DEVNULL, stdout = subprocess.PIPE, stderr = subprocess.PIPE,
                 text = True, check = True,
             )
@@ -220,33 +220,38 @@ class Unbreq:
         return br_providers
 
     @traceLog()
+    def check_removed_files(self, packages: list[str]) -> Optional[str]:
+        """
+        Attempt to remove `packages` and check if any of the file owned by
+        packages that would be removed, was accessed.
+        """
+        for path in self.get_files(self.try_remove(packages)):
+            try:
+                atime = self.accessed_files[self.buildroot.make_chroot_path(path)]
+            except FileNotFoundError:
+                continue
+            if atime > self.min_time:
+                for r in self.exclude_accessed_files:
+                    if r.search(path) is not None:
+                        break
+                else:
+                    return path
+        return None
+
+    @traceLog()
     def resolve_buildrequires(self) -> None:
         """
         Decide which BuildRequires fields were not used based on file accesses.
         """
         brs_can_be_removed: list[tuple[str, list[str]]] = []
         for br, providers in self.buildrequires_providers.items():
-            removed_packages = self.try_remove([v for vs in brs_can_be_removed for v in vs[1]] + providers)
-            can_be_removed = True
-            for path in self.get_files(removed_packages):
-                path = self.buildroot.make_chroot_path(path)
-                try:
-                    atime = self.accessed_files[path]
-                except FileNotFoundError:
-                    continue
-                if atime > self.min_time:
-                    short_path = path[len(self.buildroot.rootdir):]
-                    for r in self.exclude_accessed_files:
-                        if r.search(short_path) is not None:
-                            break
-                    else:
-                        getLog().info(
-                            "unbreq plugin: BuildRequires '%s' is needed because file %s was accessed",
-                            br, short_path
-                        )
-                        can_be_removed = False
-                        break
-            if can_be_removed:
+            path = self.check_removed_files([*(v for _, vs in brs_can_be_removed for v in vs), *providers])
+            if path is not None:
+                getLog().info(
+                    "unbreq plugin: BuildRequires '%s' is needed because file %s was accessed",
+                    br, path
+                )
+            else:
                 brs_can_be_removed.append((br, providers))
         for br, _ in brs_can_be_removed:
             getLog().warning("unbreq plugin: BuildRequires '%s' was not used", br)
@@ -283,7 +288,8 @@ class Unbreq:
                 ]
             else:
                 self.chroot_command = ["/usr/sbin/chroot", self.buildroot.bootstrap_buildroot.rootdir]
-        self.chroot_dnf_command = self.chroot_command + ["/usr/bin/dnf", "--installroot", self.buildroot.rootdir]
+        self.chroot_rpm_command = [*self.chroot_command, "/usr/bin/rpm", "--root", self.buildroot.rootdir]
+        self.chroot_dnf_command = [*self.chroot_command, "/usr/bin/dnf", "--installroot", self.buildroot.rootdir]
 
     @traceLog()
     def _PostYumHook(self) -> None:
@@ -313,10 +319,10 @@ class Unbreq:
         getLog().info("enabled unbreq plugin (postdeps)")
 
         with self.do_with_chroot():
-            self.buildrequires_providers = self.get_buildrequires_providers(sorted(self.buildrequires_deptype.keys()))
+            self.buildrequires_providers = self.get_buildrequires_providers(self.buildrequires_deptype.keys())
 
         # NOTE maybe find a better example file to touch to get an atime?
-        path = self.buildroot.make_chroot_path("dev", "null")
+        path = self.buildroot.make_chroot_path("/dev/null")
         mockbuild.file_util.touch(path)
         self.min_time = os.path.getatime(path)
 
