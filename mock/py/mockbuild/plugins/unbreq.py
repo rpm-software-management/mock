@@ -13,6 +13,7 @@ import os
 import re
 from typing import Generator, Iterable, Iterator, Optional
 from contextlib import contextmanager
+from concurrent.futures import ThreadPoolExecutor
 
 # our imports
 from mockbuild.trace_decorator import getLog, traceLog
@@ -79,6 +80,7 @@ class Unbreq:
         self.rpm_files: dict[str, list[str]] = {}
         self.buildrequires_providers: dict[str, list[str]] = {}
         self.buildrequires_deptype: dict[str, str] = {}
+        self.pool: ThreadPoolExecutor = ThreadPoolExecutor(max_workers = os.process_cpu_count() or 1)
 
         # TODO handle different package managers
         # self.buildroot.pkg_manager.name
@@ -272,15 +274,18 @@ class Unbreq:
         Get all the BuildRequires, the RPMs that provide them, the files they
         own and set both their access and modify timestamps to zero.
         """
-        buildrequires_providers = []
-        for providers in self.buildrequires_providers.values():
-            buildrequires_providers.extend(providers)
-
-        for path in set(self.get_files(self.try_remove(buildrequires_providers))):
+        def handle_file(path: str) -> None:
             try:
                 os.utime(self.buildroot.make_chroot_path(path), (0, 0))
             except FileNotFoundError:
                 pass
+
+        all_files = self.get_files(self.try_remove(
+            provider for providers in self.buildrequires_providers.values() for provider in providers
+        ))
+
+        for _ in self.pool.map(handle_file, all_files):
+            pass
 
     @traceLog()
     def _EarlyPrebuildHook(self) -> None:
