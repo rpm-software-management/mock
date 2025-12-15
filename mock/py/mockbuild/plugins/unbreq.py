@@ -11,7 +11,7 @@ Author: Marián Konček <mkoncek@redhat.com>
 import subprocess
 import os
 import re
-from typing import Generator, Iterable, Optional
+from typing import Generator, Iterable, Iterator, Optional
 from contextlib import contextmanager
 
 # our imports
@@ -75,6 +75,7 @@ class Unbreq:
         self.exclude_accessed_files = [re.compile(r) for r in config_exclude_accessed_files]
         self.accessed_files = AtimeDict()
         self.mount_options: list[str] = []
+        self.rpm_files: dict[str, list[str]] = {}
         self.buildrequires_providers: dict[str, list[str]] = {}
         self.buildrequires_deptype: dict[str, str] = {}
 
@@ -133,21 +134,29 @@ class Unbreq:
             self.buildrequires_deptype[buildrequires] = deptype
 
     @traceLog()
-    def get_files(self, packages: list[str]) -> list[str]:
+    def get_files(self, packages: set[str]) -> Iterator[str]:
         """
         Get the files owned by `packages` using an RPM query.
         """
-        if len(packages) == 0:
-            return []
-        process = subprocess.run([*self.chroot_rpm_command, "-q", "--qf", "[%{FILENAMES}\\n]", *packages],
-            stdin = subprocess.DEVNULL, stdout = subprocess.PIPE, stderr = subprocess.PIPE,
-            text = True, check = True,
-        )
-        result = process.stdout.splitlines()
-        return result
+        queried_packages = packages.difference(self.rpm_files.keys())
+        if len(queried_packages) != 0:
+            process = subprocess.run([*self.chroot_rpm_command, "-q",
+                "--qf", "\\n[%{FILENAMES}\\n]", *queried_packages],
+                stdin = subprocess.DEVNULL, stdout = subprocess.PIPE, stderr = subprocess.PIPE,
+                text = True, check = True,
+            )
+            package_it = iter(queried_packages)
+            for line in process.stdout.splitlines():
+                if not line:
+                    package = next(package_it)
+                    current_files: list[str] = []
+                    self.rpm_files[package] = current_files
+                else:
+                    current_files.append(line)
+        return (path for package in packages for path in self.rpm_files[package])
 
     @traceLog()
-    def try_remove(self, packages: list[str]) -> list[str]:
+    def try_remove(self, packages: Iterator[str]) -> set[str]:
         """
         Try to remove `packages` and obtain all the packages (NVRs) that would be removed.
         """
@@ -162,14 +171,14 @@ class Unbreq:
             raise subprocess.CalledProcessError(
                 process.returncode, " ".join(process.args), process.stdout, process.stderr
             )
-        result = []
+        result: set[str] = set()
         for line in process.stdout.splitlines():
             if not line.startswith(" "):
                 continue
             nvr = line.split()
             if len(nvr) != 6:
                 continue
-            result.append(f"{nvr[0]}-{nvr[2]}.{nvr[1]}")
+            result.add(f"{nvr[0]}-{nvr[2]}.{nvr[1]}")
         return result
 
     @traceLog()
@@ -220,7 +229,7 @@ class Unbreq:
         return br_providers
 
     @traceLog()
-    def check_removed_files(self, packages: list[str]) -> Optional[str]:
+    def check_removed_files(self, packages: Iterator[str]) -> Optional[str]:
         """
         Attempt to remove `packages` and check if any of the file owned by
         packages that would be removed, was accessed.
@@ -245,7 +254,7 @@ class Unbreq:
         """
         brs_can_be_removed: list[tuple[str, list[str]]] = []
         for br, providers in self.buildrequires_providers.items():
-            path = self.check_removed_files([*(v for _, vs in brs_can_be_removed for v in vs), *providers])
+            path = self.check_removed_files((*(v for _, vs in brs_can_be_removed for v in vs), *providers))
             if path is not None:
                 getLog().info(
                     "unbreq plugin: BuildRequires '%s' is needed because file %s was accessed",
