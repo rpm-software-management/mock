@@ -75,6 +75,7 @@ class Unbreq:
         self.exclude_accessed_files = [re.compile(r) for r in config_exclude_accessed_files]
         self.accessed_files = AtimeDict()
         self.mount_options: list[str] = []
+        self.srpms: set[str] = set()
         self.rpm_files: dict[str, list[str]] = {}
         self.buildrequires_providers: dict[str, list[str]] = {}
         self.buildrequires_deptype: dict[str, str] = {}
@@ -315,7 +316,9 @@ class Unbreq:
         srpm_dir = self.buildroot.make_chroot_path(self.buildroot.builddir, "SRPMS")
         with self.do_with_chroot():
             for srpm in os.scandir(srpm_dir):
-                self.get_buildrequires(srpm.path)
+                if srpm.path not in self.srpms:
+                    self.srpms.add(srpm.path)
+                    self.get_buildrequires(srpm.path)
 
     @traceLog()
     def _PostDepsHook(self) -> None:
