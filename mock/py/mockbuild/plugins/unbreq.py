@@ -93,9 +93,12 @@ class Unbreq:
         the bootstrap chroot, if available.
         """
         # NOTE this should really be handled automatically by `buildroot_in_bootstrap_mounted`.
-        if not USE_NSPAWN and self.buildroot.bootstrap_buildroot is not None:
+        if not USE_NSPAWN:
             with self.buildroot.shadow_utils.root.uid_manager.elevated_privileges():
-                with self.buildroot.mounts.buildroot_in_bootstrap_mounted():
+                if self.buildroot.bootstrap_buildroot is not None:
+                    with self.buildroot.mounts.buildroot_in_bootstrap_mounted():
+                        yield
+                else:
                     yield
         else:
             yield
