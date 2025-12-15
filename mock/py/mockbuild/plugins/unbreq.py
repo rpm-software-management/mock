@@ -14,6 +14,7 @@ import re
 from typing import Generator, Iterable, Iterator, Optional
 from contextlib import contextmanager
 from concurrent.futures import ThreadPoolExecutor
+from threading import Lock
 
 # our imports
 from mockbuild.trace_decorator import getLog, traceLog
@@ -29,9 +30,14 @@ class AtimeDict(dict):
     A caching lazy dictionary mapping file paths to their access time.
     """
 
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self.lock = Lock()
+
     def __missing__(self, key: str) -> float:
         result = os.stat(key).st_atime
-        self[key] = result
+        with self.lock:
+            self[key] = result
         return result
 
 @traceLog()
@@ -255,17 +261,42 @@ class Unbreq:
         """
         Decide which BuildRequires fields were not used based on file accesses.
         """
-        brs_can_be_removed: list[tuple[str, list[str]]] = []
-        for br, providers in self.buildrequires_providers.items():
-            path = self.check_removed_files((*(v for _, vs in brs_can_be_removed for v in vs), *providers))
+
+        # First check each BuildRequires separately to quickly exclude most of
+        # the candidates.
+        candidates_providers: list[tuple[str, list[str]]] = []
+        for (br, providers), path in zip(self.buildrequires_providers.items(),
+            self.pool.map(self.check_removed_files, (
+                providers for providers in self.buildrequires_providers.values()
+            ))):
             if path is not None:
                 getLog().info(
                     "unbreq plugin: BuildRequires '%s' is needed because file %s was accessed",
                     br, path
                 )
             else:
-                brs_can_be_removed.append((br, providers))
-        for br, _ in brs_can_be_removed:
+                candidates_providers.append((br, providers))
+
+        if len(candidates_providers) == 0:
+            return
+
+        # Check if all the providers can be removed together.
+        if self.check_removed_files(p for _, ps in candidates_providers for p in ps) is not None:
+            # Now execute the query with an increasing number of packages to be
+            # certain that they all can be removed together.
+            candidates_it = iter(candidates_providers)
+            brs_can_be_removed: list[tuple[str, list[str]]] = [next(candidates_it)]
+            for br, providers in candidates_it:
+                path = self.check_removed_files((*(v for _, vs in brs_can_be_removed for v in vs), *providers))
+                if path is not None:
+                    getLog().info(
+                        "unbreq plugin: BuildRequires '%s' is needed because file %s was accessed",
+                        br, path
+                    )
+                else:
+                    brs_can_be_removed.append((br, providers))
+
+        for br, _ in candidates_providers:
             getLog().warning("unbreq plugin: BuildRequires '%s' was not used", br)
 
     @traceLog()
