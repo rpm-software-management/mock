@@ -196,12 +196,12 @@ class Unbreq:
         # BuildRequires field and the RPMs that provide it.
         br_providers: dict[str, list[str]] = {}
         provided_brs: dict[str, list[str]] = {}
-        for br in buildrequires:
-            process = subprocess.run(
-                [*self.chroot_dnf_command, "repoquery", "--installed", "--whatprovides", br],
-                stdin = subprocess.DEVNULL, stdout = subprocess.PIPE, stderr = subprocess.PIPE,
-                text = True, check = True,
-            )
+
+        for br, process in zip(buildrequires, self.pool.map(lambda br: subprocess.run(
+            [*self.chroot_dnf_command, "repoquery", "--installed", "--whatprovides", br],
+            stdin = subprocess.DEVNULL, stdout = subprocess.PIPE, stderr = subprocess.PIPE,
+            text = True, check = True,
+        ), buildrequires)):
             current_br_providers: list[str] = process.stdout.splitlines()
             br_providers[br] = current_br_providers
             for provider in current_br_providers:
@@ -298,7 +298,9 @@ class Unbreq:
 
         if self.buildroot.bootstrap_buildroot is not None:
             if USE_NSPAWN:
-                self.chroot_command = ["/usr/bin/systemd-nspawn", "--quiet", "--pipe",
+                # The `--ephemeral` flag is required in order to be able to run
+                # `systemd-nspawn` concurrently.
+                self.chroot_command = ["/usr/bin/systemd-nspawn", "--quiet", "--ephemeral", "--pipe",
                     "-D", self.buildroot.bootstrap_buildroot.rootdir, "--bind", self.buildroot.rootdir
                 ]
             else:
