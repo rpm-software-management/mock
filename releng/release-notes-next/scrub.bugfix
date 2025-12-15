@@ -1,0 +1,1 @@
+Fix `mock --help` output to include information about scrubbing bootstrap image expansion.
