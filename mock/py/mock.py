@@ -23,7 +23,7 @@
 
 # pylint: disable=pointless-string-statement,wrong-import-position
 """
-       mock [options] {--init|--clean|--scrub=[all,chroot,cache,root-cache,c-cache,yum-cache,dnf-cache,lvm,overlayfs]}
+       mock [options] {--init|--clean|--scrub=[all,bootstrap,chroot,cache,root-cache,c-cache,yum-cache,dnf-cache,lvm,overlayfs]}
        mock [options] [--rebuild] /path/to/srpm(s)
        mock [options] [--chain] /path/to/srpm(s)
        mock [options] --buildsrpm {--spec /path/to/spec --sources /path/to/src|
@@ -145,10 +145,10 @@ def command_parse():
                       help="completely remove the specified chroot")
     scrub_choices = ('chroot', 'cache', 'root-cache', 'c-cache', 'yum-cache',
                      'dnf-cache', 'lvm', 'overlayfs', 'bootstrap', 'all')
-    scrub_metavar = "[all|chroot|cache|root-cache|c-cache|yum-cache|dnf-cache]"
+    scrub_metavar = "[all|bootstrap|chroot|cache|root-cache|c-cache|yum-cache|dnf-cache]"
     parser.add_option("--scrub", action='append', choices=scrub_choices, default=[],
                       metavar=scrub_metavar,
-                      help="completely remove the specified chroot "
+                      help="completely remove the specified chroot, bootstrap chroot "
                            "or cache dir or all of the chroot and cache")
     parser.add_option(
         "--scrub-all-chroots", action="store_const", dest="mode",
