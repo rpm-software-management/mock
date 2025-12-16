@@ -26,7 +26,7 @@ In logs you should see messages like:
 INFO: enabled unbreq plugin(...)
 ```
 
-If Unbreq detects an unneeded `BuildRequire` it prints a message like:
+If Unbreq detects an unneeded `BuildRequires` it prints a message like:
 ```
 WARNING: unbreq plugin: the following BuildRequires were not used:
 ...
@@ -65,12 +65,12 @@ Depending of the detected filesystem mount options, if `relatime` options is det
 ### After the build
 After executing the build, the relevant files have their access time compared to the saved timestamp.
 
-Each `BuildRequire` field may cause the installation of multiple packages.
+Each `BuildRequires` field may cause the installation of multiple packages.
 These are obtained by iteratively executing `dnf --assumeno remove ${BuildRequires}`.
 
 If any of the files owned by any of the package in this set was accessed, then this `BuildRequires` field can not be removed.
 
-Each iteration of the `remove` query will also include all the `BuildRequires` fields for which were shown to be unnecessary.
+Each iteration of the `remove` query will also include all the `BuildRequires` fields which have previously shown to be unused.
 This is because the removal of multiple packages at once can produce a different result than removing them separately.
 
 ### Output
