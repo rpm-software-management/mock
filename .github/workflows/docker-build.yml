@@ -23,4 +23,4 @@ jobs:
           pull: true
           push: false
           load: true
-      - run: docker run --privileged --cap-add=SYS_ADMIN -t --rm mockenv:latest sh -c "mock --shell echo hello world"
+      - run: docker run --privileged --cap-add=SYS_ADMIN -t --rm mockenv:latest sh -c "mock --root /etc/mock/fedora-rawhide-s390x.cfg --shell echo hello world"
