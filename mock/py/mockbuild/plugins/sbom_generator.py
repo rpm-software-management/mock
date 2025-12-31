@@ -1,5 +1,6 @@
 # Copyright (C) 2025, Atomicorp, Inc.
-# SPDX-License-Identifier: GPL-2.0-only
+# License: GPL2 or later see COPYING
+# SPDX-License-Identifier: GPL-2.0-or-later
 
 import os
 import json
