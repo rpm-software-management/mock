@@ -121,9 +121,9 @@ The plugin supports several configuration options to control SBOM generation:
 config_opts['plugin_conf']['sbom_generator_opts'] = {
     'generate_sbom': True,              # Enable SBOM generation (default: True)
     'include_file_components': True,    # Include file-level components (default: True)
-    'include_file_dependencies': True,  # Include file-to-package dependencies (default: True)
+    'include_file_dependencies': False, # Include file-to-package dependencies (default: False)
     'include_debug_files': False,       # Include debug files in file components (default: False)
-    'include_man_pages': False,         # Include man pages in file components (default: False)
+    'include_man_pages': True,          # Include man pages in file components (default: True)
     'include_toolchain_dependencies': False,  # Include build toolchain in dependencies (default: False)
 }
 ```
@@ -138,7 +138,7 @@ config_opts['plugin_conf']['sbom_generator_opts'] = {
 
 ## Output
 
-The plugin generates a file named `sbom.cyclonedx.json` in the build results directory (typically `/var/lib/mock/fedora-42-x86_64/result/`). The SBOM includes:
+The plugin generates a file named `<name>-<version>-<release>.sbom` in the build results directory (typically `/var/lib/mock/fedora-42-x86_64/result/`). The SBOM includes:
 
 * CycloneDX document metadata
   * Build timestamp
@@ -226,7 +226,8 @@ The plugin generates a file named `sbom.cyclonedx.json` in the build results dir
       "purl": "pkg:rpm/fedora/package-name@1.0-1.fc42?arch=x86_64",
       "externalReferences": [
         {
-          "type": "cpe23Type",
+          "type": "other",
+          "comment": "CPE 2.3",
           "url": "cpe:2.3:a:fedora:package-name:1.0:*:*:*:*:*:*:*:*"
         },
         {
