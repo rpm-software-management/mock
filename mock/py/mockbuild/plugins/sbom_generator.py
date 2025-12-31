@@ -11,7 +11,21 @@ import socket
 import uuid
 import tempfile
 import shutil
+import sys
+import os
+import shutil
+import json
+import subprocess
+import hashlib
+import time
+import re
 import shlex
+import tempfile
+import rpm
+from datetime import datetime
+
+import mockbuild.plugins
+from mockbuild.trace_decorator import traceLog, getLog
 
 requires_api_version = "1.1"  # Ensure compatibility with mock API
 
@@ -52,24 +66,24 @@ class SBOMGenerator(object):
     def _listSPECSDirectory(self):
         """Lists the contents of the SPECS directory before building."""
 
-        print("DEBUG: Listing contents of SPECS directory before building:")
-        print(f"DEBUG: builddir is {self.buildroot.builddir}")
-        print(f"DEBUG: rootdir is {self.rootdir}")
-        print(f"DEBUG: resultsdir is {self.buildroot.resultdir}")
+        self.buildroot.root_log.debug("DEBUG: Listing contents of SPECS directory before building:")
+        self.buildroot.root_log.debug(f"DEBUG: builddir is {self.buildroot.builddir}")
+        self.buildroot.root_log.debug(f"DEBUG: rootdir is {self.rootdir}")
+        self.buildroot.root_log.debug(f"DEBUG: resultsdir is {self.buildroot.resultdir}")
 
         # Look for spec file in the build directory
         build_dir = self.buildroot.builddir
         specs_dir = os.path.join(build_dir, "SPECS")
-        print(f"DEBUG: spec dir is {specs_dir}")
+        self.buildroot.root_log.debug(f"DEBUG: spec dir is {specs_dir}")
 
         try:
             if os.path.exists(specs_dir):
                 specs_files = os.listdir(specs_dir)
-                print(f"Contents of SPECS directory: {specs_files}")
+                self.buildroot.root_log.debug(f"Contents of SPECS directory: {specs_files}")
             else:
-                print("SPECS directory does not exist.")
+                self.buildroot.root_log.debug("SPECS directory does not exist.")
         except Exception as e:
-            print(f"Failed to list contents of SPECS directory: {e}")
+            self.buildroot.root_log.debug(f"Failed to list contents of SPECS directory: {e}")
 
     def _create_cyclonedx_document(self):
         """Creates the base CycloneDX document structure."""
@@ -85,15 +99,13 @@ class SBOMGenerator(object):
 
     def _create_metadata(self):
         """Creates CycloneDX metadata object with Mock-specific build information."""
-        from datetime import datetime
-        
         metadata = {
             "timestamp": datetime.utcnow().isoformat() + "Z",
             "tools": [
                 {
                     "vendor": "Mock",
                     "name": "mock-sbom-generator",
-                            "version": "1.2.5"
+                    "version": self.buildroot.config.get('version', 'unknown')
                 }
             ],
             "lifecycles": [
@@ -168,7 +180,7 @@ class SBOMGenerator(object):
                 if output:
                     return output.strip()
             except Exception as exc:  # pylint: disable=broad-except
-                print(f"Warning: failed to eval macro {macro} in chroot: {exc}")
+                self.buildroot.root_log.debug(f"Warning: failed to eval macro {macro} in chroot: {exc}")
         try:
             result = subprocess.run(
                 cmd,
@@ -179,7 +191,7 @@ class SBOMGenerator(object):
             )
             return result.stdout.strip()
         except subprocess.CalledProcessError as exc:
-            print(f"Warning: failed to eval macro {macro}: {exc}")
+            self.buildroot.root_log.debug(f"Warning: failed to eval macro {macro}: {exc}")
             return ""
 
     def _read_file_from_chroot(self, relative_path):
@@ -260,7 +272,7 @@ class SBOMGenerator(object):
                 for token in ["-d_fortify_source", "_fortify_source="]
             ),
             "build:hardening:pie_enabled": any(
-                token in flag_union for token in ["-fpie", "-fpie", "-pie"]
+                token in flag_union for token in ["-fpie", "-pie"]
             ),
             "build:hardening:relro_enabled": any(
                 token in flag_union
@@ -330,7 +342,7 @@ class SBOMGenerator(object):
                         break
 
             if not rpm_files and not src_rpm_files and not spec_file:
-                print("No RPM, source RPM, or spec file found for SBOM generation.")
+                self.buildroot.root_log.debug("No RPM, source RPM, or spec file found for SBOM generation.")
                 return
 
             # Create CycloneDX document
@@ -367,10 +379,11 @@ class SBOMGenerator(object):
             # Construct output filename using package name-version-release format
             # These should always be available in a proper mock build
             if not build_subject_name or not build_subject_version or not build_subject_release:
-                print(f"WARNING: Missing package metadata - name: {build_subject_name}, version: {build_subject_version}, release: {build_subject_release}")
-                print("Cannot generate SBOM with proper filename - build metadata incomplete")
+                self.buildroot.root_log.debug(f"WARNING: Missing package metadata - name: {build_subject_name}, version: {build_subject_version}, release: {build_subject_release}")
+                self.buildroot.root_log.debug("Cannot generate SBOM with proper filename - build metadata incomplete")
                 return
             
+            import os
             sbom_filename = f"{build_subject_name}-{build_subject_version}-{build_subject_release}.sbom"
             out_file = os.path.join(self.buildroot.resultdir, sbom_filename)
 
@@ -752,12 +765,13 @@ class SBOMGenerator(object):
             bom["dependencies"] = list(dependencies_dict.values())
 
             # Write CycloneDX BOM
+            import json
             with open(out_file, "w") as f:
                 json.dump(bom, f, indent=2)
 
-            print(f"CycloneDX SBOM successfully written to: {out_file}")
+            self.buildroot.root_log.debug(f"CycloneDX SBOM successfully written to: {out_file}")
         except Exception as e:
-            print(f"An error occurred during SBOM generation: {e}")
+            self.buildroot.root_log.debug(f"An error occurred during SBOM generation: {e}")
             import traceback
             traceback.print_exc()
         finally:
@@ -1410,9 +1424,9 @@ class SBOMGenerator(object):
 
     def parse_spec_file(self, spec_path):
         """Parses a spec file to extract source and patch files with their hashes and signatures."""
-        print("Parsing spec file")
+        self.buildroot.root_log.debug("Parsing spec file")
         if not os.path.isfile(spec_path):
-            print(f"Spec file not found: {spec_path}")
+            self.buildroot.root_log.debug(f"Spec file not found: {spec_path}")
             return []
         
         sources = []
@@ -1453,12 +1467,12 @@ class SBOMGenerator(object):
                     actual_hash = None
                     if os.path.isfile(file_path):
                         actual_hash = self.hash_file(file_path)
-                        print(f"Found source file {actual_filename} at {file_path}, hash: {actual_hash}")
+                        self.buildroot.root_log.debug(f"Found source file {actual_filename} at {file_path}, hash: {actual_hash}")
                     elif hash_value:
                         actual_hash = hash_value
-                        print(f"Using hash from spec file for {actual_filename}: {hash_value}")
+                        self.buildroot.root_log.debug(f"Using hash from spec file for {actual_filename}: {hash_value}")
                     else:
-                        print(f"Source file {actual_filename} not found at {file_path}")
+                        self.buildroot.root_log.debug(f"Source file {actual_filename} not found at {file_path}")
                     
                     # Check for digital signature (GPG signature)
                     signature = self.get_file_signature(file_path) if os.path.isfile(file_path) else None
@@ -1469,9 +1483,9 @@ class SBOMGenerator(object):
                         "digital_signature": signature
                     })
             
-            print(f"Extracted source and patch files from spec: {sources}")
+            self.buildroot.root_log.debug(f"Extracted source and patch files from spec: {sources}")
         except Exception as e:
-            print(f"Failed to parse spec file {spec_path}: {e}")
+            self.buildroot.root_log.debug(f"Failed to parse spec file {spec_path}: {e}")
         return sources
 
     def get_file_signature(self, file_path):
@@ -1493,7 +1507,7 @@ class SBOMGenerator(object):
             
             return None
         except Exception as e:
-            print(f"Failed to check signature for {file_path}: {e}")
+            self.buildroot.root_log.debug(f"Failed to check signature for {file_path}: {e}")
             return None
 
     def get_iso_timestamp(self):
@@ -1580,7 +1594,7 @@ class SBOMGenerator(object):
             else:
                 return "unknown"
         except Exception as e:
-            print(f"Failed to detect chroot distribution: {e}")
+            self.buildroot.root_log.debug(f"Failed to detect chroot distribution: {e}")
             return "unknown"
 
     def get_build_toolchain_packages(self):
@@ -1632,10 +1646,10 @@ class SBOMGenerator(object):
                     "cpe": cpe,
                     "checksum": package_checksum
                 })
-            print(f"Found {len(packages)} build toolchain packages")
+            self.buildroot.root_log.debug(f"Found {len(packages)} build toolchain packages")
             return packages
         except Exception as e:
-            print(f"Failed to get build environment packages: {e}")
+            self.buildroot.root_log.debug(f"Failed to get build environment packages: {e}")
             return []
 
     def get_package_checksum_from_chroot(self, package_name):
@@ -1655,15 +1669,15 @@ class SBOMGenerator(object):
             
             if output and output.strip() and output.strip() != "(none)" and not output.strip().startswith("error"):
                 # It's SHA-1, but it's better than nothing
-                print(f"Warning: Using SHA-1 for {package_name}, SHA-256 not available")
+                self.buildroot.root_log.debug(f"Warning: Using SHA-1 for {package_name}, SHA-256 not available")
                 return output.strip().lower()
             
             # No header checksum available
-            print(f"Warning: No checksum available for {package_name}")
+            self.buildroot.root_log.debug(f"Warning: No checksum available for {package_name}")
             return None
             
         except Exception as e:
-            print(f"Failed to get checksum for package {package_name}: {e}")
+            self.buildroot.root_log.debug(f"Failed to get checksum for package {package_name}: {e}")
             return None
 
     def get_package_signature_from_chroot(self, package_name):
@@ -1721,7 +1735,7 @@ class SBOMGenerator(object):
             return signature_info
             
         except Exception as e:
-            print(f"Failed to get signature for package {package_name}: {e}")
+            self.buildroot.root_log.debug(f"Failed to get signature for package {package_name}: {e}")
             return {
                 "signature_type": "unknown",
                 "signature_valid": False,
@@ -1742,11 +1756,11 @@ class SBOMGenerator(object):
             
             # If host rpm command failed (empty output), try running inside chroot
             if not output.strip():
-                print(f"Host RPM command failed for {package_name}, trying inside chroot...")
+                self.buildroot.root_log.debug(f"Host RPM command failed for {package_name}, trying inside chroot...")
                 # Use buildroot's doChroot method to run the command inside the chroot
                 cmd = ["rpm", "-qi", package_name]
                 output, _ = self.buildroot.doChroot(cmd, shell=False, returnOutput=True, printOutput=False)
-                print(f"Chroot RPM output for {package_name}: {output[:200]}...")  # Debug output
+                self.buildroot.root_log.debug(f"Chroot RPM output for {package_name}: {output[:200]}...")  # Debug output
             
             signature_info = {
                 "signature_type": None,
@@ -1761,17 +1775,17 @@ class SBOMGenerator(object):
             output_lines = output.splitlines()
             i = 0
             signature_found = False
-            print(f"DEBUG: Processing {len(output_lines)} lines for package {package_name}")
+            self.buildroot.root_log.debug(f"DEBUG: Processing {len(output_lines)} lines for package {package_name}")
             while i < len(output_lines):
                 line = output_lines[i].strip()
-                print(f"DEBUG: Line {i}: '{line}'")
+                self.buildroot.root_log.debug(f"DEBUG: Line {i}: '{line}'")
                 if line.startswith("Signature"):
                     signature_found = True
-                    print(f"DEBUG: Found signature line: '{line}'")
+                    self.buildroot.root_log.debug(f"DEBUG: Found signature line: '{line}'")
                     # Extract the signature data after the colon
                     sig_data = line.split(":", 1)[1].strip() if ":" in line else ""
                     signature_info["raw_signature_data"] = sig_data
-                    print(f"DEBUG: Extracted signature data: '{sig_data}'")
+                    self.buildroot.root_log.debug(f"DEBUG: Extracted signature data: '{sig_data}'")
                     
                     if sig_data and sig_data != "(none)" and sig_data != "":
                         signature_info["signature_type"] = "GPG"
@@ -1818,7 +1832,7 @@ class SBOMGenerator(object):
             return signature_info
             
         except Exception as e:
-            print(f"Failed to get detailed signature for package {package_name}: {e}")
+            self.buildroot.root_log.debug(f"Failed to get detailed signature for package {package_name}: {e}")
             return {
                 "signature_type": "unknown",
                 "signature_valid": False,
@@ -1828,7 +1842,7 @@ class SBOMGenerator(object):
     def get_rpm_metadata(self, rpm_path):
         """Extracts metadata from an RPM file."""
         if not os.path.isfile(rpm_path):
-            print(f"RPM file not found: {rpm_path}")
+            self.buildroot.root_log.debug(f"RPM file not found: {rpm_path}")
             return {}
 
         # Use individual rpm queries instead of trying to output JSON directly
@@ -1863,14 +1877,14 @@ class SBOMGenerator(object):
                     value = "(none)"
                 metadata[field_name] = value
             
-            print(f"RPM metadata extracted: {metadata}")
+            self.buildroot.root_log.debug(f"RPM metadata extracted: {metadata}")
             return metadata
             
         except subprocess.CalledProcessError as e:
-            print(f"RPM command failed for {rpm_path}: {e.stderr}")
+            self.buildroot.root_log.debug(f"RPM command failed for {rpm_path}: {e.stderr}")
             return {}
         except Exception as e:
-            print(f"Failed to extract RPM metadata: {e}")
+            self.buildroot.root_log.debug(f"Failed to extract RPM metadata: {e}")
             return {}
 
     def get_rpm_file_list(self, rpm_path):
@@ -1879,10 +1893,10 @@ class SBOMGenerator(object):
         try:
             result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True, text=True)
             files = result.stdout.splitlines()
-            print(f"Files in RPM {rpm_path}: {files}")
+            self.buildroot.root_log.debug(f"Files in RPM {rpm_path}: {files}")
             return files
         except subprocess.CalledProcessError as e:
-            print(f"Failed to get file list for {rpm_path}: {e.stderr}")
+            self.buildroot.root_log.debug(f"Failed to get file list for {rpm_path}: {e.stderr}")
             return []
 
     def get_rpm_file_info(self, rpm_path):
@@ -1911,10 +1925,10 @@ class SBOMGenerator(object):
                         "owner": owner,
                         "group": group
                     }
-            print(f"File info for RPM {rpm_path}: {file_info}")
+            self.buildroot.root_log.debug(f"File info for RPM {rpm_path}: {file_info}")
             return file_info
         except subprocess.CalledProcessError as e:
-            print(f"Failed to get file info for {rpm_path}: {e.stderr}")
+            self.buildroot.root_log.debug(f"Failed to get file info for {rpm_path}: {e.stderr}")
             return {}
 
     def get_rpm_dependencies(self, rpm_path):
@@ -1923,10 +1937,10 @@ class SBOMGenerator(object):
         try:
             result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True, text=True)
             dependencies = result.stdout.splitlines()
-            print(f"Dependencies for RPM {rpm_path}: {dependencies}")
+            self.buildroot.root_log.debug(f"Dependencies for RPM {rpm_path}: {dependencies}")
             return dependencies
         except subprocess.CalledProcessError as e:
-            print(f"Failed to get dependencies for {rpm_path}: {e.stderr}")
+            self.buildroot.root_log.debug(f"Failed to get dependencies for {rpm_path}: {e.stderr}")
             return []
 
     def get_rpm_signature(self, rpm_path):
@@ -1938,11 +1952,11 @@ class SBOMGenerator(object):
                 if line.startswith("Signature"):
                     # Extract the signature data after the colon
                     sig_data = line.split(":", 1)[1].strip() if ":" in line else ""
-                    print(f"GPG Signature for {rpm_path}: {sig_data}")
+                    self.buildroot.root_log.debug(f"GPG Signature for {rpm_path}: {sig_data}")
                     return sig_data
             return None
         except subprocess.CalledProcessError as e:
-            print(f"Failed to get GPG signature for {rpm_path}: {e.stderr}")
+            self.buildroot.root_log.debug(f"Failed to get GPG signature for {rpm_path}: {e.stderr}")
             return None
 
     def hash_file(self, file_path):
@@ -1954,12 +1968,15 @@ class SBOMGenerator(object):
                     sha256.update(chunk)
             return sha256.hexdigest()
         except Exception as e:
-            print(f"Failed to hash file {file_path}: {e}")
+            self.buildroot.root_log.debug(f"Failed to hash file {file_path}: {e}")
             return None
 
     def extract_source_files_from_srpm(self, src_rpm_path):
         """Extracts source files from a source RPM."""
-        print(f"Extracting source files from source RPM: {src_rpm_path}")
+        import tempfile
+        import shutil
+        import shlex
+        self.buildroot.root_log.debug(f"Extracting source files from source RPM: {src_rpm_path}")
         source_files = []
         try:
             temp_dir = tempfile.mkdtemp(prefix="sbom-srpm-")
@@ -1967,7 +1984,7 @@ class SBOMGenerator(object):
                 extract_cmd = f"rpm2cpio {shlex.quote(src_rpm_path)} | cpio -idm 2>/dev/null"
                 subprocess.run(extract_cmd, shell=True, cwd=temp_dir, check=True)
             except subprocess.CalledProcessError as e:
-                print(f"Failed to unpack source RPM {src_rpm_path}: {e}")
+                self.buildroot.root_log.debug(f"Failed to unpack source RPM {src_rpm_path}: {e}")
                 shutil.rmtree(temp_dir, ignore_errors=True)
                 return source_files
             
