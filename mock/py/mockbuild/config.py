@@ -254,6 +254,12 @@ def setup_default_config_opts():
         'sbom_generator_enable': False,
         'sbom_generator_opts': {
             'generate_sbom': True,
+            'include_file_components': True,
+            'include_file_dependencies': False,
+            'include_debug_files': False,
+            'include_man_pages': True,
+            'include_source_dependencies': True,
+            'include_toolchain_dependencies': False,
         },
     }
 
