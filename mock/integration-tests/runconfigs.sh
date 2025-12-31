@@ -14,8 +14,8 @@ if [ "$1" != "" ]; then
     configs=$1
 else
     configs=$(ls ../mock-core-configs/etc/mock | grep .cfg \
-                | grep -v -e default -e custom -e chroot-aliases \
-                | grep -E -v 'arm|ppc|s390|sparc|aarch')
+                | grep -v -e default -e custom -e chroot-aliases -e hermetic-build \
+                | grep -e "x86_64" -e "i*86")
 fi
 
 cleanup()
@@ -81,7 +81,7 @@ for i in $configs; do
 	echo "PASSED: $i"
     fi
 
-    runcmd "$MOCKCMD -r $name --scrub=all"  || die "can not scrub"
+    runcmd "$MOCKCMD -r $name --scrub=all"  || echo >&2 "Can not even --scrub $name!"
 done
 
 msg=$(printf "%d configuration failures\n" $fails)

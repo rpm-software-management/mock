@@ -33,7 +33,7 @@ PLUGIN_LIST = ['tmpfs', 'root_cache', 'yum_cache', 'mount', 'bind_mount',
                'lvm_root', 'compress_logs', 'sign', 'pm_request',
                'hw_info', 'procenv', 'showrc', 'rpkg_preprocessor',
                'rpmautospec', 'buildroot_lock', 'export_buildroot_image',
-               'sbom_generator']
+               'sbom_generator', 'unbreq']
 
 def nspawn_supported():
     """Detect some situations where the systemd-nspawn chroot code won't work"""
@@ -95,6 +95,9 @@ def setup_default_config_opts():
     config_opts['use_nspawn'] = None
     config_opts['rpmbuild_networking'] = False
     config_opts['nspawn_args'] = ['--capability=cap_ipc_lock']
+    # FIXME disable as default because of https://github.com/rpm-software-management/mock/issues/1641
+    # if check_nspawn_has_suppress_sync_option():
+    #    config_opts['nspawn_args'] += ['--suppress-sync=yes']
     config_opts['use_container_host_hostname'] = True
 
     config_opts['use_bootstrap'] = True
@@ -261,6 +264,10 @@ def setup_default_config_opts():
             'include_source_dependencies': True,
             'include_toolchain_dependencies': False,
         },
+        'unbreq_enable': False,
+        'unbreq_opts': {
+            'exclude_accessed_files': []
+        }
     }
 
     config_opts['environment'] = {
@@ -351,6 +358,8 @@ def setup_default_config_opts():
     config_opts['dynamic_buildrequires'] = True
     config_opts['dynamic_buildrequires_max_loops'] = 10
 
+    config_opts['static_buildrequires_max_loops'] = 10
+
     config_opts['external_buildrequires'] = False
 
     config_opts['dev_loop_count'] = 12
@@ -422,14 +431,8 @@ def setup_default_config_opts():
 
     # mapping from target_arch (or forcearch) to arch in /usr/bin/qemu-*-static
     config_opts["qemu_user_static_mapping"] = {
-        'aarch64': 'aarch64',
         'armv7hl': 'arm',
-        'i386': 'i386',
         'i686': 'i386',
-        'ppc64': 'ppc64',
-        'ppc64le': 'ppc64le',
-        's390x': 's390x',
-        'x86_64': 'x86_64',
     }
 
     config_opts["recursion_limit"] = 5000
@@ -730,7 +733,8 @@ def include(config_file, search_path, paths):
             return ""
 
         paths.add(config_file)
-        content = open(config_file).read()
+        with open(config_file) as f:
+            content = f.read()
         # Search for "include(FILE)" and for each "include(FILE)" replace with
         # content of the FILE, in a perpective of search for includes and replace with his content.
         include_arguments = regexp_include.findall(content)

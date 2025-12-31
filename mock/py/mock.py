@@ -23,7 +23,7 @@
 
 # pylint: disable=pointless-string-statement,wrong-import-position
 """
-       mock [options] {--init|--clean|--scrub=[all,chroot,cache,root-cache,c-cache,yum-cache,dnf-cache,lvm,overlayfs]}
+       mock [options] {--init|--clean|--scrub=[all,bootstrap,chroot,cache,root-cache,c-cache,yum-cache,dnf-cache,lvm,overlayfs]}
        mock [options] [--rebuild] /path/to/srpm(s)
        mock [options] [--chain] /path/to/srpm(s)
        mock [options] --buildsrpm {--spec /path/to/spec --sources /path/to/src|
@@ -65,7 +65,7 @@ from functools import partial
 # our imports
 from mockbuild import config
 from mockbuild import util
-from mockbuild.constants import MOCKCONFDIR, VERSION
+from mockbuild.constants import MOCKCONFDIR, VERSION, DEFAULT_UMASK
 from mockbuild.file_downloader import FileDownloader
 from mockbuild.mounts import BindMountPoint, FileSystemMountPoint
 import mockbuild.backend
@@ -145,10 +145,10 @@ def command_parse():
                       help="completely remove the specified chroot")
     scrub_choices = ('chroot', 'cache', 'root-cache', 'c-cache', 'yum-cache',
                      'dnf-cache', 'lvm', 'overlayfs', 'bootstrap', 'all')
-    scrub_metavar = "[all|chroot|cache|root-cache|c-cache|yum-cache|dnf-cache]"
+    scrub_metavar = "[all|bootstrap|chroot|cache|root-cache|c-cache|yum-cache|dnf-cache]"
     parser.add_option("--scrub", action='append', choices=scrub_choices, default=[],
                       metavar=scrub_metavar,
-                      help="completely remove the specified chroot "
+                      help="completely remove the specified chroot, bootstrap chroot "
                            "or cache dir or all of the chroot and cache")
     parser.add_option(
         "--scrub-all-chroots", action="store_const", dest="mode",
@@ -572,18 +572,8 @@ def check_arch_combination(target_arch, config_opts):
     # Check below that we can do cross-architecture builds.
 
     option = f"--forcearch={config_opts['forcearch']}"
-    binary_pattern = config_opts["qemu_user_static_mapping"].get(config_opts["forcearch"])
-    if not binary_pattern:
-        # Probably a missing configuration.
-        log.warning(
-            "Mock will likely fail, %s is enabled "
-            "while Mock is unable to detect the corresponding "
-            "/usr/bin/qemu-*-static binary",
-            option,
-        )
-        time.sleep(5)
-        return
-
+    binary_pattern = config_opts["qemu_user_static_mapping"].get(config_opts["forcearch"],
+                                                                 config_opts["forcearch"])
     binary = f'/usr/bin/qemu-{binary_pattern}-static'
     if os.path.exists(binary):
         return
@@ -877,7 +867,7 @@ def main():
     for k, v in list(config_opts.items()):
         log.debug("    %s:  %s", k, v)
 
-    os.umask(0o02)
+    os.umask(DEFAULT_UMASK)
     os.environ["HOME"] = buildroot.homedir
 
     # New namespace starting from here

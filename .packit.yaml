@@ -44,9 +44,8 @@ jobs:
         - mock
         - mock-core-configs
       targets:
-        - fedora-rawhide
-        - fedora-41
-        - fedora-40
+        - fedora-all
+        - epel-all
       additional_repos:
         - copr://@mock/mock-deps
 
@@ -60,7 +59,7 @@ jobs:
       job: tests
       trigger: pull_request
       targets:
-        - fedora-41
+        - fedora-42
       # We don't want to run two test runs; so we limit this to a single package
       packages:
         - mock

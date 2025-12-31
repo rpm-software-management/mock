@@ -32,6 +32,7 @@ name=AlmaLinux $releasever - BaseOS
 mirrorlist=https://mirrors.almalinux.org/mirrorlist/$releasever/baseos
 # baseurl=https://repo.almalinux.org/almalinux/$releasever/BaseOS/$basearch/os/
 enabled=1
+countme=1
 gpgcheck=1
 gpgkey=file:///usr/share/distribution-gpg-keys/alma/RPM-GPG-KEY-AlmaLinux-8
 skip_if_unavailable=False
@@ -41,6 +42,7 @@ name=AlmaLinux $releasever - AppStream
 mirrorlist=https://mirrors.almalinux.org/mirrorlist/$releasever/appstream
 # baseurl=https://repo.almalinux.org/almalinux/$releasever/AppStream/$basearch/os/
 enabled=1
+countme=1
 gpgcheck=1
 gpgkey=file:///usr/share/distribution-gpg-keys/alma/RPM-GPG-KEY-AlmaLinux-8
 
@@ -49,6 +51,7 @@ name=AlmaLinux $releasever - PowerTools
 mirrorlist=https://mirrors.almalinux.org/mirrorlist/$releasever/powertools
 # baseurl=https://repo.almalinux.org/almalinux/$releasever/PowerTools/$basearch/os/
 enabled=1
+countme=1
 gpgcheck=1
 gpgkey=file:///usr/share/distribution-gpg-keys/alma/RPM-GPG-KEY-AlmaLinux-8
 
@@ -57,6 +60,7 @@ name=AlmaLinux $releasever - Extras
 mirrorlist=https://mirrors.almalinux.org/mirrorlist/$releasever/extras
 # baseurl=https://repo.almalinux.org/almalinux/$releasever/extras/$basearch/os/
 enabled=1
+countme=1
 gpgcheck=1
 gpgkey=file:///usr/share/distribution-gpg-keys/alma/RPM-GPG-KEY-AlmaLinux-8
 

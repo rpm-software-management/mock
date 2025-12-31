@@ -53,7 +53,7 @@ for arch in "${architectures[@]}"; do
     git add "fedora-$next_version-$arch.cfg" "fedora-$version-$arch.cfg"
 done
 
-towncrier_file=$topdir/releng/release-notes-next/fedora-$version-branching.feature
+towncrier_file=$topdir/releng/release-notes-next/fedora-$version-branching.config
 cat > "$towncrier_file" <<EOF
 Configuration files for Fedora $version have been branched from Rawhide,
 according to the [Fedora $version Schedule](https://fedorapeople.org/groups/schedule/f-$version/f-$version-all-tasks.html).

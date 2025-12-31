@@ -1,5 +1,12 @@
 include('eol/templates/centos-6.tpl')
 
+# Copy the ca-bundle file from the host.  This is unnecessary for EL7+ chroots
+# because the bundle is a symlink to
+# /etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem, and the /etc/pki/ca-trust
+# directory is already copied from the host via
+# config_opts['ssl_copied_ca_trust_dirs'].
+config_opts['ssl_ca_bundle_path'] = '/etc/pki/tls/certs/ca-bundle.crt'
+
 config_opts['chroot_setup_cmd'] = 'install @buildsys-build'
 
 config_opts['yum.conf'] += """

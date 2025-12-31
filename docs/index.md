@@ -70,7 +70,14 @@ Versions in Linux distributions:
 
 
 ## Release Notes
-* [6.1 and Configs 42.1](Release-Notes-6.1) (2025-02-27) - more hermetic-build improvements, AlmaLinux Kitten 10, Azure Linux 2.0 and 3.0, Kylin 10, Navy Linux 8, openSUSE Leap 15.6
+* [6.6](Release-Notes-6.6) (2025-12-08) - Static build-requires installed in multiple waves, easier forcearch selection.
+* [Configs 43.3](Release-Notes-Configs-43.3) (2025-11-14) - configs for openSUSE 16.0 added
+* [6.5](Release-Notes-6.5) (2025-10-23) - Release 6.5 makes the skip-fsync() opt-out into an opt-in.
+* [6.4 and Configs 43.2](Release-Notes-6.4) (2025-10-09) - Release 6.4 adds the experimental `unbreq` plugin and boosts performance with a new default setting.
+* [Configs 43.1](Release-Notes-Configs-43.1) (2025-08-12) - Fedora 43 branched.
+* [6.3 and Configs 42.4](Release-Notes-6.3) (2025-06-18) - Compatibility bug-fix for Python 3.14, configuration is owned by root group, AlmaLinux and Rocky Linux 10 added.
+* [6.2 and Configs 42.3](Release-Notes-6.2) (2025-05-22) - RHEL 10 configuration, configurable ca-trust paths that Mock copies to chroots.
+* [6.1 and Configs 42.2](Release-Notes-6.1) (2025-02-27) - more hermetic-build improvements, AlmaLinux Kitten 10, Azure Linux 2.0 and 3.0, Kylin 10, Navy Linux 8, openSUSE Leap 15.6
 * [Configs 42.1](Release-Notes-Configs-42.1) (2025-01-16) - Fedora 42 branched.
 * [6.0 and Configs 41.5](Release-Notes-6.0) (2024-12-19) - New OCI image support for buildroot, hermetic build mode fixes, Fedora 39 EOL.
 * [5.9 and Configs 41.4](Release-Notes-5.9) (2024-09-30) - A --no-bootstrap-chroot regression with DNF4 chroots fixed.
@@ -215,6 +222,7 @@ See a [separate document](Mock-Core-Configs).
 * [showrc](Plugin-Showrc) - Log the content of `rpm --showrc` for capturing all defined macros
 * [sign](Plugin-Sign) - call command on the produced rpm
 * [tmpfs](Plugin-Tmpfs) - mount buildroot directory as tmpfs
+* [unbreq](Plugin-Unbreq) - detector of unused `BuildRequires`
 * [yum_cache](Plugin-YumCache) - mount `/var/cache/{dnf,yum}` of your host machine to chroot
 
 Plugins can be enabled on command line e.g `--enable-plugin=chroot_scan`. And you can set plugin options using e.g. `'--plugin-option=root_cache:age_check=False'`

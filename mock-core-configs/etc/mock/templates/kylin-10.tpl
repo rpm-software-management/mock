@@ -4,8 +4,8 @@ config_opts['releasever'] = '10'
 config_opts['package_manager'] = 'dnf'
 config_opts['extra_chroot_dirs'] = [ '/run/lock', ]
 
-# No official image available:
-config_opts['use_bootstrap_image'] = False
+# Registry web interface: https://cr.kylinos.cn/zh/image
+config_opts['bootstrap_image'] = 'cr.kylinos.cn/kylin/kylin-server-platform:v10sp3-2403'
 
 config_opts['dnf.conf'] = """
 [main]

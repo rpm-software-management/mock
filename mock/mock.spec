@@ -1,13 +1,13 @@
 %bcond_with lint
 %bcond_without tests
 
-# Modern distributions (using RPM v4.19+; for example, Fedora 39+) do not
+# Modern distributions (using RPM v4.20+; for example, Fedora 42+) do not
 # require the %%pre scriptlet for creating users/groups because the sysusers
 # feature is now built directly into RPM.  Simply including the sysusers
 # `mock.conf` file in a package payload is sufficient to leverage this feature.
 # However, for older distributions that lack this capability, we still define
 # the %%pre scriptlet.
-%if (0%{?rhel} && 0%{?rhel} < 10) || (0%{?mageia} && 0%{?mageia} < 10) || (0%{?suse_version} && 0%{?suse_version} < 1660)
+%if 0%{?fedora} < 42 || (0%{?rhel} && 0%{?rhel} <= 10) || (0%{?mageia} && 0%{?mageia} < 10) || (0%{?suse_version} && 0%{?suse_version} < 1660)
 %bcond_without sysusers_compat
 %else
 %bcond_with sysusers_compat
@@ -18,7 +18,7 @@
 
 Summary: Builds packages inside chroots
 Name: mock
-Version: 6.1
+Version: 6.6
 Release: 1%{?dist}
 License: GPL-2.0-or-later
 # Source is created by
@@ -262,14 +262,11 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 
 
 %files
-%defattr(0644, root, mock)
 %dir %{_pkgdocdir}/
 %doc %{_pkgdocdir}/site-defaults.cfg
 %doc %{_pkgdocdir}/buildroot-lock-schema-*.json
 %{_datadir}/bash-completion/completions/mock
 %{_datadir}/bash-completion/completions/mock-parse-buildlog
-
-%defattr(-, root, root)
 
 # executables
 %{_bindir}/mock
@@ -303,10 +300,6 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 %{_mandir}/man1/mock-hermetic-repo.1*
 %{_datadir}/cheat/mock
 
-# cache & build dirs
-%defattr(0775, root, mock, 0775)
-%dir %{_localstatedir}/cache/mock
-%dir %{_localstatedir}/lib/mock
 
 %files scm
 %{python_sitelib}/mockbuild/scm.py*
@@ -329,7 +322,41 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 %dir  %{_datadir}/cheat
 %config(noreplace) %{_sysusersdir}/mock.conf
 
+# cache & build dirs, writeable by mock group
+%defattr(0775, root, mock, 0775)
+%dir %{_localstatedir}/cache/mock
+%dir %{_localstatedir}/lib/mock
+
+
 %changelog
+* Mon Dec 08 2025 Pavel Raiskup <praiskup@redhat.com> 6.6-1
+- Make sure to install BuildRequires defined by macros (frostyx@email.cz)
+- unbreq plugin: performs action only when build is taking place (marian.koncek@mailbox.org)
+- simplify forcearch code
+
+* Thu Oct 23 2025 Pavel Raiskup <praiskup@redhat.com> 6.5-1
+- make suppress-sync opt-in, not opt-out (msuchy@redhat.com)
+
+* Thu Oct 09 2025 Pavel Raiskup <praiskup@redhat.com> 6.4-1
+- add unbreq plugin for detection of unused BuildRequires (marian.koncek@mailbox.org)
+- set module_hotfixes=true for --addrepo repositories (andreas.rogge@bareos.com)
+- added options to /bin/mock-hermetic-repo support for client certificates (scoheb@gmail.com)
+- use "systemd-nspawn --suppress-sync=yes" when available (msuchy@redhat.com)
+- buildroot_lock: call repoquery as a privileged user
+- buildroot_lock: better error reporting
+- fix unclosed file warning (pastalian46@gmail.com)
+
+* Wed Jun 18 2025 Pavel Raiskup <praiskup@redhat.com> 6.3-1
+- lockfile: don't hard-code DNF _bindir location, use config_opts
+- fix sysusers packaging once more
+- ProcessPoolExecutor changed behaviour with Python 3.14 (msuchy@redhat.com)
+- feat: plugin: hw_info: added human-readable flag for memory info (k0ste@k0ste.ru)
+- Remove the traceLog decorator from pretty_getcwd (ferdnyc@gmail.com)
+
+* Thu May 22 2025 Pavel Raiskup <praiskup@redhat.com> 6.2-1
+- disable copying ca-trust dirs with Azure Linux 3 (reubeno@users.noreply.github.com)
+- bail clearly when image pull fails (awilliam@redhat.com)
+
 * Thu Feb 27 2025 Miroslav Suchý <msuchy@redhat.com> 6.1-1
 - bootstrap: automatically bind-mount local --additional-package
   (praiskup@redhat.com)

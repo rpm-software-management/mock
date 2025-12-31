@@ -88,7 +88,8 @@ def query_packages(fields, chrootpath=None, executor=_subprocess_executor):
             if p["name"] != "gpg-pubkey"]
 
 
-def query_packages_location(packages, chrootpath=None, executor=_subprocess_executor):
+def query_packages_location(packages, chrootpath=None,
+                            executor=_subprocess_executor, dnf_cmd="/bin/dnf"):
     """
     Detect the URLs of the PACKAGES - array of dictionaries (see the output
     from query_packages()) in available RPM repositories (/etc/yum.repos.d).
@@ -113,7 +114,7 @@ def query_packages_location(packages, chrootpath=None, executor=_subprocess_exec
     """
 
     # Note: we do not support YUM in 2024+
-    query_locations_cmd = ["/bin/dnf"]
+    query_locations_cmd = [dnf_cmd]
     if chrootpath:
         query_locations_cmd += [f"--installroot={chrootpath}"]
     # The -q is necessary because of and similar:
@@ -131,9 +132,15 @@ def query_packages_location(packages, chrootpath=None, executor=_subprocess_exec
         arch = basename.split(".")[-2]
         location_map[f"{name}.{arch}"] = url
 
+    failed_packages = []
     for package in packages:
         name_arch = f"{package['name']}.{package['arch']}"
         try:
             package["url"] = location_map[name_arch]
-        except KeyError as exc:
-            raise mockbuild.exception.Error(f"Can't get location for {name_arch}") from exc
+        except KeyError:
+            failed_packages.append(package)
+
+    if failed_packages:
+        failed_str = ", ".join([f"{p['name']}-{p['version']}-{p['release']}.{p['arch']}"
+                                for p in failed_packages])
+        raise mockbuild.exception.Error(f"Can't get location for {failed_str}")

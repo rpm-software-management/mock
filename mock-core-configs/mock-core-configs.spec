@@ -3,7 +3,7 @@
 %endif
 
 Name:       mock-core-configs
-Version:    42.2
+Version:    43.3
 Release:    1%{?dist}
 Summary:    Mock core config files basic chroots
 
@@ -22,7 +22,7 @@ BuildArch:  noarch
 Provides: mock-configs
 
 # distribution-gpg-keys contains GPG keys used by mock configs
-Requires:   distribution-gpg-keys >= 1.110
+Requires:   distribution-gpg-keys >= 1.115
 # specify minimal compatible version of mock
 Requires:   mock >= 6.1.test
 Requires:   mock-filesystem
@@ -58,7 +58,6 @@ cp -a etc/mock/eol/*cfg %{buildroot}%{_sysconfdir}/mock/eol
 cp -a etc/mock/eol/templates/*.tpl %{buildroot}%{_sysconfdir}/mock/eol/templates
 
 # generate files section with config - there is many of them
-echo "%defattr(0644, root, mock)" > %{name}.cfgs
 find %{buildroot}%{_sysconfdir}/mock -name "*.cfg" -o -name '*.tpl' \
     | grep -v chroot-aliases \
     | sed -e "s|^%{buildroot}|%%config(noreplace) |" >> %{name}.cfgs
@@ -153,6 +152,36 @@ fi
 %ghost %config(noreplace,missingok) %{_sysconfdir}/mock/default.cfg
 
 %changelog
+* Fri Nov 14 2025 Pavel Raiskup <praiskup@redhat.com> 43.3-1
+- Add openSUSE Leap 16.0 configurations (negativo17@gmail.com)
+- Update Kylin OS images and comments (negativo17@gmail.com)
+
+* Thu Oct 09 2025 Pavel Raiskup <praiskup@redhat.com> 43.2-1
+- disable gpgcheck for EPEL [local] repos
+- make sure [local] repo is available in rhel+epel repos
+- Add Kylin OS 11 (negativo17@gmail.com)
+- Azure Linux (CBL Mariner) 2.0 is now EOL (negativo17@gmail.com)
+
+* Tue Aug 12 2025 Jiri Kyjovsky <j1.kyjovsky@gmail.com> 43.1-1
+- Move Rawhide to F44
+
+* Wed Jun 18 2025 Pavel Raiskup <praiskup@redhat.com> 42.4-1
+- fix sysusers packaging practice once more
+- configuration file owned by `root:root`
+- Rocky Linux 10 configs added (label@rockylinux.org)
+- missing config for AlmaLinux Kitten x86_64_v2 added (jhernandez@cloudlinux.com)
+- config for AlmaLinux Kitten 10 x86_64_v2 added (jonathan@almalinux.org)
+- AlmaLinux 10 configs added (jonathan@almalinux.org)
+
+* Thu May 22 2025 Pavel Raiskup <praiskup@redhat.com> 42.3-1
+- Fedora 40 EOL
+- Add RHEL 10 template and configs (carlwgeorge@gmail.com)
+- disable copying ca-trust dirs with Azure Linux 3 (reubeno@users.noreply.github.com)
+- Add epel-z-10 template (carlwgeorge@gmail.com)
+- Update Azure Linux configurations (scaronni@nvidia.com)
+- make opensuse-leap-15.5.tpl eol
+- fix the leap image reference to 15.6
+
 * Thu Feb 27 2025 Miroslav Suchý <msuchy@redhat.com> 42.2-1
 - fix: expand Oracle Linux distro_id from ol to oraclelinux
   (avi.miller@oracle.com)
