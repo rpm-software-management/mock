@@ -77,6 +77,7 @@ personality_defs = {
     'mipsr6': PER_LINUX32, 'mipsr6el': PER_LINUX32,
     'mips64': PER_LINUX, 'mips64el': PER_LINUX,
     'mips64r6': PER_LINUX, 'mips64r6el': PER_LINUX,
+    'riscv64': PER_LINUX, 'riscv32': PER_LINUX32,
 }
 
 USE_NSPAWN = False
