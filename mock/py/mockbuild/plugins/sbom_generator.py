@@ -1592,19 +1592,13 @@ class SBOMGenerator(object):
         return cpe
 
     def detect_chroot_distribution(self):
-        """Detects the distribution name inside the chroot by reading /etc/os-release."""
+        """Detects the distribution name inside the chroot using python-distro."""
         try:
-            # Use buildroot's doChroot to cat /etc/os-release
-            cmd = ["cat", "/etc/os-release"]
-            output, _ = self.buildroot.doChroot(cmd, shell=False, returnOutput=True, printOutput=False)
-            distro = None
-            if output:
-                for line in output.splitlines():
-                    if line.startswith("ID="):
-                        distro = line.strip().split("=", 1)[1].strip('"').lower()
-                        break
-            if distro:
-                return distro
+            import distro
+            # Query the chroot filesystem directly using root_dir parameter
+            distro_id = distro.id(root_dir=self.buildroot.rootdir)
+            if distro_id:
+                return distro_id.lower()
             else:
                 return "unknown"
         except Exception as e:
