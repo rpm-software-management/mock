@@ -1,6 +1,5 @@
 # Copyright (C) 2025, Atomicorp, Inc.
 # License: GPL2 or later see COPYING
-# SPDX-License-Identifier: GPL-2.0-or-later
 
 import os
 import json
@@ -36,6 +35,14 @@ def init(plugins, conf, buildroot):
     # Ensure configuration exists for the plugin
     if "sbom_generator_opts" not in conf:
         conf["sbom_generator_opts"] = {}
+    
+    # Check for valid SBOM type configuration
+    opts = conf["sbom_generator_opts"]
+    if "type" in opts and opts["type"] != "cyclonedx":
+        # We only support cyclonedx for now
+        buildroot.root_log.warning(f"SBOM generator type '{opts['type']}' not supported, defaulting to 'cyclonedx'")
+        opts["type"] = "cyclonedx"
+        
     SBOMGenerator(plugins, conf["sbom_generator_opts"], buildroot)
 
 class SBOMGenerator(object):
@@ -326,8 +333,18 @@ class SBOMGenerator(object):
         try:
             build_dir = self.buildroot.resultdir
             # Filter out source RPMs from binary RPM processing
-            rpm_files = [f for f in os.listdir(build_dir) if f.endswith('.rpm') and not f.endswith('.src.rpm')]
-            src_rpm_files = [f for f in os.listdir(build_dir) if f.endswith('.src.rpm')]
+            rpm_files = []
+            src_rpm_files = []
+            
+            # Use os.scandir for better performance
+            with os.scandir(build_dir) as entries:
+                for entry in entries:
+                    if not entry.is_file():
+                        continue
+                    if entry.name.endswith('.rpm') and not entry.name.endswith('.src.rpm'):
+                        rpm_files.append(entry.name)
+                    elif entry.name.endswith('.src.rpm'):
+                        src_rpm_files.append(entry.name)
             
             # Look for spec file in the build directory (during build process)
             build_build_dir = os.path.join(self.buildroot.rootdir, "builddir/build")
@@ -1513,8 +1530,8 @@ class SBOMGenerator(object):
 
     def get_iso_timestamp(self):
         """Returns the current time in ISO 8601 format."""
-        from datetime import datetime
-        return datetime.utcnow().isoformat() + "Z"
+        from datetime import datetime, timezone
+        return datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z')
 
     def get_distribution(self):
         """Returns the distribution name and version from /etc/os-release."""
