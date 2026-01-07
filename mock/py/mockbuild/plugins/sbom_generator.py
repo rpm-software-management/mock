@@ -19,7 +19,7 @@ import re
 import shlex
 import tempfile
 import rpm
-from datetime import datetime
+from datetime import datetime, timezone
 
 import mockbuild.plugins
 from mockbuild.trace_decorator import traceLog, getLog
@@ -105,7 +105,7 @@ class SBOMGenerator(object):
     def _create_metadata(self):
         """Creates CycloneDX metadata object with Mock-specific build information."""
         metadata = {
-            "timestamp": datetime.utcnow().isoformat() + "Z",
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "tools": [
                 {
                     "vendor": "Mock",
