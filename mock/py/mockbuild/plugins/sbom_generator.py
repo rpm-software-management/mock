@@ -10,13 +10,10 @@ import re
 import socket
 import uuid
 import tempfile
-import shutil
 import sys
 import os
-import shutil
 import json
 import subprocess
-import hashlib
 import time
 import re
 import shlex
@@ -2025,8 +2022,9 @@ class SBOMGenerator(object):
     def extract_source_files_from_srpm(self, src_rpm_path):
         """Extracts source files from a source RPM."""
         import tempfile
-        import shutil
         import shlex
+        import mockbuild.file_util
+        
         self.buildroot.root_log.debug(f"Extracting source files from source RPM: {src_rpm_path}")
         source_files = []
         try:
@@ -2053,7 +2051,7 @@ class SBOMGenerator(object):
 
             except (subprocess.CalledProcessError, OSError) as e:
                 self.buildroot.root_log.debug(f"Failed to unpack source RPM {src_rpm_path}: {e}")
-                shutil.rmtree(temp_dir, ignore_errors=True)
+                mockbuild.file_util.rmtree(temp_dir)
                 return source_files
             
             for root_dir, _, files in os.walk(temp_dir):
@@ -2069,7 +2067,7 @@ class SBOMGenerator(object):
                         "digital_signature": signature
                     })
             try:
-                shutil.rmtree(temp_dir)
+                mockbuild.file_util.rmtree(temp_dir)
             except Exception:
                 pass
                 
