@@ -401,7 +401,6 @@ class SBOMGenerator(object):
                 self.buildroot.root_log.debug("Cannot generate SBOM with proper filename - build metadata incomplete")
                 return
             
-            import os
             sbom_filename = f"{build_subject_name}-{build_subject_version}-{build_subject_release}.sbom"
             out_file = os.path.join(self.buildroot.resultdir, sbom_filename)
 
@@ -1918,35 +1917,69 @@ class SBOMGenerator(object):
             return []
 
     def get_rpm_file_info(self, rpm_path):
-        """Extracts file hashes, ownership, and permissions from an RPM file using 'rpm -qp --dump'."""
-        cmd = ["rpm", "-qp", "--dump", rpm_path]
+        """Extracts file hashes, ownership, and permissions from an RPM file using rpm-python."""
+        file_info = {}
         try:
-            result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True, text=True)
-            file_info = {}
-            for line in result.stdout.splitlines():
-                parts = line.split()
-                if len(parts) >= 8:
-                    file_path = parts[0]
-                    sha256 = parts[3]
-                    # If the hash is all zeroes, treat as None
-                    if sha256 == "0" * 64 or sha256 == "0000000000000000000000000000000000000000000000000000000000000000":
-                        sha256 = None
-                    
-                    # Parse permissions (field 4), owner (field 5), group (field 6)
-                    permissions = parts[4] if len(parts) > 4 else None
-                    owner = parts[5] if len(parts) > 5 else None
-                    group = parts[6] if len(parts) > 6 else None
-                    
-                    file_info[file_path] = {
-                        "sha256": sha256,
-                        "permissions": permissions,
-                        "owner": owner,
-                        "group": group
-                    }
-            self.buildroot.root_log.debug(f"File info for RPM {rpm_path}: {file_info}")
+            ts = rpm.TransactionSet()
+            ts.setVSFlags(rpm._RPMVSF_NOSIGNATURES | rpm._RPMVSF_NODIGESTS)
+            with open(rpm_path, "rb") as f:
+                hdr = ts.hdrFromFdno(f.fileno())
+
+            # Use dirnames/basenames/dirindexes to construct paths reliably
+            dirnames = hdr[rpm.RPMTAG_DIRNAMES]
+            basenames = hdr[rpm.RPMTAG_BASENAMES]
+            dirindexes = hdr[rpm.RPMTAG_DIRINDEXES]
+            
+            filedigests = hdr[rpm.RPMTAG_FILEDIGESTS]
+            filemodes = hdr[rpm.RPMTAG_FILEMODES]
+            fileusernames = hdr[rpm.RPMTAG_FILEUSERNAME]
+            filegroupnames = hdr[rpm.RPMTAG_FILEGROUPNAME]
+
+            for i, basename in enumerate(basenames):
+                dirname = dirnames[dirindexes[i]]
+                
+                # Decode bytes to strings if needed
+                if isinstance(dirname, bytes):
+                    dirname = dirname.decode('utf-8', 'replace')
+                if isinstance(basename, bytes):
+                    basename = basename.decode('utf-8', 'replace')
+                
+                filename = os.path.join(dirname, basename)
+                
+                digest = filedigests[i]
+                if isinstance(digest, bytes):
+                    digest = digest.decode('utf-8')
+                
+                # Empty digest usually means empty string or all zeros
+                if not digest:
+                    digest = None
+                
+                mode = filemodes[i]
+                # Format permissions as octal string (e.g., 0100755) to match rpm --dump format
+                permissions = "0%o" % mode
+                
+                owner = fileusernames[i]
+                if isinstance(owner, bytes):
+                    owner = owner.decode('utf-8', 'replace')
+
+                group = filegroupnames[i]
+                if isinstance(group, bytes):
+                    group = group.decode('utf-8', 'replace')
+
+                file_info[filename] = {
+                    "sha256": digest,
+                    "permissions": permissions,
+                    "owner": owner,
+                    "group": group
+                }
+            
+            self.buildroot.root_log.debug(f"File info for RPM {rpm_path}: {len(file_info)} files processed")
             return file_info
-        except subprocess.CalledProcessError as e:
-            self.buildroot.root_log.debug(f"Failed to get file info for {rpm_path}: {e.stderr}")
+            
+        except Exception as e:
+            self.buildroot.root_log.debug(f"Failed to get file info for {rpm_path}: {e}")
+            import traceback
+            self.buildroot.root_log.debug(traceback.format_exc())
             return {}
 
     def get_rpm_dependencies(self, rpm_path):
