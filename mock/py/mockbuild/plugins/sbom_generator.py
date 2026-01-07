@@ -1445,7 +1445,7 @@ class SBOMGenerator(object):
         
         sources = []
         try:
-            chroot_spec_path = self._convert_to_chroot_path(spec_path)
+            chroot_spec_path = self.from_chroot_path(spec_path)
             # Use rpmspec --parse inside the build chroot to ensure macro expansion matches the build
             cmd = ["rpmspec", "--parse", chroot_spec_path]
             result, _ = self.buildroot.doChroot(
@@ -2071,7 +2071,7 @@ class SBOMGenerator(object):
         
         return source_files
 
-    def _convert_to_chroot_path(self, host_path):
+    def from_chroot_path(self, host_path):
         """Convert an absolute host path into the corresponding path inside the build chroot."""
         rootdir = getattr(self.buildroot, "rootdir", "")
         if not rootdir:
