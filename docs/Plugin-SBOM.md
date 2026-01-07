@@ -322,4 +322,4 @@ This SBOM generator leverages Mock's unique build environment visibility:
 * **RPM-Native Intelligence**: Deep integration with RPM metadata, spec files, and package signatures
 * **Reproducible Build Context**: Complete build environment fingerprinting for reproducibility verification
 
-Available since version 6.1. 
+Available since version 6.7. 
