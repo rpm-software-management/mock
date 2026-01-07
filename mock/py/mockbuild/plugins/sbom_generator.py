@@ -1570,23 +1570,6 @@ class SBOMGenerator(object):
         if '-' in version:
             version = version.split('-')[0]  # Remove release part
         
-        # Handle special cases for common packages
-        if package_name == "glibc":
-            vendor = "gnu"
-            product = "glibc"
-        elif package_name == "openssl":
-            vendor = "openssl"
-            product = "openssl"
-        elif package_name == "gcc":
-            vendor = "gnu"
-            product = "gcc"
-        elif package_name == "make":
-            vendor = "gnu"
-            product = "make"
-        elif package_name == "gettext":
-            vendor = "gnu"
-            product = "gettext"
-        
         # Generate CPE
         cpe = f"cpe:2.3:a:{vendor}:{product}:{version}:*:*:*:*:*:*:*:*"
         return cpe
