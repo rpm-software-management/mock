@@ -1999,9 +1999,26 @@ class SBOMGenerator(object):
         try:
             temp_dir = tempfile.mkdtemp(prefix="sbom-srpm-")
             try:
-                extract_cmd = f"rpm2cpio {shlex.quote(src_rpm_path)} | cpio -idm 2>/dev/null"
-                subprocess.run(extract_cmd, shell=True, cwd=temp_dir, check=True)
-            except subprocess.CalledProcessError as e:
+                # Use rpm2archive instead of rpm2cpio to handle large files (>4GB)
+                # rpm2archive creates a .tgz file in the current directory
+                extract_cmd = ["rpm2archive", src_rpm_path]
+                subprocess.run(extract_cmd, cwd=temp_dir, check=True, stderr=subprocess.PIPE, text=True)
+                
+                # Find the generated archive (should be only one file ending in .tgz or .tar.gz)
+                archive_file = None
+                for f in os.listdir(temp_dir):
+                    if f.endswith(".tgz") or f.endswith(".tar.gz"):
+                        archive_file = os.path.join(temp_dir, f)
+                        break
+                
+                if archive_file:
+                    tar_cmd = ["tar", "-xf", archive_file]
+                    subprocess.run(tar_cmd, cwd=temp_dir, check=True)
+                    os.remove(archive_file)
+                else:
+                    self.buildroot.root_log.debug(f"rpm2archive did not produce expected output for {src_rpm_path}")
+
+            except (subprocess.CalledProcessError, OSError) as e:
                 self.buildroot.root_log.debug(f"Failed to unpack source RPM {src_rpm_path}: {e}")
                 shutil.rmtree(temp_dir, ignore_errors=True)
                 return source_files
