@@ -99,6 +99,8 @@ class Buildroot(object):
         self._lock_file = None
         self.selinux = (not self.config['plugin_conf']['selinux_enable']
                         and util.selinuxEnabled())
+        self.backup = config['backup_on_clean']
+        self.backup_base_dir = config['backup_base_dir']
 
         self.chrootuid = config['chrootuid']
         self.chrootuser = config['chrootuser']
@@ -1047,11 +1049,37 @@ class Buildroot(object):
         return util.BindMountedFile(chroot_filename, host_filename)
 
     @traceLog()
+    def backup_results(self):
+        """
+        Back up the built RPMs before deleting the chroot and results, if the `backup_on_clean` option is enabled.
+        """
+        srcdir = os.path.join(self.basedir, "result")
+        if not os.path.exists(srcdir):
+            return
+        dstdir = os.path.join(self.config['backup_base_dir'], self.config['root'])
+        file_util.mkdirIfAbsent(dstdir)
+        rpms = glob.glob(os.path.join(srcdir, "*rpm"))
+        if len(rpms) == 0:
+            return
+        self.state.state_log.info("backup_results: saving with mv %s %s", " ".join(rpms), dstdir)
+        for rpm in rpms:
+            dest_path = os.path.join(dstdir, os.path.basename(rpm))
+            try:
+                os.replace(rpm, dest_path)
+            except OSError as e:
+                self.state.state_log.error("backup_results: error moving %s to %s: %s",
+                        rpm, dest_path, e)
+
+    @traceLog()
     def delete(self):
         """
         Deletes the buildroot contents.
         """
         if os.path.exists(self.basedir):
+            # Backup the built RPMs before deleting the buildroot and results, if the backup_on_clean option is enabled
+            if self.backup:
+                self.backup_results()
+
             p = self.make_chroot_path()
             self._lock_buildroot(exclusive=True)
             util.orphansKill(p)
