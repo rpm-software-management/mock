@@ -11,7 +11,7 @@ Author: Marián Konček <mkoncek@redhat.com>
 import subprocess
 import os
 import re
-from typing import Generator, Iterable, Iterator, Optional
+from typing import Any, Generator, Iterable, Iterator, Optional
 from contextlib import contextmanager
 from concurrent.futures import ThreadPoolExecutor
 from threading import Lock
@@ -39,6 +39,34 @@ class AtimeDict(dict):
         with self.lock:
             self[key] = result
         return result
+
+@traceLog()
+def _run_subprocess(
+    command: list[str], *args: Any, expected_returncode: int = 0, **kwargs: Any
+) -> subprocess.CompletedProcess:
+    """
+    Helper function which calls `subprocess.run` but logs standard outputs in
+    case of a failure.
+    """
+    kwargs.setdefault("stdin", subprocess.DEVNULL)
+    kwargs.setdefault("stdout", subprocess.PIPE)
+    kwargs.setdefault("stderr", subprocess.PIPE)
+    kwargs.setdefault("text", True)
+    kwargs.pop("check", None)
+
+    getLog().debug("unbreq plugin: Executing command: %s", command)
+
+    # Use `check` explicitly to silence linters.
+    process = subprocess.run(command, *args, check = False, **kwargs)
+    if process.returncode != expected_returncode:
+        for line in process.stdout.splitlines():
+            getLog().error("%s", line)
+        for line in process.stderr.splitlines():
+            getLog().error("%s", line)
+        raise subprocess.CalledProcessError(
+            process.returncode, mockbuild.util.cmd_pretty(process.args), process.stdout, process.stderr
+        )
+    return process
 
 @traceLog()
 def init(plugins, conf, buildroot) -> None:
@@ -126,10 +154,8 @@ class Unbreq:
         Dependency type strings can have more attributes separated by a comma.
         We ignore those.
         """
-        process = subprocess.run([*self.chroot_rpm_command, "-q", "--qf",
+        process = _run_subprocess([*self.chroot_rpm_command, "-q", "--qf",
             "[%{REQUIREFLAGS:deptype} %{REQUIRES} %{REQUIREFLAGS:depflags} %{REQUIREVERSION}\\n]", srpm],
-            stdin = subprocess.DEVNULL, stdout = subprocess.PIPE, stderr = subprocess.PIPE,
-            text = True, check = True,
         )
         for line in process.stdout.splitlines():
             separator = line.find(" ")
@@ -149,10 +175,8 @@ class Unbreq:
         """
         queried_packages = packages.difference(self.rpm_files.keys())
         if len(queried_packages) != 0:
-            process = subprocess.run([*self.chroot_rpm_command, "-q",
+            process = _run_subprocess([*self.chroot_rpm_command, "-q",
                 "--qf", "\\n[%{FILENAMES}\\n]", *queried_packages],
-                stdin = subprocess.DEVNULL, stdout = subprocess.PIPE, stderr = subprocess.PIPE,
-                text = True, check = True,
             )
             package_it = iter(queried_packages)
             for line in process.stdout.splitlines():
@@ -171,15 +195,10 @@ class Unbreq:
         """
 
         # Note that we expect this command to return 1
-        process = subprocess.run([*self.chroot_dnf_command,
+        process = _run_subprocess([*self.chroot_dnf_command,
             "--setopt", "protected_packages=", "--assumeno", "remove", *packages],
-            stdin = subprocess.DEVNULL, stdout = subprocess.PIPE, stderr = subprocess.PIPE,
-            text = True, check = False,
+            expected_returncode = 1,
         )
-        if process.returncode != 1:
-            raise subprocess.CalledProcessError(
-                process.returncode, " ".join(process.args), process.stdout, process.stderr
-            )
         result: set[str] = set()
         for line in process.stdout.splitlines():
             if not line.startswith(" "):
@@ -203,10 +222,8 @@ class Unbreq:
         br_providers: dict[str, list[str]] = {}
         provided_brs: dict[str, list[str]] = {}
 
-        for br, process in zip(buildrequires, self.pool.map(lambda br: subprocess.run(
+        for br, process in zip(buildrequires, self.pool.map(lambda br: _run_subprocess(
             [*self.chroot_dnf_command, "repoquery", "--installed", "--whatprovides", br],
-            stdin = subprocess.DEVNULL, stdout = subprocess.PIPE, stderr = subprocess.PIPE,
-            text = True, check = True,
         ), buildrequires)):
             current_br_providers: list[str] = process.stdout.splitlines()
             br_providers[br] = current_br_providers
@@ -376,21 +393,10 @@ class Unbreq:
         mockbuild.file_util.touch(path)
         self.min_time = os.path.getatime(path)
 
-        try:
-            # NOTE should failure throw an exception?
-            mount_options_process = subprocess.run(
-                ["/usr/bin/findmnt", "-n", "-o", "OPTIONS", "--target", self.buildroot.rootdir],
-                stdin = subprocess.DEVNULL, stdout = subprocess.PIPE, stderr = subprocess.PIPE,
-                text = True, check = False,
-            )
-            if mount_options_process:
-                self.mount_options = mount_options_process.stdout.rstrip().split(",")
-            else:
-                getLog().warning("unbreq plugin: unable to detect buildroot mount options, process %s returned %d: %s",
-                    mount_options_process, mount_options_process.returncode, mount_options_process.stderr,
-                )
-        except FileNotFoundError:
-            pass
+        mount_options_process = _run_subprocess(
+            ["/usr/bin/findmnt", "-n", "-o", "OPTIONS", "--target", self.buildroot.rootdir],
+        )
+        self.mount_options = mount_options_process.stdout.rstrip().split(",")
 
         if "relatime" in self.mount_options:
             getLog().info(
