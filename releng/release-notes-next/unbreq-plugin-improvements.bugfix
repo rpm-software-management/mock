@@ -1,3 +1,4 @@
 The `unbreq` plugin now also works with both `--isolation=simple` and `--no-bootstrap-chroot` mock options.
 
 The run-time of the plugin has been significantly lowered with the addition of caching and parallelization.
+The plugin now also logs standard outputs of failed commands.
