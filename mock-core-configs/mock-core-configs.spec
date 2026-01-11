@@ -3,7 +3,7 @@
 %endif
 
 Name:       mock-core-configs
-Version:    43.3
+Version:    43.4
 Release:    1%{?dist}
 Summary:    Mock core config files basic chroots
 
@@ -152,6 +152,12 @@ fi
 %ghost %config(noreplace,missingok) %{_sysconfdir}/mock/default.cfg
 
 %changelog
+* Mon Jan 12 2026 Jiri Kyjovsky <j1.kyjovsky@gmail.com> 43.4-1
+- Disable bootstrap for riscv (j1.kyjovsky@gmail.com)
+- Add risc-v fedora chroots (j1.kyjovsky@gmail.com)
+- eol/epel-6: copy-paste ca-bundle from host (praiskup@redhat.com)
+- Fix aarch64 configuration for Azure Linux 3 (negativo17@gmail.com)
+
 * Fri Nov 14 2025 Pavel Raiskup <praiskup@redhat.com> 43.3-1
 - Add openSUSE Leap 16.0 configurations (negativo17@gmail.com)
 - Update Kylin OS images and comments (negativo17@gmail.com)
