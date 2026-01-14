@@ -116,9 +116,6 @@ class Unbreq:
         self.buildrequires_deptype: dict[str, str] = {}
         self.pool: ThreadPoolExecutor = ThreadPoolExecutor(max_workers = os.process_cpu_count() or 1)
 
-        # TODO handle different package managers
-        # self.buildroot.pkg_manager.name
-
         plugins.add_hook("earlyprebuild", self._EarlyPrebuildHook)
         plugins.add_hook("postyum", self._PostYumHook)
         plugins.add_hook("postdeps", self._PostDepsHook)
@@ -340,7 +337,18 @@ class Unbreq:
         """
         Initialize some chroot attributes.
         """
-        self.enabled = True
+
+        if self.buildroot.pkg_manager.name == "dnf5":
+            self.enabled = True
+        elif self.buildroot.pkg_manager.name == "dnf4":
+            self.enabled = True
+            # DNF 4 can not be run concurrently
+            self.pool = ThreadPoolExecutor(max_workers = 1)
+        else:
+            getLog().warning("unbreq plugin: '%s' package manager is not supported", self.buildroot.pkg_manager.name)
+
+        if not self.enabled:
+            return
 
         getLog().info("enabled unbreq plugin (earlyprebuild)")
 
@@ -354,7 +362,7 @@ class Unbreq:
             else:
                 self.chroot_command = ["/usr/sbin/chroot", self.buildroot.bootstrap_buildroot.rootdir]
         self.chroot_rpm_command = [*self.chroot_command, "/usr/bin/rpm", "--root", self.buildroot.rootdir]
-        self.chroot_dnf_command = [*self.chroot_command, "/usr/bin/dnf", "--installroot", self.buildroot.rootdir]
+        self.chroot_dnf_command = [*self.chroot_command, self.buildroot.pkg_manager.command, "--installroot", self.buildroot.rootdir]
 
     @traceLog()
     def _PostYumHook(self) -> None:
