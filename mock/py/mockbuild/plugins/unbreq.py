@@ -188,22 +188,26 @@ class Unbreq:
     @traceLog()
     def try_remove(self, packages: Iterator[str]) -> set[str]:
         """
-        Try to remove `packages` and obtain all the packages (NVRs) that would be removed.
+        Try to remove `packages` and obtain all the packages (NVRs) that would
+        be removed. A BuildRequires field may end up not being provided by any
+        installed RPM when using `if` booleans.
         """
 
-        # Note that we expect this command to return 1
-        process = _run_subprocess([*self.chroot_dnf_command,
-            "--setopt", "protected_packages=", "--assumeno", "remove", *packages],
-            expected_returncode = 1,
-        )
         result: set[str] = set()
-        for line in process.stdout.splitlines():
-            if not line.startswith(" "):
-                continue
-            nvr = line.split()
-            if len(nvr) != 6:
-                continue
-            result.add(f"{nvr[0]}-{nvr[2]}.{nvr[1]}")
+        packages = list(packages)
+        if len(packages) != 0:
+            # Note that we expect this command to return 1.
+            process = _run_subprocess([*self.chroot_dnf_command,
+                "--setopt", "protected_packages=", "--assumeno", "remove", *packages],
+                expected_returncode = 1,
+            )
+            for line in process.stdout.splitlines():
+                if not line.startswith(" "):
+                    continue
+                nvr = line.split()
+                if len(nvr) != 6:
+                    continue
+                result.add(f"{nvr[0]}-{nvr[2]}.{nvr[1]}")
         return result
 
     @traceLog()
