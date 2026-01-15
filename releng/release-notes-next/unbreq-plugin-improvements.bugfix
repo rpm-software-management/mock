@@ -1,4 +1,5 @@
 The `unbreq` plugin now also works with both `--isolation=simple` and `--no-bootstrap-chroot` mock options.
+Additionally, the plugin now does not crash in some cases when using `(foo if bar)` expressions in BuildRequires.
 
 The run-time of the plugin has been significantly lowered with the addition of caching and parallelization.
 The plugin now also logs standard outputs of failed commands.
