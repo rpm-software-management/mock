@@ -1,0 +1,8 @@
+`mock --scrub=all` now correctly backs up successful builds from the buildroot. Fixes issue #1639.
+
+The backup process now uses `mv` semantics instead of `cp`, avoiding file duplication,
+preserving timestamps, and improving performance. Gemini Code Assist flagged the
+use of `util.run` as unsafe, so it was replaced with `os.replace` to safely overwrite
+existing files.
+
+Improve logs and comments in backup_build_results for clarity.
