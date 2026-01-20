@@ -3,7 +3,7 @@ config_opts['chroot_setup_cmd'] = 'install basesystem-minimal-core rpm-build rpm
 config_opts['dist'] = 'mga{{ releasever }}'  # only useful for --resultdir variable subst
 config_opts['extra_chroot_dirs'] = [ '/run/lock', ]
 config_opts['macros']['%distro_section'] = 'core'
-config_opts['package_manager'] = 'dnf'
+config_opts['package_manager'] = '{% if releasever|int >= 10 %}dnf5{% else %}dnf{% endif %}'
 config_opts['bootstrap_image'] = 'docker.io/library/mageia:{{ releasever }}'
 config_opts['use_bootstrap_image'] = False
 config_opts['description'] = 'Mageia {{ releasever }}'

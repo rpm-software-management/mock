@@ -77,7 +77,7 @@ BuildRequires: python%{python3_pkgversion}-rpmautospec-core
 
 BuildRequires: argparse-manpage
 
-%if 0%{?fedora} >= 38
+%if 0%{?fedora} >= 38 || 0%{?mageia} >= 10
 # DNF5 stack
 Recommends: dnf5
 Recommends: dnf5-plugins
