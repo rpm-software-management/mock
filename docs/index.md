@@ -70,7 +70,7 @@ Versions in Linux distributions:
 
 
 ## Release Notes
-* [Configs 43.4](Release-Notes-43.4) (2026-01-12) - Fedora RISC-V 64-bit support added, Azure Linux 3 aarch64 fix, EPEL 6 CA trust fix
+* [Configs 43.4](Release-Notes-Configs-43.4) (2026-01-12) - Fedora RISC-V 64-bit support added, Azure Linux 3 aarch64 fix, EPEL 6 CA trust fix
 * [6.6](Release-Notes-6.6) (2025-12-08) - Static build-requires installed in multiple waves, easier forcearch selection.
 * [Configs 43.3](Release-Notes-Configs-43.3) (2025-11-14) - configs for openSUSE 16.0 added
 * [6.5](Release-Notes-6.5) (2025-10-23) - Release 6.5 makes the skip-fsync() opt-out into an opt-in.
