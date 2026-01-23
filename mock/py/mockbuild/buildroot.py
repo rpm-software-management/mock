@@ -1047,11 +1047,36 @@ class Buildroot(object):
         return util.BindMountedFile(chroot_filename, host_filename)
 
     @traceLog()
+    def backup_build_results(self):
+        """
+        Back up built RPMs if `backup_on_clean` is enabled, before cleaning the chroot and results.
+        """
+        if not self.config['backup_on_clean']:
+            return
+        srcdir = os.path.join(self.basedir, "result")
+        if not os.path.exists(srcdir):
+            return
+        rpms = glob.glob(os.path.join(srcdir, "*rpm"))
+        if len(rpms) == 0:
+            return
+        dstdir = os.path.join(self.config['backup_base_dir'], self.config['root'])
+        file_util.mkdirIfAbsent(dstdir)
+        self.state.state_log.info("backup_on_clean (completed builds): saving with mv %s %s", " ".join(rpms), dstdir)
+        for rpm in rpms:
+            dest_path = os.path.join(dstdir, os.path.basename(rpm))
+            try:
+                os.replace(rpm, dest_path)
+            except OSError as e:
+                self.state.state_log.error("backup_on_clean (completed builds): error moving %s to %s: %s",
+                        rpm, dest_path, e)
+
+    @traceLog()
     def delete(self):
         """
         Deletes the buildroot contents.
         """
         if os.path.exists(self.basedir):
+            self.backup_build_results()
             p = self.make_chroot_path()
             self._lock_buildroot(exclusive=True)
             util.orphansKill(p)
