@@ -3,8 +3,7 @@ layout: default
 title: Release Notes - Mock core configs 43.4
 ---
 
-## [Release 43.4](https://rpm-software-management.github.io/mock/Release-Notes-43.4) - 2026-01-12
-
+## [Release 43.4](https://rpm-software-management.github.io/mock/Release-Notes-Configs-43.4) - 2026-01-12
 
 ### Mock Core Configs changes
 

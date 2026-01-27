@@ -3,7 +3,7 @@
 %endif
 
 Name:       mock-core-configs
-Version:    43.4
+Version:    43.5
 Release:    1%{?dist}
 Summary:    Mock core config files basic chroots
 
@@ -152,6 +152,11 @@ fi
 %ghost %config(noreplace,missingok) %{_sysconfdir}/mock/default.cfg
 
 %changelog
+* Tue Jan 27 2026 Pavel Raiskup <pavel@raiskup.cz> 43.5-1
+- add PQ keys to rhel9 (msuchy@redhat.com)
+- Switch Mageia 10+ and Cauldron to DNF5 (ngompa@mageia.org)
+- EOL Fedora 41
+
 * Mon Jan 12 2026 Jiri Kyjovsky <j1.kyjovsky@gmail.com> 43.4-1
 - Disable bootstrap for riscv (j1.kyjovsky@gmail.com)
 - Add risc-v fedora chroots (j1.kyjovsky@gmail.com)
