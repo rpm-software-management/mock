@@ -41,7 +41,7 @@ sslverify = 1
 sslcacert = /etc/rhsm/ca/redhat-uep.pem
 sslclientkey = /etc/pki/entitlement/{{ redhat_subscription_key_id }}-key.pem
 sslclientcert = /etc/pki/entitlement/{{ redhat_subscription_key_id }}.pem
-gpgkey = file:///usr/share/distribution-gpg-keys/redhat/RPM-GPG-KEY-redhat{{ releasever }}-release
+gpgkey = file:///usr/share/distribution-gpg-keys/redhat/RPM-GPG-KEY-redhat{{ releasever }}-release file:///usr/share/distribution-gpg-keys/redhat/RPM-GPG-KEY-redhat{{ releasever }}-PQC-release
 skip_if_unavailable=False
 
 [appstream]
@@ -51,7 +51,7 @@ sslverify = 1
 sslcacert = /etc/rhsm/ca/redhat-uep.pem
 sslclientkey = /etc/pki/entitlement/{{ redhat_subscription_key_id }}-key.pem
 sslclientcert = /etc/pki/entitlement/{{ redhat_subscription_key_id }}.pem
-gpgkey = file:///usr/share/distribution-gpg-keys/redhat/RPM-GPG-KEY-redhat{{ releasever }}-release
+gpgkey = file:///usr/share/distribution-gpg-keys/redhat/RPM-GPG-KEY-redhat{{ releasever }}-release file:///usr/share/distribution-gpg-keys/redhat/RPM-GPG-KEY-redhat{{ releasever }}-PQC-release
 skip_if_unavailable=False
 
 [codeready-builder]
@@ -61,6 +61,6 @@ sslverify = 1
 sslcacert = /etc/rhsm/ca/redhat-uep.pem
 sslclientkey = /etc/pki/entitlement/{{ redhat_subscription_key_id }}-key.pem
 sslclientcert = /etc/pki/entitlement/{{ redhat_subscription_key_id }}.pem
-gpgkey = file:///usr/share/distribution-gpg-keys/redhat/RPM-GPG-KEY-redhat{{ releasever }}-release
+gpgkey = file:///usr/share/distribution-gpg-keys/redhat/RPM-GPG-KEY-redhat{{ releasever }}-release file:///usr/share/distribution-gpg-keys/redhat/RPM-GPG-KEY-redhat{{ releasever }}-PQC-release
 skip_if_unavailable=False
 """
