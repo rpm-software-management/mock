@@ -766,7 +766,6 @@ def main():
         # allow bootstrap buildroot to access the network for getting packages
         bootstrap_buildroot_config['rpmbuild_networking'] = True
         bootstrap_buildroot_config['use_host_resolv'] = True
-        util.setup_host_resolv(bootstrap_buildroot_config)
 
         # disable updating bootstrap chroot
         bootstrap_buildroot_config['update_before_build'] = False
@@ -811,6 +810,8 @@ def main():
             chroot_dir = bootstrap_buildroot.make_chroot_path(key_dir)
             mount_point = BindMountPoint(srcpath=key_dir, bindpath=chroot_dir)
             bootstrap_buildroot.mounts.add(mount_point)
+
+        util.setup_host_resolv(bootstrap_buildroot_config)
 
     # this changes config_opts['nspawn_args'], so do it after initializing
     # bootstrap chroot to not inherit the changes there
