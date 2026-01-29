@@ -339,10 +339,10 @@ class SBOMGenerator:
                 for entry in entries:
                     if not entry.is_file():
                         continue
-                    if entry.name.endswith('.rpm') and not entry.name.endswith('.src.rpm'):
-                        rpm_files.append(entry.name)
-                    elif entry.name.endswith('.src.rpm'):
+                    if entry.name.endswith('.src.rpm'):
                         src_rpm_files.append(entry.name)
+                    elif entry.name.endswith('.rpm'):
+                        rpm_files.append(entry.name)
         except OSError as e:
             self.buildroot.root_log.debug(f"Failed to scan build directory {build_dir}: {e}")
 
@@ -651,7 +651,7 @@ class SBOMGenerator:
                     elif primary_rpm_metadata:
                         lic = primary_rpm_metadata.get("license")
                         if lic and lic != "(none)":
-                            component_obj["licenses"] = [{"license": {"id": lic}}]
+                            component_obj["licenses"] = [{"expression": lic}]
                     bom["metadata"]["component"] = component_obj
             else:
                 first_pkg = next((c for c in bom["components"]
@@ -774,9 +774,7 @@ class SBOMGenerator:
         if license_str and license_str != "(none)":
             component["licenses"] = [
                 {
-                    "license": {
-                        "id": license_str
-                    }
+                    "expression": license_str
                 }
             ]
 
@@ -937,9 +935,7 @@ class SBOMGenerator:
         if license_str and license_str != "(none)":
             component["licenses"] = [
                 {
-                    "license": {
-                        "id": license_str
-                    }
+                    "expression": license_str
                 }
             ]
 
