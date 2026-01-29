@@ -39,8 +39,8 @@ def init(plugins, conf, buildroot):
 
     # Check for valid SBOM type configuration
     opts = conf["sbom_generator_opts"]
-    if "type" in opts and opts["type"] != "cyclonedx":
-        # We only support cyclonedx for now
+    if "type" in opts and opts["type"] not in ("cyclonedx", "spdx"):
+        # We only support cyclonedx and spdx for now
         buildroot.root_log.warning(
             f"SBOM generator type '{opts['type']}' not supported, defaulting to 'cyclonedx'"
         )
@@ -60,6 +60,7 @@ class SBOMGenerator:
         self.builddir = buildroot.builddir
         self.conf = conf
         self.sbom_enabled = self.conf.get('generate_sbom', True)
+        self.sbom_type = self.conf.get('type', 'cyclonedx')
         self.sbom_done = False
 
         # Configuration options for file-level dependencies and filtering
@@ -431,7 +432,7 @@ class SBOMGenerator:
         if self.sbom_done or not self.sbom_enabled:
             return
 
-        state_text = "Generating CycloneDX SBOM for built packages v1.0"
+        state_text = f"Generating {self.sbom_type.upper()} SBOM for built packages v1.0"
         self.state.start(state_text)
 
         try:
@@ -450,47 +451,69 @@ class SBOMGenerator:
                 build_subject_release, source_files
             ) = self._get_build_subject_metadata(spec_file, src_rpm_files, build_dir)
 
-            # Construct output filename using package name-version-release format
             if not build_subject_name or not build_subject_version or not build_subject_release:
                 self.buildroot.root_log.debug("Cannot generate SBOM - build metadata incomplete")
                 return
 
-            sbom_filename = (
-                f"{build_subject_name}-{build_subject_version}-{build_subject_release}.sbom"
-            )
-            out_file = os.path.join(self.buildroot.resultdir, sbom_filename)
-
-            # Create CycloneDX document
-            bom = self._create_cyclonedx_document()
+            # Gather common data
+            distro_id = self.detect_chroot_distribution() or "fedora"
             build_toolchain_packages = self.get_build_toolchain_packages()
 
-            # Add source and toolchain components
-            source_component_entries = self._add_source_components(bom, source_files)
-            distro_id = self.detect_chroot_distribution() or "fedora"
-            toolchain_bom_refs = self._add_toolchain_components(
-                bom, build_toolchain_packages, distro_id
-            )
+            # Dispatch based on type
+            if self.sbom_type == "spdx":
+                sbom_filename = (
+                    f"{build_subject_name}-{build_subject_version}-{build_subject_release}.spdx.json"
+                )
+                out_file = os.path.join(self.buildroot.resultdir, sbom_filename)
 
-            # Process binary RPMs and convert to components
-            (
-                built_package_bom_refs, primary_rpm_metadata
-            ) = self._process_built_packages(
-                bom, rpm_files, build_dir, distro_id, source_component_entries,
-                build_subject_name, build_toolchain_packages, toolchain_bom_refs
-            )
+                doc = self._generate_spdx_document(
+                    build_subject_name, build_subject_version, build_subject_release,
+                    build_dir, rpm_files, source_files,
+                    build_toolchain_packages, distro_id
+                )
 
-            # Add RPM-specific metadata and finalize dependencies
-            self._finalize_bom_metadata(bom, primary_rpm_metadata, built_package_bom_refs,
-                                        build_subject_name, build_subject_version,
-                                        build_subject_release, distro_id)
-            self._finalize_dependencies(bom, source_component_entries,
-                                        build_toolchain_packages, distro_id)
+                with open(out_file, "w", encoding="utf-8") as f:
+                    json.dump(doc, f, indent=2)
 
-            # Write CycloneDX BOM
-            with open(out_file, "w", encoding="utf-8") as f:
-                json.dump(bom, f, indent=2)
+                self.buildroot.root_log.debug(f"SPDX SBOM successfully written to: {out_file}")
 
-            self.buildroot.root_log.debug(f"CycloneDX SBOM successfully written to: {out_file}")
+            else:
+                # Default: CycloneDX
+                sbom_filename = (
+                    f"{build_subject_name}-{build_subject_version}-{build_subject_release}.sbom"
+                )
+                out_file = os.path.join(self.buildroot.resultdir, sbom_filename)
+
+                # Create CycloneDX document
+                bom = self._create_cyclonedx_document()
+
+                # Add source and toolchain components
+                source_component_entries = self._add_source_components(bom, source_files)
+                toolchain_bom_refs = self._add_toolchain_components(
+                    bom, build_toolchain_packages, distro_id
+                )
+
+                # Process binary RPMs and convert to components
+                (
+                    built_package_bom_refs, primary_rpm_metadata
+                ) = self._process_built_packages(
+                    bom, rpm_files, build_dir, distro_id, source_component_entries,
+                    build_subject_name, build_toolchain_packages, toolchain_bom_refs
+                )
+
+                # Add RPM-specific metadata and finalize dependencies
+                self._finalize_bom_metadata(bom, primary_rpm_metadata, built_package_bom_refs,
+                                            build_subject_name, build_subject_version,
+                                            build_subject_release, distro_id)
+                self._finalize_dependencies(bom, source_component_entries,
+                                            build_toolchain_packages, distro_id)
+
+                # Write CycloneDX BOM
+                with open(out_file, "w", encoding="utf-8") as f:
+                    json.dump(bom, f, indent=2)
+
+                self.buildroot.root_log.debug(f"CycloneDX SBOM successfully written to: {out_file}")
+
         # pylint: disable=broad-exception-caught
         except Exception as e:
             self.buildroot.root_log.debug(f"An error occurred during SBOM generation: {e}")
@@ -2047,3 +2070,196 @@ class SBOMGenerator:
                 rel_path = "/" + rel_path
             return rel_path
         return host_path
+
+    def _generate_spdx_document(self, name, version, release, build_dir, rpm_files,
+                                source_files, toolchain_components, distro_id):
+        """Generates the full SPDX document."""
+        doc_spdx_id = "SPDXRef-DOCUMENT"
+        creation_time = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+        # Basic Document Structure
+        document = {
+            "spdxVersion": "SPDX-2.3",
+            "dataLicense": "CC0-1.0",
+            "SPDXID": doc_spdx_id,
+            "name": f"SBOM for {name}-{version}-{release}",
+            "documentNamespace": f"http://spdx.org/spdxdocs/{name}-{version}-{release}-{uuid.uuid4()}",
+            "creationInfo": {
+                "creators": [
+                    "Tool: mock-sbom-generator-1.0",
+                    "Organization: Atomicorp"
+                ],
+                "created": creation_time
+            },
+            "packages": [],
+            "files": [],
+            "relationships": []
+        }
+
+        # Add Toolchain Packages
+        for tc in toolchain_components:
+            spdx_pkg = self._create_spdx_package_from_dict(tc)
+            if spdx_pkg:
+                document["packages"].append(spdx_pkg)
+                # Relationship: Document DESCRIBES toolchain (conceptually part of build environment)
+                # But strictly, Document DESCRIBES the output artifacts.
+                # We'll just list them.
+
+        # Add Source Files
+        for src_file in source_files:
+            spdx_file = self._create_spdx_file(src_file)
+            if spdx_file:
+                document["files"].append(spdx_file)
+                # Relationship: Document CONTAINS file
+                document["relationships"].append({
+                    "spdxElementId": doc_spdx_id,
+                    "relatedSpdxElement": spdx_file["SPDXID"],
+                    "relationshipType": "CONTAINS"
+                })
+
+        # Add Build Artifacts (RPMs)
+        for rpm_file in rpm_files:
+            rpm_path = os.path.join(build_dir, rpm_file)
+            spdx_pkg = self._create_spdx_package_from_rpm(rpm_path, distro_id)
+            if spdx_pkg:
+                document["packages"].append(spdx_pkg)
+                # Relationship: Document DESCRIBES Package
+                document["relationships"].append({
+                    "spdxElementId": doc_spdx_id,
+                    "relatedSpdxElement": spdx_pkg["SPDXID"],
+                    "relationshipType": "DESCRIBES"
+                })
+
+        return document
+
+    def _create_spdx_package_from_rpm(self, rpm_path, distro_obj):
+        """Creates an SPDX Package from an RPM file."""
+        pkg_data = self.get_rpm_metadata(rpm_path)
+        if not pkg_data:
+            return None
+
+        name = pkg_data.get("name")
+        version = pkg_data.get("version")
+        release = pkg_data.get("release")
+        arch = pkg_data.get("arch")
+        full_version = f"{version}-{release}" if release else version
+
+        safe_name = re.sub(r'[^a-zA-Z0-9.-]', '-', name)
+        safe_ver = re.sub(r'[^a-zA-Z0-9.-]', '-', full_version)
+        spdx_id = f"SPDXRef-Package-{safe_name}-{safe_ver}"
+
+        package = {
+            "name": name,
+            "SPDXID": spdx_id,
+            "versionInfo": full_version,
+            "downloadLocation": "NOASSERTION",
+            "filesAnalyzed": False,
+            "supplier": "NOASSERTION"
+        }
+
+        # License
+        lic = pkg_data.get("license")
+        if lic and lic != "(none)":
+            package["licenseDeclared"] = lic
+        else:
+            package["licenseDeclared"] = "NOASSERTION"
+        package["licenseConcluded"] = "NOASSERTION"
+
+        # Supplier
+        packager = pkg_data.get("packager")
+        if packager and packager != "(none)":
+            package["supplier"] = f"Person: {packager}"
+
+        # Checksums
+        rpm_hash = self.hash_file(rpm_path)
+        if rpm_hash:
+            package["checksums"] = [{
+                "algorithm": "SHA256",
+                "checksumValue": rpm_hash
+            }]
+
+        # External Refs
+        external_refs = []
+        purl = self._generate_purl(name, full_version, distro_obj, arch)
+        if purl:
+            external_refs.append({
+                "referenceCategory": "PACKAGE-MANAGER",
+                "referenceType": "purl",
+                "referenceLocator": purl
+            })
+
+        cpe = self.generate_cpe(name, version)
+        if cpe:
+            external_refs.append({
+                "referenceCategory": "SECURITY",
+                "referenceType": "cpe23Type",
+                "referenceLocator": cpe
+            })
+
+        if external_refs:
+            package["externalRefs"] = external_refs
+
+        return package
+
+    def _create_spdx_package_from_dict(self, pkg_data):
+        """Creates an SPDX Package from a dictionary (e.g. toolchain)."""
+        name = pkg_data.get("name")
+        version = pkg_data.get("version")
+        if not name or not version:
+            return None
+
+        safe_name = re.sub(r'[^a-zA-Z0-9.-]', '-', name)
+        safe_ver = re.sub(r'[^a-zA-Z0-9.-]', '-', version)
+        spdx_id = f"SPDXRef-Package-{safe_name}-{safe_ver}"
+
+        package = {
+            "name": name,
+            "SPDXID": spdx_id,
+            "versionInfo": version,
+            "downloadLocation": "NOASSERTION",
+            "filesAnalyzed": False,
+            "supplier": "NOASSERTION"
+        }
+
+        lic = pkg_data.get("licenseDeclared")
+        if lic and lic != "(none)":
+            package["licenseDeclared"] = lic
+        else:
+            package["licenseDeclared"] = "NOASSERTION"
+        package["licenseConcluded"] = "NOASSERTION"
+
+        checksum = pkg_data.get("checksum")
+        if checksum and not checksum.startswith("error"):
+            # Assume SHA256 if len 64 else SHA1
+            alg = "SHA256" if len(checksum) == 64 else "SHA1"
+            package["checksums"] = [{
+                "algorithm": alg,
+                "checksumValue": checksum
+            }]
+
+        return package
+
+    def _create_spdx_file(self, file_data):
+        """Creates an SPDX File from file metadata."""
+        filename = file_data.get("filename")
+        if not filename:
+            return None
+
+        safe_name = re.sub(r'[^a-zA-Z0-9.-]', '-', filename)
+        spdx_id = f"SPDXRef-File-{safe_name}"
+
+        file_obj = {
+            "fileName": f"./{filename}",
+            "SPDXID": spdx_id,
+            "licenseConcluded": "NOASSERTION",
+            "copyrightText": "NOASSERTION"
+        }
+
+        sha256 = file_data.get("sha256")
+        if sha256:
+            file_obj["checksums"] = [{
+                "algorithm": "SHA256",
+                "checksumValue": sha256
+            }]
+
+        return file_obj
