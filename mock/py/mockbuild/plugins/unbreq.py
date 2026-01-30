@@ -112,6 +112,11 @@ class Unbreq:
 
     @traceLog()
     def check_output(self, command: list[str], *args: Any, expected_returncode = 0, **kwargs: Any) -> str:
+        """
+        Run `command` in the associated chroot. Raise an exception if returned code
+        does not match `expected_returncode`. Additional arguments are passed to
+        the function `mockbuild.util.do_with_status`.
+        """
         # The `--ephemeral` flag is required in order to be able to run `systemd-nspawn` concurrently.
         kwargs["nspawn_args"] = ["--ephemeral", "--bind", self.buildroot.rootdir]
         if self.buildroot.bootstrap_buildroot is not None:
@@ -121,7 +126,9 @@ class Unbreq:
         output, returncode = mockbuild.util.do_with_status(command, *args, **kwargs)
         if returncode != expected_returncode:
             # Copied from `mockbuild.util.do_with_status`
-            raise mockbuild.exception.Error("Command failed: \n # %s\n%s" % (mockbuild.util.cmd_pretty(command), output), returncode)
+            raise mockbuild.exception.Error(
+                f"Command failed: \n # {mockbuild.util.cmd_pretty(command)}\n{output}", returncode
+            )
         return output
 
     @traceLog()
