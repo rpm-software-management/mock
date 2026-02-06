@@ -1041,10 +1041,7 @@ def subscription_redhat_init(opts, uidManager):
         raise exception.ConfigError(
             "No key found in /etc/pki/entitlement directory.  It means "
             "this machine is not subscribed.  Please use \n"
-            "  1. subscription-manager register\n"
-            "  2. subscription-manager list --all --available "
-            "(available pool IDs)\n"
-            "  3. subscription-manager attach --pool <POOL_ID>\n"
+            "  subscription-manager register\n"
             "If you don't have Red Hat subscription yet, consider "
             "getting subscription:\n"
             "  https://access.redhat.com/solutions/253273\n"
