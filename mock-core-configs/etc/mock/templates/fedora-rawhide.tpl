@@ -64,6 +64,7 @@ skip_if_unavailable=False
 [fedora]
 name=fedora
 metalink=https://mirrors.fedoraproject.org/metalink?repo=rawhide&arch=$basearch
+enabled=1
 gpgkey={{ rawhide_gpg_keys() }}
 gpgcheck=1
 skip_if_unavailable=False

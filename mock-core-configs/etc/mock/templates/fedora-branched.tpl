@@ -48,6 +48,7 @@ skip_if_unavailable=False
 [fedora]
 name=fedora
 metalink=https://mirrors.fedoraproject.org/metalink?repo=fedora-$releasever&arch=$basearch
+enabled=1
 gpgkey=file:///usr/share/distribution-gpg-keys/fedora/RPM-GPG-KEY-fedora-{{ releasever }}-primary
 gpgcheck=1
 skip_if_unavailable=False
@@ -55,6 +56,7 @@ skip_if_unavailable=False
 [updates]
 name=updates
 metalink=https://mirrors.fedoraproject.org/metalink?repo=updates-released-f$releasever&arch=$basearch
+enabled=1
 gpgkey=file:///usr/share/distribution-gpg-keys/fedora/RPM-GPG-KEY-fedora-{{ releasever }}-primary
 gpgcheck=1
 skip_if_unavailable=False
