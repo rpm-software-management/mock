@@ -11,7 +11,7 @@ Author: Marián Konček <mkoncek@redhat.com>
 import subprocess
 import os
 import re
-from typing import Generator, Iterable, Iterator, Optional
+from typing import Any, Generator, Iterable, Iterator, Optional
 from contextlib import contextmanager
 from concurrent.futures import ThreadPoolExecutor
 from threading import Lock
@@ -65,9 +65,8 @@ class Unbreq:
         self.config = buildroot.config
 
         self.enabled = False
-        self.chroot_command: list[str] = []
-        self.chroot_rpm_command: list[str] = []
-        self.chroot_dnf_command: list[str] = []
+        self.rpm_command: list[str] = []
+        self.dnf_command: list[str] = []
         self.min_time: float = 0.0
         config_exclude_accessed_files = (
             self.config
@@ -87,9 +86,6 @@ class Unbreq:
         self.buildrequires_providers: dict[str, list[str]] = {}
         self.buildrequires_deptype: dict[str, str] = {}
         self.pool: ThreadPoolExecutor = ThreadPoolExecutor(max_workers = os.process_cpu_count() or 1)
-
-        # TODO handle different package managers
-        # self.buildroot.pkg_manager.name
 
         plugins.add_hook("earlyprebuild", self._EarlyPrebuildHook)
         plugins.add_hook("postyum", self._PostYumHook)
@@ -115,6 +111,27 @@ class Unbreq:
             yield
 
     @traceLog()
+    def check_output(self, command: list[str], *args: Any, expected_returncode = 0, **kwargs: Any) -> str:
+        """
+        Run `command` in the associated chroot. Raise an exception if returned code
+        does not match `expected_returncode`. Additional arguments are passed to
+        the function `mockbuild.util.do_with_status`.
+        """
+        # The `--ephemeral` flag is required in order to be able to run `systemd-nspawn` concurrently.
+        kwargs["nspawn_args"] = ["--ephemeral", "--bind", self.buildroot.rootdir]
+        if self.buildroot.bootstrap_buildroot is not None:
+            kwargs["chrootPath"] = self.buildroot.bootstrap_buildroot.rootdir
+        kwargs["returnOutput"] = True
+        kwargs["raiseExc"] = False
+        output, returncode = mockbuild.util.do_with_status(command, *args, **kwargs)
+        if returncode != expected_returncode:
+            # Copied from `mockbuild.util.do_with_status`
+            raise mockbuild.exception.Error(
+                f"Command failed: \n # {mockbuild.util.cmd_pretty(command)}\n{output}", returncode
+            )
+        return output
+
+    @traceLog()
     def get_buildrequires(self, srpm: str) -> None:
         """
         Get the BuildRequires fields of a SRPM file and store them in `self.buildrequires_deptype`
@@ -126,12 +143,10 @@ class Unbreq:
         Dependency type strings can have more attributes separated by a comma.
         We ignore those.
         """
-        process = subprocess.run([*self.chroot_rpm_command, "-q", "--qf",
+        output = self.check_output([*self.rpm_command, "-q", "--qf",
             "[%{REQUIREFLAGS:deptype} %{REQUIRES} %{REQUIREFLAGS:depflags} %{REQUIREVERSION}\\n]", srpm],
-            stdin = subprocess.DEVNULL, stdout = subprocess.PIPE, stderr = subprocess.PIPE,
-            text = True, check = True,
         )
-        for line in process.stdout.splitlines():
+        for line in output.splitlines():
             separator = line.find(" ")
             deptype_end = line.find(",", 0, separator)
             if deptype_end == -1:
@@ -149,13 +164,11 @@ class Unbreq:
         """
         queried_packages = packages.difference(self.rpm_files.keys())
         if len(queried_packages) != 0:
-            process = subprocess.run([*self.chroot_rpm_command, "-q",
+            output = self.check_output([*self.rpm_command, "-q",
                 "--qf", "\\n[%{FILENAMES}\\n]", *queried_packages],
-                stdin = subprocess.DEVNULL, stdout = subprocess.PIPE, stderr = subprocess.PIPE,
-                text = True, check = True,
             )
             package_it = iter(queried_packages)
-            for line in process.stdout.splitlines():
+            for line in output.splitlines():
                 if not line:
                     package = next(package_it)
                     current_files: list[str] = []
@@ -167,27 +180,26 @@ class Unbreq:
     @traceLog()
     def try_remove(self, packages: Iterator[str]) -> set[str]:
         """
-        Try to remove `packages` and obtain all the packages (NVRs) that would be removed.
+        Try to remove `packages` and obtain all the packages (NVRs) that would
+        be removed. A BuildRequires field may end up not being provided by any
+        installed RPM when using `if` booleans.
         """
 
-        # Note that we expect this command to return 1
-        process = subprocess.run([*self.chroot_dnf_command,
-            "--setopt", "protected_packages=", "--assumeno", "remove", *packages],
-            stdin = subprocess.DEVNULL, stdout = subprocess.PIPE, stderr = subprocess.PIPE,
-            text = True, check = False,
-        )
-        if process.returncode != 1:
-            raise subprocess.CalledProcessError(
-                process.returncode, " ".join(process.args), process.stdout, process.stderr
-            )
         result: set[str] = set()
-        for line in process.stdout.splitlines():
-            if not line.startswith(" "):
-                continue
-            nvr = line.split()
-            if len(nvr) != 6:
-                continue
-            result.add(f"{nvr[0]}-{nvr[2]}.{nvr[1]}")
+        packages = list(packages)
+        if len(packages) != 0:
+            # Note that we expect this command to return 1.
+            output = self.check_output([*self.dnf_command,
+                "--setopt", "protected_packages=", "--assumeno", "remove", *packages],
+                expected_returncode = 1,
+            )
+            for line in output.splitlines():
+                if not line.startswith(" "):
+                    continue
+                nvr = line.split()
+                if len(nvr) != 6:
+                    continue
+                result.add(f"{nvr[0]}-{nvr[2]}.{nvr[1]}")
         return result
 
     @traceLog()
@@ -203,12 +215,10 @@ class Unbreq:
         br_providers: dict[str, list[str]] = {}
         provided_brs: dict[str, list[str]] = {}
 
-        for br, process in zip(buildrequires, self.pool.map(lambda br: subprocess.run(
-            [*self.chroot_dnf_command, "repoquery", "--installed", "--whatprovides", br],
-            stdin = subprocess.DEVNULL, stdout = subprocess.PIPE, stderr = subprocess.PIPE,
-            text = True, check = True,
+        for br, output in zip(buildrequires, self.pool.map(lambda br: self.check_output(
+            [*self.dnf_command, "repoquery", "--installed", "--whatprovides", br],
         ), buildrequires)):
-            current_br_providers: list[str] = process.stdout.splitlines()
+            current_br_providers: list[str] = output.splitlines()
             br_providers[br] = current_br_providers
             for provider in current_br_providers:
                 provided_brs.setdefault(provider, []).append(br)
@@ -323,21 +333,23 @@ class Unbreq:
         """
         Initialize some chroot attributes.
         """
-        self.enabled = True
+
+        if self.buildroot.pkg_manager.name == "dnf5":
+            self.enabled = True
+        elif self.buildroot.pkg_manager.name == "dnf4":
+            self.enabled = True
+            # DNF 4 can not be run concurrently
+            self.pool = ThreadPoolExecutor(max_workers = 1)
+        else:
+            getLog().warning("unbreq plugin: '%s' package manager is not supported", self.buildroot.pkg_manager.name)
+
+        if not self.enabled:
+            return
+
+        self.rpm_command = ["/usr/bin/rpm", "--root", self.buildroot.rootdir]
+        self.dnf_command = [self.buildroot.pkg_manager.command, "--installroot", self.buildroot.rootdir]
 
         getLog().info("enabled unbreq plugin (earlyprebuild)")
-
-        if self.buildroot.bootstrap_buildroot is not None:
-            if USE_NSPAWN:
-                # The `--ephemeral` flag is required in order to be able to run
-                # `systemd-nspawn` concurrently.
-                self.chroot_command = ["/usr/bin/systemd-nspawn", "--quiet", "--ephemeral", "--pipe",
-                    "-D", self.buildroot.bootstrap_buildroot.rootdir, "--bind", self.buildroot.rootdir
-                ]
-            else:
-                self.chroot_command = ["/usr/sbin/chroot", self.buildroot.bootstrap_buildroot.rootdir]
-        self.chroot_rpm_command = [*self.chroot_command, "/usr/bin/rpm", "--root", self.buildroot.rootdir]
-        self.chroot_dnf_command = [*self.chroot_command, "/usr/bin/dnf", "--installroot", self.buildroot.rootdir]
 
     @traceLog()
     def _PostYumHook(self) -> None:
@@ -376,21 +388,10 @@ class Unbreq:
         mockbuild.file_util.touch(path)
         self.min_time = os.path.getatime(path)
 
-        try:
-            # NOTE should failure throw an exception?
-            mount_options_process = subprocess.run(
-                ["/usr/bin/findmnt", "-n", "-o", "OPTIONS", "--target", self.buildroot.rootdir],
-                stdin = subprocess.DEVNULL, stdout = subprocess.PIPE, stderr = subprocess.PIPE,
-                text = True, check = False,
-            )
-            if mount_options_process:
-                self.mount_options = mount_options_process.stdout.rstrip().split(",")
-            else:
-                getLog().warning("unbreq plugin: unable to detect buildroot mount options, process %s returned %d: %s",
-                    mount_options_process, mount_options_process.returncode, mount_options_process.stderr,
-                )
-        except FileNotFoundError:
-            pass
+        self.mount_options = mockbuild.util.do(
+            ["/usr/bin/findmnt", "-n", "-o", "OPTIONS", "--target", self.buildroot.rootdir],
+            returnOutput = True,
+        ).rstrip().split(",")
 
         if "relatime" in self.mount_options:
             getLog().info(
