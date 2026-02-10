@@ -33,7 +33,7 @@ PLUGIN_LIST = ['tmpfs', 'root_cache', 'yum_cache', 'mount', 'bind_mount',
                'lvm_root', 'compress_logs', 'sign', 'pm_request',
                'hw_info', 'procenv', 'showrc', 'rpkg_preprocessor',
                'rpmautospec', 'buildroot_lock', 'export_buildroot_image',
-               'unbreq']
+               'unbreq', 'show_parsed_spec']
 
 def nspawn_supported():
     """Detect some situations where the systemd-nspawn chroot code won't work"""
@@ -257,7 +257,11 @@ def setup_default_config_opts():
         'unbreq_enable': False,
         'unbreq_opts': {
             'exclude_accessed_files': []
-        }
+        },
+        'show_parsed_spec_enable': True,
+        'show_parsed_spec_opts': {
+            'rpmspec_opts': [],
+        },
     }
 
     config_opts['environment'] = {
