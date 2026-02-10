@@ -62,6 +62,10 @@ class Commands(object):
         self.private_network = not config['rpmbuild_networking']
         self.rpmbuild_noclean_option = None
 
+        # on-demand buildroot properties
+        # spec path in buildroot
+        self.buildroot.spec = None
+
     @traceLog()
     def clean(self):
         """clean out chroot with extreme prejudice :)"""
@@ -175,6 +179,21 @@ class Commands(object):
         return deps
 
     @traceLog()
+    def prepareSpec(self, srpm=None, spec=None):
+        """Prepare the spec file for building."""
+        if spec and not self.config['scm']:
+            # scm sets options.spec, but we want to get spec from SRPM when using scm
+            spec_path = self.copy_spec_into_chroot(spec)
+        else:
+            spec = self.get_specfile_name(srpm)
+            spec_path = os.path.join(self.buildroot.builddir, 'SPECS', spec)
+
+        # store the spec path for later use in hooks
+        self.buildroot.spec = spec_path
+
+        return spec_path
+
+    @traceLog()
     def installSrpmDeps(self, *srpms):
         """Figure out deps from srpm. Call package manager to install them"""
         try:
@@ -256,12 +275,7 @@ class Commands(object):
             srpm = self.copy_srpm_into_chroot(srpm)
             self.install_srpm(srpm)
 
-            if spec and not self.config['scm']:
-                # scm sets options.spec, but we want to get spec from SRPM when using scm
-                spec_path = self.copy_spec_into_chroot(spec)
-            else:
-                spec = self.get_specfile_name(srpm)
-                spec_path = os.path.join(self.buildroot.builddir, 'SPECS', spec)
+            spec_path = self.prepareSpec(srpm, spec)
 
             # We need to rebuild the SRPM and install dependencies multiple
             # times so that cases like #1652 are covered
