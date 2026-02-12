@@ -137,7 +137,7 @@ def prepare_image(image_specification, bootstrap_data, outputdir):
     subprocess.check_output(pull_cmd)
     subprocess.check_output(["podman", "save", "--format=oci-archive", "--quiet",
                              "-o", os.path.join(outputdir, "bootstrap.tar"),
-                             image_specification])
+                             bootstrap_data["id"]])
 
 
 def _main():
