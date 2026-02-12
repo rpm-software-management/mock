@@ -869,7 +869,7 @@ def setup_host_resolv(config_opts):
                 ::1       localhost localhost.localdomain localhost6 localhost6.localdomain6
                 ''')
 
-    if config_opts['isolation'] == 'simple':
+    if not USE_NSPAWN:
         # Not using nspawn -> don't touch /etc/resolv.conf; we already have
         # a valid file prepared by Buildroot._init() (if user requested).
         return
