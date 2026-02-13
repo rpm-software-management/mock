@@ -811,6 +811,12 @@ def process_hermetic_build_config(cmdline_opts, config_opts):
 
     config_opts["offline_local_repository"] = final_offline_repo
 
+    # Provide build access to buildroot packages solving same issue as
+    # https://lists.fedorahosted.org/archives/list/koji-devel@lists.fedorahosted.org/thread/ZIBY53JAURLT3QRBBJIJJ7EZWLZDE3TI/
+    # keepcache=1 for local repos work only in dnf5 not dnf4
+    config_opts['plugin_conf']['bind_mount_enable'] = True
+    config_opts['plugin_conf']['bind_mount_opts']['dirs'].append((final_offline_repo, '/hermetic_repo' ))
+
     # We install all the packages at once (for now?).  We could inherit the
     # command from the previous "online" run, but it often employs a group
     # installation command - and we have no groups in the offline repo.
