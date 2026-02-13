@@ -131,6 +131,9 @@ that Mock performs.
    components from the internet and places them into a single local
    directory—let's call it an *offline repository*.
 
+   This repository is also available during the build for inspection or use
+   inside the buildroot in the `/hermetic_repo` directory.
+
    **Note:** This step doesn't necessarily have to be done by the Mock project
    itself.  The *lockfile* is concise enough for further processing and
    validation (e.g., ensuring the set of RPMs and the buildroot image come from
