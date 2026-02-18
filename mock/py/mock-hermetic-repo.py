@@ -191,7 +191,7 @@ def _main():
         log.error("RPM deps downloading failed")
         sys.exit(1)
 
-    subprocess.check_call(["createrepo_c", options.output_repo])
+    subprocess.check_call(["createrepo_c", "--compatibility", options.output_repo])
 
     prepare_image(data["config"]["bootstrap_image"], data["bootstrap"],
                   options.output_repo)
