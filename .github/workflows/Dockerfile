@@ -13,5 +13,7 @@ WORKDIR /home/user/mock/mock
 RUN tito build --test --rpm
 USER root
 RUN dnf -y copr enable @mock/mock-deps
+# https://fedoraproject.org/wiki/Changes/Enforcing_signature_checking_by_default
+RUN echo '%_pkgverify_level digest' > /etc/rpm/macros.verify
 RUN dnf -y install --allow-downgrade /tmp/tito/*/mock*.rpm
 USER user
