@@ -128,7 +128,7 @@ def prepare_image(image_specification, bootstrap_data, outputdir):
     Store the tarball into the same directory where the RPMs are
     """
     pull_cmd = ["podman", "pull"]
-    if "pull_digest" in bootstrap_data:
+    if bootstrap_data.get("pull_digest"):
         image_specification +=  "@" + bootstrap_data["pull_digest"]
     if "architecture" in bootstrap_data:
         pull_cmd += ["--arch", bootstrap_data["architecture"]]

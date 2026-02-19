@@ -251,13 +251,15 @@ class Podman:
         """
         Get the image metadata needed for the subsequent hermetic build.
         """
-        get_query = '{"pull_digest": "{{ .Digest }}", "id": "{{.Id}}", "architecture": "{{ .Architecture }}"}'
+        get_query = '{"id": "{{.Id}}", "architecture": "{{ .Architecture }}"}'
         getLog().info("Reading image %s from %s", get_query, self.image)
         cmd = ["podman", "image", "inspect", "--format", get_query, self.image]
         res = subprocess.run(cmd, env=self.buildroot.env,
                              stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                              check=True)
-        return json.loads(res.stdout.decode("utf-8").strip())
+        res = json.loads(res.stdout.decode("utf-8").strip())
+        res['pull_digest'] = None
+        return res
 
 
     def __repr__(self):
