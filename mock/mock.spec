@@ -96,6 +96,7 @@ Suggests: qemu-user-static
 Suggests: procenv
 Recommends: buildah
 Recommends: podman
+Recommends: skopeo
 Recommends: fuse-overlayfs
 
 %if %{with tests}

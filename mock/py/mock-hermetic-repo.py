@@ -127,17 +127,22 @@ def prepare_image(image_specification, bootstrap_data, outputdir):
     """
     Store the tarball into the same directory where the RPMs are
     """
-    pull_cmd = ["podman", "pull"]
+    # --scoped - it is better to refer will full repo name instead of just tag@sha
+    #            also it matches with full pullspec from config's bootstrap_image
+    # --preserve-digests - it is not needed for most images, but some could end with
+    #            modified digests (semantically identical copy, but modified digest,
+    #            e.g. embedded docker reference for v1 images), so better safe than sorry
+    pull_cmd = ["skopeo", "sync", "--src", "docker", "--dest", "dir",
+                "--scoped", "--preserve-digests"]
+    # skopeo (currently) can't live with tag + sha, so strip the tag
+    image_specification = image_specification.split(':')[0]
+    if "architecture" in bootstrap_data:
+        pull_cmd += ["--override-arch", bootstrap_data["architecture"]]
     if "pull_digest" in bootstrap_data:
         image_specification +=  "@" + bootstrap_data["pull_digest"]
-    if "architecture" in bootstrap_data:
-        pull_cmd += ["--arch", bootstrap_data["architecture"]]
-    pull_cmd += [image_specification]
+    pull_cmd += [image_specification, outputdir]
     log.info("Pulling like: %s", ' '.join(pull_cmd))
     subprocess.check_output(pull_cmd)
-    subprocess.check_output(["podman", "save", "--format=oci-archive", "--quiet",
-                             "-o", os.path.join(outputdir, "bootstrap.tar"),
-                             image_specification])
 
 
 def _main():
