@@ -192,7 +192,7 @@ class Podman:
         as the check that we've loaded same image.
         """
         the_image = self.image
-        if the_image.startswith("oci-archive:"):
+        if the_image.startswith("oci-archive:") or the_image.startswith("dir:"):
             # We can't query digest from tarball directly, but note
             # the image needs to be tagged first!
             the_image = self._tagged_id

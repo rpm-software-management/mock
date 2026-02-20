@@ -806,8 +806,11 @@ def process_hermetic_build_config(cmdline_opts, config_opts):
             "offline RPM repository (RPM metadata not found)")
 
     # Use the offline image for bootstrapping.
-    bootstrap_tarball = os.path.join(final_offline_repo, "bootstrap.tar")
-    config_opts["bootstrap_image"] = f"oci-archive:{bootstrap_tarball}"
+    # skopeo (currently) can't live with tag + sha, so strip the tag
+    image_pullspec = data['config']['bootstrap_image'].split(':')[0]
+    image_pullspec += "@" + data['bootstrap']['pull_digest']
+    bootstrap_dir = os.path.join(final_offline_repo, image_pullspec)
+    config_opts["bootstrap_image"] = f"dir:{bootstrap_dir}"
 
     config_opts["offline_local_repository"] = final_offline_repo
 
