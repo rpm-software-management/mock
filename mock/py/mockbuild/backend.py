@@ -41,7 +41,6 @@ class Commands(object):
         self.external = ExternalDeps(buildroot, bootstrap_buildroot, uid_manager)
 
         self.rpmbuild_arch = config['rpmbuild_arch']
-        self.clean_the_chroot = config['clean']
 
         self.build_results = []
 
@@ -67,6 +66,8 @@ class Commands(object):
         """clean out chroot with extreme prejudice :)"""
         self.state.start("clean chroot")
         self.buildroot.delete()
+        if self.bootstrap_buildroot is not None:
+            self.bootstrap_buildroot.delete()
         self.state.finish("clean chroot")
 
     @traceLog()
@@ -96,6 +97,8 @@ class Commands(object):
                     elif scrub == 'chroot':
                         self.buildroot.root_log.info("scrubbing chroot for %s", self.config_name)
                         self.buildroot.delete()
+                        if self.bootstrap_buildroot is not None:
+                            self.bootstrap_buildroot.delete()
                     elif scrub == 'cache':
                         self.buildroot.root_log.info("scrubbing cache for %s", self.config_name)
                         file_util.rmtree(self.buildroot.cachedir, selinux=self.buildroot.selinux)
@@ -107,6 +110,11 @@ class Commands(object):
                         self.buildroot.root_log.info("scrubbing root-cache for %s", self.config_name)
                         file_util.rmtree(os.path.join(self.buildroot.cachedir, 'root_cache'),
                                          selinux=self.buildroot.selinux)
+                        if self.bootstrap_buildroot is not None:
+                            file_util.rmtree(os.path.join(self.bootstrap_buildroot.cachedir,
+                                                          'root_cache'),
+                                             selinux=self.buildroot.selinux)
+
                     elif scrub in ['yum-cache', 'dnf-cache']:
                         self.buildroot.root_log.info("scrubbing yum-cache and dnf-cache for %s", self.config_name)
                         file_util.rmtree(os.path.join(self.buildroot.cachedir, 'yum_cache'),
