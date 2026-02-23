@@ -860,6 +860,7 @@ def clean_env():
 
 @traceLog()
 def setup_host_resolv(config_opts):
+    log = getLog()
     if not config_opts['use_host_resolv']:
         # If we don't copy host's resolv.conf, we at least want to resolve
         # our own hostname.  See commit 28027fc26d.
@@ -869,7 +870,7 @@ def setup_host_resolv(config_opts):
                 ::1       localhost localhost.localdomain localhost6 localhost6.localdomain6
                 ''')
 
-    if config_opts['isolation'] == 'simple':
+    if not USE_NSPAWN:
         # Not using nspawn -> don't touch /etc/resolv.conf; we already have
         # a valid file prepared by Buildroot._init() (if user requested).
         return
@@ -889,7 +890,10 @@ def setup_host_resolv(config_opts):
     os.chmod(resolv_path, 0o644)
 
     if config_opts['use_host_resolv']:
-        shutil.copyfile('/etc/resolv.conf', resolv_path)
+        try:
+            shutil.copyfile('/etc/resolv.conf', resolv_path)
+        except FileNotFoundError:
+            log.warning("Non-existing resolv.conf on host, using an empty one")
 
     config_opts['nspawn_args'] += ['--bind={0}:/etc/resolv.conf'.format(resolv_path)]
 
