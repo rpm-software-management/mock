@@ -14,6 +14,7 @@ import shutil
 import stat
 import tempfile
 import uuid
+from textwrap import dedent
 
 from . import file_util
 from . import mounts
@@ -491,9 +492,38 @@ class Buildroot(object):
 
     @traceLog()
     def _setup_resolver_config(self):
+        """
+        Configure NS resolution in chroot.  Key considerations for reading or
+        modifying this method:
+
+        - Missing resolv.conf: A non-existent resolv.conf can significantly prolong
+          resolution failures.  We create empty one at least.
+        - The build should not fail if host-side name resolution is broken
+          (e.g., a missing resolv.conf, which is common in 'podman run --network=none'
+          environments).
+        - etc/hosts requirement: A basic /etc/hosts is necessary to allow build-time
+          test suites (even in hermetic environments) to bind to localhost.
+        - nspawn integration: We prefer manual management of resolv.conf, so we
+          pass --resolv-conf=off to systemd-nspawn (when available, el9+).
+        """
         if self.config['use_host_resolv'] and self.config['rpmbuild_networking']:
             self._copy_config('resolv.conf')
             self._copy_config('hosts')
+        else:
+            # If we don't copy host's resolv.conf, we at least want to resolve
+            # our own hostname.  See commit 28027fc26d.
+            if 'etc/hosts' not in self.config['files']:
+                self.config['files']['etc/hosts'] = dedent('''\
+                    127.0.0.1 localhost localhost.localdomain
+                    ::1       localhost localhost.localdomain localhost6 localhost6.localdomain6
+                    ''')
+            # We want to have empty resolv.conf to speedup name resolution
+            # failure (see commit 3f939785bb).
+            rconf = self.make_chroot_path("/etc/resolv.conf")
+            file_util.unlink_if_exists(rconf)
+            file_util.touch(rconf)
+
+        util.temporary_nspawn_resolver_hack(self.config)
 
     @traceLog()
     def _setup_katello_ca(self):

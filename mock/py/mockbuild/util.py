@@ -27,7 +27,6 @@ import sys
 import tempfile
 # pylint: disable=wrong-import-order
 import termios
-from textwrap import dedent
 import time
 import uuid
 
@@ -782,9 +781,6 @@ def _prepare_nspawn_command(chrootPath, user, cmd, nspawn_args=None, env=None,
     if not USE_NSPAWN_SECCOMP:
         env['SYSTEMD_SECCOMP'] = '0'
 
-    if _check_nspawn_resolv_conf():
-        nspawn_argv.append("--resolv-conf=off")
-
     # The '/bin/sh -c' wrapper is explicitly requested (--shell).  In this case
     # we shrink the list of arguments into one shell command, so the command is
     # completely shell-expanded.
@@ -859,29 +855,20 @@ def clean_env():
 
 
 @traceLog()
-def setup_host_resolv(config_opts):
-    log = getLog()
-    if not config_opts['use_host_resolv']:
-        # If we don't copy host's resolv.conf, we at least want to resolve
-        # our own hostname.  See commit 28027fc26d.
-        if 'etc/hosts' not in config_opts['files']:
-            config_opts['files']['etc/hosts'] = dedent('''\
-                127.0.0.1 localhost localhost.localdomain
-                ::1       localhost localhost.localdomain localhost6 localhost6.localdomain6
-                ''')
-
+def temporary_nspawn_resolver_hack(config_opts):
+    """
+    Remove once we stop supporting RHEL 8 hosts.  RHEL 9+ has --resolv-conf=off
+    which can be added into 'nspawn_args' unconditionally (even if nspawn is
+    unused).
+    """
     if not USE_NSPAWN:
-        # Not using nspawn -> don't touch /etc/resolv.conf; we already have
-        # a valid file prepared by Buildroot._init() (if user requested).
+        # Not using nspawn, no need for additional hacks.
         return
 
-    if config_opts['rpmbuild_networking'] and not config_opts['use_host_resolv']:
-        # keep the default systemd-nspawn's /etc/resolv.conf
+    if _check_nspawn_resolv_conf():
+        # do not let nspawn override the files we create above
+        config_opts["nspawn_args"] += ["--resolv-conf=off"]
         return
-
-    # Either we want to have empty resolv.conf to speedup name resolution
-    # failure (rpmbuild_networking is off, see commit 3f939785bb), or we want
-    # to copy hosts resolv.conf file.
 
     resolv_path = (tempfile.mkstemp(prefix="mock-resolv."))[1]
     atexit.register(_nspawnTempResolvAtExit, resolv_path)
@@ -893,9 +880,9 @@ def setup_host_resolv(config_opts):
         try:
             shutil.copyfile('/etc/resolv.conf', resolv_path)
         except FileNotFoundError:
-            log.warning("Non-existing resolv.conf on host, using an empty one")
+            getLog().warning("Non-existing resolv.conf on host, using an empty one")
 
-    config_opts['nspawn_args'] += ['--bind={0}:/etc/resolv.conf'.format(resolv_path)]
+    config_opts['nspawn_args'] += [f'--bind={resolv_path}:/etc/resolv.conf']
 
 
 def pretty_getcwd():
