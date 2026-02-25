@@ -2,7 +2,7 @@
 # vim:expandtab:autoindent:tabstop=4:shiftwidth=4:filetype=python:textwidth=0:
 # License: GPL2 or later see COPYING
 # Written by Scott R. Shinn <scott@atomicorp.com>
-# Copyright (C) 2025, Atomicorp, Inc.
+# Copyright (C) 2026, Atomicorp, Inc.
 """Mock plugin for generating CycloneDX SBOMs from built RPM packages."""
 
 import os
@@ -1400,80 +1400,70 @@ class SBOMGenerator:
         return properties
 
     def parse_spec_file(self, spec_path):
-        """Parses a spec file to extract source and patch files with their hashes and signatures."""
-        self.buildroot.root_log.debug("Parsing spec file")
+        """Parses a spec file to extract source and patch files using the specfile library."""
+        self.buildroot.root_log.debug("Parsing spec file using specfile library")
         if not os.path.isfile(spec_path):
             self.buildroot.root_log.debug(f"Spec file not found: {spec_path}")
             return []
 
+        from specfile import Specfile
+
         sources = []
         try:
-            chroot_spec_path = self.from_chroot_path(spec_path)
-            # Use rpmspec --parse inside the build chroot to insure macro expansion
-            # matches the build
+            chroot_spec_path = self.buildroot.from_chroot_path(spec_path)
+            # Use rpmspec --parse inside the build chroot to ensure macro expansion
+            # matches the build environment exactly.
             cmd = ["rpmspec", "--parse", chroot_spec_path]
             result, _ = self.buildroot.doChroot(
                 cmd, shell=False, returnOutput=True, printOutput=False
             )
 
-            for line in (result or "").splitlines():
-                line = line.strip()
-                # Match lines like Source0: or Patch1:
-                match = re.match(r'^(Source|Patch)[0-9]*:\s*(.+)$', line)
-                if match:
-                    source_file = match.group(2)
-                    # Extract hash if present (format: filename#hash)
-                    if '#' in source_file:
-                        filename, hash_value = source_file.split('#', 1)
-                    else:
-                        filename = source_file
-                        hash_value = None
+            if not result:
+                return []
 
-                    # Extract actual filename from URL if it's a URL
-                    if filename.startswith('http'):
-                        # Extract filename from URL (last part after /)
-                        actual_filename = filename.split('/')[-1]
-                    else:
-                        actual_filename = filename
+            # Use specfile to parse the expanded content
+            spec = Specfile(content=result, sourcedir=os.path.dirname(spec_path))
+            
+            # Extract both sources and patches from the spec object model
+            all_locs = []
+            with spec.sources() as spec_sources:
+                all_locs.extend(s.location for s in spec_sources if s.location)
+            with spec.patches() as spec_patches:
+                all_locs.extend(p.location for p in spec_patches if p.location)
 
-                    # Try to find the actual file and calculate its hash
-                    build_dir = os.path.dirname(spec_path)
-                    # SOURCES directory is at the same level as SPECS, not inside SPECS
-                    sources_dir = os.path.join(os.path.dirname(build_dir), "SOURCES")
-                    file_path = os.path.join(sources_dir, actual_filename)
+            for loc in all_locs:
+                # Extract hash if present in Source (format: filename#hash)
+                filename, _, hash_value = loc.partition('#')
+                
+                # Extract actual filename from URL or path
+                actual_filename = os.path.basename(filename)
 
-                    actual_hash = None
-                    if os.path.isfile(file_path):
-                        actual_hash = self.hash_file(file_path)
-                        self.buildroot.root_log.debug(
-                            f"Found source file {actual_filename} at {file_path}, "
-                            f"hash: {actual_hash}"
-                        )
-                    elif hash_value:
-                        actual_hash = hash_value
-                        self.buildroot.root_log.debug(
-                            f"Using hash from spec file for {actual_filename}: {hash_value}"
-                        )
-                    else:
-                        self.buildroot.root_log.debug(
-                            f"Source file {actual_filename} not found at {file_path}"
-                        )
+                # Locate the file in the SOURCES directory
+                build_dir = os.path.dirname(spec_path)
+                sources_dir = os.path.join(os.path.dirname(build_dir), "SOURCES")
+                file_path = os.path.join(sources_dir, actual_filename)
 
-                    # Check for digital signature (GPG signature)
-                    signature = (
-                        self.get_file_signature(file_path) if os.path.isfile(file_path) else None
-                    )
+                actual_hash = None
+                if os.path.isfile(file_path):
+                    actual_hash = self.hash_file(file_path)
+                elif hash_value:
+                    actual_hash = hash_value
 
-                    sources.append({
-                        "filename": actual_filename,
-                        "sha256": actual_hash,
-                        "digital_signature": signature
-                    })
+                signature = (
+                    self.get_file_signature(file_path) if os.path.isfile(file_path) else None
+                )
 
-            self.buildroot.root_log.debug(f"Extracted source and patch files from spec: {sources}")
-        # pylint: disable=broad-exception-caught
+                sources.append({
+                    "filename": actual_filename,
+                    "sha256": actual_hash,
+                    "digital_signature": signature
+                })
+
+            self.buildroot.root_log.debug(f"Extracted {len(sources)} source/patch files from spec")
         except Exception as e:
             self.buildroot.root_log.debug(f"Failed to parse spec file {spec_path}: {e}")
+            self.buildroot.root_log.debug(traceback.format_exc())
+            
         return sources
 
     def get_file_signature(self, file_path):
@@ -1547,9 +1537,22 @@ class SBOMGenerator:
     def detect_chroot_distribution(self):
         """Detects the distribution name inside the chroot using python-distro."""
         try:
-            # Query the chroot filesystem directly using root_dir parameter
-            # pylint: disable=unexpected-keyword-arg
-            distro_id = distro.id(root_dir=self.buildroot.rootdir)
+            # Query the chroot filesystem directly. Attempting root_dir first.
+            try:
+                # pylint: disable=unexpected-keyword-arg
+                distro_id = distro.id(root_dir=self.buildroot.rootdir)
+            except TypeError:
+                # Fallback for older python-distro versions (<1.6.0)
+                # We could use os-release file directly
+                os_release = os.path.join(self.buildroot.rootdir, "etc/os-release")
+                distro_id = "unknown"
+                if os.path.isfile(os_release):
+                    with open(os_release, 'r') as f:
+                        for line in f:
+                            if line.startswith("ID="):
+                                distro_id = line.split("=")[1].strip().strip('"').strip("'")
+                                break
+            
             if distro_id:
                 return distro_id.lower()
             return "unknown"
@@ -2059,17 +2062,6 @@ class SBOMGenerator:
 
         return source_files
 
-    def from_chroot_path(self, host_path):
-        """Convert an absolute host path into the corresponding path inside the build chroot."""
-        rootdir = getattr(self.buildroot, "rootdir", "")
-        if not rootdir:
-            return host_path
-        if host_path.startswith(rootdir):
-            rel_path = host_path[len(rootdir):]
-            if not rel_path.startswith("/"):
-                rel_path = "/" + rel_path
-            return rel_path
-        return host_path
 
     def _generate_spdx_document(self, name, version, release, build_dir, rpm_files,
                                 source_files, toolchain_components, distro_id):

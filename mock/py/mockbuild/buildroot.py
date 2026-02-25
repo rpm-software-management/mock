@@ -193,6 +193,17 @@ class Buildroot(object):
             new_path = os.path.join(new_path, path)
         return new_path
 
+    def from_chroot_path(self, host_path):
+        """Convert an absolute host path into the corresponding path inside the build chroot."""
+        if not self.rootdir:
+            return host_path
+        if host_path.startswith(self.rootdir):
+            rel_path = host_path[len(self.rootdir):]
+            if not rel_path.startswith("/"):
+                rel_path = "/" + rel_path
+            return rel_path
+        return host_path
+
     @traceLog()
     def initialize(self, prebuild=False):
         """
