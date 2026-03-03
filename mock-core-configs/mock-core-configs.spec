@@ -3,7 +3,7 @@
 %endif
 
 Name:       mock-core-configs
-Version:    44.1
+Version:    44.2
 Release:    1%{?dist}
 Summary:    Mock core config files basic chroots
 
@@ -152,6 +152,9 @@ fi
 %ghost %config(noreplace,missingok) %{_sysconfdir}/mock/default.cfg
 
 %changelog
+* Tue Mar 03 2026 Pavel Raiskup <pavel@raiskup.cz> 44.2-1
+- Switch openSUSE Tumbleweed to DNF5 (ngompa@opensuse.org)
+
 * Tue Feb 03 2026 Pavel Raiskup <pavel@raiskup.cz> 44.1-1
 - branch rawhide into f44
 

@@ -1,1 +1,0 @@
-The mock package now pulls in DNF5 on Enterprise Linux 11+ distributions by default.

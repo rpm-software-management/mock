@@ -18,7 +18,7 @@
 
 Summary: Builds packages inside chroots
 Name: mock
-Version: 6.6
+Version: 6.7
 Release: 1%{?dist}
 License: GPL-2.0-or-later
 # Source is created by
@@ -330,6 +330,28 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 
 
 %changelog
+* Tue Mar 03 2026 Pavel Raiskup <pavel@raiskup.cz> 6.7-1
+- mock: Use umask 0022 instead of 0002 to avoid strange permissions (ngompa@velocitylimitless.com)
+- expand_spec plugin: generating expanded-spec.txt in postdeps hook (yzhu@redhat.com)
+- do not fail (not just) hermetic builds for missing resolv.conf
+- use skopeo for hermetic bootstrap images (tkopecek@redhat.com)
+- support yum for hermetic build (tkopecek@redhat.com)
+- allow access to the buildroot binary RPMs even in hermetic builds (tkopecek@redhat.com)
+- adapt mock to Changes/droppingOfCertPemFile
+- file_util: improve rmtree performance (#1672) (Gerasimov.N.V)
+- disable traceLog() wrapper (will be removed)
+- `mock --scrub=all` now correctly backs up successful builds from the buildroot (sergio@serjux.com)
+- update subscription-manager instructions (msuchy@redhat.com)
+- configs: Switch openSUSE Tumbleweed to DNF5 (ngompa@opensuse.org)
+- depend on DNF5 for EL11+ distributions (ngompa@centosproject.org)
+- depend on DNF5 for Mageia 10+ and Cauldron (ngompa@mageia.org)
+- select personality for RISC-V DNF transactions
+- document --scrub=bootstrap (negativo17@gmail.com)
+- unbreq supports `--isolation=simple` and `--no-bootstrap-chroot` (marian.koncek@mailbox.org)
+- unbreq plugin no longer crashes for `(foo if bar)` build deps (marian.koncek@mailbox.org)
+- unbreq performance has been significantly improved through caching (marian.koncek@mailbox.org)
+- unbreq logs standard outputs of failed commands (mkoncek@users.noreply.github.com)
+
 * Mon Dec 08 2025 Pavel Raiskup <praiskup@redhat.com> 6.6-1
 - Make sure to install BuildRequires defined by macros (frostyx@email.cz)
 - unbreq plugin: performs action only when build is taking place (marian.koncek@mailbox.org)
