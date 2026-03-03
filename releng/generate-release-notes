@@ -1,6 +1,7 @@
 #! /usr/bin/python3
 
 import argparse
+from datetime import date
 import os
 import re
 import subprocess
@@ -44,7 +45,7 @@ def _limited_config(opts):
     return ["--config", opts.temp_config]
 
 
-def _main():
+def _main():  # pylint: disable=too-many-locals
     options = _arg_parser().parse_args()
     options.temp_config = None
     tc_opts = _limited_config(options)
@@ -60,10 +61,22 @@ def _main():
     pattern = "|".join(TRANSFORM.keys())
     issues_re = re.compile(r"\[(" + pattern + r")#([0-9a-f]+)\]")
 
-
     cmd = ["towncrier", "build", "--version", options.version] + tc_opts
     print(f"Calling {cmd}")
     subprocess.check_call(cmd)
+
+    subject_cfgs = ""
+    release_type = "Release-Notes"
+    if options.configs_only:
+        release_type += "-Configs"
+        subject_cfgs = " and Configs ???"
+    index_md_snippet = (
+        "## Release Notes\\n"
+        f"* [{options.version}{subject_cfgs}]"
+        f"({release_type}-{options.version}) ({date.today()}) - ???"
+    )
+    cmd = ["sed", "-i", f's/## Release Notes/{index_md_snippet}/',
+           'docs/index.md']
 
     with open(output_file, "w", encoding="utf8") as fdout:
 
