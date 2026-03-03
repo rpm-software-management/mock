@@ -258,7 +258,7 @@ def setup_default_config_opts():
         'unbreq_opts': {
             'exclude_accessed_files': []
         },
-        'expand_spec_enable': True,
+        'expand_spec_enable': False,
         'expand_spec_opts': {
             'rpmspec_opts': [],
         },
