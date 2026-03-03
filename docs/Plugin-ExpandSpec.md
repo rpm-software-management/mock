@@ -12,9 +12,9 @@ It uses to expand the specfile
 
 ## Configuration
 
-You can disable the plugin using this settings:
+You can enable the plugin using this settings:
 ```python
-config_opts['plugin_conf']['expand_spec_enable'] = False
+config_opts['plugin_conf']['expand_spec_enable'] = True
 ```
 
 To add extra options in `rpmspec` command, use:
@@ -24,4 +24,4 @@ config_opts['plugin_conf']['expand_spec_opts']['rpmspec_opts'] = ['--verbose', '
 
 Available since version 6.7.
 
-This plugin is ENABLED by default.
+This plugin is DISABLED by default.
