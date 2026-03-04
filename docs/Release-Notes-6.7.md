@@ -36,7 +36,7 @@ title: Release Notes - Mock 6.7 and Core Configs 44.2
 
   These bundles are automatically synced into Mock chroots for specific targets
   (e.g., openSUSE).  This new location is also compatible with EPEL 8 hosts.
-  Fixes [issue #1667][],
+  Fixes [issue#1667][],
 
 
 ### Bugfixes
@@ -46,7 +46,7 @@ title: Release Notes - Mock 6.7 and Core Configs 44.2
   (see personality(2)).
 
 - `mock --scrub=all` now correctly backs up successful builds from the
-  buildroot.  This resolves [issue #1639][].  The backup process now uses `mv`
+  buildroot.  This resolves [issue#1639][].  The backup process now uses `mv`
   semantics instead of `cp`, which avoids file duplication, preserves
   timestamps, and improves performance.  Following a security review, the use of
   `util.run` was replaced with `os.replace` to ensure files are overwritten
