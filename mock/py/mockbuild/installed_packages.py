@@ -115,10 +115,7 @@ def query_packages_location(packages, chrootpath=None,
 
     if 'yum' in dnf_cmd:
         # yum (yum-utils must be installed)
-        repoquery_cmd = '/usr/bin/repoquery'
-        if not os.path.exists(repoquery_cmd):
-            raise mockbuild.exception.Error(f"Missing {repoquery_cmd}")
-        query_locations_cmd = [repoquery_cmd]
+        query_locations_cmd = ['/usr/bin/repoquery']
     else:
         # dnf
         query_locations_cmd = [dnf_cmd]
