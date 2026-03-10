@@ -29,11 +29,14 @@ Requires:   mock-filesystem
 
 Requires(post): coreutils
 # to detect correct default.cfg
-Requires(post): python3-dnf
-Requires(post): python3-hawkey
+# python3-libdnf5 - Fedora and RHEL10+
+# python3-dnf and python3-hawkey - older systems
+Requires(post): (python3-libdnf5 or (python3-dnf and python3-hawkey))
 Requires(post): system-release
 Requires(post): python3
+%if 0%{?mageia}
 Requires(post): sed
+%endif
 
 %description
 Mock configuration files which allow you to create chroots for Alma Linux,
@@ -99,7 +102,8 @@ fi
 if [ -s /etc/mageia-release ]; then
     mock_arch=$(sed -n '/^$/!{$ s/.* \(\w*\)$/\1/p}' /etc/mageia-release)
 else
-    mock_arch=$(%{python3} -c "import dnf.rpm; import hawkey; print(dnf.rpm.basearch(hawkey.detect_arch()))")
+    # the second command with hawkey can be removed when we stop supporting RHEL10
+    mock_arch=$(%{python3} -c 'import libdnf5 ; base = libdnf5.base.Base(); base.setup(); print(base.get_vars().get_value("basearch"))' 2>/dev/null || %{python3} -c "import dnf.rpm; import hawkey; print(dnf.rpm.basearch(hawkey.detect_arch()))")
 fi
 
 cfg=unknown-distro
