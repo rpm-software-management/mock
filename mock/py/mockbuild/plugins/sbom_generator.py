@@ -12,8 +12,6 @@ import hashlib
 import re
 import socket
 import uuid
-import tempfile
-import shlex
 import traceback
 from datetime import datetime, timezone
 
@@ -22,7 +20,7 @@ import rpm  # pylint: disable=no-member
 
 
 
-import mockbuild.file_util
+
 from mockbuild.trace_decorator import traceLog
 
 # pylint: disable=invalid-name
@@ -1016,7 +1014,6 @@ class SBOMGenerator:
             ]
 
         # Add hierarchical grouping for "RPM Contents"
-        outputs_ref = "build:outputs" # This will be the "RPM Contents" group
 
         # Add hash of RPM file - REMOVED per user request to only have hashes for files contained in RPM
         # or if needed for PURL integrity, but we'll prioritize the "only" constraint.
@@ -1152,7 +1149,7 @@ class SBOMGenerator:
             return None
 
         # Generate PURL and bom-ref
-        purl = self._generate_purl(package_name, version, distro_obj)
+        purl = self._generate_purl(package_name, version, distro_obj, arch=toolchain_pkg.get("arch"))
         bom_ref = purl
 
         component = {
@@ -1373,8 +1370,8 @@ class SBOMGenerator:
         if not self.include_file_components:
             return []
 
-        file_list = self.get_rpm_file_list(rpm_path)
         file_info = self.get_rpm_file_info(rpm_path)
+        file_list = sorted(file_info.keys())
 
         file_components = []
         for file_path in file_list:
@@ -1663,16 +1660,22 @@ class SBOMGenerator:
     def parse_spec_file(self, spec_path):
         """Parses a spec file to extract metadata and source/patch files using the specfile library."""
         self.buildroot.root_log.debug("Parsing spec file using specfile library")
+        
+        sources = []
+        metadata = {
+            "name": "",
+            "version": "",
+            "release": "",
+            "license": "",
+            "build_requires": [],
+            "requires": []
+        }
+
         if not os.path.isfile(spec_path):
             self.buildroot.root_log.debug(f"Spec file not found: {spec_path}")
-            return {}, []
-
-        from specfile import Specfile
-
-        sources = []
-        metadata = {}
+            return metadata, sources
         try:
-            chroot_spec_path = self.buildroot.from_chroot_path(spec_path)
+            chroot_spec_path = self.buildroot.from_chroot_path(spec_path) or spec_path
             # Use rpmspec --parse inside the build chroot to ensure macro expansion
             # matches the build environment exactly.
             cmd = ["rpmspec", "--parse", chroot_spec_path]
@@ -1681,75 +1684,114 @@ class SBOMGenerator:
             )
 
             if not result:
-                return {}, []
+                # If doChroot returned empty, try reading local spec as fallback
+                try:
+                    with open(spec_path, 'r', encoding='utf-8') as f:
+                        result = f.read()
+                except Exception:
+                    return metadata, sources
 
-            # Use specfile to parse the expanded content
-            spec = Specfile(content=result, sourcedir=os.path.dirname(spec_path))
-
-            import rpm
-            # Extract canonical metadata
-            metadata = {
-                "name": spec.expanded_name,
-                "version": spec.expanded_version,
-                "release": spec.expanded_release,
-                "license": spec.expanded_license,
-            }
-            
-            # Extract BuildRequires and Requires from headers
             try:
-                br = spec.rpm_spec.sourceHeader[rpm.RPMTAG_REQUIRENAME]
-                metadata["build_requires"] = [
-                    r.decode('utf-8', 'replace') if isinstance(r, bytes) else str(r) 
-                    for r in br
-                ] if br else []
-            except (AttributeError, KeyError):
-                metadata["build_requires"] = []
-                
-            try:
-                r = spec.rpm_spec.packages[0].header[rpm.RPMTAG_REQUIRENAME]
-                metadata["requires"] = [
-                    req.decode('utf-8', 'replace') if isinstance(req, bytes) else str(req) 
-                    for req in r
-                ] if r else []
-            except (AttributeError, KeyError, IndexError):
-                metadata["requires"] = []
+                from specfile import Specfile
+                # Use specfile to parse the expanded content
+                spec = Specfile(content=result, sourcedir=os.path.dirname(spec_path))
 
-            # Extract both sources and patches from the spec object model
-            all_locs = []
-            with spec.sources() as spec_sources:
-                all_locs.extend(s.location for s in spec_sources if s.location)
-            with spec.patches() as spec_patches:
-                all_locs.extend(p.location for p in spec_patches if p.location)
 
-            for loc in all_locs:
-                # Extract hash if present in Source (format: filename#hash)
-                filename, _, hash_value = loc.partition('#')
-
-                # Extract actual filename from URL or path
-                actual_filename = os.path.basename(filename)
-
-                # Locate the file in the SOURCES directory
-                build_dir = os.path.dirname(spec_path)
-                sources_dir = os.path.join(os.path.dirname(build_dir), "SOURCES")
-                file_path = os.path.join(sources_dir, actual_filename)
-
-                actual_hash = None
-                if os.path.isfile(file_path):
-                    actual_hash = self.hash_file(file_path)
-                elif hash_value:
-                    actual_hash = hash_value
-
-                signature = (
-                    self.get_file_signature(file_path) if os.path.isfile(file_path) else None
-                )
-
-                sources.append({
-                    "filename": actual_filename,
-                    "sha256": actual_hash,
-                    "digital_signature": signature
+                # Extract canonical metadata
+                metadata.update({
+                    "name": spec.expanded_name,
+                    "version": spec.expanded_version,
+                    "release": spec.expanded_release,
+                    "license": spec.expanded_license,
                 })
+                
+                # Extract BuildRequires and Requires from headers
+                try:
+                    br = spec.rpm_spec.sourceHeader[rpm.RPMTAG_REQUIRENAME]
+                    metadata["build_requires"] = [
+                        r.decode('utf-8', 'replace') if isinstance(r, bytes) else str(r) 
+                        for r in br
+                    ] if br else []
+                except (AttributeError, KeyError):
+                    metadata["build_requires"] = []
+                    
+                try:
+                    r = spec.rpm_spec.packages[0].header[rpm.RPMTAG_REQUIRENAME]
+                    metadata["requires"] = [
+                        req.decode('utf-8', 'replace') if isinstance(req, bytes) else str(req) 
+                        for req in r
+                    ] if r else []
+                except (AttributeError, KeyError, IndexError):
+                    metadata["requires"] = []
 
-            self.buildroot.root_log.debug(f"Extracted metadata {metadata} and {len(sources)} source/patch files from spec")
+                # Extract both sources and patches from the spec object model
+                all_locs = []
+                with spec.sources() as spec_sources:
+                    all_locs.extend(s.location for s in spec_sources if s.location)
+                with spec.patches() as spec_patches:
+                    all_locs.extend(p.location for p in spec_patches if p.location)
+
+                for loc in all_locs:
+                    filename, _, hash_value = loc.partition('#')
+                    actual_filename = os.path.basename(filename)
+                    build_dir = os.path.dirname(spec_path)
+                    sources_dir = os.path.join(os.path.dirname(build_dir), "SOURCES")
+                    file_path = os.path.join(sources_dir, actual_filename)
+
+                    actual_hash = None
+                    if os.path.isfile(file_path):
+                        actual_hash = self.hash_file(file_path)
+                    elif hash_value:
+                        actual_hash = hash_value
+
+                    signature = (
+                        self.get_file_signature(file_path) if os.path.isfile(file_path) else None
+                    )
+
+                    sources.append({
+                        "filename": actual_filename,
+                        "sha256": actual_hash,
+                        "digital_signature": signature
+                    })
+                self.buildroot.root_log.debug(f"Extracted metadata {metadata} and {len(sources)} source/patch files from spec")
+                
+                # Double check we actually got metadata
+                if not metadata.get("name"):
+                    raise ValueError("Empty metadata from Specfile")
+                    
+            except Exception as e:
+                self.buildroot.root_log.debug(f"Specfile parsing failed, falling back to regex: {e}")
+                
+                # Ensure result is a string for regex
+                content = str(result) if result else ""
+                
+                # Fallback to simple regex parsing of the expanded result
+                name_match = (re.search(r'^Name:\s+(.+)$', content, re.MULTILINE) or 
+                              re.search(r'^name\s*:\s*(.+)$', content, re.IGNORECASE | re.MULTILINE))
+                version_match = (re.search(r'^Version:\s+(.+)$', content, re.MULTILINE) or
+                                 re.search(r'^version\s*:\s*(.+)$', content, re.IGNORECASE | re.MULTILINE))
+                release_match = (re.search(r'^Release:\s+(.+)$', content, re.MULTILINE) or
+                                 re.search(r'^release\s*:\s*(.+)$', content, re.IGNORECASE | re.MULTILINE))
+                license_match = (re.search(r'^License:\s+(.+)$', content, re.MULTILINE) or
+                                 re.search(r'^license\s*:\s*(.+)$', content, re.IGNORECASE | re.MULTILINE))
+                
+                metadata["name"] = name_match.group(1).strip() if name_match else ""
+                metadata["version"] = version_match.group(1).strip() if version_match else ""
+                metadata["release"] = release_match.group(1).strip() if release_match else ""
+                metadata["license"] = license_match.group(1).strip() if license_match else ""
+                
+                # Simple source/patch extraction from expanded spec
+                source_matches = re.finditer(r'^(Source|Patch)\d*:\s+(.+)$', content, re.MULTILINE)
+                for sm in source_matches:
+                    loc = sm.group(2).strip()
+                    filename = os.path.basename(loc.partition('#')[0])
+                    # Avoid duplicates
+                    if not any(s['filename'] == filename for s in sources):
+                        sources.append({
+                            "filename": filename,
+                            "sha256": None,
+                            "digital_signature": None
+                        })
         except Exception as e:
             self.buildroot.root_log.debug(f"Failed to parse spec file {spec_path}: {e}")
             self.buildroot.root_log.debug(traceback.format_exc())
@@ -1859,7 +1901,8 @@ class SBOMGenerator:
             # Tags: Name, EVR, License, BuildTime, Signature data (RSA, DSA, GPG, PGP)
             fields = [
                 "%{NAME}",
-                "%{VERSION}-%{RELEASE}.%{ARCH}",
+                "%{VERSION}-%{RELEASE}",
+                "%{ARCH}",
                 "%{LICENSE}",
                 "%{BUILDTIME}",
                 "%{RSAHEADER:pgpsig}",
@@ -1880,28 +1923,29 @@ class SBOMGenerator:
 
             for line in output.splitlines():
                 parts = line.split("|")
-                if len(parts) < 5:
+                if len(parts) < 6:
                     continue
                 
                 package_name = parts[0].strip()
                 package_version = parts[1].strip()
-                package_license = parts[2].strip()
-                build_time = parts[3].strip()
+                package_arch = parts[2].strip()
+                package_license = parts[3].strip()
+                build_time = parts[4].strip()
                 
-                # Signature data is in the middle parts
+                # Signature data is in the middle parts (parts 5-8)
                 raw_sig = None
-                for sig_candidate in parts[4:8]:
+                for sig_candidate in parts[5:9]:
                     sig_candidate = sig_candidate.strip()
                     if sig_candidate and sig_candidate != "(none)":
                         raw_sig = sig_candidate
                         break
 
-                # Checksum is part 8, SOURCERPM is part 9
-                package_checksum = parts[8].strip() if len(parts) > 8 else None
+                # Checksum is part 9, SOURCERPM is part 10
+                package_checksum = parts[9].strip() if len(parts) > 9 else None
                 if package_checksum == "(none)":
                     package_checksum = None
                 
-                source_rpm = parts[9].strip() if len(parts) > 9 else None
+                source_rpm = parts[10].strip() if len(parts) > 10 else None
                 if source_rpm == "(none)":
                     source_rpm = None
 
@@ -1940,6 +1984,7 @@ class SBOMGenerator:
                 packages.append({
                     "name": package_name,
                     "version": package_version,
+                    "arch": package_arch,
                     "licenseDeclared": package_license,
                     "digital_signature": digital_signature,
                     "sourcerpm": source_rpm,
@@ -2032,61 +2077,89 @@ class SBOMGenerator:
             signature_info["signature_valid"] = False
 
     def get_rpm_metadata(self, rpm_path):
-        """Extracts metadata from an RPM file using python-rpm bindings."""
+        """Extracts metadata from an RPM file. 
+        Uses doChroot if the file is within the chroot to ensure compatibility."""
         if not os.path.isfile(rpm_path):
             self.buildroot.root_log.debug(f"RPM file not found: {rpm_path}")
             return {}
 
+        # If the file is in the chroot, and NOT in the result directory, use doChroot
+        # Note: resultdir is on the host, doChroot can't see it easily.
+        chroot_path = self.buildroot.from_chroot_path(rpm_path)
+        if chroot_path and not rpm_path.startswith(self.buildroot.resultdir):
+            return self._get_rpm_metadata_chroot(chroot_path)
+        
+        # Fallback to host-native or host-subprocess for non-chroot files
+        return self._get_rpm_metadata_native(rpm_path)
+
+    def _get_rpm_metadata_chroot(self, chroot_rpm_path):
+        """Extracts metadata using rpm -qp inside the chroot."""
+        fields = {
+            "name": "%{NAME}", "version": "%{VERSION}", "release": "%{RELEASE}",
+            "arch": "%{ARCH}", "epoch": "%{EPOCH}", "summary": "%{SUMMARY}",
+            "license": "%{LICENSE}", "vendor": "%{VENDOR}", "url": "%{URL}",
+            "packager": "%{PACKAGER}", "buildtime": "%{BUILDTIME}",
+            "buildhost": "%{BUILDHOST}", "sourcerpm": "%{SOURCERPM}",
+            "group": "%{GROUP}", "distribution": "%{DISTRIBUTION}",
+            "sha256": "%{SHA256HEADER}"
+        }
+        
+        metadata = {}
         try:
-            import rpm
+            query = "|".join(fields.values())
+            cmd = ["rpm", "-qp", "--queryformat", query, chroot_rpm_path]
+            output, _ = self.buildroot.doChroot(
+                cmd, shell=False, returnOutput=True, printOutput=False
+            )
+            
+            if output:
+                parts = output.split("|")
+                for i, field_name in enumerate(fields.keys()):
+                    if i < len(parts):
+                        val = parts[i].strip()
+                        if field_name == "epoch" and (not val or val == "(none)"):
+                            val = "0"
+                        metadata[field_name] = val
+            return metadata
+        except Exception as e:
+            self.buildroot.root_log.debug(f"Failed to extract metadata via doChroot for {chroot_rpm_path}: {e}")
+            return {}
+
+    def _get_rpm_metadata_native(self, rpm_path):
+        """Extracts metadata using native host bindings (fallback)."""
+        # pylint: disable=no-member
+        try:
             ts = rpm.TransactionSet()
             with open(rpm_path, "rb") as f:
                 hdr = ts.hdrFromFdno(f.fileno())
 
-            # Map of internal names to RPM tags
             tag_map = {
-                "name": rpm.RPMTAG_NAME,
-                "version": rpm.RPMTAG_VERSION,
-                "release": rpm.RPMTAG_RELEASE,
-                "arch": rpm.RPMTAG_ARCH,
-                "epoch": rpm.RPMTAG_EPOCH,
-                "summary": rpm.RPMTAG_SUMMARY,
-                "license": rpm.RPMTAG_LICENSE,
-                "vendor": rpm.RPMTAG_VENDOR,
-                "url": rpm.RPMTAG_URL,
-                "packager": rpm.RPMTAG_PACKAGER,
-                "buildtime": rpm.RPMTAG_BUILDTIME,
-                "buildhost": rpm.RPMTAG_BUILDHOST,
-                "sourcerpm": rpm.RPMTAG_SOURCERPM,
-                "group": rpm.RPMTAG_GROUP,
-                "distribution": rpm.RPMTAG_DISTRIBUTION,
-                "sha256": rpm.RPMTAG_SHA256HEADER
+                "name": rpm.RPMTAG_NAME, "version": rpm.RPMTAG_VERSION,
+                "release": rpm.RPMTAG_RELEASE, "arch": rpm.RPMTAG_ARCH,
+                "epoch": rpm.RPMTAG_EPOCH, "summary": rpm.RPMTAG_SUMMARY,
+                "license": rpm.RPMTAG_LICENSE, "vendor": rpm.RPMTAG_VENDOR,
+                "url": rpm.RPMTAG_URL, "packager": rpm.RPMTAG_PACKAGER,
+                "buildtime": rpm.RPMTAG_BUILDTIME, "buildhost": rpm.RPMTAG_BUILDHOST,
+                "sourcerpm": rpm.RPMTAG_SOURCERPM, "group": rpm.RPMTAG_GROUP,
+                "distribution": rpm.RPMTAG_DISTRIBUTION, "sha256": rpm.RPMTAG_SHA256HEADER
             }
 
             metadata = {}
             for field_name, tag in tag_map.items():
                 value = hdr[tag]
-                
-                # Special handling for certain types
                 if field_name == "epoch" and value is None:
-                    value = "(none)"
+                    value = "0"
                 elif value is None:
                     value = ""
                 elif isinstance(value, bytes):
                     value = value.decode('utf-8', errors='replace')
-                
                 metadata[field_name] = str(value)
-
-            self.buildroot.root_log.debug(f"RPM metadata extracted natively: {metadata['name']}-{metadata['version']}")
             return metadata
-
-        except Exception as e:
-            self.buildroot.root_log.debug(f"Failed to extract RPM metadata from {rpm_path} natively: {e}")
-            # Fallback to subprocess if native method fails (should be rare)
+        except Exception:
             return self._get_rpm_metadata_subprocess(rpm_path)
 
     def _get_rpm_metadata_subprocess(self, rpm_path):
-        """Fallback method to extract metadata using rpm command-line."""
+        """Extracts metadata using host subprocess (last resort fallback)."""
         metadata = {}
         fields = {
             "name": "%{NAME}", "version": "%{VERSION}", "release": "%{RELEASE}",
@@ -2102,124 +2175,144 @@ class SBOMGenerator:
                 result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True, text=True)
                 value = result.stdout.strip()
                 if field_name == "epoch" and not value:
-                    value = "(none)"
+                    value = "0"
                 metadata[field_name] = value
             return metadata
-        # pylint: disable=broad-exception-caught
         except Exception as e:
             self.buildroot.root_log.debug(f"Failed to extract RPM metadata via subprocess for {rpm_path}: {e}")
             return {}
 
-    def get_rpm_file_list(self, rpm_path):
-        """Extracts the list of files from an RPM file."""
-        cmd = ["rpm", "-qpl", rpm_path]
-        try:
-            result = subprocess.run(
-                cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True, text=True
-            )
-            files = result.stdout.splitlines()
-            self.buildroot.root_log.debug(f"Files in RPM {rpm_path}: {files}")
-            return files
-        except subprocess.CalledProcessError as e:
-            self.buildroot.root_log.debug(f"Failed to get file list for {rpm_path}: {e.stderr}")
-            return []
 
     def get_rpm_file_info(self, rpm_path):
-        """Extracts file hashes, ownership, and permissions from an RPM file using rpm-python."""
+        """Extracts file hashes, ownership, and permissions from an RPM file.
+        Uses doChroot for files within the chroot (and not in resultdir)."""
+        
+        chroot_path = self.buildroot.from_chroot_path(rpm_path)
+        if chroot_path and not rpm_path.startswith(self.buildroot.resultdir):
+            return self._get_rpm_file_info_chroot(chroot_path)
+            
+        return self._get_rpm_file_info_native(rpm_path)
+
+    def _get_rpm_file_info_chroot(self, chroot_rpm_path):
+        """Extracts file info using rpm -qp inside the chroot."""
+        file_info = {}
+        try:
+            # Query format for files: path|hash|mode|user|group
+            qf = "[%{FILENAMES}|%{FILEDIGESTS}|%{FILEMODES:octal}|%{FILEUSERNAME}|%{FILEGROUPNAME}\\n]"
+            cmd = ["rpm", "-qp", "--queryformat", qf, chroot_rpm_path]
+            output, _ = self.buildroot.doChroot(
+                cmd, shell=False, returnOutput=True, printOutput=False
+            )
+            
+            # Detect digest algorithm from header
+            cmd_algo = ["rpm", "-qp", "--queryformat", "%{FILEDIGESTALGO}", chroot_rpm_path]
+            algo_out, _ = self.buildroot.doChroot(
+                cmd_algo, shell=False, returnOutput=True, printOutput=False
+            )
+            try:
+                algo = int(algo_out.strip()) if algo_out and algo_out.strip() else 8
+            except ValueError:
+                algo = 8
+
+            for line in output.splitlines():
+                parts = line.split("|")
+                if len(parts) >= 5:
+                    filename = parts[0]
+                    file_info[filename] = {
+                        "hash": parts[1] if parts[1] and parts[1] != "(none)" else None,
+                        "algo": algo,
+                        "permissions": parts[2],
+                        "owner": parts[3],
+                        "group": parts[4]
+                    }
+            return file_info
+        except Exception as e:
+            self.buildroot.root_log.debug(f"Failed to get file info via doChroot for {chroot_rpm_path}: {e}")
+            return {}
+
+    def _get_rpm_file_info_native(self, rpm_path):
+        """Extracts file information using native host bindings (fallback)."""
         # pylint: disable=no-member
         file_info = {}
         try:
             ts = rpm.TransactionSet()
             # pylint: disable=protected-access
             ts.setVSFlags(rpm._RPMVSF_NOSIGNATURES | rpm._RPMVSF_NODIGESTS)
-            # pylint: enable=protected-access
             with open(rpm_path, "rb") as f:
                 hdr = ts.hdrFromFdno(f.fileno())
 
-            # Use dirnames/basenames/dirindexes to construct paths reliably
-            dirnames = hdr[rpm.RPMTAG_DIRNAMES]
             basenames = hdr[rpm.RPMTAG_BASENAMES]
+            dirnames = hdr[rpm.RPMTAG_DIRNAMES]
             dirindexes = hdr[rpm.RPMTAG_DIRINDEXES]
-
             filedigests = hdr[rpm.RPMTAG_FILEDIGESTS]
             filemodes = hdr[rpm.RPMTAG_FILEMODES]
             fileusernames = hdr[rpm.RPMTAG_FILEUSERNAME]
             filegroupnames = hdr[rpm.RPMTAG_FILEGROUPNAME]
-            
-            # Detect digest algorithm
+
             try:
                 algo = hdr[rpm.RPMTAG_FILEDIGESTALGO]
             except (KeyError, IndexError):
-                algo = 8  # Default to SHA256
+                algo = 8
 
+            file_info = {}
             for i, basename in enumerate(basenames):
                 dirname = dirnames[dirindexes[i]]
-
-                # Decode bytes to strings if needed
                 if isinstance(dirname, bytes):
                     dirname = dirname.decode('utf-8', 'replace')
                 if isinstance(basename, bytes):
                     basename = basename.decode('utf-8', 'replace')
-
                 filename = os.path.join(dirname, basename)
 
                 digest = filedigests[i]
                 if isinstance(digest, bytes):
                     digest = digest.decode('utf-8')
 
-                # Empty digest usually means empty string or all zeros
-                if not digest:
-                    digest = None
-
-                mode = filemodes[i]
-                # Format permissions as octal string
-                permissions = f"0{mode:o}"
-
-                owner = fileusernames[i]
-                if isinstance(owner, bytes):
-                    owner = owner.decode('utf-8', 'replace')
-
-                group = filegroupnames[i]
-                if isinstance(group, bytes):
-                    group = group.decode('utf-8', 'replace')
-
                 file_info[filename] = {
-                    "hash": digest,
+                    "hash": digest if digest else None,
                     "algo": algo,
-                    "permissions": permissions,
-                    "owner": owner,
-                    "group": group
+                    "permissions": f"0{filemodes[i]:o}",
+                    "owner": fileusernames[i].decode('utf-8', 'replace') if isinstance(fileusernames[i], bytes) else fileusernames[i],
+                    "group": filegroupnames[i].decode('utf-8', 'replace') if isinstance(filegroupnames[i], bytes) else filegroupnames[i]
                 }
-
-            self.buildroot.root_log.debug(
-                f"File info for RPM {rpm_path}: {len(file_info)} files processed (Algo: {algo})"
-            )
             return file_info
-
-        # pylint: disable=broad-exception-caught
-        except Exception as e:
-            self.buildroot.root_log.debug(f"Failed to get file info for {rpm_path}: {e}")
-            self.buildroot.root_log.debug(traceback.format_exc())
+        except Exception:
             return {}
 
     def get_rpm_dependencies(self, rpm_path):
-        """Extracts the list of dependencies from an RPM file natively."""
+        """Extracts the list of dependencies from an RPM file.
+        Uses doChroot for files within the chroot (and not in resultdir)."""
+        
+        chroot_path = self.buildroot.from_chroot_path(rpm_path)
+        if chroot_path and not rpm_path.startswith(self.buildroot.resultdir):
+            return self._get_rpm_dependencies_chroot(chroot_path)
+            
+        return self._get_rpm_dependencies_native(rpm_path)
+
+    def _get_rpm_dependencies_chroot(self, chroot_rpm_path):
+        """Extracts dependencies using rpm -qpR inside the chroot."""
         try:
-            import rpm
+            cmd = ["rpm", "-qpR", chroot_rpm_path]
+            output, _ = self.buildroot.doChroot(
+                cmd, shell=False, returnOutput=True, printOutput=False
+            )
+            return output.splitlines() if output else []
+        except Exception:
+            return []
+
+    def _get_rpm_dependencies_native(self, rpm_path):
+        """Extracts dependencies using native host bindings (fallback)."""
+        # pylint: disable=no-member
+        try:
             ts = rpm.TransactionSet()
             with open(rpm_path, "rb") as f:
                 hdr = ts.hdrFromFdno(f.fileno())
             
-            # Use rpm.labelCompare etc to format if needed, but for now 
-            # we just extract the requirement names.
             requirements = hdr[rpm.RPMTAG_REQUIRENAME]
             if not requirements:
                 return []
             
-            # Convert bytes to strings
             return [r.decode('utf-8', 'replace') if isinstance(r, bytes) else str(r) for r in requirements]
-        except Exception as e:
-            self.buildroot.root_log.debug(f"Failed to extract dependencies natively for {rpm_path}: {e}")
+        except Exception:  # pylint: disable=broad-exception-caught
             try:
                 cmd = ["rpm", "-qpR", rpm_path]
                 result = subprocess.run(
@@ -2230,17 +2323,51 @@ class SBOMGenerator:
                 return []
 
     def get_rpm_signature(self, rpm_path):
-        """Extracts the GPG signature of an RPM file."""
-        # Try subprocess first as it's more reliable for getting the formatted string
+        """Extracts the GPG signature of an RPM file.
+        Uses doChroot for files within the chroot (and not in resultdir)."""
+        
+        chroot_path = self.buildroot.from_chroot_path(rpm_path)
+        if chroot_path and not rpm_path.startswith(self.buildroot.resultdir):
+            return self._get_rpm_signature_chroot(chroot_path)
+            
+        return self._get_rpm_signature_host(rpm_path)
+
+    def _get_rpm_signature_chroot(self, chroot_rpm_path):
+        """Extracts signature using rpm inside the chroot."""
         try:
-            # Try to get it via queryformat first (most machine-readable if successful)
+            # Try to get it via queryformat first
+            cmd = ["rpm", "-qp", "--queryformat", "%{SIGPGP:pgpsig} %{SIGGPG:pgpsig}", chroot_rpm_path]
+            output, _ = self.buildroot.doChroot(
+                cmd, shell=False, returnOutput=True, printOutput=False
+            )
+            sig = output.strip() if output else ""
+            if sig and sig != "(none) (none)" and sig != "(none)":
+                return sig.replace("(none)", "").strip()
+
+            # Fallback to rpm -qip
+            cmd = ["rpm", "-qip", chroot_rpm_path]
+            output, _ = self.buildroot.doChroot(
+                cmd, shell=False, returnOutput=True, printOutput=False
+            )
+            if output:
+                for line in output.splitlines():
+                    if "Signature" in line and ":" in line:
+                        sig_val = line.split(":", 1)[1].strip()
+                        if sig_val and sig_val != "(none)":
+                            return sig_val
+            return None
+        except Exception:
+            return None
+
+    def _get_rpm_signature_host(self, rpm_path):
+        """Extracts signature using host tools (fallback)."""
+        try:
             cmd = ["rpm", "-qp", "--queryformat", "%{SIGPGP:pgpsig} %{SIGGPG:pgpsig}", rpm_path]
             result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True, text=True)
             sig = result.stdout.strip()
             if sig and sig != "(none) (none)" and sig != "(none)":
                 return sig.replace("(none)", "").strip()
 
-            # Fallback to parsing rpm -qip output (always works for human-readable)
             cmd = ["rpm", "-qip", rpm_path]
             result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True, text=True)
             for line in result.stdout.splitlines():
@@ -2248,10 +2375,8 @@ class SBOMGenerator:
                     sig_val = line.split(":", 1)[1].strip()
                     if sig_val and sig_val != "(none)":
                         return sig_val
-
             return None
-        except Exception as e:
-            self.buildroot.root_log.debug(f"Failed to extract signature for {rpm_path}: {e}")
+        except Exception:
             return None
 
     def hash_file(self, file_path):
@@ -2269,12 +2394,12 @@ class SBOMGenerator:
 
     def extract_source_files_from_srpm(self, src_rpm_path):
         """Extracts metadata for source files from a source RPM without full extraction."""
+        # pylint: disable=no-member
         self.buildroot.root_log.debug(f"Extracting source metadata from source RPM: {src_rpm_path}")
         source_files = []
         if not os.path.isfile(src_rpm_path):
             return source_files
         try:
-            import rpm
             ts = rpm.TransactionSet()
             with open(src_rpm_path, "rb") as f:
                 hdr = ts.hdrFromFdno(f.fileno())
