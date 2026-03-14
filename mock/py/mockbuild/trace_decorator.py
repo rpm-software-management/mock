@@ -106,7 +106,7 @@ def traceLog(logger=None):
         return trace
         #end of trace()
 
-    if os.environ.get("MOCK_TRACE_LOG", "true") == "false":
+    if os.environ.get("MOCK_TRACE_LOG", "false") == "false":
         return noop
 
     if logging.getLogger("trace").propagate:

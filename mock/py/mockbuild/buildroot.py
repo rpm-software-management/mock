@@ -14,6 +14,7 @@ import shutil
 import stat
 import tempfile
 import uuid
+from textwrap import dedent
 
 from . import file_util
 from . import mounts
@@ -451,13 +452,13 @@ class Buildroot(object):
                 self.uid_manager.restorePrivs()
         return result
 
-    def doChrootPlugin(self, command, cwd=None):
+    def doChrootPlugin(self, command, cwd=None, returnOutput=False):  # pylint: disable=invalid-name
         """
         Execute command (specified as array, not a shell command string) in this
         buildroot  in `cwd`, as a non-privileged user.  Used by plugins.
         """
         private_network = not self.config.get('rpmbuild_networking', False)
-        self.doChroot(
+        return self.doChroot(
             command,
             shell=False,
             cwd=cwd,
@@ -466,7 +467,8 @@ class Buildroot(object):
             gid=self.chrootgid,
             user=self.chrootuser,
             unshare_net=private_network,
-            printOutput=self.config.get('print_main_output', True)
+            printOutput=self.config.get('print_main_output', True),
+            returnOutput=returnOutput,
         )
 
     def all_chroot_packages(self):
@@ -502,9 +504,38 @@ class Buildroot(object):
 
     @traceLog()
     def _setup_resolver_config(self):
+        """
+        Configure NS resolution in chroot.  Key considerations for reading or
+        modifying this method:
+
+        - Missing resolv.conf: A non-existent resolv.conf can significantly prolong
+          resolution failures.  We create empty one at least.
+        - The build should not fail if host-side name resolution is broken
+          (e.g., a missing resolv.conf, which is common in 'podman run --network=none'
+          environments).
+        - etc/hosts requirement: A basic /etc/hosts is necessary to allow build-time
+          test suites (even in hermetic environments) to bind to localhost.
+        - nspawn integration: We prefer manual management of resolv.conf, so we
+          pass --resolv-conf=off to systemd-nspawn (when available, el9+).
+        """
         if self.config['use_host_resolv'] and self.config['rpmbuild_networking']:
             self._copy_config('resolv.conf')
             self._copy_config('hosts')
+        else:
+            # If we don't copy host's resolv.conf, we at least want to resolve
+            # our own hostname.  See commit 28027fc26d.
+            if 'etc/hosts' not in self.config['files']:
+                self.config['files']['etc/hosts'] = dedent('''\
+                    127.0.0.1 localhost localhost.localdomain
+                    ::1       localhost localhost.localdomain localhost6 localhost6.localdomain6
+                    ''')
+            # We want to have empty resolv.conf to speedup name resolution
+            # failure (see commit 3f939785bb).
+            rconf = self.make_chroot_path("/etc/resolv.conf")
+            file_util.unlink_if_exists(rconf)
+            file_util.touch(rconf)
+
+        util.temporary_nspawn_resolver_hack(self.config)
 
     @traceLog()
     def _setup_katello_ca(self):
@@ -1058,11 +1089,36 @@ class Buildroot(object):
         return util.BindMountedFile(chroot_filename, host_filename)
 
     @traceLog()
+    def backup_build_results(self):
+        """
+        Back up built RPMs if `backup_on_clean` is enabled, before cleaning the chroot and results.
+        """
+        if not self.config['backup_on_clean']:
+            return
+        srcdir = os.path.join(self.basedir, "result")
+        if not os.path.exists(srcdir):
+            return
+        rpms = glob.glob(os.path.join(srcdir, "*rpm"))
+        if len(rpms) == 0:
+            return
+        dstdir = os.path.join(self.config['backup_base_dir'], self.config['root'])
+        file_util.mkdirIfAbsent(dstdir)
+        self.state.state_log.info("backup_on_clean (completed builds): saving with mv %s %s", " ".join(rpms), dstdir)
+        for rpm in rpms:
+            dest_path = os.path.join(dstdir, os.path.basename(rpm))
+            try:
+                os.replace(rpm, dest_path)
+            except OSError as e:
+                self.state.state_log.error("backup_on_clean (completed builds): error moving %s to %s: %s",
+                        rpm, dest_path, e)
+
+    @traceLog()
     def delete(self):
         """
         Deletes the buildroot contents.
         """
         if os.path.exists(self.basedir):
+            self.backup_build_results()
             p = self.make_chroot_path()
             self._lock_buildroot(exclusive=True)
             util.orphansKill(p)

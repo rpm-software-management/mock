@@ -408,7 +408,7 @@ Error:      Neither dnf-utils nor yum-utils are installed. Dnf-utils or yum-util
         bundle_path = self.config['ssl_ca_bundle_path']
         if bundle_path:
             self.buildroot.root_log.debug('copying CA bundle into chroot')
-            host_bundle = os.path.realpath('/etc/pki/tls/certs/ca-bundle.crt')
+            host_bundle = os.path.realpath('/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem')
             chroot_bundle_path = self.buildroot.make_chroot_path(bundle_path)
             chroot_bundle_dir = os.path.dirname(chroot_bundle_path)
 

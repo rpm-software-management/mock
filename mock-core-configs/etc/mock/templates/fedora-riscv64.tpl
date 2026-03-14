@@ -8,7 +8,7 @@ config_opts['extra_chroot_dirs'] = [ '/run/lock', ]
 
 config_opts['package_manager'] = 'dnf5'
 
-config_opts['use_bootstrap_image'] = False
+config_opts['use_bootstrap'] = False
 
 config_opts['dnf.conf'] = """
 [main]

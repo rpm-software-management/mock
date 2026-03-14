@@ -11,8 +11,10 @@ Author: Marián Konček <mkoncek@redhat.com>
 import subprocess
 import os
 import re
-from typing import Generator
+from typing import Any, Generator, Iterable, Iterator, Optional
 from contextlib import contextmanager
+from concurrent.futures import ThreadPoolExecutor
+from threading import Lock
 
 # our imports
 from mockbuild.trace_decorator import getLog, traceLog
@@ -28,9 +30,14 @@ class AtimeDict(dict):
     A caching lazy dictionary mapping file paths to their access time.
     """
 
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self.lock = Lock()
+
     def __missing__(self, key: str) -> float:
         result = os.stat(key).st_atime
-        self[key] = result
+        with self.lock:
+            self[key] = result
         return result
 
 @traceLog()
@@ -58,8 +65,8 @@ class Unbreq:
         self.config = buildroot.config
 
         self.enabled = False
-        self.chroot_command: list[str] = []
-        self.chroot_dnf_command: list[str] = []
+        self.rpm_command: list[str] = []
+        self.dnf_command: list[str] = []
         self.min_time: float = 0.0
         config_exclude_accessed_files = (
             self.config
@@ -74,11 +81,11 @@ class Unbreq:
         self.exclude_accessed_files = [re.compile(r) for r in config_exclude_accessed_files]
         self.accessed_files = AtimeDict()
         self.mount_options: list[str] = []
+        self.srpms: set[str] = set()
+        self.rpm_files: dict[str, list[str]] = {}
         self.buildrequires_providers: dict[str, list[str]] = {}
         self.buildrequires_deptype: dict[str, str] = {}
-
-        # TODO handle different package managers
-        # self.buildroot.pkg_manager.name
+        self.pool: ThreadPoolExecutor = ThreadPoolExecutor(max_workers = os.process_cpu_count() or 1)
 
         plugins.add_hook("earlyprebuild", self._EarlyPrebuildHook)
         plugins.add_hook("postyum", self._PostYumHook)
@@ -93,12 +100,36 @@ class Unbreq:
         the bootstrap chroot, if available.
         """
         # NOTE this should really be handled automatically by `buildroot_in_bootstrap_mounted`.
-        if not USE_NSPAWN and self.buildroot.bootstrap_buildroot is not None:
+        if not USE_NSPAWN:
             with self.buildroot.shadow_utils.root.uid_manager.elevated_privileges():
-                with self.buildroot.mounts.buildroot_in_bootstrap_mounted():
+                if self.buildroot.bootstrap_buildroot is not None:
+                    with self.buildroot.mounts.buildroot_in_bootstrap_mounted():
+                        yield
+                else:
                     yield
         else:
             yield
+
+    @traceLog()
+    def check_output(self, command: list[str], *args: Any, expected_returncode = 0, **kwargs: Any) -> str:
+        """
+        Run `command` in the associated chroot. Raise an exception if returned code
+        does not match `expected_returncode`. Additional arguments are passed to
+        the function `mockbuild.util.do_with_status`.
+        """
+        # The `--ephemeral` flag is required in order to be able to run `systemd-nspawn` concurrently.
+        kwargs["nspawn_args"] = ["--ephemeral", "--bind", self.buildroot.rootdir]
+        if self.buildroot.bootstrap_buildroot is not None:
+            kwargs["chrootPath"] = self.buildroot.bootstrap_buildroot.rootdir
+        kwargs["returnOutput"] = True
+        kwargs["raiseExc"] = False
+        output, returncode = mockbuild.util.do_with_status(command, *args, **kwargs)
+        if returncode != expected_returncode:
+            # Copied from `mockbuild.util.do_with_status`
+            raise mockbuild.exception.Error(
+                f"Command failed: \n # {mockbuild.util.cmd_pretty(command)}\n{output}", returncode
+            )
+        return output
 
     @traceLog()
     def get_buildrequires(self, srpm: str) -> None:
@@ -112,12 +143,10 @@ class Unbreq:
         Dependency type strings can have more attributes separated by a comma.
         We ignore those.
         """
-        process = subprocess.run(self.chroot_command + ["/usr/bin/rpm", "--root", self.buildroot.rootdir, "-q",
-            "--qf", "[%{REQUIREFLAGS:deptype} %{REQUIRES} %{REQUIREFLAGS:depflags} %{REQUIREVERSION}\\n]", srpm],
-            stdin = subprocess.DEVNULL, stdout = subprocess.PIPE, stderr = subprocess.PIPE,
-            text = True, check = True,
+        output = self.check_output([*self.rpm_command, "-q", "--qf",
+            "[%{REQUIREFLAGS:deptype} %{REQUIRES} %{REQUIREFLAGS:depflags} %{REQUIREVERSION}\\n]", srpm],
         )
-        for line in process.stdout.splitlines():
+        for line in output.splitlines():
             separator = line.find(" ")
             deptype_end = line.find(",", 0, separator)
             if deptype_end == -1:
@@ -129,48 +158,52 @@ class Unbreq:
             self.buildrequires_deptype[buildrequires] = deptype
 
     @traceLog()
-    def get_files(self, packages: list[str]) -> list[str]:
+    def get_files(self, packages: set[str]) -> Iterator[str]:
         """
         Get the files owned by `packages` using an RPM query.
         """
-        if len(packages) == 0:
-            return []
-        process = subprocess.run(self.chroot_command +
-            ["/usr/bin/rpm", "--root", self.buildroot.rootdir, "-q", "--qf", "[%{FILENAMES}\\n]"] + packages,
-            stdin = subprocess.DEVNULL, stdout = subprocess.PIPE, stderr = subprocess.PIPE,
-            text = True, check = True,
-        )
-        result = process.stdout.splitlines()
-        return result
-
-    @traceLog()
-    def try_remove(self, packages: list[str]) -> list[str]:
-        """
-        Try to remove `packages` and obtain all the packages (NVRs) that would be removed.
-        """
-
-        # Note that we expect this command to return 1
-        process = subprocess.run(self.chroot_dnf_command +
-            ["--setopt", "protected_packages=", "--assumeno", "remove"] + packages,
-            stdin = subprocess.DEVNULL, stdout = subprocess.PIPE, stderr = subprocess.PIPE,
-            text = True, check = False,
-        )
-        if process.returncode != 1:
-            raise subprocess.CalledProcessError(
-                process.returncode, " ".join(process.args), process.stdout, process.stderr
+        queried_packages = packages.difference(self.rpm_files.keys())
+        if len(queried_packages) != 0:
+            output = self.check_output([*self.rpm_command, "-q",
+                "--qf", "\\n[%{FILENAMES}\\n]", *queried_packages],
             )
-        result = []
-        for line in process.stdout.splitlines():
-            if not line.startswith(" "):
-                continue
-            nvr = line.split()
-            if len(nvr) != 6:
-                continue
-            result.append(f"{nvr[0]}-{nvr[2]}.{nvr[1]}")
+            package_it = iter(queried_packages)
+            for line in output.splitlines():
+                if not line:
+                    package = next(package_it)
+                    current_files: list[str] = []
+                    self.rpm_files[package] = current_files
+                else:
+                    current_files.append(line)
+        return (path for package in packages for path in self.rpm_files[package])
+
+    @traceLog()
+    def try_remove(self, packages: Iterator[str]) -> set[str]:
+        """
+        Try to remove `packages` and obtain all the packages (NVRs) that would
+        be removed. A BuildRequires field may end up not being provided by any
+        installed RPM when using `if` booleans.
+        """
+
+        result: set[str] = set()
+        packages = list(packages)
+        if len(packages) != 0:
+            # Note that we expect this command to return 1.
+            output = self.check_output([*self.dnf_command,
+                "--setopt", "protected_packages=", "--assumeno", "remove", *packages],
+                expected_returncode = 1,
+            )
+            for line in output.splitlines():
+                if not line.startswith(" "):
+                    continue
+                nvr = line.split()
+                if len(nvr) != 6:
+                    continue
+                result.add(f"{nvr[0]}-{nvr[2]}.{nvr[1]}")
         return result
 
     @traceLog()
-    def get_buildrequires_providers(self, buildrequires: list[str]) -> dict[str, list[str]]:
+    def get_buildrequires_providers(self, buildrequires: Iterable[str]) -> dict[str, list[str]]:
         """
         Get the mapping of BuildRequires fields to the RPMs that provide it.
         Each BR can be provided by multiple installed RPMs but we try to
@@ -181,13 +214,11 @@ class Unbreq:
         # BuildRequires field and the RPMs that provide it.
         br_providers: dict[str, list[str]] = {}
         provided_brs: dict[str, list[str]] = {}
-        for br in buildrequires:
-            process = subprocess.run(
-                self.chroot_dnf_command + ["repoquery", "--installed", "--whatprovides", br],
-                stdin = subprocess.DEVNULL, stdout = subprocess.PIPE, stderr = subprocess.PIPE,
-                text = True, check = True,
-            )
-            current_br_providers: list[str] = process.stdout.splitlines()
+
+        for br, output in zip(buildrequires, self.pool.map(lambda br: self.check_output(
+            [*self.dnf_command, "repoquery", "--installed", "--whatprovides", br],
+        ), buildrequires)):
+            current_br_providers: list[str] = output.splitlines()
             br_providers[br] = current_br_providers
             for provider in current_br_providers:
                 provided_brs.setdefault(provider, []).append(br)
@@ -217,35 +248,65 @@ class Unbreq:
         return br_providers
 
     @traceLog()
+    def check_removed_files(self, packages: Iterator[str]) -> Optional[str]:
+        """
+        Attempt to remove `packages` and check if any of the file owned by
+        packages that would be removed, was accessed.
+        """
+        for path in self.get_files(self.try_remove(packages)):
+            try:
+                atime = self.accessed_files[self.buildroot.make_chroot_path(path)]
+            except FileNotFoundError:
+                continue
+            if atime > self.min_time:
+                for r in self.exclude_accessed_files:
+                    if r.search(path) is not None:
+                        break
+                else:
+                    return path
+        return None
+
+    @traceLog()
     def resolve_buildrequires(self) -> None:
         """
         Decide which BuildRequires fields were not used based on file accesses.
         """
-        brs_can_be_removed: list[tuple[str, list[str]]] = []
-        for br, providers in self.buildrequires_providers.items():
-            removed_packages = self.try_remove([v for vs in brs_can_be_removed for v in vs[1]] + providers)
-            can_be_removed = True
-            for path in self.get_files(removed_packages):
-                path = self.buildroot.make_chroot_path(path)
-                try:
-                    atime = self.accessed_files[path]
-                except FileNotFoundError:
-                    continue
-                if atime > self.min_time:
-                    short_path = path[len(self.buildroot.rootdir):]
-                    for r in self.exclude_accessed_files:
-                        if r.search(short_path) is not None:
-                            break
-                    else:
-                        getLog().info(
-                            "unbreq plugin: BuildRequires '%s' is needed because file %s was accessed",
-                            br, short_path
-                        )
-                        can_be_removed = False
-                        break
-            if can_be_removed:
-                brs_can_be_removed.append((br, providers))
-        for br, _ in brs_can_be_removed:
+
+        # First check each BuildRequires separately to quickly exclude most of
+        # the candidates.
+        candidates_providers: list[tuple[str, list[str]]] = []
+        for (br, providers), path in zip(self.buildrequires_providers.items(),
+            self.pool.map(self.check_removed_files, (
+                providers for providers in self.buildrequires_providers.values()
+            ))):
+            if path is not None:
+                getLog().info(
+                    "unbreq plugin: BuildRequires '%s' is needed because file %s was accessed",
+                    br, path
+                )
+            else:
+                candidates_providers.append((br, providers))
+
+        if len(candidates_providers) == 0:
+            return
+
+        # Check if all the providers can be removed together.
+        if self.check_removed_files(p for _, ps in candidates_providers for p in ps) is not None:
+            # Now execute the query with an increasing number of packages to be
+            # certain that they all can be removed together.
+            candidates_it = iter(candidates_providers)
+            brs_can_be_removed: list[tuple[str, list[str]]] = [next(candidates_it)]
+            for br, providers in candidates_it:
+                path = self.check_removed_files((*(v for _, vs in brs_can_be_removed for v in vs), *providers))
+                if path is not None:
+                    getLog().info(
+                        "unbreq plugin: BuildRequires '%s' is needed because file %s was accessed",
+                        br, path
+                    )
+                else:
+                    brs_can_be_removed.append((br, providers))
+
+        for br, _ in candidates_providers:
             getLog().warning("unbreq plugin: BuildRequires '%s' was not used", br)
 
     @traceLog()
@@ -254,33 +315,41 @@ class Unbreq:
         Get all the BuildRequires, the RPMs that provide them, the files they
         own and set both their access and modify timestamps to zero.
         """
-        buildrequires_providers = []
-        for providers in self.buildrequires_providers.values():
-            buildrequires_providers.extend(providers)
-
-        for path in set(self.get_files(self.try_remove(buildrequires_providers))):
+        def handle_file(path: str) -> None:
             try:
                 os.utime(self.buildroot.make_chroot_path(path), (0, 0))
             except FileNotFoundError:
                 pass
+
+        all_files = self.get_files(self.try_remove(
+            provider for providers in self.buildrequires_providers.values() for provider in providers
+        ))
+
+        for _ in self.pool.map(handle_file, all_files):
+            pass
 
     @traceLog()
     def _EarlyPrebuildHook(self) -> None:
         """
         Initialize some chroot attributes.
         """
-        self.enabled = True
+
+        if self.buildroot.pkg_manager.name == "dnf5":
+            self.enabled = True
+        elif self.buildroot.pkg_manager.name == "dnf4":
+            self.enabled = True
+            # DNF 4 can not be run concurrently
+            self.pool = ThreadPoolExecutor(max_workers = 1)
+        else:
+            getLog().warning("unbreq plugin: '%s' package manager is not supported", self.buildroot.pkg_manager.name)
+
+        if not self.enabled:
+            return
+
+        self.rpm_command = ["/usr/bin/rpm", "--root", self.buildroot.rootdir]
+        self.dnf_command = [self.buildroot.pkg_manager.command, "--installroot", self.buildroot.rootdir]
 
         getLog().info("enabled unbreq plugin (earlyprebuild)")
-
-        if self.buildroot.bootstrap_buildroot is not None:
-            if USE_NSPAWN:
-                self.chroot_command = ["/usr/bin/systemd-nspawn", "--quiet", "--pipe",
-                    "-D", self.buildroot.bootstrap_buildroot.rootdir, "--bind", self.buildroot.rootdir
-                ]
-            else:
-                self.chroot_command = ["/usr/sbin/chroot", self.buildroot.bootstrap_buildroot.rootdir]
-        self.chroot_dnf_command = self.chroot_command + ["/usr/bin/dnf", "--installroot", self.buildroot.rootdir]
 
     @traceLog()
     def _PostYumHook(self) -> None:
@@ -297,7 +366,9 @@ class Unbreq:
         srpm_dir = self.buildroot.make_chroot_path(self.buildroot.builddir, "SRPMS")
         with self.do_with_chroot():
             for srpm in os.scandir(srpm_dir):
-                self.get_buildrequires(srpm.path)
+                if srpm.path not in self.srpms:
+                    self.srpms.add(srpm.path)
+                    self.get_buildrequires(srpm.path)
 
     @traceLog()
     def _PostDepsHook(self) -> None:
@@ -310,28 +381,17 @@ class Unbreq:
         getLog().info("enabled unbreq plugin (postdeps)")
 
         with self.do_with_chroot():
-            self.buildrequires_providers = self.get_buildrequires_providers(sorted(self.buildrequires_deptype.keys()))
+            self.buildrequires_providers = self.get_buildrequires_providers(self.buildrequires_deptype.keys())
 
         # NOTE maybe find a better example file to touch to get an atime?
-        path = self.buildroot.make_chroot_path("dev", "null")
+        path = self.buildroot.make_chroot_path("/dev/null")
         mockbuild.file_util.touch(path)
         self.min_time = os.path.getatime(path)
 
-        try:
-            # NOTE should failure throw an exception?
-            mount_options_process = subprocess.run(
-                ["/usr/bin/findmnt", "-n", "-o", "OPTIONS", "--target", self.buildroot.rootdir],
-                stdin = subprocess.DEVNULL, stdout = subprocess.PIPE, stderr = subprocess.PIPE,
-                text = True, check = False,
-            )
-            if mount_options_process:
-                self.mount_options = mount_options_process.stdout.rstrip().split(",")
-            else:
-                getLog().warning("unbreq plugin: unable to detect buildroot mount options, process %s returned %d: %s",
-                    mount_options_process, mount_options_process.returncode, mount_options_process.stderr,
-                )
-        except FileNotFoundError:
-            pass
+        self.mount_options = mockbuild.util.do(
+            ["/usr/bin/findmnt", "-n", "-o", "OPTIONS", "--target", self.buildroot.rootdir],
+            returnOutput = True,
+        ).rstrip().split(",")
 
         if "relatime" in self.mount_options:
             getLog().info(

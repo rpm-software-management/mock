@@ -113,13 +113,18 @@ def query_packages_location(packages, chrootpath=None,
     }]
     """
 
-    # Note: we do not support YUM in 2024+
-    query_locations_cmd = [dnf_cmd]
-    if chrootpath:
-        query_locations_cmd += [f"--installroot={chrootpath}"]
+    if 'yum' in dnf_cmd:
+        # yum (yum-utils must be installed)
+        query_locations_cmd = ['/usr/bin/repoquery']
+    else:
+        # dnf
+        query_locations_cmd = [dnf_cmd]
+        if chrootpath:
+            query_locations_cmd += [f"--installroot={chrootpath}"]
+        query_locations_cmd += ["repoquery"]
     # The -q is necessary because of and similar:
     # https://github.com/rpm-software-management/dnf5/issues/1361
-    query_locations_cmd += ["repoquery", "-q", "--location"]
+    query_locations_cmd += ["-q", "--location"]
     query_locations_cmd += [
         f"{p['name']}-{p['version']}-{p['release']}.{p['arch']}"
         for p in packages

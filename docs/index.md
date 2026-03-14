@@ -70,6 +70,10 @@ Versions in Linux distributions:
 
 
 ## Release Notes
+* [6.7 and Configs 44.2](Release-Notes-6.7) (2026-03-02) - New plugin `expand_spec`, yum support for `--calculate-dependencies`, bugfixes.
+* [Configs 44.1](Release-Notes-Configs-44.1) (2026-02-03) - Fedora 44 branched from Rawhide.
+* [Configs 43.5](Release-Notes-Configs-43.5) (2026-01-27) - Fedora 41 EOL, PQ keys for RHEL9+, DNF5 for Mageia
+* [Configs 43.4](Release-Notes-Configs-43.4) (2026-01-12) - Fedora RISC-V 64-bit support added, Azure Linux 3 aarch64 fix, EPEL 6 CA trust fix
 * [6.6](Release-Notes-6.6) (2025-12-08) - Static build-requires installed in multiple waves, easier forcearch selection.
 * [Configs 43.3](Release-Notes-Configs-43.3) (2025-11-14) - configs for openSUSE 16.0 added
 * [6.5](Release-Notes-6.5) (2025-10-23) - Release 6.5 makes the skip-fsync() opt-out into an opt-in.

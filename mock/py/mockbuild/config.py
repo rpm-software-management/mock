@@ -33,7 +33,7 @@ PLUGIN_LIST = ['tmpfs', 'root_cache', 'yum_cache', 'mount', 'bind_mount',
                'lvm_root', 'compress_logs', 'sign', 'pm_request',
                'hw_info', 'procenv', 'showrc', 'rpkg_preprocessor',
                'rpmautospec', 'buildroot_lock', 'export_buildroot_image',
-               'sbom_generator', 'unbreq']
+               'sbom_generator', 'unbreq', 'expand_spec']
 
 def nspawn_supported():
     """Detect some situations where the systemd-nspawn chroot code won't work"""
@@ -267,7 +267,11 @@ def setup_default_config_opts():
         'unbreq_enable': False,
         'unbreq_opts': {
             'exclude_accessed_files': []
-        }
+        },
+        'expand_spec_enable': False,
+        'expand_spec_opts': {
+            'rpmspec_opts': [],
+        },
     }
 
     config_opts['environment'] = {
@@ -816,10 +820,19 @@ def process_hermetic_build_config(cmdline_opts, config_opts):
             "offline RPM repository (RPM metadata not found)")
 
     # Use the offline image for bootstrapping.
-    bootstrap_tarball = os.path.join(final_offline_repo, "bootstrap.tar")
-    config_opts["bootstrap_image"] = f"oci-archive:{bootstrap_tarball}"
+    # skopeo (currently) can't live with tag + sha, so strip the tag
+    image_pullspec = data['config']['bootstrap_image'].split(':')[0]
+    image_pullspec += "@" + data['bootstrap']['pull_digest']
+    bootstrap_dir = os.path.join(final_offline_repo, image_pullspec)
+    config_opts["bootstrap_image"] = f"dir:{bootstrap_dir}"
 
     config_opts["offline_local_repository"] = final_offline_repo
+
+    # Provide build access to buildroot packages solving same issue as
+    # https://lists.fedorahosted.org/archives/list/koji-devel@lists.fedorahosted.org/thread/ZIBY53JAURLT3QRBBJIJJ7EZWLZDE3TI/
+    # keepcache=1 for local repos work only in dnf5 not dnf4
+    config_opts['plugin_conf']['bind_mount_enable'] = True
+    config_opts['plugin_conf']['bind_mount_opts']['dirs'].append((final_offline_repo, '/hermetic_repo' ))
 
     # We install all the packages at once (for now?).  We could inherit the
     # command from the previous "online" run, but it often employs a group

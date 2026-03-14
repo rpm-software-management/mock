@@ -59,7 +59,7 @@ jobs:
       job: tests
       trigger: pull_request
       targets:
-        - fedora-42
+        - fedora-latest-stable
       # We don't want to run two test runs; so we limit this to a single package
       packages:
         - mock

@@ -4,7 +4,6 @@ import errno
 import os
 import os.path
 import shutil
-import stat
 import subprocess
 import time
 
@@ -37,34 +36,55 @@ def rmtree(path, selinux=False, exclude=()):
        tries harder if it finds immutable files and supports excluding paths"""
     if os.path.islink(path):
         raise OSError("Cannot call rmtree on a symbolic link: %s" % path)
+    if path in exclude:
+        return
+    _recursive_rmtree(path, selinux, exclude)
+
+
+def _recursive_rmtree(path, selinux, exclude):  # pylint: disable=too-many-statements
+    """Recursively remove a directory tree, with support for retries and SELinux-related issues.
+
+    This function attempts to remove a directory and all its contents, handling common
+    filesystem errors gracefully. It supports retry mechanisms for transient errors,
+    exclusion of specific paths from deletion, and special handling for SELinux attributes.
+
+    If removal fails due to permission, access, or busy device errors, the function may
+    retry up to 10 times with a 2-second delay between attempts. For SELinux-related
+    permission issues, it attempts to remove immutable attributes using `chattr`.
+
+    Args:
+        path (str): The root path of the directory tree to remove. Must be a valid directory.
+        selinux (bool): If True, enables special handling for SELinux-related permission issues
+            by attempting to remove immutable attributes via `chattr -R -i`.
+        exclude (set or list): A collection of file or directory paths (as strings) to exclude
+            from deletion. Matching is exact using full path comparison."""
     try_again = True
     retries = 10
     failed_to_handle = False
     failed_filename = None
-    if path in exclude:
-        return
     while try_again:
         try_again = False
         try:
-            names = os.listdir(path)
-            for name in names:
-                fullname = os.path.join(path, name)
-                if fullname not in exclude:
-                    try:
-                        mode = os.lstat(fullname).st_mode
-                    except OSError:
-                        mode = 0
-                    if stat.S_ISDIR(mode):
-                        try:
-                            rmtree(fullname, selinux=selinux, exclude=exclude)
-                        except OSError as e:
-                            if e.errno in (errno.EPERM, errno.EACCES, errno.EBUSY):
-                                # we already tried handling this on lower level and failed,
-                                # there's no point in trying again now
-                                failed_to_handle = True
-                            raise
-                    else:
-                        os.remove(fullname)
+            # To avoid holding the directory's FD during recursive traversal, we will
+            # defer processing directories until after the current directory is closed
+            dirs = []
+            with os.scandir(path) as it:
+                for entry in it:
+                    fullname = entry.path
+                    if fullname not in exclude:
+                        if entry.is_dir(follow_symlinks=False):
+                            dirs.append(fullname)
+                        else:
+                            os.remove(fullname)
+            for fullname in dirs:
+                try:
+                    _recursive_rmtree(fullname, selinux, exclude)
+                except OSError as e:
+                    if e.errno in (errno.EPERM, errno.EACCES, errno.EBUSY):
+                        # we already tried handling this on lower level and failed,
+                        # there's no point in trying again now
+                        failed_to_handle = True
+                    raise
             os.rmdir(path)
         except OSError as e:
             if failed_to_handle:
@@ -72,9 +92,9 @@ def rmtree(path, selinux=False, exclude=()):
             if e.errno == errno.ENOENT:  # no such file or directory
                 pass
             elif e.errno == errno.ENOTEMPTY:  # there's something left
-                if exclude: # but it is excluded
+                if exclude:  # but it is excluded
                     pass
-                else: # likely during Ctrl+C something additional data
+                else:  # likely during Ctrl+C something additional data
                     try_again = True
                     retries -= 1
                     if retries <= 0:

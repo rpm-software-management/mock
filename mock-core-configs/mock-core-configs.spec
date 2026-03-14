@@ -3,7 +3,7 @@
 %endif
 
 Name:       mock-core-configs
-Version:    43.3
+Version:    44.2
 Release:    1%{?dist}
 Summary:    Mock core config files basic chroots
 
@@ -22,7 +22,7 @@ BuildArch:  noarch
 Provides: mock-configs
 
 # distribution-gpg-keys contains GPG keys used by mock configs
-Requires:   distribution-gpg-keys >= 1.115
+Requires:   distribution-gpg-keys >= 1.117
 # specify minimal compatible version of mock
 Requires:   mock >= 6.1.test
 Requires:   mock-filesystem
@@ -152,6 +152,23 @@ fi
 %ghost %config(noreplace,missingok) %{_sysconfdir}/mock/default.cfg
 
 %changelog
+* Tue Mar 03 2026 Pavel Raiskup <pavel@raiskup.cz> 44.2-1
+- Switch openSUSE Tumbleweed to DNF5 (ngompa@opensuse.org)
+
+* Tue Feb 03 2026 Pavel Raiskup <pavel@raiskup.cz> 44.1-1
+- branch rawhide into f44
+
+* Tue Jan 27 2026 Pavel Raiskup <pavel@raiskup.cz> 43.5-1
+- add PQ keys to rhel9 (msuchy@redhat.com)
+- Switch Mageia 10+ and Cauldron to DNF5 (ngompa@mageia.org)
+- EOL Fedora 41
+
+* Mon Jan 12 2026 Jiri Kyjovsky <j1.kyjovsky@gmail.com> 43.4-1
+- Disable bootstrap for riscv (j1.kyjovsky@gmail.com)
+- Add risc-v fedora chroots (j1.kyjovsky@gmail.com)
+- eol/epel-6: copy-paste ca-bundle from host (praiskup@redhat.com)
+- Fix aarch64 configuration for Azure Linux 3 (negativo17@gmail.com)
+
 * Fri Nov 14 2025 Pavel Raiskup <praiskup@redhat.com> 43.3-1
 - Add openSUSE Leap 16.0 configurations (negativo17@gmail.com)
 - Update Kylin OS images and comments (negativo17@gmail.com)
