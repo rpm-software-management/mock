@@ -7,16 +7,19 @@ This plugin generates a Software Bill of Materials (SBOM) in CycloneDX format fo
 
 ## Features
 
-* Generates SBOM in CycloneDX 1.5 format (JSON)
-* Captures information about:
-  * Source files and patches from spec files
-  * Binary RPM metadata with PURL and CPE identifiers
-  * Complete build toolchain packages
-  * Runtime dependencies
-  * File hashes (SHA-256)
-  * GPG signatures with detailed metadata
-* Outputs SBOM as JSON file in the build results directory
-* Compatible with security scanners (Grype, Trivy, Snyk)
+* Generates SBOM in CycloneDX 1.5 format (JSON) and SPDX 2.3 format
+* Deep Chroot Integration:
+  * Uses the target distribution's own `rpm` binary via `doChroot` for metadata extraction, ensuring 100% version compatibility across different distributions.
+  * Correctly handles path mapping between chroot and host environments.
+* Captures detailed information about:
+  * Source files and patches from spec files with a resilient regex-based fallback for legacy/strict syntax errors.
+  * Binary RPM metadata with standard PURL and CPE identifiers.
+  * Complete build toolchain packages with per-package GPG signature metadata.
+  * Runtime dependencies.
+  * File hashes (SHA-256).
+* Optimized Performance: Consolidated file listing and metadata extraction into a single pass.
+* Outputs SBOM in the build results directory.
+* Compatible with security scanners (Grype, Trivy, Snyk).
 
 ## Usage
 
@@ -35,18 +38,7 @@ mock --enable-plugin=sbom_generator --rebuild ~/rpmbuild/SRPMS/package-1.0-1.fc4
 mock --enable-plugin=sbom_generator --rebuild package.src.rpm -r rocky-9-x86_64
 ```
 
-After the build completes, the SBOM will be available in the build results directory:
-
-```bash
-# Find the SBOM file
-ls /var/lib/mock/*/result/sbom.cyclonedx.json
-
-# View the SBOM
-cat /var/lib/mock/rocky-9-x86_64/result/sbom.cyclonedx.json | jq .
-
-# Get build results directory path
-mock --resultdir package.src.rpm
-```
+After the build completes, the SBOM will be available in the build results directory
 
 ### Viewing and Analyzing the SBOM
 
@@ -73,6 +65,10 @@ jq '.dependencies[] | select(.ref | contains("httpd"))' sbom.cyclonedx.json
 The SBOM can be directly used with security vulnerability scanners:
 
 ```bash
+
+# Scan with SBOM Auditor
+sbom-auditor sbom.cyclonedx.json
+
 # Scan with Grype
 grype sbom:./sbom.cyclonedx.json
 
@@ -138,9 +134,9 @@ config_opts['plugin_conf']['sbom_generator_opts'] = {
 
 ## Output
 
-The plugin generates a file named `<name>-<version>-<release>.sbom` in the build results directory (typically `/var/lib/mock/fedora-42-x86_64/result/`). The SBOM includes:
+The plugin generates a file named `<name>-<version>-<release>.sbom` (for CycloneDX) or `<name>-<version>-<release>.spdx.json` (for SPDX) in the build results directory. The SBOM includes:
 
-* CycloneDX document metadata
+* CycloneDX/SPDX document metadata
   * Build timestamp
   * Tool information (Mock SBOM Generator)
   * Mock-specific build properties (host, distribution, chroot, config)
@@ -300,18 +296,17 @@ The SBOM includes PURL (Package URL) and CPE identifiers for accurate vulnerabil
 ## Requirements
 
 * Python 3.x
-* RPM tools for package metadata extraction
 * Access to build environment for package information
+* Native `rpm` and `specfile` libraries (recommended)
 
 ## Notes
 
-* The plugin runs in the `postbuild` hook, after the build completes
-* SBOM generation is skipped if no RPM, source RPM, or spec file is found
-* The plugin is designed to work with both source and binary RPM builds
-* Build environment information is collected using `rpm -qa` command
-* All build toolchain packages are captured, providing complete build provenance
-* PURL format: `pkg:rpm/{distro}/{package}@{version}?arch={arch}`
-* Mock-specific metadata is stored in component and metadata properties with `mock:` prefix
+* The plugin runs in the `postbuild` hook, after the build completes.
+* SBOM generation is skipped if no RPM, source RPM, or spec file is found.
+* **Hybrid Analysis**: Uses `doChroot` to analyze artifacts within the buildroot (ensuring compatibility with target RPM versions) and host tools for artifacts already exported to the `result/` directory.
+* **Resilient Parsing**: Includes a regex-based fallback for spec files that fail strict parsing by the `specfile` library (e.g., legacy `%patchN` syntax).
+* **PURL format**: `pkg:rpm/{distro}/{package}@{version}?arch={arch}`. Architecture is always separated into a qualifier, never baked into the version string.
+* Mock-specific metadata is stored in properties with the `mock:` prefix.
 
 ## Competitive Advantages
 
