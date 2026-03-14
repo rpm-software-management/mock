@@ -71,31 +71,34 @@ class SBOMGenerator:
         self.include_source_dependencies = self.conf.get('include_source_dependencies', True)
         self.include_toolchain_dependencies = self.conf.get('include_toolchain_dependencies', False)
 
-        plugins.add_hook("prebuild", self._list_specs_directory)
+        self.prebuild_source_files = []
+        self.prebuild_spec_metadata = {}
+
+        plugins.add_hook("prebuild", self._capture_prebuild_state)
         plugins.add_hook("postbuild", self._generate_sbom_post_build_hook)
 
     @traceLog()
-    def _list_specs_directory(self):
-        """Lists the contents of the SPECS directory before building."""
+    def _capture_prebuild_state(self):
+        """Captures pristine source artifacts before the build begins."""
 
-        self.buildroot.root_log.debug("DEBUG: Listing contents of SPECS directory before building:")
-        self.buildroot.root_log.debug(f"DEBUG: builddir is {self.buildroot.builddir}")
-        self.buildroot.root_log.debug(f"DEBUG: rootdir is {self.rootdir}")
-        self.buildroot.root_log.debug(f"DEBUG: resultsdir is {self.buildroot.resultdir}")
-
+        self.buildroot.root_log.debug("Capturing pre-build state from SPECS and SOURCES")
+        
         # Look for spec file in the build directory
-        build_dir = self.buildroot.builddir
-        specs_dir = os.path.join(build_dir, "SPECS")
-        self.buildroot.root_log.debug(f"DEBUG: spec dir is {specs_dir}")
-
+        specs_dir = os.path.join(self.buildroot.rootdir, "builddir/build/SPECS")
         try:
             if os.path.exists(specs_dir):
-                specs_files = os.listdir(specs_dir)
-                self.buildroot.root_log.debug(f"Contents of SPECS directory: {specs_files}")
+                for file in os.listdir(specs_dir):
+                    if file.endswith('.spec'):
+                        spec_file = os.path.join(specs_dir, file)
+                        self.buildroot.root_log.debug(f"Parsing spec file for pre-build state: {spec_file}")
+                        metadata, sources = self.parse_spec_file(spec_file)
+                        self.prebuild_spec_metadata = metadata
+                        self.prebuild_source_files = sources
+                        break
             else:
-                self.buildroot.root_log.debug("SPECS directory does not exist.")
-        except OSError as e:
-            self.buildroot.root_log.debug(f"Failed to list contents of SPECS directory: {e}")
+                self.buildroot.root_log.debug("SPECS directory does not exist for pre-build capture.")
+        except Exception as e:
+            self.buildroot.root_log.debug(f"Failed to capture pre-build state: {e}")
 
     def _create_cyclonedx_document(self):
         """Creates the base CycloneDX document structure."""
@@ -165,11 +168,39 @@ class SBOMGenerator:
 
         # Add Mock config if available
         if hasattr(self.buildroot, 'config') and self.buildroot.config:
-            config_name = self.buildroot.config.get('config_path', 'unknown')
+            config = self.buildroot.config
+            config_name = config.get('config_path', 'unknown')
             properties.append({
                 "name": "mock:build:config",
                 "value": config_name
             })
+
+            # Capture network isolation and access status
+            online = config.get('online', True)
+            properties.append({
+                "name": "mock:build:network:online",
+                "value": str(online).lower()
+            })
+
+            rpm_net = config.get('rpmbuild_networking', False)
+            properties.append({
+                "name": "mock:build:network:rpmbuild",
+                "value": str(rpm_net).lower()
+            })
+
+            isolation = config.get('isolation')
+            if isolation:
+                properties.append({
+                    "name": "mock:build:isolation",
+                    "value": str(isolation)
+                })
+            
+            use_nspawn = config.get('use_nspawn')
+            if use_nspawn is not None:
+                properties.append({
+                    "name": "mock:build:nspawn",
+                    "value": str(use_nspawn).lower()
+                })
 
         hardening_props = self._collect_build_hardening_properties()
         if hardening_props:
@@ -371,10 +402,20 @@ class SBOMGenerator:
         build_subject_version = None
         build_subject_release = None
         source_files = []
+        spec_metadata = {}
 
-        if spec_file:
-            build_subject_name = os.path.splitext(os.path.basename(spec_file))[0]
-            parsed_sources = self.parse_spec_file(spec_file)
+        if hasattr(self, 'prebuild_spec_metadata') and self.prebuild_spec_metadata:
+            spec_metadata = self.prebuild_spec_metadata
+            source_files = self.prebuild_source_files
+            build_subject_name = spec_metadata.get("name")
+            build_subject_version = spec_metadata.get("version")
+            build_subject_release = spec_metadata.get("release")
+        elif spec_file:
+            spec_metadata, parsed_sources = self.parse_spec_file(spec_file)
+            if spec_metadata:
+                build_subject_name = spec_metadata.get("name")
+                build_subject_version = spec_metadata.get("version")
+                build_subject_release = spec_metadata.get("release")
             if parsed_sources:
                 source_files = parsed_sources
 
@@ -390,31 +431,43 @@ class SBOMGenerator:
                     build_subject_release = srpm_metadata.get("release")
 
             if not source_files:
-                # Extract from source RPM if available
+                # Extract metadata for source files from source RPM without full extraction
                 source_files = self.extract_source_files_from_srpm(srpm_path)
 
+            # Record the source RPM itself as an input artifact
+            srpm_name = src_rpm_files[0]
+            srpm_sig = self.get_rpm_signature(srpm_path)
+            # Add to the beginning of the list for visibility
+            source_files.insert(0, {
+                "filename": srpm_name,
+                "digital_signature": srpm_sig,
+                "source_type": "source_rpm"
+            })
+
         return (
-            build_subject_name, build_subject_version,
+            spec_metadata, build_subject_name, build_subject_version,
             build_subject_release, source_files
         )
 
-    def _add_source_components(self, bom, source_files):
-        """Converts source files to CycloneDX components and returns metadata entries."""
+    def _add_source_components(self, _bom, source_files):
+        """Converts source files to CycloneDX components and returns components and metadata entries."""
+        source_components = []
         source_component_entries = []
         for source_file in source_files:
             component = self._create_source_file_component(source_file)
             if component:
-                bom["components"].append(component)
+                source_components.append(component)
                 filename = source_file.get("filename")
                 source_component_entries.append({
                     "filename": filename,
-                    "bom_ref": component.get("bom-ref"),
+                    "bom-ref": component.get("bom-ref"),
                     "type": "patch" if self._is_patch_file(filename) else "source"
                 })
-        return source_component_entries
+        return source_components, source_component_entries
 
-    def _add_toolchain_components(self, bom, build_toolchain_packages, distro_id):
-        """Adds toolchain components to the BOM and returns their bom-refs."""
+    def _add_toolchain_components(self, _bom, build_toolchain_packages, distro_id):
+        """Adds toolchain components to the BOM and returns their components and bom-refs."""
+        toolchain_components = []
         toolchain_bom_refs = []
         for toolchain_pkg in build_toolchain_packages:
             component = self._create_toolchain_component(toolchain_pkg, distro_id)
@@ -422,8 +475,8 @@ class SBOMGenerator:
                 bom_ref = component.get("bom-ref")
                 if bom_ref:
                     toolchain_bom_refs.append(bom_ref)
-                bom["components"].append(component)
-        return toolchain_bom_refs
+                toolchain_components.append(component)
+        return toolchain_components, toolchain_bom_refs
 
     @traceLog()
     # pylint: disable=too-many-locals
@@ -447,7 +500,7 @@ class SBOMGenerator:
 
             # Get build subject metadata
             (
-                build_subject_name, build_subject_version,
+                spec_metadata, build_subject_name, build_subject_version,
                 build_subject_release, source_files
             ) = self._get_build_subject_metadata(spec_file, src_rpm_files, build_dir)
 
@@ -469,7 +522,7 @@ class SBOMGenerator:
                 doc = self._generate_spdx_document(
                     build_subject_name, build_subject_version, build_subject_release,
                     build_dir, rpm_files, source_files,
-                    build_toolchain_packages, distro_id
+                    build_toolchain_packages, distro_id, spec_metadata=spec_metadata
                 )
 
                 with open(out_file, "w", encoding="utf-8") as f:
@@ -488,25 +541,31 @@ class SBOMGenerator:
                 bom = self._create_cyclonedx_document()
 
                 # Add source and toolchain components
-                source_component_entries = self._add_source_components(bom, source_files)
-                toolchain_bom_refs = self._add_toolchain_components(
+                source_components, source_component_entries = self._add_source_components(bom, source_files)
+                toolchain_components, toolchain_bom_refs = self._add_toolchain_components(
                     bom, build_toolchain_packages, distro_id
                 )
 
                 # Process binary RPMs and convert to components
                 (
-                    built_package_bom_refs, primary_rpm_metadata
+                    built_package_bom_refs, primary_rpm_metadata, all_built_components
                 ) = self._process_built_packages(
-                    bom, rpm_files, build_dir, distro_id, source_component_entries,
+                    bom, rpm_files + src_rpm_files, build_dir, distro_id, source_component_entries,
                     build_subject_name, build_toolchain_packages, toolchain_bom_refs
                 )
 
                 # Add RPM-specific metadata and finalize dependencies
                 self._finalize_bom_metadata(bom, primary_rpm_metadata, built_package_bom_refs,
                                             build_subject_name, build_subject_version,
-                                            build_subject_release, distro_id)
+                                            build_subject_release, distro_id,
+                                            spec_metadata=spec_metadata)
                 self._finalize_dependencies(bom, source_component_entries,
-                                            build_toolchain_packages, distro_id)
+                                            build_toolchain_packages, distro_id,
+                                            built_package_bom_refs, toolchain_bom_refs,
+                                            spec_metadata=spec_metadata,
+                                            source_components=source_components,
+                                            toolchain_components=toolchain_components,
+                                            all_built_components=all_built_components)
 
                 # Write CycloneDX BOM
                 with open(out_file, "w", encoding="utf-8") as f:
@@ -526,8 +585,9 @@ class SBOMGenerator:
     def _process_built_packages(self, bom, rpm_files, build_dir, distro_id,
                                source_component_entries, build_subject_name,
                                build_toolchain_packages, toolchain_bom_refs):
-        """Processes binary RPMs and creates CycloneDX components and dependencies."""
+        """Processes binary RPMs and creates structured CycloneDX components and dependencies."""
         built_package_bom_refs = []
+        all_built_components = []
         component_map = {}
         primary_rpm_metadata = None
 
@@ -578,16 +638,39 @@ class SBOMGenerator:
 
             # File components
             if package_name and package_version and self.include_file_components:
+                # Extract CPE and GPG info from the component to pass to files
+                rpm_cpe = None
+                for ext_ref in component.get("externalReferences", []):
+                    if ext_ref.get("comment") == "CPE 2.3":
+                        rpm_cpe = ext_ref.get("url")
+                
+                rpm_gpg = None
+                for prop in component.get("properties", []):
+                    if prop.get("name") == "mock:signature:key":
+                        rpm_gpg = prop.get("value")
+
                 file_components = self._create_file_components(
-                    rpm_path, package_name, package_version
+                    rpm_path, package_name, package_version, 
+                    rpm_cpe=rpm_cpe, rpm_gpg=rpm_gpg
                 )
-                for file_comp in file_components:
-                    bom["components"].append(file_comp)
-                    if self._should_include_file_dependency(file_comp.get("name", "")):
-                        bom["dependencies"].append({
-                            "ref": file_comp["bom-ref"],
-                            "dependsOn": [bom_ref]
-                        })
+                
+                if file_components:
+                    if "components" not in component:
+                        component["components"] = []
+                    
+                    for file_comp in file_components:
+                        # Set scope to required for all files in the produced RPM
+                        file_comp["scope"] = "required"
+                        component["components"].append(file_comp)
+                        
+                        if self._should_include_file_dependency(file_comp.get("name", "")):
+                            bom["dependencies"].append({
+                                "ref": file_comp["bom-ref"],
+                                "dependsOn": [bom_ref]
+                            })
+                    
+                    # Sort file components alphabetically
+                    component["components"].sort(key=lambda x: x.get("name", ""))
 
             # Dependencies
             dependencies = self.get_rpm_dependencies(rpm_path)
@@ -604,24 +687,46 @@ class SBOMGenerator:
                     if t_ref not in all_depends_on:
                         all_depends_on.append(t_ref)
 
-            all_depends_on = list(set(all_depends_on))
+            all_depends_on = sorted(list(set(all_depends_on)))
             if all_depends_on:
                 bom["dependencies"].append({"ref": bom_ref, "dependsOn": all_depends_on})
             elif runtime_dependency:
                 bom["dependencies"].append(runtime_dependency)
+                
+            all_built_components.append(component)
 
-        return built_package_bom_refs, primary_rpm_metadata
+        return built_package_bom_refs, primary_rpm_metadata, all_built_components
 
     # pylint: disable=too-many-arguments,too-many-locals,too-many-branches,too-many-statements,too-many-positional-arguments
     def _finalize_bom_metadata(self, bom, primary_rpm_metadata, built_package_bom_refs,
-                              build_subject_name, build_subject_version,
-                              build_subject_release, distro_id):
-        """Adds RPM-specific metadata and component information to the BOM."""
+                                build_subject_name, build_subject_version,
+                                build_subject_release, distro_id, spec_metadata=None):
+        """Finalizes BOM metadata, sets the primary component, and adds RPM properties."""
+        # Add BuildRequires and Requires from spec if available
+        if spec_metadata:
+            metadata_props = []
+            build_reqs = spec_metadata.get("build_requires", [])
+            if build_reqs:
+                metadata_props.append({
+                    "name": "mock:spec:build_requires",
+                    "value": ",".join(build_reqs)
+                })
+
+            reqs = spec_metadata.get("requires", [])
+            if reqs:
+                metadata_props.append({
+                    "name": "mock:spec:requires",
+                    "value": ",".join(reqs)
+                })
+
+            if metadata_props:
+                bom["metadata"]["properties"] = bom["metadata"].get("properties", [])
+                bom["metadata"]["properties"].extend(metadata_props)
+
         if primary_rpm_metadata:
             rpm_props = bom["metadata"]["properties"]
             for key, prop_name in [("buildhost", "mock:rpm:buildhost"),
                                   ("buildtime", "mock:rpm:buildtime"),
-                                  ("sourcerpm", "mock:rpm:sourcerpm"),
                                   ("group", "mock:rpm:group"),
                                   ("epoch", "mock:rpm:epoch"),
                                   ("distribution", "mock:rpm:distribution")]:
@@ -631,7 +736,7 @@ class SBOMGenerator:
 
             vendor = primary_rpm_metadata.get("vendor")
             if vendor and vendor != "(none)":
-                bom["metadata"]["manufacture"] = {"name": vendor}
+                bom["metadata"]["manufacturer"] = {"name": vendor}
                 bom["metadata"]["authors"] = [{"name": vendor}]
 
             packager = primary_rpm_metadata.get("packager")
@@ -707,6 +812,13 @@ class SBOMGenerator:
                         "bom-ref": f"build-output:{aggregate_name}",
                         "description": description
                     }
+                    if primary_rpm_metadata:
+                        lic = primary_rpm_metadata.get("license")
+                        if lic and lic != "(none)":
+                            component_obj["licenses"] = [{"expression": lic}]
+                    elif spec_metadata and spec_metadata.get("license"):
+                        component_obj["licenses"] = [{"expression": spec_metadata["license"]}]
+
                     if aggregate_name and aggregate_version:
                         component_obj["purl"] = self._generate_purl(
                             aggregate_name, aggregate_version, distro_id
@@ -715,28 +827,148 @@ class SBOMGenerator:
 
     # pylint: disable=too-many-locals,too-many-branches,too-many-statements
     def _finalize_dependencies(self, bom, source_component_entries,
-                              build_toolchain_packages, distro_id):
-        """Ensures every component has a dependency entry."""
-        dependencies_dict = {dep.get("ref"): dep for dep in bom["dependencies"] if dep.get("ref")}
+                                build_toolchain_packages, distro_id,
+                                built_package_bom_refs, toolchain_bom_refs,
+                                spec_metadata=None,
+                                source_components=None,
+                                toolchain_components=None,
+                                all_built_components=None):
+        """Finalizes BOM dependencies, linking primary package to hierarchical grouping components
+        and implementing nested component composition."""
+        # Find primary component ref (metadata.component or first built package)
+        primary_ref = None
+        if bom.get("metadata") and bom["metadata"].get("component"):
+            primary_ref = bom["metadata"]["component"].get("bom-ref")
+        
+        if not primary_ref:
+            return
 
-        for source_entry in source_component_entries:
-            ref = source_entry.get("bom_ref")
-            if ref and ref not in dependencies_dict:
-                dependencies_dict[ref] = {"ref": ref, "dependsOn": []}
+        # Create virtual grouping references
+        inputs_ref = "build:inputs"
+        toolchain_ref = "build:toolchain"
+        outputs_ref = "build:outputs"
 
-        for toolchain_pkg in build_toolchain_packages:
-            name, ver = toolchain_pkg.get("name"), toolchain_pkg.get("version")
-            if name and ver:
-                purl = self._generate_purl(name, ver, distro_id)
-                if purl and purl not in dependencies_dict:
-                    dependencies_dict[purl] = {"ref": purl, "dependsOn": []}
+        # Prepare grouping components
+        inputs_group = {
+            "type": "application",
+            "bom-ref": inputs_ref,
+            "name": "Build Inputs",
+            "description": "Source code and patches used for the build",
+            "properties": [{"name": "mock:type", "value": "grouping-node"}]
+        }
+        if source_components:
+            inputs_group["components"] = sorted(source_components, key=lambda x: x.get("name", ""))
 
-        for component in bom["components"]:
-            ref = component.get("bom-ref")
-            if ref and ref not in dependencies_dict:
-                dependencies_dict[ref] = {"ref": ref, "dependsOn": []}
+        toolchain_group = {
+            "type": "application",
+            "bom-ref": toolchain_ref,
+            "name": "Build Toolchain",
+            "description": "Packages and tools used to perform the build",
+            "scope": "excluded", # Tools are not part of the runtime payload
+            "properties": [{"name": "mock:type", "value": "grouping-node"}]
+        }
+        if toolchain_components:
+            # Group toolchain components by their GPG Key ID
+            signer_groups = {}
+            pkg_map = {p.get("name"): p for p in build_toolchain_packages}
+            
+            for comp in toolchain_components:
+                comp["scope"] = "excluded"
+                pkg_info = pkg_map.get(comp.get("name"))
+                sig_info = pkg_info.get("digital_signature", {}) if pkg_info else {}
+                key_id = sig_info.get("signature_key", "unsigned")
+                
+                # Attach signature properties to the individual package component
+                if sig_info:
+                    sig_props = self._signature_info_to_properties(sig_info)
+                    comp["properties"] = comp.get("properties", [])
+                    comp["properties"].extend([p for p in sig_props if p["name"] != "mock:signature:raw"])
 
-        bom["dependencies"] = list(dependencies_dict.values())
+                if key_id not in signer_groups:
+                    # Create group properties - common only to the signer
+                    group_props = [
+                        {"name": "mock:role", "value": "build-toolchain"},
+                        {"name": "mock:type", "value": "signer-group"},
+                        {"name": "mock:signature:key", "value": key_id}
+                    ]
+                    
+                    signer_groups[key_id] = {
+                        "type": "application",
+                        "bom-ref": f"signer:{key_id}",
+                        "name": f"Packages signed by {key_id}" if key_id != "unsigned" else "Unsigned Packages",
+                        "scope": "excluded",
+                        "properties": group_props,
+                        "components": []
+                    }
+                signer_groups[key_id]["components"].append(comp)
+            
+            # Add signer groups as children of toolchain_group
+            sorted_groups = sorted(
+                list(signer_groups.values()), 
+                key=lambda x: x.get("name", "")
+            )
+            for group in sorted_groups:
+                group["components"].sort(key=lambda x: x.get("name", ""))
+            
+            toolchain_group["components"] = sorted_groups
+
+        outputs_group = {
+            "type": "application",
+            "bom-ref": outputs_ref,
+            "name": "RPM Contents",
+            "description": "RPM packages and their contained files produced by the build",
+            "scope": "required",
+            "properties": [{"name": "mock:type", "value": "grouping-node"}]
+        }
+        if all_built_components:
+            outputs_group["components"] = sorted(all_built_components, key=lambda x: x.get("name", ""))
+
+        # Nest groups into the primary component
+        primary_comp = bom["metadata"]["component"]
+        primary_comp["components"] = [inputs_group, toolchain_group, outputs_group]
+        # Sort metadata components alphabetically
+        primary_comp["components"].sort(key=lambda x: x.get("name", ""))
+
+        # 1. Primary component depends on the three groups
+        bom["dependencies"].append({
+            "ref": primary_ref,
+            "dependsOn": sorted([inputs_ref, toolchain_ref, outputs_ref])
+        })
+
+        # 2. Build Inputs Group -> Source components
+        input_deps = []
+        for entry in source_component_entries:
+            if entry.get("bom-ref"):
+                input_deps.append(entry["bom-ref"])
+        
+        if input_deps:
+            bom["dependencies"].append({
+                "ref": inputs_ref,
+                "dependsOn": sorted(list(set(input_deps)))
+            })
+
+        # 3. Build Toolchain Group -> Signer Groups
+        signer_refs = [g["bom-ref"] for g in toolchain_group.get("components", [])]
+        if signer_refs:
+            bom["dependencies"].append({
+                "ref": toolchain_ref,
+                "dependsOn": sorted(signer_refs)
+            })
+            
+            # 3b. Signer Groups -> Individual packages
+            for group in toolchain_group["components"]:
+                pkg_refs = [c["bom-ref"] for c in group["components"]]
+                bom["dependencies"].append({
+                    "ref": group["bom-ref"],
+                    "dependsOn": sorted(pkg_refs)
+                })
+
+        # 4. RPM Contents Group -> Built RPMs (Packages)
+        if built_package_bom_refs:
+            bom["dependencies"].append({
+                "ref": outputs_ref,
+                "dependsOn": sorted(list(set(built_package_bom_refs)))
+            })
 
 
     def _create_built_package_component(
@@ -772,7 +1004,8 @@ class SBOMGenerator:
         }
 
         # Add external references (CPE)
-        cpe = self.generate_cpe(package_name, version)
+        vendor = package_data.get("vendor")
+        cpe = self.generate_cpe(package_name, version, vendor=vendor)
         if cpe:
             component["externalReferences"] = [
                 {
@@ -782,15 +1015,22 @@ class SBOMGenerator:
                 }
             ]
 
-        # Add hash of RPM file
-        rpm_hash = self.hash_file(rpm_path)
-        if rpm_hash:
-            component["hashes"] = [
-                {
-                    "alg": "SHA-256",
-                    "content": rpm_hash
-                }
-            ]
+        # Add hierarchical grouping for "RPM Contents"
+        outputs_ref = "build:outputs" # This will be the "RPM Contents" group
+
+        # Add hash of RPM file - REMOVED per user request to only have hashes for files contained in RPM
+        # or if needed for PURL integrity, but we'll prioritize the "only" constraint.
+        # rpm_hash = package_data.get("sha256")
+        # if not rpm_hash or rpm_hash == "(none)":
+        #     rpm_hash = self.hash_file(rpm_path)
+        
+        # if rpm_hash:
+        #     component["hashes"] = [
+        #         {
+        #             "alg": "SHA-256",
+        #             "content": rpm_hash
+        #         }
+        #     ]
 
         # Add license information
         license_str = package_data.get("license")
@@ -810,6 +1050,11 @@ class SBOMGenerator:
 
         # Add properties for RPM metadata
         properties = []
+
+        properties.append({
+            "name": "mock:rpm:filename",
+            "value": os.path.basename(rpm_path)
+        })
 
         vendor = package_data.get("vendor")
         if vendor and vendor != "(none)":
@@ -837,13 +1082,6 @@ class SBOMGenerator:
             properties.append({
                 "name": "mock:rpm:buildtime",
                 "value": buildtime_iso
-            })
-
-        sourcerpm = package_data.get("sourcerpm")
-        if sourcerpm and sourcerpm != "(none)":
-            properties.append({
-                "name": "mock:rpm:sourcerpm",
-                "value": sourcerpm
             })
 
         group = package_data.get("group")
@@ -895,6 +1133,7 @@ class SBOMGenerator:
             component["properties"] = properties
 
         # Add external reference for source RPM if available
+        sourcerpm = package_data.get("sourcerpm")
         if sourcerpm and sourcerpm != "(none)":
             component["externalReferences"] = component.get("externalReferences", [])
             component["externalReferences"].append({
@@ -924,23 +1163,17 @@ class SBOMGenerator:
             "purl": purl
         }
 
-        # Add checksum if available
-        checksum = toolchain_pkg.get("checksum")
-        if checksum and checksum != "error" and not checksum.startswith("error"):
-            # Determine algorithm based on hash length
-            if len(checksum) == 64:
-                alg = "SHA-256"
-            elif len(checksum) == 40:
-                alg = "SHA-1"
-            else:
-                alg = "SHA-256"  # Default assumption
-
-            component["hashes"] = [
-                {
-                    "alg": alg,
-                    "content": checksum
-                }
-            ]
+        # Add checksum - REMOVED per user request to only have hashes for files contained in RPM
+        # (This follows the rule that only the 'RPM Contents' section should have hashes)
+        # checksum = toolchain_pkg.get("checksum")
+        # if checksum and checksum != "error" and not checksum.startswith("error"):
+        #     if len(checksum) == 64:
+        #         alg = "SHA-256"
+        #     elif len(checksum) == 40:
+        #         alg = "SHA-1"
+        #     else:
+        #         alg = "SHA-256"
+        #     component["hashes"] = [{"alg": alg, "content": checksum}]
 
         # Add CPE
         cpe = toolchain_pkg.get("cpe")
@@ -965,19 +1198,8 @@ class SBOMGenerator:
         # Add properties
         properties = []
 
-        # Mark as build toolchain
-        properties.append({
-            "name": "mock:role",
-            "value": "build-toolchain"
-        })
-
-        # Add signature information
-        signature_info = toolchain_pkg.get("digital_signature", {})
-        if signature_info:
-            sig_props = self._signature_info_to_properties(signature_info)
-            properties.extend(sig_props)
-
         # Add build date if available
+        signature_info = toolchain_pkg.get("digital_signature", {})
         build_date = signature_info.get("build_date")
         if build_date:
             properties.append({
@@ -1010,6 +1232,7 @@ class SBOMGenerator:
         }
 
         # Add hash
+        sha256 = source_file.get("sha256")
         if sha256:
             component["hashes"] = [
                 {
@@ -1021,7 +1244,9 @@ class SBOMGenerator:
         # Add properties
         properties = []
 
-        source_type = "patch" if self._is_patch_file(filename) else "source"
+        source_type = source_file.get("source_type")
+        if not source_type:
+            source_type = "patch" if self._is_patch_file(filename) else "source"
 
         properties.append({
             "name": "mock:source:type",
@@ -1031,10 +1256,14 @@ class SBOMGenerator:
         # Add signature information if available
         signature = source_file.get("digital_signature")
         if signature:
-            properties.append({
-                "name": "mock:signature:info",
-                "value": signature
-            })
+            if source_type == "source_rpm" and not signature.startswith("GPG signature file exists") and not signature.startswith("File is a signature file"):
+                sig_props = self._parse_signature_to_properties(signature)
+                properties.extend(sig_props)
+            else:
+                properties.append({
+                    "name": "mock:signature:info",
+                    "value": signature
+                })
 
         if properties:
             component["properties"] = properties
@@ -1138,7 +1367,8 @@ class SBOMGenerator:
 
         return True
 
-    def _create_file_components(self, rpm_path, package_name, package_version):
+    def _create_file_components(self, rpm_path, package_name, package_version, 
+                               rpm_cpe=None, rpm_gpg=None):
         """Creates file components for all files in an RPM package."""
         if not self.include_file_components:
             return []
@@ -1157,7 +1387,8 @@ class SBOMGenerator:
                     continue
 
             file_data = file_info.get(file_path, {})
-            file_hash = file_data.get("sha256")
+            file_hash = file_data.get("hash")
+            algo_id = file_data.get("algo")
 
             bom_ref = self._generate_file_bom_ref(package_name, package_version, file_path)
             component = {
@@ -1166,11 +1397,23 @@ class SBOMGenerator:
                 "name": file_path
             }
 
-            # Add hash if available
+            # Add hash if available with detected algorithm
             if file_hash:
+                # Map RPM algo ID to CycloneDX algo name
+                # 8: SHA-256, 10: SHA-512, 1: MD5, 2: SHA-1
+                algo_map = {
+                    8: "SHA-256",
+                    10: "SHA-512",
+                    1: "MD5",
+                    2: "SHA-1",
+                    9: "SHA-384",
+                    11: "SHA-224"
+                }
+                alg_name = algo_map.get(algo_id, "SHA-256")
+                
                 component["hashes"] = [
                     {
-                        "alg": "SHA-256",
+                        "alg": alg_name,
                         "content": file_hash
                     }
                 ]
@@ -1191,6 +1434,17 @@ class SBOMGenerator:
                 properties.append({
                     "name": "mock:file:group",
                     "value": file_data["group"]
+                })
+            
+            if rpm_cpe:
+                properties.append({
+                    "name": "mock:package:cpe",
+                    "value": rpm_cpe
+                })
+            if rpm_gpg:
+                properties.append({
+                    "name": "mock:package:gpg:key",
+                    "value": rpm_gpg
                 })
 
             if properties:
@@ -1394,21 +1648,29 @@ class SBOMGenerator:
             sig_valid = signature_info.get("signature_valid", False)
             properties.append({
                 "name": "mock:signature:valid",
-                "value": str(sig_valid)
+                "value": str(sig_valid).lower()
             })
+
+            raw_data = signature_info.get("raw_signature_data")
+            if raw_data:
+                properties.append({
+                    "name": "mock:signature:raw",
+                    "value": raw_data
+                })
 
         return properties
 
     def parse_spec_file(self, spec_path):
-        """Parses a spec file to extract source and patch files using the specfile library."""
+        """Parses a spec file to extract metadata and source/patch files using the specfile library."""
         self.buildroot.root_log.debug("Parsing spec file using specfile library")
         if not os.path.isfile(spec_path):
             self.buildroot.root_log.debug(f"Spec file not found: {spec_path}")
-            return []
+            return {}, []
 
         from specfile import Specfile
 
         sources = []
+        metadata = {}
         try:
             chroot_spec_path = self.buildroot.from_chroot_path(spec_path)
             # Use rpmspec --parse inside the build chroot to ensure macro expansion
@@ -1419,11 +1681,39 @@ class SBOMGenerator:
             )
 
             if not result:
-                return []
+                return {}, []
 
             # Use specfile to parse the expanded content
             spec = Specfile(content=result, sourcedir=os.path.dirname(spec_path))
+
+            import rpm
+            # Extract canonical metadata
+            metadata = {
+                "name": spec.expanded_name,
+                "version": spec.expanded_version,
+                "release": spec.expanded_release,
+                "license": spec.expanded_license,
+            }
             
+            # Extract BuildRequires and Requires from headers
+            try:
+                br = spec.rpm_spec.sourceHeader[rpm.RPMTAG_REQUIRENAME]
+                metadata["build_requires"] = [
+                    r.decode('utf-8', 'replace') if isinstance(r, bytes) else str(r) 
+                    for r in br
+                ] if br else []
+            except (AttributeError, KeyError):
+                metadata["build_requires"] = []
+                
+            try:
+                r = spec.rpm_spec.packages[0].header[rpm.RPMTAG_REQUIRENAME]
+                metadata["requires"] = [
+                    req.decode('utf-8', 'replace') if isinstance(req, bytes) else str(req) 
+                    for req in r
+                ] if r else []
+            except (AttributeError, KeyError, IndexError):
+                metadata["requires"] = []
+
             # Extract both sources and patches from the spec object model
             all_locs = []
             with spec.sources() as spec_sources:
@@ -1434,7 +1724,7 @@ class SBOMGenerator:
             for loc in all_locs:
                 # Extract hash if present in Source (format: filename#hash)
                 filename, _, hash_value = loc.partition('#')
-                
+
                 # Extract actual filename from URL or path
                 actual_filename = os.path.basename(filename)
 
@@ -1459,12 +1749,12 @@ class SBOMGenerator:
                     "digital_signature": signature
                 })
 
-            self.buildroot.root_log.debug(f"Extracted {len(sources)} source/patch files from spec")
+            self.buildroot.root_log.debug(f"Extracted metadata {metadata} and {len(sources)} source/patch files from spec")
         except Exception as e:
             self.buildroot.root_log.debug(f"Failed to parse spec file {spec_path}: {e}")
             self.buildroot.root_log.debug(traceback.format_exc())
-            
-        return sources
+
+        return metadata, sources
 
     def get_file_signature(self, file_path):
         """Attempts to detect if a file has a digital signature."""
@@ -1563,25 +1853,57 @@ class SBOMGenerator:
 
     def get_build_toolchain_packages(self):
         """Returns the list of packages installed in the build toolchain
-        with detailed signature information."""
+        with detailed signature information collected in a single batch query."""
         try:
-            # First get basic package info
-            query = "%{NAME}|%{VERSION}-%{RELEASE}.%{ARCH}|%{LICENSE}|%{BUILDTIME}\n"
+            # Get detailed package info including signature data in one batch query
+            # Tags: Name, EVR, License, BuildTime, Signature data (RSA, DSA, GPG, PGP)
+            fields = [
+                "%{NAME}",
+                "%{VERSION}-%{RELEASE}.%{ARCH}",
+                "%{LICENSE}",
+                "%{BUILDTIME}",
+                "%{RSAHEADER:pgpsig}",
+                "%{DSAHEADER:pgpsig}",
+                "%{SIGGPG:pgpsig}",
+                "%{SIGPGP:pgpsig}",
+                "%{SHA256HEADER}",
+                "%{SOURCERPM}"
+            ]
+            query = "|".join(fields) + "\n"
             cmd = ["rpm", "-qa", "--qf", query]
             output, _ = self.buildroot.doChroot(
                 cmd, shell=False, returnOutput=True, printOutput=False
             )
+            
             packages = []
             cpe_vendor_default = self.detect_chroot_distribution() or "unknown"
 
             for line in output.splitlines():
-                parts = line.split("|", 3)
-                if len(parts) < 3:
+                parts = line.split("|")
+                if len(parts) < 5:
                     continue
+                
                 package_name = parts[0].strip()
                 package_version = parts[1].strip()
                 package_license = parts[2].strip()
-                build_time = parts[3].strip() if len(parts) > 3 else None
+                build_time = parts[3].strip()
+                
+                # Signature data is in the middle parts
+                raw_sig = None
+                for sig_candidate in parts[4:8]:
+                    sig_candidate = sig_candidate.strip()
+                    if sig_candidate and sig_candidate != "(none)":
+                        raw_sig = sig_candidate
+                        break
+
+                # Checksum is part 8, SOURCERPM is part 9
+                package_checksum = parts[8].strip() if len(parts) > 8 else None
+                if package_checksum == "(none)":
+                    package_checksum = None
+                
+                source_rpm = parts[9].strip() if len(parts) > 9 else None
+                if source_rpm == "(none)":
+                    source_rpm = None
 
                 # Skip GPG keys and other non-package entries
                 if (
@@ -1591,31 +1913,41 @@ class SBOMGenerator:
                 ):
                     continue
 
-                # Get detailed signature info for this package
-                digital_signature = self.get_package_signature_from_chroot(package_name)
+                # Prepare signature info structure
+                digital_signature = {
+                    "signature_type": "unsigned",
+                    "signature_key": None,
+                    "signature_date": None,
+                    "signature_algorithm": None,
+                    "signature_valid": False,
+                    "raw_signature_data": raw_sig,
+                    "build_date": None
+                }
 
-                # Build date
+                if raw_sig:
+                    self._parse_signature_data(raw_sig, digital_signature)
+
+                # Build date from metadata
                 if build_time and build_time.isdigit():
                     try:
                         dt = datetime.fromtimestamp(int(build_time), tz=timezone.utc)
                         digital_signature["build_date"] = dt.isoformat()
                     except (ValueError, TypeError, OverflowError):
-                        digital_signature["build_date"] = None
+                        pass
 
                 cpe = self.generate_cpe(package_name, package_version, vendor=cpe_vendor_default)
-
-                # Get package checksum (SHA-256 of the RPM file)
-                package_checksum = self.get_package_checksum_from_chroot(package_name)
 
                 packages.append({
                     "name": package_name,
                     "version": package_version,
                     "licenseDeclared": package_license,
                     "digital_signature": digital_signature,
+                    "sourcerpm": source_rpm,
                     "cpe": cpe,
                     "checksum": package_checksum
                 })
-            self.buildroot.root_log.debug(f"Found {len(packages)} build toolchain packages")
+            
+            self.buildroot.root_log.debug(f"Found {len(packages)} build toolchain packages with integrated signature metadata")
             return packages
         # pylint: disable=broad-exception-caught
         except Exception as e:
@@ -1699,177 +2031,83 @@ class SBOMGenerator:
             signature_info["signature_type"] = "unsigned"
             signature_info["signature_valid"] = False
 
-    def get_package_signature_from_chroot(self, package_name):
-        """Gets detailed signature information for a specific package from inside the chroot."""
-        try:
-            cmd = ["rpm", "-qi", package_name]
-            output, _ = self.buildroot.doChroot(
-                cmd, shell=False, returnOutput=True, printOutput=False
-            )
-
-            signature_info = {
-                "signature_type": "unsigned",
-                "signature_key": None,
-                "signature_date": None,
-                "signature_algorithm": None,
-                "signature_valid": False,
-                "raw_signature_data": None,
-                "build_date": None
-            }
-
-            for line in output.splitlines():
-                line = line.strip()
-                if line.startswith("Signature"):
-                    # Extract the signature data after the colon
-                    sig_data = line.split(":", 1)[1].strip() if ":" in line else ""
-                    signature_info["raw_signature_data"] = sig_data
-                    self._parse_signature_data(sig_data, signature_info)
-                    break
-
-            return signature_info
-
-        # pylint: disable=broad-exception-caught
-        except Exception as e:
-            self.buildroot.root_log.debug(
-                f"Failed to get signature for package {package_name}: {e}"
-            )
-            return {
-                "signature_type": "unknown",
-                "signature_valid": False,
-                "error": str(e)
-            }
-
-    def get_package_detailed_signature(self, package_name):
-        """Gets detailed signature information for a specific package."""
-        try:
-            # Try to use rpm --root to query from outside the chroot first
-            # If that fails, fall back to running inside the chroot
-            root_path = self.buildroot.rootdir
-            cmd = f"rpm --root {shlex.quote(root_path)} -qi {shlex.quote(package_name)}"
-            result = subprocess.run(
-                cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                text=True, check=False
-            )
-            output = result.stdout
-
-            # If host rpm command failed (empty output), try running inside chroot
-            if not output.strip():
-                self.buildroot.root_log.debug(
-                    f"Host RPM command failed for {package_name}, trying inside chroot..."
-                )
-                # Use buildroot's doChroot method to run the command inside the chroot
-                cmd = ["rpm", "-qi", package_name]
-                output, _ = self.buildroot.doChroot(
-                    cmd, shell=False, returnOutput=True, printOutput=False
-                )
-                self.buildroot.root_log.debug(
-                    f"Chroot RPM output for {package_name}: {output[:200]}..."
-                )  # Debug output
-
-            signature_info = {
-                "signature_type": None,
-                "signature_key": None,
-                "signature_date": None,
-                "signature_algorithm": None,
-                "signature_valid": None,
-                "raw_signature_data": None,
-                "build_date": None
-            }
-
-            output_lines = output.splitlines()
-            i = 0
-            signature_found = False
-            self.buildroot.root_log.debug(
-                f"DEBUG: Processing {len(output_lines)} lines for package {package_name}"
-            )
-            while i < len(output_lines):
-                line = output_lines[i].strip()
-                self.buildroot.root_log.debug(f"DEBUG: Line {i}: '{line}'")
-                if line.startswith("Signature"):
-                    signature_found = True
-                    self.buildroot.root_log.debug(f"DEBUG: Found signature line: '{line}'")
-                    # Extract the signature data after the colon
-                    sig_data = line.split(":", 1)[1].strip() if ":" in line else ""
-                    signature_info["raw_signature_data"] = sig_data
-                    self.buildroot.root_log.debug(f"DEBUG: Extracted signature data: '{sig_data}'")
-                    self._parse_signature_data(sig_data, signature_info)
-                    i += 1
-                    continue
-
-                if line.startswith("Build Date"):
-                    # This can help verify the package build time
-                    build_date = line.split(":", 1)[1].strip() if ":" in line else None
-                    if build_date:
-                        signature_info["build_date"] = build_date
-                i += 1
-
-            # If no signature line was found, mark as unsigned
-            if not signature_found:
-                signature_info["signature_type"] = "unsigned"
-                signature_info["signature_valid"] = False
-
-            return signature_info
-
-        # pylint: disable=broad-exception-caught
-        except Exception as e:
-            self.buildroot.root_log.debug(
-                f"Failed to get detailed signature for package {package_name}: {e}"
-            )
-            return {
-                "signature_type": "unknown",
-                "signature_valid": False,
-                "error": str(e)
-            }
-
     def get_rpm_metadata(self, rpm_path):
-        """Extracts metadata from an RPM file."""
+        """Extracts metadata from an RPM file using python-rpm bindings."""
         if not os.path.isfile(rpm_path):
             self.buildroot.root_log.debug(f"RPM file not found: {rpm_path}")
             return {}
 
-        # Use individual rpm queries instead of trying to output JSON directly
         try:
-            metadata = {}
+            import rpm
+            ts = rpm.TransactionSet()
+            with open(rpm_path, "rb") as f:
+                hdr = ts.hdrFromFdno(f.fileno())
 
-            # Get each field individually
-            fields = {
-                "name": "%{NAME}",
-                "version": "%{VERSION}",
-                "release": "%{RELEASE}",
-                "arch": "%{ARCH}",
-                "epoch": "%{EPOCH}",
-                "summary": "%{SUMMARY}",
-                "license": "%{LICENSE}",
-                "vendor": "%{VENDOR}",
-                "url": "%{URL}",
-                "packager": "%{PACKAGER}",
-                "buildtime": "%{BUILDTIME}",
-                "buildhost": "%{BUILDHOST}",
-                "sourcerpm": "%{SOURCERPM}",
-                "group": "%{GROUP}",
-                "distribution": "%{DISTRIBUTION}"
+            # Map of internal names to RPM tags
+            tag_map = {
+                "name": rpm.RPMTAG_NAME,
+                "version": rpm.RPMTAG_VERSION,
+                "release": rpm.RPMTAG_RELEASE,
+                "arch": rpm.RPMTAG_ARCH,
+                "epoch": rpm.RPMTAG_EPOCH,
+                "summary": rpm.RPMTAG_SUMMARY,
+                "license": rpm.RPMTAG_LICENSE,
+                "vendor": rpm.RPMTAG_VENDOR,
+                "url": rpm.RPMTAG_URL,
+                "packager": rpm.RPMTAG_PACKAGER,
+                "buildtime": rpm.RPMTAG_BUILDTIME,
+                "buildhost": rpm.RPMTAG_BUILDHOST,
+                "sourcerpm": rpm.RPMTAG_SOURCERPM,
+                "group": rpm.RPMTAG_GROUP,
+                "distribution": rpm.RPMTAG_DISTRIBUTION,
+                "sha256": rpm.RPMTAG_SHA256HEADER
             }
 
+            metadata = {}
+            for field_name, tag in tag_map.items():
+                value = hdr[tag]
+                
+                # Special handling for certain types
+                if field_name == "epoch" and value is None:
+                    value = "(none)"
+                elif value is None:
+                    value = ""
+                elif isinstance(value, bytes):
+                    value = value.decode('utf-8', errors='replace')
+                
+                metadata[field_name] = str(value)
+
+            self.buildroot.root_log.debug(f"RPM metadata extracted natively: {metadata['name']}-{metadata['version']}")
+            return metadata
+
+        except Exception as e:
+            self.buildroot.root_log.debug(f"Failed to extract RPM metadata from {rpm_path} natively: {e}")
+            # Fallback to subprocess if native method fails (should be rare)
+            return self._get_rpm_metadata_subprocess(rpm_path)
+
+    def _get_rpm_metadata_subprocess(self, rpm_path):
+        """Fallback method to extract metadata using rpm command-line."""
+        metadata = {}
+        fields = {
+            "name": "%{NAME}", "version": "%{VERSION}", "release": "%{RELEASE}",
+            "arch": "%{ARCH}", "epoch": "%{EPOCH}", "summary": "%{SUMMARY}",
+            "license": "%{LICENSE}", "vendor": "%{VENDOR}", "url": "%{URL}",
+            "packager": "%{PACKAGER}", "buildtime": "%{BUILDTIME}",
+            "buildhost": "%{BUILDHOST}", "sourcerpm": "%{SOURCERPM}",
+            "group": "%{GROUP}", "distribution": "%{DISTRIBUTION}"
+        }
+        try:
             for field_name, field_format in fields.items():
                 cmd = ["rpm", "-qp", rpm_path, "--queryformat", field_format]
-                result = subprocess.run(
-                    cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True, text=True
-                )
+                result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True, text=True)
                 value = result.stdout.strip()
-                # Handle empty epoch (rpm returns empty string for no epoch)
                 if field_name == "epoch" and not value:
                     value = "(none)"
                 metadata[field_name] = value
-
-            self.buildroot.root_log.debug(f"RPM metadata extracted: {metadata}")
             return metadata
-
-        except subprocess.CalledProcessError as e:
-            self.buildroot.root_log.debug(f"RPM command failed for {rpm_path}: {e.stderr}")
-            return {}
         # pylint: disable=broad-exception-caught
         except Exception as e:
-            self.buildroot.root_log.debug(f"Failed to extract RPM metadata: {e}")
+            self.buildroot.root_log.debug(f"Failed to extract RPM metadata via subprocess for {rpm_path}: {e}")
             return {}
 
     def get_rpm_file_list(self, rpm_path):
@@ -1907,6 +2145,12 @@ class SBOMGenerator:
             filemodes = hdr[rpm.RPMTAG_FILEMODES]
             fileusernames = hdr[rpm.RPMTAG_FILEUSERNAME]
             filegroupnames = hdr[rpm.RPMTAG_FILEGROUPNAME]
+            
+            # Detect digest algorithm
+            try:
+                algo = hdr[rpm.RPMTAG_FILEDIGESTALGO]
+            except (KeyError, IndexError):
+                algo = 8  # Default to SHA256
 
             for i, basename in enumerate(basenames):
                 dirname = dirnames[dirindexes[i]]
@@ -1928,7 +2172,7 @@ class SBOMGenerator:
                     digest = None
 
                 mode = filemodes[i]
-                # Format permissions as octal string (e.g., 0100755) to match rpm --dump format
+                # Format permissions as octal string
                 permissions = f"0{mode:o}"
 
                 owner = fileusernames[i]
@@ -1940,14 +2184,15 @@ class SBOMGenerator:
                     group = group.decode('utf-8', 'replace')
 
                 file_info[filename] = {
-                    "sha256": digest,
+                    "hash": digest,
+                    "algo": algo,
                     "permissions": permissions,
                     "owner": owner,
                     "group": group
                 }
 
             self.buildroot.root_log.debug(
-                f"File info for RPM {rpm_path}: {len(file_info)} files processed"
+                f"File info for RPM {rpm_path}: {len(file_info)} files processed (Algo: {algo})"
             )
             return file_info
 
@@ -1958,35 +2203,55 @@ class SBOMGenerator:
             return {}
 
     def get_rpm_dependencies(self, rpm_path):
-        """Extracts the list of dependencies from an RPM file."""
-        cmd = ["rpm", "-qpR", rpm_path]
+        """Extracts the list of dependencies from an RPM file natively."""
         try:
-            result = subprocess.run(
-                cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True, text=True
-            )
-            dependencies = result.stdout.splitlines()
-            self.buildroot.root_log.debug(f"Dependencies for RPM {rpm_path}: {dependencies}")
-            return dependencies
-        except subprocess.CalledProcessError as e:
-            self.buildroot.root_log.debug(f"Failed to get dependencies for {rpm_path}: {e.stderr}")
-            return []
+            import rpm
+            ts = rpm.TransactionSet()
+            with open(rpm_path, "rb") as f:
+                hdr = ts.hdrFromFdno(f.fileno())
+            
+            # Use rpm.labelCompare etc to format if needed, but for now 
+            # we just extract the requirement names.
+            requirements = hdr[rpm.RPMTAG_REQUIRENAME]
+            if not requirements:
+                return []
+            
+            # Convert bytes to strings
+            return [r.decode('utf-8', 'replace') if isinstance(r, bytes) else str(r) for r in requirements]
+        except Exception as e:
+            self.buildroot.root_log.debug(f"Failed to extract dependencies natively for {rpm_path}: {e}")
+            try:
+                cmd = ["rpm", "-qpR", rpm_path]
+                result = subprocess.run(
+                    cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True, text=True
+                )
+                return result.stdout.splitlines()
+            except Exception:
+                return []
 
     def get_rpm_signature(self, rpm_path):
         """Extracts the GPG signature of an RPM file."""
-        cmd = ["rpm", "-qpi", rpm_path]
+        # Try subprocess first as it's more reliable for getting the formatted string
         try:
-            result = subprocess.run(
-                cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True, text=True
-            )
+            # Try to get it via queryformat first (most machine-readable if successful)
+            cmd = ["rpm", "-qp", "--queryformat", "%{SIGPGP:pgpsig} %{SIGGPG:pgpsig}", rpm_path]
+            result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True, text=True)
+            sig = result.stdout.strip()
+            if sig and sig != "(none) (none)" and sig != "(none)":
+                return sig.replace("(none)", "").strip()
+
+            # Fallback to parsing rpm -qip output (always works for human-readable)
+            cmd = ["rpm", "-qip", rpm_path]
+            result = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True, text=True)
             for line in result.stdout.splitlines():
-                if line.startswith("Signature"):
-                    # Extract the signature data after the colon
-                    sig_data = line.split(":", 1)[1].strip() if ":" in line else ""
-                    self.buildroot.root_log.debug(f"GPG Signature for {rpm_path}: {sig_data}")
-                    return sig_data
+                if "Signature" in line and ":" in line:
+                    sig_val = line.split(":", 1)[1].strip()
+                    if sig_val and sig_val != "(none)":
+                        return sig_val
+
             return None
-        except subprocess.CalledProcessError as e:
-            self.buildroot.root_log.debug(f"Failed to get GPG signature for {rpm_path}: {e.stderr}")
+        except Exception as e:
+            self.buildroot.root_log.debug(f"Failed to extract signature for {rpm_path}: {e}")
             return None
 
     def hash_file(self, file_path):
@@ -2003,68 +2268,49 @@ class SBOMGenerator:
             return None
 
     def extract_source_files_from_srpm(self, src_rpm_path):
-        """Extracts source files from a source RPM."""
-
-        self.buildroot.root_log.debug(f"Extracting source files from source RPM: {src_rpm_path}")
+        """Extracts metadata for source files from a source RPM without full extraction."""
+        self.buildroot.root_log.debug(f"Extracting source metadata from source RPM: {src_rpm_path}")
         source_files = []
+        if not os.path.isfile(src_rpm_path):
+            return source_files
         try:
-            temp_dir = tempfile.mkdtemp(prefix="sbom-srpm-")
-            try:
-                # Use rpm2archive instead of rpm2cpio to handle large files (>4GB)
-                # rpm2archive creates a .tgz file in the current directory
-                extract_cmd = ["rpm2archive", src_rpm_path]
-                subprocess.run(
-                    extract_cmd, cwd=temp_dir, check=True, stderr=subprocess.PIPE, text=True
-                )
+            import rpm
+            ts = rpm.TransactionSet()
+            with open(src_rpm_path, "rb") as f:
+                hdr = ts.hdrFromFdno(f.fileno())
 
-                # Find the generated archive (should be only one file ending in .tgz or .tar.gz)
-                archive_file = None
-                for f in os.listdir(temp_dir):
-                    if f.endswith(".tgz") or f.endswith(".tar.gz"):
-                        archive_file = os.path.join(temp_dir, f)
-                        break
+            basenames = hdr[rpm.RPMTAG_BASENAMES]
+            digests = hdr[rpm.RPMTAG_FILEDIGESTS]
 
-                if archive_file:
-                    tar_cmd = ["tar", "-xf", archive_file]
-                    subprocess.run(tar_cmd, cwd=temp_dir, check=True)
-                    os.remove(archive_file)
+            # Create a set for quick lookup of signature files
+            file_set = set(basenames)
+
+            for filename, sha256 in zip(basenames, digests):
+                if filename.endswith(".spec"):
+                    continue
+
+                signature = None
+                if filename.endswith(".asc") or filename.endswith(".sig"):
+                    signature = "File is a signature file"
                 else:
-                    self.buildroot.root_log.debug(
-                        f"rpm2archive did not produce expected output for {src_rpm_path}"
-                    )
+                    for ext in [".asc", ".sig"]:
+                        if filename + ext in file_set:
+                            signature = f"GPG signature file exists: {filename}{ext}"
+                            break
 
-            except (subprocess.CalledProcessError, OSError) as e:
-                self.buildroot.root_log.debug(f"Failed to unpack source RPM {src_rpm_path}: {e}")
-                mockbuild.file_util.rmtree(temp_dir)
-                return source_files
-
-            for root_dir, _, files in os.walk(temp_dir):
-                for file_name in files:
-                    if file_name.endswith(".spec"):
-                        continue
-                    file_path = os.path.join(root_dir, file_name)
-                    sha256 = self.hash_file(file_path)
-                    signature = self.get_file_signature(file_path)
-                    source_files.append({
-                        "filename": file_name,
-                        "sha256": sha256,
-                        "digital_signature": signature
-                    })
-            try:
-                mockbuild.file_util.rmtree(temp_dir)
-            except OSError:
-                pass
-
-            print(f"Extracted source files from source RPM: {source_files}")
-        # pylint: disable=broad-exception-caught
+                source_files.append({
+                    "filename": filename,
+                    "sha256": sha256,
+                    "digital_signature": signature
+                })
         except Exception as e:
-            print(f"Failed to extract source files from source RPM {src_rpm_path}: {e}")
+            self.buildroot.root_log.debug(f"Failed to extract source metadata from {src_rpm_path}: {e}")
 
         return source_files
 
 
     def _generate_spdx_document(self, name, version, release, build_dir, rpm_files,
-                                source_files, toolchain_components, distro_id):
+                                source_files, toolchain_components, distro_id, spec_metadata=None):
         """Generates the full SPDX document."""
         doc_spdx_id = "SPDXRef-DOCUMENT"
         creation_time = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -2109,6 +2355,17 @@ class SBOMGenerator:
                     "relationshipType": "CONTAINS"
                 })
 
+        # Prepare toolchain name to SPDXID map for relationships
+        tc_name_to_id = {}
+        if spec_metadata and toolchain_components:
+            for tc in toolchain_components:
+                pkg_name = tc.get("name")
+                pkg_version = tc.get("version")
+                if pkg_name and pkg_version:
+                    safe_name = re.sub(r'[^a-zA-Z0-9.-]', '-', pkg_name)
+                    safe_ver = re.sub(r'[^a-zA-Z0-9.-]', '-', pkg_version)
+                    tc_name_to_id[pkg_name.lower()] = f"SPDXRef-Package-{safe_name}-{safe_ver}"
+
         # Add Build Artifacts (RPMs)
         for rpm_file in rpm_files:
             rpm_path = os.path.join(build_dir, rpm_file)
@@ -2121,6 +2378,18 @@ class SBOMGenerator:
                     "relatedSpdxElement": spdx_pkg["SPDXID"],
                     "relationshipType": "DESCRIBES"
                 })
+
+                # Add BUILD_DEPENDENCY_OF relationships
+                if spec_metadata:
+                    build_reqs = spec_metadata.get("build_requires", [])
+                    for req in build_reqs:
+                        req_name = req.split()[0].lower()
+                        if req_name in tc_name_to_id:
+                            document["relationships"].append({
+                                "spdxElementId": tc_name_to_id[req_name],
+                                "relatedSpdxElement": spdx_pkg["SPDXID"],
+                                "relationshipType": "BUILD_DEPENDENCY_OF"
+                            })
 
         return document
 
@@ -2163,7 +2432,10 @@ class SBOMGenerator:
             package["supplier"] = f"Person: {packager}"
 
         # Checksums
-        rpm_hash = self.hash_file(rpm_path)
+        rpm_hash = pkg_data.get("sha256")
+        if not rpm_hash or rpm_hash == "(none)":
+            rpm_hash = self.hash_file(rpm_path)
+            
         if rpm_hash:
             package["checksums"] = [{
                 "algorithm": "SHA256",
@@ -2180,7 +2452,8 @@ class SBOMGenerator:
                 "referenceLocator": purl
             })
 
-        cpe = self.generate_cpe(name, version)
+        vendor = pkg_data.get("vendor")
+        cpe = self.generate_cpe(name, version, vendor=vendor)
         if cpe:
             external_refs.append({
                 "referenceCategory": "SECURITY",
