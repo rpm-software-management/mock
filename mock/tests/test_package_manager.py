@@ -1,6 +1,7 @@
 import os
 import tempfile
 import shutil
+from pathlib import Path
 
 import pytest
 from unittest import mock
@@ -111,6 +112,22 @@ class TestPackageManager:
         [fedora]
         baseurl = file://{}
         """.format(repo_directory)
+        mounts = self.get_user_bind_mounts_from_config(config)
+        assert len(mounts) == 1
+        assert mounts[0].srcpath == repo_directory
+        assert mounts[0].bindpath.startswith(self.workdir)
+        assert mounts[0].bindpath.endswith(repo_directory)
+
+    def test_urlencoded_file_path_name_in_baseurl(self):
+        repo_directory = os.path.join(self.workdir, 'repo@2')
+        os.mkdir(repo_directory)
+        config = """
+        [main]
+        something = 1
+
+        [fedora]
+        baseurl = {}
+        """.format(Path(repo_directory).as_uri())
         mounts = self.get_user_bind_mounts_from_config(config)
         assert len(mounts) == 1
         assert mounts[0].srcpath == repo_directory

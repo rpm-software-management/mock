@@ -8,6 +8,7 @@ import shutil
 import sys
 import time
 import re
+from urllib.parse import unquote
 from textwrap import dedent
 from configparser import ConfigParser
 
@@ -512,6 +513,7 @@ Error:      Neither dnf-utils nor yum-utils are installed. Dnf-utils or yum-util
                         continue
 
                     srcpath = self.expand_url_vars(srcpath)
+                    srcpath = unquote(srcpath)
 
                     if srcpath in tried:
                         continue
