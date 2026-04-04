@@ -109,7 +109,7 @@ _mock()
             _mock_root "${cfgdirs[@]}"
             return
             ;;
-        --configdir|--cwd|--resultdir|--rootdir)
+        --configdir|--cwd|--localrepo|--resultdir|--rootdir)
             _filedir -d
             return
             ;;
