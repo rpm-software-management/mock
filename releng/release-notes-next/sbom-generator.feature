@@ -7,3 +7,4 @@ and SPDX 2.3 formats, the plugin leverages a chroot-native analysis model to
 ensure high metadata accuracy for cross-distribution builds and compatibility 
 with modern security scanners, File Integrity Monitoring (FIM), and Supply Chain 
 forensic analysis.
+
