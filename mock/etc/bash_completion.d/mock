@@ -105,7 +105,7 @@ _mock()
             # argument required but no completions available
             return
             ;;
-        -r|--root|--chain)
+        -r|--root)
             _mock_root "${cfgdirs[@]}"
             return
             ;;
