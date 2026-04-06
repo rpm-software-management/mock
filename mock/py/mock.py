@@ -773,8 +773,14 @@ def main():
         # Enforce host-native repo architecture for bootstrap chroot (unless
         # bootstrap_forcearch=True, which should never be the case).  This
         # decision affects condPersonality() for DNF calls!
+        #
+        # Exception: sub-architecture variants (e.g. x86_64_v2) listed in
+        # oci_platform_map run natively on the host — keep the target's
+        # repo_arch so the bootstrap uses the correct sub-arch repos.
         host_arch = config_opts["host_arch"]
-        if config_opts["use_bootstrap_image"]:
+        target_arch = config_opts["target_arch"]
+        if config_opts["use_bootstrap_image"] \
+                and target_arch not in config_opts.get('oci_platform_map', {}):
             # with bootstrap image, bootstrap is always native
             bootstrap_buildroot_config['repo_arch'] = config_opts['repo_arch_map'].get(host_arch, host_arch)
         elif host_arch not in config_opts.get("legal_host_arches", []) \

@@ -429,6 +429,13 @@ def setup_default_config_opts():
         'i686': 'i386',
     }
 
+    # mapping from target_arch to OCI --platform string for podman pull
+    config_opts['oci_platform_map'] = {
+        'x86_64_v2': 'linux/amd64/v2',
+        'x86_64_v3': 'linux/amd64/v3',
+        'x86_64_v4': 'linux/amd64/v4',
+    }
+
     config_opts["recursion_limit"] = 5000
 
     config_opts["calculatedeps"] = None
