@@ -117,7 +117,12 @@ class Podman:
         """ pull the latest image, return True if successful """
         logger = getLog()
         logger.info("Pulling image: %s", self.image)
-        cmd = [self.podman_binary, "pull", self.image]
+        cmd = [self.podman_binary, "pull"]
+        target_arch = self.buildroot.config.get('target_arch', '')
+        oci_platform = self.buildroot.config.get('oci_platform_map', {}).get(target_arch)
+        if oci_platform:
+            cmd += ["--platform", oci_platform]
+        cmd.append(self.image)
 
         res = subprocess.run(cmd, env=self.buildroot.env,
                              stdout=subprocess.PIPE, stderr=subprocess.PIPE,
