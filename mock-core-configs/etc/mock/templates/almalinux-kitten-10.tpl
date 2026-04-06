@@ -9,7 +9,6 @@ config_opts['bootstrap_image'] = 'quay.io/almalinuxorg/almalinux:10-kitten'
 # deal with special handling for x86_64_v2 variant
 config_opts['mirrorlist_arch'] = "{% if repo_arch == 'x86_64_v2' %}?arch=x86_64_v2{% endif %}"
 config_opts['baseurl_arch'] = "{% if repo_arch == 'x86_64_v2' %}x86_64_v2{% else %}$basearch{% endif %}"
-config_opts['use_bootstrap_image'] = "{% if repo_arch == 'x86_64_v2' %}False{% else %}True{% endif %}"
 
 config_opts['dnf.conf'] = """
 [main]
