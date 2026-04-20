@@ -539,7 +539,6 @@ def setup_logging(config_path, config_opts, options):
         log.handlers[0].setLevel(logging.INFO)
     elif options.verbose == 2:
         log.handlers[0].setLevel(logging.DEBUG)
-        logging.getLogger("mockbuild.Root.build").propagate = 1
         logging.getLogger("mockbuild").propagate = 1
 
     # enable tracing if requested
