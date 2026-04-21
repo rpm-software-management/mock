@@ -30,6 +30,19 @@ def touch(fileName):
     open(fileName, 'a').close()
 
 
+def write_if_changed(filepath, content):
+    """Write content to file only if it differs from the current content,
+    preserving the file timestamp when unchanged."""
+    try:
+        with open(filepath, 'r', encoding="utf-8") as f:
+            if f.read() == content:
+                return
+    except FileNotFoundError:
+        pass
+    with open(filepath, 'w', encoding="utf-8") as f:
+        f.write(content)
+
+
 @traceLog()
 def rmtree(path, selinux=False, exclude=()):
     """Version of shutil.rmtree that ignores no-such-file-or-directory errors,

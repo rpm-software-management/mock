@@ -636,8 +636,7 @@ class Yum(_PackageManager):
         dnfconf_path = os.path.join('etc', 'dnf', 'dnf.conf')
         for conf_path in (yumconf_path, dnfconf_path):
             chroot_conf_path = self.buildroot.make_chroot_path(conf_path)
-            with open(chroot_conf_path, 'w+') as conf_file:
-                conf_file.write(config_content)
+            file_util.write_if_changed(chroot_conf_path, config_content)
             if os.path.exists(conf_path):
                 shutil.copystat(conf_path, chroot_conf_path)
 
@@ -704,8 +703,7 @@ class Dnf(_PackageManager):
         check_yum_config(config_content, self.buildroot.root_log)
         file_util.mkdirIfAbsent(self.buildroot.make_chroot_path('etc', 'dnf'))
         dnfconf_path = self.buildroot.make_chroot_path('etc', 'dnf', 'dnf.conf')
-        with open(dnfconf_path, 'w+') as dnfconf_file:
-            dnfconf_file.write(config_content)
+        file_util.write_if_changed(dnfconf_path, config_content)
         self.initialize_vars()
 
     def builddep(self, *pkgs, **kwargs):

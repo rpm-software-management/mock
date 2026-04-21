@@ -56,6 +56,53 @@ def chattr_works_or_skip(path: Path):
         pytest.skip(e.stderr.rstrip())
 
 
+class TestWriteIfChanged:
+    """Tests for file_util.write_if_changed"""
+
+    def test_creates_new_file(self, temp_dir):
+        """Should create the file when it does not exist."""
+        path = temp_dir / "new.conf"
+        file_util.write_if_changed(str(path), "new content")
+        assert path.read_text() == "new content"
+
+    def test_overwrites_when_content_differs(self, temp_dir):
+        """Should overwrite the file when content changes."""
+        path = temp_dir / "existing.conf"
+        path.write_text("old content")
+        file_util.write_if_changed(str(path), "new content")
+        assert path.read_text() == "new content"
+
+    def test_preserves_timestamp_when_unchanged(self, temp_dir):
+        """Should not rewrite the file when content is identical."""
+        path = temp_dir / "stable.conf"
+        path.write_text("same content")
+        mtime_before = path.stat().st_mtime_ns
+        file_util.write_if_changed(str(path), "same content")
+        mtime_after = path.stat().st_mtime_ns
+        assert mtime_before == mtime_after
+
+    def test_updates_timestamp_when_changed(self, temp_dir):
+        """Should update the file timestamp when content differs."""
+        path = temp_dir / "changing.conf"
+        path.write_text("version 1")
+        # Set mtime to the past so we can detect a change
+        old_time = path.stat().st_mtime_ns - 1_000_000_000
+        os.utime(str(path), ns=(old_time, old_time))
+        mtime_before = path.stat().st_mtime_ns
+        file_util.write_if_changed(str(path), "version 2")
+        mtime_after = path.stat().st_mtime_ns
+        assert mtime_after > mtime_before
+
+    def test_handles_empty_content(self, temp_dir):
+        """Should handle empty string content correctly."""
+        path = temp_dir / "empty.conf"
+        file_util.write_if_changed(str(path), "")
+        assert path.read_text() == ""
+        mtime_before = path.stat().st_mtime_ns
+        file_util.write_if_changed(str(path), "")
+        assert path.stat().st_mtime_ns == mtime_before
+
+
 class TestRmtree:
     """Integration-style tests for file_util.rmtree using real files and directories"""
 
