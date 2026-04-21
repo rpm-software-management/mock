@@ -17,7 +17,7 @@ import mockbuild.util
 
 # repoquery used
 repoquery_avail_opts = \
-    "--qf '%{name}-%{epoch}:%{version}-%{release}.%{arch} %{buildtime} %{size} %{repoid}' '*'"
+    "--qf '%{name}-%{epoch}:%{version}-%{release}.%{arch} %{buildtime} %{size} %{repoid}\\n' '*'"
 
 # set up logging, module options
 requires_api_version = "1.1"
