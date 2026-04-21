@@ -9,7 +9,9 @@ This plugin optionally dumps additional metadata files into the result dir:
 
 Format of `installed_pkgs.log` file is:
 
-    %{nevra} %{buildtime} %{size} %{pkgid} installed
+    %{nevra} %{buildtime} %{size} installed
+
+Note: The `%{pkgid}` field was removed from the output in Mock 6.8.
 
 ## Configuration
 
