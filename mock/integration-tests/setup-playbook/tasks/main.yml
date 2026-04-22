@@ -19,6 +19,7 @@
       - nosync.i686
       - podman
       - python3-behave
+      - python3-fedora-distro-aliases
       - python3-hamcrest
       - rpm-sign
       - subscription-manager
