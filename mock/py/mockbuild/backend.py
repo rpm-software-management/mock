@@ -635,7 +635,7 @@ class Commands(object):
         specFilename = os.path.basename(spec_path)
         dest = self.buildroot.make_chroot_path(self.buildroot.builddir, 'originals')
         dest_path = os.path.join(dest, specFilename)
-        shutil.copyfile(spec_path, dest_path)
+        shutil.copy2(spec_path, dest_path)
         os.chmod(dest_path, 0o644)
         return os.path.join(self.buildroot.builddir, 'originals', specFilename)
 
