@@ -107,6 +107,7 @@ def setup_default_config_opts():
     config_opts['bootstrap_image_ready'] = False
     config_opts['bootstrap_image_fallback'] = True
     config_opts['bootstrap_image_keep_getting'] = 120
+    config_opts['bootstrap_image_pull_timeout'] = 120
     config_opts['bootstrap_image_assert_digest'] = None
 
     config_opts['use_buildroot_image'] = False
@@ -115,6 +116,7 @@ def setup_default_config_opts():
     config_opts['buildroot_image_ready'] = False
     config_opts['buildroot_image_fallback'] = False
     config_opts['buildroot_image_keep_getting'] = 120
+    config_opts['buildroot_image_pull_timeout'] = 120
     config_opts['buildroot_image_assert_digest'] = None
 
     config_opts['internal_dev_setup'] = True

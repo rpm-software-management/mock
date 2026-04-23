@@ -117,6 +117,7 @@ class Buildroot(object):
         self.image_skip_pull = self.config[f"{image}_image_skip_pull"]
         self.image_assert_digest = self.config.get(f"{image}_image_assert_digest", None)
         self.image_keep_getting = self.config[f"{image}_image_keep_getting"]
+        self.image_pull_timeout = self.config[f"{image}_image_pull_timeout"]
 
         self.pkg_manager = None
         self.mounts = mounts.Mounts(self)
@@ -277,7 +278,8 @@ class Buildroot(object):
 
             with _fallback("Can't initialize from container image"):
                 if not self.image_skip_pull:
-                    podman.retry_image_pull(self.image_keep_getting)
+                    podman.retry_image_pull(self.image_keep_getting,
+                                            self.image_pull_timeout)
                 else:
                     podman.read_image_id()
                     getLog().info("Using local image %s (%s)",

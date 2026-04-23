@@ -120,6 +120,36 @@ class TestArchCheck:
 # Negative / boundary tests
 # ===================================================================
 
+class TestPullImageTimeout:
+    """pull_image() must handle timeout correctly."""
+
+    @patch("mockbuild.podman.subprocess.run")
+    def test_timeout_passed_to_subprocess(self, mock_run):
+        """timeout parameter is forwarded to subprocess.run."""
+        mock_run.return_value = MagicMock(returncode=0, stdout=b"sha256:abc")
+        br = _make_buildroot("x86_64")
+        pod = _make_podman(br)
+        assert pod.pull_image(timeout=60) is True
+        assert mock_run.call_args[1]["timeout"] == 60
+
+    @patch("mockbuild.podman.subprocess.run")
+    def test_timeout_expired_returns_false(self, mock_run):
+        """TimeoutExpired causes pull_image to return False."""
+        mock_run.side_effect = subprocess.TimeoutExpired(cmd="podman pull", timeout=60)
+        br = _make_buildroot("x86_64")
+        pod = _make_podman(br)
+        assert pod.pull_image(timeout=60) is False
+
+    @patch("mockbuild.podman.subprocess.run")
+    def test_no_timeout_by_default(self, mock_run):
+        """Without timeout argument, subprocess.run gets timeout=None."""
+        mock_run.return_value = MagicMock(returncode=0, stdout=b"sha256:abc")
+        br = _make_buildroot("x86_64")
+        pod = _make_podman(br)
+        pod.pull_image()
+        assert mock_run.call_args[1]["timeout"] is None
+
+
 class TestArchCheckErrorPaths:
     """Error handling in architecture check."""
 

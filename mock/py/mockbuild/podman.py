@@ -113,8 +113,8 @@ class Podman:
         getLog().info("Using container image: %s", image)
 
     @traceLog()
-    def pull_image(self):
-        """ pull the latest image, return True if successful """
+    def pull_image(self, timeout=None):
+        """Pull the latest image, return True if successful."""
         logger = getLog()
         logger.info("Pulling image: %s", self.image)
         cmd = [self.podman_binary, "pull"]
@@ -124,9 +124,15 @@ class Podman:
             cmd += ["--platform", oci_platform]
         cmd.append(self.image)
 
-        res = subprocess.run(cmd, env=self.buildroot.env,
-                             stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                             check=False)
+        try:
+            res = subprocess.run(cmd, env=self.buildroot.env,
+                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                 timeout=timeout, check=False)
+        except subprocess.TimeoutExpired:
+            logger.warning("Pulling image %s timed out after %s seconds",
+                           self.image, timeout)
+            return False
+
         if res.returncode != 0:
             logger.error("%s\n%s", res.stdout, res.stderr)
             return False
@@ -153,13 +159,13 @@ class Podman:
         subprocess.run(cmd, env=self.buildroot.env, stdout=subprocess.PIPE,
                        stderr=subprocess.PIPE, check=True)
 
-    def retry_image_pull(self, max_time):
-        """ Try pulling the image multiple times """
+    def retry_image_pull(self, max_time, timeout=None):
+        """Try pulling the image multiple times."""
         @backoff.on_predicate(backoff.expo, lambda x: not x,
                               max_time=max_time, jitter=backoff.full_jitter,
                               on_giveup=pull_fail_handler)
         def _keep_trying():
-            return self.pull_image()
+            return self.pull_image(timeout=timeout)
         _keep_trying()
 
     @contextmanager
