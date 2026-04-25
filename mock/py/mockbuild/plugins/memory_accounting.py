@@ -1,4 +1,4 @@
-from mockbuild.trace_decorator import getLog, traceLog
+from mockbuild.trace_decorator import getLog
 from mockbuild.util import get_machinectl_uuid, _safe_check_output
 
 import threading
@@ -10,13 +10,20 @@ requires_api_version = "1.1"
 ma_timer_thread = None
 ma_stop_event = threading.Event()
 
-@traceLog()
 def init(plugins, conf, buildroot):
     MemoryAccounting(plugins, conf, buildroot)
 
-@traceLog()
 def get_top_process_info(buildroot, scope_path):
-    """Finds the PID in the cgroup with the highest RSS."""
+    """Finds the process in the cgroup with the highest RSS.
+
+    Args:
+        buildroot: The buildroot object.
+        scope_path (str): Path to the cgroup scope directory.
+
+    Returns:
+        tuple[str, int]: A tuple containing the command line of the top process
+            and its RSS in bytes.
+    """
     procs_path = os.path.join(scope_path, "cgroup.procs")
     max_rss = 0
     top_cmdline = "unknown"
@@ -45,9 +52,6 @@ def get_top_process_info(buildroot, scope_path):
         getLog().error("MOCKMA: Error: %s", e)
     return top_cmdline, max_rss
 
-
-
-@traceLog()
 def ma_check_proc_mem(self, buildroot, interval):
     global ma_stop_event
     current_peak = 0
@@ -94,14 +98,12 @@ def ma_check_proc_mem(self, buildroot, interval):
             break
 
 
-
 class MemoryAccounting(object):
     # Global tracking variables
     max_memory_peak = 0
     top_rss = 0
     top_rss_cmd = ""
 
-    @traceLog()
     def _on_pre_build(self):
         global ma_timer_thread
         global ma_stop_event
@@ -122,7 +124,6 @@ class MemoryAccounting(object):
 
         getLog().debug("MOCKMA: Monitoring thread started via callback.")
 
-    @traceLog()
     def _on_post_build(self):
         global ma_stop_event
         ma_stop_event.set()
@@ -131,7 +132,6 @@ class MemoryAccounting(object):
             self.max_memory_peak / 1048576, self.top_rss / 1048576, self.top_rss_cmd
         )
 
-    @traceLog()
     def __init__(self, plugins, buildroot):
         self.buildroot = buildroot
         self.config = buildroot.config
