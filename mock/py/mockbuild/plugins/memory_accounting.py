@@ -23,7 +23,7 @@ def get_top_process_info(buildroot, scope_path):
 
     try:
         if not os.path.exists(procs_path):
-            return None, 0
+            return "unknown", 0
         with open(procs_path, 'r') as f:
             pids = f.read().split()
 
@@ -33,7 +33,7 @@ def get_top_process_info(buildroot, scope_path):
                     data = sm.read().split()
                     if not data: continue
                     # RSS in pages * 4096 bytes
-                    rss_bytes = int(data[1]) * 4096
+                    rss_bytes = int(data[1]) * os.sysconf('SC_PAGE_SIZE')
 
                 if rss_bytes > max_rss:
                     max_rss = rss_bytes
@@ -42,7 +42,7 @@ def get_top_process_info(buildroot, scope_path):
             except (FileNotFoundError, ProcessLookupError, IndexError):
                 continue
     except Exception as e:
-        getLog().error(f"MOCKMA: Error: {e}")
+        getLog().error("MOCKMA: Error: %s", e)
     return top_cmdline, max_rss
 
 
@@ -83,11 +83,11 @@ def ma_check_proc_mem(self, buildroot, interval):
 
             if f"{max_status}{pid_status}" != "CurrentCurrent":
                 getLog().debug(
-                    f"MOCKMA: {max_status} PEAK {self.max_memory_peak / 1048576:.2f} MiB | "
-                    f"MOCKMA: {pid_status} Top Process: RSS:{self.top_rss / 1048576:.2f} MiB [{self.top_rss_cmd}]"
+                    "MOCKMA: %s PEAK %.2f MiB | MOCKMA: %s Top Process: RSS:%.2f MiB [%s]",
+                    max_status, self.max_memory_peak / 1048576, pid_status, self.top_rss / 1048576, self.top_rss_cmd
                 )
         except (IOError, ValueError):
-            getLog().debug(f"MOCKMA: memory.peak missing {scope_dir}")
+            getLog().debug("MOCKMA: memory.peak missing %s", scope_dir)
             pass
 
         if ma_stop_event.wait(timeout=interval):
@@ -127,12 +127,12 @@ class MemoryAccounting(object):
         global ma_stop_event
         ma_stop_event.set()
         self.buildroot.build_log.info(
-            f"MOCKMA: Total Memory Peak {self.max_memory_peak / 1048576:.2f} MiB | "
-            f"Top process: RSS:{self.top_rss / 1048576:.2f} MiB [{self.top_rss_cmd}]"
+            "MOCKMA: Total Memory Peak %.2f MiB | Top process: RSS:%.2f MiB [%s]",
+            self.max_memory_peak / 1048576, self.top_rss / 1048576, self.top_rss_cmd
         )
 
     @traceLog()
-    def __init__(self, plugins, conf, buildroot):
+    def __init__(self, plugins, buildroot):
         self.buildroot = buildroot
         self.config = buildroot.config
 
