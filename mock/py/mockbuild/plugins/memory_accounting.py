@@ -1,31 +1,31 @@
-from mockbuild.trace_decorator import getLog
-from mockbuild.util import get_machinectl_uuid, _safe_check_output
+# License: GPL2 or later see COPYING
+"""
+Track memory usage during the build phase.
+Report maximum allocated memory in total and for the "biggest" process
+
+The plugin requires systemd-nspawn as build container runner
+"""
 
 import threading
 import time
 import os
+import json
+
+from mockbuild.trace_decorator import getLog
+from mockbuild.util import get_machinectl_uuid, _safe_check_output
 
 requires_api_version = "1.1"
-
+run_in_bootstrap = False
 
 def init(plugins, conf, buildroot):
-    MemoryAccounting(plugins, buildroot)
+    MemoryAccounting(plugins, conf, buildroot)
 
+class MemoryAccounting():
 
-class MemoryAccounting(object):
-    # Global tracking variables
-    max_memory_peak = 0
-    top_rss = 0
-    top_rss_cmd = ""
-
-    ma_timer_thread = None
-    ma_stop_event = threading.Event()
-
-    def get_top_process_info(self, buildroot, scope_path):
+    def get_top_process_info(self, scope_path):
         """Finds the process in the cgroup with the highest RSS.
 
         Args:
-            buildroot: The buildroot object.
             scope_path (str): Path to the cgroup scope directory.
 
         Returns:
@@ -34,7 +34,7 @@ class MemoryAccounting(object):
         """
         procs_path = os.path.join(scope_path, "cgroup.procs")
         max_rss = 0
-        top_cmdline = "unknown"
+        top_cmdline = ""
 
         try:
             if not os.path.exists(procs_path):
@@ -54,10 +54,14 @@ class MemoryAccounting(object):
                         max_rss = rss_bytes
                         with open(f"/proc/{pid}/cmdline", 'r') as cmd:
                             top_cmdline = cmd.read().replace('\0', ' ').strip()
+                        if not top_cmdline:
+                            top_cmdline = f"{pid}"
+
                 except (FileNotFoundError, ProcessLookupError, IndexError):
                     continue
         except Exception as e:
             getLog().error("MOCKMA: Error: %s", e)
+
         return top_cmdline, max_rss
 
     def ma_check_proc_mem(self, buildroot, interval):
@@ -66,9 +70,13 @@ class MemoryAccounting(object):
         # wait for nspawn to start
         time.sleep(5)
         machine_id = get_machinectl_uuid(buildroot.make_chroot_path())
+        if machine_id == None:
+            getLog().error("MOCKMA: Failed to get nspawn container machine_id")
+            return
+
         # The unit name depends on systemd version
         ustr = _safe_check_output(["/bin/machinectl", "show", "--property=Unit", f"{machine_id}"])
-        if (isinstance(ustr, bytes)):
+        if isinstance(ustr, bytes):
             ustr = ustr.decode("utf-8")
         machine_id_unit = ustr.rstrip().split('=')[1]
         scope_dir = f"/sys/fs/cgroup/machine.slice/{machine_id_unit}"
@@ -87,7 +95,7 @@ class MemoryAccounting(object):
                     max_status = "NEW"
                     self.max_memory_peak = current_peak
 
-                cmd, rss = self.get_top_process_info(buildroot, f"{scope_dir}/payload")
+                cmd, rss = self.get_top_process_info(f"{scope_dir}/payload")
                 if rss > self.top_rss:
                     pid_status = "NEW"
                     self.top_rss = rss
@@ -100,13 +108,9 @@ class MemoryAccounting(object):
                     )
             except (IOError, ValueError):
                 getLog().debug("MOCKMA: memory.peak missing %s", scope_dir)
-                pass
 
             if self.ma_stop_event.wait(timeout=interval):
                 break
-
-
-
 
     def _on_pre_build(self):
         # Inject nspawn args
@@ -117,24 +121,38 @@ class MemoryAccounting(object):
             self.config['nspawn_args'] = nspawn_args
 
         # Start thread
-        plugin_conf = self.config.get('plugin_conf', {}).get('memory_accounting_opts', {})
-        interval = plugin_conf.get('interval', 2)
+        interval = self.memory_accounting_opts.get('interval', 2)
         self.ma_stop_event.clear()
-        self.ma_timer_thread = threading.Thread(target=self.ma_check_proc_mem, args=(self.buildroot, interval))
+        self.ma_timer_thread = threading.Thread(target=self.ma_check_proc_mem, args=(self.buildroot, interval), daemon=True)
         self.ma_timer_thread.start()
 
         getLog().debug("MOCKMA: Monitoring thread started via callback.")
 
     def _on_post_build(self):
         self.ma_stop_event.set()
-        self.buildroot.build_log.info(
+        self.ma_timer_thread.join()
+        getLog().info(
             "MOCKMA: Total Memory Peak %.2f MiB | Top process: RSS:%.2f MiB [%s]",
             self.max_memory_peak / 1048576, self.top_rss / 1048576, self.top_rss_cmd
         )
+        out_file = self.buildroot.resultdir + '/memory_accounting.json'
+        with open(out_file, 'w') as f:
+            json.dump({"total_max_memory" : self.max_memory_peak, "top_process_memory" : self.top_rss, "top_process_cmdline" : self.top_rss_cmd}, f)
 
-    def __init__(self, plugins, buildroot):
+    def __init__(self, plugins, conf, buildroot):
+        self.max_memory_peak = 0
+        self.top_rss = 0
+        self.top_rss_cmd = ""
+        self.ma_timer_thread = None
+        self.ma_stop_event = threading.Event()
         self.buildroot = buildroot
+        self.memory_accounting_opts = conf
         self.config = buildroot.config
 
+        if self.config.get('use_nspawn', True):
+            getLog().warning("MOCKMA: build is not using nspawn. Statistics will not be available")
+            return
+
+        getLog().info("MOCKMA: Starting memory accounting")
         plugins.add_hook("prebuild", self._on_pre_build)
         plugins.add_hook("postbuild", self._on_post_build)

@@ -214,6 +214,7 @@ See a [separate document](Mock-Core-Configs).
 * [export_buildroot_image](Plugin-Export-Buildroot-Image) - export prepared build chroot as an OCI image
 * [hw_info](Plugin-HwInfo) - prints HW information of builder
 * [lvm_root](Plugin-LvmRoot) - caching buildroots using LVM
+* [memory_accounting](Plugin-MemoryAccounting) - collect memory statistics during build
 * [mount](Plugin-Mount) - allows you to mount directories into chroot
 * [overlayfs](Plugin-Overlayfs) - plugin implementing snapshot functionality (similary to lvm_root)
 * [package_state](Plugin-PackageState) - dumps list of available and installed packages
