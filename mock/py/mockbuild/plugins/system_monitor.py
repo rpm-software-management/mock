@@ -121,7 +121,7 @@ class SystemMonitor():
             self.config['nspawn_args'] = nspawn_args
 
         # Start thread
-        interval = self.memory_accounting_opts.get('interval', 2)
+        interval = self.system_monitor_opts.get('interval', 2)
         self.sysmon_stop_event.clear()
         self.sysmon_timer_thread = threading.Thread(target=self.sysmon_thread, args=(self.buildroot, interval), daemon=True)
         self.sysmon_timer_thread.start()
@@ -146,7 +146,7 @@ class SystemMonitor():
         self.sysmon_timer_thread = None
         self.sysmon_stop_event = threading.Event()
         self.buildroot = buildroot
-        self.memory_accounting_opts = conf
+        self.system_monitor_opts = conf
         self.config = buildroot.config
 
         if self.config.get('use_nspawn', True):
