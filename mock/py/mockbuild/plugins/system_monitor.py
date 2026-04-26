@@ -70,7 +70,7 @@ class SystemMonitor():
         # wait for nspawn to start
         time.sleep(5)
         machine_id = get_machinectl_uuid(buildroot.make_chroot_path())
-        if machine_id == None:
+        if machine_id is None:
             getLog().error("SYSMON: Failed to get nspawn container machine_id")
             return
 

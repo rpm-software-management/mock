@@ -1,1 +1,1 @@
-New memory_accounting plugin for collecting memory statistics in the build phase
+New system_memory plugin for collecting various statistics in the build phase
