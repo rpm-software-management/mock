@@ -214,7 +214,6 @@ See a [separate document](Mock-Core-Configs).
 * [export_buildroot_image](Plugin-Export-Buildroot-Image) - export prepared build chroot as an OCI image
 * [hw_info](Plugin-HwInfo) - prints HW information of builder
 * [lvm_root](Plugin-LvmRoot) - caching buildroots using LVM
-* [memory_accounting](Plugin-MemoryAccounting) - collect memory statistics during build
 * [mount](Plugin-Mount) - allows you to mount directories into chroot
 * [overlayfs](Plugin-Overlayfs) - plugin implementing snapshot functionality (similary to lvm_root)
 * [package_state](Plugin-PackageState) - dumps list of available and installed packages
@@ -226,6 +225,7 @@ See a [separate document](Mock-Core-Configs).
 * [selinux](Plugin-SELinux) - on SELinux enabled box, this plugin will pretend, that SELinux is disabled in build environment
 * [showrc](Plugin-Showrc) - Log the content of `rpm --showrc` for capturing all defined macros
 * [sign](Plugin-Sign) - call command on the produced rpm
+* [system_monitor](Plugin-SystemMonitor) - collect system statistics during build
 * [tmpfs](Plugin-Tmpfs) - mount buildroot directory as tmpfs
 * [unbreq](Plugin-Unbreq) - detector of unused `BuildRequires`
 * [yum_cache](Plugin-YumCache) - mount `/var/cache/{dnf,yum}` of your host machine to chroot

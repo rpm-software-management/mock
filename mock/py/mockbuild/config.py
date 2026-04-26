@@ -33,7 +33,7 @@ PLUGIN_LIST = ['tmpfs', 'root_cache', 'yum_cache', 'mount', 'bind_mount',
                'lvm_root', 'compress_logs', 'sign', 'pm_request',
                'hw_info', 'procenv', 'showrc', 'rpkg_preprocessor',
                'rpmautospec', 'buildroot_lock', 'export_buildroot_image',
-               'unbreq', 'expand_spec','memory_accounting']
+               'unbreq', 'expand_spec','system_monitor']
 
 def nspawn_supported():
     """Detect some situations where the systemd-nspawn chroot code won't work"""
@@ -264,7 +264,7 @@ def setup_default_config_opts():
         'expand_spec_opts': {
             'rpmspec_opts': [],
         },
-        'memory_accounting_enable': False,
+        'system_monitor_enable': False,
     }
 
     config_opts['environment'] = {
