@@ -81,6 +81,7 @@ personality_defs = {
 
 USE_NSPAWN = False
 USE_NSPAWN_SECCOMP = False
+USE_NSPAWN_HOST_DEV = False
 
 _NSPAWN_HELP_OUTPUT = None
 
@@ -659,8 +660,10 @@ def setup_operations_timeout(config_opts):
 def set_use_nspawn(value, config_opts):
     global USE_NSPAWN
     global USE_NSPAWN_SECCOMP
+    global USE_NSPAWN_HOST_DEV
     USE_NSPAWN = value
     USE_NSPAWN_SECCOMP = config_opts["seccomp"]
+    USE_NSPAWN_HOST_DEV = config_opts.get("nspawn_host_dev", False)
 
 
 class BindMountedFile(str):
@@ -792,6 +795,14 @@ def _prepare_nspawn_command(chrootPath, user, cmd, nspawn_args=None, env=None,
     # requirement that other people probably depend on.
     if isinstance(cmd, str):
         cmd = ['/bin/sh', '-c', cmd]
+
+    if USE_NSPAWN_HOST_DEV:
+        # Remount /dev as devtmpfs so dynamically-created device nodes (such as
+        # loop partition devices /dev/loop0p1) are visible inside the container.
+        # Submounts like /dev/pts and /dev/shm are preserved by the kernel.
+        cmd = ['/bin/sh', '-c',
+               'mount -t devtmpfs devtmpfs /dev 2>/dev/null; exec "$@"',
+               '--'] + cmd
 
     return nspawn_argv + cmd
 

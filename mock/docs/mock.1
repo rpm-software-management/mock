@@ -360,6 +360,14 @@ chroot() call.  The \fInspawn\fR  method utilizes systemd-nspawn(1) and runs the
 commands inside container.  The \fIauto\fR tries to use \fInspawn\fR, and falls
 back to \fIsimple\fR if system-nspawn can not be used (e.g. if mock is run in
 container).  The default is \fIauto\fR.
+.IP
+When using \fInspawn\fR isolation, dynamically\-created loop partition device
+nodes (e.g. /dev/loop0p1) are not visible inside the container by default.
+If your build requires partitioning loop\-backed block devices (e.g. kiwi or
+osbuild image builds), set \fBconfig_opts['nspawn_host_dev'] = True\fR in your
+configuration.  This remounts /dev as devtmpfs inside the container so that
+kernel\-created device nodes appear automatically, and adds the CAP_SYS_ADMIN
+capability with a relaxed device cgroup policy.
 .TP
 \fB\-\-localrepo\fR=\fIREPO\fR\fR
 Set the path to put the results/repo in (works only in \fB\-\-chain\fR mode).
