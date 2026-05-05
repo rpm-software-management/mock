@@ -33,7 +33,7 @@ PLUGIN_LIST = ['tmpfs', 'root_cache', 'yum_cache', 'mount', 'bind_mount',
                'lvm_root', 'compress_logs', 'sign', 'pm_request',
                'hw_info', 'procenv', 'showrc', 'rpkg_preprocessor',
                'rpmautospec', 'buildroot_lock', 'export_buildroot_image',
-               'unbreq', 'expand_spec']
+               'unbreq', 'expand_spec', 'sbom_generator']
 
 def nspawn_supported():
     """Detect some situations where the systemd-nspawn chroot code won't work"""
@@ -263,6 +263,16 @@ def setup_default_config_opts():
         'expand_spec_enable': False,
         'expand_spec_opts': {
             'rpmspec_opts': [],
+        },
+        'sbom_generator_enable': False,
+        'sbom_generator_opts': {
+            'generate_sbom': True,
+            'include_file_components': True,
+            'include_file_dependencies': False,
+            'include_debug_files': False,
+            'include_man_pages': True,
+            'include_source_dependencies': True,
+            'include_toolchain_dependencies': False,
         },
     }
 
