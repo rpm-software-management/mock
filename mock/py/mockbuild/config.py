@@ -98,6 +98,7 @@ def setup_default_config_opts():
     # FIXME disable as default because of https://github.com/rpm-software-management/mock/issues/1641
     # if check_nspawn_has_suppress_sync_option():
     #    config_opts['nspawn_args'] += ['--suppress-sync=yes']
+    config_opts['nspawn_host_dev'] = False
     config_opts['use_container_host_hostname'] = True
 
     config_opts['use_bootstrap'] = True
