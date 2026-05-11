@@ -387,6 +387,7 @@ def setup_default_config_opts():
         "makecache": ["--allowerasing"],
         "search": ["--allowerasing"],
         "info": ["--allowerasing"],
+        "download": ["--allowerasing"],
     }
 
     config_opts['microdnf_command'] = '/usr/bin/microdnf'
