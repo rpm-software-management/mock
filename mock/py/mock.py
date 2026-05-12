@@ -675,20 +675,6 @@ def main():
     # initial sanity check for correct invocation method
     rootcheck()
 
-    # drop unprivileged to parse args, etc.
-    #   uidManager saves current real uid/gid which are unprivileged (callers)
-    #   due to suid helper, our current effective uid is 0
-    #   also supports being run by sudo
-    #
-    #   setuid wrapper has real uid = unpriv,  effective uid = 0
-    #   sudo sets real/effective = 0, and sets env vars
-    #   setuid wrapper clears environment, so there wont be any conflict between these two
-    uidManager = mockbuild.uid.setup_uid_manager()
-
-    # go unpriv only when root to make --help etc work for non-mock users
-    if os.geteuid() == 0:
-        uidManager.dropPrivsTemp()
-
     (options, args) = command_parse()
     if options.printrootpath or options.list_snapshots:
         options.verbose = 0
@@ -704,8 +690,19 @@ def main():
     if options.hermetic_build:
         options.chroot = "hermetic-build"
 
+    # Setup uidManager for privilege handling.  At this point:
+    #   - setuid wrapper: real uid = unpriv, effective uid = 0
+    #   - sudo: real/effective = 0, with env vars identifying the caller
+    # Load config unprivileged, then reload uidManager with the configured
+    # chrootuid/chrootgid so that subsequent privilege dropping uses the
+    # chroot identity instead of the calling user's.
+    uidManager = mockbuild.uid.setup_uid_manager()
     config_opts = uidManager.run_in_subprocess_without_privileges(
             config.load_config, config_path, options.chroot)
+
+    uidManager = mockbuild.uid.reload_uidmanager(uidManager, config_opts)
+    if os.geteuid() == 0:
+        uidManager.dropPrivsTemp()
 
     # cmdline options override config options
     config.set_config_opts_per_cmdline(config_opts, options, args)
