@@ -41,6 +41,14 @@ def setup_uid_manager():
     uidManager = UidManager(unprivUid, unprivGid)
     return uidManager
 
+
+def reload_uidmanager(uidmanager, config_opts):
+    """Re-create UidManager with chrootuid/chrootgid from config."""
+    unpriv_uid = config_opts["chrootuid"]
+    unpriv_gid = config_opts.get("chrootgid", uidmanager.unprivGid)
+    return UidManager(unpriv_uid, unpriv_gid)
+
+
 class UidManager(object):
     @traceLog()
     def __init__(self, unprivUid=-1, unprivGid=-1):
