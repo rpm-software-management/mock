@@ -61,6 +61,16 @@ Releases use **Tito** (git-based release tool):
 
 Version is defined in `mock/mock.spec`. At install time, the Makefile substitutes `__VERSION__`, `SYSCONFDIR`, `PYTHONDIR`, etc. in source files via `install-exec-hook`.
 
+[Packit](https://packit.dev) automatically builds RPMs in
+[Copr](https://copr.fedorainfracloud.org) for every pull request.  You can
+install the built RPMs from the Copr repository linked in the PR's check results
+to test changes before merging.  For example:
+
+```bash
+dnf copr enable packit/rpm-software-management-mock-<PR_NUMBER>
+dnf upgrade mock mock-core-configs
+```
+
 ## Testing
 
 **Unit tests** (pytest):
@@ -82,11 +92,22 @@ Coverage enforcement: 100% coverage required for `mock/py/mockbuild/plugins/rpma
 
 **Integration tests** (shell scripts, require mock installed): `cd mock && make check`
 
-**BDD tests** (behave, in `behave/`): require an isolated/disposable machine — they can destroy your system.
+**BDD tests** (behave, in `behave/`): run `behave` in the `behave/` directory.
+
+Both integration and BDD tests can destroy your system — run them only in an isolated/disposable environment.
+
+For every non-trivial pull request, a Mock maintenance team member should post a
+`/packit test` comment on the PR to trigger [Testing Farm](https://docs.testing-farm.io)
+tests.  Reviewers: please remind the team if the PR looks non-trivial and the
+tests haven't been triggered yet.
 
 ## Linting
 
-CI runs `ruff` and `pylint` via `vcs-diff-lint-action` on diffs against main. Configs:
+CI runs `ruff` and `pylint` via `vcs-diff-lint-action` on diffs against main.
+You can also run linting locally before committing — install the `vcs-diff-lint`
+package along with the corresponding linters (`ruff`, `pylint`) and run
+`vcs-diff-lint` in the repo.  Configs:
+
 * Pylint: `mock/pylintrc`, `behave/pylintrc`
 * Flake8: `mock/setup.cfg` (max line length 120, google import order)
 
@@ -112,4 +133,6 @@ Key directories:
 
 ## Release Notes
 
-Uses Towncrier. Add fragments to `releng/release-notes-next/` with types: `breaking`, `feature`, `bugfix`, `config`.
+Uses Towncrier.  Add fragments to `releng/release-notes-next/` with types:
+`breaking`, `feature`, `bugfix`, `config`.  See
+[Release-Notes-New-Entry](docs/Release-Notes-New-Entry) for details.
