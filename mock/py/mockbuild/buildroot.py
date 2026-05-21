@@ -837,12 +837,16 @@ class Buildroot(object):
     def _setup_nspawn_btrfs_device(self):
         if not util.USE_NSPAWN or self.is_bootstrap:
             return
+        if self.config['nspawn_host_dev']:
+            return
         if os.path.exists('/dev/btrfs-control'):
             self.config['nspawn_args'].append('--bind=/dev/btrfs-control')
 
     @traceLog()
     def _setup_nspawn_devicemapper_device(self):
         if not util.USE_NSPAWN or self.is_bootstrap:
+            return
+        if self.config['nspawn_host_dev']:
             return
         if os.path.exists('/dev/mapper/control'):
             self.config['nspawn_args'].append('--bind=/dev/mapper/control')
@@ -851,12 +855,21 @@ class Buildroot(object):
     def _setup_nspawn_fuse_device(self):
         if not util.USE_NSPAWN or self.is_bootstrap:
             return
+        if self.config['nspawn_host_dev']:
+            return
         if os.path.exists('/dev/fuse'):
             self.config['nspawn_args'].append('--bind=/dev/fuse')
 
     @traceLog()
     def _setup_nspawn_loop_devices(self):
         if not util.USE_NSPAWN or self.is_bootstrap:
+            return
+
+        if self.config['nspawn_host_dev']:
+            self.config['nspawn_args'].extend([
+                '--capability=cap_sys_admin',
+                '--property=DevicePolicy=auto',
+            ])
             return
 
         self.config['nspawn_args'].append('--bind=/dev/loop-control')
