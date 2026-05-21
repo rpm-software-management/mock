@@ -193,18 +193,41 @@ class Commands(object):
 
         return spec_path
 
+    def _get_update_exclude_opts(self):
+        """
+        When update_before_build is disabled, return --exclude options for all
+        installed packages so that builddep/install won't upgrade them.
+        Works around https://github.com/rpm-software-management/dnf5/issues/1747
+        """
+        if self.config.get('update_before_build', True):
+            return []
+
+        if self.buildroot.pkg_manager.name != "dnf5":
+            return []
+
+        command = [self.config['rpm_command'], "-qa", "--queryformat", "%{NAME}\\n",
+                   "--root", self.buildroot.make_chroot_path()]
+        out, _ = self.buildroot.doOutChroot(command, returnOutput=True,
+                                            printOutput=False, shell=False)
+        pkg_names = set(filter(None, out.strip().splitlines()))
+        if not pkg_names:
+            return []
+        return ['--exclude=' + ','.join(sorted(pkg_names))]
+
     @traceLog()
     def installSrpmDeps(self, *srpms):
         """Figure out deps from srpm. Call package manager to install them"""
         try:
             self.uid_manager.becomeUser(0, 0)
 
+            exclude_opts = self._get_update_exclude_opts()
+
             deps = self.getPreconfiguredDeps(srpms)
             if deps:
-                self.buildroot.pkg_manager.install(*deps, check=True)
+                self.buildroot.pkg_manager.install(*exclude_opts, *deps, check=True)
 
             # install actual build dependencies
-            self.buildroot.pkg_manager.builddep(*srpms, check=True)
+            self.buildroot.pkg_manager.builddep(*exclude_opts, *srpms, check=True)
         finally:
             self.uid_manager.restorePrivs()
 
