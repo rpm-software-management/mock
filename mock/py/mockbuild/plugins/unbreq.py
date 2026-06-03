@@ -284,6 +284,8 @@ class Unbreq:
                     "unbreq plugin: BuildRequires '%s' is needed because file %s was accessed",
                     br, path
                 )
+            elif not providers:
+                getLog().info("unbreq plugin: rich dependency '%s' is not installed", br)
             else:
                 candidates_providers.append((br, providers))
 
