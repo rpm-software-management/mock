@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE policyconfig PUBLIC
+ "-//freedesktop//DTD PolicyKit Policy Configuration 1.0//EN"
+ "http://www.freedesktop.org/standards/PolicyKit/1.0/policyconfig.dtd">
+<policyconfig>
+  <vendor>Mock</vendor>
+  <vendor_url>https://github.com/rpm-software-management/mock/</vendor_url>
+
+  <action id="org.rpm.mock.pkexec.run">
+    <description>Execute mock command</description>
+    <message>Authentication is required to run mock</message>
+    <defaults>
+        <allow_any>auth_admin</allow_any>
+        <allow_inactive>auth_admin</allow_inactive>
+        <allow_active>auth_admin</allow_active>
+    </defaults>
+    <annotate key="org.freedesktop.policykit.exec.path">/usr/libexec/mock/mock</annotate>
+    <annotate key="org.freedesktop.policykit.exec.allow_gui">false</annotate>
+    <annotate key="org.freedesktop.policykit.exec.keep_env">COLUMNS,SSH_AUTH_SOCK,http_proxy,ftp_proxy,https_proxy,no_proxy,MOCK_TRACE_LOG</annotate>
+  </action>
+</policyconfig>

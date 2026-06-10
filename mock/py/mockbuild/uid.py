@@ -38,6 +38,13 @@ def setup_uid_manager():
         secondary_groups = [g.gr_gid for g in grp.getgrall() if unprivName in g.gr_mem]
         os.setgroups([mockgid] + secondary_groups)
 
+    # pkexec
+    if os.environ.get("PKEXEC_UID") is not None:
+        unprivUid = int(os.environ['PKEXEC_UID'])
+        unprivName = pwd.getpwuid(unprivUid).pw_name
+        secondary_groups = [g.gr_gid for g in grp.getgrall() if unprivName in g.gr_mem]
+        os.setgroups([mockgid] + secondary_groups)
+
     uidManager = UidManager(unprivUid, unprivGid)
     return uidManager
 

@@ -1,0 +1,6 @@
+polkit.addRule(function(action, subject) {
+	if (action.id == "org.rpm.mock.pkexec.run" &&
+		subject.isInGroup("mock")) {
+			return polkit.Result.YES;
+	}
+});

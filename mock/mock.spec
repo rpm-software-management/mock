@@ -1,5 +1,6 @@
 %bcond_with lint
 %bcond_without tests
+%bcond_with polkit
 
 # Modern distributions (using RPM v4.20+; for example, Fedora 42+) do not
 # require the %%pre scriptlet for creating users/groups because the sysusers
@@ -31,12 +32,18 @@ URL: https://github.com/rpm-software-management/mock/
 BuildArch: noarch
 Requires: tar
 Requires: pigz
+%if %{without polkit}
 %if 0%{?mageia}
 Requires: usermode-consoleonly
 %else
 Requires: usermode
 %endif
+%endif
 Requires: createrepo_c
+
+%if %{with polkit}
+Requires: polkit
+%endif
 
 # We know that the current version of mock isn't compatible with older variants,
 # and we want to enforce automatic upgrades.
@@ -207,16 +214,29 @@ install mockchain %{buildroot}%{_bindir}/mockchain
 install py/mock-hermetic-repo.py %{buildroot}%{_bindir}/mock-hermetic-repo
 install py/mock-parse-buildlog.py %{buildroot}%{_bindir}/mock-parse-buildlog
 install py/mock.py %{buildroot}%{_libexecdir}/mock/mock
+%if %{with polkit}
+install etc/polkit/mock-pkexec.sh %{buildroot}%{_bindir}/mock
+%else
 ln -s consolehelper %{buildroot}%{_bindir}/mock
- 
+%endif
+
 install -d %{buildroot}%{_sysconfdir}/pam.d
 cp -a etc/pam/* %{buildroot}%{_sysconfdir}/pam.d/
 
 install -d %{buildroot}%{_sysconfdir}/mock
 cp -a etc/mock/* %{buildroot}%{_sysconfdir}/mock/
 
+%if %{without polkit}
 install -d %{buildroot}%{_sysconfdir}/security/console.apps/
 cp -a etc/consolehelper/mock %{buildroot}%{_sysconfdir}/security/console.apps/%{name}
+%endif
+
+%if %{with polkit}
+install -d %{buildroot}%{_datadir}/polkit-1/actions
+install -d %{buildroot}%{_datadir}/polkit-1/rules.d
+cp -a etc/polkit/org.rpm.mock.policy %{buildroot}%{_datadir}/polkit-1/actions/org.rpm.mock.policy
+cp -a etc/polkit/org.rpm.mock.rules %{buildroot}%{_datadir}/polkit-1/rules.d/org.rpm.mock.rules
+%endif
 
 install -d %{buildroot}%{_datadir}/bash-completion/completions/
 cp -a etc/bash_completion.d/* %{buildroot}%{_datadir}/bash-completion/completions/
@@ -275,6 +295,11 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 %{_datadir}/bash-completion/completions/mock
 %{_datadir}/bash-completion/completions/mock-parse-buildlog
 
+%if %{with polkit}
+%attr(0644,root,root) %{_datadir}/polkit-1/actions/org.rpm.mock.policy
+%attr(0644,root,root) %{_datadir}/polkit-1/rules.d/org.rpm.mock.rules
+%endif
+
 # executables
 %{_bindir}/mock
 %{_bindir}/mockchain
@@ -295,7 +320,9 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 %config(noreplace) %{_sysconfdir}/%{name}/*.ini
 %config(noreplace) %{_sysconfdir}/%{name}/hermetic-build.cfg
 %config(noreplace) %{_sysconfdir}/pam.d/%{name}
+%if %{without polkit}
 %config(noreplace) %{_sysconfdir}/security/console.apps/%{name}
+%endif
 
 # directory for personal gpg keys
 %dir %{_sysconfdir}/pki/mock
@@ -821,7 +848,7 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 - load secondary groups [RHBZ#1264005]
 - pass --allowerasing by default to DNF [GH#251]
 - make include() functional for --chain [GH#263]
-- Removing buildstderr from log - configurable via 
+- Removing buildstderr from log - configurable via
   _mock_stderr_line_prefix (sisi.chlupova@gmail.com)
 - Fixup: Use rpm -qa --root instead of running rpm -qa in chroot
   (miro@hroncok.cz)
