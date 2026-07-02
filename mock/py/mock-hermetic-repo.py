@@ -27,7 +27,7 @@ log = logging.getLogger(__name__)
 
 
 def request_with_retry(retries=5, backoff_factor=0.3,
-                       status_forcelist=(500, 502, 504, 408, 429), session=None):
+                       status_forcelist=(500, 502, 503, 504, 408, 429), session=None):
     """
     Wrapper for requests Session with default retries
 
