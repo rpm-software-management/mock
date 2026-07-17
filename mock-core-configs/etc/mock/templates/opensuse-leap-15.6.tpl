@@ -49,8 +49,8 @@ user_agent={{ user_agent }}
 
 [opensuse-leap-oss]
 name=openSUSE Leap $releasever - {{ repo_arch }} - OSS
-baseurl=https://download.opensuse.org/distribution/leap/$releasever/repo/oss/
-#metalink=https://download.opensuse.org/distribution/leap/$releasever/repo/oss/repodata/repomd.xml.metalink
+baseurl=https://cdn.opensuse.org/distribution/leap/$releasever/repo/oss/
+#metalink=https://cdn.opensuse.org/distribution/leap/$releasever/repo/oss/repodata/repomd.xml.metalink
 enabled=1
 gpgkey=file:///usr/share/distribution-gpg-keys/opensuse/RPM-GPG-KEY-openSUSE-2022
         file:///usr/share/distribution-gpg-keys/opensuse/RPM-GPG-KEY-openSUSE-Backports-2023
@@ -60,24 +60,24 @@ gpgcheck=1
 
 [opensuse-leap-oss-update]
 name=openSUSE Leap $releasever - {{ repo_arch }} - OSS - Updates
-baseurl=https://download.opensuse.org/update/leap/$releasever/oss/
-#metalink=https://download.opensuse.org/update/leap/$releasever/oss/repodata/repomd.xml.metalink
+baseurl=https://cdn.opensuse.org/update/leap/$releasever/oss/
+#metalink=https://cdn.opensuse.org/update/leap/$releasever/oss/repodata/repomd.xml.metalink
 enabled=1
 gpgkey=file:///usr/share/distribution-gpg-keys/opensuse/RPM-GPG-KEY-openSUSE-2022
 gpgcheck=1
 
 [opensuse-leap-sle-update]
 name=openSUSE Leap $releasever - {{ repo_arch }} - Updates from SUSE Linux Enterprise
-baseurl=https://download.opensuse.org/update/leap/$releasever/sle/
-#metalink=https://download.opensuse.org/update/leap/$releasever/sle/repodata/repomd.xml.metalink
+baseurl=https://cdn.opensuse.org/update/leap/$releasever/sle/
+#metalink=https://cdn.opensuse.org/update/leap/$releasever/sle/repodata/repomd.xml.metalink
 enabled=1
 gpgkey=file:///usr/share/distribution-gpg-keys/suse/RPM-GPG-KEY-SuSE-SLE-Main-2023
 gpgcheck=1
 
 [opensuse-leap-sle-backports-update]
 name=openSUSE Leap $releasever - {{ repo_arch }} - Updates from Backports for SUSE Linux Enterprise
-baseurl=https://download.opensuse.org/update/leap/$releasever/backports/
-#metalink=https://download.opensuse.org/update/leap/$releasever/backports/repodata/repomd.xml.metalink
+baseurl=https://cdn.opensuse.org/update/leap/$releasever/backports/
+#metalink=https://cdn.opensuse.org/update/leap/$releasever/backports/repodata/repomd.xml.metalink
 enabled=1
 gpgkey=file:///usr/share/distribution-gpg-keys/opensuse/RPM-GPG-KEY-openSUSE-Backports-2023
 gpgcheck=1

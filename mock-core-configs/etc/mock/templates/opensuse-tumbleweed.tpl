@@ -48,20 +48,20 @@ user_agent={{ user_agent }}
 [opensuse-tumbleweed-oss]
 name=openSUSE Tumbleweed - {{ repo_arch }} - OSS
 {% if repo_arch in ['x86_64'] %}
-baseurl=https://download.opensuse.org/tumbleweed/repo/oss/
-#metalink=https://download.opensuse.org/tumbleweed/repo/oss/repodata/repomd.xml.metalink
+baseurl=https://cdn.opensuse.org/tumbleweed/repo/oss/
+#metalink=https://cdn.opensuse.org/tumbleweed/repo/oss/repodata/repomd.xml.metalink
 {% elif repo_arch in ['ppc64le', 'ppc64'] %}
-baseurl=https://download.opensuse.org/ports/ppc/tumbleweed/repo/oss/
-#metalink=https://download.opensuse.org/ports/ppc/tumbleweed/repo/oss/repodata/repomd.xml.metalink
+baseurl=https://cdn.opensuse.org/ports/ppc/tumbleweed/repo/oss/
+#metalink=https://cdn.opensuse.org/ports/ppc/tumbleweed/repo/oss/repodata/repomd.xml.metalink
 {% elif repo_arch in ['aarch64'] %}
-baseurl=https://download.opensuse.org/ports/aarch64/tumbleweed/repo/oss/
-#metalink=https://download.opensuse.org/ports/aarch64/tumbleweed/repo/oss/repodata/repomd.xml.metalink
+baseurl=https://cdn.opensuse.org/ports/aarch64/tumbleweed/repo/oss/
+#metalink=https://cdn.opensuse.org/ports/aarch64/tumbleweed/repo/oss/repodata/repomd.xml.metalink
 {% elif repo_arch in ['i586'] %}
-baseurl=https://download.opensuse.org/ports/i586/tumbleweed/repo/oss/
-#metalink=https://download.opensuse.org/ports/i586/tumbleweed/repo/oss/repodata/repomd.xml.metalink
+baseurl=https://cdn.opensuse.org/ports/i586/tumbleweed/repo/oss/
+#metalink=https://cdn.opensuse.org/ports/i586/tumbleweed/repo/oss/repodata/repomd.xml.metalink
 {% elif repo_arch in ['s390x'] %}
-baseurl=https://download.opensuse.org/ports/zsystems/tumbleweed/repo/oss/
-#metalink=https://download.opensuse.org/ports/zsystems/tumbleweed/repo/oss/repodata/repomd.xml.metalink
+baseurl=https://cdn.opensuse.org/ports/zsystems/tumbleweed/repo/oss/
+#metalink=https://cdn.opensuse.org/ports/zsystems/tumbleweed/repo/oss/repodata/repomd.xml.metalink
 {% endif %}
 gpgkey=file:///usr/share/distribution-gpg-keys/opensuse/RPM-GPG-KEY-openSUSE file:///usr/share/distribution-gpg-keys/opensuse/RPM-GPG-KEY-openSUSE-Tumbleweed
 gpgcheck=1

@@ -40,8 +40,8 @@ user_agent={{ user_agent }}
 
 [opensuse-leap-oss]
 name=openSUSE Leap $releasever - {{ repo_arch }} - OSS
-baseurl=https://download.opensuse.org/distribution/leap/$releasever/repo/oss/
-#metalink=https://download.opensuse.org/distribution/leap/$releasever/repo/oss/repodata/repomd.xml.metalink
+baseurl=https://cdn.opensuse.org/distribution/leap/$releasever/repo/oss/
+#metalink=https://cdn.opensuse.org/distribution/leap/$releasever/repo/oss/repodata/repomd.xml.metalink
 enabled=1
 gpgkey=file:///usr/share/distribution-gpg-keys/opensuse/RPM-GPG-KEY-openSUSE-2022
        file:///usr/share/distribution-gpg-keys/suse/RPM-GPG-KEY-SuSE-ALP-Main
