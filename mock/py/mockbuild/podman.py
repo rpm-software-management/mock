@@ -8,7 +8,7 @@ import logging
 import subprocess
 from contextlib import contextmanager
 
-import backoff
+import backon
 from mockbuild.trace_decorator import getLog, traceLog
 
 
@@ -161,8 +161,8 @@ class Podman:
 
     def retry_image_pull(self, max_time, timeout=None):
         """Try pulling the image multiple times."""
-        @backoff.on_predicate(backoff.expo, lambda x: not x,
-                              max_time=max_time, jitter=backoff.full_jitter,
+        @backon.on_predicate(backon.expo, lambda x: not x,
+                              max_time=max_time, jitter=backon.full_jitter,
                               on_giveup=pull_fail_handler)
         def _keep_trying():
             return self.pull_image(timeout=timeout)

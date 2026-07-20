@@ -73,8 +73,8 @@ Requires: python%{python3_pkgversion}-requests
 Requires: python%{python3_pkgversion}-rpm
 Requires: python%{python3_pkgversion}-pyroute2
 Requires: python%{python3_pkgversion}-templated-dictionary >= 1.5
-Requires: python%{python3_pkgversion}-backoff
-BuildRequires: python%{python3_pkgversion}-backoff
+Requires: python%{python3_pkgversion}-backon
+BuildRequires: python%{python3_pkgversion}-backon
 BuildRequires: python%{python3_pkgversion}-devel
 %if %{with lint}
 BuildRequires: python%{python3_pkgversion}-pylint

@@ -10,7 +10,7 @@ The plugin requires systemd-nspawn as build container runner
 import threading
 import os
 import json
-import backoff
+import backon
 
 from mockbuild.trace_decorator import getLog
 from mockbuild.util import get_machinectl_uuid, _safe_check_output, USE_NSPAWN
@@ -68,7 +68,7 @@ class SystemMonitor:
 
         return (max_rss, max_cmdline)
 
-    @backoff.on_predicate(backoff.constant, jitter=None, interval=2, max_time=120)
+    @backon.on_predicate(backon.constant, jitter=None, interval=2, max_time=120)
     def get_machine_id(self, buildroot):
         """ Retry getting machine id until nspawn starts """
         return get_machinectl_uuid(buildroot.make_chroot_path())

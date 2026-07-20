@@ -6,7 +6,7 @@ import shutil
 import tempfile
 from urllib.parse import urlsplit
 
-import backoff
+import backon
 import requests
 
 from .trace_decorator import getLog
@@ -64,7 +64,7 @@ class FileDownloader:
             return None
 
     @classmethod
-    @backoff.on_exception(backoff.expo, requests.exceptions.RequestException,
+    @backon.on_exception(backon.expo, requests.exceptions.RequestException,
                           max_tries=3, max_time=100)
     def _get_inner(cls, url):
         req = requests.get(url, timeout=30)
