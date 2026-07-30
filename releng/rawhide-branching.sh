@@ -63,7 +63,7 @@ git add "$towncrier_file"
 # Use updated relasever in rawhide template, because we need to reference
 # updated GPG keys (of $next_version and $versiono).
 
-for file in templates/fedora-rawhide.tpl templates/fedora-eln.tpl; do
+for file in templates/fedora-rawhide.tpl templates/fedora-rawhide-riscv64.tpl templates/fedora-eln.tpl; do
   sed -i "s|'$version'|'$next_version'|" "$file"
   git add "$file"
 done
