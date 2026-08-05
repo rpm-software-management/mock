@@ -151,6 +151,45 @@ skip_if_unavailable=False
 
 
 
+[eln-extensions]
+name=Fedora - ELN Extensions - Developmental packages for the next Enterprise Linux release
+#baseurl=https://dl.fedoraproject.org/pub/eln/1/Extensions/$basearch/os/
+metalink=https://mirrors.fedoraproject.org/metalink?repo=eln-extensions-1&arch=$basearch
+enabled=0
+countme=1
+metadata_expire=6h
+repo_gpgcheck=0
+type=rpm
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-fedora-eln-$basearch
+skip_if_unavailable=False
+
+[eln-extensions-debuginfo]
+name=Fedora - ELN Extensions - Debug
+#baseurl=https://dl.fedoraproject.org/pub/eln/1/Extensions/$basearch/debug/tree
+metalink=https://mirrors.fedoraproject.org/metalink?repo=eln-extensions-debug-1&arch=$basearch
+enabled=0
+metadata_expire=6h
+repo_gpgcheck=0
+type=rpm
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-fedora-eln-$basearch
+skip_if_unavailable=False
+
+[eln-extensions-source]
+name=Fedora - ELN Extensions - Source
+#baseurl=https://dl.fedoraproject.org/pub/eln/1/Extensions/source/tree/
+metalink=https://mirrors.fedoraproject.org/metalink?repo=eln-extensions-source-1&arch=source
+enabled=0
+metadata_expire=6h
+repo_gpgcheck=0
+type=rpm
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-fedora-eln-$basearch
+skip_if_unavailable=False
+
+
+
 [eln-extras]
 name=Fedora - ELN Extras - Developmental packages for the next Enterprise Linux release
 #baseurl=https://dl.fedoraproject.org/pub/eln/1/Extras/$basearch/os/
@@ -179,7 +218,7 @@ skip_if_unavailable=False
 [eln-extras-source]
 name=Fedora - ELN Extras - Source
 #baseurl=https://dl.fedoraproject.org/pub/eln/1/Extras/source/tree/
-metalink=https://mirrors.fedoraproject.org/metalink?repo=eln-extras-source-1&arch=$basearch
+metalink=https://mirrors.fedoraproject.org/metalink?repo=eln-extras-source-1&arch=source
 enabled=0
 metadata_expire=6h
 repo_gpgcheck=0
@@ -335,7 +374,7 @@ skip_if_unavailable=False
 [eln-sap-source]
 name=Fedora - ELN SAP - Source
 #baseurl=https://dl.fedoraproject.org/pub/eln/1/SAP/source/tree/
-metalink=https://mirrors.fedoraproject.org/metalink?repo=eln-sap-source-1&arch=$basearch
+metalink=https://mirrors.fedoraproject.org/metalink?repo=eln-sap-source-1&arch=source
 enabled=0
 metadata_expire=6h
 repo_gpgcheck=0
