@@ -54,9 +54,12 @@ enabled=0
 gpgcheck=1
 gpgkey=file:///usr/share/distribution-gpg-keys/openeuler/RPM-GPG-KEY-openEuler-EulerMaker
 
+# metalink path= form does NOT translate $releasever to the full mirror
+# directory name (only the repo= form does), so source repos must use the
+# literal openEuler-<version> directory.
 [source]
 name=source
-metalink=https://mirrors.openeuler.org/metalink?path=openeuler/$releasever/source/repodata/repomd.xml
+metalink=https://mirrors.openeuler.org/metalink?path=openeuler/openEuler-20.03-LTS-SP4/source/repodata/repomd.xml
 enabled=0
 gpgcheck=1
 gpgkey=file:///usr/share/distribution-gpg-keys/openeuler/RPM-GPG-KEY-openEuler-EulerMaker

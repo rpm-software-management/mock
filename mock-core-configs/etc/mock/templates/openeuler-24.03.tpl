@@ -1,10 +1,10 @@
 config_opts['chroot_setup_cmd'] = 'install tar gcc-c++ openEuler-rpm-config openEuler-release which xz sed make bzip2 gzip gcc coreutils unzip diffutils cpio bash gawk rpm-build info patch util-linux findutils grep'
 config_opts['dist'] = 'oe2403'  # only useful for --resultdir variable subst
-config_opts['releasever'] = '24.03LTS_SP1'
+config_opts['releasever'] = '24.03LTS_SP4'
 config_opts['package_manager'] = 'dnf'
-config_opts['description'] = 'openEuler 24.03 LTS SP1'
+config_opts['description'] = 'openEuler 24.03 LTS SP4'
 config_opts['extra_chroot_dirs'] = [ '/run/lock', ]
-config_opts['bootstrap_image'] = 'docker.io/openeuler/openeuler:24.03-lts-sp1'
+config_opts['bootstrap_image'] = 'docker.io/openeuler/openeuler:24.03-lts-sp4'
 
 config_opts['dnf.conf'] = """
 [main]
@@ -57,9 +57,12 @@ enabled=0
 gpgcheck=1
 gpgkey=file:///usr/share/distribution-gpg-keys/openeuler/RPM-GPG-KEY-openEuler-EulerMaker
 
+# metalink path= form does NOT translate $releasever to the full mirror
+# directory name (only the repo= form does), so source repos must use the
+# literal openEuler-<version> directory.
 [source]
 name=source
-metalink=https://mirrors.openeuler.org/metalink?path=openeuler/$releasever/source/repodata/repomd.xml
+metalink=https://mirrors.openeuler.org/metalink?path=openeuler/openEuler-24.03-LTS-SP4/source/repodata/repomd.xml
 enabled=0
 gpgcheck=1
 gpgkey=file:///usr/share/distribution-gpg-keys/openeuler/RPM-GPG-KEY-openEuler-EulerMaker
@@ -73,7 +76,7 @@ gpgkey=file:///usr/share/distribution-gpg-keys/openeuler/RPM-GPG-KEY-openEuler-E
 
 [update-source]
 name=update-source
-metalink=https://mirrors.openeuler.org/metalink?path=openeuler/$releasever/update/source/repodata/repomd.xml
+metalink=https://mirrors.openeuler.org/metalink?path=openeuler/openEuler-24.03-LTS-SP4/update/source/repodata/repomd.xml
 enabled=0
 gpgcheck=1
 gpgkey=file:///usr/share/distribution-gpg-keys/openeuler/RPM-GPG-KEY-openEuler-EulerMaker
