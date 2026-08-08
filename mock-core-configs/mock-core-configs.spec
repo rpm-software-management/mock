@@ -16,6 +16,7 @@ URL:        https://github.com/rpm-software-management/mock/
 # tito build --tgz
 Source:     https://github.com/rpm-software-management/mock/releases/download/%{name}-%{version}-1/%{name}-%{version}.tar.gz
 BuildArch:  noarch
+BuildRequires: python3-pytest
 
 # The mock.rpm requires this.  Other packages may provide this if they tend to
 # replace the mock-core-configs.rpm functionality.
@@ -81,6 +82,11 @@ mock_docs=%{_pkgdocdir}
 mock_docs=${mock_docs//mock-core-configs/mock}
 mock_docs=${mock_docs//-%version/-*}
 sed -i "s~@MOCK_DOCS@~$mock_docs~" %{buildroot}%{_sysconfdir}/mock/site-defaults.cfg
+
+%check
+# Validate the shipped templates directly from the source tree (the configs
+# live in mock-core-configs, not the mock package).
+PYTHONPATH=. python3 -m pytest tests
 
 %post
 if [ -s /etc/os-release ]; then
