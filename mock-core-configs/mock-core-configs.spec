@@ -86,7 +86,7 @@ sed -i "s~@MOCK_DOCS@~$mock_docs~" %{buildroot}%{_sysconfdir}/mock/site-defaults
 %check
 # Validate the shipped templates directly from the source tree (the configs
 # live in mock-core-configs, not the mock package).
-PYTHONPATH=. python3 -m pytest tests
+PYTHONPATH=. %{python3} -m pytest tests
 
 %post
 if [ -s /etc/os-release ]; then
