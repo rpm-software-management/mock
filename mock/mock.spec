@@ -201,6 +201,7 @@ done
 ./precompile-bash-completion "mock.complete"
 
 argparse-manpage --pyfile ./py/mock-hermetic-repo.py --function _argparser > mock-hermetic-repo.1
+argparse-manpage --pyfile ./py/mock-system-monitor-collector.py --function _argparser > mock-system-monitor-collector.1
 
 
 %install
@@ -213,6 +214,7 @@ install -d %{buildroot}%{_libexecdir}/mock
 install mockchain %{buildroot}%{_bindir}/mockchain
 install py/mock-hermetic-repo.py %{buildroot}%{_bindir}/mock-hermetic-repo
 install py/mock-parse-buildlog.py %{buildroot}%{_bindir}/mock-parse-buildlog
+install py/mock-system-monitor-collector.py %{buildroot}%{_bindir}/mock-system-monitor-collector
 install py/mock.py %{buildroot}%{_libexecdir}/mock/mock
 %if %{with polkit}
 install etc/polkit/mock-pkexec.sh %{buildroot}%{_bindir}/mock
@@ -251,6 +253,7 @@ cp -a py/mockbuild %{buildroot}%{python_sitelib}/
 
 install -d %{buildroot}%{_mandir}/man1
 cp -a docs/mock.1 docs/mock-parse-buildlog.1 mock-hermetic-repo.1 %{buildroot}%{_mandir}/man1/
+cp -a mock-system-monitor-collector.1 %{buildroot}%{_mandir}/man1/
 install -d %{buildroot}%{_datadir}/cheat
 cp -a docs/mock.cheat %{buildroot}%{_datadir}/cheat/mock
 
@@ -305,6 +308,7 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 %{_bindir}/mockchain
 %{_bindir}/mock-hermetic-repo
 %{_bindir}/mock-parse-buildlog
+%{_bindir}/mock-system-monitor-collector
 %{_libexecdir}/mock
 
 # python stuff
@@ -332,6 +336,7 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 %{_mandir}/man1/mock.1*
 %{_mandir}/man1/mock-parse-buildlog.1*
 %{_mandir}/man1/mock-hermetic-repo.1*
+%{_mandir}/man1/mock-system-monitor-collector.1*
 %{_datadir}/cheat/mock
 
 
