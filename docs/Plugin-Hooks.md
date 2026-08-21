@@ -25,6 +25,7 @@ Where `HOOK_NAME` is one of:
 * postumount - This hook is called when everything in chroot finished or has been killed. All inner mounts have been umounted. E.g., tmpfs plugin uses this to umount tmpfs chroot. This action is currently being used by `lvm_root`, `tmpfs` plugins.
 * postyum - This hook is called after any packager manager action is executed. This is e.g., used by the `package_state` plugin to list all available packages. This action is currently being used by `package_state`, `root_cache`, `selinux`, `yum_cache` plugins.
 * prebuild - This hook is called after `BuildRequires` have been installed, but before RPM builds. This is not called for SRPM rebuilds.
+* precheck - Called immediately before the separate `%check` step, after the main RPM build succeeds. Used by `system_monitor` to distinguish test samples from build samples. See the conditions below.
 * prechroot - This hook is called just before executing a command when `mock chroot` command has been used. This action is currently being used by `root_cache` plugin.
 * preinit - Only chroot and result_dir directories exist. There may be no other content. No binary. Not even base directories. Root_cache plugin uses this hook to populate the content of chroot_from cache. HW_info gather information about hardware and store it in result_dir. This action is currently being used by `ccache`, `hw_info`, `root_cache`, `yum_cache` plugins.
 * preshell - This hook is called just before giving a prompt to a user when `mock shell` command has been used. This action is currently being used by `pm_request`, `root_cache` plugins.
@@ -35,5 +36,12 @@ Where `HOOK_NAME` is one of:
 * rollback_to
 * scrub
 * umount_root - The counterpart to mount_root; called to instruct the buildroot-managing plugin to unmount the buildroot.
+
+## Separate check hook
+
+`precheck` takes no arguments and is called before `%check` only when it
+runs as a separate step (`separate_check`), after the main RPM build
+succeeds. It is not called when `%check` runs inline or is disabled.
+This lets plugins such as `system_monitor` distinguish testing from building.
 
 You can get inspired by existing [plugins](https://github.com/rpm-software-management/mock/tree/master/mock/py/mockbuild/plugins).
