@@ -26,7 +26,7 @@ from .constants import MOCKCONFDIR, PKGPYTHONDIR, VERSION
 from .file_util import is_in_dir
 from .trace_decorator import getLog, traceLog
 from .uid import getresuid, getresgid
-from .util import set_use_nspawn, setup_operations_timeout
+from .util import check_nspawn_has_restrict_address_families_option, set_use_nspawn, setup_operations_timeout
 
 PLUGIN_LIST = ['tmpfs', 'root_cache', 'yum_cache', 'mount', 'bind_mount',
                'ccache', 'selinux', 'package_state', 'chroot_scan',
@@ -632,6 +632,14 @@ def set_config_opts_per_cmdline(config_opts, options, args):
     if use_nspawn is None:
         use_nspawn = nspawn_supported()
         getLog().info("systemd-nspawn auto-detected: %s", use_nspawn)
+
+    # Since systemd v261, nspawn prints a warning that starting in an undetermined future
+    # version, it will restrict permitted socket address families by default. To supress
+    # the warning, users must specify the --restrict-address-families option.
+    # Providing an empty value allows to retain the "no restrictions" behaviour.
+    if use_nspawn:
+        if check_nspawn_has_restrict_address_families_option():
+            config_opts['nspawn_args'] += ['--restrict-address-families=']
 
     set_use_nspawn(use_nspawn, config_opts)
 

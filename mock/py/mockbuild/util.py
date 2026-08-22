@@ -829,6 +829,15 @@ def check_nspawn_has_suppress_sync_option():
     """
     return '--suppress-sync' in systemd_nspawn_help_output()
 
+def check_nspawn_has_restrict_address_families_option():
+    """
+    Older systemd-nspawn versions don't have --restrict-address-families option,
+    and we need to know if we work with such version, as versions that *do*
+    have this option will print warnings when it's not used.
+    When systemd 261 is everywhere we can remove this.
+    """
+    return '--restrict-address-families' in systemd_nspawn_help_output()
+
 def _prepare_nspawn_command(chrootPath, user, cmd, nspawn_args=None, env=None,
                             cwd=None, interactive=False, shell=False):
     nspawn_argv = ['/usr/bin/systemd-nspawn', '-q', '-M', uuid.uuid4().hex, '-D', chrootPath]
