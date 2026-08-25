@@ -48,9 +48,6 @@ for i in $configs; do
         # we support building mock there, so test it instead
         srpm=$MOCKSRPM
         ;;
-    # Skip tests for those chroots.
-    # - amazonlinux - see #522
-    amazonlinux*) continue;;
     esac
 
     # For branched Fedoras, try also updates-testing.
