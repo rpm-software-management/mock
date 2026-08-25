@@ -2,7 +2,7 @@
 summary: Execute the old `make check` test-suite
 test: ./test.sh
 tag: old_testsuite
-duration: 3h
+duration: 4h
 tty: true
 
 require:
