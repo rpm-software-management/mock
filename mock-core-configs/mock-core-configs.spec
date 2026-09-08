@@ -23,7 +23,7 @@ BuildRequires: python3-pytest
 Provides: mock-configs
 
 # distribution-gpg-keys contains GPG keys used by mock configs
-Requires:   distribution-gpg-keys >= 1.121
+Requires:   distribution-gpg-keys >= 1.122
 # specify minimal compatible version of mock
 Requires:   mock >= 6.8
 Requires:   mock-filesystem
