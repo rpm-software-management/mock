@@ -7,8 +7,8 @@ config_opts['dnf.conf'] += """
 # available since dnf 4.18.0.  In some configurations mock will be using the
 # host dnf to bootstrap the chroot, which could be older and lack those
 # features, leading to problems.  The alternative is to use this simplified
-# metalink here in this template for CentOS Stream, and a different metalink in
-# another template for RHEL.
+# metalink here in this template for RHEL, and a different metalink in
+# another template for CentOS Stream.
 
 [epel]
 name=Extra Packages for Enterprise Linux $releasever - $basearch
@@ -28,7 +28,7 @@ enabled=0
 {% if koji_primary_repo == "epel" %}
 
 # The baseurl below is a symlink in the koji infrastructure that moves forward
-# over time to the buildroot repo of the minor version tag matching CentOS Stream.
+# over time to the buildroot repo of the minor version tag matching RHEL.
 
 [local]
 name=Extra Packages for Enterprise Linux $releasever - Koji Local - BUILDROOT ONLY!
