@@ -2,13 +2,13 @@ config_opts['chroot_setup_cmd'] += " epel-rpm-macros"
 
 config_opts['dnf.conf'] += """
 
-# The metalinks below differ from the ones used in epel-release.  The
-# epel-release metalinks rely on a dnf variable expansion feature that is only
-# available since dnf 4.18.0.  In some configurations mock will be using the
-# host dnf to bootstrap the chroot, which could be older and lack those
-# features, leading to problems.  The alternative is to use this simplified
-# metalink here in this template for RHEL, and a different metalink in
-# another template for CentOS Stream.
+# The baseurls below differ from the ones used in
+# epel-release-almalinux-altarch, which rely on a dnf variable expansion
+# feature that is only available since dnf 4.18.0.  In some configurations mock
+# will be using the host dnf to bootstrap the chroot, which could be older and
+# lack those features, leading to problems.  The alternative is to use this
+# simplified baseurl here in this template for AlmaLinux, and a different
+# baseurl in another template for AlmaLinux Kitten.
 
 [epel]
 name=Extra Packages for Enterprise Linux $releasever from AlmaLinux - x86_64_v2
