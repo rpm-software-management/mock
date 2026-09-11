@@ -225,6 +225,7 @@ See a [separate document](Mock-Core-Configs).
 * [rpkg_preprocessor](Plugin-rpkg-preprocessor) - preprocess the input spec file just before srpm build starts
 * [rpmautospec](Plugin-Rpmautospec) - automatically expand `%autorelease` and `%autochangelog` using rpmautospec
 * [root_cache](Plugin-RootCache) - cache buildroots (as tar file)
+* [sbom_generator](Plugin-SBOM) - generate SBOMs for built packages
 * [scm](Plugin-Scm) - SCM integration module - builds directly from Git or Svn
 * [selinux](Plugin-SELinux) - on SELinux enabled box, this plugin will pretend, that SELinux is disabled in build environment
 * [showrc](Plugin-Showrc) - Log the content of `rpm --showrc` for capturing all defined macros
