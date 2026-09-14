@@ -32,13 +32,14 @@ class RpmBuild:
     @property
     def noclean_option(self):
         """
-        Return ["--noclean"] if rpmbuild supports it, otherwise [].
+        We never want rpmbuild to run the %clean stage.  Mock does its own
+        cleanup (commands.clean()), and the %clean stage removes the build
+        directory that the separate %check phase (rpmbuild -bk --short-circuit)
+        still needs.  So return ["--noclean"] whenever rpmbuild supports it.
 
-        TODO: --noclean is not supported on EL6, remove this method once nobody
-              is building for RHEL 6.  See #954.
+        TODO: --noclean is not supported on EL6, remove this check once
+        nobody is building for RHEL 6.  See PR#931, #953 and PR#978.
         """
-        if self._config["cleanup_on_success"]:
-            return []
         if "--noclean" in self._rpmbuild_help_output:
             return ["--noclean"]
         return []
@@ -122,7 +123,14 @@ class RpmBuild:
                         checkdeps=checkdeps, raiseExc=raiseExc)
 
     def run_separate_check(self):
-        """Run %check as an isolated phase with artifact dirs protected."""
+        """
+        Run %check as an isolated phase with artifact dirs protected.
+
+        The main build was run with --noclean (see noclean_option) so that the
+        build directory survived for this phase.  We never run rpmbuild's %clean
+        stage; Mock removes the build directory as part of its own cleanup
+        (commands.clean()).
+        """
         if not self.use_separate_check:
             return
         getLog().info("Running %check as a separate phase"
