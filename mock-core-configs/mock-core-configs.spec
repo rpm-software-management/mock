@@ -40,10 +40,11 @@ Requires(post): sed
 %endif
 
 %description
-Mock configuration files which allow you to create chroots for Alma Linux,
-Amazon Linux, CentOS, CentOS Stream, Circle Linux, EuroLinux, Fedora, Fedora EPEL, Mageia,
-Navy Linux, OpenMandriva Lx, openSUSE, Oracle Linux, Red Hat Enterprise Linux,
-Rocky Linux and various other specific or combined chroots.
+Mock configuration files which allow you to create chroots for AlmaLinux,
+AlmaLinux Kitten, Amazon Linux, CentOS, CentOS Stream, Circle Linux, EuroLinux,
+Fedora, Fedora EPEL, Mageia, Navy Linux, OpenMandriva Lx, openSUSE, Oracle
+Linux, Red Hat Enterprise Linux, Rocky Linux and various other specific or
+combined chroots.
 
 
 %prep
