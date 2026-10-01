@@ -33,7 +33,7 @@ PLUGIN_LIST = ['tmpfs', 'root_cache', 'yum_cache', 'mount', 'bind_mount',
                'lvm_root', 'compress_logs', 'sign', 'pm_request',
                'hw_info', 'procenv', 'showrc', 'rpkg_preprocessor',
                'rpmautospec', 'buildroot_lock', 'export_buildroot_image',
-               'unbreq', 'expand_spec', 'system_monitor']
+               'unbreq', 'expand_spec', 'system_monitor', 'sbom_generator']
 
 def nspawn_supported():
     """Detect some situations where the systemd-nspawn chroot code won't work"""
@@ -269,7 +269,33 @@ def setup_default_config_opts():
         'system_monitor_enable': False,
         'system_monitor_opts': {
             'interval' : 2
-        }
+        },
+        'sbom_generator_enable': False,
+        'sbom_generator_opts': {
+            'generate_sbom': True,
+            # Full argv template. Generator flags are literal; Mock substitutes
+            # only path/runtime placeholders (resultdir, root, builddir, online,
+            # rpmbuild_networking, isolation, use_nspawn). Override this string
+            # to change format/includes or to use an external generator.
+            'command': (
+                '/usr/bin/mock-sbom-generator'
+                ' --type cyclonedx'
+                ' --resultdir %(resultdir)s'
+                ' --root %(root)s'
+                ' --builddir %(builddir)s'
+                ' --include-file-components true'
+                ' --include-file-dependencies false'
+                ' --include-debug-files false'
+                ' --include-man-pages true'
+                ' --include-source-dependencies true'
+                ' --include-toolchain-dependencies false'
+                ' --generate-cpe false'
+                ' --online %(online)s'
+                ' --rpmbuild-networking %(rpmbuild_networking)s'
+                ' --isolation %(isolation)s'
+                ' --use-nspawn %(use_nspawn)s'
+            ),
+        },
     }
 
     config_opts['environment'] = {
