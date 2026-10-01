@@ -3,7 +3,7 @@
 %endif
 
 Name:       mock-core-configs
-Version:    45.1
+Version:    45.2
 Release:    1%{?dist}
 Summary:    Mock core config files basic chroots
 
@@ -163,6 +163,18 @@ fi
 %ghost %config(noreplace,missingok) %{_sysconfdir}/mock/default.cfg
 
 %changelog
+* Thu Oct 01 2026 Pavel Raiskup <pavel@raiskup.cz> 45.2-1
+- Add openSUSE Leap 16.1 configurations (ucraft98@gmail.com)
+- Fix openSUSE Tumbleweed %%dist macro (ucraft98@gmail.com)
+- Fix "AlmaLinux" name (one word) (msuchy@redhat.com)
+- Alma Kitten + EPEL 10s adjustments (carlwgeorge@gmail.com)
+- Add Amazon Linux 2027 configuration and mark AL2 eol (rajibade@amazon.com)
+- Add epel-10s template (carlwgeorge@gmail.com)
+- Amazon Linux 2023 has a buildsys-build group that can be used to setup the
+  chroot (negativo17@gmail.com)
+- tests: add openEuler source metalink test to mock-core-configs
+  (pkwarcraft@gmail.com)
+
 * Tue Aug 11 2026 Pavel Raiskup <pavel@raiskup.cz> 45.1-1
 - branch Fedora 45 from Rawhide
 - Document oci_platform_map as a temporary workaround
