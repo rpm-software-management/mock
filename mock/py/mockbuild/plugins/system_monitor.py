@@ -1,190 +1,176 @@
 # License: GPL2 or later see COPYING
 """
-Track various system statistics during the build phase.
-- Report maximum allocated memory in total and for the "biggest" process
-- Report maximum swap usage
+Sample resource usage continuously throughout the whole build,
+tagging each sample with the build phase active at the time, and
+stream the raw samples into the result dir.
 
-The plugin requires systemd-nspawn as build container runner
+The actual sampling happens in a separate `mock-system-monitor-collector`
+process (see mock-system-monitor-collector.py). This plugin only figures out
+which cgroups to monitor plus is creating named nspawn slice.
 """
 
-import threading
-import os
 import json
-import backoff
+import os
+import subprocess
+import threading
 
+from mockbuild import util
 from mockbuild.trace_decorator import getLog
-from mockbuild.util import get_machinectl_uuid, _safe_check_output, USE_NSPAWN
 
 requires_api_version = "1.1"
+# TODO: would be nice to have monitoring for bootstrap as well
 run_in_bootstrap = False
+
+_COLLECTOR_ARGV = ["mock-system-monitor-collector"]
+
 
 def init(plugins, conf, buildroot):
     """ Plugin entry point """
     SystemMonitor(plugins, conf, buildroot)
 
-class SystemMonitor:
-    """ Main plugin class """
 
-    def get_top_process_info(self, scope_path):
-        """Finds the process in the cgroup with the highest RSS.
+def _own_cgroup_path():
+    # return the cgroupfs path of the current process cgroup as
+    # absolute path (no self-reference). This is where mock itself
+    # is running: builddeps, chroot init, ...
+    try:
+        with open("/proc/self/cgroup", 'r', encoding="utf-8") as file:
+            for line in file:
+                # example line: 0::/some/path
+                if line.startswith("0::"):
+                    relative = line.strip().split(":", 2)[2]
+                    return "/sys/fs/cgroup" + relative
+    except OSError as e:
+        getLog().debug("SYSMON: could not read own cgroup: %s", e)
 
-        Args:
-            scope_path (str): Path to the cgroup scope directory.
+    return None
 
-        Returns:
-            tuple[int, str]: A tuple containing the RSS of the top process in bytes
-                and its command line.
-        """
-        procs_path = os.path.join(scope_path, "cgroup.procs")
-        max_rss = 0
-        max_cmdline = ""
 
-        try:
-            if not os.path.exists(procs_path):
-                return (0, "unknown")
-            with open(procs_path, 'r', encoding="utf-8") as f:
-                pids = f.read().split()
+def _setup_cgroup():
+    cgroup_path = _own_cgroup_path()
+    if not cgroup_path or not os.path.isdir(cgroup_path):
+        return None
 
-            for pid in pids:
-                try:
-                    with open(f"/proc/{pid}/statm", 'r', encoding="utf-8") as sm:
-                        data = sm.read().split()
-                        if not data:
-                            continue
-                        # RSS in pages * PAGE_SIZE bytes
-                        rss_bytes = int(data[1]) * os.sysconf('SC_PAGE_SIZE')
+    return cgroup_path
 
-                    if rss_bytes > max_rss:
-                        max_rss = rss_bytes
-                        with open(f"/proc/{pid}/cmdline", 'r', encoding="utf-8") as cmd:
-                            max_cmdline = cmd.read().replace('\0', ' ').strip()
-                        if not max_cmdline:
-                            max_cmdline = f"{pid}"
 
-                except (FileNotFoundError, ProcessLookupError, IndexError):
-                    continue
-        except OSError as e:
-            getLog().error("SYSMON: Error: %s", e)
+def _inject_nspawn_slice(config, slice_name):
+    # without a dedicated slice, the actual build (running inside
+    # the nspawn container) would be invisible to us - monitoring
+    # only mock's own cgroup would be misleading, not useful.
+    # This is where the building happens.
+    if '--slice' not in util.systemd_nspawn_help_output():
+        return False
 
-        return (max_rss, max_cmdline)
+    nspawn_args = config.get('nspawn_args', [])
+    slice_arg = f'--slice={slice_name}'
+    if slice_arg not in nspawn_args:
+        nspawn_args.append(slice_arg)
+        config['nspawn_args'] = nspawn_args
 
-    @backoff.on_predicate(backoff.constant, jitter=None, interval=2, max_time=120)
-    def get_machine_id(self, buildroot):
-        """ Retry getting machine id until nspawn starts """
-        return get_machinectl_uuid(buildroot.make_chroot_path())
+    return True
 
-    def sysmon_thread(self, buildroot, interval):
-        """ Main monitoring thread """
-        current_memory_peak = 0
-        current_swap_peak = 0
 
-        machine_id = self.get_machine_id(buildroot)
-        if machine_id is None:
-            getLog().error("SYSMON: Failed to get nspawn container machine_id")
-            return
+def _parse_sample_line(line):
+    try:
+        return json.loads(line)
+    except json.JSONDecodeError:
+        getLog().debug("SYSMON: could not parse collector output line: %r", line)
+        return None
 
-        getLog().debug("SYSMON: Collecting data from machine_id: %s", machine_id)
 
-        # The unit name depends on systemd version
-        ustr = _safe_check_output(["/bin/machinectl", "show", "--property=Unit", f"{machine_id}"])
-        if isinstance(ustr, bytes):
-            ustr = ustr.decode("utf-8")
-        machine_id_unit = ustr.rstrip().split('=')[1]
-        scope_dir = f"/sys/fs/cgroup/machine.slice/{machine_id_unit}"
-        memory_peak_file = os.path.join(scope_dir, "memory.peak")
-        swap_peak_file = os.path.join(scope_dir, "memory.swap.peak")
-
-        while not self.sysmon_stop_event.is_set():
-            max_status = "Current"
-            pid_status = "Current"
-            swap_status = "Current"
-
-            try:
-                if os.path.exists(memory_peak_file):
-                    with open(memory_peak_file, 'r', encoding="utf-8") as f:
-                        current_memory_peak = int(f.read().strip())
-
-                if current_memory_peak > self.max_memory_peak:
-                    max_status = "NEW"
-                    self.max_memory_peak = current_memory_peak
-
-                if os.path.exists(swap_peak_file):
-                    with open(swap_peak_file, 'r', encoding="utf-8") as f:
-                        current_swap_peak = int(f.read().strip())
-
-                if current_swap_peak > self.max_swap_peak:
-                    swap_status = "NEW"
-                    self.max_swap_peak = current_swap_peak
-
-                top = self.get_top_process_info(f"{scope_dir}/payload")
-                if top[0] > self.top_rss[0]:
-                    pid_status = "NEW"
-                    self.top_rss = top
-
-                if f"{max_status}{swap_status}{pid_status}" != "CurrentCurrentCurrent":
-                    getLog().debug("SYSMON: "
-                        "%s MEMORY PEAK %.2f MiB | "
-                        "%s SWAP PEAK %.2f MiB | "
-                        "%s Top Process: RSS:%.2f MiB [%s]",
-                        max_status, self.max_memory_peak / 1048576,
-                        swap_status, self.max_swap_peak / 1048576,
-                        pid_status, self.top_rss[0] / 1048576, self.top_rss[1]
-                    )
-            except (IOError, ValueError):
-                getLog().debug("SYSMON: memory.peak missing %s", scope_dir)
-
-            if self.sysmon_stop_event.wait(timeout=interval):
-                break
-
-    def _on_postdeps(self):
-        # Inject nspawn args
-        nspawn_args = self.config.get('nspawn_args', [])
-        prop = '--property=MemoryAccounting=on'
-        if prop not in nspawn_args:
-            nspawn_args.append(prop)
-            self.config['nspawn_args'] = nspawn_args
-
-        # Start thread
-        interval = self.system_monitor_opts.get('interval', 2)
-        self.sysmon_stop_event.clear()
-        self.sysmon_timer_thread = threading.Thread(target=self.sysmon_thread,
-                                                    args=(self.buildroot, interval),
-                                                    daemon=True)
-        self.sysmon_timer_thread.start()
-
-        getLog().debug("SYSMON: Monitoring thread started via callback.")
-
-    def _on_postbuild(self):
-        self.sysmon_stop_event.set()
-        self.sysmon_timer_thread.join()
-        getLog().info("SYSMON: "
-            "Total Memory Peak %.2f MiB | Total Swap Peak %.2f MiB | "
-            "Top process: RSS:%.2f MiB [%s]",
-            self.max_memory_peak / 1048576, self.max_swap_peak / 1048576,
-            self.top_rss[0] / 1048576, self.top_rss[1]
-        )
-        out_file = os.path.join(self.buildroot.resultdir, 'system_monior.json')
-        with open(out_file, 'w', encoding="utf-8") as f:
-            json.dump({"total_max_memory" : self.max_memory_peak,
-                       "total_max_swap" : self.max_swap_peak,
-                       "top_process_memory" : self.top_rss[0],
-                       "top_process_cmdline" : self.top_rss[1]},
-                       f)
+class SystemMonitor:  # pylint: disable=too-few-public-methods
+    """ Main plugin class. """
 
     def __init__(self, plugins, conf, buildroot):
-        self.max_memory_peak = 0
-        self.max_swap_peak = 0
-        self.top_rss = (0, "")
-        self.sysmon_timer_thread = None
-        self.sysmon_stop_event = threading.Event()
         self.buildroot = buildroot
-        self.system_monitor_opts = conf
-        self.config = buildroot.config
+        self.opts = conf
+        self.interval = self.opts.get('interval', 5)
+        self._proc = None
+        self._thread = None
+        self._samples_path = None
+        self._current_phase = "startup"
 
-        if not USE_NSPAWN:
-            getLog().warning("SYSMON: build is not using nspawn. Statistics will not be available")
+        cgroup_path = _setup_cgroup()
+        if not cgroup_path:
+            getLog().warning("SYSMON: could not determine own cgroup, "
+                              "resource monitoring disabled")
             return
 
-        getLog().info("SYSMON: Starting system monitor")
-        plugins.add_hook("postdeps", self._on_postdeps)
-        plugins.add_hook("postbuild", self._on_postbuild)
+        slice_name = f"mocksysmon{os.getpid()}.slice"
+        if not _inject_nspawn_slice(buildroot.config, slice_name):
+            getLog().warning("SYSMON: systemd-nspawn does not support --slice, "
+                              "resource monitoring disabled")
+            return
+
+        if not self._prepare_samples_file(buildroot.resultdir):
+            return
+
+        cgroup_dirs = [cgroup_path, os.path.join("/sys/fs/cgroup", slice_name)]
+        self._start_collector(cgroup_dirs, self.interval)
+
+        # needed for phase tagging in samples
+        plugins.add_hook("preinit", lambda: self._set_phase("chroot_init"))
+        plugins.add_hook("earlyprebuild", lambda: self._set_phase("resolving_deps"))
+        plugins.add_hook("postdeps", lambda: self._set_phase("build"))
+        # only produces check phase when `separate_check` is enabled
+        # otherwise %check run inside the run_build() so we get
+        # everything under build phase
+        plugins.add_hook("precheck", lambda: self._set_phase("check"))
+
+        plugins.add_hook("postbuild", self._finalize)
+        plugins.add_hook("initfailed", self._finalize)
+
+        getLog().info("SYSMON: monitoring cgroups ready at %s", cgroup_dirs)
+
+    def _prepare_samples_file(self, resultdir):
+        try:
+            self._samples_path = os.path.join(resultdir, "system_monitor_samples.jsonl")
+            # start each build with a fresh, empty file - later samples are
+            # appended to it one by one as they arrive
+            with open(self._samples_path, 'w', encoding="utf-8"):
+                pass
+
+            return True
+        except OSError:
+            getLog().warning("SYSMON: failed to create results file", exc_info=True)
+            return False
+
+    def _start_collector(self, cgroup_dirs, interval):
+        cmd = list(_COLLECTOR_ARGV) + ["--interval", str(interval)]
+        for cgroup_dir in cgroup_dirs:
+            cmd += ["--cgroup", cgroup_dir]
+
+        self._proc = subprocess.Popen(  # pylint: disable=consider-using-with
+            cmd, stdout=subprocess.PIPE, universal_newlines=True)
+        self._thread = threading.Thread(target=self._read_samples, daemon=True)
+        self._thread.start()
+
+    def _read_samples(self):
+        # runs in the background reader thread; ends naturally once the
+        # collector process exits and its stdout hits EOF
+        for line in self._proc.stdout:
+            sample = _parse_sample_line(line)
+            if sample is None:
+                continue
+
+            sample["phase"] = self._current_phase
+            try:
+                with open(self._samples_path, 'a', encoding="utf-8") as f:
+                    f.write(json.dumps(sample) + "\n")
+            except OSError:
+                getLog().warning("SYSMON: failed to write sample", exc_info=True)
+
+    def _set_phase(self, name):
+        getLog().debug("SYSMON: switching to phase '%s'", name)
+        self._current_phase = name
+
+    def _finalize(self):
+        if self._proc is None:
+            return
+
+        proc = self._proc
+        self._proc = None
+        proc.terminate()
+        self._thread.join(timeout=5)
+        proc.wait()
