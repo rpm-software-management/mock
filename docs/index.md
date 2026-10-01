@@ -70,6 +70,7 @@ Versions in Linux distributions:
 
 
 ## Release Notes
+* [6.9 and Configs 45.2](Release-Notes-6.9) (2026-10-01) - The `%clean` spec file section is no longer executed by `rpmbuild` (Mock does the cleanup itself), systemd-nspawn `--restrict-address-families` probing, `unbreq` plugin fixes.
 * [6.8 and Configs 45.1](Release-Notes-6.8) (2026-08-11) - System monitor plugin, polkit support, pivot_root_chroot, separate %check phase, bugfixes.
 * [Configs 44.4](Release-Notes-Configs-44.4) (2026-06-24) - Fedora Rawhide RISC-V, Azure Linux 4.0 beta
 * [Configs 44.3](Release-Notes-Configs-44.3) (2026-06-10) - AlmaLinux bootstrap_image_ready, ELN package rename, AlmaLinux x86_64_v2 bootstrap re-enabled, RISC-V 64-bit for Fedora 44.

@@ -19,7 +19,7 @@
 
 Summary: Builds packages inside chroots
 Name: mock
-Version: 6.8
+Version: 6.9
 Release: 1%{?dist}
 License: GPL-2.0-or-later
 # Source is created by
@@ -363,6 +363,17 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 
 
 %changelog
+* Thu Oct 01 2026 Pavel Raiskup <pavel@raiskup.cz> 6.9-1
+- Keep the build directory for the separate %%check phase; the %%clean section
+  is no longer executed by rpmbuild
+- unbreq plugin: Rename variables for consistency (marian.koncek@mailbox.org)
+- unbreq plugin: Fix incorrect BuildRequires resolution
+  (marian.koncek@mailbox.org)
+- unbreq plugin: Fix incorrect handling of BuildRequires providers
+  deduplication (marian.koncek@mailbox.org)
+- Detect if nspawn has --restrict-address-families (veg@svgames.pl)
+- ci: turn on config test for Amazon Linux
+
 * Tue Aug 11 2026 Pavel Raiskup <pavel@raiskup.cz> 6.8-1
 - bump Conflicts to mock-core-configs < 45.1
 - Document oci_platform_map as a temporary workaround
