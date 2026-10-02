@@ -115,7 +115,13 @@ metadata needed for a hermetic build (see also \fB\-\-hermetic\-build\fR).
 When passing more than one SRPM, it will try to build failed builds if at least one subsequent SRPM succeed. This mimic the behaviour of deprecated mockchain.
 .TP
 \fB\-\-clean\fP
-Purge the chroot tree.
+Purge the buildroot.  This removes the whole \fIbasedir\fR/\fIroot\fR directory
+tree, which includes the chroot itself, the build directories and the default
+result directory (a \fB\-\-resultdir\fR pointing outside of the buildroot is
+not touched).  If \fBconfig_opts['rootdir']\fR places the chroot outside of
+\fIbasedir\fR, that directory is removed as well.  Built RPMs from the default
+result directory can be rescued first, see \fBbackup_on_clean\fR in
+site-defaults.cfg.
 .TP
 \fB\-\-copyin\fP
 Copies the source paths (files or directory trees) into the chroot at
@@ -303,7 +309,13 @@ Pass \-\-forcearch to DNF. This will enable to install packages for different ar
 Rebuild the root cache after making alterations to the chroot (i.e. \-\-install). This option is useful only when using tmpfs plugin.
 .TP
 \fB\-\-cleanup\-after\fR
-Clean chroot after building. Use with \-\-resultdir. Only active for '\-\-rebuild'.
+Clean the buildroot after building, as if \fB\-\-clean\fR was called once the
+build finished.  This sets both the \fBcleanup_on_success\fR and
+\fBcleanup_on_failure\fR configuration options, see site-defaults.cfg for a
+fine-grained control.  The cleanup is only performed when the resultdir points
+outside of the buildroot (typically with \fB\-\-resultdir\fR); otherwise the
+results would be removed together with it, so the option is silently ignored.
+Applies to the \fB\-\-rebuild\fR and \fB\-\-buildsrpm\fR commands.
 .TP
 \fB\-\-configdir\fR=\fICONFIGDIR\fP
 Change directory where config files are found
@@ -378,7 +390,8 @@ Use pre\-defined rpm macro file. Macros passed to '\-\-define' override macros o
 Deprecated. Use \fV\-\-isolation=nspawn\fP.
 .TP
 \fB\-n\fR, \fB\-\-no\-clean\fR
-Do not clean chroot before building a package.
+Do not clean the buildroot before building a package, reuse the pre-existing
+one instead.
 .TP
 \fB\-\-nocheck\fR
 Pass \-\-nocheck to rpmbuild to skip 'make check' tests.

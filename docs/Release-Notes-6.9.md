@@ -8,12 +8,23 @@ title: Release Notes - Mock 6.9
 
 ### Breaking changes
 
-- Mock now always runs `rpmbuild` with `--noclean` (when supported), so the
-  `%clean` section of spec files is no longer executed.  Mock does its own
-  cleanup of the build directory, and keeping the directory around is needed
-  for the separate `%check` phase.  Spec files that rely on their `%clean`
-  section being performed _in a Mock build_ would need to be adjusted — but we
-  believe no such spec files exist in practice.
+- Mock now always runs `rpmbuild` with `--noclean` (when supported by
+  `rpmbuild`), so the `%clean` section of spec files is never executed, and
+  neither is `rpmbuild`'s built-in `rmbuild` step that removes the build tree.
+  Mock does its own cleanup of the build directory (and keeping the directory
+  around is needed, e.g., for the separate `%check` phase).
+
+  Note this is not really a new behavior.  Mock has been passing `--noclean`
+  [since 2022][commit#638e0abf], and it did so for the default configuration
+  already — a `resultdir` inside the `basedir` [disables
+  `cleanup_on_success`][config-noclean], which is what made Mock pass
+  `--noclean`.  That is also the case in Fedora Koji, so Fedora package builds
+  have not been running `%clean` for years.  What changes in 6.9 is that a
+  `resultdir` placed outside of the `basedir` behaves the same way.
+
+  Spec files that rely on their `%clean` section being performed _in a Mock
+  build_ would need to be adjusted — but we believe no such spec files exist in
+  practice.  See also [the related devel@ discussion][devel-clean-thread].
 
 
 ### New features
@@ -77,3 +88,6 @@ title: Release Notes - Mock 6.9
 [issue#1808]: https://github.com/rpm-software-management/mock/issues/1808
 [rhbz#2511998]: https://bugzilla.redhat.com/2511998
 [issue#1799]: https://github.com/rpm-software-management/mock/issues/1799
+[commit#638e0abf]: https://github.com/rpm-software-management/mock/commit/638e0abfa05d21171940da734a08b2d4ec497669
+[config-noclean]: https://github.com/rpm-software-management/mock/blob/3b308660a12fb59886f438a59561f023d01586d8/mock/py/mockbuild/config.py#L670-L672
+[devel-clean-thread]: https://lists.fedoraproject.org/archives/list/devel@lists.fedoraproject.org/thread/257ZJM2NQ6E45ZUIFK2QO5QXZ6W5WZG7/
