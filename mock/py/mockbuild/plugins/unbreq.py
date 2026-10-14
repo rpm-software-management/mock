@@ -77,6 +77,7 @@ class Unbreq:
                 f"`exclude_accessed_files` to be a list, but was {type(config_exclude_accessed_files)}"
             )
         self.exclude_accessed_files = [re.compile(r) for r in config_exclude_accessed_files]
+        self.touched_files: set[str] = set()
         self.accessed_files = AtimeDict()
         self.mount_options: list[str] = []
         self.rpm_files: dict[str, list[str]] = {}
@@ -86,6 +87,7 @@ class Unbreq:
 
         plugins.add_hook("earlyprebuild", self._EarlyPrebuildHook)
         plugins.add_hook("postyum", self._PostYumHook)
+        plugins.add_hook("prebuild", self._PreBuildHook)
         plugins.add_hook("postdeps", self._PostDepsHook)
         plugins.add_hook("postbuild", self._PostBuildHook)
 
@@ -311,20 +313,39 @@ class Unbreq:
         """
         Get all the BuildRequires, the RPMs that provide them, the files they
         own and set both their access and modify timestamps to zero.
+        Make sure to touch each file only once.
         """
         def handle_file(path: str) -> None:
             try:
                 os.utime(self.buildroot.make_chroot_path(path), (0, 0))
+                self.touched_files.add(path)
             except FileNotFoundError:
                 pass
 
-        all_files = self.get_files(self.try_remove(provider
+        all_files = (path for path in self.get_files(self.try_remove(provider
             for providers in self.buildrequires_providers.values()
             for provider in providers
-        ))
+        )) if path not in self.touched_files)
 
         for _ in self.pool.map(handle_file, all_files):
             pass
+
+    @traceLog()
+    def handle_buildrequires_files(self) -> None:
+        """
+        Resolve which RPMs provide the current set of BuildRequires and
+        reset the access/modification times of their files to zero.
+        """
+        with self.do_with_chroot():
+            self.buildrequires_providers = self.get_buildrequires_providers(self.buildrequires_deptype.keys())
+
+        if "relatime" in self.mount_options:
+            getLog().info(
+                "unbreq plugin: detected 'relatime' mount option, setting access times of files under %s to 0",
+                self.buildroot.rootdir
+            )
+            with self.do_with_chroot():
+                self.set_br_files_am_time()
 
     @traceLog()
     def _EarlyPrebuildHook(self) -> None:
@@ -366,17 +387,15 @@ class Unbreq:
                 self.get_buildrequires(srpm.path)
 
     @traceLog()
-    def _PostDepsHook(self) -> None:
+    def _PreBuildHook(self) -> None:
         """
-        At this point even dynamic BuildRequires have been generated.
+        Static but not dynamic BuildRequires have been installed.
+        This hook is called before %prep.
         """
         if not self.enabled:
             return
 
-        getLog().info("enabled unbreq plugin (postdeps)")
-
-        with self.do_with_chroot():
-            self.buildrequires_providers = self.get_buildrequires_providers(self.buildrequires_deptype.keys())
+        getLog().info("enabled unbreq plugin (prebuild)")
 
         # NOTE maybe find a better example file to touch to get an atime?
         path = self.buildroot.make_chroot_path("/dev/null")
@@ -388,13 +407,20 @@ class Unbreq:
             returnOutput = True,
         ).rstrip().split(",")
 
-        if "relatime" in self.mount_options:
-            getLog().info(
-                "unbreq plugin: detected 'relatime' mount option, setting access times of files under %s to 0",
-                self.buildroot.rootdir
-            )
-            with self.do_with_chroot():
-                self.set_br_files_am_time()
+        self.handle_buildrequires_files()
+
+    @traceLog()
+    def _PostDepsHook(self) -> None:
+        """
+        At this point even dynamic BuildRequires have been generated.
+        This hook may be called after %prep.
+        """
+        if not self.enabled:
+            return
+
+        getLog().info("enabled unbreq plugin (postdeps)")
+
+        self.handle_buildrequires_files()
 
     @traceLog()
     def _PostBuildHook(self) -> None:
