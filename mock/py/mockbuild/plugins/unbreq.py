@@ -29,7 +29,6 @@ class AtimeDict(dict):
     """
     A caching lazy dictionary mapping file paths to their access time.
     """
-
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.lock = Lock()
@@ -56,7 +55,6 @@ class Unbreq:
     BuildRequires fields whose files were not accessed as potentially
     unnecessary.
     """
-
     # pylint: disable=too-many-instance-attributes
     @traceLog()
     def __init__(self, plugins, conf, buildroot) -> None:
@@ -183,7 +181,6 @@ class Unbreq:
         be removed. A BuildRequires field may end up not being provided by any
         installed RPM when using `if` booleans.
         """
-
         result: set[str] = set()
         packages = list(packages)
         if len(packages) != 0:
@@ -208,7 +205,6 @@ class Unbreq:
         Each BR can be provided by multiple installed RPMs but we try to
         minimize it.
         """
-
         # Get both the mapping and the reverse mapping between each
         # BuildRequires field and the RPMs that provide it.
         br_providers: dict[str, list[str]] = {}
@@ -322,8 +318,9 @@ class Unbreq:
             except FileNotFoundError:
                 pass
 
-        all_files = self.get_files(self.try_remove(
-            provider for providers in self.buildrequires_providers.values() for provider in providers
+        all_files = self.get_files(self.try_remove(provider
+            for providers in self.buildrequires_providers.values()
+            for provider in providers
         ))
 
         for _ in self.pool.map(handle_file, all_files):
@@ -334,7 +331,6 @@ class Unbreq:
         """
         Initialize some chroot attributes.
         """
-
         if self.buildroot.pkg_manager.name == "dnf5":
             self.enabled = True
         elif self.buildroot.pkg_manager.name == "dnf4":
