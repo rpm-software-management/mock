@@ -40,5 +40,5 @@ $ sudo sed -e '/^enabled=/ s/1/0/' -i /etc/dnf/plugins/subscription-manager.conf
 
 If there are multiple client keys,
 mock takes the first one in `glob("/etc/pki/entitlement/<numeric-part>-key.pem")` output.
-But users still generate configure `config_opts['redhat_subscription_key_id']` in mock configuration,
+But users can configure `config_opts['redhat_subscription_key_id']` in mock configuration,
 or on command line `--config-opts=redhat_subscription_key_id=<ID>`.
