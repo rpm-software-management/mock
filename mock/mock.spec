@@ -177,7 +177,7 @@ Filesystem layout and group for Mock.
 
 %prep
 %setup -q
-for file in py/mock.py py/mock-parse-buildlog.py; do
+for file in py/mock.py py/mock-parse-buildlog.py py/mock-sbom-generator.py; do
   sed -i 1"s|#!/usr/bin/python3 |#!%{__python} |" $file
 done
 
@@ -201,6 +201,7 @@ done
 ./precompile-bash-completion "mock.complete"
 
 argparse-manpage --pyfile ./py/mock-hermetic-repo.py --function _argparser > mock-hermetic-repo.1
+argparse-manpage --pyfile ./py/mock-sbom-generator.py --function _argparser > mock-sbom-generator.1
 
 
 %install
@@ -213,6 +214,7 @@ install -d %{buildroot}%{_libexecdir}/mock
 install mockchain %{buildroot}%{_bindir}/mockchain
 install py/mock-hermetic-repo.py %{buildroot}%{_bindir}/mock-hermetic-repo
 install py/mock-parse-buildlog.py %{buildroot}%{_bindir}/mock-parse-buildlog
+install py/mock-sbom-generator.py %{buildroot}%{_bindir}/mock-sbom-generator
 install py/mock.py %{buildroot}%{_libexecdir}/mock/mock
 %if %{with polkit}
 install etc/polkit/mock-pkexec.sh %{buildroot}%{_bindir}/mock
@@ -250,7 +252,7 @@ install -d %{buildroot}%{python_sitelib}/
 cp -a py/mockbuild %{buildroot}%{python_sitelib}/
 
 install -d %{buildroot}%{_mandir}/man1
-cp -a docs/mock.1 docs/mock-parse-buildlog.1 mock-hermetic-repo.1 %{buildroot}%{_mandir}/man1/
+cp -a docs/mock.1 docs/mock-parse-buildlog.1 mock-hermetic-repo.1 mock-sbom-generator.1 %{buildroot}%{_mandir}/man1/
 install -d %{buildroot}%{_datadir}/cheat
 cp -a docs/mock.cheat %{buildroot}%{_datadir}/cheat/mock
 
@@ -305,6 +307,7 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 %{_bindir}/mockchain
 %{_bindir}/mock-hermetic-repo
 %{_bindir}/mock-parse-buildlog
+%{_bindir}/mock-sbom-generator
 %{_libexecdir}/mock
 
 # python stuff
@@ -332,6 +335,7 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 %{_mandir}/man1/mock.1*
 %{_mandir}/man1/mock-parse-buildlog.1*
 %{_mandir}/man1/mock-hermetic-repo.1*
+%{_mandir}/man1/mock-sbom-generator.1*
 %{_datadir}/cheat/mock
 
 

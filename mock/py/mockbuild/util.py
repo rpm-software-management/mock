@@ -105,6 +105,27 @@ RHEL_CLONES = ['centos', 'deskos', 'ol', 'rhel', 'scientific']
 _OPS_TIMEOUT = 0
 
 
+def host_path_to_chroot_path(host_path, rootdir):
+    """Convert an absolute host path under ``rootdir`` to an in-chroot path.
+
+    Accepts ``host_path`` only when it equals ``rootdir`` or has a path
+    separator immediately after ``rootdir``. Sibling prefixes such as
+    ``/var/lib/mock/foo`` vs ``/var/lib/mock/foobar`` are left unchanged.
+    """
+    if not rootdir or host_path is None:
+        return host_path
+    root = rootdir.rstrip("/")
+    if not root:
+        # rootdir was "/" — return the original path unchanged.
+        return host_path
+    if host_path == root or host_path == root + "/":
+        return "/"
+    prefix = root + "/"
+    if host_path.startswith(prefix):
+        return "/" + host_path[len(prefix):]
+    return host_path
+
+
 def cmd_pretty(cmd, env=None):
     if isinstance(cmd, list):
         return ' '.join(shlex.quote(arg) for arg in cmd)
