@@ -213,6 +213,7 @@ install -d %{buildroot}%{_libexecdir}/mock
 install mockchain %{buildroot}%{_bindir}/mockchain
 install py/mock-hermetic-repo.py %{buildroot}%{_bindir}/mock-hermetic-repo
 install py/mock-parse-buildlog.py %{buildroot}%{_bindir}/mock-parse-buildlog
+install py/mock-system-monitor-collector.py %{buildroot}%{_bindir}/mock-system-monitor-collector
 install py/mock.py %{buildroot}%{_libexecdir}/mock/mock
 %if %{with polkit}
 install etc/polkit/mock-pkexec.sh %{buildroot}%{_bindir}/mock
@@ -305,6 +306,7 @@ pylint-3 py/mockbuild/ py/*.py py/mockbuild/plugins/* || :
 %{_bindir}/mockchain
 %{_bindir}/mock-hermetic-repo
 %{_bindir}/mock-parse-buildlog
+%{_bindir}/mock-system-monitor-collector
 %{_libexecdir}/mock
 
 # python stuff
