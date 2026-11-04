@@ -13,6 +13,7 @@ import pwd
 import shutil
 import stat
 import tempfile
+import time
 import uuid
 from textwrap import dedent
 
@@ -98,7 +99,8 @@ class Buildroot(object):
         self.cachedir = os.path.join(self.cache_topdir, self.shared_root_name)
         self.builddir = os.path.join(self.homedir, 'build')
         self._lock_file = None
-        self.selinux = (not self.config['plugin_conf']['selinux_enable']
+        self._lock_exclusive = False
+        self.selinux =(not self.config['plugin_conf']['selinux_enable']
                         and util.selinuxEnabled())
 
         self.chrootuid = config['chrootuid']
@@ -202,13 +204,23 @@ class Buildroot(object):
         commands in chroot. If it was already initialized, just lock the shared
         lock.
         """
+        joined = False
         try:
             self._lock_buildroot(exclusive=True)
             self._init(prebuild=prebuild)
         except BuildRootLocked:
             self._init_locked()
+            joined = True
         finally:
             self._lock_buildroot(exclusive=False)
+        if joined:
+            # The process that initialized the buildroot may have
+            # bind-mounted device nodes (when mknod is not permitted, e.g. in
+            # a container).  Track them too, so that whichever process tears
+            # the buildroot down last also unmounts them.  Only look now that
+            # we hold the shared lock: before that, the initializing process
+            # may still have been creating them.
+            self._register_device_bindmounts()
 
     @traceLog()
     def chroot_is_initialized(self):
@@ -438,6 +450,11 @@ class Buildroot(object):
         kargs.setdefault("nspawn_args", [])
         kargs["nspawn_args"].extend(self.config.get("nspawn_args", []))
         kargs.setdefault("pivot_root_chroot", self.config.get("pivot_root_chroot", False))
+        # Leftover processes in the chroot may belong to another mock process
+        # using this buildroot concurrently; only kill them if there is none.
+        # Decide when the command has finished, not now: another process may
+        # join while it runs.
+        kargs.setdefault("kill_orphans", lambda: not self.other_users_present())
 
         try:
             result = util.do_with_status(command, chrootPath=self.make_chroot_path(),
@@ -744,16 +761,51 @@ class Buildroot(object):
         lock_type = fcntl.LOCK_EX if exclusive else fcntl.LOCK_SH
         if not self._lock_file:
             self._open_lock()
-        try:
-            fcntl.lockf(self._lock_file.fileno(), lock_type | fcntl.LOCK_NB)
-        except IOError:
-            raise BuildRootLocked("Build root is locked by another process.")
+        # other_users_present() in another process briefly upgrades its shared
+        # lock to exclusive; retry shared requests so that they do not fail
+        # in that window.
+        attempts = 1 if exclusive else 20
+        for attempt in range(attempts):
+            try:
+                fcntl.lockf(self._lock_file.fileno(), lock_type | fcntl.LOCK_NB)
+                break
+            except OSError as err:
+                if attempt == attempts - 1:
+                    raise BuildRootLocked("Build root is locked by another process.") from err
+                time.sleep(0.05)
+        self._lock_exclusive = exclusive
 
     @traceLog()
     def _unlock_buildroot(self):
         if self._lock_file:
             self._lock_file.close()
         self._lock_file = None
+        self._lock_exclusive = False
+
+    @traceLog()
+    def other_users_present(self):
+        """
+        Return True if another mock process holds the buildroot lock, i.e. is
+        using this buildroot concurrently.  Killing "leftover" processes or
+        tearing down mounts would then break that other process.
+
+        This briefly upgrades our own lock to exclusive and restores it.  It
+        must reuse self._lock_file: the lock is a POSIX record lock, and
+        closing any other descriptor of the lock file would drop it.
+        """
+        if not self._lock_file:
+            # We do not hold the lock, so we cannot tell; keep the old
+            # behaviour.
+            return False
+        if self._lock_exclusive:
+            return False
+        try:
+            fcntl.lockf(self._lock_file.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except OSError:
+            # A failed upgrade leaves our shared lock in place.
+            return True
+        fcntl.lockf(self._lock_file.fileno(), fcntl.LOCK_SH | fcntl.LOCK_NB)
+        return False
 
     @traceLog()
     def _setup_dirs(self):
@@ -874,6 +926,53 @@ class Buildroot(object):
                     raise
             self.config['nspawn_args'].append('--bind={0}'.format(loop_file))
 
+    def _device_files(self):
+        """
+        Device nodes created in the chroot by _setup_devices(), as
+        (mode, device number, path relative to the chroot) tuples.
+        """
+        dev_files = [
+            (stat.S_IFCHR | 0o666, os.makedev(1, 3), "dev/null"),
+            (stat.S_IFCHR | 0o666, os.makedev(1, 7), "dev/full"),
+            (stat.S_IFCHR | 0o666, os.makedev(1, 5), "dev/zero"),
+            (stat.S_IFCHR | 0o666, os.makedev(1, 8), "dev/random"),
+            (stat.S_IFCHR | 0o444, os.makedev(1, 9), "dev/urandom"),
+            (stat.S_IFCHR | 0o666, os.makedev(5, 0), "dev/tty"),
+            (stat.S_IFCHR | 0o600, os.makedev(5, 1), "dev/console"),
+            (stat.S_IFCHR | 0o666, os.makedev(5, 2), "dev/ptmx"),
+            (stat.S_IFCHR | 0o666, os.makedev(10, 229), "dev/fuse"),
+            (stat.S_IFCHR | 0o660, os.makedev(10, 234), "dev/btrfs-control"),
+            (stat.S_IFCHR | 0o600, os.makedev(10, 236), "dev/mapper/control"),
+            (stat.S_IFCHR | 0o666, os.makedev(10, 237), "dev/loop-control"),
+            (stat.S_IFCHR | 0o600, os.makedev(10, 57), "dev/prandom"),
+            (stat.S_IFCHR | 0o600, os.makedev(10, 183), "dev/hwrng"),
+        ]
+        for i in range(self.config['dev_loop_count']):
+            dev_files.append((stat.S_IFBLK | 0o666, os.makedev(7, i),
+                              f"dev/loop{i}"))
+        return dev_files
+
+    @traceLog()
+    def _register_device_bindmounts(self):
+        """
+        Track device nodes that another mock process bind-mounted into this
+        buildroot (_setup_devices() falls back to bind mounts when mknod
+        fails with EPERM), so that they are unmounted with the other
+        essential mounts.  Without this, a process that joined an already
+        initialized buildroot does not know about them, and when it is the
+        last one to tear the buildroot down they stay mounted, which later
+        makes deleting the buildroot fail with EBUSY.
+        """
+        if not self.config['internal_dev_setup']:
+            return
+        tracked = {m.mountpath for m in self.mounts.essential_mounts}
+        for _, _, path in self._device_files():
+            chroot_path = self.make_chroot_path(path)
+            if chroot_path in tracked:
+                continue
+            if os.path.ismount(chroot_path):
+                self.mounts.add_device_bindmount("/" + path)
+
     @traceLog()
     def _setup_devices(self):
         if self.config['internal_dev_setup']:
@@ -882,24 +981,7 @@ class Buildroot(object):
             file_util.mkdirIfAbsent(self.make_chroot_path("dev", "shm"))
             file_util.mkdirIfAbsent(self.make_chroot_path("dev", "mapper"))
             prevMask = os.umask(0000)
-            devFiles = [
-                (stat.S_IFCHR | 0o666, os.makedev(1, 3), "dev/null"),
-                (stat.S_IFCHR | 0o666, os.makedev(1, 7), "dev/full"),
-                (stat.S_IFCHR | 0o666, os.makedev(1, 5), "dev/zero"),
-                (stat.S_IFCHR | 0o666, os.makedev(1, 8), "dev/random"),
-                (stat.S_IFCHR | 0o444, os.makedev(1, 9), "dev/urandom"),
-                (stat.S_IFCHR | 0o666, os.makedev(5, 0), "dev/tty"),
-                (stat.S_IFCHR | 0o600, os.makedev(5, 1), "dev/console"),
-                (stat.S_IFCHR | 0o666, os.makedev(5, 2), "dev/ptmx"),
-                (stat.S_IFCHR | 0o666, os.makedev(10, 229), "dev/fuse"),
-                (stat.S_IFCHR | 0o660, os.makedev(10, 234), "dev/btrfs-control"),
-                (stat.S_IFCHR | 0o600, os.makedev(10, 236), "dev/mapper/control"),
-                (stat.S_IFCHR | 0o666, os.makedev(10, 237), "dev/loop-control"),
-                (stat.S_IFCHR | 0o600, os.makedev(10, 57), "dev/prandom"),
-                (stat.S_IFCHR | 0o600, os.makedev(10, 183), "dev/hwrng"),
-            ]
-            for i in range(self.config['dev_loop_count']):
-                devFiles.append((stat.S_IFBLK | 0o666, os.makedev(7, i), "dev/loop{loop_number}".format(loop_number=i)))
+            devFiles = self._device_files()
             kver = os.uname()[2]
             self.root_log.debug("kernel version == %s", kver)
             for i in devFiles:

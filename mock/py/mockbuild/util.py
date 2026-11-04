@@ -458,7 +458,7 @@ def process_input(line):
 
 
 def logOutput(fdout, fderr, logger, returnOutput=1, start=0, timeout=0, printOutput=False,
-              child=None, chrootPath=None, pty=False, returnStderr=True):
+              child=None, chrootPath=None, pty=False, returnStderr=True, kill_orphans=True):
     output = ""
     done = False
     fds = [fdout, fderr]
@@ -489,9 +489,16 @@ def logOutput(fdout, fderr, logger, returnOutput=1, start=0, timeout=0, printOut
                 if child and child.poll() is not None:
                     logger.info("Child pid '%s' is dead", child.pid)
                     done = True
-                    if chrootPath:
+                    # kill_orphans may be a callable, so that the decision
+                    # is made now rather than when the command was started
+                    if chrootPath and callable(kill_orphans):
+                        kill_orphans = kill_orphans()
+                    if chrootPath and kill_orphans:
                         logger.info("Child dead, killing orphans")
                         orphansKill(chrootPath)
+                    elif chrootPath:
+                        logger.info("Child dead, chroot in use by another "
+                                    "process, not killing orphans")
                     continue
 
             for s in i_rdy:
@@ -601,7 +608,7 @@ def do(*args, **kargs):
 def do_with_status(command, shell=False, chrootPath=None, cwd=None, timeout=0, raiseExc=True,
                    returnOutput=0, uid=None, gid=None, user=None, personality=None,
                    printOutput=False, env=None, pty=False, nspawn_args=None, unshare_net=False,
-                   returnStderr=True, pivot_root_chroot=False, *_, **kargs):
+                   returnStderr=True, pivot_root_chroot=False, kill_orphans=True, *_, **kargs):
     logger = kargs.get("logger", getLog())
     if timeout == 0:
         timeout = _OPS_TIMEOUT
@@ -653,7 +660,8 @@ def do_with_status(command, shell=False, chrootPath=None, cwd=None, timeout=0, r
                     reader if pty else child.stdout, child.stderr,
                     logger, returnOutput, start, timeout, pty=pty,
                     printOutput=printOutput, child=child,
-                    chrootPath=chrootPath, returnStderr=returnStderr)
+                    chrootPath=chrootPath, returnStderr=returnStderr,
+                    kill_orphans=kill_orphans)
     except:
         # kill children if they arent done
         if child is not None and child.returncode is None:

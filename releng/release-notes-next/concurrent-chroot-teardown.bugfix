@@ -1,0 +1,6 @@
+A Mock run that uses a chroot another Mock run is still using (e.g.
+`--install`, `--shell` or `--no-clean` while a build runs) no longer kills
+the other run's processes as "leftover" processes, and device nodes that
+were bind-mounted into the chroot (when `mknod` is not permitted, e.g. in a
+container) are now unmounted by whichever run finishes last instead of being
+left mounted, which made the chroot impossible to delete ([issue#1836][]).
