@@ -31,14 +31,16 @@ class MountPoint(object):
 
     @traceLog()
     # pylint: disable=unused-argument
-    def umount(self, force=False, nowarn=False):
+    def umount(self, force=False, nowarn=False, kill_orphans=True):
         """
-        Return None if not mounted, and True if successfully umounted
+        Return None if not mounted, and True if successfully umounted.
+        With kill_orphans=False, processes in a mount used as a chroot are
+        left alone (they may belong to another mock process).
         """
         if not self.mounted:
             return None
 
-        if self._is_chroot:
+        if self._is_chroot and kill_orphans:
             # Don't keep background processes running with unmounted
             # /proc/self/root directory.
             util.orphansKill(self.mountpath)
@@ -282,11 +284,18 @@ class Mounts(object):
     @traceLog()
     def _umount_bootstrap(self):
         # Kill leftover processes in the bind-mountpoint, typically these
-        # processes can be started by DNF/RPM via buggy scriptlets.
-        util.orphansKill(self.rootObj.make_chroot_path(), manual_forced=True)
+        # processes can be started by DNF/RPM via buggy scriptlets.  But if
+        # another mock process is using this buildroot concurrently, the
+        # processes in it may be that process's build: leave them alone.
+        kill_orphans = not self.rootObj.other_users_present()
+        if kill_orphans:
+            util.orphansKill(self.rootObj.make_chroot_path(), manual_forced=True)
+        else:
+            self.rootObj.root_log.debug(
+                "buildroot in use by another process, not killing orphans")
         with self.rootObj.uid_manager.elevated_privileges():
             for m in reversed(self.bootstrap_mounts):
-                m.umount()
+                m.umount(kill_orphans=kill_orphans)
 
     @contextmanager
     def essential_mounted(self, noop=False):
