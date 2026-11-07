@@ -1,0 +1,1 @@
+Report the actual Podman error instead of "tuple index out of range" when image_fallback is disabled and pulling the bootstrap or buildroot image fails.
