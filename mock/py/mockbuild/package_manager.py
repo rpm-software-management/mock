@@ -410,16 +410,23 @@ Error:      Neither dnf-utils nor yum-utils are installed. Dnf-utils or yum-util
         bundle_path = self.config['ssl_ca_bundle_path']
         if bundle_path:
             self.buildroot.root_log.debug('copying CA bundle into chroot')
-            host_bundle = os.path.realpath('/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem')
-            chroot_bundle_path = self.buildroot.make_chroot_path(bundle_path)
-            chroot_bundle_dir = os.path.dirname(chroot_bundle_path)
+            host_bundle_locations = [
+                '/etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem',
+                '/etc/ca-certificates/extracted/tls-ca-bundle.pem'
+            ]
+            for src in host_bundle_locations:
+                host_bundle = os.path.realpath(src)
+                chroot_bundle_path = self.buildroot.make_chroot_path(bundle_path)
+                chroot_bundle_dir = os.path.dirname(chroot_bundle_path)
 
-            file_util.mkdirIfAbsent(chroot_bundle_dir)
-            try:
-                shutil.copy(host_bundle, chroot_bundle_path)
-            except FileNotFoundError:
-                # when mock is not run on Fedora or EL
-                self.buildroot.root_log.debug("ca bundle not found on host")
+                file_util.mkdirIfAbsent(chroot_bundle_dir)
+                try:
+                    shutil.copy(host_bundle, chroot_bundle_path)
+                    self.buildroot.root_log.debug(f"found host ca bundle in '{src}'")
+                    break
+                except FileNotFoundError:
+                    # when mock is not run on Fedora or EL
+                    self.buildroot.root_log.debug(f"host ca bundle not found in '{src}'")
 
     @traceLog()
     def copy_extra_certs(self):
