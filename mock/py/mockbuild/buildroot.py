@@ -267,7 +267,7 @@ class Buildroot(object):
             except PodmanError as exc:
                 if not self.config["image_fallback"]:
                     err = BootstrapError if self.is_bootstrap else RootError
-                    raise err from exc
+                    raise err(f"{message}: {exc}") from exc
                 raise _FallbackException(
                     f"{message}, falling back to chroot installation: {exc}"
                 ) from exc
