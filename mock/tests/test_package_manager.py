@@ -11,6 +11,7 @@ from templated_dictionary import TemplatedDictionary
 from mockbuild.config import setup_default_config_opts
 from mockbuild.constants import PKGPYTHONDIR
 from mockbuild.buildroot import Buildroot
+from mockbuild.exception import YumError, commandTimeoutExpired
 from mockbuild.package_manager import _PackageManager
 
 
@@ -34,6 +35,9 @@ class TestPackageManager:
         self.config_opts['releasever'] = '1'
         self.config_opts['target_arch'] = 'fakearch'
         self.config_opts['dnf_vars'] = {'test': 'testval'}
+        # normally set by the mock CLI, or by config post-processing
+        self.config_opts['enable_disable_repos'] = []
+        self.config_opts['print_main_output'] = False
 
         with mock.patch('mockbuild.buildroot.package_manager'):
             with mock.patch('mockbuild.util.cmpKernelVer') as kv:
@@ -207,3 +211,35 @@ class TestPackageManager:
         assert len(mounts) == 1
         mount = mounts[0]
         assert mount.srcpath == repo_directory
+
+    def test_attempt_timeout_disabled_by_default(self):
+        """ By default, no time limit is imposed on the command. """
+        with mock.patch('mockbuild.package_manager.util.do') as do:
+            do.return_value = "output"
+            # pylint: disable=protected-access
+            self.package_manager._execute_mounted('install', 'pkg')
+        # call_args[1] is the kwargs dict (call_args.kwargs needs Python 3.8)
+        assert 'timeout' not in do.call_args[1]
+
+    def test_attempt_timeout_passed_to_do(self):
+        """ The configured limit is passed down to util.do(). """
+        self.config_opts['package_manager_attempt_timeout'] = 33
+        with mock.patch('mockbuild.package_manager.util.do') as do:
+            do.return_value = "output"
+            # pylint: disable=protected-access
+            self.package_manager._execute_mounted('install', 'pkg')
+        assert do.call_args[1]['timeout'] == 33
+
+    def test_attempt_timeout_retries(self):
+        """ A command killed on timeout is retried up to max_attempts. """
+        self.config_opts['package_manager_attempt_timeout'] = 1
+        self.config_opts['package_manager_max_attempts'] = 3
+        self.config_opts['package_manager_attempt_delay'] = 0
+        # the base class has no name set, the retry log messages need one
+        self.package_manager.name = 'dnf4'
+        with mock.patch('mockbuild.package_manager.util.do') as do:
+            do.side_effect = commandTimeoutExpired("Timeout(1) expired")
+            with pytest.raises(YumError):
+                # pylint: disable=protected-access
+                self.package_manager._execute_mounted('install', 'pkg')
+        assert do.call_count == 3
