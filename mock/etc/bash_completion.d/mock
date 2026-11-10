@@ -139,7 +139,7 @@ _mock()
             ;;
         --scrub)
             COMPREPLY=( $( compgen -W "all chroot cache root-cache c-cache
-                yum-cache dnf-cache lvm overlayfs bootstrap" -- "$cur" ) )
+                yum-cache dnf-cache lvm overlayfs bootstrap bootstrap-cache" -- "$cur" ) )
             return
             ;;
         -i|--install|install)

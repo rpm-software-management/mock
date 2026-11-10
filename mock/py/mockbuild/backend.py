@@ -120,6 +120,8 @@ class Commands(object):
                     elif scrub == 'bootstrap' and self.bootstrap_buildroot is not None:
                         self.buildroot.root_log.info("scrubbing bootstrap for %s", self.config_name)
                         self.bootstrap_buildroot.delete()
+                    elif scrub == 'bootstrap-cache' and self.bootstrap_buildroot is not None:
+                        self.buildroot.root_log.info("scrubbing bootstrap-cache for %s", self.config_name)
                         file_util.rmtree(self.bootstrap_buildroot.cachedir, selinux=self.bootstrap_buildroot.selinux)
 
             except IOError as e:
