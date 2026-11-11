@@ -1,0 +1,9 @@
+Mock now refuses to use a buildroot that another Mock process is using,
+instead of joining it.  Previously a second run that did not clean the
+chroot first (e.g. `--shell`, `--chroot`, `--install`, `--copyin` or
+`--no-clean` while a build ran) went ahead and, when it finished, killed
+the other run's processes in the chroot as leftovers; when `mknod` is not
+permitted (e.g. in a container) it also left device bind mounts behind, so
+the chroot could not be deleted.  The second run now exits with code 60;
+wait for the first run to finish, or use `--uniqueext` to work in a
+separate buildroot ([issue#1836][]).
