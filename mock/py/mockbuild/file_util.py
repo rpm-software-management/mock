@@ -30,16 +30,27 @@ def touch(fileName):
     open(fileName, 'a').close()
 
 
-def write_if_changed(filepath, content):
+def write_if_changed(filepath, content, mode=None):
     """Write content to file only if it differs from the current content,
-    preserving the file timestamp when unchanged."""
+    preserving the file timestamp when unchanged.
+
+    When mode is set, the file is created with (and always set to) that mode,
+    so that its content is never readable with broader permissions.
+    """
+    if mode is not None and os.path.exists(filepath):
+        os.chmod(filepath, mode)
     try:
         with open(filepath, 'r', encoding="utf-8") as f:
             if f.read() == content:
                 return
     except FileNotFoundError:
         pass
-    with open(filepath, 'w', encoding="utf-8") as f:
+    if mode is None:
+        with open(filepath, 'w', encoding="utf-8") as f:
+            f.write(content)
+        return
+    fd = os.open(filepath, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, mode)
+    with os.fdopen(fd, 'w', encoding="utf-8") as f:
         f.write(content)
 
 
