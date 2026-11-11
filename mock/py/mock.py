@@ -64,6 +64,7 @@ from functools import partial
 
 # our imports
 from mockbuild import config
+from mockbuild import subscription_suse
 from mockbuild import util
 from mockbuild.constants import MOCKCONFDIR, VERSION, DEFAULT_UMASK
 from mockbuild.file_downloader import FileDownloader
@@ -720,6 +721,11 @@ def main():
     sys.setrecursionlimit(config_opts["recursion_limit"])
 
     util.subscription_redhat_init(config_opts, uidManager)
+    # Cleaning and listing don't need the repositories, so don't fail if the
+    # registration server is not reachable.
+    if options.mode not in ('clean', 'orphanskill', 'listchroots') \
+            and not options.printrootpath and not options.list_snapshots:
+        subscription_suse.subscription_suse_init(config_opts, uidManager)
 
     # allow a different mock group to be specified
     uidManager.fix_different_chrootgid(config_opts)
@@ -776,28 +782,8 @@ def main():
         # disable updating bootstrap chroot
         bootstrap_buildroot_config['update_before_build'] = False
 
-        # Enforce host-native repo architecture for bootstrap chroot (unless
-        # bootstrap_forcearch=True, which should never be the case).  This
-        # decision affects condPersonality() for DNF calls!
-        #
-        # Temporary workaround: sub-architecture variants (e.g. x86_64_v2)
-        # listed in oci_platform_map run natively on the host — keep the
-        # target's repo_arch so the bootstrap uses the correct sub-arch
-        # repos.  See oci_platform_map in config.py and PR #1733/#1783.
-        host_arch = config_opts["host_arch"]
-        target_arch = config_opts["target_arch"]
-        if config_opts["use_bootstrap_image"] \
-                and target_arch not in config_opts.get('oci_platform_map', {}):
-            # with bootstrap image, bootstrap is always native
-            bootstrap_buildroot_config['repo_arch'] = config_opts['repo_arch_map'].get(host_arch, host_arch)
-        elif host_arch not in config_opts.get("legal_host_arches", []) \
-                and not config_opts.get('bootstrap_forcearch'):
-            # target chroot uses --forcearch, but bootstrap is native
-            bootstrap_buildroot_config['repo_arch'] = config_opts['repo_arch_map'].get(host_arch, host_arch)
-        # else:
-        # We keep the 'repo_arch' copied from target chroot (config_opts['repo_arch']):
-        # - for the 'multilib' cases (we don't want to use x86_64 repos for i586 chroots)
-        # - 'bootstrap_forcearch' is set
+        # This decision affects condPersonality() for DNF calls!
+        bootstrap_buildroot_config['repo_arch'] = config.get_bootstrap_repo_arch(config_opts)
 
         # disable forcearch in bootstrap, per https://github.com/rpm-software-management/mock/issues/1110
         bootstrap_buildroot_config['forcearch'] = None

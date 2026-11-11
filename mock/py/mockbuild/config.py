@@ -142,6 +142,21 @@ def setup_default_config_opts():
 
     config_opts['redhat_subscription_required'] = False
 
+    # SUSE Linux Enterprise repositories, see Feature-slechroots documentation.
+    config_opts['suse_subscription_required'] = False
+    config_opts['suse_subscription_product'] = 'SLES'
+    config_opts['suse_subscription_version'] = '{{ releasever }}'
+    config_opts['suse_subscription_arch'] = '{{ target_arch }}'
+    config_opts['suse_subscription_extensions'] = []
+    config_opts['suse_subscription_include_recommended'] = True
+    config_opts['suse_subscription_regcode'] = None
+    config_opts['suse_subscription_server'] = None
+    config_opts['suse_subscription_credentials_file'] = '/etc/zypp/credentials.d/SCCcredentials'
+    config_opts['suse_subscription_gpgkey'] = ''
+    config_opts['suse_subscription_bootstrap_extensions'] = []
+    config_opts['suse_subscription_bootstrap_gpgkey'] = ''
+    config_opts['suse_subscription_repos'] = ''
+
     config_opts['ssl_ca_bundle_path'] = None
 
     config_opts['ssl_copied_ca_trust_dirs'] = [
@@ -330,6 +345,7 @@ def setup_default_config_opts():
     config_opts['nosync'] = False
     config_opts['nosync_force'] = False
     config_opts['files'] = {}
+    config_opts['installation_rpm_macros'] = {}
     config_opts['macros'] = {
         '%_topdir': '%s/build' % config_opts['chroothome'],
         '%_rpmfilename': '%%{NAME}-%%{VERSION}-%%{RELEASE}.%%{ARCH}.rpm',
@@ -462,6 +478,38 @@ def multiply_platform_multiplier(config_opts):
     """
     if '%_platform_multiplier' not in config_opts["macros"]:
         config_opts["macros"]["%_platform_multiplier"] = 10 if config_opts["forcearch"] else 1
+
+
+def get_bootstrap_repo_arch(config_opts):
+    """Return the repo_arch of the bootstrap chroot.
+
+    The bootstrap chroot is host-native (unless bootstrap_forcearch=True, which
+    should never be the case), even when the target chroot uses --forcearch.
+
+    Temporary workaround: sub-architecture variants (e.g. x86_64_v2) listed in
+    oci_platform_map run natively on the host, so keep the target's repo_arch
+    for them.  See oci_platform_map and PR #1733/#1783.
+
+    The target's repo_arch is also kept for the 'multilib' cases (we don't want
+    to use x86_64 repos for i586 chroots).
+
+    Args:
+        config_opts (dict): The mock configuration.
+
+    Returns:
+        str: The repository architecture of the bootstrap chroot.
+    """
+    host_arch = config_opts["host_arch"]
+    host_repo_arch = config_opts['repo_arch_map'].get(host_arch, host_arch)
+    if config_opts["use_bootstrap_image"] \
+            and config_opts["target_arch"] not in config_opts.get('oci_platform_map', {}):
+        # with bootstrap image, bootstrap is always native
+        return host_repo_arch
+    if host_arch not in config_opts.get("legal_host_arches", []) \
+            and not config_opts.get('bootstrap_forcearch'):
+        # target chroot uses --forcearch, but bootstrap is native
+        return host_repo_arch
+    return config_opts['repo_arch']
 
 
 @traceLog()
