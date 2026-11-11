@@ -22,3 +22,13 @@ def test_module_config():
 
     _check([("info", "")], [["module", "info"]])
     _check([("info", None)], [["module", "info"]])
+
+
+def test_installation_time_homedir(tmp_path):
+    """ installation_rpm_macros end up in the installation-time .rpmmacros """
+    fake = MagicMock()
+    fake.rootdir = str(tmp_path)
+    fake.config = {"installation_rpm_macros": {"%_db_backend": "ndb"}}
+    homedir = buildroot.Buildroot.prepare_installation_time_homedir(fake)
+    with open(f"{homedir}/.rpmmacros", encoding="utf-8") as macros:
+        assert macros.read() == "%_netsharedpath /proc:/sys\n%_db_backend ndb\n"

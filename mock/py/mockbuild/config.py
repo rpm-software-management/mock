@@ -330,6 +330,7 @@ def setup_default_config_opts():
     config_opts['nosync'] = False
     config_opts['nosync_force'] = False
     config_opts['files'] = {}
+    config_opts['installation_rpm_macros'] = {}
     config_opts['macros'] = {
         '%_topdir': '%s/build' % config_opts['chroothome'],
         '%_rpmfilename': '%%{NAME}-%%{VERSION}-%%{RELEASE}.%%{ARCH}.rpm',
