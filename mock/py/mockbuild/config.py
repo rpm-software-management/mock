@@ -142,6 +142,21 @@ def setup_default_config_opts():
 
     config_opts['redhat_subscription_required'] = False
 
+    # SUSE Linux Enterprise repositories, see Feature-slechroots documentation.
+    config_opts['suse_subscription_required'] = False
+    config_opts['suse_subscription_product'] = 'SLES'
+    config_opts['suse_subscription_version'] = '{{ releasever }}'
+    config_opts['suse_subscription_arch'] = '{{ target_arch }}'
+    config_opts['suse_subscription_extensions'] = []
+    config_opts['suse_subscription_include_recommended'] = True
+    config_opts['suse_subscription_regcode'] = None
+    config_opts['suse_subscription_server'] = None
+    config_opts['suse_subscription_credentials_file'] = '/etc/zypp/credentials.d/SCCcredentials'
+    config_opts['suse_subscription_gpgkey'] = ''
+    config_opts['suse_subscription_bootstrap_extensions'] = []
+    config_opts['suse_subscription_bootstrap_gpgkey'] = ''
+    config_opts['suse_subscription_repos'] = ''
+
     config_opts['ssl_ca_bundle_path'] = None
 
     config_opts['ssl_copied_ca_trust_dirs'] = [
