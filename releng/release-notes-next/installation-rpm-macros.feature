@@ -1,0 +1,1 @@
+New `config_opts['installation_rpm_macros']` option, to set RPM macros used by the package manager while it installs packages into the chroot. For example, `{'%_db_backend': 'ndb'}` makes the host's RPM create the bootstrap chroot database with the backend expected by the target distribution.

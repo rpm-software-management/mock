@@ -796,6 +796,8 @@ class Buildroot(object):
         # set the permissions on them - and that might fail with permission errors.
         with open(os.path.join(rpm_config_home, ".rpmmacros"), "w") as macro_fd:
             macro_fd.write("%_netsharedpath /proc:/sys\n")
+            for key, value in self.config["installation_rpm_macros"].items():
+                macro_fd.write(f"{key} {value}\n")
 
         # To make the DNF (and wrapped RPM) use the appropriate .rpmmacros file
         # we need to set the $HOME environment variable to non-standard
