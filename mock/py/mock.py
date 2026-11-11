@@ -64,6 +64,7 @@ from functools import partial
 
 # our imports
 from mockbuild import config
+from mockbuild import subscription_suse
 from mockbuild import util
 from mockbuild.constants import MOCKCONFDIR, VERSION, DEFAULT_UMASK
 from mockbuild.file_downloader import FileDownloader
@@ -720,6 +721,11 @@ def main():
     sys.setrecursionlimit(config_opts["recursion_limit"])
 
     util.subscription_redhat_init(config_opts, uidManager)
+    # Cleaning and listing don't need the repositories, so don't fail if the
+    # registration server is not reachable.
+    if options.mode not in ('clean', 'orphanskill', 'listchroots') \
+            and not options.printrootpath and not options.list_snapshots:
+        subscription_suse.subscription_suse_init(config_opts, uidManager)
 
     # allow a different mock group to be specified
     uidManager.fix_different_chrootgid(config_opts)

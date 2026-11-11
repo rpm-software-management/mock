@@ -102,6 +102,30 @@ class TestWriteIfChanged:
         file_util.write_if_changed(str(path), "")
         assert path.stat().st_mtime_ns == mtime_before
 
+    def test_creates_new_file_with_mode(self, temp_dir):
+        """Should create the file with the requested mode."""
+        path = temp_dir / "private.conf"
+        file_util.write_if_changed(str(path), "secret", mode=0o600)
+        assert path.read_text() == "secret"
+        assert path.stat().st_mode & 0o777 == 0o600
+
+    def test_restricts_mode_when_unchanged(self, temp_dir):
+        """Should set the mode of an existing file even if content is identical."""
+        path = temp_dir / "private.conf"
+        path.write_text("secret")
+        path.chmod(0o644)
+        file_util.write_if_changed(str(path), "secret", mode=0o600)
+        assert path.stat().st_mode & 0o777 == 0o600
+
+    def test_restricts_mode_when_changed(self, temp_dir):
+        """Should set the mode of an existing file before writing new content."""
+        path = temp_dir / "private.conf"
+        path.write_text("old")
+        path.chmod(0o644)
+        file_util.write_if_changed(str(path), "secret", mode=0o600)
+        assert path.read_text() == "secret"
+        assert path.stat().st_mode & 0o777 == 0o600
+
 
 class TestRmtree:
     """Integration-style tests for file_util.rmtree using real files and directories"""
