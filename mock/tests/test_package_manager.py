@@ -207,3 +207,30 @@ class TestPackageManager:
         assert len(mounts) == 1
         mount = mounts[0]
         assert mount.srcpath == repo_directory
+
+    @pytest.mark.parametrize("support_installroot, is_bootstrap_image, chrooted", [
+        (True, False, False),
+        (True, True, True),
+        (False, False, True),
+    ])
+    def test_installation_time_homedir(self, support_installroot, is_bootstrap_image, chrooted):
+        """The installation-time HOME is valid where the package manager runs."""
+        self.buildroot.rootdir = os.path.join(self.workdir, "root")
+        pm = self.package_manager
+        pm.support_installroot = support_installroot
+        pm.is_bootstrap_image = is_bootstrap_image
+        pm.bootstrap_buildroot = None
+        pm.config["print_main_output"] = False
+        pm.build_invocation = MagicMock(return_value=["dnf", "install", "foo"])
+        self.buildroot.nuke_rpm_db = MagicMock()
+        with mock.patch('mockbuild.package_manager.util.do') as do:
+            pm._execute_mounted("install", "foo")  # pylint: disable=protected-access
+        # call_args.kwargs needs Python 3.8
+        _, kwargs = do.call_args
+        home = kwargs["env"]["HOME"]
+        if chrooted:
+            assert home == "/installation-homedir"
+            assert kwargs["chrootPath"] == self.buildroot.make_chroot_path()
+        else:
+            assert home == self.buildroot.make_chroot_path("installation-homedir")
+        assert os.path.exists(self.buildroot.make_chroot_path("installation-homedir", ".rpmmacros"))

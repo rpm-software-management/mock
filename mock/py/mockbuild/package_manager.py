@@ -289,6 +289,10 @@ class _PackageManager(object):
         env.update(util.get_proxy_environment(self.config))
         # installation-time specific homedir
         env['HOME'] = self.buildroot.prepare_installation_time_homedir()
+        if not self.support_installroot or self.is_bootstrap_image:
+            # The package manager runs chrooted into this buildroot, so it
+            # needs the path of the home directory inside the chroot.
+            env['HOME'] = os.path.join('/', os.path.relpath(env['HOME'], self.buildroot.make_chroot_path()))
         env['LC_MESSAGES'] = 'C.UTF-8'
         if self.buildroot.nosync_path:
             env['LD_PRELOAD'] = self.buildroot.nosync_path
