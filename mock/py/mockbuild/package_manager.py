@@ -14,7 +14,7 @@ from configparser import ConfigParser
 
 from . import file_util
 from . import util
-from .exception import BuildError, Error, YumError
+from .exception import BuildError, Error, YumError, commandTimeoutExpired
 from .trace_decorator import traceLog, getLog
 from .mounts import BindMountPoint
 
@@ -302,6 +302,14 @@ class _PackageManager(object):
             kwargs.setdefault("pty", True)
         self.buildroot.nuke_rpm_db()
 
+        # Kill the package manager command if a single attempt takes too long
+        # (e.g. it got stuck downloading from a very slow mirror) and let the
+        # loop below retry it, ideally against a different mirror.  Zero means
+        # no limit (the more generic 'opstimeout' option still applies).
+        timeout = int(self.config['package_manager_attempt_timeout'])
+        if timeout > 0:
+            kwargs.setdefault('timeout', timeout)
+
         error = None
         max_attempts = int(self.config['package_manager_max_attempts'])
         for attempt in range(max(max_attempts, 1)):
@@ -335,6 +343,11 @@ class _PackageManager(object):
                                   personality=personality, **kwargs)
                 error = None
                 break
+            except commandTimeoutExpired as e:
+                self.buildroot.root_log.warning(
+                    "%s command exceeded the time limit and was killed",
+                    self.name.upper())
+                error = YumError(str(e))
             except Error as e:
                 error = YumError(str(e))
 
