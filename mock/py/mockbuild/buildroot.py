@@ -199,14 +199,22 @@ class Buildroot(object):
     def initialize(self, prebuild=False):
         """
         Initialize the buildroot to a point where it's possible to execute
-        commands in chroot. If it was already initialized, just lock the shared
-        lock.
+        commands in chroot, then keep holding its lock as shared.
+
+        Refuse to use a buildroot that another Mock process holds: the two
+        would kill each other's processes in the chroot as leftovers and
+        unmount each other's mounts.
         """
         try:
             self._lock_buildroot(exclusive=True)
+        except BuildRootLocked as exc:
+            kind = "Bootstrap chroot" if self.is_bootstrap else "Buildroot"
+            raise BuildRootLocked(
+                f"{kind} {self.basedir} is in use by another Mock process. "
+                "Wait for it to finish, or use --uniqueext to work in a "
+                "separate buildroot.") from exc
+        try:
             self._init(prebuild=prebuild)
-        except BuildRootLocked:
-            self._init_locked()
         finally:
             self._lock_buildroot(exclusive=False)
 
@@ -235,15 +243,6 @@ class Buildroot(object):
                     ResultDirNotAccessible.__doc__ % self.resultdir
                 ) from err
 
-
-    @traceLog()
-    def _init_locked(self):
-        """
-        Things to do if other mock process initialized the Buidlroot.  Stuff
-        which would otherwise happen in self._init().
-        """
-        # Detect what package manager to use.
-        self.set_package_manager()
 
     @traceLog()
     def _load_from_container_image(self):
