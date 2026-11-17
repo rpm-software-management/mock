@@ -751,7 +751,10 @@ class Commands(object):
         if not calculatedeps:
             checkdeps = dynamic_buildrequires and self.bootstrap_buildroot is not None
             rpmbuild.run_build(mode, checkdeps=checkdeps)
-            rpmbuild.run_separate_check()
+            if rpmbuild.use_separate_check:
+                # Let plugins distinguish separate %check from the main build.
+                self.plugins.call_hooks('precheck')
+                rpmbuild.run_separate_check()
 
         results = glob.glob(bd_out + '/RPMS/*.rpm')
         results += glob.glob(bd_out + '/SRPMS/*.rpm')
