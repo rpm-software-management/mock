@@ -1,8 +1,9 @@
+config_opts['root'] = 'opensuse-leap-{{ releasever }}-{{ target_arch }}'
+
 config_opts['chroot_setup_cmd'] = 'install patterns-devel-base-devel_rpm_build'
-config_opts['dist'] = 'suse.lp161'  # only useful for --resultdir variable subst
+config_opts['dist'] = 'suse.lp{{ releasever|replace(".", "") }}'  # only useful for --resultdir variable subst
 config_opts['extra_chroot_dirs'] = [ '/run/lock', ]
-config_opts['releasever'] = '16.1'
-config_opts['macros']['%dist'] = '.suse.lp161'
+config_opts['macros']['%dist'] = '.suse.lp{{ releasever|replace(".", "") }}'
 config_opts['package_manager'] = 'dnf'
 config_opts['ssl_ca_bundle_path'] = '/var/lib/ca-certificates/ca-bundle.pem'
 config_opts['description'] = 'openSUSE Leap {{ releasever }}'
