@@ -35,6 +35,9 @@ header "testing all supported configurations"
 for i in $configs; do
     srpm=$SIMPLESRPM
     case $i in
+    # Skip tests for those chroots.
+    # - rhel and sles need a subscription
+    rhel-*|rhel+epel-*|sles-*) continue;;
     # Keep building the SIMPLESRPM
     # - oraclelinux+epel can't work with mock.spec, as %rhel is not defined
     # - fedora-eln doesn't provide all the EPEL packages needed by mock.spec
