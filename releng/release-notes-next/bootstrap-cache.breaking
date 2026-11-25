@@ -1,0 +1,4 @@
+`--scrub=bootstrap` now removes only the bootstrap chroot, preserving its
+cache. Use the new `--scrub=bootstrap-cache` option to remove only the bootstrap
+cache, or combine both options to retain the previous behavior.
+`--scrub=all` still removes both chroots and their caches.
