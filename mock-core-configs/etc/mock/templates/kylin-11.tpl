@@ -1,11 +1,13 @@
-config_opts['chroot_setup_cmd'] = 'install tar gcc-c++ kylin-rpm-config kylin-release which xz sed make bzip2 gzip gcc coreutils unzip diffutils cpio bash gawk rpm-build info patch util-linux findutils grep'
+config_opts['chroot_setup_cmd'] = 'install tar gcc-c++ kylin-rpm-config kylin-release which xz sed make bzip2 gzip gcc coreutils unzip diffutils cpio bash gawk rpm-build info patch util-linux findutils grep chrpath'
 config_opts['dist'] = 'ky11' # only useful for --resultdir variable subst
 config_opts['releasever'] = '11'
 config_opts['package_manager'] = 'dnf'
 config_opts['extra_chroot_dirs'] = [ '/run/lock', ]
 
 # Registry web interface: https://cr.kylinos.cn/zh/image
-config_opts['bootstrap_image'] = 'cr.kylinos.cn/kylin/kylin-server-platform:v11-2503'
+config_opts['bootstrap_image'] = 'cr.kylinos.cn/kylin/kylin-server-minimal:v11-2603'
+# The image only has dnf5, which is not in the repositories and has no builddep plugin, so install the dnf4 tooling in it.
+config_opts['bootstrap_image_ready'] = False
 
 config_opts['dnf.conf'] = """
 [main]
@@ -29,14 +31,14 @@ user_agent={{ user_agent }}
 
 [ks11-adv-os]
 name = Kylin Linux Advanced Server V11 - OS
-baseurl = https://update.cs2c.com.cn/NS/V11/2503/os/adv/lic/base/$basearch/
+baseurl = https://update.cs2c.com.cn/NS/V11/V11SP1-2603/os/adv/lic/base/$basearch/
 gpgkey = file:///usr/share/distribution-gpg-keys/kylin/RPM-GPG-KEY-kylin
 gpgcheck = 1
 enabled = 1
 
 [ks11-adv-updates]
 name = Kylin Linux Advanced Server V11 - Updates
-baseurl = https://update.cs2c.com.cn/NS/V11/2503/os/adv/lic/updates/$basearch/
+baseurl = https://update.cs2c.com.cn/NS/V11/V11SP1-2603/os/adv/lic/updates/$basearch/
 gpgkey = file:///usr/share/distribution-gpg-keys/kylin/RPM-GPG-KEY-kylin
 gpgcheck = 1
 enabled = 1
