@@ -6,6 +6,8 @@ title: Feature SUSE Linux Enterprise chroots
 
 Mock provides `sles-<RELEASEVER>-<TARGET_ARCH>` configs (for example `sles-15.7-x86_64` for SLES 15 SP7, or `sles-16.1-aarch64`) which build against the real SUSE Linux Enterprise Server repositories. You need a [SUSE subscription](https://www.suse.com/products/server/); a free 60-day evaluation is available at <https://www.suse.com/download/sles/>.
 
+The configs for the releases out of general support, SLES 15 SP1 (`sles-15.1-*`) to SLES 15 SP6, are in the `eol/` directory (for example `mock -r eol/sles-15.6-x86_64`). They only get the updates released during the general support, not the LTSS ones.
+
 ### How it works
 
 SUSE does not publish static repository URLs for SUSE Linux Enterprise. At the start of every run, mock asks the registration server for the repositories of the product. That server is the SUSE Customer Center (SCC), or the RMT/SMT server set in `/etc/SUSEConnect`. SUSE's own [container-suseconnect](https://github.com/SUSE/container-suseconnect) does the same for containers.

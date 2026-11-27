@@ -28,6 +28,9 @@ config_opts['suse_subscription_gpgkey'] = 'file:///usr/share/distribution-gpg-ke
 config_opts['use_bootstrap_image'] = False
 config_opts['suse_subscription_bootstrap_extensions'] = ['PackageHub']
 config_opts['suse_subscription_bootstrap_gpgkey'] = 'file:///usr/share/distribution-gpg-keys/opensuse/RPM-GPG-KEY-openSUSE-Backports-2023'
+if config_opts['releasever'] in ('15.1', '15.2', '15.3', '15.4'):
+    # The dnf of these releases is signed by the old Backports key.
+    config_opts['suse_subscription_bootstrap_gpgkey'] = 'file:///usr/share/distribution-gpg-keys/opensuse/RPM-GPG-KEY-openSUSE-Backports ' + config_opts['suse_subscription_bootstrap_gpgkey']
 
 # The bootstrap chroot is installed by the host's RPM: create its database in
 # the native SUSE format, as the SLE 15 rpm %post runs "rpmdb --initdb" if it
@@ -36,6 +39,13 @@ config_opts['installation_rpm_macros'] = {'%_db_backend': 'ndb'}
 # SLE 15 rpm still defaults to the BerkeleyDB backend.
 config_opts['files']['etc/rpm/macros.db_backend'] = """
 %_db_backend ndb
+"""
+if config_opts['releasever'] in ('15.1', '15.2'):
+    # Keep the database in /var/lib/rpm, as the rpm %posttrans migration to
+    # /usr/lib/sysimage/rpm overwrites an existing database there, and the 15.1
+    # rpm %post runs "rpmdb --initdb" if it does not find a BerkeleyDB database
+    # in /usr/lib/sysimage/rpm.
+    config_opts['files']['etc/rpm/macros.db_backend'] += """%_dbpath /var/lib/rpm
 """
 
 # dnf-data's %post calls ln without requiring coreutils, so install coreutils
