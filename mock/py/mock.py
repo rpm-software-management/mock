@@ -721,9 +721,10 @@ def main():
     sys.setrecursionlimit(config_opts["recursion_limit"])
 
     util.subscription_redhat_init(config_opts, uidManager)
-    # Cleaning and listing don't need the repositories, so don't fail if the
-    # registration server is not reachable.
-    if options.mode not in ('clean', 'orphanskill', 'listchroots') \
+    # Cleaning, listing and printing the configuration don't need the
+    # repositories, so don't contact the registration server, which could also
+    # be unreachable, nor print the access tokens.
+    if options.mode not in ('clean', 'orphanskill', 'listchroots', 'debugconfig', 'debugconfigexpand') \
             and not options.printrootpath and not options.list_snapshots:
         subscription_suse.subscription_suse_init(config_opts, uidManager)
 

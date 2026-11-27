@@ -708,8 +708,9 @@ class Dnf(_PackageManager):
         check_yum_config(config_content, self.buildroot.root_log)
         file_util.mkdirIfAbsent(self.buildroot.make_chroot_path('etc', 'dnf'))
         dnfconf_path = self.buildroot.make_chroot_path('etc', 'dnf', 'dnf.conf')
-        # The SUSE repositories carry access tokens or the system credentials,
-        # keep them away from the build user.
+        # The SUSE repositories carry access tokens or the system credentials.
+        # This is not a protection: the build user can become root through the
+        # build (for example with BuildRequires) and read them anyway.
         mode = 0o600 if self.config.get('suse_subscription_required') else None
         file_util.write_if_changed(dnfconf_path, config_content, mode=mode)
         self.initialize_vars()
