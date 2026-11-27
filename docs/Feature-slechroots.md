@@ -45,7 +45,7 @@ config_opts['suse_subscription_regcode'] = '<REGISTRATION_CODE>'
 
 Don't pass the registration code with `--config-opts` on the command line, where it is visible to other users in the process list, stays in the shell history and is written to the mock logs.
 
-The access tokens or credentials end up only in the chroot's `dnf.conf` and in the saved repositories in the cache directory. Mock writes both with mode `0600`, so the build user can't read them.
+Mock writes the access tokens or credentials to the chroot's `dnf.conf` and to the saved repositories in the cache directory, both with mode `0600`. The saved repositories are outside the chroot, but `dnf.conf` is only a small obstacle: the build user can become root through the build (for example with `BuildRequires`) and read it. The internal tracing output (`MOCK_TRACE_LOG=true` with `--trace`) prints them, and the registration code, on the standard error; it's not written to the log files.
 
 ### Extensions and modules
 

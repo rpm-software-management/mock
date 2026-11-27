@@ -639,9 +639,10 @@ class Yum(_PackageManager):
         yumconf_path = os.path.join('etc', 'yum', 'yum.conf')
         # we need dnf too in case that yum is not installed and /usr/bin/yum points in fact to dnf
         dnfconf_path = os.path.join('etc', 'dnf', 'dnf.conf')
+        mode = 0o600 if self.config.get('suse_subscription_required') else None
         for conf_path in (yumconf_path, dnfconf_path):
             chroot_conf_path = self.buildroot.make_chroot_path(conf_path)
-            file_util.write_if_changed(chroot_conf_path, config_content)
+            file_util.write_if_changed(chroot_conf_path, config_content, mode=mode)
             if os.path.exists(conf_path):
                 shutil.copystat(conf_path, chroot_conf_path)
 
@@ -708,8 +709,9 @@ class Dnf(_PackageManager):
         check_yum_config(config_content, self.buildroot.root_log)
         file_util.mkdirIfAbsent(self.buildroot.make_chroot_path('etc', 'dnf'))
         dnfconf_path = self.buildroot.make_chroot_path('etc', 'dnf', 'dnf.conf')
-        # The SUSE repositories carry access tokens or the system credentials,
-        # keep them away from the build user.
+        # The SUSE repositories carry access tokens or the system credentials.
+        # This is not a protection: the build user can become root through the
+        # build (for example with BuildRequires) and read them anyway.
         mode = 0o600 if self.config.get('suse_subscription_required') else None
         file_util.write_if_changed(dnfconf_path, config_content, mode=mode)
         self.initialize_vars()
