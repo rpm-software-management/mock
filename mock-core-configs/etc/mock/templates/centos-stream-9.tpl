@@ -41,7 +41,7 @@ skip_if_unavailable=False
 name=CentOS Stream $releasever - BaseOS
 #baseurl=http://mirror.stream.centos.org/$releasever-stream/BaseOS/$basearch/os/
 metalink=https://mirrors.centos.org/metalink?repo=centos-baseos-$releasever-stream&arch=$basearch
-gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
+gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official-SHA256
 gpgcheck=1
 enabled=1
 skip_if_unavailable=False
@@ -50,7 +50,7 @@ skip_if_unavailable=False
 name=CentOS Stream $releasever - AppStream
 #baseurl=http://mirror.stream.centos.org/$releasever-stream/AppStream/$basearch/os/
 metalink=https://mirrors.centos.org/metalink?repo=centos-appstream-$releasever-stream&arch=$basearch
-gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
+gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official-SHA256
 gpgcheck=1
 enabled=1
 skip_if_unavailable=False
@@ -59,7 +59,7 @@ skip_if_unavailable=False
 name=CentOS Stream $releasever - CRB
 #baseurl=http://mirror.stream.centos.org/$releasever-stream/CRB/$basearch/os/
 metalink=https://mirrors.centos.org/metalink?repo=centos-crb-$releasever-stream&arch=$basearch
-gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
+gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official-SHA256
 gpgcheck=1
 enabled=1
 skip_if_unavailable=False
@@ -68,7 +68,7 @@ skip_if_unavailable=False
 name=CentOS Stream $releasever - HighAvailability
 #baseurl=http://mirror.stream.centos.org/$releasever-stream/HighAvailability/$basearch/os/
 metalink=https://mirrors.centos.org/metalink?repo=centos-highavailability-$releasever-stream&arch=$basearch
-gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
+gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official-SHA256
 gpgcheck=1
 enabled=0
 
@@ -76,7 +76,7 @@ enabled=0
 name=CentOS Stream $releasever - NFV
 #baseurl=http://mirror.stream.centos.org/$releasever-stream/NFV/$basearch/os/
 metalink=https://mirrors.centos.org/metalink?repo=centos-nfv-$releasever-stream&arch=$basearch
-gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
+gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official-SHA256
 gpgcheck=1
 enabled=0
 
@@ -84,7 +84,7 @@ enabled=0
 name=CentOS Stream $releasever - RT
 #baseurl=http://mirror.stream.centos.org/$releasever-stream/RT/$basearch/os/
 metalink=https://mirrors.centos.org/metalink?repo=centos-rt-$releasever-stream&arch=$basearch
-gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
+gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official-SHA256
 gpgcheck=1
 enabled=0
 
@@ -92,7 +92,7 @@ enabled=0
 name=CentOS Stream $releasever - ResilientStorage
 #baseurl=http://mirror.stream.centos.org/$releasever-stream/ResilientStorage/$basearch/os/
 metalink=https://mirrors.centos.org/metalink?repo=centos-resilientstorage-$releasever-stream&arch=$basearch
-gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official
+gpgkey=file:///usr/share/distribution-gpg-keys/centos/RPM-GPG-KEY-CentOS-Official-SHA256
 gpgcheck=1
 enabled=0
 
